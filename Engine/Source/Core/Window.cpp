@@ -2,10 +2,15 @@
 #include "Window.h"
 #include "Renderer/D3D12Viewport.h"
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 namespace Drn
 {
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+		if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+			return true;
+
 		LONG_PTR WindowPtr = GetWindowLongPtr(hWnd, /*GWL_USERDATA*/ (-21));
 		Window* Win = reinterpret_cast<Drn::Window*>(WindowPtr);
 
@@ -66,6 +71,7 @@ namespace Drn
 		Viewport = new D3D12Viewport(InAdapter, m_WindowHandle, Width, Height, false, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 		ShowWindow(m_WindowHandle, SW_SHOWDEFAULT);
+		UpdateWindow(m_WindowHandle);
 	}
 
 	void Window::Shutdown()
@@ -75,8 +81,6 @@ namespace Drn
 
 	void Window::Tick(float DeltaTime)
 	{
-		Viewport->Tick(DeltaTime);
-
 		MSG msg = {};
 		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
@@ -86,6 +90,8 @@ namespace Drn
 			if (msg.message == WM_QUIT)
 				g_bPendingClose = true;
 		}
+
+		Viewport->Tick(DeltaTime);
 	}
 
 	void Window::Resize(int16 InWidth, int16 InHeight)

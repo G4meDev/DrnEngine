@@ -256,9 +256,16 @@ namespace Drn
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 
+		static bool show_demo_window = true;
+		static bool show_another_window = false;
+		static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+
+		ImGui::DockSpaceOverViewport();
+
 
 		if (show_demo_window)
 			ImGui::ShowDemoWindow(&show_demo_window);
