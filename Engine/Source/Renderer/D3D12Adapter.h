@@ -1,26 +1,29 @@
 #pragma once
 
-class D3D12Device;
-
-class D3D12Adapter
+namespace Drn
 {
-public:
-	D3D12Adapter();
+	class D3D12Device;
 
-public:
-	void InitalizeAdapter(bool bWithDebug);
+	class D3D12Adapter
+	{
+	public:
+		D3D12Adapter();
 
-	inline IDXGIAdapter* GetAdapter() {return DxgiAdapter.Get(); }
+	public:
+		void InitalizeAdapter(bool bWithDebug);
 
-protected:
-	bool bDebugDevice;
+		inline IDXGIAdapter* GetAdapter() {return DxgiAdapter.Get(); }
 
-	Microsoft::WRL::ComPtr<IDXGIFactory2> DxgiFactory;
-	Microsoft::WRL::ComPtr<IDXGIAdapter> DxgiAdapter;
+	protected:
+		bool bDebugDevice;
 
-private:
-	//void CreateDevice(D3D12Device* Device);
-	void CreateDXGIFactory(bool bWithDebug);
+		Microsoft::WRL::ComPtr<IDXGIFactory2> DxgiFactory;
+		Microsoft::WRL::ComPtr<IDXGIAdapter> DxgiAdapter;
 
-	HRESULT EnumAdapters(IDXGIAdapter** TempAdapter) const;
-};
+	private:
+		//void CreateDevice(D3D12Device* Device);
+		void CreateDXGIFactory(bool bWithDebug);
+
+		HRESULT EnumAdapters(IDXGIAdapter** TempAdapter) const;
+	};
+}

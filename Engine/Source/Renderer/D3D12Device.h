@@ -1,21 +1,28 @@
 #pragma once
 
-class D3D12Adapter;
-
-class D3D12Device
+namespace Drn
 {
-public:
-	D3D12Device(D3D12Adapter* InAdapter);
+	class D3D12Adapter;
+	class D3D12Queue;
 
-	inline D3D12Adapter* GetAdapter(){ return Adapter; }
-	inline IDXGIDevice* GetDevice(){ return Device.Get(); }
+	class D3D12Device
+	{
+	public:
+		D3D12Device(D3D12Adapter* InAdapter);
 
-	void InitializeDevice();
+		inline D3D12Adapter* GetAdapter(){ return Adapter; }
+		inline ID3D12Device* GetDevice(){ return Device.Get(); }
 
-protected:
+	protected:
 
-	D3D12Adapter* Adapter;
-	Microsoft::WRL::ComPtr<IDXGIDevice> Device;
+		D3D12Adapter* Adapter;
+		Microsoft::WRL::ComPtr<ID3D12Device> Device;
 
-private:
-};
+		D3D12Queue* CommandQueue_Direct;
+		D3D12Queue* CommandQueue_Copy;
+		D3D12Queue* CommandQueue_Compute;
+
+	private:
+	};
+
+}

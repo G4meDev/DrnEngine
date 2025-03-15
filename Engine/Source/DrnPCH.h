@@ -2,6 +2,8 @@
 
 #include "Core/Drn.h"
 
+#include "Renderer/D3D12Utils.h"
+
 #include <iostream>
 #include <Windows.h>
 #include <WinUser.h>

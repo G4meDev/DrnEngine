@@ -23,8 +23,7 @@ namespace Drn
 	{
 		std::cout << "Start application" << std::endl;
 
-		Renderer::MakeInstance();
-		Renderer::Get()->Init();
+		Renderer::Init();
 
 	}
 
