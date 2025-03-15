@@ -10,11 +10,14 @@ namespace Drn
 	{
 	}
 
+	ID3D12Device* D3D12Device::GetD3DDevice()
+	{
+		return Adapter->GetD3DDevice();
+	}
+
 	void D3D12Device::Initialize()
 	{
-		CommandQueue_Direct = new D3D12Queue(this, D3D12QueueType::Direct);
-		CommandQueue_Copy = new D3D12Queue(this, D3D12QueueType::Copy);
-		CommandQueue_Compute = new D3D12Queue(this, D3D12QueueType::Compute);
+
 	}
 
 }

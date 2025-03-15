@@ -3,6 +3,7 @@
 #include "Core/Drn.h"
 
 #include "Renderer/D3D12Utils.h"
+#include "Misc/EnumClassFlags.h"
 
 #include <iostream>
 #include <Windows.h>

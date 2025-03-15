@@ -63,7 +63,7 @@ namespace Drn
 
 		SetWindowLongPtr(m_WindowHandle, /*GWL_USERDATA*/ (-21), LONG_PTR(this));
 
-		Viewport = new D3D12Viewport(InAdapter, m_WindowHandle, Width, Height, false, R8G8B8A8_UNORM);
+		Viewport = new D3D12Viewport(InAdapter, m_WindowHandle, Width, Height, false, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 		ShowWindow(m_WindowHandle, SW_SHOWDEFAULT);
 	}

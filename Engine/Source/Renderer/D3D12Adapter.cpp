@@ -42,7 +42,7 @@ namespace Drn
 	void D3D12Adapter::CreateMainDevice()
 	{
 		Device = new D3D12Device(this);
-		D3D12CreateDevice(GetAdapter(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(Device->Device.GetAddressOf()));
+		D3D12CreateDevice(GetAdapter(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(D3DDevice.GetAddressOf()));
 		Device->Initialize();
 	}
 

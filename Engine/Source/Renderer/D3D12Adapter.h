@@ -15,6 +15,8 @@ namespace Drn
 
 		inline IDXGIAdapter* GetAdapter() {return DxgiAdapter.Get(); }
 		inline D3D12Device* GetDevice() {return Device; }
+		inline ID3D12Device* GetD3DDevice() {return D3DDevice.Get(); }
+		inline IDXGIFactory2* GetFactory() { return DxgiFactory.Get(); }
 
 		inline std::vector<D3D12Viewport*>& GetViewports() { return Viewports; }
 
@@ -23,6 +25,8 @@ namespace Drn
 
 		Microsoft::WRL::ComPtr<IDXGIFactory2> DxgiFactory;
 		Microsoft::WRL::ComPtr<IDXGIAdapter> DxgiAdapter;
+
+		Microsoft::WRL::ComPtr<ID3D12Device> D3DDevice;
 
 		D3D12Device* Device;
 
