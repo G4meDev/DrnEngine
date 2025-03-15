@@ -43,7 +43,8 @@ project "Engine"
 	includedirs
 	{
 		"%{prj.name}/Source",
-		"ThirdParty/Header"
+		"ThirdParty/Header",
+		"ImGui"
 	}
 	
 	links
@@ -51,7 +52,8 @@ project "Engine"
 		"d3d12.lib",
 		"D3DCompiler.lib",
 		"DXGI.lib",
-		"dxguid.lib"
+		"dxguid.lib",
+		"ImGui"
 	}
 	
 	filter "configurations:DebugEditor"
@@ -151,3 +153,5 @@ project "Game"
 		}
 		runtime "Release"
 		optimize "on"
+		
+include "ImGui/premake5.lua"

@@ -5,8 +5,14 @@
 #include "D3D12Queue.h"
 #include "D3D12Descriptors.h"
 
+//#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_dx12.h"
+
 namespace Drn
 {
+	ExampleDescriptorHeapAllocator D3D12Viewport::g_pd3dSrvDescHeapAlloc;
+
 	D3D12Viewport::D3D12Viewport(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat)
 		: Adapter(InAdapter)
 		, WindowHandle(InWindowHandle)
@@ -63,6 +69,11 @@ namespace Drn
 		VERIFYD3D12RESULT(Adapter->GetFactory()->CreateSwapChainForHwnd(CommandQueue_Direct->CommandQueue.Get(), WindowHandle, &SwapChainDesc1, &FullscreenDesc, nullptr, SwapChain1.GetAddressOf()));
 
 		SwapChain1.As(&SwapChain);
+
+		D3D12DescriptorHeap* SRVHeapPtr = D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"SRV descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 64, ED3D12DescriptorHeapFlags::GpuVisible, false);
+		DescriptorHeapSRV = std::shared_ptr<D3D12DescriptorHeap>(SRVHeapPtr);
+
+		g_pd3dSrvDescHeapAlloc.Create(Adapter->GetD3DDevice(), DescriptorHeapSRV->GetHeap());
 
 		SwapChainDescriptorRVTRoot = D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"Swap chain descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_RTV, NUM_BACKBUFFERS, ED3D12DescriptorHeapFlags::None, false);
 
@@ -173,6 +184,41 @@ namespace Drn
 
 		// -------------------------------------------------------------------------------------------------
 
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+		//io.ConfigViewportsNoAutoMerge = true;
+		//io.ConfigViewportsNoTaskBarIcon = true;
+
+		ImGui::StyleColorsDark();
+		//ImGui::StyleColorsLight();
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+		ImGui_ImplWin32_Init(WindowHandle);
+
+		ImGui_ImplDX12_InitInfo init_info = {};
+		init_info.Device = Adapter->GetD3DDevice();
+		init_info.CommandQueue = CommandQueue_Direct->CommandQueue.Get();
+		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
+		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
+		init_info.SrvDescriptorHeap = DescriptorHeapSRV->GetHeap();
+		init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { return g_pd3dSrvDescHeapAlloc.Alloc(out_cpu_handle, out_gpu_handle); };
+		init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) { return g_pd3dSrvDescHeapAlloc.Free(cpu_handle, gpu_handle); };
+		ImGui_ImplDX12_Init(&init_info);
+
+		// -------------------------------------------------------------------------------------------------
+
 		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(Fence.GetAddressOf())));
 		FenceValue = 1;
 
@@ -206,18 +252,70 @@ namespace Drn
 		CommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
 		CommandList->DrawInstanced(3, 1, 0, 0);
 
-		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BackBufferResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+		// -------------------------------------------------------------------------------------------------
 
-		VERIFYD3D12RESULT(CommandList->Close());
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+		ImGui_ImplDX12_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+
+		if (show_demo_window)
+			ImGui::ShowDemoWindow(&show_demo_window);
+		{
+			static float f = 0.0f;
+			static int counter = 0;
+
+			ImGui::Begin("Hello, world!");
+
+			ImGui::Text("This is some useful text.");
+			ImGui::Checkbox("Demo Window", &show_demo_window);
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); 
+
+			if (ImGui::Button("Button"))
+				counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+			ImGui::End();
+		}
+
+		if (show_another_window)
+		{
+			ImGui::Begin("Another Window", &show_another_window);
+			ImGui::Text("Hello from another window!");
+			if (ImGui::Button("Close Me"))
+				show_another_window = false;
+			ImGui::End();
+		}
+
+		ImGui::Render();
+
+		ID3D12DescriptorHeap* SRV = DescriptorHeapSRV->GetHeap();
+		CommandList->SetDescriptorHeaps(1, &SRV);
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), CommandList.Get());
 
 		// -------------------------------------------------------------------------------------------------
+
+		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BackBufferResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+		VERIFYD3D12RESULT(CommandList->Close());
 
 		ID3D12CommandList* ppCommandLists[] = { CommandList.Get() };
 		CommandQueue_Direct->CommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
+
  		VERIFYD3D12RESULT(SwapChain->Present(1, 0));
  
- 		WaitForPreviousFrame();
+		WaitForPreviousFrame();
 	}
 
 	void D3D12Viewport::WaitForPreviousFrame()

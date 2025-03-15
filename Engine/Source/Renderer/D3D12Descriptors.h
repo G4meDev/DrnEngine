@@ -25,6 +25,8 @@ namespace Drn
 	
 		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetCpuHandle() { return CpuBase; };
 
+		inline ID3D12DescriptorHeap* GetHeap() { return Heap.get(); }
+
 	protected:
 
 
