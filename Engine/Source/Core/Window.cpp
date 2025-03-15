@@ -75,6 +75,8 @@ namespace Drn
 
 	void Window::Tick(float DeltaTime)
 	{
+		Viewport->Tick(DeltaTime);
+
 		MSG msg = {};
 		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{

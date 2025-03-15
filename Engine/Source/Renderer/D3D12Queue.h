@@ -45,4 +45,23 @@ namespace Drn
 	private:
 	};
 
+	class D3D12CommandAllocator
+	{
+	public:
+
+		D3D12CommandAllocator(D3D12Device* Device, D3D12QueueType QueueType);
+
+		~D3D12CommandAllocator();
+
+		D3D12Device* const Device;
+		D3D12QueueType const QueueType;
+
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> CommandAllocator;
+
+		//ID3D12Fence Fence;
+
+	protected:
+
+	private:
+	};
 }
