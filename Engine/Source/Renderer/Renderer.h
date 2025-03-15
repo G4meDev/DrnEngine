@@ -2,7 +2,6 @@
 
 namespace Drn
 {
-	class D3D12RHI;
 	class D3D12Adapter;
 	class D3D12Device;
 
@@ -16,12 +15,13 @@ namespace Drn
 		static void Shutdown();
 
 		static Renderer* Get();
-		static D3D12RHI* GetRHI();
 
 		void Tick(float DeltaTime);
 
 		D3D12Adapter* Adapter;
-		D3D12Device* MainDevice;
+
+
+		void CreateCommandQueue(D3D12Device* Device, const D3D12_COMMAND_QUEUE_DESC& Desc, Microsoft::WRL::ComPtr<ID3D12CommandQueue>& OutCommandQueue);
 
 	protected:
 		static Renderer* SingletonInstance;

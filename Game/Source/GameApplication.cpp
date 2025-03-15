@@ -1,5 +1,4 @@
 #include "GameApplication.h"
-
 #include <iostream>
 
 void GameApplication::Startup()

@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "Window.h"
+#include "Renderer/D3D12Viewport.h"
 
 namespace Drn
 {
@@ -26,7 +27,11 @@ namespace Drn
 		return 0;
 	}
 
-	void Window::Init()
+	Window::Window(HINSTANCE InhInstance, D3D12Adapter* InAdapter, std::wstring& InTitle, int16 InWidth, int16 InHeight)
+ 		: m_hInstance(InhInstance)
+ 		, Title(InTitle)
+ 		, Width(InWidth)
+ 		, Height(InHeight)
 	{
 		std::cout << "Start window" << std::endl;
 
@@ -57,6 +62,8 @@ namespace Drn
 		// TODO: error
 
 		SetWindowLongPtr(m_WindowHandle, /*GWL_USERDATA*/ (-21), LONG_PTR(this));
+
+		Viewport = new D3D12Viewport(InAdapter, m_WindowHandle, Width, Height, false, R8G8B8A8_UNORM);
 
 		ShowWindow(m_WindowHandle, SW_SHOWDEFAULT);
 	}

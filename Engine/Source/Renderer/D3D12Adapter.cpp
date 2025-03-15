@@ -16,6 +16,7 @@ namespace Drn
 #endif
 
 		InitalizeAdapter(bDebugDevice);
+		CreateMainDevice();
 	}
 
 	void D3D12Adapter::InitalizeAdapter(bool bWithDebug)
@@ -38,11 +39,12 @@ namespace Drn
 		TempAdapter->QueryInterface(IID_PPV_ARGS(DxgiAdapter.GetAddressOf()));
 	}
 
-	// void D3D12Adapter::CreateDevice(D3D12Device* Device)
-	// {
-	// 	Microsoft::WRL::ComPtr<IDXGIAdapter> TempDevice;
-	// 	D3D12CreateDevice(GetAdapter(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(TempDevice.GetAddressOf()));
-	// }
+	void D3D12Adapter::CreateMainDevice()
+	{
+		Device = new D3D12Device(this);
+		D3D12CreateDevice(GetAdapter(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(Device->Device.GetAddressOf()));
+		Device->Initialize();
+	}
 
 	void D3D12Adapter::CreateDXGIFactory(bool bWithDebug)
 	{

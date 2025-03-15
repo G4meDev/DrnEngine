@@ -7,7 +7,10 @@ namespace Drn
 {
 	void Application::Run(HINSTANCE inhInstance)
 	{
-		m_Window = std::make_unique<Window>(inhInstance, std::wstring(L"Untitled window"));
+		std::cout << "Start application" << std::endl;
+
+		Renderer::Init();
+		m_Window = std::make_unique<Window>(inhInstance, Renderer::Get()->Adapter, std::wstring(L"Untitled window"));
 
 		Startup();
 
@@ -21,9 +24,6 @@ namespace Drn
 
 	void Application::Startup()
 	{
-		std::cout << "Start application" << std::endl;
-
-		Renderer::Init();
 
 	}
 

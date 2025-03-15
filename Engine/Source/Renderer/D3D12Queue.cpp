@@ -1,7 +1,6 @@
 #include "DrnPCH.h"
 #include "D3D12Queue.h"
 #include "Renderer.h"
-#include "D3D12RHI.h"
 #include "D3D12Adapter.h"
 #include "D3D12Device.h"
 
@@ -19,7 +18,7 @@ namespace Drn
 		CommandQueueDesc.Priority = 0;
 		CommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
- 		Renderer::GetRHI()->CreateCommandQueue(Device, CommandQueueDesc, CommandQueue);
+ 		Renderer::Get()->CreateCommandQueue(Device, CommandQueueDesc, CommandQueue);
 		
  		CommandQueue->SetName(L"Untitled Command Queue");
 

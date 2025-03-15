@@ -4,17 +4,13 @@
 
 namespace Drn
 {
+	class D3D12Adapter;
+	class D3D12Viewport;
+
 	class Window
 	{
 	public:
-		Window(HINSTANCE InhInstance, std::wstring& InTitle, int16 InWidth = 800, int16 InHeight = 600)
-		: m_hInstance(InhInstance)
-		, Title(InTitle)
-		, Width(InWidth)
-		, Height(InHeight)
-		{
-			Init();
-		}
+		Window(HINSTANCE InhInstance, D3D12Adapter* InAdapter, std::wstring& InTitle, int16 InWidth = 800, int16 InHeight = 600);
 
 		~Window()
 		{
@@ -22,8 +18,6 @@ namespace Drn
 		}
 
 	public:
-
-		void Init();
 		void Shutdown();
 
 		void Tick(float DeltaTime);
@@ -42,6 +36,8 @@ namespace Drn
 		HWND m_WindowHandle;
 
 		bool g_bPendingClose = false;
+
+		D3D12Viewport* Viewport;
 
 	private:
 	};

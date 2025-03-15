@@ -22,6 +22,10 @@ namespace Drn
 		D3D12Queue* CommandQueue_Copy;
 		D3D12Queue* CommandQueue_Compute;
 
+		void Initialize();
+
+		friend D3D12Adapter;
+
 	private:
 	};
 

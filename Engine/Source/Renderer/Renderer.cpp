@@ -1,6 +1,5 @@
 #include "DrnPCH.h"
 #include "Renderer.h"
-#include "D3D12RHI.h"
 #include "D3D12Adapter.h"
 #include "D3D12Device.h"
 
@@ -13,20 +12,12 @@ namespace Drn
 		return SingletonInstance;
 	}
 
-	Drn::D3D12RHI* Renderer::GetRHI()
-	{
-		return D3D12RHI::Get();
-	}
-
 	void Renderer::Init()
 	{
 		std::cout << "Renderer start!" << std::endl;
 		SingletonInstance = new Renderer();
 
-		D3D12RHI::Init();
-
 		Get()->Adapter = new D3D12Adapter();
-		Get()->MainDevice = new D3D12Device(Get()->Adapter);
 	}
 
 	void Renderer::Shutdown()
@@ -39,4 +30,8 @@ namespace Drn
 
 	}
 
+	void Renderer::CreateCommandQueue(D3D12Device* Device, const D3D12_COMMAND_QUEUE_DESC& Desc, Microsoft::WRL::ComPtr<ID3D12CommandQueue>& OutCommandQueue)
+	{
+		VERIFYD3D12RESULT(Device->GetDevice()->CreateCommandQueue(&Desc, IID_PPV_ARGS(OutCommandQueue.GetAddressOf())));
+	}
 }
