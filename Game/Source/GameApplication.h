@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Application.h"
+#include "Runtime/Core/Application.h"
 
 class GameApplication : public Drn::Application
 {

@@ -43,7 +43,7 @@ namespace Drn
 
 	private:
 		
-		static std::shared_ptr<D3D12DescriptorHeap> ImguiSrvHeap;
+		std::shared_ptr<D3D12DescriptorHeap> ImguiSrvHeap;
 		std::shared_ptr<D3D12DescriptorHeap> BasePassHeap;
 
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignature;

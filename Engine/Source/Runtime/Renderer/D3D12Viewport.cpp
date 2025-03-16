@@ -11,7 +11,7 @@
 
 namespace Drn
 {
-	std::shared_ptr<D3D12DescriptorHeap> D3D12Viewport::ImguiSrvHeap;
+	//std::shared_ptr<D3D12DescriptorHeap> D3D12Viewport::ImguiSrvHeap;
 
 	D3D12Viewport::D3D12Viewport(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat)
 		: Adapter(InAdapter)
@@ -59,13 +59,20 @@ namespace Drn
 
 		SwapChain1.As(&SwapChain);
 
+		D3D12_CLEAR_VALUE BasePassClearValue = {};
+		BasePassClearValue.Format = PixelFormat;
+		BasePassClearValue.Color[0] = 0.0f;
+		BasePassClearValue.Color[1] = 0.2f;
+		BasePassClearValue.Color[2] = 0.4f;
+		BasePassClearValue.Color[3] = 1.0f;
+
 		BasePassRTV = std::make_shared<D3D12DescriptorHeap>(Adapter->GetDevice(), 1, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, ED3D12DescriptorHeapFlags::None, false);
 		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Tex2D(PixelFormat, SizeX, SizeY, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			nullptr,
+			&BasePassClearValue,
 			IID_PPV_ARGS(BasePassBuffer.GetAddressOf())));
 
 		D3D12_RENDER_TARGET_VIEW_DESC BasePassrtvDesc = {};
@@ -221,23 +228,23 @@ namespace Drn
 		ImGui_ImplWin32_Init(WindowHandle);
 
 		ImGui_ImplDX12_InitInfo init_info = {};
+		init_info.UserData = (void*)(ImguiSrvHeap.get());
 		init_info.Device = Adapter->GetD3DDevice();
 		init_info.CommandQueue = CommandQueue_Direct->CommandQueue.Get();
 		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
 		init_info.SrvDescriptorHeap = ImguiSrvHeap->GetHeap();
-		init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) 
+		init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo* Info, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) 
 		{
-			D3D12DescriptorHeap* H = new D3D12DescriptorHeap(ImguiSrvHeap.get());
+			D3D12DescriptorHeap* H = new D3D12DescriptorHeap(static_cast<D3D12DescriptorHeap*>(Info->UserData));
 
 			out_cpu_handle->ptr = H->GetCpuHandle().ptr;
 			out_gpu_handle->ptr = H->GetGpuHandle().ptr;
-			
 		};
-		init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) 
+		init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo* Info, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) 
 		{
-			return ImguiSrvHeap->Free(cpu_handle);
+			return static_cast<D3D12DescriptorHeap*>(Info->UserData)->Free(cpu_handle);
 		};
 
 		ImGui_ImplDX12_Init(&init_info);
@@ -292,7 +299,6 @@ namespace Drn
 
 		static bool show_demo_window = true;
 		static bool show_another_window = false;
-		static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -313,7 +319,6 @@ namespace Drn
 			ImGui::Checkbox("Another Window", &show_another_window);
 
 			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-			ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
 			if (ImGui::Button("Button"))
 				counter++;
