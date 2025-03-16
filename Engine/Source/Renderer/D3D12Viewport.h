@@ -91,8 +91,12 @@ namespace Drn
 		
 		static ExampleDescriptorHeapAllocator g_pd3dSrvDescHeapAlloc;
 
+		CD3DX12_CPU_DESCRIPTOR_HANDLE SRVCpuBase;
+		CD3DX12_GPU_DESCRIPTOR_HANDLE SRVGpuBase;
+
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignature;
-		Microsoft::WRL::ComPtr<ID3D12PipelineState> PipelineState;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> BasePassPipelineState;
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> ResolvePipelineState;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> CommandList;
 
 		Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
@@ -109,6 +113,9 @@ namespace Drn
 
 		D3D12DescriptorHeap* SwapChainDescriptorRVTRoot;
 		std::shared_ptr<D3D12DescriptorHeap> SwapChainDescriptorRVT[NUM_BACKBUFFERS];
+
+		std::shared_ptr<D3D12DescriptorHeap> BasePassRTV;
+		Microsoft::WRL::ComPtr<ID3D12Resource> BasePassBuffer;
 
 		std::shared_ptr<D3D12DescriptorHeap> DescriptorHeapSRV;
 

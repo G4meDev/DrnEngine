@@ -24,6 +24,7 @@ namespace Drn
 		static D3D12DescriptorHeap* Create(D3D12Device* Device, const TCHAR* DebugName, D3D12_DESCRIPTOR_HEAP_TYPE HeapType, uint32 NumDescriptors, ED3D12DescriptorHeapFlags Flags, bool bGlobal = false);
 	
 		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetCpuHandle() { return CpuBase; };
+		inline CD3DX12_GPU_DESCRIPTOR_HANDLE GetGpuHandle() { return GpuBase; };
 
 		inline ID3D12DescriptorHeap* GetHeap() { return Heap.get(); }
 

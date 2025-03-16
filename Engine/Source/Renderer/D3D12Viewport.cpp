@@ -70,12 +70,41 @@ namespace Drn
 
 		SwapChain1.As(&SwapChain);
 
+		BasePassRTV = std::shared_ptr<D3D12DescriptorHeap>(D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"Base pass descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1, ED3D12DescriptorHeapFlags::None, false));
+		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Tex2D(PixelFormat, SizeX, SizeY, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			nullptr,
+			IID_PPV_ARGS(BasePassBuffer.GetAddressOf())));
+
+		D3D12_RENDER_TARGET_VIEW_DESC BasePassrtvDesc = {};
+		BasePassrtvDesc.Format = PixelFormat;
+		BasePassrtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
+		Adapter->GetD3DDevice()->CreateRenderTargetView(BasePassBuffer.Get(), &BasePassrtvDesc, BasePassRTV->GetCpuHandle());
+
+		BasePassBuffer->SetName(L"BasePassBuffer");
+
+		SwapChainDescriptorRVTRoot = D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"Swap chain descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_RTV, NUM_BACKBUFFERS, ED3D12DescriptorHeapFlags::None, false);
+
+
 		D3D12DescriptorHeap* SRVHeapPtr = D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"SRV descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 64, ED3D12DescriptorHeapFlags::GpuVisible, false);
 		DescriptorHeapSRV = std::shared_ptr<D3D12DescriptorHeap>(SRVHeapPtr);
 
 		g_pd3dSrvDescHeapAlloc.Create(Adapter->GetD3DDevice(), DescriptorHeapSRV->GetHeap());
+		g_pd3dSrvDescHeapAlloc.Alloc(&SRVCpuBase, &SRVGpuBase);
 
-		SwapChainDescriptorRVTRoot = D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"Swap chain descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_RTV, NUM_BACKBUFFERS, ED3D12DescriptorHeapFlags::None, false);
+		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
+
+		descSRV.Texture2D.MipLevels = 1;
+		descSRV.Texture2D.MostDetailedMip = 0;
+		descSRV.Format = PixelFormat;
+		descSRV.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		descSRV.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+		Adapter->GetD3DDevice()->CreateShaderResourceView(BasePassBuffer.Get(), &descSRV, SRVCpuBase);
 
 		for (UINT n = 0; n < NUM_BACKBUFFERS; n++)
 		{
@@ -128,23 +157,40 @@ namespace Drn
 			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 		};
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-		psoDesc.pRootSignature = RootSignature.Get();
-		psoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-		psoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		psoDesc.DepthStencilState.DepthEnable = FALSE;
-		psoDesc.DepthStencilState.StencilEnable = FALSE;
-		psoDesc.SampleMask = UINT_MAX;
-		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		psoDesc.NumRenderTargets = 1;
-		psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-		psoDesc.SampleDesc.Count = 1;
- 		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(PipelineState.GetAddressOf())));
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC BasePasspsoDesc = {};
+		BasePasspsoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+		BasePasspsoDesc.pRootSignature = RootSignature.Get();
+		BasePasspsoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
+		BasePasspsoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+		BasePasspsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+		BasePasspsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		BasePasspsoDesc.DepthStencilState.DepthEnable = FALSE;
+		BasePasspsoDesc.DepthStencilState.StencilEnable = FALSE;
+		BasePasspsoDesc.SampleMask = UINT_MAX;
+		BasePasspsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		BasePasspsoDesc.NumRenderTargets = 1;
+		BasePasspsoDesc.RTVFormats[0] = PixelFormat;
+		BasePasspsoDesc.SampleDesc.Count = 1;
+ 		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateGraphicsPipelineState(&BasePasspsoDesc, IID_PPV_ARGS(BasePassPipelineState.GetAddressOf())));
 
-		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocator_Direct->CommandAllocator.Get(), PipelineState.Get(), IID_PPV_ARGS(CommandList.GetAddressOf())));
+		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocator_Direct->CommandAllocator.Get(), BasePassPipelineState.Get(), IID_PPV_ARGS(CommandList.GetAddressOf())));
+
+// 		D3D12_GRAPHICS_PIPELINE_STATE_DESC ResolvepsoDesc = {};
+// 		ResolvepsoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
+// 		ResolvepsoDesc.pRootSignature = RootSignature.Get();
+// 		ResolvepsoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
+// 		ResolvepsoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+// 		ResolvepsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+// 		ResolvepsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+// 		ResolvepsoDesc.DepthStencilState.DepthEnable = FALSE;
+// 		ResolvepsoDesc.DepthStencilState.StencilEnable = FALSE;
+// 		ResolvepsoDesc.SampleMask = UINT_MAX;
+// 		ResolvepsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+// 		ResolvepsoDesc.NumRenderTargets = 1;
+// 		ResolvepsoDesc.RTVFormats[0] = PixelFormat;
+// 		ResolvepsoDesc.SampleDesc.Count = 1;
+// 		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateGraphicsPipelineState(&BasePasspsoDesc, IID_PPV_ARGS(BasePassPipelineState.GetAddressOf())));
+
 		VERIFYD3D12RESULT(CommandList->Close());
 
 		// -------------------------------------------------------------------------------------------------
@@ -234,23 +280,34 @@ namespace Drn
 	void D3D12Viewport::Tick(float DeltaTime)
 	{
 		VERIFYD3D12RESULT(CommandAllocator_Direct->CommandAllocator->Reset());
-		VERIFYD3D12RESULT(CommandList->Reset(CommandAllocator_Direct->CommandAllocator.Get(), PipelineState.Get()));
+		VERIFYD3D12RESULT(CommandList->Reset(CommandAllocator_Direct->CommandAllocator.Get(), BasePassPipelineState.Get()));
 
 		CommandList->SetGraphicsRootSignature(RootSignature.Get());
 		CommandList->RSSetViewports(1, &Viewport);
 		CommandList->RSSetScissorRects(1, &ScissorRect);
 
- 		ID3D12Resource* BackBufferResource = BackBuffers[BackBufferIndex].get();
-		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BackBufferResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = SwapChainDescriptorRVT[BackBufferIndex]->GetCpuHandle();
+ 		//ID3D12Resource* BackBufferResource = BackBuffers[BackBufferIndex].get();
+ 		ID3D12Resource* BasePassResource = BasePassBuffer.Get();
+		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BasePassResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = SwapChainDescriptorRVT[BackBufferIndex]->GetCpuHandle();
+		CD3DX12_CPU_DESCRIPTOR_HANDLE BasePassrtvHandle = BasePassRTV->GetCpuHandle();
 
-		CommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+		CommandList->OMSetRenderTargets(1, &BasePassrtvHandle, FALSE, nullptr);
 
 		const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-		CommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+		CommandList->ClearRenderTargetView(BasePassrtvHandle, clearColor, 0, nullptr);
 		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		CommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
 		CommandList->DrawInstanced(3, 1, 0, 0);
+
+		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BasePassResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
+		ID3D12Resource* BackBufferResource = BackBuffers[BackBufferIndex].get();
+		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BackBufferResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = SwapChainDescriptorRVT[BackBufferIndex]->GetCpuHandle();
+		CommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+		CommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
 		// -------------------------------------------------------------------------------------------------
 
@@ -264,8 +321,7 @@ namespace Drn
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::DockSpaceOverViewport();
-
+		//ImGui::DockSpaceOverViewport();
 
 		if (show_demo_window)
 			ImGui::ShowDemoWindow(&show_demo_window);
@@ -280,7 +336,7 @@ namespace Drn
 			ImGui::Checkbox("Another Window", &show_another_window);
 
 			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); 
+			ImGui::ColorEdit3("clear color", (float*)&clear_color);
 
 			if (ImGui::Button("Button"))
 				counter++;
@@ -288,6 +344,10 @@ namespace Drn
 			ImGui::Text("counter = %d", counter);
 
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+			ImGui::End();
+
+			ImGui::Begin("MainWindow");
+			ImGui::Image(ImTextureID(SRVGpuBase.ptr), ImVec2(SizeX, SizeY));
 			ImGui::End();
 		}
 
