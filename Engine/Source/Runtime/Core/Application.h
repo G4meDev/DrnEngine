@@ -18,7 +18,5 @@ namespace Drn
 		virtual void Tick(float DeltaTime);
 
 		bool bRunning = true;
-
-		std::unique_ptr<Window> m_Window = nullptr;
 	};
 }

@@ -25,7 +25,15 @@ namespace Drn
 		void Resize(int16 InWidth, int16 InHeight);
 
 		bool PendingClose() const; 
+
+		inline HINSTANCE GethInstance() { return m_hInstance; }
+		inline HWND GetWindowHandle() { return m_WindowHandle; }
 	
+		inline D3D12Viewport* GetViewport() { return Viewport; };
+		
+		inline uint16 GetSizeX() { return Width; };
+		inline uint16 GetSizeY() { return Height; };
+
 	protected:
 		uint16 Width;
 		uint16 Height;

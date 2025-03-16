@@ -11,7 +11,7 @@ namespace Drn
 		
 		Renderer(){};
 
-		static void Init();
+		static void Init(HINSTANCE inhInstance);
 		static void Shutdown();
 
 		static Renderer* Get();
@@ -20,11 +20,14 @@ namespace Drn
 
 		D3D12Adapter* Adapter;
 
+		inline Window* GetMainWindow() { return MainWindow.get(); }
 
 		void CreateCommandQueue(D3D12Device* Device, const D3D12_COMMAND_QUEUE_DESC& Desc, Microsoft::WRL::ComPtr<ID3D12CommandQueue>& OutCommandQueue);
 
 	protected:
 		static Renderer* SingletonInstance;
+
+		std::unique_ptr<Window> MainWindow = nullptr;
 
 	private:
 

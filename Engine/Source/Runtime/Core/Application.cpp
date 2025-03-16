@@ -9,12 +9,12 @@ namespace Drn
 	{
 		std::cout << "Start application" << std::endl;
 
-		Renderer::Init();
-		m_Window = std::make_unique<Window>(inhInstance, Renderer::Get()->Adapter, std::wstring(L"Untitled window"));
+		Renderer::Init(inhInstance);
+		
 
 		Startup();
 
-		while (bRunning && !m_Window->PendingClose())
+		while (bRunning && !Renderer::Get()->GetMainWindow()->PendingClose())
 		{
 			Tick(1.0f);
 		}
@@ -36,7 +36,6 @@ namespace Drn
 
 	void Application::Tick(float DeltaTime)
 	{
-		m_Window->Tick(DeltaTime);
 		Renderer::Get()->Tick(DeltaTime);
 	}
 }

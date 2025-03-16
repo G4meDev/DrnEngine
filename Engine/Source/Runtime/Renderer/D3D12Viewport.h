@@ -1,9 +1,5 @@
 #pragma once
 
-#include "imgui.h"
-
-#define NUM_BACKBUFFERS 3
-
 namespace Drn
 {
 	class D3D12Adapter;
@@ -23,6 +19,9 @@ namespace Drn
 		void Tick(float DeltaTime);
 
 		inline D3D12Queue* GetQueue_Direct() { return CommandQueue_Direct; }
+		inline ID3D12GraphicsCommandList* GetCommandList() { return CommandList.Get(); }
+
+		inline ID3D12Resource* GetOutputBuffer() { return BasePassBuffer.Get(); }
 
 
 	protected:
@@ -42,9 +41,6 @@ namespace Drn
 		CD3DX12_RECT ScissorRect;
 
 	private:
-		
-		std::shared_ptr<D3D12DescriptorHeap> ImguiSrvHeap;
-		std::shared_ptr<D3D12DescriptorHeap> BasePassHeap;
 
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignature;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> BasePassPipelineState;
