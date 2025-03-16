@@ -15,30 +15,41 @@ namespace Drn
 	{
 	public:
 		D3D12DescriptorHeap() = delete;
+		~D3D12DescriptorHeap();
 
-		D3D12DescriptorHeap(D3D12Device* InDevice, std::shared_ptr<ID3D12DescriptorHeap> InHeap, uint32 InNumDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE InType, ED3D12DescriptorHeapFlags InFlags, bool bInIsGlobal);
-		D3D12DescriptorHeap(D3D12DescriptorHeap* SubAllocateSourceHeap, uint32 InOffset, uint32 InNumDescriptors);
+		D3D12DescriptorHeap(D3D12Device* InDevice, uint32 InNumDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE InType, ED3D12DescriptorHeapFlags InFlags, bool bInIsGlobal);
+		D3D12DescriptorHeap(D3D12DescriptorHeap* InSubAllocateSourceHeap);
 
 		inline D3D12Device* GetDevice() { return Device; }
-
-		static D3D12DescriptorHeap* Create(D3D12Device* Device, const TCHAR* DebugName, D3D12_DESCRIPTOR_HEAP_TYPE HeapType, uint32 NumDescriptors, ED3D12DescriptorHeapFlags Flags, bool bGlobal = false);
 	
 		inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetCpuHandle() { return CpuBase; };
 		inline CD3DX12_GPU_DESCRIPTOR_HANDLE GetGpuHandle() { return GpuBase; };
 
-		inline ID3D12DescriptorHeap* GetHeap() { return Heap.get(); }
+		inline ID3D12DescriptorHeap* GetHeap() 
+		{
+			if (SubAllocateSourceHeap == nullptr)
+			{
+				return Heap.get();
+			}
+
+			return SubAllocateSourceHeap->Heap.get();
+		}
+
+		UINT Alloc();
+		void Free(D3D12DescriptorHeap* HeapToFree);
+		void Free(D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle);
+		void Free(D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle);
 
 	protected:
 
 
 	private:
-		
 
 		D3D12Device* Device;
 		std::shared_ptr<ID3D12DescriptorHeap> Heap;
 
-		const CD3DX12_CPU_DESCRIPTOR_HANDLE CpuBase;
-		const CD3DX12_GPU_DESCRIPTOR_HANDLE GpuBase;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE CpuBase;
+		CD3DX12_GPU_DESCRIPTOR_HANDLE GpuBase;
 
 		UINT Offset;
 		UINT NumDescriptors;
@@ -46,6 +57,8 @@ namespace Drn
 		D3D12_DESCRIPTOR_HEAP_TYPE Type;
 		ED3D12DescriptorHeapFlags Flags;
 		bool bIsGlobal;
-		bool bIsSubAllocation;
+		D3D12DescriptorHeap* SubAllocateSourceHeap;
+
+		std::vector<UINT> FreeBlocks;
 	};
 }

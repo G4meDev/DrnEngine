@@ -11,7 +11,7 @@
 
 namespace Drn
 {
-	ExampleDescriptorHeapAllocator D3D12Viewport::g_pd3dSrvDescHeapAlloc;
+	std::shared_ptr<D3D12DescriptorHeap> D3D12Viewport::ImguiSrvHeap;
 
 	D3D12Viewport::D3D12Viewport(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat)
 		: Adapter(InAdapter)
@@ -30,18 +30,7 @@ namespace Drn
 	void D3D12Viewport::Init()
 	{
 		CommandQueue_Direct = new D3D12Queue(Adapter->GetDevice(), D3D12QueueType::Direct);
-		CommandQueue_Copy = new D3D12Queue(Adapter->GetDevice(), D3D12QueueType::Copy);
-		CommandQueue_Compute = new D3D12Queue(Adapter->GetDevice(), D3D12QueueType::Compute);
-
-		for (UINT n = 0; n < NUM_BACKBUFFERS; n++)
-		{
-			CommandAllocators_Direct[n] = std::make_shared<D3D12CommandAllocator>(D3D12CommandAllocator(Adapter->GetDevice(), D3D12QueueType::Direct));
-			CommandAllocators_Copy[n] = std::make_shared<D3D12CommandAllocator>(D3D12CommandAllocator(Adapter->GetDevice(), D3D12QueueType::Copy));
-			CommandAllocators_Compute[n] = std::make_shared<D3D12CommandAllocator>(D3D12CommandAllocator(Adapter->GetDevice(), D3D12QueueType::Compute));
-		}
-
 		CommandAllocator_Direct = std::make_shared<D3D12CommandAllocator>(D3D12CommandAllocator(Adapter->GetDevice(), D3D12QueueType::Direct));
-
 
 		UINT SwapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
@@ -70,7 +59,7 @@ namespace Drn
 
 		SwapChain1.As(&SwapChain);
 
-		BasePassRTV = std::shared_ptr<D3D12DescriptorHeap>(D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"Base pass descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1, ED3D12DescriptorHeapFlags::None, false));
+		BasePassRTV = std::make_shared<D3D12DescriptorHeap>(Adapter->GetDevice(), 1, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, ED3D12DescriptorHeapFlags::None, false);
 		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
@@ -87,14 +76,10 @@ namespace Drn
 
 		BasePassBuffer->SetName(L"BasePassBuffer");
 
-		SwapChainDescriptorRVTRoot = D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"Swap chain descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_RTV, NUM_BACKBUFFERS, ED3D12DescriptorHeapFlags::None, false);
+		SwapChainDescriptorRVTRoot = new D3D12DescriptorHeap(Adapter->GetDevice(), NUM_BACKBUFFERS, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, ED3D12DescriptorHeapFlags::None, false);
 
-
-		D3D12DescriptorHeap* SRVHeapPtr = D3D12DescriptorHeap::Create(Adapter->GetDevice(), L"SRV descriptor", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 64, ED3D12DescriptorHeapFlags::GpuVisible, false);
-		DescriptorHeapSRV = std::shared_ptr<D3D12DescriptorHeap>(SRVHeapPtr);
-
-		g_pd3dSrvDescHeapAlloc.Create(Adapter->GetD3DDevice(), DescriptorHeapSRV->GetHeap());
-		g_pd3dSrvDescHeapAlloc.Alloc(&SRVCpuBase, &SRVGpuBase);
+		ImguiSrvHeap = std::make_shared<D3D12DescriptorHeap>(Adapter->GetDevice(), 64, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, ED3D12DescriptorHeapFlags::GpuVisible, false);
+		BasePassHeap = std::make_shared<D3D12DescriptorHeap>(ImguiSrvHeap.get());
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
 
@@ -104,7 +89,7 @@ namespace Drn
 		descSRV.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		Adapter->GetD3DDevice()->CreateShaderResourceView(BasePassBuffer.Get(), &descSRV, SRVCpuBase);
+		Adapter->GetD3DDevice()->CreateShaderResourceView(BasePassBuffer.Get(), &descSRV, BasePassHeap->GetCpuHandle());
 
 		for (UINT n = 0; n < NUM_BACKBUFFERS; n++)
 		{
@@ -117,7 +102,7 @@ namespace Drn
 
 			BackBuffers[n] = std::shared_ptr<ID3D12Resource>(RenderTargetPtr);
 
-			D3D12DescriptorHeap* RVT = new D3D12DescriptorHeap(SwapChainDescriptorRVTRoot, n, 1);
+			D3D12DescriptorHeap* RVT = new D3D12DescriptorHeap(SwapChainDescriptorRVTRoot);
 			SwapChainDescriptorRVT[n] = std::shared_ptr<D3D12DescriptorHeap>(RVT);
 
 			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -174,23 +159,6 @@ namespace Drn
  		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateGraphicsPipelineState(&BasePasspsoDesc, IID_PPV_ARGS(BasePassPipelineState.GetAddressOf())));
 
 		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocator_Direct->CommandAllocator.Get(), BasePassPipelineState.Get(), IID_PPV_ARGS(CommandList.GetAddressOf())));
-
-// 		D3D12_GRAPHICS_PIPELINE_STATE_DESC ResolvepsoDesc = {};
-// 		ResolvepsoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
-// 		ResolvepsoDesc.pRootSignature = RootSignature.Get();
-// 		ResolvepsoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-// 		ResolvepsoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
-// 		ResolvepsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-// 		ResolvepsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-// 		ResolvepsoDesc.DepthStencilState.DepthEnable = FALSE;
-// 		ResolvepsoDesc.DepthStencilState.StencilEnable = FALSE;
-// 		ResolvepsoDesc.SampleMask = UINT_MAX;
-// 		ResolvepsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-// 		ResolvepsoDesc.NumRenderTargets = 1;
-// 		ResolvepsoDesc.RTVFormats[0] = PixelFormat;
-// 		ResolvepsoDesc.SampleDesc.Count = 1;
-// 		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateGraphicsPipelineState(&BasePasspsoDesc, IID_PPV_ARGS(BasePassPipelineState.GetAddressOf())));
-
 		VERIFYD3D12RESULT(CommandList->Close());
 
 		// -------------------------------------------------------------------------------------------------
@@ -258,9 +226,20 @@ namespace Drn
 		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
-		init_info.SrvDescriptorHeap = DescriptorHeapSRV->GetHeap();
-		init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) { return g_pd3dSrvDescHeapAlloc.Alloc(out_cpu_handle, out_gpu_handle); };
-		init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) { return g_pd3dSrvDescHeapAlloc.Free(cpu_handle, gpu_handle); };
+		init_info.SrvDescriptorHeap = ImguiSrvHeap->GetHeap();
+		init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle) 
+		{
+			D3D12DescriptorHeap* H = new D3D12DescriptorHeap(ImguiSrvHeap.get());
+
+			out_cpu_handle->ptr = H->GetCpuHandle().ptr;
+			out_gpu_handle->ptr = H->GetGpuHandle().ptr;
+			
+		};
+		init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) 
+		{
+			return ImguiSrvHeap->Free(cpu_handle);
+		};
+
 		ImGui_ImplDX12_Init(&init_info);
 
 		// -------------------------------------------------------------------------------------------------
@@ -286,10 +265,8 @@ namespace Drn
 		CommandList->RSSetViewports(1, &Viewport);
 		CommandList->RSSetScissorRects(1, &ScissorRect);
 
- 		//ID3D12Resource* BackBufferResource = BackBuffers[BackBufferIndex].get();
  		ID3D12Resource* BasePassResource = BasePassBuffer.Get();
 		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BasePassResource, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET));
-		//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = SwapChainDescriptorRVT[BackBufferIndex]->GetCpuHandle();
 		CD3DX12_CPU_DESCRIPTOR_HANDLE BasePassrtvHandle = BasePassRTV->GetCpuHandle();
 
 		CommandList->OMSetRenderTargets(1, &BasePassrtvHandle, FALSE, nullptr);
@@ -347,7 +324,7 @@ namespace Drn
 			ImGui::End();
 
 			ImGui::Begin("MainWindow");
-			ImGui::Image(ImTextureID(SRVGpuBase.ptr), ImVec2(SizeX, SizeY));
+			ImGui::Image(ImTextureID(BasePassHeap->GetGpuHandle().ptr), ImVec2(SizeX, SizeY));
 			ImGui::End();
 		}
 
@@ -362,7 +339,7 @@ namespace Drn
 
 		ImGui::Render();
 
-		ID3D12DescriptorHeap* SRV = DescriptorHeapSRV->GetHeap();
+		ID3D12DescriptorHeap* SRV = ImguiSrvHeap->GetHeap();
 		CommandList->SetDescriptorHeaps(1, &SRV);
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), CommandList.Get());
 
