@@ -4,11 +4,11 @@
 #if WITH_EDITOR
 
 #include "Editor/Viewport/ViewportGuiLayer.h"
+#include "Runtime/Renderer/Renderer.h"
 
 namespace Drn
 {
 	std::unique_ptr<Viewport> Viewport::SingletonInstance;
-
 
 	Viewport::Viewport()
 	{
@@ -22,7 +22,7 @@ namespace Drn
 
 	void Viewport::Init()
 	{
-		ViewportLayer = std::make_unique<ViewportGuiLayer>();
+		ViewportLayer = std::make_unique<ViewportGuiLayer>(Renderer::Get()->GetMainScene());
 		ViewportLayer->Attach();
 	}
 

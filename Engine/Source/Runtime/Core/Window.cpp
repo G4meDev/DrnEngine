@@ -1,6 +1,6 @@
 #include "DrnPCH.h"
 #include "Window.h"
-#include "Runtime/Renderer/D3D12Viewport.h"
+#include "Runtime/Renderer/D3D12Scene.h"
 
 #include "imgui.h"
 
@@ -70,8 +70,6 @@ namespace Drn
 
 		SetWindowLongPtr(m_WindowHandle, /*GWL_USERDATA*/ (-21), LONG_PTR(this));
 
-		Viewport = new D3D12Viewport(InAdapter, m_WindowHandle, Width, Height, false, DXGI_FORMAT_R8G8B8A8_UNORM);
-
 		ShowWindow(m_WindowHandle, SW_SHOWDEFAULT);
 		UpdateWindow(m_WindowHandle);
 	}
@@ -92,8 +90,6 @@ namespace Drn
 			if (msg.message == WM_QUIT)
 				g_bPendingClose = true;
 		}
-
-		Viewport->Tick(DeltaTime);
 	}
 
 	void Window::Resize(int16 InWidth, int16 InHeight)

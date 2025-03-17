@@ -24,7 +24,7 @@ namespace Drn
 
 	}
 
-	void ImGuiRenderer::Init(ID3D12Resource* MainViewportOutputBuffer)
+	void ImGuiRenderer::Init()
 	{
 		SrvHeap = std::make_unique<D3D12DescriptorHeap>(Renderer::Get()->Adapter->GetDevice(), 64, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, ED3D12DescriptorHeapFlags::GpuVisible, false);
 

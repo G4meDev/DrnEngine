@@ -12,7 +12,7 @@ namespace Drn
 		ImGuiRenderer();
 		virtual ~ImGuiRenderer();
 
-		virtual void Init(ID3D12Resource* MainViewportOutputBuffer);
+		virtual void Init();
 		virtual void Tick(float DeltaTime);
 
 		void AttachLayer(ImGuiLayer* InLayer);

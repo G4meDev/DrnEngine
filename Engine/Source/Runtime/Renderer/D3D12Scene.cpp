@@ -1,6 +1,6 @@
 #include "DrnPCH.h"
+#include "D3D12Scene.h"
 #include "D3D12Device.h"
-#include "D3D12Viewport.h"
 #include "D3D12Adapter.h"
 #include "D3D12Queue.h"
 #include "D3D12Descriptors.h"
@@ -10,7 +10,7 @@
 
 namespace Drn
 {
-	D3D12Viewport::D3D12Viewport(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat)
+	D3D12Scene::D3D12Scene(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat)
 		: Adapter(InAdapter)
 		, WindowHandle(InWindowHandle)
 		, SizeX(InSizeX)
@@ -24,7 +24,7 @@ namespace Drn
 		Init();
 	}
 
-	void D3D12Viewport::Init()
+	void D3D12Scene::Init()
 	{
 		D3D12_CLEAR_VALUE BasePassClearValue = {};
 		BasePassClearValue.Format = PixelFormat;
@@ -133,7 +133,7 @@ namespace Drn
 
 	}
 
-	void D3D12Viewport::Tick(float DeltaTime)
+	void D3D12Scene::Tick(float DeltaTime)
 	{
 		auto* CommandList = Renderer::Get()->GetCommandList();
  		CommandList->SetPipelineState(BasePassPipelineState.Get());

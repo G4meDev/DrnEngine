@@ -5,7 +5,7 @@
 namespace Drn
 {
 	class D3D12Adapter;
-	class D3D12Viewport;
+	class D3D12Scene;
 
 	class Window
 	{
@@ -28,8 +28,6 @@ namespace Drn
 
 		inline HINSTANCE GethInstance() { return m_hInstance; }
 		inline HWND GetWindowHandle() { return m_WindowHandle; }
-	
-		inline D3D12Viewport* GetViewport() { return Viewport; };
 		
 		inline uint16 GetSizeX() { return Width; };
 		inline uint16 GetSizeY() { return Height; };
@@ -44,8 +42,6 @@ namespace Drn
 		HWND m_WindowHandle;
 
 		bool g_bPendingClose = false;
-
-		D3D12Viewport* Viewport;
 
 	private:
 	};

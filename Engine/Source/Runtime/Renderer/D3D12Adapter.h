@@ -18,7 +18,7 @@ namespace Drn
 		inline ID3D12Device* GetD3DDevice() {return D3DDevice.Get(); }
 		inline IDXGIFactory2* GetFactory() { return DxgiFactory.Get(); }
 
-		inline std::vector<D3D12Viewport*>& GetViewports() { return Viewports; }
+		inline std::vector<D3D12Scene*>& GetViewports() { return Viewports; }
 
 	protected:
 		bool bDebugDevice;
@@ -30,7 +30,7 @@ namespace Drn
 
 		D3D12Device* Device;
 
-		std::vector<D3D12Viewport*> Viewports;
+		std::vector<D3D12Scene*> Viewports;
 
 	private:
 		void CreateDXGIFactory(bool bWithDebug);

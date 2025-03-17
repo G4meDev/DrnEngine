@@ -2,7 +2,7 @@
 #include "Renderer.h"
 #include "D3D12Adapter.h"
 #include "D3D12Device.h"
-#include "D3D12Viewport.h"
+#include "D3D12Scene.h"
 #include "D3D12Queue.h"
 #include "D3D12Descriptors.h"
 
@@ -11,6 +11,11 @@
 namespace Drn
 {
 	Renderer* Renderer::SingletonInstance;
+
+	void Renderer::CreateMainScene()
+	{
+		Get()->MainScene = new D3D12Scene(Adapter, GetMainWindow()->GetWindowHandle(), GetMainWindow()->GetSizeX(), GetMainWindow()->GetSizeY(), false, DISPLAY_OUTPUT_FORMAT);
+	}
 
 	void Renderer::CreateResources()
 	{
@@ -151,9 +156,11 @@ namespace Drn
 		Get()->CreateResources();
 
 		Get()->MainWindow = std::make_unique<Window>(inhInstance, Renderer::Get()->Adapter, std::wstring(L"Untitled window"));
+		Get()->CreateMainScene();
+
 		Get()->CreateSwapChain();
 
-		ImGuiRenderer::Get()->Init(Get()->GetMainWindow()->GetViewport()->GetOutputBuffer());
+		ImGuiRenderer::Get()->Init();
 	}
 
 	void Renderer::Shutdown()
@@ -165,6 +172,8 @@ namespace Drn
 	{
 		ResetResources();
 		MainWindow->Tick(DeltaTime);
+		MainScene->Tick(DeltaTime);
+
 		BindFrontBuffer();
 		ImGuiRenderer::Get()->Tick(DeltaTime);
 		ExecuteCommandList();

@@ -8,12 +8,14 @@
 #include "Runtime/Renderer/D3D12Adapter.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 #include "Runtime/Renderer/D3D12Descriptors.h"
-#include "Runtime/Renderer/D3D12Viewport.h"
+#include "Runtime/Renderer/D3D12Scene.h"
 
 namespace Drn
 {
-	ViewportGuiLayer::ViewportGuiLayer()
+	ViewportGuiLayer::ViewportGuiLayer(D3D12Scene* InScene)
 	{
+		Scene = InScene;
+
 		ViewportHeap = std::make_unique<D3D12DescriptorHeap>(ImGuiRenderer::Get()->GetSrvHeap());
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
@@ -24,7 +26,7 @@ namespace Drn
 		descSRV.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		Renderer::Get()->Adapter->GetD3DDevice()->CreateShaderResourceView(Renderer::Get()->GetMainWindow()->GetViewport()->GetOutputBuffer(), &descSRV, ViewportHeap->GetCpuHandle());
+		Renderer::Get()->Adapter->GetD3DDevice()->CreateShaderResourceView(Scene->GetOutputBuffer(), &descSRV, ViewportHeap->GetCpuHandle());
 	}
 
 	void ViewportGuiLayer::Draw()

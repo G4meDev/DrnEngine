@@ -24,6 +24,7 @@ namespace Drn
 		D3D12Adapter* Adapter;
 
 		inline Window* GetMainWindow() { return MainWindow.get(); }
+		inline D3D12Scene* GetMainScene() { return MainScene; };
 
 		inline ID3D12GraphicsCommandList* GetCommandList() { return CommandList; }
 		inline ID3D12CommandQueue* GetCommandQueue() { return CommandQueue->CommandQueue.Get(); }
@@ -55,8 +56,12 @@ namespace Drn
 		ULONG FenceValue;
 		HANDLE FenceEvent;
 
+		D3D12Scene* MainScene;
+
 	private:
 		
+		void CreateMainScene();
+
 		void CreateResources();
 		void CreateSwapChain();
 		void ResetResources();

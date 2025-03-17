@@ -8,11 +8,11 @@ namespace Drn
 	class D3D12DescriptorHeap;
 	class D3D12CommandAllocator;
 
-	class D3D12Viewport
+	class D3D12Scene
 	{
 	public:
 
-		D3D12Viewport(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat);
+		D3D12Scene(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat);
 
 		void Init();
 
