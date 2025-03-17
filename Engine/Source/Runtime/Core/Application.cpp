@@ -3,6 +3,8 @@
 #include "Window.h"
 #include "Runtime/Renderer/Renderer.h"
 
+#include "Editor/Editor.h"
+
 namespace Drn
 {
 	void Application::Run(HINSTANCE inhInstance)
@@ -11,6 +13,9 @@ namespace Drn
 
 		Renderer::Init(inhInstance);
 		
+#if WITH_EDITOR
+		Editor::Get()->Init();
+#endif
 
 		Startup();
 
@@ -37,6 +42,11 @@ namespace Drn
 	void Application::Tick(float DeltaTime)
 	{
 		Renderer::Get()->Tick(DeltaTime);
+
+#if WITH_EDITOR
+		Editor::Get()->Tick(DeltaTime);
+#endif
+
 		Renderer::Get()->WaitForPreviousFrame();
 	}
 }

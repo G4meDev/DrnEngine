@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "ImGuiRenderer.h"
 
+#include "ImGuiLayer.h"
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/D3D12Adapter.h"
 #include "Runtime/Renderer/D3D12Descriptors.h"
@@ -92,7 +93,7 @@ namespace Drn
 
 	void ImGuiRenderer::AttachLayer(ImGuiLayer* InLayer)
 	{
-
+		Layers.AddFirst(InLayer);
 	}
 
 	ImGuiRenderer* ImGuiRenderer::Get()
@@ -155,13 +156,13 @@ namespace Drn
 			ImGui::End();
 		}
 
-// 		for (LinkedListIterator It(Layers); It; ++It)
-// 		{
-// 			if (It)
-// 			{
-// 				It->Draw();
-// 			}
-// 		}
+		for (LinkedListIterator It(Layers); It; ++It)
+		{
+			if (It)
+			{
+				It->Draw();
+			}
+		}
 	}
 
 	void ImGuiRenderer::EndDraw()
