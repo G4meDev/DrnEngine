@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace Drn
 {
 	struct IntPoint
@@ -16,9 +18,10 @@ namespace Drn
 		void operator=(const IntPoint& R);
 		const bool operator!=(const IntPoint& R) const;
 
-	public:
 		static const IntPoint Zero;
 		static const IntPoint One;
+
+		std::string ToString() const;
 	};
 }
 

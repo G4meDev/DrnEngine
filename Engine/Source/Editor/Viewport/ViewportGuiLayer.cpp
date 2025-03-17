@@ -10,6 +10,8 @@
 #include "Runtime/Renderer/D3D12Descriptors.h"
 #include "Runtime/Renderer/D3D12Scene.h"
 
+#include "Editor/Editor.h"
+
 namespace Drn
 {
 	ViewportGuiLayer::ViewportGuiLayer(D3D12Scene* InScene)
@@ -49,7 +51,7 @@ namespace Drn
 
 	void ViewportGuiLayer::OnViewportSizeChanged(const IntPoint& OldSize, const IntPoint& NewSize)
 	{
-		std::cout << "viewport resize from (" << OldSize.X << ", " << OldSize.Y << ") to (" << NewSize.X << ", " << NewSize.Y << ").\n";
+		LOG(LogEditor, Info, "Resize viewport from %s to %s.", OldSize.ToString().c_str(), NewSize.ToString().c_str());
 
 		//Viewport::Get()->OnViewportSizeChanged(OldSize, NewSize);
 	}

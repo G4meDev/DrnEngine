@@ -184,8 +184,6 @@ namespace Drn
  		ImGuiRenderer::Get()->Tick(DeltaTime);
 #endif
  		ExecuteCommandList();
-
-		//std::cout << "Renderer Tick.\n";
 	}
 
 	void Renderer::CreateCommandQueue(D3D12Device* Device, const D3D12_COMMAND_QUEUE_DESC& Desc, Microsoft::WRL::ComPtr<ID3D12CommandQueue>& OutCommandQueue)

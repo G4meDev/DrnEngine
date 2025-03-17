@@ -2,6 +2,8 @@
 
 #if WITH_EDITOR
 
+LOG_DECLARE_CATEGORY(LogEditor);
+
 namespace Drn
 {
 

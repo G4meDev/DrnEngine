@@ -3,6 +3,9 @@
 
 #if WITH_EDITOR
 #include "Editor/Viewport/Viewport.h"
+#include "Editor/OutputLog/OutputLog.h"
+
+LOG_DEFINE_CATEGORY(LogEditor, "Editor");
 
 namespace Drn
 {
@@ -17,11 +20,13 @@ namespace Drn
 	void Editor::Init()
 	{
 		Viewport::Get()->Init();
+		OutputLog::Get()->Init();
 	}
 
 	void Editor::Tick(float DeltaTime)
 	{
 		Viewport::Get()->Tick(DeltaTime);
+		OutputLog::Get()->Tick(DeltaTime);
 	}
 
 	Editor* Editor::Get()
