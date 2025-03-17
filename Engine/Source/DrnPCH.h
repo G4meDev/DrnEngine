@@ -4,6 +4,7 @@
 
 
 #include "Runtime/Renderer/D3D12Utils.h"
+#include "Runtime/Math/Math.h"
 #include "Runtime/Math/IntPoint.h"
 #include "Runtime/Containers/List.h"
 
@@ -32,5 +33,7 @@
 
 #include <string>
 #include <unordered_map>
+
+#include <algorithm>
 
 #include "Runtime/Core/Window.h"

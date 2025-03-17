@@ -18,6 +18,9 @@ namespace Drn
 		void operator=(const IntPoint& R);
 		const bool operator!=(const IntPoint& R) const;
 
+		static IntPoint& ComponentWiseMin(const IntPoint& Value1, const IntPoint& Value2);
+		static IntPoint& ComponentWiseMax(const IntPoint& Value1, const IntPoint& Value2);
+
 		static const IntPoint Zero;
 		static const IntPoint One;
 

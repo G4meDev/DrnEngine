@@ -53,7 +53,7 @@ namespace Drn
 	{
 		LOG(LogEditor, Info, "Resize viewport from %s to %s.", OldSize.ToString().c_str(), NewSize.ToString().c_str());
 
-		//Viewport::Get()->OnViewportSizeChanged(OldSize, NewSize);
+		//Scene->Resize(NewSize);
 	}
 
 }
