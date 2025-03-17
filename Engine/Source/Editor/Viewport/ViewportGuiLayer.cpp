@@ -4,10 +4,29 @@
 #if WITH_EDITOR
 
 #include "imgui.h"
-//#include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
+#include "Runtime/Renderer/Renderer.h"
+#include "Runtime/Renderer/D3D12Adapter.h"
+#include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
+#include "Runtime/Renderer/D3D12Descriptors.h"
+#include "Runtime/Renderer/D3D12Viewport.h"
 
 namespace Drn
 {
+	ViewportGuiLayer::ViewportGuiLayer()
+	{
+		ViewportHeap = std::make_unique<D3D12DescriptorHeap>(ImGuiRenderer::Get()->GetSrvHeap());
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
+
+		descSRV.Texture2D.MipLevels = 1;
+		descSRV.Texture2D.MostDetailedMip = 0;
+		descSRV.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descSRV.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		descSRV.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+		Renderer::Get()->Adapter->GetD3DDevice()->CreateShaderResourceView(Renderer::Get()->GetMainWindow()->GetViewport()->GetOutputBuffer(), &descSRV, ViewportHeap->GetCpuHandle());
+	}
+
 	void ViewportGuiLayer::Draw()
 	{
 		ImGui::Begin("Viewport", (bool*)0, ImGuiWindowFlags_::ImGuiWindowFlags_MenuBar);
@@ -21,8 +40,7 @@ namespace Drn
 			ViewportImageSize = ImageSize;
 		}
 
-		//ImGui::Image((void*)(size_t)(Renderer::Gbuffer->Attachments[7]->TextureID), AvaliableSize,
-		//	ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image(ImTextureID(ViewportHeap->GetGpuHandle().ptr), ImVec2(Renderer::Get()->GetMainWindow()->GetSizeX(), Renderer::Get()->GetMainWindow()->GetSizeY()));
 
 		ImGui::End();
 	}

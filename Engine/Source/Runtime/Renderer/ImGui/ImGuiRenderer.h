@@ -19,6 +19,8 @@ namespace Drn
 
 		static ImGuiRenderer* Get();
 
+		inline D3D12DescriptorHeap* GetSrvHeap() { return SrvHeap.get(); }
+
 	protected:
 		virtual void BeginDraw();
 		virtual void Draw();
@@ -27,8 +29,6 @@ namespace Drn
 
 		std::unique_ptr<D3D12DescriptorHeap> SrvHeap;
 		
-		std::unique_ptr<D3D12DescriptorHeap> MainViewportOutputHeap;
-
 		friend class Renderer;
 
 	private:

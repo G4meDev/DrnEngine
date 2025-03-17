@@ -67,8 +67,6 @@ namespace Drn
 
 	UINT D3D12DescriptorHeap::Alloc()
 	{
-		VERIFYD3D12RESULT(FreeBlocks.size() == 0);
-
 		UINT Result = FreeBlocks.back();
 		FreeBlocks.pop_back();
 		

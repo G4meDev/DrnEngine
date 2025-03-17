@@ -27,17 +27,6 @@ namespace Drn
 	void ImGuiRenderer::Init(ID3D12Resource* MainViewportOutputBuffer)
 	{
 		SrvHeap = std::make_unique<D3D12DescriptorHeap>(Renderer::Get()->Adapter->GetDevice(), 64, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, ED3D12DescriptorHeapFlags::GpuVisible, false);
-		MainViewportOutputHeap = std::make_unique<D3D12DescriptorHeap>(SrvHeap.get());
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-
-		descSRV.Texture2D.MipLevels = 1;
-		descSRV.Texture2D.MostDetailedMip = 0;
-		descSRV.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		descSRV.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		descSRV.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-		Renderer::Get()->Adapter->GetD3DDevice()->CreateShaderResourceView(MainViewportOutputBuffer, &descSRV, MainViewportOutputHeap->GetCpuHandle());
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -140,10 +129,6 @@ namespace Drn
 			ImGui::Text("counter = %d", counter);
 
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-			ImGui::End();
-
-			ImGui::Begin("MainWindow");
-			ImGui::Image(ImTextureID(MainViewportOutputHeap->GetGpuHandle().ptr), ImVec2(Renderer::Get()->GetMainWindow()->GetSizeX(), Renderer::Get()->GetMainWindow()->GetSizeY()));
 			ImGui::End();
 		}
 
