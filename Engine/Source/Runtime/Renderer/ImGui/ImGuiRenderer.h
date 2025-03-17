@@ -29,7 +29,7 @@ namespace Drn
 		
 		std::unique_ptr<D3D12DescriptorHeap> MainViewportOutputHeap;
 
-		friend class D3D12Viewport;
+		friend class Renderer;
 
 	private:
 		static std::unique_ptr<ImGuiRenderer> SingletonInstance;

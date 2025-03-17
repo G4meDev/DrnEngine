@@ -23,16 +23,12 @@ namespace Drn
 
 	protected:
 
-		Microsoft::WRL::ComPtr<IDXGISwapChain3> SwapChain;
-
 		D3D12Adapter* Adapter;
 		HWND WindowHandle;
 		UINT SizeX;
 		UINT SizeY;
 		DXGI_FORMAT PixelFormat;
 		bool bFullScreen;
-
-		UINT BackBufferIndex;
 
 		CD3DX12_VIEWPORT Viewport;
 		CD3DX12_RECT ScissorRect;
@@ -43,22 +39,10 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> BasePassPipelineState;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> ResolvePipelineState;
 
-		Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
-		ULONG FenceValue;
-		HANDLE FenceEvent;
-
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBuffer;
 		D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
 
-		//std::shared_ptr<D3D12Texture> BackBuffers[NUM_BACKBUFFERS];
-		std::shared_ptr<ID3D12Resource> BackBuffers[NUM_BACKBUFFERS];
-
-		D3D12DescriptorHeap* SwapChainDescriptorRVTRoot;
-		std::shared_ptr<D3D12DescriptorHeap> SwapChainDescriptorRVT[NUM_BACKBUFFERS];
-
 		std::shared_ptr<D3D12DescriptorHeap> BasePassRTV;
 		Microsoft::WRL::ComPtr<ID3D12Resource> BasePassBuffer;
-
-		void WaitForPreviousFrame();
 	};
 }

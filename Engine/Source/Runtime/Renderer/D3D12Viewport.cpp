@@ -26,33 +26,6 @@ namespace Drn
 
 	void D3D12Viewport::Init()
 	{
-		UINT SwapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-		DXGI_SWAP_CHAIN_DESC1 SwapChainDesc1{};
-
-		SwapChainDesc1.Width = SizeX;
-		SwapChainDesc1.Height = SizeY;
-		SwapChainDesc1.Format = PixelFormat;
-		SwapChainDesc1.SampleDesc.Count = 1;
-		SwapChainDesc1.SampleDesc.Quality = 0;
-		SwapChainDesc1.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		SwapChainDesc1.BufferCount = NUM_BACKBUFFERS;
-		SwapChainDesc1.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		SwapChainDesc1.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-		SwapChainDesc1.Flags = SwapChainFlags;
-
-		DXGI_SWAP_CHAIN_FULLSCREEN_DESC FullscreenDesc{};
-		FullscreenDesc.RefreshRate.Numerator = 0;
-		FullscreenDesc.RefreshRate.Denominator = 0;
-		FullscreenDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-		FullscreenDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-		FullscreenDesc.Windowed = !bFullScreen;
-
-		Microsoft::WRL::ComPtr<IDXGISwapChain1> SwapChain1;
-		VERIFYD3D12RESULT(Adapter->GetFactory()->CreateSwapChainForHwnd(Renderer::Get()->GetCommandQueue(), WindowHandle, &SwapChainDesc1, &FullscreenDesc, nullptr, SwapChain1.GetAddressOf()));
-
-		SwapChain1.As(&SwapChain);
-
 		D3D12_CLEAR_VALUE BasePassClearValue = {};
 		BasePassClearValue.Format = PixelFormat;
 		BasePassClearValue.Color[0] = 0.0f;
@@ -76,31 +49,6 @@ namespace Drn
  		Adapter->GetD3DDevice()->CreateRenderTargetView(BasePassBuffer.Get(), &BasePassrtvDesc, BasePassRTV->GetCpuHandle());
  
  		BasePassBuffer->SetName(L"BasePassBuffer");
-
-		SwapChainDescriptorRVTRoot = new D3D12DescriptorHeap(Adapter->GetDevice(), NUM_BACKBUFFERS, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, ED3D12DescriptorHeapFlags::None, false);
-
-		for (UINT n = 0; n < NUM_BACKBUFFERS; n++)
-		{
-			ID3D12Resource* RenderTargetPtr;
-			SwapChain->GetBuffer(n, IID_PPV_ARGS(&RenderTargetPtr));
-
-			wchar_t name[25] = {};
-			swprintf_s(name, L"Render target %u", n);
-			RenderTargetPtr->SetName(name);
-
-			BackBuffers[n] = std::shared_ptr<ID3D12Resource>(RenderTargetPtr);
-
-			D3D12DescriptorHeap* RVT = new D3D12DescriptorHeap(SwapChainDescriptorRVTRoot);
-			SwapChainDescriptorRVT[n] = std::shared_ptr<D3D12DescriptorHeap>(RVT);
-
-			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-			rtvDesc.Format = PixelFormat;
-			rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-
-			Adapter->GetD3DDevice()->CreateRenderTargetView(RenderTargetPtr, &rtvDesc, RVT->GetCpuHandle());
-		}
-
-		BackBufferIndex = SwapChain->GetCurrentBackBufferIndex();
 
 		// -------------------------------------------------------------------------------------------------
 
@@ -183,16 +131,6 @@ namespace Drn
 
 		// -------------------------------------------------------------------------------------------------
 
-		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(Fence.GetAddressOf())));
-		FenceValue = 1;
-
-		FenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-		if (FenceEvent == nullptr)
-		{
-			VERIFYD3D12RESULT(HRESULT_FROM_WIN32(GetLastError()));
-		}
-
-		WaitForPreviousFrame();
 	}
 
 	void D3D12Viewport::Tick(float DeltaTime)
@@ -217,43 +155,5 @@ namespace Drn
 		CommandList->DrawInstanced(3, 1, 0, 0);
 
 		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BasePassResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
-		ID3D12Resource* BackBufferResource = BackBuffers[BackBufferIndex].get();
-		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BackBufferResource, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle = SwapChainDescriptorRVT[BackBufferIndex]->GetCpuHandle();
-		CommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-
-		CommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
-		ImGuiRenderer::Get()->Tick(DeltaTime);
-
-		// -------------------------------------------------------------------------------------------------
-
-		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BackBufferResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-		VERIFYD3D12RESULT(CommandList->Close());
-
-		ID3D12CommandList* ppCommandLists[] = { CommandList};
-		Renderer::Get()->GetCommandQueue()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-
-		ImGuiRenderer::Get()->PostExecuteCommands();
-
- 		VERIFYD3D12RESULT(SwapChain->Present(1, 0));
- 
-		WaitForPreviousFrame();
-	}
-
-	void D3D12Viewport::WaitForPreviousFrame()
-	{
-		const UINT64 fence = FenceValue;
-		VERIFYD3D12RESULT(Renderer::Get()->GetCommandQueue()->Signal(Fence.Get(), fence));
-		FenceValue++;
-
-		if (Fence->GetCompletedValue() < fence)
-		{
-			VERIFYD3D12RESULT(Fence->SetEventOnCompletion(fence, FenceEvent));
-			WaitForSingleObject(FenceEvent, INFINITE);
-		}
-
-		BackBufferIndex = SwapChain->GetCurrentBackBufferIndex();
-	}
+ 	}
 }

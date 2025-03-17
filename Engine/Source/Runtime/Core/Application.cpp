@@ -37,5 +37,6 @@ namespace Drn
 	void Application::Tick(float DeltaTime)
 	{
 		Renderer::Get()->Tick(DeltaTime);
+		Renderer::Get()->WaitForPreviousFrame();
 	}
 }

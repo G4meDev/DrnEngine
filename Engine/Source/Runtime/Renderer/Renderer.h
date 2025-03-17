@@ -6,6 +6,7 @@ namespace Drn
 {
 	class D3D12Adapter;
 	class D3D12Device;
+	class D3D12DescriptorHeap;
 
 	class Renderer
 	{
@@ -29,6 +30,8 @@ namespace Drn
 
 		void CreateCommandQueue(D3D12Device* Device, const D3D12_COMMAND_QUEUE_DESC& Desc, Microsoft::WRL::ComPtr<ID3D12CommandQueue>& OutCommandQueue);
 
+		void WaitForPreviousFrame();
+
 	protected:
 		static Renderer* SingletonInstance;
 
@@ -38,10 +41,26 @@ namespace Drn
 		std::unique_ptr<D3D12CommandAllocator> CommandAllocator;
 		std::unique_ptr<D3D12Queue> CommandQueue;
 
+
+		Microsoft::WRL::ComPtr<IDXGISwapChain3> SwapChain;
+
+		UINT BackBufferIndex;
+
+		std::shared_ptr<ID3D12Resource> BackBuffers[NUM_BACKBUFFERS];
+
+		D3D12DescriptorHeap* SwapChainDescriptorRVTRoot;
+		std::shared_ptr<D3D12DescriptorHeap> SwapChainDescriptorRVT[NUM_BACKBUFFERS];
+
+		Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
+		ULONG FenceValue;
+		HANDLE FenceEvent;
+
 	private:
 		
 		void CreateResources();
-
+		void CreateSwapChain();
 		void ResetResources();
+		void BindFrontBuffer();
+		void ExecuteCommandList();
 	};
 }
