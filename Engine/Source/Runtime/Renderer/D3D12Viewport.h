@@ -18,9 +18,6 @@ namespace Drn
 
 		void Tick(float DeltaTime);
 
-		inline D3D12Queue* GetQueue_Direct() { return CommandQueue_Direct; }
-		inline ID3D12GraphicsCommandList* GetCommandList() { return CommandList.Get(); }
-
 		inline ID3D12Resource* GetOutputBuffer() { return BasePassBuffer.Get(); }
 
 
@@ -45,7 +42,6 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignature;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> BasePassPipelineState;
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> ResolvePipelineState;
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> CommandList;
 
 		Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
 		ULONG FenceValue;
@@ -53,8 +49,6 @@ namespace Drn
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBuffer;
 		D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
-
-		std::shared_ptr<D3D12CommandAllocator> CommandAllocator_Direct;
 
 		//std::shared_ptr<D3D12Texture> BackBuffers[NUM_BACKBUFFERS];
 		std::shared_ptr<ID3D12Resource> BackBuffers[NUM_BACKBUFFERS];
@@ -64,8 +58,6 @@ namespace Drn
 
 		std::shared_ptr<D3D12DescriptorHeap> BasePassRTV;
 		Microsoft::WRL::ComPtr<ID3D12Resource> BasePassBuffer;
-
-		D3D12Queue* CommandQueue_Direct;
 
 		void WaitForPreviousFrame();
 	};

@@ -23,11 +23,8 @@ namespace Drn
 
 	}
 
-	void ImGuiRenderer::Init(ID3D12CommandQueue* InCommandQueue, ID3D12GraphicsCommandList* InCommandList, ID3D12Resource* MainViewportOutputBuffer)
+	void ImGuiRenderer::Init(ID3D12Resource* MainViewportOutputBuffer)
 	{
-		CommandQueue = InCommandQueue;
-		CommandList = InCommandList;
-
 		SrvHeap = std::make_unique<D3D12DescriptorHeap>(Renderer::Get()->Adapter->GetDevice(), 64, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, ED3D12DescriptorHeapFlags::GpuVisible, false);
 		MainViewportOutputHeap = std::make_unique<D3D12DescriptorHeap>(SrvHeap.get());
 
@@ -66,7 +63,7 @@ namespace Drn
 		ImGui_ImplDX12_InitInfo init_info = {};
 		init_info.UserData = (void*)(SrvHeap.get());
 		init_info.Device = Renderer::Get()->Adapter->GetD3DDevice();
-		init_info.CommandQueue = CommandQueue;
+		init_info.CommandQueue = Renderer::Get()->GetCommandQueue();
 		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
@@ -172,8 +169,8 @@ namespace Drn
 		ImGui::Render();
 
 		ID3D12DescriptorHeap* SRV = SrvHeap->GetHeap();
-		CommandList->SetDescriptorHeaps(1, &SRV);
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), CommandList);
+		Renderer::Get()->GetCommandList()->SetDescriptorHeaps(1, &SRV);
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), Renderer::Get()->GetCommandList());
 	}
 
 	void ImGuiRenderer::PostExecuteCommands()

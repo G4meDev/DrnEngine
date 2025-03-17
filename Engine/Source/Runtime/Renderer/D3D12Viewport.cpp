@@ -5,6 +5,7 @@
 #include "D3D12Queue.h"
 #include "D3D12Descriptors.h"
 
+#include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
 namespace Drn
@@ -25,9 +26,6 @@ namespace Drn
 
 	void D3D12Viewport::Init()
 	{
-		CommandQueue_Direct = new D3D12Queue(Adapter->GetDevice(), D3D12QueueType::Direct);
-		CommandAllocator_Direct = std::make_shared<D3D12CommandAllocator>(D3D12CommandAllocator(Adapter->GetDevice(), D3D12QueueType::Direct));
-
 		UINT SwapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 		DXGI_SWAP_CHAIN_DESC1 SwapChainDesc1{};
@@ -51,7 +49,7 @@ namespace Drn
 		FullscreenDesc.Windowed = !bFullScreen;
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1> SwapChain1;
-		VERIFYD3D12RESULT(Adapter->GetFactory()->CreateSwapChainForHwnd(CommandQueue_Direct->CommandQueue.Get(), WindowHandle, &SwapChainDesc1, &FullscreenDesc, nullptr, SwapChain1.GetAddressOf()));
+		VERIFYD3D12RESULT(Adapter->GetFactory()->CreateSwapChainForHwnd(Renderer::Get()->GetCommandQueue(), WindowHandle, &SwapChainDesc1, &FullscreenDesc, nullptr, SwapChain1.GetAddressOf()));
 
 		SwapChain1.As(&SwapChain);
 
@@ -148,9 +146,6 @@ namespace Drn
 		BasePasspsoDesc.SampleDesc.Count = 1;
  		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateGraphicsPipelineState(&BasePasspsoDesc, IID_PPV_ARGS(BasePassPipelineState.GetAddressOf())));
 
-		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocator_Direct->CommandAllocator.Get(), BasePassPipelineState.Get(), IID_PPV_ARGS(CommandList.GetAddressOf())));
-		VERIFYD3D12RESULT(CommandList->Close());
-
 		// -------------------------------------------------------------------------------------------------
 
 		struct Vertex
@@ -202,8 +197,8 @@ namespace Drn
 
 	void D3D12Viewport::Tick(float DeltaTime)
 	{
-		VERIFYD3D12RESULT(CommandAllocator_Direct->CommandAllocator->Reset());
-		VERIFYD3D12RESULT(CommandList->Reset(CommandAllocator_Direct->CommandAllocator.Get(), BasePassPipelineState.Get()));
+		auto* CommandList = Renderer::Get()->GetCommandList();
+ 		CommandList->SetPipelineState(BasePassPipelineState.Get());
 
 		CommandList->SetGraphicsRootSignature(RootSignature.Get());
 		CommandList->RSSetViewports(1, &Viewport);
@@ -237,8 +232,8 @@ namespace Drn
 		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BackBufferResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 		VERIFYD3D12RESULT(CommandList->Close());
 
-		ID3D12CommandList* ppCommandLists[] = { CommandList.Get() };
-		CommandQueue_Direct->CommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+		ID3D12CommandList* ppCommandLists[] = { CommandList};
+		Renderer::Get()->GetCommandQueue()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 		ImGuiRenderer::Get()->PostExecuteCommands();
 
@@ -250,7 +245,7 @@ namespace Drn
 	void D3D12Viewport::WaitForPreviousFrame()
 	{
 		const UINT64 fence = FenceValue;
-		VERIFYD3D12RESULT(CommandQueue_Direct->CommandQueue->Signal(Fence.Get(), fence));
+		VERIFYD3D12RESULT(Renderer::Get()->GetCommandQueue()->Signal(Fence.Get(), fence));
 		FenceValue++;
 
 		if (Fence->GetCompletedValue() < fence)
