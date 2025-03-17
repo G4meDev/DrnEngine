@@ -1,8 +1,9 @@
 #pragma once
 
+#if WITH_EDITOR
+
 namespace Drn
 {
-#if WITH_EDITOR
 
 	class Editor
 	{
@@ -22,5 +23,6 @@ namespace Drn
 
 	};
 
-#endif
 }
+
+#endif

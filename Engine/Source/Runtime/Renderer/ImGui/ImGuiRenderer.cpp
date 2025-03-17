@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "ImGuiRenderer.h"
 
+#if WITH_EDITOR
+
 #include "ImGuiLayer.h"
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/D3D12Adapter.h"
@@ -170,3 +172,5 @@ namespace Drn
 	}
 
 }
+
+#endif

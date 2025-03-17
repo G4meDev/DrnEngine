@@ -1,5 +1,6 @@
 #pragma once
 
+#if WITH_EDITOR
 namespace Drn
 {
 	class ImGuiLayer;
@@ -36,3 +37,4 @@ namespace Drn
 		LinkedList<ImGuiLayer> Layers;
 	};
 }
+#endif

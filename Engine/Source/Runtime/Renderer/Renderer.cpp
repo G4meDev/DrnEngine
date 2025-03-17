@@ -120,7 +120,9 @@ namespace Drn
 		ID3D12CommandList* ppCommandLists[] = { CommandList };
 		Renderer::Get()->GetCommandQueue()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
+#if WITH_EDITOR
 		ImGuiRenderer::Get()->PostExecuteCommands();
+#endif
 
 		VERIFYD3D12RESULT(SwapChain->Present(1, 0));
 
@@ -160,7 +162,9 @@ namespace Drn
 
 		Get()->CreateSwapChain();
 
+#if WITH_EDITOR
 		ImGuiRenderer::Get()->Init();
+#endif
 	}
 
 	void Renderer::Shutdown()
@@ -172,11 +176,16 @@ namespace Drn
 	{
 		ResetResources();
 		MainWindow->Tick(DeltaTime);
-		MainScene->Tick(DeltaTime);
+ 		MainScene->Tick(DeltaTime);
+ 
+ 		BindFrontBuffer();
 
-		BindFrontBuffer();
-		ImGuiRenderer::Get()->Tick(DeltaTime);
-		ExecuteCommandList();
+#if WITH_EDITOR
+ 		ImGuiRenderer::Get()->Tick(DeltaTime);
+#endif
+ 		ExecuteCommandList();
+
+		//std::cout << "Renderer Tick.\n";
 	}
 
 	void Renderer::CreateCommandQueue(D3D12Device* Device, const D3D12_COMMAND_QUEUE_DESC& Desc, Microsoft::WRL::ComPtr<ID3D12CommandQueue>& OutCommandQueue)

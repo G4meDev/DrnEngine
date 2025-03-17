@@ -2,16 +2,20 @@
 #include "Window.h"
 #include "Runtime/Renderer/D3D12Scene.h"
 
-#include "imgui.h"
 
+#if WITH_EDITOR
+#include "imgui.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
 
 namespace Drn
 {
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
+#if WITH_EDITOR
 		if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
 			return true;
+#endif
 
 		LONG_PTR WindowPtr = GetWindowLongPtr(hWnd, /*GWL_USERDATA*/ (-21));
 		Window* Win = reinterpret_cast<Drn::Window*>(WindowPtr);
@@ -90,6 +94,10 @@ namespace Drn
 			if (msg.message == WM_QUIT)
 				g_bPendingClose = true;
 		}
+
+#if WITH_EDITOR
+		std::flush(std::cout);
+#endif
 	}
 
 	void Window::Resize(int16 InWidth, int16 InHeight)

@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "ImGuiLayer.h"
 
+#if WITH_EDITOR
+
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
 namespace Drn
@@ -32,3 +34,5 @@ namespace Drn
 
 
 }
+
+#endif

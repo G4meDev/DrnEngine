@@ -49,6 +49,8 @@ namespace Drn
 
 	void ViewportGuiLayer::OnViewportSizeChanged(const IntPoint& OldSize, const IntPoint& NewSize)
 	{
+		std::cout << "viewport resize from (" << OldSize.X << ", " << OldSize.Y << ") to (" << NewSize.X << ", " << NewSize.Y << ").\n";
+
 		//Viewport::Get()->OnViewportSizeChanged(OldSize, NewSize);
 	}
 
