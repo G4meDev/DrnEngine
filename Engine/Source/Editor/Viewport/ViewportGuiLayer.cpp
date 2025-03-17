@@ -44,7 +44,7 @@ namespace Drn
 			ViewportImageSize = ImageSize;
 		}
 
-		ImGui::Image(ImTextureID(ViewportHeap->GetGpuHandle().ptr), ImVec2(Renderer::Get()->GetMainWindow()->GetSizeX(), Renderer::Get()->GetMainWindow()->GetSizeY()));
+		ImGui::Image(ImTextureID(ViewportHeap->GetGpuHandle().ptr), ImVec2(Renderer::Get()->GetMainScene()->GetSize().X, Renderer::Get()->GetMainScene()->GetSize().Y));
 
 		ImGui::End();
 	}
@@ -53,7 +53,7 @@ namespace Drn
 	{
 		LOG(LogEditor, Info, "Resize viewport from %s to %s.", OldSize.ToString().c_str(), NewSize.ToString().c_str());
 
-		//Scene->Resize(NewSize);
+		Scene->Resize(NewSize);
 	}
 
 }

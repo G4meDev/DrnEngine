@@ -14,7 +14,7 @@ namespace Drn
 	class D3D12DescriptorHeap
 	{
 	public:
-		D3D12DescriptorHeap() = delete;
+		//D3D12DescriptorHeap() = delete;
 		~D3D12DescriptorHeap();
 
 		D3D12DescriptorHeap(D3D12Device* InDevice, uint32 InNumDescriptors, D3D12_DESCRIPTOR_HEAP_TYPE InType, ED3D12DescriptorHeapFlags InFlags, bool bInIsGlobal);

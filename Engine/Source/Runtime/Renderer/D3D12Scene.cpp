@@ -10,15 +10,13 @@
 
 namespace Drn
 {
-	D3D12Scene::D3D12Scene(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat)
+	D3D12Scene::D3D12Scene(D3D12Adapter* InAdapter, HWND InWindowHandle, const IntPoint& InSize, bool InFullScreen, DXGI_FORMAT InPixelFormat)
 		: Adapter(InAdapter)
 		, WindowHandle(InWindowHandle)
-		, SizeX(InSizeX)
-		, SizeY(InSizeY)
+		, Size(InSize)
 		, bFullScreen(InFullScreen)
 		, PixelFormat(InPixelFormat)
-		, Viewport(0.0f, 0.0f, static_cast<float>(InSizeX), static_cast<float>(InSizeY))
-		, ScissorRect(0, 0, static_cast<LONG>(InSizeX), static_cast<LONG>(InSizeY))
+		, BasePassRTV(nullptr)
 	{
 		Adapter->GetViewports().push_back(this);
 		Init();
@@ -26,29 +24,7 @@ namespace Drn
 
 	void D3D12Scene::Init()
 	{
-		D3D12_CLEAR_VALUE BasePassClearValue = {};
-		BasePassClearValue.Format = PixelFormat;
-		BasePassClearValue.Color[0] = 0.0f;
-		BasePassClearValue.Color[1] = 0.2f;
-		BasePassClearValue.Color[2] = 0.4f;
-		BasePassClearValue.Color[3] = 1.0f;
-
-		BasePassRTV = std::make_shared<D3D12DescriptorHeap>(Adapter->GetDevice(), 1, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, ED3D12DescriptorHeapFlags::None, false);
-		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Tex2D(PixelFormat, SizeX, SizeY, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			&BasePassClearValue,
-			IID_PPV_ARGS(BasePassBuffer.GetAddressOf())));
-
- 		D3D12_RENDER_TARGET_VIEW_DESC BasePassrtvDesc = {};
- 		BasePassrtvDesc.Format = PixelFormat;
- 		BasePassrtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
- 
- 		Adapter->GetD3DDevice()->CreateRenderTargetView(BasePassBuffer.Get(), &BasePassrtvDesc, BasePassRTV->GetCpuHandle());
- 
- 		BasePassBuffer->SetName(L"BasePassBuffer");
+		Resize(Size);
 
 		// -------------------------------------------------------------------------------------------------
 
@@ -156,4 +132,41 @@ namespace Drn
 
 		CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(BasePassResource, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
  	}
+
+	void D3D12Scene::Resize(const IntPoint& InSize)
+	{
+		Size = InSize;
+
+		Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Size.X), static_cast<float>(Size.Y));
+		ScissorRect = CD3DX12_RECT(0, 0, static_cast<LONG>(Size.X), static_cast<LONG>(Size.Y));
+		
+		D3D12_CLEAR_VALUE BasePassClearValue = {};
+		BasePassClearValue.Format = PixelFormat;
+		BasePassClearValue.Color[0] = 0.0f;
+		BasePassClearValue.Color[1] = 0.2f;
+		BasePassClearValue.Color[2] = 0.4f;
+		BasePassClearValue.Color[3] = 1.0f;
+
+
+		if (BasePassRTV.get() == nullptr)
+		{
+			BasePassRTV = std::make_unique<D3D12DescriptorHeap>(Adapter->GetDevice(), 1, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, ED3D12DescriptorHeapFlags::None, false);
+		}
+		
+		VERIFYD3D12RESULT(Adapter->GetD3DDevice()->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Tex2D(PixelFormat, Size.X, Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			&BasePassClearValue,
+			IID_PPV_ARGS(BasePassBuffer.GetAddressOf())));
+
+		D3D12_RENDER_TARGET_VIEW_DESC BasePassrtvDesc = {};
+		BasePassrtvDesc.Format = PixelFormat;
+		BasePassrtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
+		Adapter->GetD3DDevice()->CreateRenderTargetView(BasePassBuffer.Get(), &BasePassrtvDesc, BasePassRTV->GetCpuHandle());
+
+		BasePassBuffer->SetName(L"BasePassBuffer");
+	}
 }

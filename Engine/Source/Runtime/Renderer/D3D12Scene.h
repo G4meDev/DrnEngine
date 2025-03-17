@@ -12,21 +12,22 @@ namespace Drn
 	{
 	public:
 
-		D3D12Scene(D3D12Adapter* InAdapter, HWND InWindowHandle, UINT InSizeX, UINT InSizeY, bool InFullScreen, DXGI_FORMAT InPixelFormat);
+		D3D12Scene(D3D12Adapter* InAdapter, HWND InWindowHandle, const IntPoint& InSize, bool InFullScreen, DXGI_FORMAT InPixelFormat);
 
 		void Init();
 
 		void Tick(float DeltaTime);
 
 		inline ID3D12Resource* GetOutputBuffer() { return BasePassBuffer.Get(); }
+		inline IntPoint GetSize() { return Size; };
 
+		void Resize(const IntPoint& InSize);
 
 	protected:
 
 		D3D12Adapter* Adapter;
 		HWND WindowHandle;
-		UINT SizeX;
-		UINT SizeY;
+		IntPoint Size;
 		DXGI_FORMAT PixelFormat;
 		bool bFullScreen;
 
@@ -42,7 +43,7 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBuffer;
 		D3D12_VERTEX_BUFFER_VIEW VertexBufferView;
 
-		std::shared_ptr<D3D12DescriptorHeap> BasePassRTV;
+		std::unique_ptr<D3D12DescriptorHeap> BasePassRTV;
 		Microsoft::WRL::ComPtr<ID3D12Resource> BasePassBuffer;
 	};
 }

@@ -14,7 +14,7 @@ namespace Drn
 
 	void Renderer::CreateMainScene()
 	{
-		Get()->MainScene = new D3D12Scene(Adapter, GetMainWindow()->GetWindowHandle(), GetMainWindow()->GetSizeX(), GetMainWindow()->GetSizeY(), false, DISPLAY_OUTPUT_FORMAT);
+		Get()->MainScene = new D3D12Scene(Adapter, GetMainWindow()->GetWindowHandle(), IntPoint(GetMainWindow()->GetSizeX(), GetMainWindow()->GetSizeY()), false, DISPLAY_OUTPUT_FORMAT);
 	}
 
 	void Renderer::CreateResources()
