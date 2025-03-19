@@ -3,6 +3,8 @@
 #include "Window.h"
 #include "Runtime/Renderer/Renderer.h"
 
+#include <dx12lib/Device.h>
+
 #include "Editor/Editor.h"
 
 namespace Drn
@@ -12,7 +14,7 @@ namespace Drn
 		std::cout << "Start application" << std::endl;
 
 		Renderer::Init(inhInstance);
-		
+
 #if WITH_EDITOR
 		Editor::Get()->Init();
 #endif

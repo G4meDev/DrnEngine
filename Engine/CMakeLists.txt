@@ -109,17 +109,21 @@ add_compile_definitions("$<$<CONFIG:Debug>:WITH_EDITOR>")
 target_include_directories( Engine
     PUBLIC inc Source/
     PUBLIC inc ../ThirdParty/ImGui/
+    PUBLIC inc ../DX12Lib/inc/
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
 target_link_libraries( Engine 
 #	PUBLIC DirectXTex
-#    PUBLIC assimp
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
 	PUBLIC d3dcompiler.lib
 	PUBLIC ImGui
+    PUBLIC assimp
+    PUBLIC DirectXTex
+    PUBLIC gainput
+    PUBLIC DX12Lib
 )
 
 # Enable precompiled header files.
