@@ -21,7 +21,7 @@ if( MSVC )
 endif()
 
 add_subdirectory( Engine )
-add_subdirectory( ImGui )
+add_subdirectory( ThirdParty/ImGui )
 add_subdirectory( Game )
 
 set_directory_properties( PROPERTIES VS_STARTUP_PROJECT Game)

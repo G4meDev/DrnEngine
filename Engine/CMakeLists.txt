@@ -102,12 +102,13 @@ target_compile_features( Engine
 
 target_compile_definitions( Engine
     PUBLIC NOMINMAX
-    PUBLIC WITH_EDITOR
 )
+
+add_compile_definitions("$<$<CONFIG:Debug>:WITH_EDITOR>")
 
 target_include_directories( Engine
     PUBLIC inc Source/
-    PUBLIC inc ../ImGui/
+    PUBLIC inc ../ThirdParty/ImGui/
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
