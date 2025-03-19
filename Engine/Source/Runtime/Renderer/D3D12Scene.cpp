@@ -8,6 +8,9 @@
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
+#include "TestShader_PS.h"
+#include "TestShader_VS.h"
+
 namespace Drn
 {
 	D3D12Scene::D3D12Scene(D3D12Adapter* InAdapter, HWND InWindowHandle, const IntPoint& InSize, bool InFullScreen, DXGI_FORMAT InPixelFormat)
@@ -44,9 +47,6 @@ namespace Drn
 #else
 		UINT compileFlags = 0;
 #endif
-		
-		VERIFYD3D12RESULT(D3DCompileFromFile(Path::ShaderFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "VSMain", "vs_5_0", compileFlags, 0, vertexShader.GetAddressOf(), nullptr));
-		VERIFYD3D12RESULT(D3DCompileFromFile(Path::ShaderFullPath(L"shaders.hlsl").c_str(), nullptr, nullptr, "PSMain", "ps_5_0", compileFlags, 0, pixelShader.GetAddressOf(), nullptr));
 
 		D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
 		{
@@ -57,8 +57,8 @@ namespace Drn
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC BasePasspsoDesc = {};
 		BasePasspsoDesc.InputLayout = { inputElementDescs, _countof(inputElementDescs) };
 		BasePasspsoDesc.pRootSignature = RootSignature.Get();
-		BasePasspsoDesc.VS = CD3DX12_SHADER_BYTECODE(vertexShader.Get());
-		BasePasspsoDesc.PS = CD3DX12_SHADER_BYTECODE(pixelShader.Get());
+		BasePasspsoDesc.VS = CD3DX12_SHADER_BYTECODE(TestShader_VS, sizeof(TestShader_VS));
+		BasePasspsoDesc.PS = CD3DX12_SHADER_BYTECODE(TestShader_PS, sizeof(TestShader_PS));
 		BasePasspsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		BasePasspsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 		BasePasspsoDesc.DepthStencilState.DepthEnable = FALSE;
