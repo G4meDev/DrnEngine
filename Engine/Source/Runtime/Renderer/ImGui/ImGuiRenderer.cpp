@@ -9,8 +9,8 @@
 #include "Runtime/Renderer/D3D12Descriptors.h"
 
 #include "imgui.h"
-#include "backends/imgui_impl_win32.h"
-#include "backends/imgui_impl_dx12.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx12.h"
 
 namespace Drn
 {

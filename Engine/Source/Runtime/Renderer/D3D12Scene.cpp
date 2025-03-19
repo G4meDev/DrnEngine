@@ -135,7 +135,7 @@ namespace Drn
 
 	void D3D12Scene::Resize(const IntPoint& InSize)
 	{
-		Size = InSize;
+		Size = IntPoint(std::max(InSize.X, 1), std::max(InSize.Y, 1));
 
 		Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Size.X), static_cast<float>(Size.Y));
 		ScissorRect = CD3DX12_RECT(0, 0, static_cast<LONG>(Size.X), static_cast<LONG>(Size.Y));

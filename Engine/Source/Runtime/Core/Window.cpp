@@ -46,7 +46,7 @@ namespace Drn
 	{
 		std::cout << "Start window" << std::endl;
 
-		WNDCLASSEX wcex;
+		WNDCLASSEXW wcex;
 		wcex.cbSize = sizeof(WNDCLASSEX);
 		wcex.style = CS_HREDRAW | CS_VREDRAW;
 		wcex.lpfnWndProc = WndProc;
@@ -62,13 +62,13 @@ namespace Drn
 
 		// TODO: error
 		//ASSERT(0 != RegisterClassEx(&wcex), "Unable to register a window");
-		bool result = RegisterClassEx(&wcex);
+		bool result = RegisterClassExW(&wcex);
 
 
 		RECT rc = { 0, 0, (LONG)Width, (LONG)Height };
 		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
-		m_WindowHandle = CreateWindow(Title.c_str(), Title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+		m_WindowHandle = CreateWindowExW(NULL, Title.c_str(), Title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
 			rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, m_hInstance, nullptr);
 		// TODO: error
 
