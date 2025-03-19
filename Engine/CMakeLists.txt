@@ -5,14 +5,8 @@ cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this fil
 set( HEADER_FILES
 	Source/Runtime/Core/Drn.h
 	Source/Runtime/Core/Application.h
-	Source/Runtime/Core/Window.h
 	
-	Source/Runtime/Renderer/D3D12Descriptors.h
-	Source/Runtime/Renderer/D3D12Device.h
-	Source/Runtime/Renderer/D3D12Queue.h
-	Source/Runtime/Renderer/D3D12Adapter.h
 	Source/Runtime/Renderer/D3D12Scene.h
-	Source/Runtime/Renderer/D3D12Texture.h
 	Source/Runtime/Renderer/D3D12Utils.h
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
@@ -42,14 +36,8 @@ set( SOURCE_FILES
 	Source/DrnPCH.cpp
 	
 	Source/Runtime/Core/Application.cpp
-	Source/Runtime/Core/Window.cpp
 	
-	Source/Runtime/Renderer/D3D12Descriptors.cpp
-	Source/Runtime/Renderer/D3D12Device.cpp
-	Source/Runtime/Renderer/D3D12Queue.cpp
-	Source/Runtime/Renderer/D3D12Adapter.cpp
 	Source/Runtime/Renderer/D3D12Scene.cpp
-	Source/Runtime/Renderer/D3D12Texture.cpp
 	Source/Runtime/Renderer/D3D12Utils.cpp
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
@@ -104,17 +92,17 @@ target_compile_definitions( Engine
     PUBLIC NOMINMAX
 )
 
-add_compile_definitions("$<$<CONFIG:Debug>:WITH_EDITOR>")
+#add_compile_definitions("$<$<CONFIG:Debug>:WITH_EDITOR>")
 
 target_include_directories( Engine
     PUBLIC inc Source/
     PUBLIC inc ../ThirdParty/ImGui/
-    PUBLIC inc ../DX12Lib/inc/
+    PUBLIC inc ../ThirdParty/DX12Lib/inc/
+    PUBLIC inc ../GameFramework/inc/
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
 target_link_libraries( Engine 
-#	PUBLIC DirectXTex
     PUBLIC d3d12.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
@@ -124,6 +112,7 @@ target_link_libraries( Engine
     PUBLIC DirectXTex
     PUBLIC gainput
     PUBLIC DX12Lib
+    PUBLIC GameFramework
 )
 
 # Enable precompiled header files.

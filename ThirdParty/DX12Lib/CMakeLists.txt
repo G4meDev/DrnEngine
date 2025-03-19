@@ -79,6 +79,13 @@ set( SOURCE_FILES
     src/VertexTypes.cpp
 )
 
+set( SHADER_FILES
+    Resources/Shaders/GenerateMips_CS.hlsl
+    Resources/Shaders/PanoToCubemap_CS.hlsl
+    Resources/Shaders/ImGUI_VS.hlsl
+    Resources/Shaders/ImGUI_PS.hlsl
+)
+
 set( RESOURCE_FILES 
     DX12Lib.rc
     Resources/Icon/app_icon.ico
@@ -93,7 +100,7 @@ add_library( DX12Lib STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${RESOURCE_FILES}
-    ../../.clang-format
+    #../../.clang-format
 )
 
 # Enable C++17 compiler features.

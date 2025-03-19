@@ -35,5 +35,3 @@
 #include <unordered_map>
 
 #include <algorithm>
-
-#include "Runtime/Core/Window.h"
