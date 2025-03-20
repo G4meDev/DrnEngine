@@ -1,20 +1,28 @@
-struct PSInput
+struct ModelViewProjection
 {
-    float4 position : SV_POSITION;
-    float4 color : COLOR;
+    matrix MVP;
 };
 
-PSInput main(float4 position : POSITION, float4 color : COLOR)
+ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
+
+struct VertexPosColor
 {
-    PSInput result;
+    float3 Position : POSITION;
+    float3 Color : COLOR;
+};
 
-    result.position = position;
-    result.color = color;
-
-    return result;
-}
-
-float4 PSMain(PSInput input) : SV_TARGET
+struct VertexShaderOutput
 {
-    return input.color;
+    float4 Color : COLOR;
+    float4 Position : SV_Position;
+};
+
+VertexShaderOutput main(VertexPosColor IN)
+{
+    VertexShaderOutput OUT;
+
+    OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
+    OUT.Color = float4(IN.Color, 1.0f);
+
+    return OUT;
 }

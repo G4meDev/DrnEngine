@@ -2,7 +2,7 @@
 
 #define SMALL_NUMBER		(1.e-8f)
 #define KINDA_SMALL_NUMBER	(1.e-4f)
-#define PI 3.14159
+//#define PI 3.14159
 #define PI_ON_180_DEGREES 0.0174532778 // PI / 180
 
 #include <algorithm>

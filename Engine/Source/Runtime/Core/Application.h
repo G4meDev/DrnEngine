@@ -9,6 +9,13 @@
 #include <dx12lib/RenderTarget.h>
 #include <dx12lib/SwapChain.h>
 
+#include <dx12lib/VertexBuffer.h>
+#include <dx12lib/IndexBuffer.h>
+
+#include <dx12lib/RootSignature.h>
+#include <dx12lib/PipelineStateObject.h>
+#include <dx12lib/Texture.h>
+
 #include "GameFramework/HighResolutionTimer.h"
 #include "GameFramework/Events.h"
 
@@ -46,5 +53,15 @@ namespace Drn
 		std::shared_ptr<Window> pGameWindow = nullptr;
 
 		std::shared_ptr<dx12lib::SwapChain> pSwapChain = nullptr;
+
+		std::shared_ptr<dx12lib::VertexBuffer> pVertexBuffer = nullptr;
+		std::shared_ptr<dx12lib::IndexBuffer>  pIndexBuffer  = nullptr;
+
+		std::shared_ptr<dx12lib::RootSignature> pRootSignature = nullptr;
+		std::shared_ptr<dx12lib::PipelineStateObject>    pPipelineStateObject = nullptr;
+
+		std::shared_ptr<dx12lib::Texture> pDepthTexture = nullptr;
+
+		float fieldOfView = 45.0f;
 	};
 }
