@@ -62,6 +62,8 @@ namespace Drn
 
 		std::shared_ptr<dx12lib::Texture> pDepthTexture = nullptr;
 
+		dx12lib::RenderTarget m_RenderTarget;
+
 		float fieldOfView = 45.0f;
 	};
 }

@@ -70,7 +70,7 @@ namespace Drn
 
 			pGameWindow = gf.CreateWindow( L"Clear Screen", 1920, 1080 );
 
-			pSwapChain = pDevice->CreateSwapChain( pGameWindow->GetWindowHandle() );
+			pSwapChain = pDevice->CreateSwapChain( pGameWindow->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM);
 			pSwapChain->SetVSync( false );
 
 			pGameWindow->KeyPressed += KeyboardEvent::slot( &Application::OnKeyPressed, this );
@@ -104,6 +104,15 @@ namespace Drn
 			ComPtr<ID3DBlob> pixelShaderBlob;
 			ThrowIfFailed( D3DReadFileToBlob( L"TestShader_PS.cso", &pixelShaderBlob ) );
 
+			DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
+
+			DXGI_SAMPLE_DESC sampleDesc = pDevice->GetMultisampleQualityLevels( backBufferFormat );
+
+			D3D12_RT_FORMAT_ARRAY rtvFormats = {};
+			rtvFormats.NumRenderTargets      = 1;
+			rtvFormats.RTFormats[0]          = backBufferFormat;
+
 			struct PipelineStateStream
 			{
 				CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE        pRootSignature;
@@ -113,6 +122,7 @@ namespace Drn
 				CD3DX12_PIPELINE_STATE_STREAM_PS                    PS;
 				CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT  DSVFormat;
 				CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
+				CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC           SampleDesc;
 			} pipelineStateStream;
 
 			pipelineStateStream.pRootSignature        = pRootSignature->GetD3D12RootSignature().Get();
@@ -120,10 +130,42 @@ namespace Drn
 			pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 			pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
 			pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );
-			pipelineStateStream.DSVFormat             = DXGI_FORMAT_D32_FLOAT;
-			pipelineStateStream.RTVFormats = pSwapChain->GetRenderTarget().GetRenderTargetFormats();
+			pipelineStateStream.DSVFormat             = depthBufferFormat;
+			pipelineStateStream.RTVFormats = rtvFormats;
+			pipelineStateStream.SampleDesc = sampleDesc;
 
 			pPipelineStateObject = pDevice->CreatePipelineStateObject( pipelineStateStream );
+			
+
+			auto colorDesc =
+				CD3DX12_RESOURCE_DESC::Tex2D( backBufferFormat, 1920, 1080, 1, 1, sampleDesc.Count,
+												sampleDesc.Quality, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET );
+			D3D12_CLEAR_VALUE colorClearValue;
+			colorClearValue.Format   = colorDesc.Format;
+			colorClearValue.Color[0] = 0.4f;
+			colorClearValue.Color[1] = 0.6f;
+			colorClearValue.Color[2] = 0.9f;
+			colorClearValue.Color[3] = 1.0f;
+
+			auto colorTexture = pDevice->CreateTexture( colorDesc, &colorClearValue );
+			colorTexture->SetName( L"Color Render Target" );
+
+			// Create a depth buffer.
+			auto depthDesc =
+				CD3DX12_RESOURCE_DESC::Tex2D( depthBufferFormat, 1920, 1080, 1, 1, sampleDesc.Count,
+												sampleDesc.Quality, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL );
+			D3D12_CLEAR_VALUE depthClearValue;
+			depthClearValue.Format       = depthDesc.Format;
+			depthClearValue.DepthStencil = { 1.0f, 0 };
+
+			auto depthTexture = pDevice->CreateTexture( depthDesc, &depthClearValue );
+			depthTexture->SetName( L"Depth Render Target" );
+
+
+			m_RenderTarget.AttachTexture( dx12lib::AttachmentPoint::Color0, colorTexture );
+			m_RenderTarget.AttachTexture( dx12lib::AttachmentPoint::DepthStencil, depthTexture );
+
+
 
 			commandQueue.Flush();
 
@@ -137,6 +179,7 @@ namespace Drn
 			pPipelineStateObject.reset();
 			pRootSignature.reset();
 			pDepthTexture.reset();
+			m_RenderTarget.Reset();
 			pDevice.reset();
 			pSwapChain.reset();
 			pGameWindow.reset();
@@ -170,10 +213,8 @@ namespace Drn
 			pGameWindow->SetWindowTitle( buffer );
 		}
 
-		auto renderTarget = pSwapChain->GetRenderTarget();
-		renderTarget.AttachTexture( dx12lib::AttachmentPoint::DepthStencil, pDepthTexture );
-
-		auto viewport = renderTarget.GetViewport();
+		//auto renderTarget = pSwapChain->GetRenderTarget();
+		//renderTarget.AttachTexture( dx12lib::AttachmentPoint::DepthStencil, pDepthTexture );
 
 		float          angle        = static_cast<float>( e.TotalTime * 90.0 );
 		const XMVECTOR rotationAxis = XMVectorSet( 0, 1, 1, 0 );
@@ -184,6 +225,8 @@ namespace Drn
 		const XMVECTOR upDirection = XMVectorSet( 0, 1, 0, 0 );
 		XMMATRIX       viewMatrix  = XMMatrixLookAtLH( eyePosition, focusPoint, upDirection );
 
+		auto viewport = m_RenderTarget.GetViewport();
+
 		float    aspectRatio = viewport.Width / viewport.Height;
 		XMMATRIX projectionMatrix =
 			XMMatrixPerspectiveFovLH( XMConvertToRadians( fieldOfView ), aspectRatio, 0.1f, 100.0f );
@@ -193,23 +236,36 @@ namespace Drn
 		auto& commandQueue = pDevice->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
 		auto  commandList  = commandQueue.GetCommandList();
 
+
+		{
+			FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+
+			commandList->ClearTexture( m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ), clearColor );
+			commandList->ClearDepthStencilTexture(m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::DepthStencil ), D3D12_CLEAR_FLAG_DEPTH );
+		}
+
+
 		commandList->SetPipelineState( pPipelineStateObject );
 		commandList->SetGraphicsRootSignature( pRootSignature );
 
 		commandList->SetGraphics32BitConstants( 0, mvpMatrix );
 
-		const FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-		commandList->ClearTexture( renderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ), clearColor );
-		commandList->ClearDepthStencilTexture( pDepthTexture, D3D12_CLEAR_FLAG_DEPTH );
-
-		commandList->SetRenderTarget( renderTarget );
-		commandList->SetViewport( renderTarget.GetViewport() );
+		commandList->SetRenderTarget( m_RenderTarget );
+		commandList->SetViewport( m_RenderTarget.GetViewport() );
 		commandList->SetScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) );
 
 		commandList->SetVertexBuffer( 0, pVertexBuffer );
 		commandList->SetIndexBuffer( pIndexBuffer );
 		commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		commandList->DrawIndexed( pIndexBuffer->GetNumIndices() );
+
+
+		auto& swapChainRT         = pSwapChain->GetRenderTarget();
+		auto  swapChainBackBuffer = swapChainRT.GetTexture( dx12lib::AttachmentPoint::Color0 );
+		auto  msaaRenderTarget    = m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
+
+		commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
+
 
 		commandQueue.ExecuteCommandList( commandList );
 
@@ -249,14 +305,7 @@ namespace Drn
 
 		pSwapChain->Resize( e.Width, e.Height );
 
-		auto depthTextureDesc = CD3DX12_RESOURCE_DESC::Tex2D( DXGI_FORMAT_D32_FLOAT, e.Width, e.Height );
-		depthTextureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-		D3D12_CLEAR_VALUE optimizedClearValue = {};
-		optimizedClearValue.Format            = DXGI_FORMAT_D32_FLOAT;
-		optimizedClearValue.DepthStencil      = { 1.0F, 0 };
-
-		pDepthTexture = pDevice->CreateTexture( depthTextureDesc, &optimizedClearValue );
+		m_RenderTarget.Resize(e.Width, e.Height);
 	}
 
 	void Application::OnWindowClose( WindowCloseEventArgs& e ) 
