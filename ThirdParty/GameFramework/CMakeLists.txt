@@ -60,7 +60,11 @@ target_compile_definitions( GameFramework
 )
 
 target_include_directories( GameFramework
-    PUBLIC inc
+    PUBLIC inc ../ImGui
+)
+
+target_link_libraries( DX12Lib 
+	PUBLIC ImGui
 )
 
 target_link_libraries( GameFramework

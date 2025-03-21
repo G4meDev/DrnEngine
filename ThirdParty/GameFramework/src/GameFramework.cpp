@@ -418,10 +418,16 @@ void GameFramework::OnFileChange( FileChangedEventArgs& e )
     FileChanged( e );
 }
 
+#include <imgui.h>
+#include <imgui_impl_win32.h>
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
+
 LRESULT GameFramework::OnWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-    auto res = WndProcHandler( hWnd, msg, wParam, lParam );
-    return res ? *res : 0;
+    return ImGui_ImplWin32_WndProcHandler( hWnd, msg, wParam, lParam );
+
+    //auto res = WndProcHandler( hWnd, msg, wParam, lParam );
+    //return res ? *res : 0;
 }
 
 void GameFramework::OnExit( EventArgs& e )

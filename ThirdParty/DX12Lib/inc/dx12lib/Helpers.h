@@ -45,7 +45,7 @@
 // Source: https://github.com/Microsoft/DirectX-Graphics-Samples
 inline void ThrowIfFailed(HRESULT hr)
 {
-    if (FAILED(hr))
+    if (FAILED(hr)) 
     {
         _com_error err(hr);
         OutputDebugString(err.ErrorMessage());

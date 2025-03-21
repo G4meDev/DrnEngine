@@ -142,6 +142,9 @@ public:
         return m_dxgiSwapChain;
     }
 
+        // The current backbuffer index of the swap chain.
+    UINT m_CurrentBackBufferIndex;
+
 protected:
     // Swap chains can only be created through the Device.
     SwapChain( Device& device, HWND hWnd, DXGI_FORMAT renderTargetFormat = DXGI_FORMAT_R10G10B10A2_UNORM );
@@ -163,8 +166,7 @@ private:
     std::shared_ptr<Texture>                m_BackBufferTextures[BufferCount];
     mutable RenderTarget                    m_RenderTarget;
 
-    // The current backbuffer index of the swap chain.
-    UINT   m_CurrentBackBufferIndex;
+
     UINT64 m_FenceValues[BufferCount];  // The fence values to wait for before leaving the Present method.
 
     // A handle to a waitable object. Used to wait for the swapchain before presenting.

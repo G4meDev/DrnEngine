@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "Application.h"
 #include "Runtime/Renderer/Renderer.h"
+#include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
 #include "Editor/Editor.h"
 
@@ -104,10 +105,14 @@ namespace Drn
 			ComPtr<ID3DBlob> pixelShaderBlob;
 			ThrowIfFailed( D3DReadFileToBlob( L"TestShader_PS.cso", &pixelShaderBlob ) );
 
-			DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+			DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
 			DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
 
-			DXGI_SAMPLE_DESC sampleDesc = pDevice->GetMultisampleQualityLevels( backBufferFormat );
+			//DXGI_SAMPLE_DESC sampleDesc = pDevice->GetMultisampleQualityLevels( backBufferFormat );
+			
+			DXGI_SAMPLE_DESC sampleDesc = {};
+			sampleDesc.Count = 1;
+
 
 			D3D12_RT_FORMAT_ARRAY rtvFormats = {};
 			rtvFormats.NumRenderTargets      = 1;
@@ -132,6 +137,7 @@ namespace Drn
 			pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );
 			pipelineStateStream.DSVFormat             = depthBufferFormat;
 			pipelineStateStream.RTVFormats = rtvFormats;
+			//pipelineStateStream.SampleDesc = sampleDesc;
 			pipelineStateStream.SampleDesc = sampleDesc;
 
 			pPipelineStateObject = pDevice->CreatePipelineStateObject( pipelineStateStream );
@@ -171,6 +177,8 @@ namespace Drn
 
 
 			pGameWindow->Show();
+
+			ImGuiRenderer::Get()->Init(pDevice.get(),  m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 )->GetD3D12Resource().Get());
 
 			retCode = GameFramework::Get().Run();
 
@@ -237,8 +245,8 @@ namespace Drn
 		auto  commandList  = commandQueue.GetCommandList();
 
 
+		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 		{
-			FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 
 			commandList->ClearTexture( m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ), clearColor );
 			commandList->ClearDepthStencilTexture(m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::DepthStencil ), D3D12_CLEAR_FLAG_DEPTH );
@@ -264,10 +272,18 @@ namespace Drn
 		auto  swapChainBackBuffer = swapChainRT.GetTexture( dx12lib::AttachmentPoint::Color0 );
 		auto  msaaRenderTarget    = m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
 
-		commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
+		commandList->SetRenderTarget(swapChainRT);
+		commandList->ClearTexture(swapChainRT.GetTexture(dx12lib::AttachmentPoint::Color0), clearColor);
 
+		//commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
+		//commandList->CopyResource( swapChainBackBuffer, msaaRenderTarget );
+
+		ImGuiRenderer::Get()->Tick(1, swapChainBackBuffer->GetRenderTargetView(), commandList->GetD3D12CommandList().Get());
 
 		commandQueue.ExecuteCommandList( commandList );
+
+
+		ImGuiRenderer::Get()->PostExecuteCommands();
 
 		pSwapChain->Present();
 	}
@@ -298,7 +314,7 @@ namespace Drn
 
 	void Application::OnWindowResized( ResizeEventArgs& e )
 	{
-		logger->info( "Window Resize: {}, {}", e.Width, e.Height );
+		//logger->info( "Window Resize: {}, {}, {}", e.Width, e.Height , pSwapChain->);
 		GameFramework::Get().SetDisplaySize( e.Width, e.Height );
 
 		pDevice->Flush();
@@ -306,6 +322,9 @@ namespace Drn
 		pSwapChain->Resize( e.Width, e.Height );
 
 		m_RenderTarget.Resize(e.Width, e.Height);
+
+		ImGuiRenderer::Get()->OnViewportResize( e.Width, e.Height,
+                                                        m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 )->GetD3D12Resource().Get());
 	}
 
 	void Application::OnWindowClose( WindowCloseEventArgs& e ) 
