@@ -13,7 +13,6 @@
 #include "Runtime/Misc/Path.h"
 
 #include <iostream>
-#include <Windows.h>
 #include <WinUser.h>
 
 #include <memory>
@@ -36,3 +35,6 @@
 #include <unordered_map>
 
 #include <algorithm>
+
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>

@@ -34,6 +34,7 @@ set( HEADER_FILES
 set( SOURCE_FILES
 	Source/DrnPCH.h
 	Source/DrnPCH.cpp
+	Source/ForwardTypes.h
 	
 	Source/Runtime/Core/Application.cpp
 	

@@ -26,7 +26,7 @@ namespace Drn
 
 	void OutputLog::Tick(float DeltaTime)
 	{
-
+		
 	}
 
 	OutputLog* OutputLog::Get()
@@ -47,6 +47,7 @@ namespace Drn
 	void OutputLog::AddLogMessage(const LogMessage& InLogMessage)
 	{
 		LogMessages.push_back(InLogMessage);
+
 	}
 
 	void OutputLog::AddLogMessage(LogCategory* InLogCategory, Verbosity InVerbosity, const DateTime& InTime, const std::string& InMessage)

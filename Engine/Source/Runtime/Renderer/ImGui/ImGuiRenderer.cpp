@@ -107,7 +107,7 @@ namespace Drn
 
 	void ImGuiRenderer::Draw( )
 	{
-		//ImGui::DockSpaceOverViewport();
+		ImGui::DockSpaceOverViewport();
 
 		for (LinkedListIterator It(Layers); It; ++It)
 		{

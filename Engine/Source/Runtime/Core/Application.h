@@ -1,13 +1,9 @@
 #pragma once
 
 #include <GameFramework/GameFramework.h>
+#include "ForwardTypes.h"
 
-class UpdateEventArgs;
-class KeyEventArgs;
-class ResizeEventArgs;
-class WindowCloseEventArgs;
-
-class Window;
+LOG_DECLARE_CATEGORY(LogApplication);
 
 namespace Drn
 {
@@ -27,10 +23,7 @@ namespace Drn
 		void OnWindowResized( ResizeEventArgs& e );
 		void OnWindowClose( WindowCloseEventArgs& e );
 
-		HINSTANCE m_hInstance;
-
 		std::shared_ptr<Window> m_MainWindow;
-
-		Logger logger;
+		HINSTANCE m_hInstance;
 	};
 }

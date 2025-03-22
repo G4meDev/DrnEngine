@@ -207,13 +207,6 @@ namespace Drn
 	{
 		m_Device->Flush();
 		m_RenderTarget.Resize( InWidth, InHeight );
-
-//#if WITH_EDITOR
-//		Editor::Get()->OnViewportResize( InWidth, InHeight,
-//														m_RenderTarget.GetTexture(
-//														dx12lib::AttachmentPoint::Color0
-//														)->GetD3D12Resource().Get());
-//#endif
 	}
 
 	ID3D12Resource* Renderer::GetViewportResource() 

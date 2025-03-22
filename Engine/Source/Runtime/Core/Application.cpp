@@ -1,4 +1,5 @@
 #include "DrnPCH.h"
+
 #include "Application.h"
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
@@ -17,6 +18,8 @@
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
+LOG_DEFINE_CATEGORY( LogApplication, "Application" );
+
 namespace Drn
 {
 	int Application::Run(HINSTANCE inhInstance)
@@ -30,8 +33,6 @@ namespace Drn
 		int retCode = 0;
 		auto& gf = GameFramework::Create( m_hInstance );
 		{
-			logger = gf.CreateLogger( "ClearScreen" );
-
 			WCHAR   path[MAX_PATH];
 			HMODULE hModule = ::GetModuleHandleW( NULL );
 			if ( ::GetModuleFileNameW( hModule, path, MAX_PATH ) > 0 )
@@ -83,7 +84,7 @@ namespace Drn
 			frameCount = 0;
 			totalTime -= 1.0;
 
-			logger->info( "FPS: {:.7}", fps );
+			LOG( LogApplication, Info, "FPS: %i", (int)fps);
 
 			wchar_t buffer[256];
 			::swprintf_s( buffer, L"Cube [FPS: %f]", fps );
@@ -99,7 +100,7 @@ namespace Drn
 
 	void Application::OnKeyPressed( KeyEventArgs& e )
 	{
-		logger->info( L"KeyPressed: {}", (wchar_t)e.Char );
+		LOG( LogApplication, Info, "KeyPressed: %c", e.Char);
 
 		switch ( e.Key )
 		{
@@ -126,8 +127,8 @@ namespace Drn
 
 	void Application::OnWindowResized( ResizeEventArgs& e )
 	{
-		logger->info( "Window Resize: {}, {}", e.Width, e.Height);
-		
+		LOG( LogApplication, Info, "Window Resized: %ix%i", e.Width, e.Height);
+
 		GameFramework::Get().SetDisplaySize( e.Width, e.Height );
 		Renderer::Get()->MainWindowResized(e.Width, e.Height);
 	}
@@ -136,48 +137,4 @@ namespace Drn
 	{
 		GameFramework::Get().Stop();
 	}
-
-// 		Startup();
-// 
-// 		while (bRunning && !Renderer::Get()->GetMainWindow()->PendingClose())
-// 		{
-// 			float DeltaTime = m_Timer.ElapsedSeconds();
-// 			m_Timer.Tick();
-// 
-// 			Tick(DeltaTime);
-// 		}
-// 
-// 		Shutdown();
-// 	}
-// 
-// 	void Application::Startup()
-// 	{
-// 		std::cout << "Start application" << std::endl;
-// 
-// 		Renderer::Init(m_hInstance);
-// 
-// #if WITH_EDITOR
-// 		Editor::Get()->Init();
-// #endif
-// 
-// 
-// 	}
-// 
-// 	void Application::Shutdown()
-// 	{
-// 		std::cout << "Shutdown application" << std::endl;
-// 
-// 		Renderer::Get()->Shutdown();
-// 	}
-// 
-// 	void Application::Tick(float DeltaTime)
-// 	{
-// 		Renderer::Get()->Tick(DeltaTime);
-// 
-// #if WITH_EDITOR
-// 		Editor::Get()->Tick(DeltaTime);
-// #endif
-// 	}
-
-
 }

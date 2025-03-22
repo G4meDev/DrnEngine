@@ -34,7 +34,7 @@ void PrintLogToConsole(const LogMessage& InLogMessage)
 	SetConsoleTextAttribute(h, f->second);
 
 	std::cout << InLogMessage.Time.ToString();
-	std::cout << InLogMessage.Category->Name;
+	std::cout << " [" << InLogMessage.Category->Name << "] ";
 	std::cout << InLogMessage.Message;
 
 	// set console color to default

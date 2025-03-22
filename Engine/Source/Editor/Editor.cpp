@@ -20,13 +20,13 @@ namespace Drn
 	void Editor::Init()
 	{
 		Viewport::Get()->Init();
-		//OutputLog::Get()->Init();
+		OutputLog::Get()->Init();
 	}
 
 	void Editor::Tick(float DeltaTime)
 	{
 		Viewport::Get()->Tick(DeltaTime);
-		//OutputLog::Get()->Tick(DeltaTime);
+		OutputLog::Get()->Tick(DeltaTime);
 	}
 
 	Editor* Editor::Get()

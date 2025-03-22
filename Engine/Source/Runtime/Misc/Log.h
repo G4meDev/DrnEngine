@@ -7,8 +7,8 @@
 
 #define LOG_MAX_CHARACTERS 500
 
-#define LOG_DECLARE_CATEGORY(Category)													\
-extern LogCategory Category;															\
+//#define LOG_DECLARE_CATEGORY(Category)													\
+//extern LogCategory Category;															\
 
 
 #define LOG_DEFINE_CATEGORY(Category , Name)											\
