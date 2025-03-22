@@ -38,7 +38,7 @@ namespace Drn
 	{
 		
 	}
-		void Renderer::CreateMainScene()
+	void Renderer::CreateMainScene()
 	{
 		//Get()->MainScene = new D3D12Scene(Adapter, GetMainWindow()->GetWindowHandle(), IntPoint(GetMainWindow()->GetSizeX(), GetMainWindow()->GetSizeY()), false, DISPLAY_OUTPUT_FORMAT);
 	}
@@ -208,12 +208,17 @@ namespace Drn
 		m_Device->Flush();
 		m_RenderTarget.Resize( InWidth, InHeight );
 
-#if WITH_EDITOR
-		ImGuiRenderer::Get()->OnViewportResize( InWidth, InHeight,
-														m_RenderTarget.GetTexture(
-														dx12lib::AttachmentPoint::Color0
-														)->GetD3D12Resource().Get());
-#endif
+//#if WITH_EDITOR
+//		Editor::Get()->OnViewportResize( InWidth, InHeight,
+//														m_RenderTarget.GetTexture(
+//														dx12lib::AttachmentPoint::Color0
+//														)->GetD3D12Resource().Get());
+//#endif
+	}
+
+	ID3D12Resource* Renderer::GetViewportResource() 
+	{
+		return m_RenderTarget.GetTexture(dx12lib::AttachmentPoint::Color0)->GetD3D12Resource().Get();
 	}
 
 	void Renderer::Tick( float DeltaTime )

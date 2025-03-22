@@ -24,18 +24,7 @@ namespace Drn
 
 	void ImGuiRenderer::Init(ID3D12Resource* InViewportResource )
 	{
-		bInitalized = true;
-
 		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
-		ViewportResource = InViewportResource;
-
-		Width = 1920;
-		Height = 1080;
-
-		D3D12_COMMAND_QUEUE_DESC desc4 = {};
-		desc4.Type                     = D3D12_COMMAND_LIST_TYPE_DIRECT;
-		desc4.Flags                    = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		desc4.NodeMask                 = 1;
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -43,19 +32,6 @@ namespace Drn
 		desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		pDevice->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
 		g_pd3dSrvDescHeapAlloc.Create( pDevice, g_pd3dSrvDescHeap );
-
-
-		g_pd3dSrvDescHeapAlloc.Alloc(&ViewCpuHandle, &ViewGpuHandle);
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-
-		descSRV.Texture2D.MipLevels       = 1;
-		descSRV.Texture2D.MostDetailedMip = 0;
-		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-		pDevice->CreateShaderResourceView(ViewportResource, &descSRV, ViewCpuHandle);
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -133,48 +109,17 @@ namespace Drn
 	{
 		//ImGui::DockSpaceOverViewport();
 
-		ImGui::Begin( "WWW" );
-
-		const ImVec2   AvaliableSize = ImGui::GetContentRegionAvail();
-		IntPoint ImageSize     = IntPoint( (int)AvaliableSize.x, (int)AvaliableSize.y );
-
-		ImageSize.X = std::max(ImageSize.X, 1);
-		ImageSize.Y = std::max(ImageSize.Y, 1);
-
-		if ( CachedSize != ImageSize )
+		for (LinkedListIterator It(Layers); It; ++It)
 		{
-			CachedSize = ImageSize;
-			Renderer::Get()->ViewportResized(CachedSize.X, CachedSize.Y);
+			if (It)
+			{
+				It->Draw();
+			}
 		}
-
-		ImGui::Image((ImTextureID)ViewGpuHandle.ptr, ImVec2(Width, Height));
-		ImGui::End();
-
-// 		for (LinkedListIterator It(Layers); It; ++It)
-// 		{
-// 			if (It)
-// 			{
-// 				It->Draw();
-// 			}
-// 		}
 	}
 
 	void ImGuiRenderer::EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL )
 	{
-		if (ViewportSizeDirty)
-		{
-		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-		
-		descSRV.Texture2D.MipLevels       = 1;
-		descSRV.Texture2D.MostDetailedMip = 0;
-		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		
-		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( ViewportResource, &descSRV,
-																ViewCpuHandle );
-		}
-
 		ImGui::Render();
 
 		CL->SetDescriptorHeaps( 1, &g_pd3dSrvDescHeap );
@@ -190,21 +135,6 @@ namespace Drn
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 		}
-	}
-
-	void ImGuiRenderer::OnViewportResize( float InWidth, float InHeight, ID3D12Resource* InView ) 
-	{
-		if (!bInitalized)
-		{
-			return;
-		}
-
-		ViewportResource = InView;
-
-		Width = std::max(InWidth, 1.0f);
-		Height = std::max( InHeight, 1.0f );
-
-		ViewportSizeDirty = true;
 	}
 }
 

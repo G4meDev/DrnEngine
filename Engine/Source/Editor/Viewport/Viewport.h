@@ -1,6 +1,6 @@
 #pragma once
 
-#if 0
+#if WITH_EDITOR
 
 namespace Drn
 {
@@ -16,7 +16,7 @@ namespace Drn
 		void Tick(float DeltaTime);
 
 		static Viewport* Get();
-		void OnViewportSizeChanged(const IntPoint& OldSize, const IntPoint& NewSize);
+		void OnViewportSizeChanged(const IntPoint& NewSize);
 
 	protected:
 		std::unique_ptr<ViewportGuiLayer> ViewportLayer;

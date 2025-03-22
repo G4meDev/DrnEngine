@@ -1,7 +1,7 @@
 #include "DrnPCH.h"
 #include "Viewport.h"
 
-#if 0
+#if WITH_EDITOR
 
 #include "Editor/Viewport/ViewportGuiLayer.h"
 #include "Runtime/Renderer/Renderer.h"
@@ -22,7 +22,7 @@ namespace Drn
 
 	void Viewport::Init()
 	{
-		ViewportLayer = std::make_unique<ViewportGuiLayer>(Renderer::Get()->GetMainScene());
+		ViewportLayer = std::make_unique<ViewportGuiLayer>();
 		ViewportLayer->Attach();
 	}
 
@@ -41,7 +41,7 @@ namespace Drn
 		return SingletonInstance.get();
 	}
 
-	void Viewport::OnViewportSizeChanged(const IntPoint& OldSize, const IntPoint& NewSize)
+	void Viewport::OnViewportSizeChanged(const IntPoint& NewSize)
 	{
 
 	}

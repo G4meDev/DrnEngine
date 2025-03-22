@@ -75,30 +75,16 @@ namespace Drn
 		static ImGuiRenderer* Get();
 		virtual void PostExecuteCommands();
 
-        void OnViewportResize( float InWidth, float InHeight, ID3D12Resource* InView);
-
-	protected:
+        static ExampleDescriptorHeapAllocator g_pd3dSrvDescHeapAlloc;
+	
+    protected:
 		virtual void BeginDraw();
 		virtual void Draw();
-                virtual void EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL );
-
-        float Width;
-        float Height;
+        virtual void EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL );
 
 		friend class Renderer;
 
-        ID3D12Resource* ViewportResource;
-
 		ID3D12DescriptorHeap*          g_pd3dSrvDescHeap = nullptr;
-        static ExampleDescriptorHeapAllocator g_pd3dSrvDescHeapAlloc;
-
-        D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
-        D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;
-
-        bool bInitalized = false;
-        bool ViewportSizeDirty = false;
-
-        IntPoint CachedSize = IntPoint(0,0);
 
 	private:
 		static std::unique_ptr<ImGuiRenderer> SingletonInstance;

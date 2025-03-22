@@ -3,6 +3,10 @@
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
+#include <GameFramework/Events.h>
+#include <GameFramework/GameFramework.h>
+#include <GameFramework/Window.h>
+
 #include "Editor/Editor.h"
 
 #include <shlwapi.h>
@@ -12,7 +16,6 @@
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
-
 
 namespace Drn
 {
@@ -45,6 +48,10 @@ namespace Drn
 			m_MainWindow->Close += WindowCloseEvent::slot( &Application::OnWindowClose, this );
 
 			Renderer::Init( inhInstance, m_MainWindow.get() );
+		
+#if WITH_EDITOR
+			Editor::Get()->Init();
+#endif
 
 			m_MainWindow->Show();
 		}
@@ -84,6 +91,10 @@ namespace Drn
 		}
 
 		Renderer::Get()->Tick(e.DeltaTime);
+
+#if WITH_EDITOR
+		Editor::Get()->Tick(e.DeltaTime);
+#endif
 	}
 
 	void Application::OnKeyPressed( KeyEventArgs& e )
@@ -119,16 +130,6 @@ namespace Drn
 		
 		GameFramework::Get().SetDisplaySize( e.Width, e.Height );
 		Renderer::Get()->MainWindowResized(e.Width, e.Height);
-
-		
-		//pDevice->Flush();
-		//
-		//pSwapChain->Resize( e.Width, e.Height );
-		//
-		//m_RenderTarget.Resize(e.Width, e.Height);
-		//
-		//ImGuiRenderer::Get()->OnViewportResize( e.Width, e.Height,
-        //                                                m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 )->GetD3D12Resource().Get());
 	}
 
 	void Application::OnWindowClose( WindowCloseEventArgs& e ) 

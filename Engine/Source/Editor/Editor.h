@@ -1,6 +1,6 @@
 #pragma once
 
-#if 0
+#if WITH_EDITOR
 
 LOG_DECLARE_CATEGORY(LogEditor);
 

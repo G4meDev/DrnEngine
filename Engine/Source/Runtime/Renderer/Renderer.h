@@ -39,6 +39,8 @@ namespace Drn
 
 		inline dx12lib::Device* GetDevice() { return m_Device.get(); }
 
+		ID3D12Resource* GetViewportResource();
+
 		void Tick(float DeltaTime);
 
 	protected:

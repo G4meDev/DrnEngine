@@ -2,7 +2,6 @@
 
 #include "Runtime/Core/Drn.h"
 
-
 #include "Runtime/Renderer/D3D12Utils.h"
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/IntPoint.h"

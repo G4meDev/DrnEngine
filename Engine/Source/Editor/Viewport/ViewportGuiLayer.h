@@ -1,29 +1,26 @@
 #pragma once
 
-#if 0
-#include "Runtime/Renderer/ImGui/ImGuiLayer.h"
+#if WITH_EDITOR
+    #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
 
 namespace Drn
 {
-	class D3D12DescriptorHeap;
-	class D3D12Scene;
 
 	class ViewportGuiLayer : public ImGuiLayer
 	{
 	public:
-		ViewportGuiLayer(D3D12Scene* InScene);
+		ViewportGuiLayer();
 
 		virtual void Draw() override;
 
 	private:
 
-		void OnViewportSizeChanged(const IntPoint& OldSize, const IntPoint& NewSize);
+		void OnViewportSizeChanged( const IntPoint& NewSize);
 
-		IntPoint ViewportImageSize = IntPoint(800, 600);
+		D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;
 
-		std::unique_ptr<D3D12DescriptorHeap> ViewportHeap;
-
-		D3D12Scene* Scene;
+		IntPoint CachedSize = IntPoint( 1920, 1080 );
 
 		friend class Viewport;
 	};

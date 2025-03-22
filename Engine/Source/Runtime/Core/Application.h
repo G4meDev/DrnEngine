@@ -2,9 +2,12 @@
 
 #include <GameFramework/GameFramework.h>
 
-#include <GameFramework/Window.h>
+class UpdateEventArgs;
+class KeyEventArgs;
+class ResizeEventArgs;
+class WindowCloseEventArgs;
 
-#include "GameFramework/Events.h"
+class Window;
 
 namespace Drn
 {
@@ -23,9 +26,6 @@ namespace Drn
 		void OnKeyPressed( KeyEventArgs& e );
 		void OnWindowResized( ResizeEventArgs& e );
 		void OnWindowClose( WindowCloseEventArgs& e );
-
-
-		bool bRunning = true;
 
 		HINSTANCE m_hInstance;
 

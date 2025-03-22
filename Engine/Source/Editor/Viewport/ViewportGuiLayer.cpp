@@ -1,7 +1,7 @@
 #include "DrnPCH.h"
 #include "ViewportGuiLayer.h"
 
-#if 0
+#if WITH_EDITOR
 
 #include "imgui.h"
 #include "Runtime/Renderer/Renderer.h"
@@ -12,46 +12,56 @@
 
 namespace Drn
 {
-	ViewportGuiLayer::ViewportGuiLayer(D3D12Scene* InScene)
+	ViewportGuiLayer::ViewportGuiLayer()
 	{
-		Scene = InScene;
+		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
 
-		ViewportHeap = std::make_unique<D3D12DescriptorHeap>(ImGuiRenderer::Get()->GetSrvHeap());
+		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Alloc( &ViewCpuHandle, &ViewGpuHandle );
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-
-		descSRV.Texture2D.MipLevels = 1;
+		
+		descSRV.Texture2D.MipLevels       = 1;
 		descSRV.Texture2D.MostDetailedMip = 0;
-		descSRV.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		descSRV.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		descSRV.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-		Renderer::Get()->Adapter->GetD3DDevice()->CreateShaderResourceView(Scene->GetOutputBuffer(), &descSRV, ViewportHeap->GetCpuHandle());
+		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
+		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		
+		pDevice->CreateShaderResourceView( Renderer::Get()->GetViewportResource(), &descSRV, ViewCpuHandle );
 	}
 
 	void ViewportGuiLayer::Draw()
 	{
-		ImGui::Begin("Viewport", (bool*)0, ImGuiWindowFlags_::ImGuiWindowFlags_MenuBar);
+		ImGui::Begin( "Viewport" );
 
 		const ImVec2 AvaliableSize = ImGui::GetContentRegionAvail();
-		const IntPoint ImageSize = IntPoint((int32)AvaliableSize.x, (int32)AvaliableSize.y);
+		IntPoint     ImageSize     = IntPoint( (int)AvaliableSize.x, (int)AvaliableSize.y );
 
-		if (ViewportImageSize != ImageSize)
+		ImageSize.X = std::max( ImageSize.X, 1 );
+		ImageSize.Y = std::max( ImageSize.Y, 1 );
+
+		if ( CachedSize != ImageSize )
 		{
-			OnViewportSizeChanged(ViewportImageSize, ImageSize);
-			ViewportImageSize = ImageSize;
+			CachedSize = ImageSize;
+			OnViewportSizeChanged(CachedSize);
 		}
 
-		ImGui::Image(ImTextureID(ViewportHeap->GetGpuHandle().ptr), ImVec2(Renderer::Get()->GetMainScene()->GetSize().X, Renderer::Get()->GetMainScene()->GetSize().Y));
-
+		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
 		ImGui::End();
 	}
 
-	void ViewportGuiLayer::OnViewportSizeChanged(const IntPoint& OldSize, const IntPoint& NewSize)
+	void ViewportGuiLayer::OnViewportSizeChanged(const IntPoint& NewSize)
 	{
-		LOG(LogEditor, Info, "Resize viewport from %s to %s.", OldSize.ToString().c_str(), NewSize.ToString().c_str());
+		Renderer::Get()->ViewportResized( CachedSize.X, CachedSize.Y );
 
-		Scene->Resize(NewSize);
+		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
+
+		descSRV.Texture2D.MipLevels       = 1;
+		descSRV.Texture2D.MostDetailedMip = 0;
+		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
+		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( Renderer::Get()->GetViewportResource(), &descSRV, ViewCpuHandle );
 	}
 
 }
