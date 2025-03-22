@@ -7,6 +7,8 @@
 #include <dx12lib/Helpers.h>
 #include <DirectXMath.h>
 
+LOG_DEFINE_CATEGORY( LogRenderer, "Renderer" );
+
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
@@ -58,12 +60,11 @@ namespace Drn
 
 	void Renderer::Init_Internal() 
 	{
-		logger = GameFramework::Get().CreateLogger( "Renderer" );
-
 		m_Device = dx12lib::Device::Create();
 
 		auto description = m_Device->GetDescription();
-		logger->info( L"Device Created: {}", description );
+		std::string description_str( description.begin(), description.end() );
+		LOG( LogRenderer, Info, "%s", description_str.c_str());
 
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
 		auto  commandList  = commandQueue.GetCommandList();
@@ -169,7 +170,7 @@ namespace Drn
 		commandQueue.Flush();
 
 #if WITH_EDITOR
-		ImGuiRenderer::Get()->Init(m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 )->GetD3D12Resource().Get() );
+		ImGuiRenderer::Get()->Init();
 #endif
 	}
 
@@ -177,14 +178,20 @@ namespace Drn
 	{
 		std::cout << "Renderer shutdown!" << std::endl;
 
+#if WITH_EDITOR
+		ImGuiRenderer::Get()->Shutdown();
+#endif
+
 		SingletonInstance->m_IndexBuffer.reset();
 		SingletonInstance->m_VertexBuffer.reset();
 		SingletonInstance->m_PipelineStateObject.reset();
 		SingletonInstance->m_RootSignature.reset();
 		SingletonInstance->m_DepthTexture.reset();
 		SingletonInstance->m_RenderTarget.Reset();
-		SingletonInstance->m_Device.reset();
 		SingletonInstance->m_SwapChain.reset();
+		
+		SingletonInstance->m_Device->ReportLiveObjects();
+		SingletonInstance->m_Device.reset();
 	}
 
 	void Renderer::ToggleSwapChain() 

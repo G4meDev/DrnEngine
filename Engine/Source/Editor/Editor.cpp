@@ -2,6 +2,9 @@
 #include "Editor.h"
 
 #if WITH_EDITOR
+
+#include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
+
 #include "Editor/Viewport/Viewport.h"
 #include "Editor/OutputLog/OutputLog.h"
 
@@ -27,6 +30,12 @@ namespace Drn
 	{
 		Viewport::Get()->Tick(DeltaTime);
 		OutputLog::Get()->Tick(DeltaTime);
+	}
+
+	void Editor::Shutdown() 
+	{
+		OutputLog::Get()->Shutdown();
+		Viewport::Get()->Shutdown();
 	}
 
 	Editor* Editor::Get()

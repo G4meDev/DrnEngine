@@ -14,6 +14,7 @@ namespace Drn
 
 		void Init();
 		void Tick(float DeltaTime);
+		void Shutdown();
 
 		static Viewport* Get();
 		void OnViewportSizeChanged(const IntPoint& NewSize);

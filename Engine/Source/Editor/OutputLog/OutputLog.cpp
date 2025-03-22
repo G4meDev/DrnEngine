@@ -10,7 +10,7 @@ namespace Drn
 
 	OutputLog::OutputLog()
 	{
-		// TODO: when container is full remove half of it and shift other half to first
+		// TODO: make circular array
 		LogMessages.reserve(2000);
 	}
 
@@ -27,6 +27,12 @@ namespace Drn
 	void OutputLog::Tick(float DeltaTime)
 	{
 		
+	}
+
+	void OutputLog::Shutdown() 
+	{
+		OutputLogLayer->DeAttach();
+		OutputLogLayer.reset();
 	}
 
 	OutputLog* OutputLog::Get()

@@ -67,10 +67,12 @@ namespace Drn
 		ImGuiRenderer();
 		virtual ~ImGuiRenderer();
 
-		virtual void Init(ID3D12Resource* InViewportResource);
+		virtual void Init();
 		virtual void Tick(float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL);
+        virtual void Shutdown();
 
 		void AttachLayer(ImGuiLayer* InLayer);
+		void DetachLayer(ImGuiLayer* InLayer);
 
 		static ImGuiRenderer* Get();
 		virtual void PostExecuteCommands();

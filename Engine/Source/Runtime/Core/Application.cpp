@@ -60,6 +60,7 @@ namespace Drn
 		{
 			retCode = GameFramework::Get().Run();
 
+			Editor::Get()->Shutdown();
 			Renderer::Shutdown();
 			m_MainWindow.reset();
 		}

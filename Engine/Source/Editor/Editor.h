@@ -17,6 +17,7 @@ namespace Drn
 
 		void Init();
 		void Tick(float DeltaTime);
+		void Shutdown();
 
 		static Editor* Get();
 

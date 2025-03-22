@@ -29,7 +29,7 @@ namespace Drn
 
 	void ImGuiLayer::DeAttach()
 	{
-
+		ImGuiRenderer::Get()->DetachLayer(this);
 	}
 
 

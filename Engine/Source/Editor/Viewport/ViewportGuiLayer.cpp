@@ -29,6 +29,11 @@ namespace Drn
 		pDevice->CreateShaderResourceView( Renderer::Get()->GetViewportResource(), &descSRV, ViewCpuHandle );
 	}
 
+	ViewportGuiLayer::~ViewportGuiLayer() 
+	{
+		
+	}
+
 	void ViewportGuiLayer::Draw()
 	{
 		ImGui::Begin( "Viewport" );

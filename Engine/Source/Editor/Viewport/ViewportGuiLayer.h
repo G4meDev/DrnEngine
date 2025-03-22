@@ -10,6 +10,7 @@ namespace Drn
 	{
 	public:
 		ViewportGuiLayer();
+		~ViewportGuiLayer();
 
 		virtual void Draw() override;
 

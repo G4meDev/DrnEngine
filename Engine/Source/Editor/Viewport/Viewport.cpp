@@ -31,6 +31,12 @@ namespace Drn
 
 	}
 
+	void Viewport::Shutdown() 
+	{
+		ViewportLayer->DeAttach();
+		ViewportLayer.reset();
+	}
+
 	Viewport* Viewport::Get()
 	{
 		if (!SingletonInstance.get())

@@ -22,7 +22,7 @@ namespace Drn
 
 	}
 
-	void ImGuiRenderer::Init(ID3D12Resource* InViewportResource )
+	void ImGuiRenderer::Init()
 	{
 		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
 
@@ -83,9 +83,20 @@ namespace Drn
         EndDraw( SwapChainCpuhandle, CL);
 	}
 
-	void ImGuiRenderer::AttachLayer(ImGuiLayer* InLayer)
+	void ImGuiRenderer::Shutdown() 
+	{
+		
+	}
+
+	void ImGuiRenderer::AttachLayer( ImGuiLayer* InLayer )
 	{
 		Layers.AddFirst(InLayer);
+	}
+
+	void ImGuiRenderer::DetachLayer( ImGuiLayer* InLayer ) 
+	{
+		// @TODO: Add remove to list
+		//Layers
 	}
 
 	ImGuiRenderer* ImGuiRenderer::Get()

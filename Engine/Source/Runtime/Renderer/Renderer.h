@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ForwardTypes.h"
+
 #include <dx12lib/CommandList.h>
 #include <dx12lib/CommandQueue.h>
 #include <dx12lib/Device.h>
@@ -16,6 +18,7 @@
 #include <GameFramework/Window.h>
 #include <GameFramework/GameFramework.h>
 
+LOG_DECLARE_CATEGORY( LogRenderer );
 
 namespace Drn
 {
@@ -65,8 +68,6 @@ namespace Drn
 		dx12lib::RenderTarget m_RenderTarget;
 
 		float m_fieldOfView = 45.0f;
-
-		Logger logger;
 
 		float TotalTime = 0;
 
