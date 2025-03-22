@@ -4,8 +4,8 @@
 
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
-#include <dx12lib/Helpers.h>
-#include <DirectXMath.h>
+#include <GameFramework/Window.h>
+#include <GameFramework/GameFramework.h>
 
 LOG_DEFINE_CATEGORY( LogRenderer, "Renderer" );
 
@@ -176,7 +176,7 @@ namespace Drn
 
 	void Renderer::Shutdown()
 	{
-		std::cout << "Renderer shutdown!" << std::endl;
+		LOG(LogRenderer, Info, "Renderer shutdown.");
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Shutdown();
@@ -212,6 +212,8 @@ namespace Drn
 
 	void Renderer::ViewportResized( float InWidth, float InHeight ) 
 	{
+		LOG( LogRenderer, Info, "viewport resize: %ix%i", (int)InWidth, (int)InHeight);
+
 		m_Device->Flush();
 		m_RenderTarget.Resize( InWidth, InHeight );
 	}

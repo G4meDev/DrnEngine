@@ -6,6 +6,9 @@
 #include "ImGuiLayer.h"
 #include "Runtime/Renderer/Renderer.h"
 
+#include <GameFramework/Window.h>
+#include <GameFramework/GameFramework.h>
+
 
 namespace Drn
 {
@@ -83,9 +86,16 @@ namespace Drn
         EndDraw( SwapChainCpuhandle, CL);
 	}
 
-	void ImGuiRenderer::Shutdown() 
+	void ImGuiRenderer::Shutdown()
 	{
-		
+        ImGui_ImplDX12_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+
+		g_pd3dSrvDescHeap->Release();
+		g_pd3dSrvDescHeap = nullptr;
+
+		g_pd3dSrvDescHeapAlloc.Destroy();
 	}
 
 	void ImGuiRenderer::AttachLayer( ImGuiLayer* InLayer )

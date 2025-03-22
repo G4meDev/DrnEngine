@@ -2,12 +2,7 @@
 
 #if WITH_EDITOR
 
-#include <GameFramework/GameFramework.h>
-#include <GameFramework/Window.h>
-#include <dx12lib/Device.h>
-#include <dx12lib/CommandQueue.h>
-#include <dx12lib/CommandList.h>
-
+#include "ForwardTypes.h"
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
@@ -86,7 +81,7 @@ namespace Drn
 
 		friend class Renderer;
 
-		ID3D12DescriptorHeap*          g_pd3dSrvDescHeap = nullptr;
+		ID3D12DescriptorHeap* g_pd3dSrvDescHeap = nullptr;
 
 	private:
 		static std::unique_ptr<ImGuiRenderer> SingletonInstance;

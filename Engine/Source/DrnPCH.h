@@ -2,6 +2,18 @@
 
 #include "Runtime/Core/Drn.h"
 
+#include <dx12lib/Device.h>
+#include <dx12lib/SwapChain.h>
+#include <dx12lib/CommandList.h>
+#include <dx12lib/CommandQueue.h>
+#include <dx12lib/RenderTarget.h>
+#include <dx12lib/IndexBuffer.h>
+#include <dx12lib/VertexBuffer.h>
+#include <dx12lib/PipelineStateObject.h>
+#include <dx12lib/RootSignature.h>
+#include <dx12lib/Texture.h>
+#include <dx12lib/Helpers.h>
+
 #include "Runtime/Renderer/D3D12Utils.h"
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/IntPoint.h"
@@ -15,7 +27,7 @@
 #include <iostream>
 #include <WinUser.h>
 
-#include <memory>
+//#include <memory>
 #include <sstream>
 #include <ostream>
 #include <fstream>

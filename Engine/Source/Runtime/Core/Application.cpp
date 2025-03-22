@@ -12,9 +12,6 @@
 
 #include <shlwapi.h>
 
-#include <DirectXMath.h>
-#include <dx12lib/Helpers.h>
-
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
@@ -60,7 +57,9 @@ namespace Drn
 		{
 			retCode = GameFramework::Get().Run();
 
+#if WITH_EDITOR
 			Editor::Get()->Shutdown();
+#endif
 			Renderer::Shutdown();
 			m_MainWindow.reset();
 		}
