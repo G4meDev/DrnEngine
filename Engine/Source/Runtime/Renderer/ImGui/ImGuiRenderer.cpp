@@ -1,7 +1,7 @@
 #include "DrnPCH.h"
 #include "ImGuiRenderer.h"
 
-//#if WITH_EDITOR
+#if WITH_EDITOR
 
 #include "ImGuiLayer.h"
 #include "Runtime/Renderer/Renderer.h"
@@ -22,12 +22,11 @@ namespace Drn
 
 	}
 
-	void ImGuiRenderer::Init( dx12lib::Device* InDevice, ID3D12Resource* InViewportResource )
+	void ImGuiRenderer::Init(ID3D12Resource* InViewportResource )
 	{
 		bInitalized = true;
 
-		m_Device = InDevice;
-
+		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
 		ViewportResource = InViewportResource;
 
 		Width = 1920;
@@ -38,18 +37,12 @@ namespace Drn
 		desc4.Flags                    = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		desc4.NodeMask                 = 1;
 
-		//m_Device->GetD3D12Device()->CreateCommandQueue( &desc4, IID_PPV_ARGS( &g_pd3dCommandQueue ) );
-		//m_Device->GetD3D12Device()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocator));
-		//m_Device->GetD3D12Device()->CreateCommandList( 0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocator, nullptr, IID_PPV_ARGS( &g_pd3dCommandList ));
-		//g_pd3dCommandList->Close();
-
-
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		desc.NumDescriptors             = 64;
 		desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		m_Device->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
-		g_pd3dSrvDescHeapAlloc.Create( m_Device->GetD3D12Device().Get(), g_pd3dSrvDescHeap );
+		pDevice->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
+		g_pd3dSrvDescHeapAlloc.Create( pDevice, g_pd3dSrvDescHeap );
 
 
 		g_pd3dSrvDescHeapAlloc.Alloc(&ViewCpuHandle, &ViewGpuHandle);
@@ -62,7 +55,7 @@ namespace Drn
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		m_Device->GetD3D12Device()->CreateShaderResourceView(ViewportResource, &descSRV, ViewCpuHandle);
+		pDevice->CreateShaderResourceView(ViewportResource, &descSRV, ViewCpuHandle);
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -88,13 +81,9 @@ namespace Drn
 		ImGui_ImplWin32_Init(Wind->GetWindowHandle());
 
 		ImGui_ImplDX12_InitInfo init_info = {};
-		//init_info.UserData = (void*)(SrvHeap.get());
 
-
-
-		init_info.Device = m_Device->GetD3D12Device().Get();
-        //init_info.CommandQueue         = g_pd3dCommandQueue;
-        init_info.CommandQueue         = m_Device->GetCommandQueue().GetD3D12CommandQueue().Get();
+		init_info.Device = pDevice;
+        init_info.CommandQueue         = Renderer::Get()->GetDevice()->GetCommandQueue().GetD3D12CommandQueue().Get();
 		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
@@ -109,22 +98,6 @@ namespace Drn
 			return g_pd3dSrvDescHeapAlloc.Free( cpu_handle, gpu_handle );
 		};
 		ImGui_ImplDX12_Init( &init_info );
-
-
-
-
-		{
-			m_Device->GetD3D12Device()->CreateFence( 0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS( &m_fence ) );
-			m_fenceValue = 1;
-
-			m_fenceEvent = CreateEvent( nullptr, FALSE, FALSE, nullptr );
-			if ( m_fenceEvent == nullptr )
-			{
-				HRESULT_FROM_WIN32( GetLastError() );
-			}
-
-			//WaitForPreviousFrame();
-		}
 	}
 
 	void ImGuiRenderer::Tick( float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL)
@@ -158,35 +131,22 @@ namespace Drn
 
 	void ImGuiRenderer::Draw( )
 	{
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-
 		//ImGui::DockSpaceOverViewport();
 
-// 		static bool show_demo_window = true;
-// 
-// 		if (show_demo_window)
-// 			ImGui::ShowDemoWindow(&show_demo_window);
-// 		{
-// 			static float f = 0.0f;
-// 			static int counter = 0;
-// 
-// 			ImGui::Begin("Hello, world!");
-// 
-// 			ImGui::Text("This is some useful text.");
-// 			ImGui::Checkbox("Demo Window", &show_demo_window);
-// 
-// 			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-// 
-// 			if (ImGui::Button("Button"))
-// 				counter++;
-// 			ImGui::SameLine();
-// 			ImGui::Text("counter = %d", counter);
-// 
-// 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-// 			ImGui::End();
-// 		}
-
 		ImGui::Begin( "WWW" );
+
+		const ImVec2   AvaliableSize = ImGui::GetContentRegionAvail();
+		IntPoint ImageSize     = IntPoint( (int)AvaliableSize.x, (int)AvaliableSize.y );
+
+		ImageSize.X = std::max(ImageSize.X, 1);
+		ImageSize.Y = std::max(ImageSize.Y, 1);
+
+		if ( CachedSize != ImageSize )
+		{
+			CachedSize = ImageSize;
+			Renderer::Get()->ViewportResized(CachedSize.X, CachedSize.Y);
+		}
+
 		ImGui::Image((ImTextureID)ViewGpuHandle.ptr, ImVec2(Width, Height));
 		ImGui::End();
 
@@ -201,13 +161,6 @@ namespace Drn
 
 	void ImGuiRenderer::EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL )
 	{
-		//auto& commandQueue = m_Device->GetCommandQueue();
-		//auto  commandList  = commandQueue.GetCommandList();
-
-		//CommandAllocator->Reset();
-		//g_pd3dCommandList->Reset(CommandAllocator, nullptr);
-		//auto commandList = m_Device->GetCommandQueue().GetCommandList()->GetD3D12CommandList();
-
 		if (ViewportSizeDirty)
 		{
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
@@ -218,41 +171,16 @@ namespace Drn
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		
-		m_Device->GetD3D12Device()->CreateShaderResourceView( ViewportResource, &descSRV,
+		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( ViewportResource, &descSRV,
 																ViewCpuHandle );
 		}
 
 		ImGui::Render();
 
-
-		//g_pd3dCommandList->OMSetRenderTargets(1, &SwapChainCpuhandle, false, nullptr);
-		//g_pd3dCommandList->SetDescriptorHeaps( 1, &g_pd3dSrvDescHeap );
 		CL->SetDescriptorHeaps( 1, &g_pd3dSrvDescHeap );
 
 		ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), CL );
-		
-
-		//ID3D12CommandList* commands[] = { g_pd3dCommandList };
-		//g_pd3dCommandList->Close();
-		//g_pd3dCommandQueue->ExecuteCommandLists(1, commands);
-
-		//WaitForPreviousFrame();
-
-		//PostExecuteCommands();
-	}
-
-	void ImGuiRenderer::WaitForPreviousFrame() 
-	{
-		const UINT64 fence = m_fenceValue;
-		g_pd3dCommandQueue->Signal( m_fence.Get(), fence );
-		m_fenceValue++;
-
-		if ( m_fence->GetCompletedValue() < fence )
-		{
-			m_fence->SetEventOnCompletion( fence, m_fenceEvent );
-			WaitForSingleObject( m_fenceEvent, INFINITE );
-		}
-	}
+}
 
 	void ImGuiRenderer::PostExecuteCommands()
 	{
@@ -278,7 +206,6 @@ namespace Drn
 
 		ViewportSizeDirty = true;
 	}
-
 }
 
-//#endif
+#endif

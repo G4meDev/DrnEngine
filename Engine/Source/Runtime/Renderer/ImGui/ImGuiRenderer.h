@@ -1,6 +1,6 @@
 #pragma once
 
-//#if WITH_EDITOR
+#if WITH_EDITOR
 
 #include <GameFramework/GameFramework.h>
 #include <GameFramework/Window.h>
@@ -67,7 +67,7 @@ namespace Drn
 		ImGuiRenderer();
 		virtual ~ImGuiRenderer();
 
-		virtual void Init( dx12lib::Device* InDevice, ID3D12Resource* InViewportResource);
+		virtual void Init(ID3D12Resource* InViewportResource);
 		virtual void Tick(float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL);
 
 		void AttachLayer(ImGuiLayer* InLayer);
@@ -81,23 +81,16 @@ namespace Drn
 		virtual void BeginDraw();
 		virtual void Draw();
                 virtual void EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL );
-		
-            void WaitForPreviousFrame();
 
         float Width;
         float Height;
 
 		friend class Renderer;
 
-		dx12lib::Device* m_Device;
-
         ID3D12Resource* ViewportResource;
 
 		ID3D12DescriptorHeap*          g_pd3dSrvDescHeap = nullptr;
         static ExampleDescriptorHeapAllocator g_pd3dSrvDescHeapAlloc;
-        ID3D12CommandQueue*            g_pd3dCommandQueue = nullptr;
-        ID3D12CommandAllocator*                CommandAllocator;
-        ID3D12GraphicsCommandList*      g_pd3dCommandList = nullptr;
 
         D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
         D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;
@@ -105,15 +98,11 @@ namespace Drn
         bool bInitalized = false;
         bool ViewportSizeDirty = false;
 
-        UINT                m_frameIndex;
-        HANDLE              m_fenceEvent;
-        Microsoft::WRL::ComPtr<ID3D12Fence> m_fence;
-        UINT64              m_fenceValue;
-
+        IntPoint CachedSize = IntPoint(0,0);
 
 	private:
 		static std::unique_ptr<ImGuiRenderer> SingletonInstance;
 		LinkedList<ImGuiLayer> Layers;
 	};
 }
-//#endif
+#endif

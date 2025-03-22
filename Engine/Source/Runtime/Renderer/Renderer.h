@@ -37,6 +37,8 @@ namespace Drn
 
 		static Renderer* Get();
 
+		inline dx12lib::Device* GetDevice() { return m_Device.get(); }
+
 		void Tick(float DeltaTime);
 
 	protected:

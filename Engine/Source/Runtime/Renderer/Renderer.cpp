@@ -169,9 +169,7 @@ namespace Drn
 		commandQueue.Flush();
 
 #if WITH_EDITOR
-		ImGuiRenderer::Get()->Init(
-			m_Device.get(),
-			m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 )->GetD3D12Resource().Get() );
+		ImGuiRenderer::Get()->Init(m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 )->GetD3D12Resource().Get() );
 #endif
 	}
 
@@ -200,24 +198,17 @@ namespace Drn
 
 		m_SwapChain->Resize( InWidth, InHeight );
 
-		ViewportResized(InWidth, InHeight);
-
 #ifndef WITH_EDITOR
-		m_RenderTarget.Resize( InWidth, InHeight );
+		ViewportResized(InWidth, InHeight);
 #endif
-
-		//ImGuiRenderer::Get()->OnViewportResize( InWidth, InHeight,
-		//												m_RenderTarget.GetTexture(
-		//												dx12lib::AttachmentPoint::Color0
-		//												)->GetD3D12Resource().Get());
 	}
 
 	void Renderer::ViewportResized( float InWidth, float InHeight ) 
 	{
-#if WITH_EDITOR
 		m_Device->Flush();
 		m_RenderTarget.Resize( InWidth, InHeight );
 
+#if WITH_EDITOR
 		ImGuiRenderer::Get()->OnViewportResize( InWidth, InHeight,
 														m_RenderTarget.GetTexture(
 														dx12lib::AttachmentPoint::Color0
@@ -280,12 +271,13 @@ namespace Drn
 		commandList->SetRenderTarget( swapChainRT );
 		commandList->ClearTexture( swapChainRT.GetTexture( dx12lib::AttachmentPoint::Color0 ), clearColor );
 
-		// commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
-		// commandList->CopyResource( swapChainBackBuffer, msaaRenderTarget );
-
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Tick( 1, swapChainBackBuffer->GetRenderTargetView(),
 									commandList->GetD3D12CommandList().Get() );
+#else
+		// commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
+		commandList->CopyResource( swapChainBackBuffer, msaaRenderTarget );
+
 #endif
 
 		commandQueue.ExecuteCommandList( commandList );
