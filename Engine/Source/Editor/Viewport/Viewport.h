@@ -1,6 +1,6 @@
 #pragma once
 
-#if WITH_EDITOR
+#if 0
 
 namespace Drn
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#if WITH_EDITOR
+#if 0
 #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
 
 namespace Drn

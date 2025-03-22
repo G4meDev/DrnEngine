@@ -187,7 +187,7 @@ namespace Drn
 // 		}
 
 		ImGui::Begin( "WWW" );
-		//ImGui::Image((ImTextureID)ViewGpuHandle.ptr, ImVec2(Width, Height));
+		ImGui::Image((ImTextureID)ViewGpuHandle.ptr, ImVec2(Width, Height));
 		ImGui::End();
 
 // 		for (LinkedListIterator It(Layers); It; ++It)
@@ -208,19 +208,19 @@ namespace Drn
 		//g_pd3dCommandList->Reset(CommandAllocator, nullptr);
 		//auto commandList = m_Device->GetCommandQueue().GetCommandList()->GetD3D12CommandList();
 
-		//if (ViewportSizeDirty)
-		//{
-		//D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-		//
-		//descSRV.Texture2D.MipLevels       = 1;
-		//descSRV.Texture2D.MostDetailedMip = 0;
-		//descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		//descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-		//descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		//
-		//m_Device->GetD3D12Device()->CreateShaderResourceView( ViewportResource, &descSRV,
-		//														ViewCpuHandle );
-		//}
+		if (ViewportSizeDirty)
+		{
+		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
+		
+		descSRV.Texture2D.MipLevels       = 1;
+		descSRV.Texture2D.MostDetailedMip = 0;
+		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
+		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
+		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		
+		m_Device->GetD3D12Device()->CreateShaderResourceView( ViewportResource, &descSRV,
+																ViewCpuHandle );
+		}
 
 		ImGui::Render();
 
@@ -273,12 +273,12 @@ namespace Drn
 
 		ViewportResource = InView;
 
-		Width = InWidth;
-		Height = InHeight;
+		Width = std::max(InWidth, 1.0f);
+		Height = std::max( InHeight, 1.0f );
 
 		ViewportSizeDirty = true;
 	}
 
-        }  // namespace Drn
+}
 
 //#endif

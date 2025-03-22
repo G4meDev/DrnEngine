@@ -1,7 +1,7 @@
 #include "DrnPCH.h"
 #include "Editor.h"
 
-#if WITH_EDITOR
+#if 0
 #include "Editor/Viewport/Viewport.h"
 #include "Editor/OutputLog/OutputLog.h"
 

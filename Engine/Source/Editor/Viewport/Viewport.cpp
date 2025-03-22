@@ -1,7 +1,7 @@
 #include "DrnPCH.h"
 #include "Viewport.h"
 
-#if WITH_EDITOR
+#if 0
 
 #include "Editor/Viewport/ViewportGuiLayer.h"
 #include "Runtime/Renderer/Renderer.h"

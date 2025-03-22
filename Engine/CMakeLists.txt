@@ -92,7 +92,7 @@ target_compile_definitions( Engine
     PUBLIC NOMINMAX
 )
 
-#add_compile_definitions("$<$<CONFIG:Debug>:WITH_EDITOR>")
+add_compile_definitions("$<$<CONFIG:Debug>:WITH_EDITOR>")
 
 target_include_directories( Engine
     PUBLIC inc Source/
