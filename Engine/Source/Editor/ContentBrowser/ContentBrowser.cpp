@@ -3,6 +3,7 @@
 
 #if WITH_EDITOR
 #include "ContentBrowserGuiLayer.h"
+#include "Runtime/Misc/FileSystem.h"
 
 namespace Drn
 {
@@ -43,6 +44,16 @@ namespace Drn
 		}
 
 		return SingletonInstance.get();
+	}
+
+	std::string ContentBrowser::GetSelectedFilePath()
+	{
+		if (ContentBrowserLayer)
+		{
+			return ContentBrowserLayer->SelectedFile ? ContentBrowserLayer->SelectedFile->File.m_FullPath : NAME_NULL;
+		}
+
+		return NAME_NULL;
 	}
 }
 

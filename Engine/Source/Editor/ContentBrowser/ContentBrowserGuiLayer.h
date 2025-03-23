@@ -8,8 +8,6 @@ LOG_DECLARE_CATEGORY( LogContentBrowser );
 
 namespace Drn
 {
-	struct SystemFileNode;
-
 	class ContentBrowserGuiLayer: public ImGuiLayer
 	{
 	public:
@@ -21,12 +19,18 @@ namespace Drn
 	private:
 
 		void DrawNextFolder(SystemFileNode* Node);
-
+		void DrawFileView();
 
 		void OnImport();
 		void OnRefresh();
 
 		std::unique_ptr<SystemFileNode> RootFolder;
+		SystemFileNode* SelectedFolder;
+		std::vector<SystemFileNode*> SelectedFolderFiles;
+		SystemFileNode* SelectedFile;
+
+		float LayoutOuterPadding = 32;
+
 		friend class ContentBrowser;
 	};
 }

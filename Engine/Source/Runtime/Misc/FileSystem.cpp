@@ -35,6 +35,40 @@ namespace Drn
 		}
 	}
 
+	bool SystemFileNode::ContainsDirectory()
+	{
+		for (SystemFileNode* Child : Childs)
+		{
+			if (Child && Child->File.m_IsDirectory)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	std::vector<SystemFileNode*> SystemFileNode::GetFiles()
+	{
+		std::vector<SystemFileNode*> Result;
+		Result.reserve(Childs.size());
+
+		for (SystemFileNode* Child : Childs)
+		{
+			if (Child && !Child->File.m_IsDirectory)
+			{
+				Result.push_back(Child);
+			}
+		}
+
+		return Result;
+	}
+
+	int SystemFileNode::GetNumberOfFiles()
+	{
+		return GetFiles().size();
+	}
+
 	void SystemFileNode::AddChild( SystemFileNode* Child )
 	{
 		Childs.push_back(Child);

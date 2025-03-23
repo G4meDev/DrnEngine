@@ -17,7 +17,16 @@ namespace dx12lib
 	class RenderTarget;
 }
 
+namespace Drn
+{
+	struct SystemFileNode;
+
+	class AssetPreview;
+}
+
 class LogCategory;
 
 #define LOG_DECLARE_CATEGORY(Category)					\
 	extern LogCategory Category;						\
+
+#define NAME_NULL ""

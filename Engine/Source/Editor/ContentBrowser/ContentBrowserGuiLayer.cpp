@@ -28,7 +28,11 @@ namespace Drn
 
 	void ContentBrowserGuiLayer::Draw()
 	{
-		ImGui::Begin("ContentBrowser");
+		if (!ImGui::Begin("ContentBrowser"))
+		{
+			ImGui::End();
+			return;
+		}
 
 		if (ImGui::Button( "Import" ))
 			OnImport();
@@ -57,13 +61,16 @@ namespace Drn
 
 		if (ImGui::BeginChild("FileView", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 		{
-			
+			if (RootFolder)
+			{
+				DrawFileView();
+			}
 		}
 		ImGui::EndChild();
 
 		ImGui::End();
 
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 	}
 
 	void ContentBrowserGuiLayer::DrawNextFolder( SystemFileNode* Node )
@@ -77,16 +84,34 @@ namespace Drn
 		ImGuiTreeNodeFlags_OpenOnDoubleClick;
 		tree_flags |= ImGuiTreeNodeFlags_NavLeftJumpsBackHere;
 
-		if ( Node->Childs.size() == 0 )
+		if ( Node == SelectedFolder)
+			tree_flags |= ImGuiTreeNodeFlags_Selected;
+
+		if (!Node->ContainsDirectory())
 		tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
 
 		bool node_open = ImGui::TreeNodeEx( "", tree_flags, "%s", Node->File.m_ShortPath.c_str());
+
+		if (ImGui::IsItemFocused() && SelectedFolder != Node)
+		{
+			SelectedFolder = Node;
+			SelectedFile = nullptr;
+			
+			if (SelectedFolder)
+			{
+				SelectedFolderFiles = SelectedFolder->GetFiles();
+			}
+			else
+			{
+				SelectedFolderFiles.clear();
+			}
+		}
 
 		if ( node_open )
 		{
 			for (SystemFileNode* child : Node->Childs)
 			{
-				if (child->File.m_IsDirectory)
+				if (child && child->File.m_IsDirectory)
 				{
 					DrawNextFolder( child );
 				}
@@ -95,6 +120,41 @@ namespace Drn
 		}
 
 		ImGui::PopID();
+	}
+
+	void ContentBrowserGuiLayer::DrawFileView()
+	{
+		if ( ImGui::BeginTable( "FileView_1", 1, ImGuiTableFlags_RowBg ) )
+		{
+			for ( SystemFileNode* File: SelectedFolderFiles )
+			{
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::PushID( File->File.m_FullPath.c_str() );
+
+				ImGuiTreeNodeFlags tree_flags = 0;
+
+				if ( File == SelectedFile )
+					tree_flags |= ImGuiTreeNodeFlags_Selected;
+
+				bool node_open = ImGui::TreeNodeEx( "", tree_flags, "%s", File->File.m_ShortPath.c_str() );
+
+				if ( ImGui::IsItemFocused() && SelectedFile != File )
+				{
+					SelectedFile = File;
+					Editor::Get()->OnSelectedFile(SelectedFile->File.m_FullPath);
+				}
+
+				if ( node_open )
+				{
+					ImGui::TreePop();
+				}
+
+				ImGui::PopID();
+			}
+		
+			ImGui::EndTable();
+		}
 	}
 
 	void ContentBrowserGuiLayer::OnImport()
@@ -109,6 +169,9 @@ namespace Drn
 		LOG(LogContentBrowser, Info, "Refresh");
 		
 		FileSystem::GetFilesInDirectory("C:\\SelfProjects\\DrnEngine\\Content", RootFolder);
+		SelectedFolder = RootFolder.get();
+		SelectedFile = nullptr;
+		SelectedFolderFiles.clear();
 	}
 }
 

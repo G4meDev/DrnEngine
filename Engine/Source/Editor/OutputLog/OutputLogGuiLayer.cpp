@@ -12,7 +12,12 @@ namespace Drn
 	{
 		const std::vector<LogMessage>& Logs = OutputLog::Get()->GetLogMessages();
 
-		ImGui::Begin("OutputLog", (bool*)0, ImGuiWindowFlags_::ImGuiWindowFlags_MenuBar);
+		if (!ImGui::Begin("OutputLog", (bool*)0, ImGuiWindowFlags_::ImGuiWindowFlags_MenuBar))
+		{
+			ImGui::End();
+			return;
+		}
+		
 		MakeMenuBar();
 		MakeLogsTable();
 		ImGui::End();

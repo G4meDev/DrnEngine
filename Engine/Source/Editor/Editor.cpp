@@ -8,6 +8,7 @@
 #include "Editor/Viewport/Viewport.h"
 #include "Editor/OutputLog/OutputLog.h"
 #include "Editor/ContentBrowser/ContentBrowser.h"
+#include "Editor/AssetPreview/AssetPreview.h"
 
 LOG_DEFINE_CATEGORY(LogEditor, "Editor");
 
@@ -51,6 +52,29 @@ namespace Drn
 
 		return SingletonInstance.get();
 	}
+
+	void Editor::OnSelectedFile( const std::string Path )
+	{
+		OpenAssetView(Path);
+	}
+
+	void Editor::OpenAssetView( const std::string Path )
+	{
+		for (int i = 0; i < AssetPreviews.size(); i++)
+		{
+			std::unique_ptr<AssetPreview>& AssetView = AssetPreviews[i];
+
+			if (AssetView->GetPath() == Path)
+			{
+				AssetView->SetCurrentFocus();
+				return;
+			}
+		}
+
+		AssetPreviews.push_back(std::unique_ptr<AssetPreview>(AssetPreview::Create(Path)));
+	}
+
+
 }
 
 #endif

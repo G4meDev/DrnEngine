@@ -25,6 +25,10 @@ namespace Drn
 		SystemFile File;
 		std::vector<SystemFileNode*> Childs;
 
+		bool ContainsDirectory();
+		std::vector<SystemFileNode*> GetFiles();
+		int GetNumberOfFiles();
+
 		void AddChild(SystemFileNode* Child);
 	};
 

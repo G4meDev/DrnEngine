@@ -21,11 +21,22 @@ namespace Drn
 
 		static Editor* Get();
 
+
 	protected:
 
+		
+		// @TODO: link list
+		std::vector<std::unique_ptr<AssetPreview>> AssetPreviews;
+
 	private:
+
+		void OnSelectedFile(const std::string Path);
+		void OpenAssetView(const std::string Path);
+		
+		
 		static std::unique_ptr<Editor> SingletonInstance;
 
+		friend class ContentBrowserGuiLayer;
 	};
 
 }
