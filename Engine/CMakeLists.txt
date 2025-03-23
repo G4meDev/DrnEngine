@@ -17,6 +17,7 @@ set( HEADER_FILES
 	Source/Runtime/Math/IntPoint.h
 	Source/Runtime/Math/Math.h
 	
+	Source/Runtime/Misc/FileSystem.h
 	Source/Runtime/Misc/DateTime.h
 	Source/Runtime/Misc/EnumClassFlags.h
 	Source/Runtime/Misc/Log.h
@@ -54,6 +55,7 @@ set( SOURCE_FILES
 	Source/Runtime/Math/IntPoint.cpp
 	Source/Runtime/Math/Math.cpp
 	
+	Source/Runtime/Misc/FileSystem.cpp
 	Source/Runtime/Misc/DateTime.cpp
 	Source/Runtime/Misc/EnumClassFlags.cpp
 	Source/Runtime/Misc/Log.cpp
