@@ -29,6 +29,11 @@ set( HEADER_FILES
 	
 	Source/Editor/OutputLog/OutputLog.h
 	Source/Editor/OutputLog/OutputLogGuiLayer.h
+
+	Source/Editor/ContentBrowser/ContentBrowser.h
+	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.h
+
+	Source/Runtime/Engine/StaticMesh.h
 )
 
 set( SOURCE_FILES
@@ -61,6 +66,11 @@ set( SOURCE_FILES
 	
 	Source/Editor/OutputLog/OutputLog.cpp
 	Source/Editor/OutputLog/OutputLogGuiLayer.cpp
+
+	Source/Editor/ContentBrowser/ContentBrowser.cpp
+	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.cpp
+
+	Source/Runtime/Engine/StaticMesh.cpp
 )
 
 set( SHADER_FILES_VS

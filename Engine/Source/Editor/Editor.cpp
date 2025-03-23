@@ -7,6 +7,7 @@
 
 #include "Editor/Viewport/Viewport.h"
 #include "Editor/OutputLog/OutputLog.h"
+#include "Editor/ContentBrowser/ContentBrowser.h"
 
 LOG_DEFINE_CATEGORY(LogEditor, "Editor");
 
@@ -22,20 +23,23 @@ namespace Drn
 
 	void Editor::Init()
 	{
-		Viewport::Get()->Init();
 		OutputLog::Get()->Init();
+		Viewport::Get()->Init();
+		ContentBrowser::Get()->Init();
 	}
 
 	void Editor::Tick(float DeltaTime)
 	{
-		Viewport::Get()->Tick(DeltaTime);
 		OutputLog::Get()->Tick(DeltaTime);
+		Viewport::Get()->Tick(DeltaTime);
+		ContentBrowser::Get()->Tick(DeltaTime);
 	}
 
 	void Editor::Shutdown() 
 	{
-		OutputLog::Get()->Shutdown();
+		ContentBrowser::Get()->Shutdown();
 		Viewport::Get()->Shutdown();
+		OutputLog::Get()->Shutdown();
 	}
 
 	Editor* Editor::Get()

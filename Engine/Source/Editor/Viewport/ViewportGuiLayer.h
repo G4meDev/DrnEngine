@@ -1,11 +1,10 @@
 #pragma once
 
 #if WITH_EDITOR
-    #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
+#include "Runtime/Renderer/ImGui/ImGuiLayer.h"
 
 namespace Drn
 {
-
 	class ViewportGuiLayer : public ImGuiLayer
 	{
 	public:
