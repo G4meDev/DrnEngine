@@ -119,6 +119,7 @@ target_include_directories( Engine
     PUBLIC inc Source/
     PUBLIC inc ../ThirdParty/ImGui/
     PUBLIC inc ../ThirdParty/DX12Lib/inc/
+    PUBLIC inc ../ThirdParty/ImGuiFileDialog/
     PUBLIC inc ../GameFramework/inc/
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
@@ -134,6 +135,7 @@ target_link_libraries( Engine
     PUBLIC gainput
     PUBLIC DX12Lib
     PUBLIC GameFramework
+    PUBLIC ImGuiFileDialog
 )
 
 # Enable precompiled header files.

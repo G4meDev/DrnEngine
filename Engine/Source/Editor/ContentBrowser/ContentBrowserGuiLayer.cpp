@@ -11,6 +11,10 @@
 #include "Editor/Editor.h"
 
 #include "Runtime/Misc/FileSystem.h"
+#include <GameFramework/GameFramework.h>
+#include <GameFramework/Window.h>
+
+#include <ImGuiFileDialog.h>
 
 LOG_DEFINE_CATEGORY( LogContentBrowser, "ContentBrowser" );
 
@@ -28,6 +32,35 @@ namespace Drn
 
 	void ContentBrowserGuiLayer::Draw()
 	{
+ 		ImGui::Begin("Import");
+
+		if ( ImGui::Button( "Open File Dialog" ) )
+		{
+			IGFD::FileDialogConfig config;
+			config.path = ".";
+			ImGuiFileDialog::Instance()->OpenDialog( "ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp",
+														config );
+		}
+		// display
+		if ( ImGuiFileDialog::Instance()->Display( "ChooseFileDlgKey" ) )
+		{
+			if ( ImGuiFileDialog::Instance()->IsOk() )
+			{  // action if OK
+				std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+				std::string filePath     = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+				LOG( LogContentBrowser, Info, "%s", filePathName.c_str());
+				LOG( LogContentBrowser, Info, "%s", filePath.c_str());
+
+				// action
+			}
+
+			// close
+			ImGuiFileDialog::Instance()->Close();
+		}
+
+		ImGui::End();
+
 		if (!ImGui::Begin("ContentBrowser"))
 		{
 			ImGui::End();
@@ -168,10 +201,18 @@ namespace Drn
 	{
 		LOG(LogContentBrowser, Info, "Refresh");
 		
-		FileSystem::GetFilesInDirectory("C:\\SelfProjects\\DrnEngine\\Content", RootFolder);
+		FileSystem::GetFilesInDirectory(Path::GetContentPath(), RootFolder);
+
+		if (!RootFolder)
+		{
+			LOG(LogContentBrowser, Error, "failed to load content folder.");
+		}
+
 		SelectedFolder = RootFolder.get();
 		SelectedFile = nullptr;
 		SelectedFolderFiles.clear();
+
+		//OnImport();
 	}
 }
 

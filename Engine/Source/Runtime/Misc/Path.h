@@ -8,5 +8,11 @@ namespace Drn
 	{
 	public:
 		static std::wstring ShaderFullPath(LPCWSTR ShortPath);
+
+#ifdef _DEBUG
+		static std::string GetContentPath();
+
+		static std::string ConvertFullPath(const std::string& ShortPath);
+#endif
 	};
 }

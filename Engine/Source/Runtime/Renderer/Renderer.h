@@ -5,8 +5,6 @@
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 
-class Window;
-
 LOG_DECLARE_CATEGORY( LogRenderer );
 
 namespace Drn
@@ -30,6 +28,8 @@ namespace Drn
 		static Renderer* Get();
 
 		inline dx12lib::Device* GetDevice() { return m_Device.get(); }
+
+		inline Window* GetMainWindow() { return m_MainWindow; }
 
 		ID3D12Resource* GetViewportResource();
 

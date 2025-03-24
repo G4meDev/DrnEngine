@@ -5,6 +5,8 @@ class KeyEventArgs;
 class ResizeEventArgs;
 class WindowCloseEventArgs;
 
+class Window;
+
 namespace dx12lib
 {
 	class Device;

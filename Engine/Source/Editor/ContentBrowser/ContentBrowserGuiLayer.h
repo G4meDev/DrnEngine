@@ -29,7 +29,7 @@ namespace Drn
 		std::vector<SystemFileNode*> SelectedFolderFiles;
 		SystemFileNode* SelectedFile;
 
-		float LayoutOuterPadding = 32;
+		std::shared_ptr<Window> ImportWindow;
 
 		friend class ContentBrowser;
 	};
