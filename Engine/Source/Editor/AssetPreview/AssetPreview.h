@@ -3,12 +3,13 @@
 #if WITH_EDITOR
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/Serializable.h"
 
 LOG_DECLARE_CATEGORY(LogAssetPreview);
 
 namespace Drn
 {
-	class AssetPreview
+	class AssetPreview : public Serializable
 	{
 	public:
 		AssetPreview(const std::string InPath);
@@ -24,6 +25,10 @@ namespace Drn
 		virtual void Reimport() = 0;
 
 		virtual EAssetType GetAssetType() = 0;
+
+		virtual void Serialize(Archive& Ar) override;
+
+		inline std::string GetSourcePath() { return m_SourcePath; }
 
 	protected:
 		std::string m_Path;

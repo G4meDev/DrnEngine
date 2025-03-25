@@ -2,6 +2,7 @@
 
 #include "Runtime/Core/Drn.h"
 #include "Runtime/Core/AssetManager.h"
+#include "Runtime/Core/Archive.h"
 
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>

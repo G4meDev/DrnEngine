@@ -19,7 +19,7 @@ namespace Drn
 
 	protected:
 
-		AssetPreviewStaticMesh* OwningAsset;
+		AssetPreviewStaticMesh* m_OwningAsset;
 
 	private:
 	};

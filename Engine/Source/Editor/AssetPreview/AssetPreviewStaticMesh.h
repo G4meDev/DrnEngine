@@ -20,6 +20,8 @@ namespace Drn
 
 		virtual EAssetType GetAssetType() override;
 
+		virtual void Serialize(Archive& Ar) override;
+
 	protected:
 
 		std::unique_ptr<AssetPreviewStaticMeshGuiLayer> GuiLayer;

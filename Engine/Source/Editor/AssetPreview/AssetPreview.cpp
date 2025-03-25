@@ -12,7 +12,7 @@ namespace Drn
 	AssetPreview::AssetPreview(const std::string InPath)
 		: m_Path(InPath)
 	{
-		
+
 	}
 
 	AssetPreview::AssetPreview( const std::string& InPath, const std::string InSourcePath )
@@ -78,6 +78,23 @@ namespace Drn
 		else
 		{
 			LOG( LogAssetPreview, Error, "import failed. " );
+		}
+	}
+
+	void AssetPreview::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			uint8 byte;
+
+			Ar >> byte;
+			Ar >> m_SourcePath;
+		}
+
+		else
+		{
+			uint8 type = static_cast<uint8>(GetAssetType());
+			Ar << type << m_SourcePath << type << type;
 		}
 	}
 

@@ -13,20 +13,22 @@
 namespace Drn
 {
 	AssetPreviewStaticMeshGuiLayer::AssetPreviewStaticMeshGuiLayer(AssetPreviewStaticMesh* InOwningAsset)
-		: OwningAsset(InOwningAsset)
+		: m_OwningAsset(InOwningAsset)
 	{
 		
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::Draw()
 	{
-		if (!ImGui::Begin(OwningAsset->GetPath().c_str()))
+		if (!ImGui::Begin(m_OwningAsset->GetPath().c_str()))
 		{
 			ImGui::End();
 			return;
 		}
 
+		ImGui::Text( "%s", m_OwningAsset->GetSourcePath().c_str());
 
+		ImGui::ShowDemoWindow();
 
 		ImGui::End();
 	}

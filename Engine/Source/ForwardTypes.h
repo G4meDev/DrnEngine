@@ -1,4 +1,5 @@
 #include <memory>
+#include <iosfwd>
 #include <string>
 
 class UpdateEventArgs;
@@ -20,11 +21,18 @@ namespace dx12lib
 	class RenderTarget;
 }
 
+namespace std
+{
+	//class ofstream;
+}
+
 namespace Drn
 {
+	class Archive;
+	class AssetPreview;
+	
 	struct SystemFileNode;
 
-	class AssetPreview;
 }
 
 class LogCategory;

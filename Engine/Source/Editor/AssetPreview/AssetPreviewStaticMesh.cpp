@@ -12,6 +12,9 @@ namespace Drn
 	AssetPreviewStaticMesh::AssetPreviewStaticMesh(const std::string InPath)
 		: AssetPreview(InPath)
 	{
+		std::unique_ptr<Archive> Ar = std::make_unique<Archive>( InPath, true );
+		Serialize( *Ar.get() );
+
 		GuiLayer = std::make_unique<AssetPreviewStaticMeshGuiLayer>(this);
 		GuiLayer->Attach();
 	}
@@ -20,23 +23,8 @@ namespace Drn
 	AssetPreviewStaticMesh::AssetPreviewStaticMesh(const std::string& InPath, const std::string& InSourcePath)
 		: AssetPreview(InPath, InSourcePath)
 	{
-		std::ofstream outFile( InPath, std::ios::binary );
-		if (!outFile)
-		{
-			LOG( LogAssetPreview, Error, "failed to create asset file. " );
-			return;
-		}
-
-		uint8 type = static_cast<uint8>(GetAssetType());
-		uint8 SourceFileSize = InSourcePath.size();
-		
-		//outFile<<(reinterpret_cast<const char*>(&type), sizeof(type));
-		//outFile<<(reinterpret_cast<const char*>(&SourceFileSize), sizeof(SourceFileSize));
-		//outFile.write(InSourcePath.c_str(), SourceFileSize);
-		outFile<<type;
-		outFile<<SourceFileSize;
-		outFile<<InSourcePath.c_str();
-		outFile.close();
+		std::unique_ptr<Archive> Ar = std::make_unique<Archive>(InPath, false);
+		Serialize(*Ar.get());
 	}
 
 	AssetPreviewStaticMesh::~AssetPreviewStaticMesh()
@@ -63,6 +51,10 @@ namespace Drn
 		return EAssetType::StaticMesh;
 	}
 
+	void AssetPreviewStaticMesh::Serialize( Archive& Ar )
+	{
+		AssetPreview::Serialize(Ar);
+	}
 }
 
 #endif
