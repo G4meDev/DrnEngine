@@ -11,10 +11,9 @@
 #include "Editor/Editor.h"
 
 #include "Runtime/Misc/FileSystem.h"
+#include "Editor/FileImportMenu/FileImportMenu.h"
 #include <GameFramework/GameFramework.h>
 #include <GameFramework/Window.h>
-
-#include <ImGuiFileDialog.h>
 
 LOG_DEFINE_CATEGORY( LogContentBrowser, "ContentBrowser" );
 
@@ -165,7 +164,7 @@ namespace Drn
 	{
 		LOG(LogContentBrowser, Info, "Import");
 
-		Editor::Get()->OpenImportMenu();
+		Editor::Get()->OpenImportMenu("Select file to import", FileImportMenu::FileFilter_Any(), std::bind(&ContentBrowserGuiLayer::OnSelectedFileToImport, this, std::placeholders::_1));
 	}
 
 	void ContentBrowserGuiLayer::OnRefresh()
@@ -183,6 +182,12 @@ namespace Drn
 		SelectedFile = nullptr;
 		SelectedFolderFiles.clear();
 	}
+
+	void ContentBrowserGuiLayer::OnSelectedFileToImport( std::string FilePath )
+	{
+		LOG( LogContentBrowser, Info, "selected file to import: %s ", FilePath.c_str());
+	}
+
 }
 
 #endif

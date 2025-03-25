@@ -7,6 +7,7 @@
 #include "ImGuiFileDialog.h"
 #include "FileImportMenu.h"
 
+#include "Runtime/Misc/Path.h"
 #include "Editor/Editor.h"
 
 LOG_DEFINE_CATEGORY( LogFileImportMenu, "FileImportMenu" );
@@ -17,15 +18,15 @@ namespace Drn
 		: m_FileImportMenu(InFileImportMenu)
 	{
 		IGFD::FileDialogConfig config;
-		config.path = ".";
-		ImGuiFileDialog::Instance()->OpenDialog( "ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config );
+		config.path = Path::GetContentPath();
+		ImGuiFileDialog::Instance()->OpenDialog( "ChooseFileDlgKey", m_FileImportMenu->m_DisplayText, m_FileImportMenu->m_Filters, config );
+
+		LOG( LogFileImportMenu, Info, "opened file import menu." );
 	}
 
 	FileImportMenuGuiLayer::~FileImportMenuGuiLayer()
 	{
-		//IGFD::FileDialogConfig config;
-		//config.path = ".";
-		//ImGuiFileDialog::Instance()->( "ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp", config );
+		
 	}
 
 	void FileImportMenuGuiLayer::Draw()
@@ -35,20 +36,17 @@ namespace Drn
 			if ( ImGuiFileDialog::Instance()->IsOk() )
 			{
 				std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-				std::string filePath     = ImGuiFileDialog::Instance()->GetCurrentPath();
-		
-				LOG( LogFileImportMenu, Info, "%s", filePathName.c_str());
-				LOG( LogFileImportMenu, Info, "%s", filePath.c_str());
+
+				if (m_FileImportMenu && m_FileImportMenu->m_OnSelectedFileDelegate)
+				{
+					m_FileImportMenu->m_OnSelectedFileDelegate(filePathName);
+				}
 			}
 		
-			else
-			{
-				ImGuiFileDialog::Instance()->Close();
+			ImGuiFileDialog::Instance()->Close();
 
-				LOG( LogFileImportMenu, Info, "closed file import menu." );
-
-				Editor::Get()->CloseImportMenu();
-			}
+			LOG( LogFileImportMenu, Info, "closed file import menu." );
+			Editor::Get()->CloseImportMenu();
 		}
 	}
 }

@@ -84,11 +84,11 @@ namespace Drn
 		m_AssetPreviews.clear();
 	}
 
-	std::shared_ptr<Drn::FileImportMenu> Editor::OpenImportMenu()
+	std::shared_ptr<Drn::FileImportMenu> Editor::OpenImportMenu(const std::string& InDisplayText, char* InFilters, std::function<void(std::string)> InOnSelectedFile)
 	{
 		CloseImportMenu();
 
-		m_FileImportMenu = std::make_shared<FileImportMenu>();
+		m_FileImportMenu = std::make_shared<FileImportMenu>(InDisplayText, InFilters, InOnSelectedFile);
 		return m_FileImportMenu;
 	}
 

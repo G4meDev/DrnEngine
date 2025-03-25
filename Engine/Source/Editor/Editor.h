@@ -22,7 +22,7 @@ namespace Drn
 
 		static Editor* Get();
 
-		std::shared_ptr<FileImportMenu> OpenImportMenu();
+		std::shared_ptr<FileImportMenu> OpenImportMenu(const std::string& InDisplayText, char* InFilters, std::function<void(std::string)> InOnSelectedFile);
 		void CloseImportMenu();
 
 	protected:

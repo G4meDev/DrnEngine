@@ -24,6 +24,8 @@ namespace Drn
 		void OnImport();
 		void OnRefresh();
 
+		void OnSelectedFileToImport(std::string FilePath);
+
 		std::unique_ptr<SystemFileNode> RootFolder;
 		SystemFileNode* SelectedFolder;
 		std::vector<SystemFileNode*> SelectedFolderFiles;
