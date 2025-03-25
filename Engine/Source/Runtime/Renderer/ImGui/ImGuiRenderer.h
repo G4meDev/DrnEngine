@@ -8,6 +8,7 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx12.h"
 
+LOG_DECLARE_CATEGORY(LogImguiRenderer);
 
 namespace Drn
 {
@@ -86,6 +87,8 @@ namespace Drn
 	private:
 		static std::unique_ptr<ImGuiRenderer> SingletonInstance;
 		LinkedList<ImGuiLayer> Layers;
-	};
+        std::vector<ImGuiLayer*> m_CurrentTickLayers;
+	
+    };
 }
 #endif

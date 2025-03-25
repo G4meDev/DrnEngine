@@ -8,6 +8,7 @@ namespace Drn
 	{
 	public:
 		AssetPreview(const std::string InPath);
+		virtual ~AssetPreview();
 
 		static AssetPreview* Create(const std::string InPath);
 

@@ -10,6 +10,8 @@
 #include "Editor/ContentBrowser/ContentBrowser.h"
 #include "Editor/AssetPreview/AssetPreview.h"
 
+#include "Editor/FileImportMenu/FileImportMenu.h"
+
 LOG_DEFINE_CATEGORY(LogEditor, "Editor");
 
 namespace Drn
@@ -38,6 +40,9 @@ namespace Drn
 
 	void Editor::Shutdown() 
 	{
+		CloseImportMenu();
+		CloseAssetPreviews();
+
 		ContentBrowser::Get()->Shutdown();
 		Viewport::Get()->Shutdown();
 		OutputLog::Get()->Shutdown();
@@ -60,9 +65,9 @@ namespace Drn
 
 	void Editor::OpenAssetView( const std::string Path )
 	{
-		for (int i = 0; i < AssetPreviews.size(); i++)
+		for (int i = 0; i < m_AssetPreviews.size(); i++)
 		{
-			std::unique_ptr<AssetPreview>& AssetView = AssetPreviews[i];
+			std::unique_ptr<AssetPreview>& AssetView = m_AssetPreviews[i];
 
 			if (AssetView->GetPath() == Path)
 			{
@@ -71,9 +76,26 @@ namespace Drn
 			}
 		}
 
-		AssetPreviews.push_back(std::unique_ptr<AssetPreview>(AssetPreview::Create(Path)));
+		m_AssetPreviews.push_back(std::unique_ptr<AssetPreview>(AssetPreview::Create(Path)));
 	}
 
+	void Editor::CloseAssetPreviews()
+	{
+		m_AssetPreviews.clear();
+	}
+
+	std::shared_ptr<Drn::FileImportMenu> Editor::OpenImportMenu()
+	{
+		CloseImportMenu();
+
+		m_FileImportMenu = std::make_shared<FileImportMenu>();
+		return m_FileImportMenu;
+	}
+
+	void Editor::CloseImportMenu()
+	{
+		m_FileImportMenu.reset();
+	}
 
 }
 

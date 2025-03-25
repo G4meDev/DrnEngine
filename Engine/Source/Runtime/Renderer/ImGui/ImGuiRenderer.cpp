@@ -9,6 +9,7 @@
 #include <GameFramework/Window.h>
 #include <GameFramework/GameFramework.h>
 
+LOG_DEFINE_CATEGORY( LogImguiRenderer, "ImguiRenderer" );
 
 namespace Drn
 {
@@ -105,8 +106,23 @@ namespace Drn
 
 	void ImGuiRenderer::DetachLayer( ImGuiLayer* InLayer ) 
 	{
-		// @TODO: Add remove to list
-		//Layers
+		for ( LinkedListIterator It( Layers ); It; ++It )
+		{
+			if ( *It == InLayer )
+			{
+				It.Remove();
+				break;
+			}
+		}
+
+		for (ImGuiLayer*& Layer : m_CurrentTickLayers)
+		{
+			if (Layer == InLayer)
+			{
+				Layer = nullptr;
+				break;
+			}
+		}
 	}
 
 	ImGuiRenderer* ImGuiRenderer::Get()
@@ -129,12 +145,19 @@ namespace Drn
 	void ImGuiRenderer::Draw( )
 	{
 		ImGui::DockSpaceOverViewport();
-
+		
+		// cache drawing layers to keep track of added and removed layers mid drawing
+		m_CurrentTickLayers.clear();
 		for (LinkedListIterator It(Layers); It; ++It)
 		{
-			if (It)
+			m_CurrentTickLayers.push_back(*It);
+		}
+
+		for (ImGuiLayer*& Layer : m_CurrentTickLayers)
+		{
+			if (Layer != nullptr)
 			{
-				It->Draw();
+				Layer->Draw();
 			}
 		}
 	}

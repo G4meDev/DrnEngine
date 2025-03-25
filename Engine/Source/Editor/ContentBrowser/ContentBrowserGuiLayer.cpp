@@ -32,35 +32,6 @@ namespace Drn
 
 	void ContentBrowserGuiLayer::Draw()
 	{
- 		ImGui::Begin("Import");
-
-		if ( ImGui::Button( "Open File Dialog" ) )
-		{
-			IGFD::FileDialogConfig config;
-			config.path = ".";
-			ImGuiFileDialog::Instance()->OpenDialog( "ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp",
-														config );
-		}
-		// display
-		if ( ImGuiFileDialog::Instance()->Display( "ChooseFileDlgKey" ) )
-		{
-			if ( ImGuiFileDialog::Instance()->IsOk() )
-			{  // action if OK
-				std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-				std::string filePath     = ImGuiFileDialog::Instance()->GetCurrentPath();
-
-				LOG( LogContentBrowser, Info, "%s", filePathName.c_str());
-				LOG( LogContentBrowser, Info, "%s", filePath.c_str());
-
-				// action
-			}
-
-			// close
-			ImGuiFileDialog::Instance()->Close();
-		}
-
-		ImGui::End();
-
 		if (!ImGui::Begin("ContentBrowser"))
 		{
 			ImGui::End();
@@ -194,7 +165,7 @@ namespace Drn
 	{
 		LOG(LogContentBrowser, Info, "Import");
 
-
+		Editor::Get()->OpenImportMenu();
 	}
 
 	void ContentBrowserGuiLayer::OnRefresh()
@@ -211,8 +182,6 @@ namespace Drn
 		SelectedFolder = RootFolder.get();
 		SelectedFile = nullptr;
 		SelectedFolderFiles.clear();
-
-		//OnImport();
 	}
 }
 

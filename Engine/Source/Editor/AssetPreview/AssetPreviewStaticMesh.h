@@ -12,7 +12,7 @@ namespace Drn
 	{
 	public:
 		AssetPreviewStaticMesh(const std::string InPath);
-		~AssetPreviewStaticMesh();
+		virtual ~AssetPreviewStaticMesh();
 
 		virtual void SetCurrentFocus() override;
 	protected:

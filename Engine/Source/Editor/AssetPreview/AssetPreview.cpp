@@ -13,6 +13,11 @@ namespace Drn
 		
 	}
 
+	AssetPreview::~AssetPreview()
+	{
+		
+	}
+
 	AssetPreview* AssetPreview::Create( const std::string InPath )
 	{
 		return new AssetPreviewStaticMesh(InPath);

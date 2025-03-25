@@ -38,6 +38,9 @@ set( HEADER_FILES
 	Source/Editor/AssetPreview/AssetPreviewStaticMesh.h
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h
 
+	Source/Editor/FileImportMenu/FileImportMenu.h
+	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.h
+
 	Source/Runtime/Engine/StaticMesh.h
 )
 
@@ -79,6 +82,9 @@ set( SOURCE_FILES
 	Source/Editor/AssetPreview/AssetPreview.cpp
 	Source/Editor/AssetPreview/AssetPreviewStaticMesh.cpp
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.cpp
+
+	Source/Editor/FileImportMenu/FileImportMenu.cpp
+	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.cpp
 
 	Source/Runtime/Engine/StaticMesh.cpp
 )
