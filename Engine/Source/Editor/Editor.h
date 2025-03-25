@@ -27,7 +27,7 @@ namespace Drn
 
 	protected:
 
-		std::vector<std::unique_ptr<AssetPreview>> m_AssetPreviews;
+		std::vector<std::shared_ptr<AssetPreview>> m_AssetPreviews;
 		std::shared_ptr<FileImportMenu> m_FileImportMenu;
 
 	private:

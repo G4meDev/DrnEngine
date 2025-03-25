@@ -9,6 +9,7 @@
 #include "imgui.h"
 
 #include "Editor/Editor.h"
+#include "Editor/AssetPreview/AssetPreview.h"
 
 #include "Runtime/Misc/FileSystem.h"
 #include "Editor/FileImportMenu/FileImportMenu.h"
@@ -185,7 +186,15 @@ namespace Drn
 
 	void ContentBrowserGuiLayer::OnSelectedFileToImport( std::string FilePath )
 	{
-		LOG( LogContentBrowser, Info, "selected file to import: %s ", FilePath.c_str());
+		LOG( LogContentBrowser, Info, "selected file to import.\n\t%s ", FilePath.c_str());
+
+		if (!SelectedFolder)
+		{
+			LOG( LogContentBrowser, Error, "there is no folder selected in content browser for imprting file. ");
+			return;
+		}
+
+		AssetPreview::Create(FilePath, SelectedFolder->File.m_FullPath);
 	}
 
 }

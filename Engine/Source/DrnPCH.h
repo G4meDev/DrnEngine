@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Runtime/Core/Drn.h"
+#include "Runtime/Core/AssetManager.h"
 
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>
@@ -23,6 +24,7 @@
 #include "Runtime/Misc/DateTime.h"
 #include "Runtime/Misc/EnumClassFlags.h"
 #include "Runtime/Misc/Path.h"
+#include "Runtime/Misc/FileSystem.h"
 
 #include <iostream>
 #include <WinUser.h>

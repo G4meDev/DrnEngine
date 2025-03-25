@@ -67,7 +67,7 @@ namespace Drn
 	{
 		for (int i = 0; i < m_AssetPreviews.size(); i++)
 		{
-			std::unique_ptr<AssetPreview>& AssetView = m_AssetPreviews[i];
+			std::shared_ptr<AssetPreview>& AssetView = m_AssetPreviews[i];
 
 			if (AssetView->GetPath() == Path)
 			{
@@ -76,7 +76,7 @@ namespace Drn
 			}
 		}
 
-		m_AssetPreviews.push_back(std::unique_ptr<AssetPreview>(AssetPreview::Create(Path)));
+		m_AssetPreviews.push_back(AssetPreview::Open(Path));
 	}
 
 	void Editor::CloseAssetPreviews()

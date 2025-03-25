@@ -84,6 +84,16 @@ namespace Drn
 		return false;
 	}
 
+	bool FileSystem::FileExists( const std::string& Path )
+	{
+		if (std::filesystem::exists(Path) && !std::filesystem::is_directory(Path))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 	void FileSystem::GetFilesInDirectory( const std::string& Path, std::unique_ptr<SystemFileNode>& RootNode )
 	{
 		RootNode.reset();
