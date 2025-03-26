@@ -3,7 +3,6 @@
 
 #if WITH_EDITOR
 
-#include "Runtime/Renderer/D3D12Scene.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 #include "Runtime/Renderer/Renderer.h"
 #include "imgui.h"

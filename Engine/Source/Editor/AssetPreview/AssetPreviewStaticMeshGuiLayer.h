@@ -21,6 +21,10 @@ namespace Drn
 
 	protected:
 
+		World* PreviewWorld;
+		Scene* PreviewScene;
+		SceneRenderer* MainView;
+
 		AssetPreviewStaticMesh* m_OwningAsset;
 
 	private:

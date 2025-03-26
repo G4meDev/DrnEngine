@@ -9,9 +9,14 @@ set( HEADER_FILES
 	Source/Runtime/Core/Archive.h
 	Source/Runtime/Core/Serializable.h
 	
-	Source/Runtime/Renderer/D3D12Scene.h
-	Source/Runtime/Renderer/D3D12Utils.h
+	Source/Runtime/Engine/World.h
+	Source/Runtime/Engine/Scene.h
+	Source/Runtime/Engine/PrimitiveComponent.h
+	Source/Runtime/Engine/StaticMesh.h
+	
 	Source/Runtime/Renderer/Renderer.h
+	Source/Runtime/Renderer/SceneRenderer.h
+	Source/Runtime/Renderer/D3D12Utils.h
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
 	
@@ -45,8 +50,6 @@ set( HEADER_FILES
 
 	Source/Editor/FileImportMenu/FileImportMenu.h
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.h
-
-	Source/Runtime/Engine/StaticMesh.h
 )
 
 set( SOURCE_FILES
@@ -59,9 +62,14 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Archive.cpp
 	Source/Runtime/Core/Serializable.cpp
 	
-	Source/Runtime/Renderer/D3D12Scene.cpp
-	Source/Runtime/Renderer/D3D12Utils.cpp
+	Source/Runtime/Engine/World.cpp
+	Source/Runtime/Engine/Scene.cpp
+	Source/Runtime/Engine/PrimitiveComponent.cpp
+	Source/Runtime/Engine/StaticMesh.cpp
+	
 	Source/Runtime/Renderer/Renderer.cpp
+	Source/Runtime/Renderer/SceneRenderer.cpp
+	Source/Runtime/Renderer/D3D12Utils.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp
 	
@@ -95,8 +103,6 @@ set( SOURCE_FILES
 
 	Source/Editor/FileImportMenu/FileImportMenu.cpp
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.cpp
-
-	Source/Runtime/Engine/StaticMesh.cpp
 )
 
 set( SHADER_FILES_VS

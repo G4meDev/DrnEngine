@@ -15,7 +15,13 @@ namespace Drn
 	AssetPreviewStaticMeshGuiLayer::AssetPreviewStaticMeshGuiLayer(AssetPreviewStaticMesh* InOwningAsset)
 		: m_OwningAsset(InOwningAsset)
 	{
-		
+		// TODO: lifetime management
+		PreviewWorld = new World();
+
+		//PreviewWorld->AddPrimitive(new PrimitiveComponent());
+
+		PreviewScene = Renderer::Get()->AllocateScene(PreviewWorld);
+		MainView = PreviewScene->AllocateSceneRenderer();
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::Draw()

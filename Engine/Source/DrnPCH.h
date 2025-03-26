@@ -4,6 +4,10 @@
 #include "Runtime/Core/AssetManager.h"
 #include "Runtime/Core/Archive.h"
 
+#include "Runtime/Engine/World.h"
+#include "Runtime/Engine/Scene.h"
+#include "Runtime/Engine/PrimitiveComponent.h"
+
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>
 #include <dx12lib/CommandList.h>
@@ -16,6 +20,8 @@
 #include <dx12lib/Texture.h>
 #include <dx12lib/Helpers.h>
 
+#include "Runtime/Renderer/Renderer.h"
+#include "Runtime/Renderer/SceneRenderer.h"
 #include "Runtime/Renderer/D3D12Utils.h"
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/IntPoint.h"
@@ -30,7 +36,6 @@
 #include <iostream>
 #include <WinUser.h>
 
-//#include <memory>
 #include <sstream>
 #include <ostream>
 #include <fstream>
@@ -44,11 +49,8 @@
 #include <dxgidebug.h>
 #include <wrl.h>
 
-#include <set>
-
 #include <chrono>
 
-#include <string>
 #include <unordered_map>
 
 #include <algorithm>

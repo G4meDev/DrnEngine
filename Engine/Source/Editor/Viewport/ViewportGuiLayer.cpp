@@ -6,7 +6,6 @@
 #include "imgui.h"
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
-#include "Runtime/Renderer/D3D12Scene.h"
 
 #include "Editor/Editor.h"
 

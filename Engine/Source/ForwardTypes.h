@@ -1,6 +1,8 @@
 #include <memory>
 #include <iosfwd>
 #include <string>
+#include <vector>
+#include <set>
 
 class UpdateEventArgs;
 class KeyEventArgs;
@@ -16,6 +18,7 @@ struct aiScene;
 namespace dx12lib
 {
 	class Device;
+	class CommandList;
 	class SwapChain;
 	class VertexBuffer;
 	class IndexBuffer;
@@ -28,10 +31,16 @@ namespace dx12lib
 namespace std
 {
 	//class ofstream;
+	//class set;
 }
 
 namespace Drn
 {
+	class World;
+	class Scene;
+	class SceneRenderer;
+	class PrimitiveComponent;
+	
 	class Archive;
 	class AssetPreview;
 	

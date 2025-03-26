@@ -35,6 +35,11 @@ namespace Drn
 
 		void Tick(float DeltaTime);
 
+		Scene* AllocateScene(World* InWorld);
+		void RemoveScene(Scene* InScene);
+
+		float TotalTime = 0;
+
 	protected:
 		static Renderer* SingletonInstance;
 
@@ -58,12 +63,11 @@ namespace Drn
 
 		float m_fieldOfView = 45.0f;
 
-		float TotalTime = 0;
+
+		std::set<Scene*> AllocatedScenes;
 
 	private:
 		
 		void Init_Internal();
-
-		void CreateMainScene();
 	};
 }
