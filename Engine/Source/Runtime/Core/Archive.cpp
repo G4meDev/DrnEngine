@@ -41,21 +41,30 @@ namespace Drn
 	Archive& Archive::operator<<( uint8 Value )
 	{
 		File << Value;
-
 		return *this;
 	}
 
 	Archive& Archive::operator<<( uint16 Value )
 	{
 		File << Value;
+		return *this;
+	}
 
+	Archive& Archive::operator<<( uint32 Value )
+	{
+		File << Value;
+		return *this;
+	}
+
+	Archive& Archive::operator<<( uint64 Value )
+	{
+		File << Value;
 		return *this;
 	}
 
 	Archive& Archive::operator<<( float Value )
 	{
 		File << Value;
-
 		return *this;
 	}
 	
@@ -67,6 +76,15 @@ namespace Drn
 		return *this;
 	}
 
+	Archive& Archive::operator<<( const std::vector<char>& Value )
+	{
+		uint64 size = (uint64)Value.size();
+		File << size;
+		File.write(Value.data(), size);
+
+		return *this;
+	}
+
 	Archive& Archive::operator>>( uint8& Value )
 	{
 		File >> Value;
@@ -74,6 +92,18 @@ namespace Drn
 	}
 
 	Archive& Archive::operator>>( uint16& Value )
+	{
+		File >> Value;
+		return *this;
+	}
+
+	Archive& Archive::operator>>( uint32& Value )
+	{
+		File >> Value;
+		return *this;
+	}
+
+	Archive& Archive::operator>>( uint64& Value )
 	{
 		File >> Value;
 		return *this;
@@ -95,6 +125,16 @@ namespace Drn
 
 		Value = std::string(buffer.begin(), buffer.end());
 
+		return *this;
+	}
+
+	Archive& Archive::operator>>( std::vector<char>& Value )
+	{
+		uint64 size;
+		File >> size;
+		Value.resize(size);
+
+		File.read( Value.data(), size );
 		return *this;
 	}
 }

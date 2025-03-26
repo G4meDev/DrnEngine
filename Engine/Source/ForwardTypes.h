@@ -38,6 +38,11 @@ namespace std
 
 namespace Drn
 {
+	struct StaticMeshVertexData;
+	struct StaticMeshVertexBuffer;
+	struct StaticMeshData;
+	struct MaterialData;
+
 	struct VertexPosColor;
 
 	class World;

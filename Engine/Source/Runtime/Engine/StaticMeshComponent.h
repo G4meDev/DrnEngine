@@ -22,6 +22,8 @@ namespace Drn
 
 	protected:
 
+		std::string MeshPath;
+
 		std::shared_ptr<dx12lib::VertexBuffer> m_VertexBuffer = nullptr;
 		std::shared_ptr<dx12lib::IndexBuffer>  m_IndexBuffer  = nullptr;
 
