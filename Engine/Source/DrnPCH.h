@@ -44,6 +44,8 @@
 #include <dxgidebug.h>
 #include <wrl.h>
 
+#include <set>
+
 #include <chrono>
 
 #include <string>

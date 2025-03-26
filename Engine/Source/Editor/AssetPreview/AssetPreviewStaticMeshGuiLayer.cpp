@@ -26,17 +26,45 @@ namespace Drn
 			return;
 		}
 
-		ImGui::Text( "%s", m_OwningAsset->GetSourcePath().c_str());
+		DrawSidePanel();
 
 		ImGui::ShowDemoWindow();
 
 		ImGui::End();
 	}
 
+	void AssetPreviewStaticMeshGuiLayer::DrawSidePanel()
+	{
+		ImGui::Begin("Details");
+
+		if (ImGui::Button( "save" ))
+		{
+			m_OwningAsset->Save();
+		}
+
+		ImGui::Separator();
+
+		ImGui::Text("source file: %s", m_OwningAsset->GetSourcePath() != NAME_NULL ? m_OwningAsset->GetSourcePath().c_str() : "...");
+		
+		if (ImGui::Button("reimport"))
+		{
+			m_OwningAsset->Reimport();
+		}
+
+		ImGui::Button("select");
+
+		ImGui::Separator();
+
+		ImGui::InputFloat( "ImportScale", &m_OwningAsset->ImportScale);
+		
+		ImGui::End();
+	}
+
 	void AssetPreviewStaticMeshGuiLayer::SetCurrentFocus()
 	{
-
+		
 	}
+
 }
 
 #endif

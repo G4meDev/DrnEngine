@@ -16,7 +16,7 @@ namespace Drn
 	}
 
 	AssetPreview::AssetPreview( const std::string& InPath, const std::string InSourcePath )
-		: m_Path(InSourcePath)
+		: m_Path(InPath)
 		, m_SourcePath(InSourcePath)
 	{
 		
@@ -94,7 +94,7 @@ namespace Drn
 		else
 		{
 			uint8 type = static_cast<uint8>(GetAssetType());
-			Ar << type << m_SourcePath << type << type;
+			Ar << type << m_SourcePath;
 		}
 	}
 

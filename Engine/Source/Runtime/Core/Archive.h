@@ -19,11 +19,13 @@ namespace Drn
 
 		Archive& operator<<(uint8 Value);
 		Archive& operator<<(uint16 Value);
+		Archive& operator<<(float Value);
 		Archive& operator<<(const std::string& Value);
 
 
 		Archive& operator>>(uint8& Value);
 		Archive& operator>>(uint16& Value);
+		Archive& operator>>(float& Value);
 		Archive& operator>>(std::string& Value);
 
 	protected:

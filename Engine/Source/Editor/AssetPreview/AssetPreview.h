@@ -30,6 +30,8 @@ namespace Drn
 
 		inline std::string GetSourcePath() { return m_SourcePath; }
 
+		virtual void Save() = 0;
+
 	protected:
 		std::string m_Path;
 		std::string m_SourcePath;

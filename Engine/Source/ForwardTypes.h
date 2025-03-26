@@ -9,6 +9,10 @@ class WindowCloseEventArgs;
 
 class Window;
 
+struct aiMesh;
+struct aiNode;
+struct aiScene;
+
 namespace dx12lib
 {
 	class Device;

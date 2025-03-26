@@ -51,6 +51,13 @@ namespace Drn
 
 		return *this;
 	}
+
+	Archive& Archive::operator<<( float Value )
+	{
+		File << Value;
+
+		return *this;
+	}
 	
 	Archive& Archive::operator<<( const std::string& Value )
 	{
@@ -67,6 +74,12 @@ namespace Drn
 	}
 
 	Archive& Archive::operator>>( uint16& Value )
+	{
+		File >> Value;
+		return *this;
+	}
+
+	Archive& Archive::operator>>( float& Value )
 	{
 		File >> Value;
 		return *this;

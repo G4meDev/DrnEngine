@@ -17,6 +17,8 @@ namespace Drn
 
 		void SetCurrentFocus();
 
+		void DrawSidePanel();
+
 	protected:
 
 		AssetPreviewStaticMesh* m_OwningAsset;
