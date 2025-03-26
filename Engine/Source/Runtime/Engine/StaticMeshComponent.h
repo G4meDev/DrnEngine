@@ -18,20 +18,13 @@ namespace Drn
 	{
 	public:
 
-		void UploadResources(dx12lib::CommandList* CommandList);
+		StaticMesh* Mesh;
 
 	protected:
 
 		std::string MeshPath;
 
-		std::shared_ptr<dx12lib::VertexBuffer> m_VertexBuffer = nullptr;
-		std::shared_ptr<dx12lib::IndexBuffer>  m_IndexBuffer  = nullptr;
 
-		std::vector<VertexPosColor> VertexData;
-		std::vector<uint16> IndicesData;
-
-		friend class Renderer;
-		friend class SceneRenderer;
 
 	private:
 	};

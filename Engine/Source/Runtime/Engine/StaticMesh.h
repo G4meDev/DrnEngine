@@ -83,6 +83,19 @@ namespace Drn
 		float Color_B;
 	};
 
+	struct StaticMeshRenderProxy
+	{
+	public:
+		StaticMeshRenderProxy(){};
+
+		std::shared_ptr<dx12lib::VertexBuffer> VertexBuffer = nullptr;
+		std::shared_ptr<dx12lib::IndexBuffer>  IndexBuffer  = nullptr;
+
+		std::vector<StaticMeshVertexBuffer> VertexData;
+		std::vector<uint32> IndexData;
+	};
+
+
 	class StaticMesh : Serializable
 	{
 	public:
@@ -90,9 +103,15 @@ namespace Drn
 
 		virtual void Serialize(Archive& Ar) override;
 
+		void UploadResources( dx12lib::CommandList* CommandList );
+
 	protected:
 
-		
+		std::string Path;
+		std::vector<StaticMeshRenderProxy> RenderProxies;
+
+		friend class Renderer;
+		friend class SceneRenderer;
 
 	private:
 	};

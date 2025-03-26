@@ -60,8 +60,8 @@ namespace Drn
 			{
 				StaticMeshVertexBuffer Buffer;
 				Buffer.Pos_X = Data.Pos_X;
-				Buffer.Pos_X = Data.Pos_Y;
-				Buffer.Pos_X = Data.Pos_Z;
+				Buffer.Pos_Y = Data.Pos_Y;
+				Buffer.Pos_Z = Data.Pos_Z;
 
 				Buffer.Color_R = Data.Color_R;
 				Buffer.Color_G = Data.Color_G;

@@ -60,20 +60,11 @@ namespace Drn
 
 // -------------------------------------------------------------------------------
 
+		StaticMesh* M = new StaticMesh( Path::ConvertFullPath("Test.drn") );
+		M->UploadResources(m_CommandList.get());
+		
 		CubeMesh = new StaticMeshComponent();
-
-		for (VertexPosColor V : g_Vertices)
-		{
-			CubeMesh->VertexData.push_back(V);
-		}
-
-		for (auto i : g_Indices)
-		{
-			CubeMesh->IndicesData.push_back(i);
-		}
-
-		CubeMesh->UploadResources(m_CommandList.get());
-
+		CubeMesh->Mesh = M;
 
 // -------------------------------------------------------------------------------
 

@@ -163,13 +163,12 @@ namespace Drn
 
 	void SceneRenderer::RenderBasePass(dx12lib::CommandList* CommandList)
 	{
-		//CommandList->SetVertexBuffer( 0, m_VertexBuffer );
-		//CommandList->SetIndexBuffer( m_IndexBuffer );
-		//CommandList->DrawIndexed( m_IndexBuffer->GetNumIndices() );
-
-		CommandList->SetVertexBuffer( 0, Renderer::Get()->CubeMesh->m_VertexBuffer );
-		CommandList->SetIndexBuffer( Renderer::Get()->CubeMesh->m_IndexBuffer);
-		CommandList->DrawIndexed( Renderer::Get()->CubeMesh->m_IndexBuffer->GetNumIndices() );
+		for (const StaticMeshRenderProxy& RenderProxy : Renderer::Get()->CubeMesh->Mesh->RenderProxies)
+		{
+			CommandList->SetVertexBuffer( 0, RenderProxy.VertexBuffer );
+			CommandList->SetIndexBuffer( RenderProxy.IndexBuffer );
+			CommandList->DrawIndexed( RenderProxy.IndexBuffer->GetNumIndices() );
+		}
 	}
 
 void SceneRenderer::Render( dx12lib::CommandList* CommandList )

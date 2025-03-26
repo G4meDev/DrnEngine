@@ -16,17 +16,49 @@ namespace Drn
 	void StaticMesh::Serialize( Archive& Ar )
 	{
 #if WITH_EDITOR
-
 		if (!Ar.IsLoading())
 		{
 			LOG(LogStaticMesh, Error, "tring to save to a static mesh. if you want update a static mesh, try updating its asset.");
 		}
-
 #endif
 
-		
+		RenderProxies.clear();
 
+		uint8 Type;
+		Ar >> Type;
+
+		std::string Source;
+		Ar >> Source;
+
+		uint8 size;
+		Ar >> size;
+
+		for (int i = 0; i < size; i++)
+		{
+			StaticMeshData M;
+			M.Serialize(Ar);
+
+			StaticMeshRenderProxy RP;
+			RP.VertexData = M.VertexBuffer;
+			RP.IndexData = M.Indices;
+
+			RenderProxies.push_back(RP);
+		}
+
+		//m_VertexBuffer = CommandList->CopyVertexBuffer( VertexData.size(), sizeof(VertexPosColor), VertexData.data() );
+		//m_IndexBuffer = CommandList->CopyIndexBuffer(IndicesData.size(), DXGI_FORMAT_R16_UINT, IndicesData.data());
 	}
+
+	void StaticMesh::UploadResources( dx12lib::CommandList* CommandList )
+	{
+		for (auto& Proxy : RenderProxies)
+		{
+			Proxy.VertexBuffer = CommandList->CopyVertexBuffer( Proxy.VertexData.size(), sizeof(StaticMeshVertexBuffer), Proxy.VertexData.data());
+			Proxy.IndexBuffer = CommandList->CopyIndexBuffer( Proxy.IndexData.size(), DXGI_FORMAT_R32_UINT, Proxy.IndexData.data());
+		}
+	}
+
+// ----------------------------------------------------------------------------------------------------------
 
 	void StaticMeshData::Serialize( Archive& Ar )
 	{

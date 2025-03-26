@@ -41,6 +41,7 @@ namespace Drn
 	struct StaticMeshVertexData;
 	struct StaticMeshVertexBuffer;
 	struct StaticMeshData;
+	struct StaticMeshRenderProxy;
 	struct MaterialData;
 
 	struct VertexPosColor;
@@ -50,6 +51,7 @@ namespace Drn
 	class SceneRenderer;
 	class PrimitiveComponent;
 	class StaticMeshComponent;
+	class StaticMesh;
 	
 	class Archive;
 	class AssetPreview;
