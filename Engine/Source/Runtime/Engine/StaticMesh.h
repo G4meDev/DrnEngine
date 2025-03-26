@@ -4,7 +4,7 @@
 
 namespace Drn
 {
-	class StaticMesh
+	class StaticMesh 
 	{
 	public:
 		StaticMesh();

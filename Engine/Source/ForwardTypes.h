@@ -4,6 +4,8 @@
 #include <vector>
 #include <set>
 
+#include <DirectXMath.h>
+
 class UpdateEventArgs;
 class KeyEventArgs;
 class ResizeEventArgs;
@@ -36,10 +38,13 @@ namespace std
 
 namespace Drn
 {
+	struct VertexPosColor;
+
 	class World;
 	class Scene;
 	class SceneRenderer;
 	class PrimitiveComponent;
+	class StaticMeshComponent;
 	
 	class Archive;
 	class AssetPreview;

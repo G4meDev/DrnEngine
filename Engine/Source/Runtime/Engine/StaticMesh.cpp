@@ -1,7 +1,7 @@
 #include "DrnPCH.h"
 #include "StaticMesh.h"
 
-#include <assimp/Importer.hpp>
+using namespace DirectX;
 
 namespace Drn
 {

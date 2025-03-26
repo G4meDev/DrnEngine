@@ -6,26 +6,6 @@ using namespace Microsoft::WRL;
 
 namespace Drn
 {
-	struct VertexPosColor
-	{
-		XMFLOAT3 Position;
-		XMFLOAT3 Color;
-	};
-
-	static VertexPosColor g_Vertices[8] = {
-		{ XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT3( 0.0f, 0.0f, 0.0f ) },  // 0
-		{ XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT3( 0.0f, 1.0f, 0.0f ) },   // 1
-		{ XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT3( 1.0f, 1.0f, 0.0f ) },    // 2
-		{ XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT3( 1.0f, 0.0f, 0.0f ) },   // 3
-		{ XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT3( 0.0f, 0.0f, 1.0f ) },   // 4
-		{ XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT3( 0.0f, 1.0f, 1.0f ) },    // 5
-		{ XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT3( 1.0f, 1.0f, 1.0f ) },     // 6
-		{ XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT3( 1.0f, 0.0f, 1.0f ) }     // 7
-	};
-
-	static WORD g_Indices[36] = { 0, 1, 2, 0, 2, 3, 4, 6, 5, 4, 7, 6, 4, 5, 1, 4, 1, 0,
-									3, 2, 6, 3, 6, 7, 1, 5, 6, 1, 6, 2, 4, 0, 3, 4, 3, 7 };
-
 	SceneRenderer::SceneRenderer(Scene* InScene)
 		: m_Scene(InScene)
         , m_RenderingEnabled(true)
@@ -43,8 +23,8 @@ namespace Drn
 		m_Device = Renderer::Get()->GetDevice();
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
 
-		m_VertexBuffer = CommandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
-		m_IndexBuffer = CommandList->CopyIndexBuffer( _countof( g_Indices ), DXGI_FORMAT_R16_UINT, g_Indices );
+		//m_VertexBuffer = CommandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
+		//m_IndexBuffer = CommandList->CopyIndexBuffer( _countof( g_Indices ), DXGI_FORMAT_R16_UINT, g_Indices );
 
 		D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
@@ -139,13 +119,8 @@ namespace Drn
 		//commandQueue.Flush();
 	}
 
-	void SceneRenderer::Render( dx12lib::CommandList* CommandList )
+	void SceneRenderer::BeginRender(dx12lib::CommandList* CommandList)
 	{
-		if (!m_RenderingEnabled)
-		{
-			return;
-		}
-
 		float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
 		const XMVECTOR rotationAxis = XMVectorSet( 0, 1, 1, 0 );
 		XMMATRIX       modelMatrix  = XMMatrixRotationAxis( rotationAxis, XMConvertToRadians( angle ) );
@@ -167,12 +142,11 @@ namespace Drn
 
 		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 		{
-
-			CommandList->ClearTexture( m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ),
-										clearColor );
-			CommandList->ClearDepthStencilTexture(
-				m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::DepthStencil ),
-				D3D12_CLEAR_FLAG_DEPTH );
+				CommandList->ClearTexture( m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ),
+											clearColor );
+				CommandList->ClearDepthStencilTexture(
+					m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::DepthStencil ),
+					D3D12_CLEAR_FLAG_DEPTH );
 		}
 
 		CommandList->SetPipelineState( m_PipelineStateObject );
@@ -183,13 +157,30 @@ namespace Drn
 		CommandList->SetRenderTarget( m_RenderTarget );
 		CommandList->SetViewport( m_RenderTarget.GetViewport() );
 		CommandList->SetScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) );
-
-		CommandList->SetVertexBuffer( 0, m_VertexBuffer );
-		CommandList->SetIndexBuffer( m_IndexBuffer );
+		
 		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommandList->DrawIndexed( m_IndexBuffer->GetNumIndices() );
+	}
 
+	void SceneRenderer::RenderBasePass(dx12lib::CommandList* CommandList)
+	{
+		//CommandList->SetVertexBuffer( 0, m_VertexBuffer );
+		//CommandList->SetIndexBuffer( m_IndexBuffer );
+		//CommandList->DrawIndexed( m_IndexBuffer->GetNumIndices() );
 
+		CommandList->SetVertexBuffer( 0, Renderer::Get()->CubeMesh->m_VertexBuffer );
+		CommandList->SetIndexBuffer( Renderer::Get()->CubeMesh->m_IndexBuffer);
+		CommandList->DrawIndexed( Renderer::Get()->CubeMesh->m_IndexBuffer->GetNumIndices() );
+	}
+
+void SceneRenderer::Render( dx12lib::CommandList* CommandList )
+	{
+		if (!m_RenderingEnabled)
+		{
+			return;
+		}
+
+		BeginRender(CommandList);
+		RenderBasePass(CommandList);
 	}
 
 	ID3D12Resource* SceneRenderer::GetViewResource()

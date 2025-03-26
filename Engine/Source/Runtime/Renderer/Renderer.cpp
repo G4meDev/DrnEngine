@@ -13,12 +13,6 @@ using namespace Microsoft::WRL;
 
 namespace Drn
 {
-	struct VertexPosColor
-	{
-		XMFLOAT3 Position;
-		XMFLOAT3 Color;
-	};
-
 	static VertexPosColor g_Vertices[8] = {
 		{ XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT3( 0.0f, 0.0f, 0.0f ) },  // 0
 		{ XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT3( 0.0f, 1.0f, 0.0f ) },   // 1
@@ -57,16 +51,33 @@ namespace Drn
 	{
 		m_Device = dx12lib::Device::Create();
 
-		auto description = m_Device->GetDescription();
+		auto        description = m_Device->GetDescription();
 		std::string description_str( description.begin(), description.end() );
-		LOG( LogRenderer, Info, "%s", description_str.c_str());
+		LOG( LogRenderer, Info, "%s", description_str.c_str() );
 
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-		//auto  commandList  = commandQueue.GetCommandList();
 		m_CommandList = commandQueue.GetCommandList();
 
-		m_VertexBuffer =
-			m_CommandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
+// -------------------------------------------------------------------------------
+
+		CubeMesh = new StaticMeshComponent();
+
+		for (VertexPosColor V : g_Vertices)
+		{
+			CubeMesh->VertexData.push_back(V);
+		}
+
+		for (auto i : g_Indices)
+		{
+			CubeMesh->IndicesData.push_back(i);
+		}
+
+		CubeMesh->UploadResources(m_CommandList.get());
+
+
+// -------------------------------------------------------------------------------
+
+		m_VertexBuffer = m_CommandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
 		m_IndexBuffer = m_CommandList->CopyIndexBuffer( _countof( g_Indices ), DXGI_FORMAT_R16_UINT, g_Indices );
 		commandQueue.ExecuteCommandList( m_CommandList );
 
@@ -264,6 +275,7 @@ namespace Drn
 
 		m_CommandList->SetVertexBuffer( 0, m_VertexBuffer );
 		m_CommandList->SetIndexBuffer( m_IndexBuffer );
+
 		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		m_CommandList->DrawIndexed( m_IndexBuffer->GetNumIndices() );
 

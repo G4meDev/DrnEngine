@@ -7,6 +7,7 @@
 #include "Runtime/Engine/World.h"
 #include "Runtime/Engine/Scene.h"
 #include "Runtime/Engine/PrimitiveComponent.h"
+#include "Runtime/Engine/StaticMeshComponent.h"
 
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>
@@ -42,7 +43,6 @@
 #include <stdlib.h>
 
 #include <d3d12.h>
-#include <DirectXMath.h>
 #include <d3dcompiler.h>
 #include <dxgi1_6.h>
 #include "Runtime/Renderer/d3dx12.h"

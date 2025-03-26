@@ -12,6 +12,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/World.h
 	Source/Runtime/Engine/Scene.h
 	Source/Runtime/Engine/PrimitiveComponent.h
+	Source/Runtime/Engine/StaticMeshComponent.h
 	Source/Runtime/Engine/StaticMesh.h
 	
 	Source/Runtime/Renderer/Renderer.h
@@ -65,6 +66,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/World.cpp
 	Source/Runtime/Engine/Scene.cpp
 	Source/Runtime/Engine/PrimitiveComponent.cpp
+	Source/Runtime/Engine/StaticMeshComponent.cpp
 	Source/Runtime/Engine/StaticMesh.cpp
 	
 	Source/Runtime/Renderer/Renderer.cpp
