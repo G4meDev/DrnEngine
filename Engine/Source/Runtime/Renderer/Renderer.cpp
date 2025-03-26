@@ -62,12 +62,13 @@ namespace Drn
 		LOG( LogRenderer, Info, "%s", description_str.c_str());
 
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-		auto  commandList  = commandQueue.GetCommandList();
+		//auto  commandList  = commandQueue.GetCommandList();
+		m_CommandList = commandQueue.GetCommandList();
 
 		m_VertexBuffer =
-			commandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
-		m_IndexBuffer = commandList->CopyIndexBuffer( _countof( g_Indices ), DXGI_FORMAT_R16_UINT, g_Indices );
-		commandQueue.ExecuteCommandList( commandList );
+			m_CommandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
+		m_IndexBuffer = m_CommandList->CopyIndexBuffer( _countof( g_Indices ), DXGI_FORMAT_R16_UINT, g_Indices );
+		commandQueue.ExecuteCommandList( m_CommandList );
 
 		m_SwapChain = m_Device->CreateSwapChain( m_MainWindow->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM );
 		m_SwapChain->SetVSync( false );
@@ -241,30 +242,30 @@ namespace Drn
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
-		auto  commandList  = commandQueue.GetCommandList();
+		m_CommandList  = commandQueue.GetCommandList();
 
 		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 		{
 
-			commandList->ClearTexture( m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ),
+			m_CommandList->ClearTexture( m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ),
 										clearColor );
-			commandList->ClearDepthStencilTexture(
+			m_CommandList->ClearDepthStencilTexture(
 				m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::DepthStencil ), D3D12_CLEAR_FLAG_DEPTH );
 		}
 
-		commandList->SetPipelineState( m_PipelineStateObject );
-		commandList->SetGraphicsRootSignature( m_RootSignature );
+		m_CommandList->SetPipelineState( m_PipelineStateObject );
+		m_CommandList->SetGraphicsRootSignature( m_RootSignature );
 
-		commandList->SetGraphics32BitConstants( 0, mvpMatrix );
+		m_CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
 
-		commandList->SetRenderTarget( m_RenderTarget );
-		commandList->SetViewport( m_RenderTarget.GetViewport() );
-		commandList->SetScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) );
+		m_CommandList->SetRenderTarget( m_RenderTarget );
+		m_CommandList->SetViewport( m_RenderTarget.GetViewport() );
+		m_CommandList->SetScissorRect( CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ) );
 
-		commandList->SetVertexBuffer( 0, m_VertexBuffer );
-		commandList->SetIndexBuffer( m_IndexBuffer );
-		commandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		commandList->DrawIndexed( m_IndexBuffer->GetNumIndices() );
+		m_CommandList->SetVertexBuffer( 0, m_VertexBuffer );
+		m_CommandList->SetIndexBuffer( m_IndexBuffer );
+		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		m_CommandList->DrawIndexed( m_IndexBuffer->GetNumIndices() );
 
 		auto& swapChainRT         = m_SwapChain->GetRenderTarget();
 		auto  swapChainBackBuffer = swapChainRT.GetTexture( dx12lib::AttachmentPoint::Color0 );
@@ -272,23 +273,23 @@ namespace Drn
 
 		for (Scene* S : AllocatedScenes)
 		{
-			//S->Render(commandList);
-			S->Render(commandList.get());
+			//S->Render(m_CommandList);
+			S->Render(m_CommandList.get());
 		}
 
-		commandList->SetRenderTarget( swapChainRT );
-		commandList->ClearTexture( swapChainRT.GetTexture( dx12lib::AttachmentPoint::Color0 ), clearColor );
+		m_CommandList->SetRenderTarget( swapChainRT );
+		m_CommandList->ClearTexture( swapChainRT.GetTexture( dx12lib::AttachmentPoint::Color0 ), clearColor );
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Tick( 1, swapChainBackBuffer->GetRenderTargetView(),
-									commandList->GetD3D12CommandList().Get() );
+									m_CommandList->GetD3D12CommandList().Get() );
 #else
-		// commandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
+		// m_CommandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
 		commandList->CopyResource( swapChainBackBuffer, msaaRenderTarget );
 
 #endif
 
-		commandQueue.ExecuteCommandList( commandList );
+		commandQueue.ExecuteCommandList( m_CommandList );
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->PostExecuteCommands();

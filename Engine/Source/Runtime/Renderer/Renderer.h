@@ -40,6 +40,8 @@ namespace Drn
 
 		float TotalTime = 0;
 
+		std::shared_ptr<dx12lib::CommandList> m_CommandList;
+
 	protected:
 		static Renderer* SingletonInstance;
 

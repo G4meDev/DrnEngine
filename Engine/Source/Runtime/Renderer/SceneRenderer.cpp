@@ -28,8 +28,9 @@ namespace Drn
 
 	SceneRenderer::SceneRenderer(Scene* InScene)
 		: m_Scene(InScene)
+        , m_RenderingEnabled(true)
 	{
-		
+		Init(Renderer::Get()->m_CommandList.get());
 	}
 
 	SceneRenderer::~SceneRenderer()
@@ -140,10 +141,9 @@ namespace Drn
 
 	void SceneRenderer::Render( dx12lib::CommandList* CommandList )
 	{
-		if (!m_Initalized)
+		if (!m_RenderingEnabled)
 		{
-			m_Initalized = true;
-			Init(CommandList);
+			return;
 		}
 
 		float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
@@ -190,6 +190,24 @@ namespace Drn
 		CommandList->DrawIndexed( m_IndexBuffer->GetNumIndices() );
 
 
+	}
+
+	ID3D12Resource* SceneRenderer::GetViewResource()
+	{
+		return m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 )->GetD3D12Resource().Get();
+	}
+
+	void SceneRenderer::ResizeView( const IntPoint& InSize )
+	{
+		//LOG( LogRenderer, Info, "viewport resize: %ix%i", (int)InWidth, (int)InHeight );
+
+		m_Device->Flush();
+		m_RenderTarget.Resize( InSize.X, InSize.Y);
+	}
+
+	void SceneRenderer::SetRenderingEnabled( bool Enabled )
+	{
+		m_RenderingEnabled = Enabled;
 	}
 
 }

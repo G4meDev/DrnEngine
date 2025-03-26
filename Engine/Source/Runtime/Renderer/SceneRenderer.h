@@ -15,6 +15,12 @@ namespace Drn
 
 		void Render(dx12lib::CommandList* CommandList);
 
+		ID3D12Resource* GetViewResource();
+
+		void ResizeView(const IntPoint& InSize);
+
+		void SetRenderingEnabled(bool Enabled);
+
 	protected:
 
 		Scene* m_Scene;
@@ -33,7 +39,7 @@ namespace Drn
 
 		float m_fieldOfView = 45.0f;
 
-		bool m_Initalized = false;
+		bool m_RenderingEnabled;
 
 	private:
 

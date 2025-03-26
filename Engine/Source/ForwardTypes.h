@@ -46,6 +46,7 @@ namespace Drn
 	
 	struct SystemFileNode;
 
+	struct IntPoint;
 }
 
 class LogCategory;
