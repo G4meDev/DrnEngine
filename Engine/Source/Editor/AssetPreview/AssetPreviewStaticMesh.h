@@ -10,8 +10,6 @@ namespace Drn
 	class AssetPreviewStaticMeshGuiLayer;
 	class AssetImporterStaticMesh;
 
-
-
 	class AssetPreviewStaticMesh : public AssetPreview
 	{
 	public:
@@ -21,7 +19,6 @@ namespace Drn
 
 		virtual void SetCurrentFocus() override;
 		virtual void Reimport() override;
-		void RebuildVertexBufferData();
 
 		virtual EAssetType GetAssetType() override;
 
@@ -31,18 +28,21 @@ namespace Drn
 
 	protected:
 
-		std::vector<StaticMeshData> MeshesData;
-		std::vector<MaterialData> MaterialsData;
-
-		uint8 AddMaterial(MaterialData Material);
+		StaticMeshData MeshData;
 
 		float ImportScale = 1.0f;
 
-		std::unique_ptr<AssetPreviewStaticMeshGuiLayer> GuiLayer;
+		bool  ImportNormal = false;
+		bool  ImportTangent = false;
+		bool  ImportBiTangent = false;
+		bool  ImportColor = true;
+		uint8 ImportUvCount = 0;
 		
+
+		std::unique_ptr<AssetPreviewStaticMeshGuiLayer> GuiLayer;
+
 		friend AssetPreviewStaticMeshGuiLayer;
 		friend AssetImporterStaticMesh;
-
 
 	private:
 	};

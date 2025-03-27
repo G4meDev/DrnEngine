@@ -30,23 +30,17 @@ namespace Drn
 		std::string Source;
 		Ar >> Source;
 
-		uint8 size;
-		Ar >> size;
+		Data.Serialize(Ar);
 
-		for (int i = 0; i < size; i++)
+		for (auto& Mesh : Data.MeshesData)
 		{
-			StaticMeshData M;
-			M.Serialize(Ar);
-
 			StaticMeshRenderProxy RP;
-			RP.VertexData = M.VertexBuffer;
-			RP.IndexData = M.Indices;
+
+			RP.VertexData = Mesh.VertexData;
+			RP.IndexData = Mesh.IndexData;
 
 			RenderProxies.push_back(RP);
 		}
-
-		//m_VertexBuffer = CommandList->CopyVertexBuffer( VertexData.size(), sizeof(VertexPosColor), VertexData.data() );
-		//m_IndexBuffer = CommandList->CopyIndexBuffer(IndicesData.size(), DXGI_FORMAT_R16_UINT, IndicesData.data());
 	}
 
 	void StaticMesh::UploadResources( dx12lib::CommandList* CommandList )
@@ -64,113 +58,67 @@ namespace Drn
 	{
 		if (Ar.IsLoading())
 		{
-			std::vector<char> Buffer;
-			
-			Ar >> Buffer;
-			int size =  Buffer.size() / sizeof( StaticMeshVertexData );
-			Vertices.resize(size);
-			std::memcpy( Vertices.data(), Buffer.data(), Buffer.size() );
+			MeshesData.clear();
+			Materials.clear();
 
-			Ar >> Buffer;
-			size = Buffer.size() / sizeof(uint32);
-			Indices.resize(size);
-			std::memcpy( Indices.data(), Buffer.data(), Buffer.size() );
+			uint8 size;
+			Ar >> size;
 
-			Ar >> Buffer;
-			size = Buffer.size() / sizeof(StaticMeshVertexBuffer);
-			VertexBuffer.resize(size);
-			std::memcpy( VertexBuffer.data(), Buffer.data(), Buffer.size() );
+			for (int i = 0; i < size; i++)
+			{
+				StaticMeshSlotData M;
+				M.Serialize(Ar);
+
+				MeshesData.push_back(M);
+			}
 		}
 
 		else
 		{
-			uint64 size = Vertices.size() * sizeof(StaticMeshVertexData);
-			std::vector<char> buffer(size);
-			std::memcpy(buffer.data(), Vertices.data(), size);
-			Ar << buffer;
+			uint8 size = MeshesData.size();
+			Ar << size;
 
-			size = Indices.size() * sizeof(uint32);
-			buffer.resize(size);
-			std::memcpy(buffer.data(), Indices.data(), size);
-			Ar << buffer;
-
-			size = VertexBuffer.size() * sizeof( StaticMeshVertexBuffer);
-			buffer.resize( size );
-			std::memcpy( buffer.data(), VertexBuffer.data(), size );
-			Ar << buffer;
+			for (int i = 0; i < size; i++)
+			{
+				MeshesData[i].Serialize(Ar);
+			}
 		}
+		
 	}
 
-	void StaticMeshVertexData::Serialize( Archive& Ar )
+	void StaticMeshSlotData::Serialize( Archive& Ar )
 	{
 		if (Ar.IsLoading())
 		{
-			Ar >> Pos_X;
-			Ar >> Pos_Y;
-			Ar >> Pos_Z;
+			std::vector<char> Buffer;
 
-			Ar >> Normal_X;
-			Ar >> Normal_Y;
-			Ar >> Normal_Z;
+			Ar >> Buffer;
+			int size =  Buffer.size() / sizeof( StaticMeshVertexBuffer );
+			VertexData.resize(size);
+			std::memcpy( VertexData.data(), Buffer.data(), Buffer.size() );
 
-			Ar >> Tangent_X;
-			Ar >> Tangent_Y;
-			Ar >> Tangent_Z;
+			Ar >> Buffer;
+			size = Buffer.size() / sizeof(uint32);
+			IndexData.resize(size);
+			std::memcpy( IndexData.data(), Buffer.data(), Buffer.size() );
 
-			Ar >> BiTangent_X;
-			Ar >> BiTangent_Y;
-			Ar >> BiTangent_Z;
-
-			Ar >> Color_R;
-			Ar >> Color_G;
-			Ar >> Color_B;
-
-			Ar >> U_1;
-			Ar >> V_1;
-
-			Ar >> U_2;
-			Ar >> V_2;
-
-			Ar >> U_3;
-			Ar >> V_3;
-
-			Ar >> U_4;
-			Ar >> V_4;
+			Ar >> Stride;
+			Ar >> MaterialIndex;
 		}
-
 		else
 		{
-			Ar << Pos_X;
-			Ar << Pos_Y;
-			Ar << Pos_Z;
+			uint64 size = VertexData.size() * sizeof( StaticMeshVertexBuffer );
+			std::vector<char> buffer( size );
+			std::memcpy( buffer.data(), VertexData.data(), size );
+			Ar << buffer;
 
-			Ar << Normal_X;
-			Ar << Normal_Y;
-			Ar << Normal_Z;
+			size = IndexData.size() * sizeof( uint32 );
+			buffer.resize( size );
+			std::memcpy( buffer.data(), IndexData.data(), size );
+			Ar << buffer;
 
-			Ar << Tangent_X;
-			Ar << Tangent_Y;
-			Ar << Tangent_Z;
-
-			Ar << BiTangent_X;
-			Ar << BiTangent_Y;
-			Ar << BiTangent_Z;
-
-			Ar << Color_R;
-			Ar << Color_G;
-			Ar << Color_B;
-
-			Ar << U_1;
-			Ar << V_1;
-
-			Ar << U_2;
-			Ar << V_2;
-
-			Ar << U_3;
-			Ar << V_3;
-
-			Ar << U_4;
-			Ar << V_4;
+			Ar << Stride;
+			Ar << MaterialIndex;
 		}
 	}
 }

@@ -15,6 +15,8 @@ namespace Drn
 {
 	void AssetImporterStaticMesh::Import( AssetPreviewStaticMesh* MeshAsset, const std::string& Path )
 	{
+		ImportedStaticMeshData Data;
+		
 		if (!FileSystem::FileExists(Path))
 		{
 			LOG(LogStaticMeshImporter, Error, "source not found.\n importing failed.");
@@ -30,20 +32,17 @@ namespace Drn
 			return;
 		}
 
-		MeshAsset->MeshesData.clear();
-		MeshAsset->MaterialsData.clear();
-
 		for (int i = 0; i < scene->mNumMeshes; i++)
 		{
-			ProcessMesh( MeshAsset, scene->mMeshes[i], scene );
+			ProcessMesh( MeshAsset, scene->mMeshes[i], scene, Data);
 		}
 
+		Build(MeshAsset, Data);
 	}
 
-
-	void AssetImporterStaticMesh::ProcessMesh( AssetPreviewStaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )
+	void AssetImporterStaticMesh::ProcessMesh( AssetPreviewStaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene, ImportedStaticMeshData& BuildingData)
 	{
-		StaticMeshData MeshData;
+		ImportedStaticMeshSlotData MeshData;
 
 		std::vector<StaticMeshVertexData> VertexData;
 		std::vector<uint32> indices;
@@ -101,14 +100,58 @@ namespace Drn
 		if ( mesh->mMaterialIndex >= 0 )
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-			MaterialData Data;
-			Data.Name = material->GetName().C_Str();
-
-			MeshData.MaterialIndex = MeshAsset->AddMaterial(Data);
+			MeshData.MaterialIndex = BuildingData.AddMaterial(std::string( material->GetName().C_Str()));
 		}
 
-		MeshAsset->MeshesData.push_back(MeshData);
+		BuildingData.MeshesData.push_back(MeshData);
+	}
+
+	uint8 ImportedStaticMeshData::AddMaterial( std::string& InMaterial )
+	{
+		for ( int i = 0; i < MaterialsData.size(); i++ )
+		{
+			if ( MaterialsData[i] == InMaterial)
+			{
+				return i;
+			}
+		}
+
+		MaterialsData.push_back( InMaterial );
+		return MaterialsData.size() - 1;
+	}
+
+	void AssetImporterStaticMesh::Build( AssetPreviewStaticMesh* MeshAsset, ImportedStaticMeshData& BuildingData) 
+	{
+		MeshAsset->MeshData.MeshesData.clear();
+		MeshAsset->MeshData.Materials.clear();
+
+		for (ImportedStaticMeshSlotData& Mesh : BuildingData.MeshesData)
+		{
+			StaticMeshSlotData Data;
+			StaticMeshVertexBuffer VertexBuffer;
+
+			for (auto& Vertex : Mesh.Vertices)
+			{
+				VertexBuffer.Pos_X = Vertex.Pos_X;
+				VertexBuffer.Pos_Y = Vertex.Pos_Y;
+				VertexBuffer.Pos_Z = Vertex.Pos_Z;
+				
+				VertexBuffer.Color_R = Vertex.Color_R;
+				VertexBuffer.Color_G = Vertex.Color_G;
+				VertexBuffer.Color_B = Vertex.Color_B;
+
+				Data.VertexData.push_back(VertexBuffer);
+			}
+
+			Data.IndexData = Mesh.Indices;
+
+			Data.Stride = 1;
+			Data.MaterialIndex = Mesh.MaterialIndex;
+
+			MeshAsset->MeshData.MeshesData.push_back(Data);
+		}
+
+		MeshAsset->MeshData.Materials = BuildingData.MaterialsData;
 	}
 
 }
