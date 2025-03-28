@@ -77,12 +77,14 @@ namespace Drn
 
 		inline static AssetManager* Get() { return m_SingletionInstance; }
 
+		void ReportLiveAssets();
+
 		template< typename T >
 		T* Load(const std::string& Path);
 
 	protected:
 
-		std::unordered_map<std::string, Asset*> AssetRegistery;
+		std::unordered_map<std::string, Asset*> m_AssetRegistery;
 
 		static AssetManager* m_SingletionInstance;
 
@@ -94,9 +96,9 @@ namespace Drn
 	T* AssetManager::Load( const std::string& Path )
 	{
 		Asset* asset = nullptr;
-		auto it = AssetRegistery.find(Path);
+		auto it = m_AssetRegistery.find(Path);
 
-		if (it != AssetRegistery.end())
+		if (it != m_AssetRegistery.end())
 		{
 			asset = it->second;
 		}
@@ -104,7 +106,7 @@ namespace Drn
 		else
 		{
 			asset = new T(Path);
-			AssetRegistery[Path] = asset;
+			m_AssetRegistery[Path] = asset;
 		}
 
 		asset->AddRef();

@@ -35,7 +35,13 @@ namespace Drn
 
 	void ViewportGuiLayer::Draw()
 	{
-		ImGui::Begin( "Viewport" );
+		if (!ImGui::Begin( "Viewport" ))
+		{
+			ImGui::End();
+			return;
+		}
+
+		ShowMenu();
 
 		const ImVec2 AvaliableSize = ImGui::GetContentRegionAvail();
 		IntPoint     ImageSize     = IntPoint( (int)AvaliableSize.x, (int)AvaliableSize.y );
@@ -51,9 +57,34 @@ namespace Drn
 
 		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
 		ImGui::End();
+
+		ImGui::ShowDemoWindow();
 	}
 
-	void ViewportGuiLayer::OnViewportSizeChanged(const IntPoint& NewSize)
+	void ViewportGuiLayer::ShowMenu()
+	{
+		if (ImGui::BeginMainMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Asset Manager"))
+			{
+				if (ImGui::MenuItem("log live assets"))
+				{
+					AssetManager::Get()->ReportLiveAssets();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
+		}
+	}
+
+	void ViewportGuiLayer::OnViewportSizeChanged( const IntPoint& NewSize )
 	{
 		Renderer::Get()->ViewportResized( CachedSize.X, CachedSize.Y );
 

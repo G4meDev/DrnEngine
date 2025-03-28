@@ -190,6 +190,8 @@ namespace Drn
 		ImGuiRenderer::Get()->Shutdown();
 #endif
 
+		AssetManager::Shutdown();
+
 		SingletonInstance->m_IndexBuffer.reset();
 		SingletonInstance->m_VertexBuffer.reset();
 		SingletonInstance->m_PipelineStateObject.reset();

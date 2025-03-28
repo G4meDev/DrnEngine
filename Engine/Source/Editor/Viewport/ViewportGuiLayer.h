@@ -15,6 +15,8 @@ namespace Drn
 
 	private:
 
+		void ShowMenu();
+
 		void OnViewportSizeChanged( const IntPoint& NewSize);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
