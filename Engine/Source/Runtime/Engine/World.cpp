@@ -13,12 +13,12 @@ namespace Drn
 		
 	}
 
-	void World::AddPrimitive( PrimitiveComponent* InPrimitive )
+	void World::AddStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
 	{
-		m_PrimitiveComponents.push_back(InPrimitive);
+		m_StaticMeshComponents.push_back(InStaticMesh);
 	}
 
-	void World::RemovePrimitive( PrimitiveComponent* InPrimitive )
+	void World::RemoveStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
 	{
 		
 	}

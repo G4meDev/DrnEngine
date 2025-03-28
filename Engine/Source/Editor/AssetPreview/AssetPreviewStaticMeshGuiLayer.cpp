@@ -15,10 +15,12 @@ namespace Drn
 	AssetPreviewStaticMeshGuiLayer::AssetPreviewStaticMeshGuiLayer(AssetPreviewStaticMesh* InOwningAsset)
 		: m_OwningAsset(InOwningAsset)
 	{
+		PreviewMesh = new StaticMeshComponent();
+		PreviewMesh->SetMesh(Renderer::Get()->CubeStaticMeshAsset);
+
 		// TODO: lifetime management
 		PreviewWorld = new World();
-
-		//PreviewWorld->AddPrimitive(new PrimitiveComponent());
+		PreviewWorld->AddStaticMeshCompponent(PreviewMesh);
 
 		PreviewScene = Renderer::Get()->AllocateScene(PreviewWorld);
 		MainView = PreviewScene->AllocateSceneRenderer();

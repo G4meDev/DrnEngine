@@ -16,15 +16,17 @@ namespace Drn
 		SceneRenderer* AllocateSceneRenderer();
 		void RemoveSceneRenderer(SceneRenderer* InSceneRenderer);
 
-		//void AddPrimitive(PrimitiveComponent* InComponenet);
-		//void RemovePrimitive(PrimitiveComponent* InComponenet);
+		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
+		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 
 	protected:
 
 		World* m_World;
 
-		std::vector<StaticMeshComponent*> m_PrimitiveComponents;
+		std::vector<StaticMeshComponent*> m_StaticMeshComponents;
 		std::set<SceneRenderer*> m_SceneRenderers;
+
+		friend class SceneRenderer;
 
 	private:
 

@@ -57,8 +57,6 @@ namespace Drn
 
 		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
 		ImGui::End();
-
-		ImGui::ShowDemoWindow();
 	}
 
 	void ViewportGuiLayer::ShowMenu()
@@ -67,6 +65,7 @@ namespace Drn
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				ImGui::MenuItem("nothing");
 				ImGui::EndMenu();
 			}
 

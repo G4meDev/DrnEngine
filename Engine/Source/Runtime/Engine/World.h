@@ -11,15 +11,15 @@ namespace Drn
 		World();
 		~World();
 
-		void AddPrimitive(PrimitiveComponent* InPrimitive);
-		void RemovePrimitive(PrimitiveComponent* InPrimitive);
+		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
+		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 
 	protected:
 
 		
 
 		// @TODO: promote to actor
-		std::vector<PrimitiveComponent*> m_PrimitiveComponents;
+		std::vector<StaticMeshComponent*> m_StaticMeshComponents;
 
 		friend Scene;
 

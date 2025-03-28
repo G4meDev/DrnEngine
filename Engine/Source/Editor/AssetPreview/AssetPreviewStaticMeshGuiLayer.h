@@ -35,6 +35,8 @@ namespace Drn
 		Scene* PreviewScene;
 		SceneRenderer* MainView;
 
+		StaticMeshComponent* PreviewMesh;
+
 		AssetPreviewStaticMesh* m_OwningAsset;
 
 	private:

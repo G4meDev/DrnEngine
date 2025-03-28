@@ -6,10 +6,10 @@ namespace Drn
 	Scene::Scene( World* InWorld )
 		: m_World(InWorld)
 	{
-		//for (PrimitiveComponent* Prim : m_World->m_PrimitiveComponents)
-		//{
-		//	AddPrimitive(Prim);
-		//}
+		for (StaticMeshComponent* Mesh : m_World->m_StaticMeshComponents)
+		{
+			AddStaticMeshCompponent(Mesh);
+		}
 	}
 
 	void Scene::Render( dx12lib::CommandList* CommandList )
@@ -33,14 +33,14 @@ namespace Drn
 		m_SceneRenderers.erase(InSceneRenderer);
 	}
 
-	//void Scene::AddPrimitive( PrimitiveComponent* InComponenet )
-	//{
-	//	m_PrimitiveComponents.push_back(InComponenet);
-	//}
-	//
-	//void Scene::RemovePrimitive( PrimitiveComponent* InComponenet )
-	//{
-	//	
-	//}
+	void Scene::AddStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
+	{
+		m_StaticMeshComponents.push_back(InStaticMesh);
+	}
+
+	void Scene::RemoveStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
+	{
+		
+	}
 
 }
