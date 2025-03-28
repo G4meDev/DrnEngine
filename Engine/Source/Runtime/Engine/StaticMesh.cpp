@@ -8,9 +8,11 @@ using namespace DirectX;
 namespace Drn
 {
 	StaticMesh::StaticMesh(const std::string& Path)
+		: Asset(Path)
 	{
-		Archive Ar = Archive(Path);
-		Serialize(Ar);
+		Load();
+
+
 	}
 
 	void StaticMesh::Serialize( Archive& Ar )
@@ -50,6 +52,12 @@ namespace Drn
 			Proxy.VertexBuffer = CommandList->CopyVertexBuffer( Proxy.VertexData.size(), sizeof(StaticMeshVertexBuffer), Proxy.VertexData.data());
 			Proxy.IndexBuffer = CommandList->CopyIndexBuffer( Proxy.IndexData.size(), DXGI_FORMAT_R32_UINT, Proxy.IndexData.data());
 		}
+	}
+
+	void StaticMesh::Load() 
+	{
+		Archive Ar = Archive(m_Path);
+		Serialize(Ar);
 	}
 
 // ----------------------------------------------------------------------------------------------------------

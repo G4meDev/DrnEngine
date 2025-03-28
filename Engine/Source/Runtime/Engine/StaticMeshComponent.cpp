@@ -3,6 +3,10 @@
 
 namespace Drn
 {
+	void StaticMeshComponent::SetMesh( const AssetHandle<StaticMesh>& InHandle )
+	{
+		Mesh = InHandle;
+	}
 
 
 }

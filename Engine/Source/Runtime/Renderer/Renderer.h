@@ -5,6 +5,7 @@
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 
+
 LOG_DECLARE_CATEGORY( LogRenderer );
 
 namespace Drn

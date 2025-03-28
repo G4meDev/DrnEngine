@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Core/Serializable.h"
+#include "Runtime/Core/Asset.h"
 
 LOG_DECLARE_CATEGORY(LogStaticMesh)
 
@@ -61,7 +62,7 @@ namespace Drn
 	};
 
 
-	class StaticMesh : Serializable
+	class StaticMesh : public Serializable, public Asset
 	{
 	public:
 		StaticMesh(const std::string& Path);
@@ -72,7 +73,7 @@ namespace Drn
 
 	protected:
 
-		std::string Path;
+		virtual void Load() override;
 
 		StaticMeshData Data;
 		std::vector<StaticMeshRenderProxy> RenderProxies;

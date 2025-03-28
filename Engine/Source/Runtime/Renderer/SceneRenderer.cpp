@@ -163,7 +163,9 @@ namespace Drn
 
 	void SceneRenderer::RenderBasePass(dx12lib::CommandList* CommandList)
 	{
-		for (const StaticMeshRenderProxy& RenderProxy : Renderer::Get()->CubeMesh->Mesh->RenderProxies)
+		StaticMeshComponent* Comp = Renderer::Get()->CubeMesh;
+
+		for (const StaticMeshRenderProxy& RenderProxy : Renderer::Get()->CubeMesh->GetMesh()->RenderProxies)
 		{
 			CommandList->SetVertexBuffer( 0, RenderProxy.VertexBuffer );
 			CommandList->SetIndexBuffer( RenderProxy.IndexBuffer );

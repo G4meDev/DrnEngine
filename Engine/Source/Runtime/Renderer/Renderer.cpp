@@ -6,6 +6,7 @@
 #include <GameFramework/Window.h>
 #include <GameFramework/GameFramework.h>
 
+
 LOG_DEFINE_CATEGORY( LogRenderer, "Renderer" );
 
 using namespace DirectX;
@@ -60,11 +61,20 @@ namespace Drn
 
 // -------------------------------------------------------------------------------
 
-		StaticMesh* M = new StaticMesh( Path::ConvertFullPath("Test.drn") );
-		M->UploadResources(m_CommandList.get());
+		AssetManager::Init();
+
+		{
+			AssetHandle<StaticMesh> CubeStaticMeshAsset(Path::ConvertFullPath("Test.drn"));
+			CubeStaticMeshAsset.Load();
+			CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
+
+			int A = 1 + 2;
+			std::cout << "123";
+
+			CubeMesh = new StaticMeshComponent();
+			CubeMesh->SetMesh(CubeStaticMeshAsset);
+		}
 		
-		CubeMesh = new StaticMeshComponent();
-		CubeMesh->Mesh = M;
 
 // -------------------------------------------------------------------------------
 

@@ -3,6 +3,9 @@
 #include "PrimitiveComponent.h"
 #include "ForwardTypes.h"
 
+#include "Runtime/Core/AssetManager.h"
+#include "Runtime/Engine/StaticMesh.h"
+
 using namespace DirectX;
 
 namespace Drn
@@ -18,12 +21,12 @@ namespace Drn
 	{
 	public:
 
-		StaticMesh* Mesh;
+		inline StaticMesh* GetMesh() { return Mesh.Get(); }
+		void SetMesh(const AssetHandle<StaticMesh>& InHandle);
 
 	protected:
 
-		std::string MeshPath;
-
+		AssetHandle<StaticMesh> Mesh;
 
 
 	private:
