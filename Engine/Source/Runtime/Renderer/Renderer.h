@@ -44,7 +44,6 @@ namespace Drn
 		std::shared_ptr<dx12lib::CommandList> m_CommandList;
 
 		AssetHandle<StaticMesh> CubeStaticMeshAsset;
-		StaticMeshComponent* CubeMesh;
 
 	protected:
 		static Renderer* SingletonInstance;

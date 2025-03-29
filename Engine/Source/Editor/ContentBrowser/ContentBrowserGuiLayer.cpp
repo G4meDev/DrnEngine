@@ -8,7 +8,6 @@
 #include "imgui.h"
 
 #include "Editor/Editor.h"
-#include "Editor/AssetPreview/AssetPreview.h"
 
 #include "Runtime/Misc/FileSystem.h"
 #include "Editor/FileImportMenu/FileImportMenu.h"
@@ -192,8 +191,8 @@ namespace Drn
 			LOG( LogContentBrowser, Error, "there is no folder selected in content browser for imprting file. ");
 			return;
 		}
-
-		AssetPreview::Create(FilePath, SelectedFolder->File.m_FullPath);
+		
+		AssetManager::Get()->Create( FilePath, SelectedFolder->File.m_FullPath );
 	}
 
 }

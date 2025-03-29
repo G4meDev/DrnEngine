@@ -44,8 +44,6 @@ set( HEADER_FILES
 	Source/Editor/ContentBrowser/ContentBrowser.h
 	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.h
 
-	Source/Editor/AssetPreview/AssetPreview.h
-	Source/Editor/AssetPreview/AssetPreviewStaticMesh.h
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.h
@@ -99,8 +97,6 @@ set( SOURCE_FILES
 	Source/Editor/ContentBrowser/ContentBrowser.cpp
 	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.cpp
 
-	Source/Editor/AssetPreview/AssetPreview.cpp
-	Source/Editor/AssetPreview/AssetPreviewStaticMesh.cpp
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.cpp
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.cpp

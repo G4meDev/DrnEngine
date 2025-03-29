@@ -1,48 +1,70 @@
 #include "DrnPCH.h"
 #include "StaticMesh.h"
 
+#include "Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h"
+#include "Editor/AssetImporter/AssetImporterStaticMesh.h"
+
 LOG_DEFINE_CATEGORY( LogStaticMesh, "StaticMesh" )
 
 using namespace DirectX;
 
 namespace Drn
 {
-	StaticMesh::StaticMesh(const std::string& Path)
-		: Asset(Path)
+	StaticMesh::StaticMesh(const std::string& InPath)
+		: Asset(InPath)
 	{
 		Load();
+	}
 
+	StaticMesh::StaticMesh( const std::string& InPath, const std::string& InSourcePath )
+		: Asset(InPath, InSourcePath)
+	{
+		Import();
+		Save();
+	}
 
+	StaticMesh::~StaticMesh()
+	{
+#if WITH_EDITOR
+		CloseAssetPreview();
+#endif
+
+		
 	}
 
 	void StaticMesh::Serialize( Archive& Ar )
 	{
-#if WITH_EDITOR
-		if (!Ar.IsLoading())
+		if (Ar.IsLoading())
 		{
-			LOG(LogStaticMesh, Error, "tring to save to a static mesh. if you want update a static mesh, try updating its asset.");
+			RenderProxies.clear();
+
+			Ar >> m_AssetType;
+			Ar >> m_AssetVersion;
+			Ar >> m_SourcePath;
+			Data.Serialize( Ar );
+			Ar >> ImportScale;
+
+			for ( auto& Mesh: Data.MeshesData )
+			{
+				StaticMeshRenderProxy RP;
+
+				RP.VertexData = Mesh.VertexData;
+				RP.IndexData  = Mesh.IndexData;
+
+				RenderProxies.push_back( RP );
+			}
+		}
+
+#if WITH_EDITOR
+		else
+		{
+			Ar << static_cast<uint8>(GetAssetType());
+			Ar << m_AssetVersion;
+			Ar << m_SourcePath;
+			Data.Serialize( Ar );
+			Ar << ImportScale;
 		}
 #endif
-
-		RenderProxies.clear();
-
-		uint8 Type;
-		Ar >> Type;
-
-		std::string Source;
-		Ar >> Source;
-
-		Data.Serialize(Ar);
-
-		for (auto& Mesh : Data.MeshesData)
-		{
-			StaticMeshRenderProxy RP;
-
-			RP.VertexData = Mesh.VertexData;
-			RP.IndexData = Mesh.IndexData;
-
-			RenderProxies.push_back(RP);
-		}
 	}
 
 	void StaticMesh::UploadResources( dx12lib::CommandList* CommandList )
@@ -54,11 +76,45 @@ namespace Drn
 		}
 	}
 
+	void StaticMesh::Save()
+	{
+		Archive Ar = Archive(m_Path, false);
+		Serialize(Ar);
+	}
+
 	void StaticMesh::Load() 
 	{
 		Archive Ar = Archive(m_Path);
 		Serialize(Ar);
 	}
+
+	void StaticMesh::Import()
+	{
+		AssetImporterStaticMesh::Import(this, m_SourcePath);
+	}
+
+	EAssetType StaticMesh::GetAssetType()
+	{
+		return EAssetType::StaticMesh;
+	}
+
+#if WITH_EDITOR
+	void StaticMesh::OpenAssetPreview()
+	{
+		GuiLayer = std::make_unique<AssetPreviewStaticMeshGuiLayer>( this );
+		GuiLayer->Attach();
+	}
+
+	void StaticMesh::CloseAssetPreview()
+	{
+		if ( GuiLayer )
+		{
+				GuiLayer->DeAttach();
+				GuiLayer.reset();
+		}
+	}
+
+#endif
 
 // ----------------------------------------------------------------------------------------------------------
 

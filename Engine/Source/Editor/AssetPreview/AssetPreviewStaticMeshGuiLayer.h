@@ -11,7 +11,7 @@ namespace Drn
 	class AssetPreviewStaticMeshGuiLayer : public ImGuiLayer
 	{
 	public:
-		AssetPreviewStaticMeshGuiLayer(AssetPreviewStaticMesh* InOwningAsset);
+		AssetPreviewStaticMeshGuiLayer(StaticMesh* InOwningAsset);
 		~AssetPreviewStaticMeshGuiLayer();
 
 		virtual void Draw() override;
@@ -37,7 +37,7 @@ namespace Drn
 
 		StaticMeshComponent* PreviewMesh;
 
-		AssetPreviewStaticMesh* m_OwningAsset;
+		AssetHandle<StaticMesh> m_OwningAsset;
 
 	private:
 	};

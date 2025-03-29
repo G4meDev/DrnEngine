@@ -3,8 +3,6 @@
 
 #if WITH_EDITOR
 
-#include "Editor/AssetPreview/AssetPreviewStaticMesh.h"
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -13,7 +11,7 @@ LOG_DEFINE_CATEGORY( LogStaticMeshImporter, "StaticMeshImporter" );
 
 namespace Drn
 {
-	void AssetImporterStaticMesh::Import( AssetPreviewStaticMesh* MeshAsset, const std::string& Path )
+	void AssetImporterStaticMesh::Import( StaticMesh* MeshAsset, const std::string& Path )
 	{
 		ImportedStaticMeshData Data;
 		
@@ -40,7 +38,7 @@ namespace Drn
 		Build(MeshAsset, Data);
 	}
 
-	void AssetImporterStaticMesh::ProcessMesh( AssetPreviewStaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene, ImportedStaticMeshData& BuildingData)
+	void AssetImporterStaticMesh::ProcessMesh( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene, ImportedStaticMeshData& BuildingData)
 	{
 		ImportedStaticMeshSlotData MeshData;
 
@@ -120,10 +118,10 @@ namespace Drn
 		return MaterialsData.size() - 1;
 	}
 
-	void AssetImporterStaticMesh::Build( AssetPreviewStaticMesh* MeshAsset, ImportedStaticMeshData& BuildingData) 
+	void AssetImporterStaticMesh::Build( StaticMesh* MeshAsset, ImportedStaticMeshData& BuildingData) 
 	{
-		MeshAsset->MeshData.MeshesData.clear();
-		MeshAsset->MeshData.Materials.clear();
+		MeshAsset->Data.MeshesData.clear();
+		MeshAsset->Data.Materials.clear();
 
 		for (ImportedStaticMeshSlotData& Mesh : BuildingData.MeshesData)
 		{
@@ -148,10 +146,10 @@ namespace Drn
 			Data.Stride = 1;
 			Data.MaterialIndex = Mesh.MaterialIndex;
 
-			MeshAsset->MeshData.MeshesData.push_back(Data);
+			MeshAsset->Data.MeshesData.push_back(Data);
 		}
 
-		MeshAsset->MeshData.Materials = BuildingData.MaterialsData;
+		MeshAsset->Data.Materials = BuildingData.MaterialsData;
 	}
 
 }

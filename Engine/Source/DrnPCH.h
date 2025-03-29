@@ -10,8 +10,6 @@
 #include "Runtime/Engine/StaticMesh.h"
 #include "Runtime/Engine/StaticMeshComponent.h"
 
-#include "Editor/AssetPreview/AssetPreviewStaticMesh.h"
-
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>
 #include <dx12lib/CommandList.h>

@@ -73,13 +73,13 @@ namespace Drn
 	{
 	public:
 
-		static void Import(AssetPreviewStaticMesh* MeshAsset, const std::string& Path);
+		static void Import(StaticMesh* MeshAsset, const std::string& Path);
 
 	private:
 
-		static void ProcessMesh(AssetPreviewStaticMesh* MeshAsset, aiMesh* mesh, const aiScene *scene, ImportedStaticMeshData& BuildingData);
+		static void ProcessMesh(StaticMesh* MeshAsset, aiMesh* mesh, const aiScene *scene, ImportedStaticMeshData& BuildingData);
 
-		static void Build(AssetPreviewStaticMesh* MeshAsset, ImportedStaticMeshData& BuildingData);
+		static void Build(StaticMesh* MeshAsset, ImportedStaticMeshData& BuildingData);
 	};
 }
 

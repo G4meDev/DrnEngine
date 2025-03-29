@@ -11,11 +11,6 @@ namespace Drn
 {
 	class AssetManager;
 
-	enum class EAssetType : uint8
-	{
-		StaticMesh = 0
-	};
-
 	template<typename T>
 	struct AssetHandle
 	{
@@ -52,6 +47,26 @@ namespace Drn
 			return;
 		}
 
+		EAssetType LoadGeneric()
+		{
+			Release();
+
+			uint8 TypeByte;
+			{
+				Archive Ar(m_Path);
+				Ar >> TypeByte;
+			}
+
+			EAssetType Type = static_cast<EAssetType>(TypeByte);
+
+			if (Type == EAssetType::StaticMesh)
+			{
+				m_Asset = AssetManager::Get()->Load<StaticMesh>(m_Path);
+			}
+
+			return Type;
+		}
+
 		void Release() 
 		{
 			if (IsValid())
@@ -81,6 +96,9 @@ namespace Drn
 
 		template< typename T >
 		T* Load(const std::string& Path);
+
+		void Create(const std::string& SourceFile, const std::string& TargetFolder);
+
 
 	protected:
 

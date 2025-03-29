@@ -8,6 +8,8 @@ LOG_DECLARE_CATEGORY(LogStaticMesh)
 
 namespace Drn
 {
+	class AssetPreviewStaticMeshGuiLayer;
+
 	struct StaticMeshSlotData : public Serializable
 	{
 	public:
@@ -65,7 +67,10 @@ namespace Drn
 	class StaticMesh : public Serializable, public Asset
 	{
 	public:
-		StaticMesh(const std::string& Path);
+		
+		StaticMesh(const std::string& InPath);
+		StaticMesh(const std::string& InPath, const std::string& InSourcePath);
+		virtual ~StaticMesh();
 
 		virtual void Serialize(Archive& Ar) override;
 
@@ -73,7 +78,11 @@ namespace Drn
 
 	protected:
 
+		virtual void Save() override;
 		virtual void Load() override;
+		virtual void Import() override;
+
+		virtual EAssetType GetAssetType() override;
 
 		StaticMeshData Data;
 		std::vector<StaticMeshRenderProxy> RenderProxies;
@@ -82,5 +91,24 @@ namespace Drn
 		friend class SceneRenderer;
 
 	private:
+
+		float ImportScale = 1.0f;
+
+		bool  ImportNormal    = false;
+		bool  ImportTangent   = false;
+		bool  ImportBiTangent = false;
+		bool  ImportColor     = true;
+		uint8 ImportUvCount   = 0;
+
+#if WITH_EDITOR
+		virtual void OpenAssetPreview() override;
+		virtual void CloseAssetPreview() override;
+
+		std::unique_ptr<AssetPreviewStaticMeshGuiLayer> GuiLayer;
+#endif
+
+		friend class AssetPreviewStaticMeshGuiLayer;
+		friend class AssetImporterStaticMesh;
+		friend class Editor;
 	};
 }

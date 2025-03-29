@@ -12,4 +12,11 @@ namespace Drn
 		
 	}
 
+	Asset::Asset( const std::string InPath, const std::string InSourcePath )
+		: m_Path(InPath)
+		, m_SourcePath(InSourcePath)
+		, RefCount(0)
+	{
+		
+	}
 }

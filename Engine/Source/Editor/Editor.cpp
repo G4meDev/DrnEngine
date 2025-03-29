@@ -8,7 +8,6 @@
 #include "Editor/Viewport/Viewport.h"
 #include "Editor/OutputLog/OutputLog.h"
 #include "Editor/ContentBrowser/ContentBrowser.h"
-#include "Editor/AssetPreview/AssetPreview.h"
 
 #include "Editor/FileImportMenu/FileImportMenu.h"
 
@@ -41,7 +40,7 @@ namespace Drn
 	void Editor::Shutdown() 
 	{
 		CloseImportMenu();
-		CloseAssetPreviews();
+		//CloseAssetPreviews();
 
 		ContentBrowser::Get()->Shutdown();
 		Viewport::Get()->Shutdown();
@@ -60,28 +59,9 @@ namespace Drn
 
 	void Editor::OnSelectedFile( const std::string Path )
 	{
-		OpenAssetView(Path);
-	}
-
-	void Editor::OpenAssetView( const std::string Path )
-	{
-		for (int i = 0; i < m_AssetPreviews.size(); i++)
-		{
-			std::shared_ptr<AssetPreview>& AssetView = m_AssetPreviews[i];
-
-			if (AssetView->GetPath() == Path)
-			{
-				AssetView->SetCurrentFocus();
-				return;
-			}
-		}
-
-		m_AssetPreviews.push_back(AssetPreview::Open(Path));
-	}
-
-	void Editor::CloseAssetPreviews()
-	{
-		m_AssetPreviews.clear();
+		AssetHandle<Asset> SelectedAsset(Path);
+		SelectedAsset.LoadGeneric();
+		SelectedAsset.Get()->OpenAssetPreview();
 	}
 
 	std::shared_ptr<Drn::FileImportMenu> Editor::OpenImportMenu(const std::string& InDisplayText, char* InFilters, std::function<void(std::string)> InOnSelectedFile)

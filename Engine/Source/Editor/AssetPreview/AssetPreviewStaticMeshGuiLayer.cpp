@@ -8,13 +8,15 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include "AssetPreviewStaticMesh.h"
-
 namespace Drn
 {
-	AssetPreviewStaticMeshGuiLayer::AssetPreviewStaticMeshGuiLayer(AssetPreviewStaticMesh* InOwningAsset)
-		: m_OwningAsset(InOwningAsset)
+	AssetPreviewStaticMeshGuiLayer::AssetPreviewStaticMeshGuiLayer(StaticMesh* InOwningAsset)
+		//: m_OwningAsset(InOwningAsset)
 	{
+		// make reference to prevent destruction when this gui is open
+		m_OwningAsset = AssetHandle<StaticMesh>(InOwningAsset->m_Path);
+		m_OwningAsset.Load();
+
 		PreviewMesh = new StaticMeshComponent();
 		PreviewMesh->SetMesh(Renderer::Get()->CubeStaticMeshAsset);
 
@@ -49,7 +51,7 @@ namespace Drn
 
 	void AssetPreviewStaticMeshGuiLayer::Draw()
 	{
-		if (!ImGui::Begin(m_OwningAsset->GetPath().c_str()))
+		if (!ImGui::Begin(m_OwningAsset.Get()->m_Path.c_str()))
 		{
 			MainView->SetRenderingEnabled(false);
 
@@ -74,23 +76,23 @@ namespace Drn
 
 		if (ImGui::Button( "save" ))
 		{
-			m_OwningAsset->Save();
+			m_OwningAsset.Get()->Save();
 		}
 
 		ImGui::Separator();
 
-		ImGui::Text("source file: %s", m_OwningAsset->GetSourcePath() != NAME_NULL ? m_OwningAsset->GetSourcePath().c_str() : "...");
+		ImGui::Text("source file: %s", m_OwningAsset.Get()->m_SourcePath != NAME_NULL ? m_OwningAsset.Get()->m_SourcePath.c_str() : "...");
 		
 		if (ImGui::Button("reimport"))
 		{
-			m_OwningAsset->Reimport();
+			m_OwningAsset.Get()->Import();
 		}
 
 		ImGui::Button("select");
 
 		ImGui::Separator();
 
-		ImGui::InputFloat( "ImportScale", &m_OwningAsset->ImportScale);
+		ImGui::InputFloat( "ImportScale", &m_OwningAsset.Get()->ImportScale);
 		
 		ImGui::End();
 	}

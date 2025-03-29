@@ -40,4 +40,53 @@ namespace Drn
 	}
 
 
+	void AssetManager::Create( const std::string& SourceFile, const std::string& TargetFolder )
+	{
+		if ( !FileSystem::DirectoryExists( TargetFolder ) )
+		{
+			LOG( LogAssetManager, Error, "selected folder in content browser doesnt exist on disk.\n\t%s ", TargetFolder.c_str() );
+			return;
+		}
+
+		std::string FileName      = Path::ConvertShortPath( SourceFile );
+		std::string FileExtension = Path::GetFileExtension( FileName );
+
+		FileName                        = Path::RemoveFileExtension( FileName );
+		FileName                        = Path::AddAssetFileExtension( FileName );
+		const std::string AssetFilePath = TargetFolder + "\\" + FileName;
+
+		LOG( LogAssetManager, Info, "trying to import file as\n\t%s ", AssetFilePath.c_str() );
+
+		if ( FileSystem::DirectoryExists( AssetFilePath ) )
+		{
+			LOG( LogAssetManager, Error, "file already exists. try reimporting them. " );
+			return;
+		}
+
+		std::shared_ptr<Asset> CreatedAsset;
+		bool                          FormatSupported = false;
+
+		if ( FileExtension == ".obj" )
+		{
+			FormatSupported = true;
+			CreatedAsset    = std::shared_ptr<Asset>(new StaticMesh( AssetFilePath, SourceFile ) );
+		}
+
+		if ( !FormatSupported )
+		{
+				LOG( LogAssetManager, Error, "file format %s is not supported. ", FileExtension.c_str() );
+				return;
+		}
+
+		if ( CreatedAsset )
+		{
+				LOG( LogAssetManager, Info, "import succesful. " );
+		}
+
+		else
+		{
+				LOG( LogAssetManager, Error, "import failed. " );
+		}
+	}
+
 }

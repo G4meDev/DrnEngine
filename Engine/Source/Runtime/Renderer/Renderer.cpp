@@ -64,16 +64,12 @@ namespace Drn
 		AssetManager::Init();
 
 		{
-			//AssetHandle<StaticMesh> CubeStaticMeshAsset(Path::ConvertFullPath("Test.drn"));
 			CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
 			CubeStaticMeshAsset.Load();
 			CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
 
 			int A = 1 + 2;
 			std::cout << "123";
-
-			//CubeMesh = new StaticMeshComponent();
-			//CubeMesh->SetMesh(CubeStaticMeshAsset);
 		}
 		
 
