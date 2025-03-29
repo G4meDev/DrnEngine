@@ -38,6 +38,7 @@ namespace Drn
 
 		Scene* AllocateScene(World* InWorld);
 		void RemoveScene(Scene* InScene);
+		void RemoveAndInvalidateScene(Scene* InScene);
 
 		float TotalTime = 0;
 
@@ -47,8 +48,6 @@ namespace Drn
 
 	protected:
 		static Renderer* SingletonInstance;
-
-		D3D12Scene* MainScene;
 
 		Window* m_MainWindow = nullptr;
 		

@@ -27,6 +27,16 @@ namespace Drn
 			Release();
 		}
 
+		T* operator*()
+		{
+			return m_Asset;
+		}
+
+		T* operator->() 
+		{
+			return m_Asset;
+		}
+
 		AssetHandle& operator=(const AssetHandle& other)
 		{
 			this->m_Path = other.m_Path;

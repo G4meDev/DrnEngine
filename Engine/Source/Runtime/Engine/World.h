@@ -16,8 +16,6 @@ namespace Drn
 
 	protected:
 
-		
-
 		// @TODO: promote to actor
 		std::vector<StaticMeshComponent*> m_StaticMeshComponents;
 

@@ -64,12 +64,9 @@ namespace Drn
 		AssetManager::Init();
 
 		{
-			CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
-			CubeStaticMeshAsset.Load();
-			CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
-
-			int A = 1 + 2;
-			std::cout << "123";
+			//CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
+			//CubeStaticMeshAsset.Load();
+			//CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
 		}
 		
 
@@ -196,8 +193,6 @@ namespace Drn
 		SingletonInstance->m_DepthTexture.reset();
 		SingletonInstance->m_RenderTarget.Reset();
 		SingletonInstance->m_SwapChain.reset();
-		
-		SingletonInstance->m_Device->ReportLiveObjects();
 		SingletonInstance->m_Device.reset();
 	}
 
@@ -285,7 +280,6 @@ namespace Drn
 
 		for (Scene* S : AllocatedScenes)
 		{
-			//S->Render(m_CommandList);
 			S->Render(m_CommandList.get());
 		}
 
@@ -323,5 +317,10 @@ namespace Drn
 		AllocatedScenes.erase(InScene);
 	}
 
+	void Renderer::RemoveAndInvalidateScene( Scene* InScene )
+	{
+		RemoveScene(InScene);
+		delete InScene;
+	}
 
 }

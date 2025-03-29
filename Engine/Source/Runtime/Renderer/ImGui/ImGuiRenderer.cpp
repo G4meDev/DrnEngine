@@ -101,28 +101,12 @@ namespace Drn
 
 	void ImGuiRenderer::AttachLayer( ImGuiLayer* InLayer )
 	{
-		Layers.AddFirst(InLayer);
+		Layers.insert(InLayer);
 	}
 
 	void ImGuiRenderer::DetachLayer( ImGuiLayer* InLayer ) 
 	{
-		for ( LinkedListIterator It( Layers ); It; ++It )
-		{
-			if ( *It == InLayer )
-			{
-				It.Remove();
-				break;
-			}
-		}
-
-		for (ImGuiLayer*& Layer : m_CurrentTickLayers)
-		{
-			if (Layer == InLayer)
-			{
-				Layer = nullptr;
-				break;
-			}
-		}
+		Layers.erase(InLayer);
 	}
 
 	ImGuiRenderer* ImGuiRenderer::Get()
@@ -144,21 +128,25 @@ namespace Drn
 
 	void ImGuiRenderer::Draw( )
 	{
-		ImGui::DockSpaceOverViewport();
-		
-		// cache drawing layers to keep track of added and removed layers mid drawing
-		m_CurrentTickLayers.clear();
-		for (LinkedListIterator It(Layers); It; ++It)
+		for ( auto it = Layers.begin(); it != Layers.end(); )
 		{
-			m_CurrentTickLayers.push_back(*It);
+			if ((*it)->m_Open == false)
+			{
+				ImGuiLayer* Layer = *it; 
+				it = Layers.erase(it);
+				delete Layer;
+			}
+			else
+			{
+				++it;
+			}
 		}
 
-		for (ImGuiLayer*& Layer : m_CurrentTickLayers)
+		ImGui::DockSpaceOverViewport();
+		
+		for (auto it = Layers.begin(); it != Layers.end(); ++it)
 		{
-			if (Layer != nullptr)
-			{
-				Layer->Draw();
-			}
+			(*it)->Draw();
 		}
 	}
 

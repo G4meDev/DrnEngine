@@ -30,7 +30,7 @@ namespace Drn
 
 	ViewportGuiLayer::~ViewportGuiLayer() 
 	{
-		
+		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
 	}
 
 	void ViewportGuiLayer::Draw()

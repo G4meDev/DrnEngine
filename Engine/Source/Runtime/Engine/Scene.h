@@ -8,6 +8,7 @@ namespace Drn
 	{
 	public:
 		Scene(World* InWorld);
+		~Scene();
 
 		inline World* GetWorld() { return m_World; }
 
@@ -15,6 +16,7 @@ namespace Drn
 
 		SceneRenderer* AllocateSceneRenderer();
 		void RemoveSceneRenderer(SceneRenderer* InSceneRenderer);
+		void RemoveAndInvalidateSceneRenderer(SceneRenderer* InSceneRenderer);
 
 		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);

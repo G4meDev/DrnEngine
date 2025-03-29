@@ -8,6 +8,7 @@
 namespace Drn
 {
 	ImGuiLayer::ImGuiLayer()
+		: m_Open(true)
 	{
 
 	}

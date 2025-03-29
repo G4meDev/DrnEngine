@@ -14,6 +14,8 @@ namespace Drn
 
 		void Attach();
 		void DeAttach();
+
+		bool m_Open;
 	};
 }
 

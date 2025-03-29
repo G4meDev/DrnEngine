@@ -15,16 +15,16 @@ namespace Drn
 
 	SceneRenderer::~SceneRenderer()
 	{
-		
+		m_PipelineStateObject.reset();
+		m_RootSignature.reset();
+		m_DepthTexture.reset();
+		m_RenderTarget.Reset();
 	}
 
 	void SceneRenderer::Init(dx12lib::CommandList* CommandList)
 	{
 		m_Device = Renderer::Get()->GetDevice();
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
-
-		//m_VertexBuffer = CommandList->CopyVertexBuffer( _countof( g_Vertices ), sizeof( VertexPosColor ), g_Vertices );
-		//m_IndexBuffer = CommandList->CopyIndexBuffer( _countof( g_Indices ), DXGI_FORMAT_R16_UINT, g_Indices );
 
 		D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,

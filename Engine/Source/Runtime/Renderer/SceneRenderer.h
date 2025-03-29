@@ -27,9 +27,6 @@ namespace Drn
 
 		dx12lib::Device* m_Device;
 
-		//std::shared_ptr<dx12lib::VertexBuffer> m_VertexBuffer = nullptr;
-		//std::shared_ptr<dx12lib::IndexBuffer>  m_IndexBuffer  = nullptr;
-
 		std::shared_ptr<dx12lib::RootSignature>       m_RootSignature       = nullptr;
 		std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject = nullptr;
 

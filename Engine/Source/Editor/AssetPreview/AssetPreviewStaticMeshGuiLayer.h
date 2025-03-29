@@ -4,6 +4,8 @@
 
 #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
 
+LOG_DECLARE_CATEGORY(LogStaticMeshPreview);
+
 namespace Drn
 {
 	class AssetPreviewStaticMesh;
@@ -38,7 +40,6 @@ namespace Drn
 		StaticMeshComponent* PreviewMesh;
 
 		AssetHandle<StaticMesh> m_OwningAsset;
-
 	private:
 	};
 }

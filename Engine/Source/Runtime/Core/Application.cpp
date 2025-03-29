@@ -66,6 +66,7 @@ namespace Drn
 
 		GameFramework::Destroy();
 
+		atexit( &dx12lib::Device::ReportLiveObjects );
 		return retCode;
 	}
 

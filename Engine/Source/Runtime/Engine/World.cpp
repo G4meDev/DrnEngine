@@ -10,7 +10,12 @@ namespace Drn
 
 	World::~World()
 	{
-		
+		for (StaticMeshComponent* Mesh : m_StaticMeshComponents)
+		{
+			delete Mesh;
+		}
+
+		m_StaticMeshComponents.clear();
 	}
 
 	void World::AddStaticMeshCompponent( StaticMeshComponent* InStaticMesh )

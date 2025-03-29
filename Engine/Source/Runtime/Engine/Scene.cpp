@@ -12,6 +12,16 @@ namespace Drn
 		}
 	}
 
+	Scene::~Scene()
+	{
+		for (auto it = m_SceneRenderers.begin(); it != m_SceneRenderers.end();)
+		{
+			SceneRenderer* SceneRen = *it;
+			it = m_SceneRenderers.erase(it);
+			delete SceneRen;
+		}
+	}
+
 	void Scene::Render( dx12lib::CommandList* CommandList )
 	{
 		for (SceneRenderer* SceneRen : m_SceneRenderers)
@@ -31,6 +41,12 @@ namespace Drn
 	void Scene::RemoveSceneRenderer( SceneRenderer* InSceneRenderer )
 	{
 		m_SceneRenderers.erase(InSceneRenderer);
+	}
+
+	void Scene::RemoveAndInvalidateSceneRenderer( SceneRenderer* InSceneRenderer )
+	{
+		RemoveSceneRenderer(InSceneRenderer);
+		delete InSceneRenderer;
 	}
 
 	void Scene::AddStaticMeshCompponent( StaticMeshComponent* InStaticMesh )

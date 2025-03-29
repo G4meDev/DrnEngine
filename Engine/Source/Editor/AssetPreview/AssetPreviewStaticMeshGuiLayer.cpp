@@ -8,11 +8,14 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
+LOG_DEFINE_CATEGORY( LogStaticMeshPreview, "StaticMeshPreview" );
+
 namespace Drn
 {
 	AssetPreviewStaticMeshGuiLayer::AssetPreviewStaticMeshGuiLayer(StaticMesh* InOwningAsset)
-		//: m_OwningAsset(InOwningAsset)
 	{
+		LOG(LogStaticMeshPreview, Info, "opening %s", InOwningAsset->m_Path.c_str());
+
 		// make reference to prevent destruction when this gui is open
 		m_OwningAsset = AssetHandle<StaticMesh>(InOwningAsset->m_Path);
 		m_OwningAsset.Load();
@@ -46,12 +49,30 @@ namespace Drn
 
 	AssetPreviewStaticMeshGuiLayer::~AssetPreviewStaticMeshGuiLayer()
 	{
-		
+		LOG(LogStaticMeshPreview, Info, "closing %s", m_OwningAsset->m_Path.c_str());
+
+		if (PreviewScene)
+		{
+			if (MainView)
+			{
+				PreviewScene->RemoveAndInvalidateSceneRenderer(MainView);
+			}
+
+			Renderer::Get()->RemoveAndInvalidateScene(PreviewScene);
+		}
+
+		if (PreviewWorld)
+		{
+			delete PreviewWorld;
+			PreviewWorld = nullptr;
+		}
+
+		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::Draw()
 	{
-		if (!ImGui::Begin(m_OwningAsset.Get()->m_Path.c_str()))
+		if (!ImGui::Begin(m_OwningAsset.Get()->m_Path.c_str(), &m_Open))
 		{
 			MainView->SetRenderingEnabled(false);
 
