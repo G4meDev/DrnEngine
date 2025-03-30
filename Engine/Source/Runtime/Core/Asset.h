@@ -25,13 +25,14 @@ namespace Drn
 
 	protected:
 
-		virtual void Save() = 0;
 		virtual void Load() = 0;
-		virtual void Import() = 0;
 
 		virtual EAssetType GetAssetType() = 0;
 
 #if WITH_EDITOR
+		virtual void Save() = 0;
+		virtual void Import() = 0;
+
 		virtual void OpenAssetPreview() = 0;
 		virtual void CloseAssetPreview() = 0;
 #endif

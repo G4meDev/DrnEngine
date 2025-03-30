@@ -295,7 +295,7 @@ namespace Drn
 									m_CommandList->GetD3D12CommandList().Get() );
 #else
 		// m_CommandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
-		commandList->CopyResource( swapChainBackBuffer, msaaRenderTarget );
+		m_CommandList->CopyResource( swapChainBackBuffer, msaaRenderTarget );
 
 #endif
 

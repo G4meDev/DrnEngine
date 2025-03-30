@@ -12,18 +12,18 @@ namespace Drn
 {
 	StaticMesh::StaticMesh(const std::string& InPath)
 		: Asset(InPath)
-		, GuiLayer(nullptr)
 	{
 		Load();
 	}
 
+#if WITH_EDITOR
 	StaticMesh::StaticMesh( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath, InSourcePath)
-		, GuiLayer( nullptr )
 	{
 		Import();
 		Save();
 	}
+#endif
 
 	StaticMesh::~StaticMesh()
 	{
@@ -78,21 +78,10 @@ namespace Drn
 		}
 	}
 
-	void StaticMesh::Save()
-	{
-		Archive Ar = Archive(m_Path, false);
-		Serialize(Ar);
-	}
-
 	void StaticMesh::Load() 
 	{
 		Archive Ar = Archive(m_Path);
 		Serialize(Ar);
-	}
-
-	void StaticMesh::Import()
-	{
-		AssetImporterStaticMesh::Import(this, m_SourcePath);
 	}
 
 	EAssetType StaticMesh::GetAssetType()
@@ -101,6 +90,18 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+
+	void StaticMesh::Save()
+	{
+		Archive Ar = Archive(m_Path, false);
+		Serialize(Ar);
+	}
+
+	void StaticMesh::Import()
+	{
+		AssetImporterStaticMesh::Import(this, m_SourcePath);
+	}
+
 	void StaticMesh::OpenAssetPreview()
 	{
 		GuiLayer = new AssetPreviewStaticMeshGuiLayer( this );

@@ -69,8 +69,11 @@ namespace Drn
 	public:
 		
 		StaticMesh(const std::string& InPath);
-		StaticMesh(const std::string& InPath, const std::string& InSourcePath);
 		virtual ~StaticMesh();
+
+#if WITH_EDITOR
+		StaticMesh(const std::string& InPath, const std::string& InSourcePath);
+#endif
 
 		virtual void Serialize(Archive& Ar) override;
 
@@ -78,9 +81,12 @@ namespace Drn
 
 	protected:
 
-		virtual void Save() override;
 		virtual void Load() override;
+
+#if WITH_EDITOR
+		virtual void Save() override;
 		virtual void Import() override;
+#endif
 
 		virtual EAssetType GetAssetType() override;
 
@@ -104,7 +110,7 @@ namespace Drn
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;
 
-		AssetPreviewStaticMeshGuiLayer* GuiLayer;
+		AssetPreviewStaticMeshGuiLayer* GuiLayer = nullptr;
 #endif
 
 		friend class AssetPreviewStaticMeshGuiLayer;

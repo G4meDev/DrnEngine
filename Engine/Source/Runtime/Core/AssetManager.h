@@ -112,7 +112,9 @@ namespace Drn
 		template< typename T >
 		T* Load(const std::string& Path);
 
+#if WITH_EDITOR
 		void Create(const std::string& SourceFile, const std::string& TargetFolder);
+#endif
 
 		template< typename T >
 		void InvalidateAsset(T*& InAsset);

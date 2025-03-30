@@ -12,11 +12,14 @@ namespace Drn
 		return SHADER_PATH + ShortPath;
 	}
 
-#if _DEBUG
 
 	std::string Path::GetContentPath()
 	{
+#if _DEBUG
 		return PATH_CONTENT;
+#else
+		return PATH_CONTENT;
+#endif
 	}
 
 	std::string Path::ConvertFullPath(const std::string& ShortPath)
@@ -62,5 +65,4 @@ namespace Drn
 		return Path + ".drn";
 	}
 
-#endif
 }

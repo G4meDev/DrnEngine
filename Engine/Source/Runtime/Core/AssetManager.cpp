@@ -39,7 +39,7 @@ namespace Drn
 		}
 	}
 
-
+#if WITH_EDITOR
 	void AssetManager::Create( const std::string& SourceFile, const std::string& TargetFolder )
 	{
 		if ( !FileSystem::DirectoryExists( TargetFolder ) )
@@ -88,6 +88,6 @@ namespace Drn
 				LOG( LogAssetManager, Error, "import failed. " );
 		}
 	}
-
+#endif
 
 }
