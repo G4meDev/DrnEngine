@@ -15,6 +15,11 @@ namespace Drn
 			delete Mesh;
 		}
 
+		for (CameraComponent* Camera : m_CameraComponents)
+		{
+			delete Camera;
+		}
+
 		m_StaticMeshComponents.clear();
 	}
 
@@ -24,6 +29,16 @@ namespace Drn
 	}
 
 	void World::RemoveStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
+	{
+		
+	}
+
+	void World::AddCameraComponent( CameraComponent* InCamera )
+	{
+		m_CameraComponents.push_back(InCamera);
+	}
+
+	void World::RemoveCameraComponent( CameraComponent* InCamera )
 	{
 		
 	}

@@ -9,6 +9,7 @@
 #include "Runtime/Engine/PrimitiveComponent.h"
 #include "Runtime/Engine/StaticMesh.h"
 #include "Runtime/Engine/StaticMeshComponent.h"
+#include "Runtime/Engine/CameraComponent.h"
 
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>

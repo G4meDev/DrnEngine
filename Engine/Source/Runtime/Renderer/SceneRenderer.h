@@ -21,6 +21,8 @@ namespace Drn
 
 		void SetRenderingEnabled(bool Enabled);
 
+		CameraComponent* TargetCamera;
+
 	protected:
 
 		Scene* m_Scene;
@@ -37,6 +39,7 @@ namespace Drn
 		float m_fieldOfView = 45.0f;
 
 		bool m_RenderingEnabled;
+
 
 	private:
 

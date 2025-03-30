@@ -15,6 +15,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/PrimitiveComponent.h
 	Source/Runtime/Engine/StaticMeshComponent.h
 	Source/Runtime/Engine/StaticMesh.h
+	Source/Runtime/Engine/CameraComponent.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/SceneRenderer.h
@@ -69,6 +70,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/PrimitiveComponent.cpp
 	Source/Runtime/Engine/StaticMeshComponent.cpp
 	Source/Runtime/Engine/StaticMesh.cpp
+	Source/Runtime/Engine/CameraComponent.cpp
 	
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/SceneRenderer.cpp

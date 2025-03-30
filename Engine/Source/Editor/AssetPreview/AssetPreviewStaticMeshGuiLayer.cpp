@@ -26,12 +26,17 @@ namespace Drn
 		PreviewMesh = new StaticMeshComponent();
 		PreviewMesh->SetMesh(m_OwningAsset);
 
+		Camera = new CameraComponent();
+
 		// TODO: lifetime management
 		PreviewWorld = new World();
 		PreviewWorld->AddStaticMeshCompponent(PreviewMesh);
+		PreviewWorld->AddCameraComponent(Camera);
 
 		PreviewScene = Renderer::Get()->AllocateScene(PreviewWorld);
 		MainView = PreviewScene->AllocateSceneRenderer();
+
+		MainView->TargetCamera = Camera;
 
 // -------------------------------------------------------------------------------------------------------------------------
 
@@ -88,6 +93,30 @@ namespace Drn
 			ImGui::End();
 			return;
 		}
+
+		bool bHovering = ImGui::IsWindowHovered();
+		bool bMouseDown = ImGui::IsKeyDown(ImGuiKey_MouseRight);
+
+		if (bHovering && bMouseDown)
+		{
+			bool wDown = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_W);
+			bool aDown = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_A);
+			bool sDown = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_S);
+			bool dDown = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_D);
+			bool eDown = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_E);
+			bool qDown = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_Q);
+
+			float ForwardDis = wDown - sDown;
+			float RightDis = dDown - aDown;
+			float UpDis = eDown - qDown;
+
+			XMVECTOR Displacement = XMVectorSet(RightDis, UpDis, ForwardDis, 0);
+			Displacement *= XMVectorSet(CameraSpeed, CameraSpeed, CameraSpeed, 0);
+
+			Camera->m_Pos += Displacement;
+			Camera->m_FocusPoint = Camera->m_Pos + XMVectorSet(0, 0, 10, 0);
+		}
+
 
 		MainView->SetRenderingEnabled(true);
 

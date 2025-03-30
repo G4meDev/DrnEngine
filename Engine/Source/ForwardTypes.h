@@ -53,6 +53,7 @@ namespace Drn
 	class PrimitiveComponent;
 	class StaticMeshComponent;
 	class StaticMesh;
+	class CameraComponent;
 	
 	class Archive;
 	class AssetPreview;

@@ -125,16 +125,22 @@ namespace Drn
 		const XMVECTOR rotationAxis = XMVectorSet( 0, 1, 1, 0 );
 		XMMATRIX       modelMatrix  = XMMatrixRotationAxis( rotationAxis, XMConvertToRadians( angle ) );
 
-		const XMVECTOR eyePosition = XMVectorSet( 0, 0, -10, 1 );
-		const XMVECTOR focusPoint  = XMVectorSet( 0, 0, 0, 1 );
-		const XMVECTOR upDirection = XMVectorSet( 0, 1, 0, 0 );
-		XMMATRIX       viewMatrix  = XMMatrixLookAtLH( eyePosition, focusPoint, upDirection );
+		//const XMVECTOR eyePosition = XMVectorSet( 0, 0, -10, 1 );
+		//const XMVECTOR focusPoint  = XMVectorSet( 0, 0, 0, 1 );
+		//const XMVECTOR upDirection = XMVectorSet( 0, 1, 0, 0 );
+		//XMMATRIX       viewMatrix  = XMMatrixLookAtLH( eyePosition, focusPoint, upDirection );
 
 		auto viewport = m_RenderTarget.GetViewport();
-
 		float    aspectRatio = viewport.Width / viewport.Height;
-		XMMATRIX projectionMatrix =
-			XMMatrixPerspectiveFovLH( XMConvertToRadians( m_fieldOfView ), aspectRatio, 0.1f, 100.0f );
+		
+		//XMMATRIX projectionMatrix =
+		//	XMMatrixPerspectiveFovLH( XMConvertToRadians( m_fieldOfView ), aspectRatio, 0.1f, 100.0f );
+		
+		XMMATRIX viewMatrix;
+		XMMATRIX projectionMatrix;
+		
+		TargetCamera->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+		
 		XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 

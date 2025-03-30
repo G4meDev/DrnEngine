@@ -60,4 +60,14 @@ namespace Drn
 		
 	}
 
+	void Scene::AddCameraComponent( CameraComponent* InCamera )
+	{
+		m_CameraComponents.push_back(InCamera);
+	}
+
+	void Scene::RemoveCameraComponent( CameraComponent* InCamera )
+	{
+		
+	}
+
 }
