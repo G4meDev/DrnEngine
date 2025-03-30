@@ -82,6 +82,11 @@ namespace Drn
 			if (IsValid())
 			{
 				m_Asset->RemoveRef();
+
+				if (m_Asset->m_RefCount <= 0)
+				{
+					AssetManager::Get()->InvalidateAsset(m_Asset);
+				}
 			}
 		}
 
@@ -109,6 +114,8 @@ namespace Drn
 
 		void Create(const std::string& SourceFile, const std::string& TargetFolder);
 
+		template< typename T >
+		void InvalidateAsset(T*& InAsset);
 
 	protected:
 
@@ -139,6 +146,20 @@ namespace Drn
 
 		asset->AddRef();
 		return static_cast<T*>(asset);
+	}
+
+	template<typename T>
+	void AssetManager::InvalidateAsset(T*& InAsset)
+	{
+		auto it = m_AssetRegistery.find( InAsset->m_Path );
+
+		if ( it != m_AssetRegistery.end() )
+		{
+			m_AssetRegistery.erase( it );
+		}
+
+		delete InAsset;
+		InAsset = nullptr;
 	}
 
 }

@@ -63,12 +63,9 @@ namespace Drn
 
 		AssetManager::Init();
 
-		{
-			CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
-			CubeStaticMeshAsset.Load();
-			CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
-		}
-		
+		CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
+		CubeStaticMeshAsset.Load();
+		CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
 
 // -------------------------------------------------------------------------------
 
@@ -183,6 +180,8 @@ namespace Drn
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Shutdown();
 #endif
+
+		SingletonInstance->CubeStaticMeshAsset.Release();
 
 		AssetManager::Shutdown();
 
@@ -322,10 +321,11 @@ namespace Drn
 		AllocatedScenes.erase(InScene);
 	}
 
-	void Renderer::RemoveAndInvalidateScene( Scene* InScene )
+	void Renderer::RemoveAndInvalidateScene( Scene*& InScene )
 	{
 		RemoveScene(InScene);
 		delete InScene;
+		InScene = nullptr;
 	}
 
 }

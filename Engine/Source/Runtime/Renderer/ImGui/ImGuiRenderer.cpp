@@ -97,6 +97,12 @@ namespace Drn
 		g_pd3dSrvDescHeap = nullptr;
 
 		g_pd3dSrvDescHeapAlloc.Destroy();
+
+		for (auto it = Layers.begin(); it != Layers.end(); )
+		{
+			delete *it;
+			it++;
+		}
 	}
 
 	void ImGuiRenderer::AttachLayer( ImGuiLayer* InLayer )

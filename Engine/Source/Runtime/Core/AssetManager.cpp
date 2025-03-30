@@ -32,10 +32,10 @@ namespace Drn
 		for (auto& it : m_AssetRegistery)
 		{
 			char Msg[500];
-			sprintf(Msg, "\t(%u) %s\n", it.second->RefCount, it.first.c_str());
+			sprintf(Msg, "\t(%u) %s\n", it.second->m_RefCount, it.first.c_str());
 			OutputDebugString( Msg );
 
-			LOG(LogAssetManager, Info, "\t(%u) %s", it.second->RefCount, it.first.c_str());
+			LOG(LogAssetManager, Info, "\t(%u) %s", it.second->m_RefCount, it.first.c_str());
 		}
 	}
 
@@ -88,5 +88,6 @@ namespace Drn
 				LOG( LogAssetManager, Error, "import failed. " );
 		}
 	}
+
 
 }

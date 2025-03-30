@@ -16,7 +16,7 @@ namespace Drn
 
 		SceneRenderer* AllocateSceneRenderer();
 		void RemoveSceneRenderer(SceneRenderer* InSceneRenderer);
-		void RemoveAndInvalidateSceneRenderer(SceneRenderer* InSceneRenderer);
+		void RemoveAndInvalidateSceneRenderer(SceneRenderer*& InSceneRenderer);
 
 		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);

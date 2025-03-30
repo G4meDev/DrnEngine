@@ -104,7 +104,7 @@ namespace Drn
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;
 
-		std::unique_ptr<AssetPreviewStaticMeshGuiLayer> GuiLayer;
+		AssetPreviewStaticMeshGuiLayer* GuiLayer;
 #endif
 
 		friend class AssetPreviewStaticMeshGuiLayer;

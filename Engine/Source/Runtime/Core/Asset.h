@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "AssetManager.h"
 
 LOG_DECLARE_CATEGORY( LogAsset )
 
@@ -17,10 +18,10 @@ namespace Drn
 		Asset(const std::string InPath);
 		Asset(const std::string InPath, const std::string InSourcePath);
 
-		uint16 RefCount;
+		uint16 m_RefCount;
 
-		inline void AddRef() { RefCount++; }
-		inline void RemoveRef() { RefCount--; }
+		inline void AddRef() { m_RefCount++; }
+		inline void RemoveRef() { m_RefCount--; }
 
 	protected:
 

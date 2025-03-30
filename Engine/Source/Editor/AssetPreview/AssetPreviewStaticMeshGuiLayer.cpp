@@ -68,6 +68,8 @@ namespace Drn
 		}
 
 		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
+
+		m_OwningAsset->GuiLayer = nullptr;
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::Draw()

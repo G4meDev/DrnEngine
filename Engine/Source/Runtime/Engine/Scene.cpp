@@ -43,10 +43,11 @@ namespace Drn
 		m_SceneRenderers.erase(InSceneRenderer);
 	}
 
-	void Scene::RemoveAndInvalidateSceneRenderer( SceneRenderer* InSceneRenderer )
+	void Scene::RemoveAndInvalidateSceneRenderer( SceneRenderer*& InSceneRenderer )
 	{
 		RemoveSceneRenderer(InSceneRenderer);
 		delete InSceneRenderer;
+		InSceneRenderer = nullptr;
 	}
 
 	void Scene::AddStaticMeshCompponent( StaticMeshComponent* InStaticMesh )

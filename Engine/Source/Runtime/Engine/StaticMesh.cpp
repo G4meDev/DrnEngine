@@ -101,7 +101,7 @@ namespace Drn
 #if WITH_EDITOR
 	void StaticMesh::OpenAssetPreview()
 	{
-		GuiLayer = std::make_unique<AssetPreviewStaticMeshGuiLayer>( this );
+		GuiLayer = new AssetPreviewStaticMeshGuiLayer( this );
 		GuiLayer->Attach();
 	}
 
@@ -109,8 +109,9 @@ namespace Drn
 	{
 		if ( GuiLayer )
 		{
-				GuiLayer->DeAttach();
-				GuiLayer.reset();
+			GuiLayer->DeAttach();
+			delete GuiLayer;
+			GuiLayer = nullptr;
 		}
 	}
 
