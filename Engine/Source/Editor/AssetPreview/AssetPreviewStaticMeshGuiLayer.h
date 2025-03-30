@@ -20,13 +20,13 @@ namespace Drn
 
 		void SetCurrentFocus();
 
-		void DrawSidePanel();
-
-		void DrawViewport();
-
-		void OnViewportSizeChanged( const IntPoint& NewSize );
 
 	protected:
+
+		void DrawMenu();
+		void DrawSidePanel();
+		void DrawViewport();
+		void OnViewportSizeChanged( const IntPoint& NewSize );
 
 		D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;

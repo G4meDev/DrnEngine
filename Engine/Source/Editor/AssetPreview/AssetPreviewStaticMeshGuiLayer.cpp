@@ -74,23 +74,49 @@ namespace Drn
 
 	void AssetPreviewStaticMeshGuiLayer::Draw()
 	{
-		if (!ImGui::Begin(m_OwningAsset.Get()->m_Path.c_str(), &m_Open))
+		std::string name = m_OwningAsset->m_Path;
+		name = Path::ConvertShortPath(name);
+		name = Path::RemoveFileExtension(name);
+
+		if (!ImGui::Begin(name.c_str(), &m_Open))
 		{
 			MainView->SetRenderingEnabled(false);
 
 			ImGui::End();
 			return;
 		}
-	
+
 		MainView->SetRenderingEnabled(true);
 
+		DrawMenu();
 		DrawViewport();
-
 		DrawSidePanel();
 
-		ImGui::ShowDemoWindow();
-
 		ImGui::End();
+	}
+
+	void AssetPreviewStaticMeshGuiLayer::DrawMenu()
+	{
+		if ( ImGui::BeginMainMenuBar() )
+		{
+			if ( ImGui::BeginMenu( "File" ) )
+			{
+				ImGui::MenuItem( "nothing" );
+				ImGui::EndMenu();
+			}
+
+			if ( ImGui::BeginMenu( "Asset Manager" ) )
+			{
+				if ( ImGui::MenuItem( "log live assets" ) )
+				{
+					AssetManager::Get()->ReportLiveAssets();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
+		}
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::DrawSidePanel()

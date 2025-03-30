@@ -130,6 +130,8 @@ namespace Drn
 		{
 			for ( SystemFileNode* File: SelectedFolderFiles )
 			{
+				
+
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 				ImGui::PushID( File->File.m_FullPath.c_str() );
@@ -139,7 +141,8 @@ namespace Drn
 				if ( File == SelectedFile )
 					tree_flags |= ImGuiTreeNodeFlags_Selected;
 
-				bool node_open = ImGui::TreeNodeEx( "", tree_flags, "%s", File->File.m_ShortPath.c_str() );
+				std::string FileName = Path::RemoveFileExtension(File->File.m_ShortPath);
+				bool node_open = ImGui::TreeNodeEx( "", tree_flags, "%s", FileName.c_str());
 
 				if ( ImGui::IsItemFocused() && SelectedFile != File )
 				{
@@ -170,7 +173,7 @@ namespace Drn
 	{
 		LOG(LogContentBrowser, Info, "Refresh");
 		
-		FileSystem::GetFilesInDirectory(Path::GetContentPath(), RootFolder);
+		FileSystem::GetFilesInDirectory( Path::GetContentPath(), RootFolder, ".drn" );
 
 		if (!RootFolder)
 		{
@@ -178,8 +181,8 @@ namespace Drn
 		}
 
 		SelectedFolder = RootFolder.get();
+		SelectedFolderFiles = SelectedFolder->GetFiles();
 		SelectedFile = nullptr;
-		SelectedFolderFiles.clear();
 	}
 
 	void ContentBrowserGuiLayer::OnSelectedFileToImport( std::string FilePath )

@@ -94,13 +94,13 @@ namespace Drn
 		return false;
 	}
 
-	void FileSystem::GetFilesInDirectory( const std::string& Path, std::unique_ptr<SystemFileNode>& RootNode )
+	void FileSystem::GetFilesInDirectory( const std::string& Path, std::unique_ptr<SystemFileNode>& RootNode, const std::string& Filter)
 	{
 		RootNode.reset();
-		RootNode = std::unique_ptr<SystemFileNode>(GetFilesInDirectory_Intern(Path));
+		RootNode = std::unique_ptr<SystemFileNode>(GetFilesInDirectory_Intern(Path, Filter));
 	}
 
-	SystemFileNode* FileSystem::GetFilesInDirectory_Intern( const std::string& Path )
+	SystemFileNode* FileSystem::GetFilesInDirectory_Intern( const std::string& Path, const std::string& Filter)
 	{
 		if (DirectoryExists(Path))
 		{
@@ -112,13 +112,19 @@ namespace Drn
 				{
 					if (file.is_directory())
 					{
-						Root->AddChild(GetFilesInDirectory_Intern(file.path().string()));
+						Root->AddChild(GetFilesInDirectory_Intern(file.path().string(), Filter));
 					}
 					else
 					{
-						
-						SystemFileNode* FileNode = new SystemFileNode(file.path().string(), false);
-						Root->AddChild(FileNode);
+						std::string FileFormat = file.path().string();
+						FileFormat = Path::GetFileExtension(FileFormat);
+
+						auto FilterFormats = StringHelper::split( Filter, "," );
+						if (FilterFormats.find("*") != FilterFormats.end() || FilterFormats.find(FileFormat) != FilterFormats.end())
+						{
+							SystemFileNode* FileNode = new SystemFileNode(file.path().string(), false);
+							Root->AddChild(FileNode);
+						}
 					}
 				}
 			}

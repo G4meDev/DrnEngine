@@ -43,6 +43,7 @@
 #include <ostream>
 #include <fstream>
 #include <stdlib.h>
+#include <regex>
 
 #include <d3d12.h>
 #include <d3dcompiler.h>

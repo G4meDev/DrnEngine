@@ -12,12 +12,14 @@ namespace Drn
 {
 	StaticMesh::StaticMesh(const std::string& InPath)
 		: Asset(InPath)
+		, GuiLayer(nullptr)
 	{
 		Load();
 	}
 
 	StaticMesh::StaticMesh( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath, InSourcePath)
+		, GuiLayer( nullptr )
 	{
 		Import();
 		Save();
