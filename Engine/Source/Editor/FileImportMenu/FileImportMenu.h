@@ -17,7 +17,7 @@ namespace Drn
 		static char* FileFilter_Texture(); 
 
 	protected:
-		std::unique_ptr<FileImportMenuGuiLayer> GuiLayer;
+		FileImportMenuGuiLayer* GuiLayer;
 
 		const std::string m_DisplayText;
 		const char* m_Filters;

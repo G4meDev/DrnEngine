@@ -47,6 +47,8 @@ namespace Drn
 
 			LOG( LogFileImportMenu, Info, "closed file import menu." );
 			Editor::Get()->CloseImportMenu();
+
+			m_Open = false;
 		}
 	}
 }

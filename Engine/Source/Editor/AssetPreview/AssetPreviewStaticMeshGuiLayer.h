@@ -27,6 +27,9 @@ namespace Drn
 		void DrawSidePanel();
 		void DrawViewport();
 		void OnViewportSizeChanged( const IntPoint& NewSize );
+		void ShowSourceFileSelection();
+		
+		void OnSelectedSourceFile( std::string FilePath );
 
 		D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;

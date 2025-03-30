@@ -12,14 +12,16 @@ namespace Drn
 		, m_Filters(InFilters)
 		, m_OnSelectedFileDelegate(InOnSelectedFileDelegate)
 	{
-		GuiLayer = std::make_unique<FileImportMenuGuiLayer>(this);
+		GuiLayer = new FileImportMenuGuiLayer(this);
 		GuiLayer->Attach();
 	}
 
 	FileImportMenu::~FileImportMenu()
 	{
-		GuiLayer->DeAttach();
-		GuiLayer.reset();
+		m_OnSelectedFileDelegate = nullptr;
+
+		//GuiLayer->DeAttach();
+		//GuiLayer.reset();
 	}
 
 	char* FileImportMenu::FileFilter_Any()

@@ -55,6 +55,8 @@ namespace Drn
 
 				RenderProxies.push_back( RP );
 			}
+
+			//UploadResources()
 		}
 
 #if WITH_EDITOR

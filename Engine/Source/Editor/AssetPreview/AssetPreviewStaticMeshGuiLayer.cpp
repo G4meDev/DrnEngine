@@ -8,6 +8,9 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
+#include "Editor/Editor.h"
+#include "Editor/FileImportMenu/FileImportMenu.h"
+
 LOG_DEFINE_CATEGORY( LogStaticMeshPreview, "StaticMeshPreview" );
 
 namespace Drn
@@ -137,7 +140,10 @@ namespace Drn
 			m_OwningAsset.Get()->Import();
 		}
 
-		ImGui::Button("select");
+		if ( ImGui::Button( "select" ) )
+		{
+			ShowSourceFileSelection();
+		}
 
 		ImGui::Separator();
 
@@ -177,6 +183,18 @@ namespace Drn
 
 		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView(
 			MainView->GetViewResource(), &descSRV, ViewCpuHandle );
+	}
+
+	void AssetPreviewStaticMeshGuiLayer::ShowSourceFileSelection()
+	{
+		Editor::Get()->OpenImportMenu(
+			"Select source file", FileImportMenu::FileFilter_Any(),
+			std::bind( &AssetPreviewStaticMeshGuiLayer::OnSelectedSourceFile, this, std::placeholders::_1 ) );
+	}
+
+	void AssetPreviewStaticMeshGuiLayer::OnSelectedSourceFile( std::string FilePath )
+	{
+		m_OwningAsset->m_SourcePath = FilePath;
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::SetCurrentFocus()
