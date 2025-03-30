@@ -24,7 +24,7 @@ namespace Drn
 		m_OwningAsset.Load();
 
 		PreviewMesh = new StaticMeshComponent();
-		PreviewMesh->SetMesh(Renderer::Get()->CubeStaticMeshAsset);
+		PreviewMesh->SetMesh(m_OwningAsset);
 
 		// TODO: lifetime management
 		PreviewWorld = new World();
@@ -195,6 +195,7 @@ namespace Drn
 	void AssetPreviewStaticMeshGuiLayer::OnSelectedSourceFile( std::string FilePath )
 	{
 		m_OwningAsset->m_SourcePath = FilePath;
+		m_OwningAsset->Import();
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::SetCurrentFocus()

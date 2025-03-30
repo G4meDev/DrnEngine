@@ -165,6 +165,11 @@ namespace Drn
 	{
 		for (StaticMeshComponent* Mesh : m_Scene->m_StaticMeshComponents)
 		{
+			if (!Mesh->GetMesh()->m_LoadedOnGPU)
+			{
+				Mesh->GetMesh()->UploadResources(CommandList);
+			}
+
 			for (const StaticMeshRenderProxy& RenderProxy : Mesh->GetMesh()->RenderProxies)
 			{
 				CommandList->SetVertexBuffer( 0, RenderProxy.VertexBuffer );

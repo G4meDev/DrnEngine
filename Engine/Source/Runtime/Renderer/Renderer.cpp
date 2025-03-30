@@ -63,9 +63,9 @@ namespace Drn
 
 		AssetManager::Init();
 
-		CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
-		CubeStaticMeshAsset.Load();
-		CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
+		//CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
+		//CubeStaticMeshAsset.Load();
+		//CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
 
 // -------------------------------------------------------------------------------
 
@@ -181,7 +181,7 @@ namespace Drn
 		ImGuiRenderer::Get()->Shutdown();
 #endif
 
-		SingletonInstance->CubeStaticMeshAsset.Release();
+		//SingletonInstance->CubeStaticMeshAsset.Release();
 
 		AssetManager::Shutdown();
 

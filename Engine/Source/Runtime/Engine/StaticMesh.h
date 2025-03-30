@@ -93,6 +93,8 @@ namespace Drn
 		StaticMeshData Data;
 		std::vector<StaticMeshRenderProxy> RenderProxies;
 
+		bool m_LoadedOnGPU;
+
 		friend class Renderer;
 		friend class SceneRenderer;
 

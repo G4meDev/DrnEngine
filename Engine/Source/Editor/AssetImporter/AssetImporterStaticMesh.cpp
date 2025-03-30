@@ -49,9 +49,9 @@ namespace Drn
 		{
 			StaticMeshVertexData Vertex;
 			
-			Vertex.Pos_X = mesh->mVertices[i].x;
-			Vertex.Pos_Y = mesh->mVertices[i].y;
-			Vertex.Pos_Z = mesh->mVertices[i].z;
+			Vertex.Pos_X = mesh->mVertices[i].x * MeshAsset->ImportScale;
+			Vertex.Pos_Y = mesh->mVertices[i].y * MeshAsset->ImportScale;
+			Vertex.Pos_Z = mesh->mVertices[i].z * MeshAsset->ImportScale;
 
 			Vertex.Normal_X = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
 			Vertex.Normal_Y = mesh->HasNormals() ? mesh->mNormals[i].y : 0;

@@ -12,6 +12,7 @@ namespace Drn
 {
 	StaticMesh::StaticMesh(const std::string& InPath)
 		: Asset(InPath)
+		, m_LoadedOnGPU(false)
 	{
 		Load();
 	}
@@ -19,6 +20,7 @@ namespace Drn
 #if WITH_EDITOR
 	StaticMesh::StaticMesh( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath, InSourcePath)
+		, m_LoadedOnGPU(false)
 	{
 		Import();
 		Save();
@@ -55,8 +57,6 @@ namespace Drn
 
 				RenderProxies.push_back( RP );
 			}
-
-			//UploadResources()
 		}
 
 #if WITH_EDITOR
@@ -78,6 +78,8 @@ namespace Drn
 			Proxy.VertexBuffer = CommandList->CopyVertexBuffer( Proxy.VertexData.size(), sizeof(StaticMeshVertexBuffer), Proxy.VertexData.data());
 			Proxy.IndexBuffer = CommandList->CopyIndexBuffer( Proxy.IndexData.size(), DXGI_FORMAT_R32_UINT, Proxy.IndexData.data());
 		}
+
+		m_LoadedOnGPU = true;
 	}
 
 	void StaticMesh::Load() 
@@ -102,12 +104,19 @@ namespace Drn
 	void StaticMesh::Import()
 	{
 		AssetImporterStaticMesh::Import(this, m_SourcePath);
+		Save();
+		Load();
+
+		m_LoadedOnGPU = false;
 	}
 
 	void StaticMesh::OpenAssetPreview()
 	{
-		GuiLayer = new AssetPreviewStaticMeshGuiLayer( this );
-		GuiLayer->Attach();
+		if (!GuiLayer)
+		{
+			GuiLayer = new AssetPreviewStaticMeshGuiLayer( this );
+			GuiLayer->Attach();
+		}
 	}
 
 	void StaticMesh::CloseAssetPreview()
