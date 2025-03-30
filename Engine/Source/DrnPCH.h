@@ -29,6 +29,7 @@
 #include "Runtime/Math/IntPoint.h"
 #include "Runtime/Containers/List.h"
 
+#include "Runtime/Misc/StringHelper.h"
 #include "Runtime/Misc/Log.h"
 #include "Runtime/Misc/DateTime.h"
 #include "Runtime/Misc/EnumClassFlags.h"

@@ -53,7 +53,7 @@ namespace Drn
 		m_Device = dx12lib::Device::Create();
 
 		auto        description = m_Device->GetDescription();
-		std::string description_str( description.begin(), description.end() );
+		std::string description_str( StringHelper::ws2s(description) );
 		LOG( LogRenderer, Info, "%s", description_str.c_str() );
 
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
@@ -64,9 +64,9 @@ namespace Drn
 		AssetManager::Init();
 
 		{
-			//CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
-			//CubeStaticMeshAsset.Load();
-			//CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
+			CubeStaticMeshAsset = AssetHandle<StaticMesh>(Path::ConvertFullPath("Test.drn"));
+			CubeStaticMeshAsset.Load();
+			CubeStaticMeshAsset.Get()->UploadResources(m_CommandList.get());
 		}
 		
 
@@ -186,6 +186,8 @@ namespace Drn
 
 		AssetManager::Shutdown();
 
+
+		SingletonInstance->m_CommandList.reset();
 		SingletonInstance->m_IndexBuffer.reset();
 		SingletonInstance->m_VertexBuffer.reset();
 		SingletonInstance->m_PipelineStateObject.reset();
@@ -194,6 +196,9 @@ namespace Drn
 		SingletonInstance->m_RenderTarget.Reset();
 		SingletonInstance->m_SwapChain.reset();
 		SingletonInstance->m_Device.reset();
+
+		delete SingletonInstance;
+		SingletonInstance = nullptr;
 	}
 
 	void Renderer::ToggleSwapChain() 

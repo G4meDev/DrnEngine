@@ -40,7 +40,6 @@ namespace Drn
 	void Editor::Shutdown() 
 	{
 		CloseImportMenu();
-		//CloseAssetPreviews();
 
 		ContentBrowser::Get()->Shutdown();
 		Viewport::Get()->Shutdown();
