@@ -24,6 +24,9 @@ namespace Drn
 
 		IntPoint CachedSize = IntPoint( 1920, 1080 );
 
+		IntPoint m_LastMousePos;
+		bool m_CapturingMouse;
+
 		friend class Viewport;
 	};
 }

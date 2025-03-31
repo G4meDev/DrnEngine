@@ -54,21 +54,19 @@ namespace Drn
 
 		// ------------------ rotation --------------------
 
-/*
-		const Quaternion GetRelativeRotation() const;
-		const Quaternion GetLocalRotation() const;
-		const Quaternion GetWorldRotation() const;
+		DirectX::XMVECTOR GetRelativeRotation() const;
+		DirectX::XMVECTOR GetLocalRotation() const;
+		DirectX::XMVECTOR GetWorldRotation() const;
 
-		void SetRelativeRotation(const Quaternion& InRotator, bool bMarkDirty = true);
-		void SetLocalRotation(const Quaternion& InRotator, bool bMarkDirty = true);
-		void SetWorldRotation(const Quaternion& InRotator, bool bMarkDirty = true);
+		void SetRelativeRotation(const DirectX::XMVECTOR& InRotator, bool bMarkDirty = true);
+		void SetLocalRotation(const DirectX::XMVECTOR& InRotator, bool bMarkDirty = true);
+		void SetWorldRotation(const DirectX::XMVECTOR& InRotator, bool bMarkDirty = true);
 
 		void UpdateRotation();
 
 		bool IsDirtyRotation() const;
 		void MarkDirtyRotation();
 		void MarkDirtyRotationRecursive();
-*/
 
 		// ------------------ scale ------------------------
 
@@ -97,11 +95,11 @@ namespace Drn
 		DirectX::XMVECTOR RelativeLocation;
 		DirectX::XMVECTOR LocalLocation;
 
-/*
-		Quaternion WorldRotation	= Quaternion::Identity;
-		Quaternion RelativeRotation	= Quaternion::Identity;
-		Quaternion LocalRotation	= Quaternion::Identity;
+		DirectX::XMVECTOR WorldRotation;
+		DirectX::XMVECTOR RelativeRotation;
+		DirectX::XMVECTOR LocalRotation;
 
+/*
 		Vector3 WorldScale			= Vector3::Zero;
 		Vector3 RelativeScale		= Vector3::Zero;
 		Vector3 LocalScale			= Vector3::Zero;

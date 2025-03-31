@@ -39,18 +39,18 @@ namespace Drn
 	}
 
 
-/*
-	const Quaternion Actor::GetActorRotation()
+	DirectX::XMVECTOR Actor::GetActorRotation()
 	{
 		return Root->GetWorldRotation();
 	}
 
-	void Actor::SetActorRotation(const Quaternion& InRotator)
+	void Actor::SetActorRotation( const DirectX::XMVECTOR& InRotator )
 	{
 		Root->SetWorldRotation(InRotator);
-		Root->MarkDirtyRotationRecursive();
+		//Root->MarkDirtyRotationRecursive();
 	}
 
+/*
 	const Vector3 Actor::GetActorScale()
 	{
 		return Root->GetWorldScale();

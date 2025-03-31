@@ -30,7 +30,12 @@ namespace Drn
 	void CameraComponent::CalculateMatrices( XMMATRIX& InViewMatrix, XMMATRIX& InProjectionMatrix, float AspectRatio )
 	{
 		XMVECTOR CameraPos = GetWorldLocation();
-		m_FocusPoint = CameraPos + XMVectorSet(0, 0, 10, 0);
+		XMVECTOR CamearRot = GetWorldRotation();
+
+		XMVECTOR FocusPointOffset = XMVectorSet( 0, 0, 10, 0 );
+		FocusPointOffset = XMVector3Rotate(FocusPointOffset, CamearRot);
+
+		m_FocusPoint = CameraPos + FocusPointOffset;
 
 		InViewMatrix = XMMatrixLookAtLH( CameraPos, m_FocusPoint, m_UpVector);
 		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMin, m_ClipMax);

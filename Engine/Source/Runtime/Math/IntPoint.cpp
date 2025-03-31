@@ -29,7 +29,12 @@ namespace Drn
 		: IntPoint(0, 0)
 	{ }
 
-	IntPoint IntPoint::operator*(const IntPoint& R)
+	IntPoint IntPoint::operator-( const IntPoint& R )
+	{
+		return IntPoint(X - R.X, Y - R.Y);
+	}
+
+	IntPoint IntPoint::operator*( const IntPoint& R )
 	{
 		return IntPoint(X * R.X, Y * R.Y);
 	}

@@ -7,6 +7,7 @@ namespace Drn
 		: Component() 
 	{
 		WorldLocation = XMVectorSet(0, 0, 0, 0);
+		WorldRotation = XMQuaternionIdentity();
 	}
 
 	SceneComponent::~SceneComponent()
@@ -121,56 +122,63 @@ namespace Drn
 		}
 	}
 
-/*
-	const Quaternion SceneComponent::GetRelativeRotation() const
+
+	DirectX::XMVECTOR SceneComponent::GetRelativeRotation() const
 	{
 		return RelativeRotation;
 	}
 
-	const Quaternion SceneComponent::GetLocalRotation() const
+	DirectX::XMVECTOR SceneComponent::GetLocalRotation() const
 	{
 		return LocalRotation;
 	}
 
-	const Quaternion SceneComponent::GetWorldRotation() const
+	DirectX::XMVECTOR SceneComponent::GetWorldRotation() const
 	{
-		return WorldRotation;
-	}
-
-	void SceneComponent::SetRelativeRotation(const Quaternion& InRotator, bool bMarkDirty)
-	{
-		RelativeRotation = InRotator;
-		if (bMarkDirty)
+		if (Parent == nullptr)
 		{
-			MarkDirtyRotationRecursive();
-		}
-	}
-
-	void SceneComponent::SetLocalRotation(const Quaternion& InRotator, bool bMarkDirty)
-	{
-
-	}
-
-	void SceneComponent::SetWorldRotation(const Quaternion& InRotator, bool bMarkDirty)
-	{
-		if (GetOwningActor()->GetRoot() == this)
-		{
-			WorldRotation = InRotator;
-			RelativeRotation = InRotator;
+			return WorldRotation;
 		}
 
-		MarkDirtyRotationRecursive();
+		return GetOwningActor()->GetActorRotation();
+	}
+
+	void SceneComponent::SetRelativeRotation( const DirectX::XMVECTOR& InRotator, bool bMarkDirty )
+	{
+		//RelativeRotation = InRotator;
+		//if (bMarkDirty)
+		//{
+		//	MarkDirtyRotationRecursive();
+		//}
+	}
+
+	void SceneComponent::SetLocalRotation( const DirectX::XMVECTOR& InRotator, bool bMarkDirty )
+	{
+
+	}
+
+	void SceneComponent::SetWorldRotation( const DirectX::XMVECTOR& InRotator, bool bMarkDirty )
+	{
+		WorldRotation = InRotator;
+
+		//if (GetOwningActor()->GetRoot() == this)
+		//{
+		//	WorldRotation = InRotator;
+		//	RelativeRotation = InRotator;
+		//}
+		//
+		//MarkDirtyRotationRecursive();
 	}
 
 	void SceneComponent::UpdateRotation()
 	{
-		if (bDirtyRotation)
-		{
-			WorldRotation = RelativeRotation + Parent->GetWorldRotation();
-			LocalRotation = Rotatorf::CombineRotators(WorldRotation, GetOwningActor()->GetActorRotation() * -1);
-
-			bDirtyRotation = false;
-		}
+		//if (bDirtyRotation)
+		//{
+		//	WorldRotation = RelativeRotation + Parent->GetWorldRotation();
+		//	LocalRotation = Rotatorf::CombineRotators(WorldRotation, GetOwningActor()->GetActorRotation() * -1);
+		//
+		//	bDirtyRotation = false;
+		//}
 	}
 
 	bool SceneComponent::IsDirtyRotation() const
@@ -180,18 +188,20 @@ namespace Drn
 
 	void SceneComponent::MarkDirtyRotation()
 	{
-		bDirtyRotation = true;
+		//bDirtyRotation = true;
 	}
 
 	void SceneComponent::MarkDirtyRotationRecursive()
 	{
-		MarkDirtyRotation();
-
-		for (SceneComponent* Comp : Childs)
-		{
-			Comp->MarkDirtyRotationRecursive();
-		}
+		//MarkDirtyRotation();
+		//
+		//for (SceneComponent* Comp : Childs)
+		//{
+		//	Comp->MarkDirtyRotationRecursive();
+		//}
 	}
+
+/*
 
 	const Vector3 SceneComponent::GetRelativeScale() const
 	{

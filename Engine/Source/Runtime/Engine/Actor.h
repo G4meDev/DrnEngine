@@ -16,10 +16,10 @@ namespace Drn
 		DirectX::XMVECTOR GetActorLocation();
 		void SetActorLocation(const DirectX::XMVECTOR& InLocation);
 
-/*
-		const Quaternion GetActorRotation();
-		void SetActorRotation(const Quaternion& InRotator);
+		DirectX::XMVECTOR GetActorRotation();
+		void SetActorRotation(const DirectX::XMVECTOR& InRotator);
 
+/*
 		const Vector3 GetActorScale();
 		void SetActorScale(const Vector3& InScale);
 */
