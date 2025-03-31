@@ -4,12 +4,23 @@
 
 namespace Drn
 {
+	enum class EComponentType : uint32
+	{
+		Component = 0,
+		SceneComponenet,
+		StaticMeshComponent,
+		CameraComponent,
+	};
+
 	class Component
 	{
 	public:
 		Component();
+		virtual ~Component();
 
 		virtual void Tick(float DeltaTime);
+
+		inline virtual EComponentType GetComponentType() { return EComponentType::Component; }
 
 		Actor* GetOwningActor() const;
 		void SetOwningActor(Actor* InActor);

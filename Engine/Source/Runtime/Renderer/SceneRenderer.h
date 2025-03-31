@@ -23,7 +23,7 @@ namespace Drn
 
 		void SetRenderingEnabled(bool Enabled);
 
-		CameraComponent* TargetCamera;
+		CameraActor* m_CameraActor;
 
 	protected:
 

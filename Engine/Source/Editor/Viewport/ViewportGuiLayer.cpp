@@ -62,8 +62,9 @@ namespace Drn
 			XMVECTOR Displacement = XMVectorSet( RightDis, UpDis, ForwardDis, 0 );
 			Displacement *= XMVectorSet( CameraSpeed, CameraSpeed, CameraSpeed, 0 );
 
-			Renderer::Get()->Camera->m_Pos += Displacement;
-			Renderer::Get()->Camera->m_FocusPoint = Renderer::Get()->Camera->m_Pos + XMVectorSet( 0, 0, 10, 0 );
+			CameraActor* Cam = Renderer::Get()->m_CameraActor;
+
+			Cam->SetActorLocation(Cam->GetActorLocation() + Displacement );
 		}
 
 		ShowMenu();

@@ -3,8 +3,8 @@
 
 namespace Drn
 {
-
 	PrimitiveComponent::PrimitiveComponent()
+		: SceneComponent()
 	{
 		
 	}

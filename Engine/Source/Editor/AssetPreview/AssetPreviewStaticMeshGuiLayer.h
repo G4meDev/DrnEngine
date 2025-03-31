@@ -40,8 +40,8 @@ namespace Drn
 		Scene* PreviewScene;
 		SceneRenderer* MainView;
 
-		StaticMeshComponent* PreviewMesh;
-		CameraComponent* Camera;
+		StaticMeshActor* PreviewMesh;
+		CameraActor* Camera;
 		float CameraSpeed = 0.01f;
 
 		AssetHandle<StaticMesh> m_OwningAsset;

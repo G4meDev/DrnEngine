@@ -8,7 +8,12 @@ namespace Drn
 		
 	}
 
-	void Component::Tick(float DeltaTime)
+	Component::~Component()
+	{
+		
+	}
+
+	void Component::Tick( float DeltaTime )
 	{
 		
 	}

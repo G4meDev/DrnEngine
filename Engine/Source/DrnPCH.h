@@ -14,6 +14,8 @@
 #include "Runtime/Engine/Component.h"
 #include "Runtime/Engine/SceneComponent.h"
 #include "Runtime/Engine/Actor.h"
+#include "Runtime/Engine/StaticMeshActor.h"
+#include "Runtime/Engine/CameraActor.h"
 
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>

@@ -51,19 +51,18 @@ namespace Drn
 		AssetHandle<StaticMesh> CubeMesh(Path::ConvertFullPath("BasicShapes\\SM_Cube.drn"));
 		CubeMesh.Load();
 
-		CubeMeshComponent = new StaticMeshComponent();
-		CubeMeshComponent->SetMesh( CubeMesh );
-
-		Camera = new CameraComponent();
-
 		MainWorld = WorldManager::Get()->AllocateWorld();
-		MainWorld->AddStaticMeshCompponent( CubeMeshComponent );
-		MainWorld->AddCameraComponent( Camera );
+
+		m_CubeStaticMeshActor = MainWorld->SpawnActor<StaticMeshActor>();
+		m_CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
+
+		m_CameraActor = MainWorld->SpawnActor<CameraActor>();
+		m_CameraActor->SetActorLocation(XMVectorSet(0, 0, -10, 0));
 
 		MainScene = Renderer::Get()->AllocateScene( MainWorld );
 		MainSceneRenderer = MainScene->AllocateSceneRenderer();
 
-		MainSceneRenderer->TargetCamera = Camera;
+		MainSceneRenderer->m_CameraActor = m_CameraActor;
 
 // -------------------------------------------------------------------------------
 
@@ -130,7 +129,7 @@ namespace Drn
 		TotalTime += DeltaTime;
 
 		XMVECTOR Location = XMVectorSet(sin(TotalTime) * 5, 0, 0, 1);
-		CubeMeshComponent->SetWorldLocation(Location);
+		m_CubeStaticMeshActor->SetActorLocation(Location);
 
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
 		m_CommandList  = commandQueue.GetCommandList();

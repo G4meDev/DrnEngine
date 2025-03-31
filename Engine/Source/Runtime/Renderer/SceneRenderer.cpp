@@ -188,7 +188,7 @@ namespace Drn
 			XMMATRIX viewMatrix;
 			XMMATRIX projectionMatrix;
 		
-			TargetCamera->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+			m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
 		
 			XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
 			mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );

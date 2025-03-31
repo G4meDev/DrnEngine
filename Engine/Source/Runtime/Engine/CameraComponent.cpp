@@ -4,7 +4,7 @@
 namespace Drn
 {
 	CameraComponent::CameraComponent()
-		: m_Pos(XMVectorSet( 0, 0, -10, 1 ))
+		:SceneComponent()
 		, m_FocusPoint(XMVectorSet( 0, 0, 0, 1 ))
 		, m_UpVector(XMVectorSet( 0, 1, 0, 0 ))
 		, m_AspectRatio(1.0f)
@@ -20,11 +20,19 @@ namespace Drn
 		
 	}
 
-	void CameraComponent::CalculateMatrices( XMMATRIX& InViewMatrix, XMMATRIX& InProjectionMatrix, float AspectRatio)
+	void CameraComponent::Tick( float DeltaTime )
 	{
-		
+		SceneComponent::Tick(DeltaTime);
 
-		InViewMatrix = XMMatrixLookAtLH( m_Pos, m_FocusPoint, m_UpVector);
+
+	}
+
+	void CameraComponent::CalculateMatrices( XMMATRIX& InViewMatrix, XMMATRIX& InProjectionMatrix, float AspectRatio )
+	{
+		XMVECTOR CameraPos = GetWorldLocation();
+		m_FocusPoint = CameraPos + XMVectorSet(0, 0, 10, 0);
+
+		InViewMatrix = XMMatrixLookAtLH( CameraPos, m_FocusPoint, m_UpVector);
 		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMin, m_ClipMax);
 	}
 }

@@ -13,10 +13,8 @@ namespace Drn
 
 		virtual void Tick(float DeltaTime);
 
-/*
 		DirectX::XMVECTOR GetActorLocation();
 		void SetActorLocation(const DirectX::XMVECTOR& InLocation);
-*/
 
 /*
 		const Quaternion GetActorRotation();
@@ -46,7 +44,7 @@ namespace Drn
 		std::unique_ptr<SceneComponent> Root;
 
 		/** this only contains non scene components */
-		std::vector<Component*> Components;
+		std::vector<std::shared_ptr<Component>> Components;
 
 		bool bDestroy = false;
 

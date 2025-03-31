@@ -21,6 +21,13 @@ namespace Drn
 	{
 	public:
 
+		StaticMeshComponent();
+		virtual ~StaticMeshComponent();
+
+		virtual void Tick(float DeltaTime) override;
+
+		inline virtual EComponentType GetComponentType() override { return EComponentType::StaticMeshComponent; }
+
 		inline StaticMesh* GetMesh() { return Mesh.Get(); }
 		void SetMesh(const AssetHandle<StaticMesh>& InHandle);
 

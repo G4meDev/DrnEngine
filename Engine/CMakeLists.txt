@@ -20,6 +20,8 @@ set( HEADER_FILES
 	Source/Runtime/Engine/Component.h
 	Source/Runtime/Engine/SceneComponent.h
 	Source/Runtime/Engine/Actor.h
+	Source/Runtime/Engine/StaticMeshActor.h
+	Source/Runtime/Engine/CameraActor.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/SceneRenderer.h
@@ -79,6 +81,8 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/Component.cpp
 	Source/Runtime/Engine/SceneComponent.cpp
 	Source/Runtime/Engine/Actor.cpp
+	Source/Runtime/Engine/StaticMeshActor.cpp
+	Source/Runtime/Engine/CameraActor.cpp
 	
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/SceneRenderer.cpp

@@ -13,17 +13,18 @@ namespace Drn
 
 		void Tick(float DeltaTime);
 
-		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
-		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
+		template<typename T>
+		T* SpawnActor()
+		{
+			T* NewActor = new T();
+			m_Actors.insert(NewActor);
 
-		void AddCameraComponent( CameraComponent* InCamera );
-		void RemoveCameraComponent( CameraComponent* InCamera );
+			return NewActor;
+		}
 
 	protected:
 
-		// @TODO: promote to actor
-		std::vector<StaticMeshComponent*> m_StaticMeshComponents;
-		std::vector<CameraComponent*>     m_CameraComponents;
+		std::set<Actor*> m_Actors;
 
 		friend Scene;
 

@@ -17,6 +17,11 @@ namespace Drn
 
 	void WorldManager::Shutdown()
 	{
+		for (World* W : m_SingletonInstance->m_AllocatedWorlds)
+		{
+			delete W;
+		}
+
 		delete m_SingletonInstance;
 		m_SingletonInstance = nullptr;
 	}

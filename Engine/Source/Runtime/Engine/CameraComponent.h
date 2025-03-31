@@ -1,19 +1,23 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "SceneComponent.h"
 
 using namespace DirectX;
 
 namespace Drn
 {
-	class CameraComponent
+	class CameraComponent : public SceneComponent
 	{
 	public:
 
 		CameraComponent();
 		virtual ~CameraComponent();
 
-		XMVECTOR m_Pos;
+		virtual void Tick(float DeltaTime) override;
+
+		inline virtual EComponentType GetComponentType() override { return EComponentType::CameraComponent; }
+
 		XMVECTOR m_FocusPoint;
 		XMVECTOR m_UpVector;
 

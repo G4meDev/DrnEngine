@@ -21,16 +21,12 @@ namespace Drn
 		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 
-		void AddCameraComponent(CameraComponent* InCamera);
-		void RemoveCameraComponent(CameraComponent* InCamera);
-
 	protected:
 
 		World* m_World;
 
 		std::vector<StaticMeshComponent*> m_StaticMeshComponents;
-		std::vector<CameraComponent*> m_CameraComponents;
-		
+
 		std::set<SceneRenderer*> m_SceneRenderers;
 
 		friend class SceneRenderer;

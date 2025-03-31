@@ -19,25 +19,21 @@ namespace Drn
 	{
 		LOG(LogStaticMeshPreview, Info, "opening %s", InOwningAsset->m_Path.c_str());
 
-		// make reference to prevent destruction when this gui is open
 		m_OwningAsset = AssetHandle<StaticMesh>(InOwningAsset->m_Path);
 		m_OwningAsset.Load();
 
-		PreviewMesh = new StaticMeshComponent();
-		PreviewMesh->SetMesh(m_OwningAsset);
-
-		Camera = new CameraComponent();
-
-		// TODO: lifetime management
 		PreviewWorld = WorldManager::Get()->AllocateWorld();
-		
-		PreviewWorld->AddStaticMeshCompponent(PreviewMesh);
-		PreviewWorld->AddCameraComponent(Camera);
+
+		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
+		PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
+
+		Camera = PreviewWorld->SpawnActor<CameraActor>();
+		Camera->SetActorLocation(XMVectorSet(0, 0, -10, 0));
 
 		PreviewScene = Renderer::Get()->AllocateScene(PreviewWorld);
 		MainView = PreviewScene->AllocateSceneRenderer();
 
-		MainView->TargetCamera = Camera;
+		MainView->m_CameraActor = Camera;
 
 // -------------------------------------------------------------------------------------------------------------------------
 
@@ -113,8 +109,7 @@ namespace Drn
 			XMVECTOR Displacement = XMVectorSet(RightDis, UpDis, ForwardDis, 0);
 			Displacement *= XMVectorSet(CameraSpeed, CameraSpeed, CameraSpeed, 0);
 
-			Camera->m_Pos += Displacement;
-			Camera->m_FocusPoint = Camera->m_Pos + XMVectorSet(0, 0, 10, 0);
+			Camera->SetActorLocation( Camera->GetActorLocation() + Displacement );
 		}
 
 

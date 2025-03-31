@@ -9,12 +9,32 @@ namespace Drn
 	{
 	public:
 		SceneComponent();
+		virtual ~SceneComponent();
 		
 		virtual void Tick(float DeltaTime) override;
 
+		inline virtual EComponentType GetComponentType() override { return EComponentType::SceneComponenet; }
+
 		void AttachSceneComponent(SceneComponent* InComponent);
 
-		const std::vector<SceneComponent*>& GetChilds() const;
+		const std::vector<std::shared_ptr<SceneComponent>>& GetChilds() const;
+
+		template<typename T>
+		void GetComponents(std::vector<T*>& OutComponents, EComponentType Type, bool Recursive)
+		{
+			for (auto Comp : Childs)
+			{
+				if (Comp->GetComponentType() == Type)
+				{
+					OutComponents.push_back( static_cast<T*>(Comp.get()) );
+
+					if (Recursive)
+					{
+						Comp->GetComponents(OutComponents, Type, true);
+					}
+				}
+			}
+		}
 
 		// ------------------ location -----------------
 
@@ -71,7 +91,7 @@ namespace Drn
 	private:
 		
 		SceneComponent* Parent = nullptr;
-		std::vector<SceneComponent*> Childs;
+		std::vector<std::shared_ptr<SceneComponent>> Childs;
 
 		DirectX::XMVECTOR WorldLocation;
 		DirectX::XMVECTOR RelativeLocation;

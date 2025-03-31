@@ -6,9 +6,15 @@ namespace Drn
 	Scene::Scene( World* InWorld )
 		: m_World(InWorld)
 	{
-		for (StaticMeshComponent* Mesh : m_World->m_StaticMeshComponents)
+		for (Actor* actor : m_World->m_Actors)
 		{
-			AddStaticMeshCompponent(Mesh);
+			std::vector<StaticMeshComponent*> StaticMeshComponenets;
+			actor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
+		
+			for (StaticMeshComponent* Mesh : StaticMeshComponenets)
+			{
+				AddStaticMeshCompponent(Mesh);
+			}
 		}
 	}
 
@@ -59,15 +65,4 @@ namespace Drn
 	{
 		
 	}
-
-	void Scene::AddCameraComponent( CameraComponent* InCamera )
-	{
-		m_CameraComponents.push_back(InCamera);
-	}
-
-	void Scene::RemoveCameraComponent( CameraComponent* InCamera )
-	{
-		
-	}
-
 }

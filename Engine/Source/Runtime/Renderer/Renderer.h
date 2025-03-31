@@ -55,8 +55,9 @@ namespace Drn
 		Scene* MainScene;
 		SceneRenderer* MainSceneRenderer;
 
-		StaticMeshComponent* CubeMeshComponent;
-		CameraComponent* Camera;
+		StaticMeshActor* m_CubeStaticMeshActor;
+		CameraActor* m_CameraActor;
+
 		float CameraSpeed = 0.01f;
 
 		std::set<Scene*> AllocatedScenes;

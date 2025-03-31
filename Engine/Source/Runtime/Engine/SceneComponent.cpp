@@ -3,12 +3,18 @@
 
 namespace Drn
 {
-	SceneComponent::SceneComponent() : Component()
+	SceneComponent::SceneComponent() 
+		: Component() 
+	{
+		WorldLocation = XMVectorSet(0, 0, 0, 0);
+	}
+
+	SceneComponent::~SceneComponent()
 	{
 		
 	}
 
-	void SceneComponent::Tick(float DeltaTime)
+	void SceneComponent::Tick( float DeltaTime )
 	{
 		Component::Tick(DeltaTime);
 
@@ -16,7 +22,7 @@ namespace Drn
 		//UpdateRotation();
 		//UpdateScale();
 
-		for (SceneComponent* SceneComp : Childs)
+		for (auto SceneComp : Childs)
 		{
 			SceneComp->Tick(DeltaTime);
 		}
@@ -25,10 +31,11 @@ namespace Drn
 	void SceneComponent::AttachSceneComponent(SceneComponent* InComponent)
 	{
 		InComponent->Parent = this;
-		Childs.push_back(InComponent);
+		InComponent->SetOwningActor(GetOwningActor());
+		Childs.push_back(std::shared_ptr<SceneComponent>(InComponent));
 	}
 
-	const std::vector<SceneComponent*>& SceneComponent::GetChilds() const
+	const std::vector<std::shared_ptr<SceneComponent>>& SceneComponent::GetChilds() const
 	{
 		return Childs;
 	}
@@ -45,7 +52,12 @@ namespace Drn
 
 	DirectX::XMVECTOR SceneComponent::GetWorldLocation()const
 	{
-		return WorldLocation;
+		if (Parent == nullptr)
+		{
+			return WorldLocation;
+		}
+
+		return GetOwningActor()->GetActorLocation();
 	}
 
 	void SceneComponent::SetRelativeLocation( const DirectX::XMVECTOR& Inlocation, bool bMarkDirty )
@@ -103,7 +115,7 @@ namespace Drn
 	{
 		MarkDirtyLocation();
 
-		for (SceneComponent* Comp : Childs)
+		for (auto Comp : Childs)
 		{
 			Comp->MarkDirtyLocationRecursive();
 		}

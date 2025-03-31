@@ -57,6 +57,8 @@ namespace Drn
 	class Component;
 	class SceneComponent;
 	class Actor;
+	class StaticMeshActor;
+	class CameraActor;
 	
 	class Archive;
 	class AssetPreview;

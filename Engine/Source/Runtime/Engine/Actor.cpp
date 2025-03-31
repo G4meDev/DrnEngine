@@ -11,22 +11,22 @@ namespace Drn
 
 	Actor::~Actor()
 	{
+		
 	}
 
 	void Actor::Tick(float DeltaTime)
 	{
-		for (Component* Comp : Components)
+		for (auto Comp : Components)
 		{
 			Comp->Tick(DeltaTime);
 		}
 
-		for (SceneComponent* SceneComp : Root->GetChilds())
+		for (auto SceneComp : Root->GetChilds())
 		{
 			SceneComp->Tick(DeltaTime);
 		}
 	}
 
-/*
 	DirectX::XMVECTOR Actor::GetActorLocation()
 	{
 		return Root->GetWorldLocation();
@@ -35,9 +35,9 @@ namespace Drn
 	void Actor::SetActorLocation( const DirectX::XMVECTOR& InLocation )
 	{
 		Root->SetWorldLocation(InLocation);
-		Root->MarkDirtyLocationRecursive();
+		//Root->MarkDirtyLocationRecursive();
 	}
-*/
+
 
 /*
 	const Quaternion Actor::GetActorRotation()
@@ -79,7 +79,7 @@ namespace Drn
 
 	void Actor::AddComponent(Component* InComponent)
 	{
-		Components.push_back(InComponent);
+		Components.push_back(std::shared_ptr<Component>(InComponent));
 		InComponent->SetOwningActor(this);
 	}
 
