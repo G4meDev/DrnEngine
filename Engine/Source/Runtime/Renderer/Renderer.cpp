@@ -102,14 +102,7 @@ namespace Drn
 		ImGuiRenderer::Get()->Shutdown();
 #endif
 
-
 		SingletonInstance->m_CommandList.reset();
-		SingletonInstance->m_IndexBuffer.reset();
-		SingletonInstance->m_VertexBuffer.reset();
-		SingletonInstance->m_PipelineStateObject.reset();
-		SingletonInstance->m_RootSignature.reset();
-		SingletonInstance->m_DepthTexture.reset();
-		SingletonInstance->m_RenderTarget.Reset();
 		SingletonInstance->m_SwapChain.reset();
 		SingletonInstance->m_Device.reset();
 
@@ -125,11 +118,10 @@ namespace Drn
 	void Renderer::MainWindowResized( float InWidth, float InHeight ) 
 	{
 		m_Device->Flush();
-
 		m_SwapChain->Resize( InWidth, InHeight );
 
 #ifndef WITH_EDITOR
-		ViewportResized(InWidth, InHeight);
+		MainSceneRenderer->ResizeView(IntPoint(InWidth, InHeight));
 #endif
 	}
 
@@ -145,7 +137,7 @@ namespace Drn
 
 		auto& swapChainRT         = m_SwapChain->GetRenderTarget();
 		auto  swapChainBackBuffer = swapChainRT.GetTexture( dx12lib::AttachmentPoint::Color0 );
-		auto  msaaRenderTarget    = m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
+		auto  msaaRenderTarget    = MainSceneRenderer->m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
 
 		for (Scene* S : AllocatedScenes)
 		{

@@ -50,17 +50,6 @@ namespace Drn
 
 		std::shared_ptr<::dx12lib::SwapChain> m_SwapChain = nullptr;
 
-		std::shared_ptr<dx12lib::VertexBuffer> m_VertexBuffer = nullptr;
-		std::shared_ptr<dx12lib::IndexBuffer>  m_IndexBuffer  = nullptr;
-
-		std::shared_ptr<dx12lib::RootSignature>       m_RootSignature       = nullptr;
-		std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject = nullptr;
-
-		std::shared_ptr<dx12lib::Texture> m_DepthTexture = nullptr;
-
-		dx12lib::RenderTarget m_RenderTarget;
-
-		float m_fieldOfView = 45.0f;
 
 		World* MainWorld;
 		Scene* MainScene;

@@ -40,6 +40,7 @@ namespace Drn
 
 		bool m_RenderingEnabled;
 
+		friend class Renderer;
 
 	private:
 
