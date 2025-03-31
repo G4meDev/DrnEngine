@@ -10,6 +10,7 @@ set( HEADER_FILES
 	Source/Runtime/Core/Archive.h
 	Source/Runtime/Core/Serializable.h
 	
+	Source/Runtime/Engine/WorldManager.h
 	Source/Runtime/Engine/World.h
 	Source/Runtime/Engine/Scene.h
 	Source/Runtime/Engine/PrimitiveComponent.h
@@ -68,6 +69,7 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Archive.cpp
 	Source/Runtime/Core/Serializable.cpp
 	
+	Source/Runtime/Engine/WorldManager.cpp
 	Source/Runtime/Engine/World.cpp
 	Source/Runtime/Engine/Scene.cpp
 	Source/Runtime/Engine/PrimitiveComponent.cpp

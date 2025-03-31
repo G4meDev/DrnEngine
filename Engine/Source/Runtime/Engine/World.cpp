@@ -23,6 +23,11 @@ namespace Drn
 		m_StaticMeshComponents.clear();
 	}
 
+	void World::Tick( float DeltaTime )
+	{
+		
+	}
+
 	void World::AddStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
 	{
 		m_StaticMeshComponents.push_back(InStaticMesh);

@@ -11,6 +11,8 @@ namespace Drn
 		World();
 		~World();
 
+		void Tick(float DeltaTime);
+
 		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 

@@ -56,7 +56,7 @@ namespace Drn
 
 		Camera = new CameraComponent();
 
-		MainWorld = new World();
+		MainWorld = WorldManager::Get()->AllocateWorld();
 		MainWorld->AddStaticMeshCompponent( CubeMeshComponent );
 		MainWorld->AddCameraComponent( Camera );
 
@@ -93,8 +93,7 @@ namespace Drn
 
 		if ( SingletonInstance->MainWorld)
 		{
-			delete SingletonInstance->MainWorld;
-			SingletonInstance->MainWorld = nullptr;
+			WorldManager::Get()->RemoveAndInvalidateWorld(SingletonInstance->MainWorld);
 		}
 
 

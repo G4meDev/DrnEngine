@@ -173,7 +173,7 @@ namespace Drn
 			}
 
 			XMVECTOR Location = Mesh->GetWorldLocation();
-			LOG(LogSceneRenderer, Info, "%f, %f, %f", XMVectorGetX(Location), XMVectorGetY(Location), XMVectorGetZ(Location));
+			//LOG(LogSceneRenderer, Info, "%f, %f, %f", XMVectorGetX(Location), XMVectorGetY(Location), XMVectorGetZ(Location));
 
 			float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
 			const XMVECTOR rotationAxis = DirectX::XMVectorSet( 0, 1, 1, 0 );

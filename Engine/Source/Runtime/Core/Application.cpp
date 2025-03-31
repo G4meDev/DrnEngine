@@ -46,6 +46,7 @@ namespace Drn
 			m_MainWindow->Close += WindowCloseEvent::slot( &Application::OnWindowClose, this );
 
 			AssetManager::Get()->Init();
+			WorldManager::Get()->Init();
 
 			Renderer::Init( inhInstance, m_MainWindow.get() );
 		
@@ -63,6 +64,8 @@ namespace Drn
 			Editor::Get()->Shutdown();
 #endif
 			Renderer::Shutdown();
+
+			WorldManager::Shutdown();
 			AssetManager::Shutdown();
 
 			m_MainWindow.reset();
@@ -95,6 +98,8 @@ namespace Drn
 			::swprintf_s( buffer, L"Cube [FPS: %f]", fps );
 			m_MainWindow->SetWindowTitle( buffer );
 		}
+
+		WorldManager::Get()->Tick(e.DeltaTime);
 
 		Renderer::Get()->Tick(e.DeltaTime);
 

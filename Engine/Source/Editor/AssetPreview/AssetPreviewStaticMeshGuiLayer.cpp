@@ -29,7 +29,8 @@ namespace Drn
 		Camera = new CameraComponent();
 
 		// TODO: lifetime management
-		PreviewWorld = new World();
+		PreviewWorld = WorldManager::Get()->AllocateWorld();
+		
 		PreviewWorld->AddStaticMeshCompponent(PreviewMesh);
 		PreviewWorld->AddCameraComponent(Camera);
 
@@ -71,8 +72,7 @@ namespace Drn
 
 		if (PreviewWorld)
 		{
-			delete PreviewWorld;
-			PreviewWorld = nullptr;
+			WorldManager::Get()->RemoveAndInvalidateWorld(PreviewWorld);
 		}
 
 		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
