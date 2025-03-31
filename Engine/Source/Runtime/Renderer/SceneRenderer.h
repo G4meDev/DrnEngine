@@ -2,6 +2,8 @@
 
 #include "ForwardTypes.h"
 
+LOG_DECLARE_CATEGORY(LogSceneRenderer);
+
 namespace Drn
 {
 	class SceneRenderer

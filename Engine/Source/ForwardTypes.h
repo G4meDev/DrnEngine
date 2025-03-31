@@ -54,6 +54,9 @@ namespace Drn
 	class StaticMeshComponent;
 	class StaticMesh;
 	class CameraComponent;
+	class Component;
+	class SceneComponent;
+	class Actor;
 	
 	class Archive;
 	class AssetPreview;

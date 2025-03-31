@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "SceneRenderer.h"
 
+LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
+
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
@@ -121,20 +123,13 @@ namespace Drn
 
 	void SceneRenderer::BeginRender(dx12lib::CommandList* CommandList)
 	{
+/*
 		float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
 		const XMVECTOR rotationAxis = XMVectorSet( 0, 1, 1, 0 );
 		XMMATRIX       modelMatrix  = XMMatrixRotationAxis( rotationAxis, XMConvertToRadians( angle ) );
 
-		//const XMVECTOR eyePosition = XMVectorSet( 0, 0, -10, 1 );
-		//const XMVECTOR focusPoint  = XMVectorSet( 0, 0, 0, 1 );
-		//const XMVECTOR upDirection = XMVectorSet( 0, 1, 0, 0 );
-		//XMMATRIX       viewMatrix  = XMMatrixLookAtLH( eyePosition, focusPoint, upDirection );
-
 		auto viewport = m_RenderTarget.GetViewport();
 		float    aspectRatio = viewport.Width / viewport.Height;
-		
-		//XMMATRIX projectionMatrix =
-		//	XMMatrixPerspectiveFovLH( XMConvertToRadians( m_fieldOfView ), aspectRatio, 0.1f, 100.0f );
 		
 		XMMATRIX viewMatrix;
 		XMMATRIX projectionMatrix;
@@ -143,6 +138,7 @@ namespace Drn
 		
 		XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
+*/
 
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
 
@@ -158,7 +154,7 @@ namespace Drn
 		CommandList->SetPipelineState( m_PipelineStateObject );
 		CommandList->SetGraphicsRootSignature( m_RootSignature );
 
-		CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
+//		CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
 
 		CommandList->SetRenderTarget( m_RenderTarget );
 		CommandList->SetViewport( m_RenderTarget.GetViewport() );
@@ -175,6 +171,29 @@ namespace Drn
 			{
 				Mesh->GetMesh()->UploadResources(CommandList);
 			}
+
+			XMVECTOR Location = Mesh->GetWorldLocation();
+			LOG(LogSceneRenderer, Info, "%f, %f, %f", XMVectorGetX(Location), XMVectorGetY(Location), XMVectorGetZ(Location));
+
+			float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
+			const XMVECTOR rotationAxis = DirectX::XMVectorSet( 0, 1, 1, 0 );
+			XMMATRIX       RotationMatrix  = XMMatrixRotationAxis( rotationAxis, XMConvertToRadians( angle ) );
+			XMMATRIX       TranslationMatrix  = XMMatrixTranslation( DirectX::XMVectorGetX(Location), DirectX::XMVectorGetY(Location), DirectX::XMVectorGetZ(Location));
+
+			XMMATRIX modelMatrix = RotationMatrix * TranslationMatrix;
+
+			auto viewport = m_RenderTarget.GetViewport();
+			float    aspectRatio = viewport.Width / viewport.Height;
+		
+			XMMATRIX viewMatrix;
+			XMMATRIX projectionMatrix;
+		
+			TargetCamera->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+		
+			XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
+			mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
+
+			CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
 
 			for (const StaticMeshRenderProxy& RenderProxy : Mesh->GetMesh()->RenderProxies)
 			{

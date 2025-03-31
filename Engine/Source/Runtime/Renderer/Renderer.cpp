@@ -130,6 +130,9 @@ namespace Drn
 		// @TODO: move time to accessible location
 		TotalTime += DeltaTime;
 
+		XMVECTOR Location = XMVectorSet(sin(TotalTime) * 5, 0, 0, 1);
+		CubeMeshComponent->SetWorldLocation(Location);
+
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
 		m_CommandList  = commandQueue.GetCommandList();
 

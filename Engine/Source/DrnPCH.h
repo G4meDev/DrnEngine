@@ -10,6 +10,9 @@
 #include "Runtime/Engine/StaticMesh.h"
 #include "Runtime/Engine/StaticMeshComponent.h"
 #include "Runtime/Engine/CameraComponent.h"
+#include "Runtime/Engine/Component.h"
+#include "Runtime/Engine/SceneComponent.h"
+#include "Runtime/Engine/Actor.h"
 
 #include <dx12lib/Device.h>
 #include <dx12lib/SwapChain.h>

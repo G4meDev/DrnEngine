@@ -16,6 +16,9 @@ set( HEADER_FILES
 	Source/Runtime/Engine/StaticMeshComponent.h
 	Source/Runtime/Engine/StaticMesh.h
 	Source/Runtime/Engine/CameraComponent.h
+	Source/Runtime/Engine/Component.h
+	Source/Runtime/Engine/SceneComponent.h
+	Source/Runtime/Engine/Actor.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/SceneRenderer.h
@@ -24,7 +27,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
 	
 	Source/Runtime/Containers/List.h
-	
+
 	Source/Runtime/Math/IntPoint.h
 	Source/Runtime/Math/Math.h
 	
@@ -71,6 +74,9 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/StaticMeshComponent.cpp
 	Source/Runtime/Engine/StaticMesh.cpp
 	Source/Runtime/Engine/CameraComponent.cpp
+	Source/Runtime/Engine/Component.cpp
+	Source/Runtime/Engine/SceneComponent.cpp
+	Source/Runtime/Engine/Actor.cpp
 	
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/SceneRenderer.cpp

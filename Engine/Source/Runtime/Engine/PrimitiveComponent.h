@@ -1,10 +1,11 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "SceneComponent.h"
 
 namespace Drn
 {
-	class PrimitiveComponent
+	class PrimitiveComponent : public SceneComponent
 	{
 	public:
 		PrimitiveComponent();
