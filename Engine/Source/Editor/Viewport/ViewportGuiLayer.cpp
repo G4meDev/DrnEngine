@@ -25,7 +25,8 @@ namespace Drn
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		
-		pDevice->CreateShaderResourceView( Renderer::Get()->GetViewportResource(), &descSRV, ViewCpuHandle );
+		//pDevice->CreateShaderResourceView( Renderer::Get()->GetViewportResource(), &descSRV, ViewCpuHandle );
+		pDevice->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
 
 	ViewportGuiLayer::~ViewportGuiLayer() 
@@ -39,6 +40,30 @@ namespace Drn
 		{
 			ImGui::End();
 			return;
+		}
+
+		bool bHovering  = ImGui::IsWindowHovered();
+		bool bMouseDown = ImGui::IsKeyDown( ImGuiKey_MouseRight );
+
+		if ( bHovering && bMouseDown )
+		{
+			bool wDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_W );
+			bool aDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_A );
+			bool sDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_S );
+			bool dDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_D );
+			bool eDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_E );
+			bool qDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_Q );
+
+			float ForwardDis = wDown - sDown;
+			float RightDis   = dDown - aDown;
+			float UpDis      = eDown - qDown;
+
+			float CameraSpeed = Renderer::Get()->CameraSpeed;
+			XMVECTOR Displacement = XMVectorSet( RightDis, UpDis, ForwardDis, 0 );
+			Displacement *= XMVectorSet( CameraSpeed, CameraSpeed, CameraSpeed, 0 );
+
+			Renderer::Get()->Camera->m_Pos += Displacement;
+			Renderer::Get()->Camera->m_FocusPoint = Renderer::Get()->Camera->m_Pos + XMVectorSet( 0, 0, 10, 0 );
 		}
 
 		ShowMenu();
@@ -85,7 +110,7 @@ namespace Drn
 
 	void ViewportGuiLayer::OnViewportSizeChanged( const IntPoint& NewSize )
 	{
-		Renderer::Get()->ViewportResized( CachedSize.X, CachedSize.Y );
+		Renderer::Get()->MainSceneRenderer->ResizeView( NewSize );
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
 
@@ -95,7 +120,7 @@ namespace Drn
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( Renderer::Get()->GetViewportResource(), &descSRV, ViewCpuHandle );
+		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
 
 }

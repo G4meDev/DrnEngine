@@ -24,15 +24,12 @@ namespace Drn
 		void ToggleSwapChain();
 
 		void MainWindowResized(float InWidth, float InHeight);
-		void ViewportResized(float InWidth, float InHeight);
 
 		static Renderer* Get();
 
 		inline dx12lib::Device* GetDevice() { return m_Device.get(); }
 
 		inline Window* GetMainWindow() { return m_MainWindow; }
-
-		ID3D12Resource* GetViewportResource();
 
 		void Tick(float DeltaTime);
 
@@ -43,8 +40,6 @@ namespace Drn
 		float TotalTime = 0;
 
 		std::shared_ptr<dx12lib::CommandList> m_CommandList;
-
-		//AssetHandle<StaticMesh> CubeStaticMeshAsset;
 
 	protected:
 		static Renderer* SingletonInstance;
@@ -67,8 +62,17 @@ namespace Drn
 
 		float m_fieldOfView = 45.0f;
 
+		World* MainWorld;
+		Scene* MainScene;
+		SceneRenderer* MainSceneRenderer;
+
+		StaticMeshComponent* CubeMeshComponent;
+		CameraComponent* Camera;
+		float CameraSpeed = 0.01f;
 
 		std::set<Scene*> AllocatedScenes;
+
+		friend class ViewportGuiLayer;
 
 	private:
 		

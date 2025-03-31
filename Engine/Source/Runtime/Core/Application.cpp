@@ -45,6 +45,8 @@ namespace Drn
 			m_MainWindow->Update += UpdateEvent::slot( &Application::OnUpdate, this );
 			m_MainWindow->Close += WindowCloseEvent::slot( &Application::OnWindowClose, this );
 
+			AssetManager::Get()->Init();
+
 			Renderer::Init( inhInstance, m_MainWindow.get() );
 		
 #if WITH_EDITOR
@@ -61,6 +63,8 @@ namespace Drn
 			Editor::Get()->Shutdown();
 #endif
 			Renderer::Shutdown();
+			AssetManager::Shutdown();
+
 			m_MainWindow.reset();
 		}
 

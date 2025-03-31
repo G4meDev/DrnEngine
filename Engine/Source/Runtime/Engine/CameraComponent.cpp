@@ -9,8 +9,10 @@ namespace Drn
 		, m_UpVector(XMVectorSet( 0, 1, 0, 0 ))
 		, m_AspectRatio(1.0f)
 		, m_FOV(45.0f)
+		, m_ClipMin(0.1f)
+		, m_ClipMax(100.0f)
 	{
-		
+		m_Rotation = XMQuaternionIdentity();
 	}
 
 	CameraComponent::~CameraComponent()
@@ -20,7 +22,9 @@ namespace Drn
 
 	void CameraComponent::CalculateMatrices( XMMATRIX& InViewMatrix, XMMATRIX& InProjectionMatrix, float AspectRatio)
 	{
+		
+
 		InViewMatrix = XMMatrixLookAtLH( m_Pos, m_FocusPoint, m_UpVector);
-		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, 0.1f, 100.0f );
+		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMin, m_ClipMax);
 	}
 }
