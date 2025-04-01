@@ -19,7 +19,6 @@ namespace Drn
 	{
 		Actor::Tick(DeltaTime);
 
-
 	}
 
 #if WITH_EDITOR
@@ -34,12 +33,13 @@ namespace Drn
 
 		XMVECTOR Axis_Y = XMVectorSet( 0, 1, 0, 0 );
 		XMVECTOR Axis_X = XMVectorSet( 1, 0, 0, 0 );
+		Axis_X = XMVector3Rotate(Axis_X, CamRot);
 
 		XMVECTOR Rot_Offset_X = XMQuaternionRotationAxis( Axis_Y, CameraInput.m_MouseDelta.X * CameraRotationSpeed );
 		XMVECTOR Rot_Offset_Y = XMQuaternionRotationAxis( Axis_X, CameraInput.m_MouseDelta.Y * CameraRotationSpeed );
 
-		SetActorRotation( XMQuaternionMultiply( Rot_Offset_X, CamRot ) );
-		SetActorRotation( XMQuaternionMultiply( Rot_Offset_Y, GetActorRotation() ) );
+		SetActorRotation( XMQuaternionMultiply( CamRot, Rot_Offset_Y ) );
+		SetActorRotation( XMQuaternionMultiply( GetActorRotation(), Rot_Offset_X ) );
 	}
 #endif
 

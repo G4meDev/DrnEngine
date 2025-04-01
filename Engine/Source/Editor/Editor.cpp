@@ -8,6 +8,7 @@
 #include "Editor/Viewport/Viewport.h"
 #include "Editor/OutputLog/OutputLog.h"
 #include "Editor/ContentBrowser/ContentBrowser.h"
+#include "Editor/WorldOutliner/WorldOutliner.h"
 
 #include "Editor/FileImportMenu/FileImportMenu.h"
 
@@ -28,6 +29,7 @@ namespace Drn
 		OutputLog::Get()->Init();
 		Viewport::Get()->Init();
 		ContentBrowser::Get()->Init();
+		WorldOutliner::Get()->Init();
 	}
 
 	void Editor::Tick(float DeltaTime)
@@ -35,12 +37,14 @@ namespace Drn
 		OutputLog::Get()->Tick(DeltaTime);
 		Viewport::Get()->Tick(DeltaTime);
 		ContentBrowser::Get()->Tick(DeltaTime);
+		WorldOutliner::Get()->Tick(DeltaTime);
 	}
 
 	void Editor::Shutdown() 
 	{
 		CloseImportMenu();
 
+		WorldOutliner::Get()->Get()->Shutdown();
 		ContentBrowser::Get()->Shutdown();
 		Viewport::Get()->Shutdown();
 		OutputLog::Get()->Shutdown();

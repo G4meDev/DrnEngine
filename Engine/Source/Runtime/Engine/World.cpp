@@ -4,6 +4,7 @@
 namespace Drn
 {
 	World::World() 
+		: m_ShouldTick(true)
 	{
 		
 	}
@@ -18,6 +19,11 @@ namespace Drn
 
 	void World::Tick( float DeltaTime )
 	{
+		if (!m_ShouldTick)
+		{
+			return;
+		}
+
 		for (Actor* actor : m_Actors)
 		{
 			actor->Tick(DeltaTime);

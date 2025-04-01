@@ -8,6 +8,7 @@
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
 #include "Editor/Editor.h"
+#include "Editor/Viewport/Viewport.h"
 
 namespace Drn
 {
@@ -38,6 +39,8 @@ namespace Drn
 	{
 		if (!ImGui::Begin( "Viewport" ))
 		{
+			Viewport::Get()->m_Visible = false;
+
 			ImGui::End();
 			return;
 		}
@@ -46,25 +49,9 @@ namespace Drn
 		{
 			CameraActor* Cam = Renderer::Get()->m_CameraActor;
 			Cam->ApplyViewportInput(CameraInputHandler, CameraMovementSpeed, CameraRotationSpeed);
-			
-			//XMVECTOR CamPos = Cam->GetActorLocation();
-			//XMVECTOR CamRot = Cam->GetActorRotation();
-			//
-			//float CameraSpeed = Renderer::Get()->CameraSpeed;
-			//XMVECTOR Displacement = XMVector3Rotate(CameraInputHandler.m_Displacement, CamRot);
-			//Displacement *= XMVectorSet( CameraSpeed, CameraSpeed, CameraSpeed, 0 );
-			//
-			//Cam->SetActorLocation( CamPos + Displacement );
-			//
-			//XMVECTOR Axis_Y = XMVectorSet(0, 1, 0, 0);
-			//XMVECTOR Axis_X = XMVectorSet(1, 0, 0, 0);
-			//
-			//XMVECTOR Rot_Offset_X = XMQuaternionRotationAxis(Axis_Y, CameraInputHandler.m_MouseDelta.X * 0.01f);
-			//XMVECTOR Rot_Offset_Y = XMQuaternionRotationAxis(Axis_X, CameraInputHandler.m_MouseDelta.Y * 0.01f);
-			//
-			//Cam->SetActorRotation( XMQuaternionMultiply(Rot_Offset_X, CamRot) );
-			//Cam->SetActorRotation( XMQuaternionMultiply(Rot_Offset_Y, Cam->GetActorRotation()) );
 		}
+
+		Viewport::Get()->m_Visible = true;
 
 		ShowMenu();
 

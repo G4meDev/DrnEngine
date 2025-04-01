@@ -41,6 +41,13 @@ namespace Drn
 
 		std::shared_ptr<dx12lib::CommandList> m_CommandList;
 
+		World* MainWorld;
+		Scene* MainScene;
+		SceneRenderer* MainSceneRenderer;
+
+		StaticMeshActor* m_CubeStaticMeshActor;
+		CameraActor* m_CameraActor;
+
 	protected:
 		static Renderer* SingletonInstance;
 
@@ -49,14 +56,6 @@ namespace Drn
 		std::shared_ptr<::dx12lib::Device> m_Device = nullptr;
 
 		std::shared_ptr<::dx12lib::SwapChain> m_SwapChain = nullptr;
-
-
-		World* MainWorld;
-		Scene* MainScene;
-		SceneRenderer* MainSceneRenderer;
-
-		StaticMeshActor* m_CubeStaticMeshActor;
-		CameraActor* m_CameraActor;
 
 		std::set<Scene*> AllocatedScenes;
 

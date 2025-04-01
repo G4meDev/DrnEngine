@@ -45,6 +45,9 @@ set( HEADER_FILES
 
 	Source/Editor/Misc/ViewportCameraInputHandler.h
 	
+	Source/Editor/WorldOutliner/WorldOutliner.h
+	Source/Editor/WorldOutliner/WorldOutlinerGuiLayer.h
+
 	Source/Editor/Viewport/Viewport.h
 	Source/Editor/Viewport/ViewportGuiLayer.h
 	
@@ -107,6 +110,9 @@ set( SOURCE_FILES
 	Source/Editor/Editor.cpp
 
 	Source/Editor/Misc/ViewportCameraInputHandler.cpp
+
+	Source/Editor/WorldOutliner/WorldOutliner.cpp
+	Source/Editor/WorldOutliner/WorldOutlinerGuiLayer.cpp
 	
 	Source/Editor/Viewport/Viewport.cpp
 	Source/Editor/Viewport/ViewportGuiLayer.cpp

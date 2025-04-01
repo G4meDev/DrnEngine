@@ -19,8 +19,12 @@ namespace Drn
 		static Viewport* Get();
 		void OnViewportSizeChanged(const IntPoint& NewSize);
 
+		inline bool IsVisible() { return m_Visible; }
+
 	protected:
 		std::unique_ptr<ViewportGuiLayer> ViewportLayer;
+
+		bool m_Visible;
 
 	private:
 		static std::unique_ptr<Viewport> SingletonInstance;
