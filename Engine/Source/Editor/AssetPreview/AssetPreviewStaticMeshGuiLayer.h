@@ -3,6 +3,7 @@
 #if WITH_EDITOR
 
 #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
+#include "Editor/Misc/ViewportCameraInputHandler.h"
 
 LOG_DECLARE_CATEGORY(LogStaticMeshPreview);
 
@@ -42,7 +43,10 @@ namespace Drn
 
 		StaticMeshActor* PreviewMesh;
 		CameraActor* Camera;
-		float CameraSpeed = 0.01f;
+
+		ViewportCameraInputHandler CameraInputHandler;
+		float CameraMovementSpeed = 0.01f;
+		float CameraRotationSpeed = 0.01f;
 
 		AssetHandle<StaticMesh> m_OwningAsset;
 	private:

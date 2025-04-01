@@ -31,6 +31,7 @@ namespace Drn
 
 		void CalculateMatrices( XMMATRIX& InViewMatrix, XMMATRIX& InProjectionMatrix, float AspectRatio);
 
+
 	protected:
 
 	private:

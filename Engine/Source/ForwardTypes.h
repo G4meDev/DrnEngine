@@ -7,6 +7,8 @@
 
 #include <DirectXMath.h>
 
+#include "Runtime/Math/IntPoint.h"
+
 class UpdateEventArgs;
 class KeyEventArgs;
 class ResizeEventArgs;

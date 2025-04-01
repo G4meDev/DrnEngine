@@ -58,8 +58,6 @@ namespace Drn
 		StaticMeshActor* m_CubeStaticMeshActor;
 		CameraActor* m_CameraActor;
 
-		float CameraSpeed = 0.01f;
-
 		std::set<Scene*> AllocatedScenes;
 
 		friend class ViewportGuiLayer;

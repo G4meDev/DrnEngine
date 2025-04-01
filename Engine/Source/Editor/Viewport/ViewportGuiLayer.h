@@ -26,6 +26,8 @@ namespace Drn
 		IntPoint CachedSize = IntPoint( 1920, 1080 );
 
 		ViewportCameraInputHandler CameraInputHandler;
+		float CameraMovementSpeed = 0.01f;
+		float CameraRotationSpeed = 0.01f;
 
 		friend class Viewport;
 	};

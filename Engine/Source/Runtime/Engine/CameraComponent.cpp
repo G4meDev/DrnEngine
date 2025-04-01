@@ -40,4 +40,5 @@ namespace Drn
 		InViewMatrix = XMMatrixLookAtLH( CameraPos, m_FocusPoint, m_UpVector);
 		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMin, m_ClipMax);
 	}
+
 }
