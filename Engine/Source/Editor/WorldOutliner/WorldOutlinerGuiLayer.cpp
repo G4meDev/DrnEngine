@@ -51,15 +51,16 @@ namespace Drn
 
 		for (const Actor* Actor : W->GetActorList())
 		{
-			//std::string ActorLabel = Actor->GetActorLabel();
-			std::string ActorLabel = std::string("Actor") + std::to_string(i+1);
+			std::string ActorLabel = Actor->GetActorLabel();
 
-			if ( ImGui::Selectable(ActorLabel.c_str(), SelectedActorIndex == i) )
+			ImGui::PushID(i++);
+
+			if ( ImGui::Selectable(ActorLabel.c_str(), SelectedActor == Actor) )
 			{
-				SelectedActorIndex = i;
+				SelectedActor = Actor;
 			}
 
-			i++;
+			ImGui::PopID();
 		}
 
 		ImGui::EndChild();

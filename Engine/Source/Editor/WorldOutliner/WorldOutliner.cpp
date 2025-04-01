@@ -27,8 +27,8 @@ namespace Drn
 
 	void WorldOutliner::Shutdown()
 	{
-		WorldOutlinerLayer->DeAttach();
-		WorldOutlinerLayer.reset();
+		SingletonInstance->WorldOutlinerLayer->DeAttach();
+		SingletonInstance->WorldOutlinerLayer.reset();
 	}
 
 	void WorldOutliner::Tick( float DeltaTime )
@@ -39,9 +39,9 @@ namespace Drn
 
 	WorldOutliner* WorldOutliner::Get()
 	{
-		if (!SingletonInstance.get())
+		if (!SingletonInstance)
 		{
-			SingletonInstance = std::make_unique<WorldOutliner>();
+			SingletonInstance = std::make_unique<Drn::WorldOutliner>();
 		}
 
 		return SingletonInstance.get();

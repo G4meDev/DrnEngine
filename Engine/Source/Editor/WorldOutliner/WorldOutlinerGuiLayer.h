@@ -23,7 +23,7 @@ namespace Drn
 
 		World* GetMainWorld();
 
-		int32 SelectedActorIndex = -1;
+		const Actor* SelectedActor;
 
 	protected:
 

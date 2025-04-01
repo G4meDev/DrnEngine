@@ -16,8 +16,8 @@ namespace Drn
 		~WorldOutliner();
 
 		void Init();
-		void Tick(float DeltaTime);
 		void Shutdown();
+		void Tick(float DeltaTime);
 
 		static WorldOutliner* Get();
 

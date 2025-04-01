@@ -45,6 +45,9 @@ set( HEADER_FILES
 
 	Source/Editor/Misc/ViewportCameraInputHandler.h
 	
+	Source/Editor/WorldDetailPanel/WorldDetailPanel.h
+	Source/Editor/WorldDetailPanel/WorldDetailPanelGuiLayer.h
+	
 	Source/Editor/WorldOutliner/WorldOutliner.h
 	Source/Editor/WorldOutliner/WorldOutlinerGuiLayer.h
 
@@ -110,6 +113,9 @@ set( SOURCE_FILES
 	Source/Editor/Editor.cpp
 
 	Source/Editor/Misc/ViewportCameraInputHandler.cpp
+
+	Source/Editor/WorldDetailPanel/WorldDetailPanel.cpp
+	Source/Editor/WorldDetailPanel/WorldDetailPanelGuiLayer.cpp
 
 	Source/Editor/WorldOutliner/WorldOutliner.cpp
 	Source/Editor/WorldOutliner/WorldOutlinerGuiLayer.cpp
