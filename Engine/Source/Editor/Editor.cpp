@@ -10,6 +10,7 @@
 #include "Editor/ContentBrowser/ContentBrowser.h"
 #include "Editor/WorldOutliner/WorldOutliner.h"
 #include "Editor/WorldDetailPanel/WorldDetailPanel.h"
+#include "Editor/LevelViewport/LevelViewport.h"
 
 #include "Editor/FileImportMenu/FileImportMenu.h"
 
@@ -28,29 +29,33 @@ namespace Drn
 	void Editor::Init()
 	{
 		OutputLog::Get()->Init();
-		Viewport::Get()->Init();
+		//Viewport::Get()->Init();
 		ContentBrowser::Get()->Init();
-		WorldOutliner::Get()->Init();
-		WorldDetailPanel::Get()->Init();
+		//WorldOutliner::Get()->Init();
+		//WorldDetailPanel::Get()->Init();
+		LevelViewport::Get()->Init();
+		
 	}
 
 	void Editor::Tick(float DeltaTime)
 	{
 		OutputLog::Get()->Tick(DeltaTime);
-		Viewport::Get()->Tick(DeltaTime);
+		//Viewport::Get()->Tick(DeltaTime);
 		ContentBrowser::Get()->Tick(DeltaTime);
-		WorldOutliner::Get()->Tick(DeltaTime);
-		WorldDetailPanel::Get()->Tick(DeltaTime);
+		//WorldOutliner::Get()->Tick(DeltaTime);
+		//WorldDetailPanel::Get()->Tick(DeltaTime);
+		LevelViewport::Get()->Tick(DeltaTime);
 	}
 
 	void Editor::Shutdown() 
 	{
 		CloseImportMenu();
 
-		WorldDetailPanel::Get()->Get()->Shutdown();
-		WorldOutliner::Get()->Get()->Shutdown();
+		LevelViewport::Get()->Shutdown();
+		//WorldDetailPanel::Get()->Get()->Shutdown();
+		//WorldOutliner::Get()->Get()->Shutdown();
 		ContentBrowser::Get()->Shutdown();
-		Viewport::Get()->Shutdown();
+		//Viewport::Get()->Shutdown();
 		OutputLog::Get()->Shutdown();
 	}
 

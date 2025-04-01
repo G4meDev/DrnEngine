@@ -41,15 +41,22 @@ set( HEADER_FILES
 	Source/Runtime/Misc/Log.h
 	Source/Runtime/Misc/Path.h
 	
-	Source/Editor/Editor.h
-
 	Source/Editor/Misc/ViewportCameraInputHandler.h
+
+	Source/Editor/Editor.h
 	
+	Source/Editor/EditorPanels/ViewportPanel.h
+	Source/Editor/EditorPanels/ActorDetailPanel.h
+	Source/Editor/EditorPanels/WorldOutlinerPanel.h
+
 	Source/Editor/WorldDetailPanel/WorldDetailPanel.h
 	Source/Editor/WorldDetailPanel/WorldDetailPanelGuiLayer.h
 	
 	Source/Editor/WorldOutliner/WorldOutliner.h
 	Source/Editor/WorldOutliner/WorldOutlinerGuiLayer.h
+
+	Source/Editor/LevelViewport/LevelViewport.h
+	Source/Editor/LevelViewport/LevelViewportGuiLayer.h
 
 	Source/Editor/Viewport/Viewport.h
 	Source/Editor/Viewport/ViewportGuiLayer.h
@@ -111,6 +118,13 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/Path.cpp
 	
 	Source/Editor/Editor.cpp
+
+	Source/Editor/EditorPanels/ViewportPanel.cpp
+	Source/Editor/EditorPanels/ActorDetailPanel.cpp
+	Source/Editor/EditorPanels/WorldOutlinerPanel.cpp
+
+	Source/Editor/LevelViewport/LevelViewport.cpp
+	Source/Editor/LevelViewport/LevelViewportGuiLayer.cpp
 
 	Source/Editor/Misc/ViewportCameraInputHandler.cpp
 

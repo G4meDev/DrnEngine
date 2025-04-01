@@ -27,8 +27,8 @@ namespace Drn
 
 	void WorldOutliner::Shutdown()
 	{
-		SingletonInstance->WorldOutlinerLayer->DeAttach();
-		SingletonInstance->WorldOutlinerLayer.reset();
+		WorldOutlinerLayer->DeAttach();
+		WorldOutlinerLayer.reset();
 	}
 
 	void WorldOutliner::Tick( float DeltaTime )

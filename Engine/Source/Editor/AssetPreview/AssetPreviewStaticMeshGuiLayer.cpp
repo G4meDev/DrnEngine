@@ -101,6 +101,9 @@ namespace Drn
 		DrawViewport();
 		DrawSidePanel();
 
+		ImGui::Begin( "LeftPanel" );
+		ImGui::End();
+
 		ImGui::End();
 	}
 

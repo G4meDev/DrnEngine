@@ -33,10 +33,8 @@ namespace Drn
 		{
 			ImGui::End();
 		}
-		
-		
+
 		DrawActorList();
-		ImGui::ShowDemoWindow();
 
 		ImGui::End();
 	}
