@@ -2,6 +2,7 @@
 
 #if WITH_EDITOR
 #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
+#include "Editor/Misc/ViewportCameraInputHandler.h"
 
 namespace Drn
 {
@@ -11,7 +12,7 @@ namespace Drn
 		ViewportGuiLayer();
 		~ViewportGuiLayer();
 
-		virtual void Draw() override;
+		virtual void Draw( float DeltaTime ) override;
 
 	private:
 
@@ -24,8 +25,7 @@ namespace Drn
 
 		IntPoint CachedSize = IntPoint( 1920, 1080 );
 
-		IntPoint m_LastMousePos;
-		bool m_CapturingMouse;
+		ViewportCameraInputHandler CameraInputHandler;
 
 		friend class Viewport;
 	};

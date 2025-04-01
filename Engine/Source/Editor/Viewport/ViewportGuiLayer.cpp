@@ -34,7 +34,7 @@ namespace Drn
 		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
 	}
 
-	void ViewportGuiLayer::Draw()
+	void ViewportGuiLayer::Draw( float DeltaTime )
 	{
 		if (!ImGui::Begin( "Viewport" ))
 		{
@@ -42,44 +42,14 @@ namespace Drn
 			return;
 		}
 
-		bool bHovering  = ImGui::IsWindowHovered();
-		bool bMouseDown = ImGui::IsKeyDown( ImGuiKey_MouseRight );
-
-		if ( bHovering && bMouseDown )
+		if (CameraInputHandler.Tick(DeltaTime))
 		{
-			IntPoint MouseDelta(0, 0);
-			IntPoint CurerentMousePos(ImGui::GetMousePos().x, ImGui::GetMousePos().y);
-
-			if (m_CapturingMouse)
-			{
-				MouseDelta = CurerentMousePos - m_LastMousePos;
-			}
-
-			else
-			{
-				m_CapturingMouse = true;
-			}
-
-			m_LastMousePos = CurerentMousePos;
-
-			bool wDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_W );
-			bool aDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_A );
-			bool sDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_S );
-			bool dDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_D );
-			bool eDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_E );
-			bool qDown = ImGui::IsKeyDown( ImGuiKey::ImGuiKey_Q );
-
-			float ForwardDis = wDown - sDown;
-			float RightDis   = dDown - aDown;
-			float UpDis      = eDown - qDown;
-
 			CameraActor* Cam = Renderer::Get()->m_CameraActor;
 			XMVECTOR CamPos = Cam->GetActorLocation();
 			XMVECTOR CamRot = Cam->GetActorRotation();
 
 			float CameraSpeed = Renderer::Get()->CameraSpeed;
-			XMVECTOR Displacement = XMVectorSet( RightDis, UpDis, ForwardDis, 0 );
-			Displacement = XMVector3Rotate(Displacement, CamRot);
+			XMVECTOR Displacement = XMVector3Rotate(CameraInputHandler.m_Displacement, CamRot);
 			Displacement *= XMVectorSet( CameraSpeed, CameraSpeed, CameraSpeed, 0 );
 
 			Cam->SetActorLocation( CamPos + Displacement );
@@ -87,16 +57,11 @@ namespace Drn
 			XMVECTOR Axis_Y = XMVectorSet(0, 1, 0, 0);
 			XMVECTOR Axis_X = XMVectorSet(1, 0, 0, 0);
 
-			XMVECTOR Rot_Offset_X = XMQuaternionRotationAxis(Axis_Y, MouseDelta.X * 0.01f);
-			XMVECTOR Rot_Offset_Y = XMQuaternionRotationAxis(Axis_X, MouseDelta.Y * 0.01f);
+			XMVECTOR Rot_Offset_X = XMQuaternionRotationAxis(Axis_Y, CameraInputHandler.m_MouseDelta.X * 0.01f);
+			XMVECTOR Rot_Offset_Y = XMQuaternionRotationAxis(Axis_X, CameraInputHandler.m_MouseDelta.Y * 0.01f);
 
 			Cam->SetActorRotation( XMQuaternionMultiply(Rot_Offset_X, CamRot) );
 			Cam->SetActorRotation( XMQuaternionMultiply(Rot_Offset_Y, Cam->GetActorRotation()) );
-		}
-
-		else
-		{
-			m_CapturingMouse = false;
 		}
 
 		ShowMenu();

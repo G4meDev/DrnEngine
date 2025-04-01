@@ -14,7 +14,7 @@ namespace Drn
 		ContentBrowserGuiLayer();
 		~ContentBrowserGuiLayer();
 
-		virtual void Draw() override;
+		virtual void Draw( float DeltaTime ) override;
 
 	private:
 

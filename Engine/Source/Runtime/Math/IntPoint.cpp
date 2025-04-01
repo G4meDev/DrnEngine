@@ -39,7 +39,12 @@ namespace Drn
 		return IntPoint(X * R.X, Y * R.Y);
 	}
 
-	void IntPoint::operator=(const IntPoint& R)
+	IntPoint IntPoint::operator*( float R )
+	{
+		return IntPoint(X * R, Y * R);
+	}
+
+	void IntPoint::operator=( const IntPoint& R )
 	{
 		X = R.X;
 		Y = R.Y;

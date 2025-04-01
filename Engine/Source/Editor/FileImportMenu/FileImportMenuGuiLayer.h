@@ -18,7 +18,7 @@ namespace Drn
 		~FileImportMenuGuiLayer();
 
 	protected:
-		virtual void Draw() override;
+		virtual void Draw(float DeltaTime) override;
 	
 	private:
 		FileImportMenu* m_FileImportMenu;

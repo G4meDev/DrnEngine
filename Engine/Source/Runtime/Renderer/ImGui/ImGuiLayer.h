@@ -10,7 +10,7 @@ namespace Drn
 		ImGuiLayer();
 		virtual ~ImGuiLayer();
 
-		virtual void Draw() = 0;
+		virtual void Draw(float DeltaTime) = 0;
 
 		void Attach();
 		void DeAttach();

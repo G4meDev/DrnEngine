@@ -16,7 +16,7 @@ namespace Drn
 		AssetPreviewStaticMeshGuiLayer(StaticMesh* InOwningAsset);
 		~AssetPreviewStaticMeshGuiLayer();
 
-		virtual void Draw() override;
+		virtual void Draw( float DeltaTime ) override;
 
 		void SetCurrentFocus();
 

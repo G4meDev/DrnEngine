@@ -76,7 +76,7 @@ namespace Drn
 		m_OwningAsset->GuiLayer = nullptr;
 	}
 
-	void AssetPreviewStaticMeshGuiLayer::Draw()
+	void AssetPreviewStaticMeshGuiLayer::Draw( float DeltaTime )
 	{
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);

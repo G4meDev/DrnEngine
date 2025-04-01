@@ -63,11 +63,11 @@ namespace Drn
 		ImGui_ImplDX12_InitInfo init_info = {};
 
 		init_info.Device = pDevice;
-        init_info.CommandQueue         = Renderer::Get()->GetDevice()->GetCommandQueue().GetD3D12CommandQueue().Get();
+		init_info.CommandQueue         = Renderer::Get()->GetDevice()->GetCommandQueue().GetD3D12CommandQueue().Get();
 		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
-        init_info.SrvDescriptorHeap    = g_pd3dSrvDescHeap;
+		init_info.SrvDescriptorHeap    = g_pd3dSrvDescHeap;
 		init_info.SrvDescriptorAllocFn = []( ImGui_ImplDX12_InitInfo*,
 												D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle,
 												D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle ) {
@@ -83,15 +83,15 @@ namespace Drn
 	void ImGuiRenderer::Tick( float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL)
 	{
 		BeginDraw();
-		Draw();
-        EndDraw( SwapChainCpuhandle, CL);
+		Draw(DeltaTime);
+		EndDraw( SwapChainCpuhandle, CL);
 	}
 
 	void ImGuiRenderer::Shutdown()
 	{
-        ImGui_ImplDX12_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
+		ImGui_ImplDX12_Shutdown();
+		ImGui_ImplWin32_Shutdown();
+		ImGui::DestroyContext();
 
 		g_pd3dSrvDescHeap->Release();
 		g_pd3dSrvDescHeap = nullptr;
@@ -132,7 +132,7 @@ namespace Drn
 		ImGui::NewFrame();
 	}
 
-	void ImGuiRenderer::Draw( )
+	void ImGuiRenderer::Draw( float DeltaTime )
 	{
 		for ( auto it = Layers.begin(); it != Layers.end(); )
 		{
@@ -152,7 +152,7 @@ namespace Drn
 		
 		for (auto it = Layers.begin(); it != Layers.end(); ++it)
 		{
-			(*it)->Draw();
+			(*it)->Draw(DeltaTime);
 		}
 	}
 

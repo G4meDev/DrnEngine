@@ -28,7 +28,7 @@ namespace Drn
 		
 	}
 
-	void ContentBrowserGuiLayer::Draw()
+	void ContentBrowserGuiLayer::Draw( float DeltaTime )
 	{
 		if (!ImGui::Begin("ContentBrowser"))
 		{

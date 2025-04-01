@@ -42,6 +42,8 @@ set( HEADER_FILES
 	Source/Runtime/Misc/Path.h
 	
 	Source/Editor/Editor.h
+
+	Source/Editor/Misc/ViewportCameraInputHandler.h
 	
 	Source/Editor/Viewport/Viewport.h
 	Source/Editor/Viewport/ViewportGuiLayer.h
@@ -103,6 +105,8 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/Path.cpp
 	
 	Source/Editor/Editor.cpp
+
+	Source/Editor/Misc/ViewportCameraInputHandler.cpp
 	
 	Source/Editor/Viewport/Viewport.cpp
 	Source/Editor/Viewport/ViewportGuiLayer.cpp

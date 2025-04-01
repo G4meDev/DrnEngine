@@ -8,7 +8,7 @@
 
 namespace Drn
 {
-	void OutputLogGuiLayer::Draw()
+	void OutputLogGuiLayer::Draw(float DeltaTime)
 	{
 		const std::vector<LogMessage>& Logs = OutputLog::Get()->GetLogMessages();
 

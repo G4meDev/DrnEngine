@@ -29,7 +29,7 @@ namespace Drn
 		
 	}
 
-	void FileImportMenuGuiLayer::Draw()
+	void FileImportMenuGuiLayer::Draw( float DeltaTime )
 	{
 		if ( ImGuiFileDialog::Instance()->Display( "ChooseFileDlgKey" ) )
 		{

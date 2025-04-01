@@ -18,7 +18,7 @@ namespace Drn
 
 	}
 
-	void ImGuiLayer::Draw()
+	void ImGuiLayer::Draw( float DeltaTime )
 	{
 
 	}

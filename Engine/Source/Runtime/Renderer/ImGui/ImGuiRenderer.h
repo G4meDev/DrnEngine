@@ -77,7 +77,7 @@ namespace Drn
 	
 	protected:
 		virtual void BeginDraw();
-		virtual void Draw();
+		virtual void Draw(float DeltaTime);
 		virtual void EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL );
 
 		friend class Renderer;

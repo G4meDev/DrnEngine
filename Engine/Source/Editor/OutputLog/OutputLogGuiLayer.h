@@ -8,7 +8,7 @@ namespace Drn
 	class OutputLogGuiLayer : public ImGuiLayer
 	{
 	public:
-		virtual void Draw() override;
+		virtual void Draw(float DeltaTime) override;
 
 	private:
 		void MakeMenuBar();
