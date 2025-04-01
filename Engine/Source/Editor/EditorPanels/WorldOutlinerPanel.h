@@ -9,16 +9,16 @@ namespace Drn
 	class WorldOutlinerPanel
 	{
 	public:
-		WorldOutlinerPanel();
+		WorldOutlinerPanel(World* InWorld);
 		~WorldOutlinerPanel();
 
 		void Draw(float DeltaTime);
 
 	protected:
 
-		World* GetMainWorld();
-
 		const Actor* SelectedActor;
+
+		World* m_World;
 
 	private:
 

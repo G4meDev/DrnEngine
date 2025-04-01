@@ -21,11 +21,18 @@ namespace Drn
 
 		void Tick(float DeltaTime);
 
+		void LoadInitalWorld();
+
+		inline World* GetMainWorld() { return m_MainWorld; }
+	
 	protected:
 
 		static WorldManager* m_SingletonInstance;
 
 		std::set<World*> m_AllocatedWorlds;
+
+		World* m_MainWorld;
+		void LoadDefaultWorld();
 
 	private:
 	};

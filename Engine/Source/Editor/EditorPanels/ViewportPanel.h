@@ -9,10 +9,12 @@ namespace Drn
 	class ViewportPanel
 	{
 	public:
-		ViewportPanel();
+		ViewportPanel(Scene* InScene);
 		~ViewportPanel();
 
 		void Draw(float DeltaTime);
+
+		void SetRenderingEnabled(bool Enabled);
 
 	protected:
 
@@ -23,9 +25,15 @@ namespace Drn
 
 		IntPoint CachedSize = IntPoint( 1920, 1080 );
 
+		CameraActor* m_ViewportCamera;
+
 		ViewportCameraInputHandler CameraInputHandler;
 		float CameraMovementSpeed = 0.01f;
 		float CameraRotationSpeed = 0.01f;
+
+		World* m_World;
+		Scene* m_Scene;
+		SceneRenderer* m_SceneRenderer;
 
 	private:
 	};

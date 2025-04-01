@@ -10,6 +10,7 @@
 
 #include "Editor/Editor.h"
 #include "Editor/FileImportMenu/FileImportMenu.h"
+#include "Editor/EditorPanels/ViewportPanel.h"
 
 LOG_DEFINE_CATEGORY( LogStaticMeshPreview, "StaticMeshPreview" );
 
@@ -27,51 +28,24 @@ namespace Drn
 		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
 		PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
 
-		Camera = PreviewWorld->SpawnActor<CameraActor>();
-		Camera->SetActorLocation(XMVectorSet(0, 0, -10, 0));
+		m_Scene = Renderer::Get()->AllocateScene(PreviewWorld);
 
-		PreviewScene = Renderer::Get()->AllocateScene(PreviewWorld);
-		MainView = PreviewScene->AllocateSceneRenderer();
-
-		MainView->m_CameraActor = Camera;
-
-// -------------------------------------------------------------------------------------------------------------------------
-
-		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
-
-		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Alloc( &ViewCpuHandle, &ViewGpuHandle );
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-
-		descSRV.Texture2D.MipLevels       = 1;
-		descSRV.Texture2D.MostDetailedMip = 0;
-		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-		pDevice->CreateShaderResourceView( MainView->GetViewResource(), &descSRV, ViewCpuHandle );
+		m_ViewportPanel = std::make_unique<ViewportPanel>(m_Scene);
 	}
 
 	AssetPreviewStaticMeshGuiLayer::~AssetPreviewStaticMeshGuiLayer()
 	{
 		LOG(LogStaticMeshPreview, Info, "closing %s", m_OwningAsset->m_Path.c_str());
 
-		if (PreviewScene)
+		if (m_Scene)
 		{
-			if (MainView)
-			{
-				PreviewScene->RemoveAndInvalidateSceneRenderer(MainView);
-			}
-
-			Renderer::Get()->RemoveAndInvalidateScene(PreviewScene);
+			Renderer::Get()->RemoveAndInvalidateScene(m_Scene);
 		}
 
 		if (PreviewWorld)
 		{
 			WorldManager::Get()->RemoveAndInvalidateWorld(PreviewWorld);
 		}
-
-		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
 
 		m_OwningAsset->GuiLayer = nullptr;
 	}
@@ -84,21 +58,17 @@ namespace Drn
 
 		if (!ImGui::Begin(name.c_str(), &m_Open))
 		{
-			MainView->SetRenderingEnabled(false);
+			m_ViewportPanel->SetRenderingEnabled(false);
 
 			ImGui::End();
 			return;
 		}
 
-		if (CameraInputHandler.Tick(DeltaTime))
-		{
-			Camera->ApplyViewportInput(CameraInputHandler, CameraMovementSpeed, CameraRotationSpeed);
-		}
-
-		MainView->SetRenderingEnabled(true);
-
 		DrawMenu();
-		DrawViewport();
+		
+		m_ViewportPanel->SetRenderingEnabled(true);
+		m_ViewportPanel->Draw(DeltaTime);
+
 		DrawSidePanel();
 
 		ImGui::Begin( "LeftPanel" );
@@ -159,39 +129,6 @@ namespace Drn
 		ImGui::InputFloat( "ImportScale", &m_OwningAsset.Get()->ImportScale);
 		
 		ImGui::End();
-	}
-
-	void AssetPreviewStaticMeshGuiLayer::DrawViewport()
-	{
-		const ImVec2 AvaliableSize = ImGui::GetContentRegionAvail();
-		IntPoint ImageSize = IntPoint( (int)AvaliableSize.x, (int)AvaliableSize.y );
-
-		ImageSize.X = std::max( ImageSize.X, 1 );
-		ImageSize.Y = std::max( ImageSize.Y, 1 );
-
-		if ( CachedViewportSize != ImageSize )
-		{
-				CachedViewportSize = ImageSize;
-				OnViewportSizeChanged( CachedViewportSize );
-		}
-
-		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedViewportSize.X, CachedViewportSize.Y ) );
-	}
-
-	void AssetPreviewStaticMeshGuiLayer::OnViewportSizeChanged( const IntPoint& NewSize )
-	{
-		MainView->ResizeView( NewSize );
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-
-		descSRV.Texture2D.MipLevels       = 1;
-		descSRV.Texture2D.MostDetailedMip = 0;
-		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView(
-			MainView->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::ShowSourceFileSelection()

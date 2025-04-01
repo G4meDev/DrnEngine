@@ -46,10 +46,10 @@ namespace Drn
 			m_MainWindow->Close += WindowCloseEvent::slot( &Application::OnWindowClose, this );
 
 			AssetManager::Get()->Init();
-			WorldManager::Get()->Init();
 
+			WorldManager::Get()->Init();
 			Renderer::Init( inhInstance, m_MainWindow.get() );
-		
+
 #if WITH_EDITOR
 			Editor::Get()->Init();
 #endif
@@ -63,9 +63,11 @@ namespace Drn
 #if WITH_EDITOR
 			Editor::Get()->Shutdown();
 #endif
+			
+			
 			Renderer::Shutdown();
-
 			WorldManager::Shutdown();
+
 			AssetManager::Shutdown();
 
 			m_MainWindow.reset();

@@ -4,13 +4,13 @@
 #if WITH_EDITOR
 
 #include "Runtime/Renderer/Renderer.h"
-#include "Editor/Viewport/Viewport.h"
 
 #include "imgui.h"
 
 namespace Drn
 {
-	WorldOutlinerPanel::WorldOutlinerPanel()
+	WorldOutlinerPanel::WorldOutlinerPanel(World* InWorld)
+		: m_World(InWorld)
 	{
 		
 	}
@@ -22,11 +22,9 @@ namespace Drn
 
 	void WorldOutlinerPanel::Draw( float DeltaTime )
 	{
-		World* W = GetMainWorld();
-
 		int i = 0;
 
-		for (const Actor* Actor : W->GetActorList())
+		for (const Actor* Actor : m_World->GetActorList())
 		{
 			std::string ActorLabel = Actor->GetActorLabel();
 
@@ -39,11 +37,6 @@ namespace Drn
 
 			ImGui::PopID();
 		}
-	}
-
-	World* WorldOutlinerPanel::GetMainWorld()
-	{
-		return Renderer::Get()->MainWorld;
 	}
 
 }

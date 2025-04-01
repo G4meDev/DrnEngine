@@ -10,6 +10,7 @@ LOG_DECLARE_CATEGORY(LogStaticMeshPreview);
 namespace Drn
 {
 	class AssetPreviewStaticMesh;
+	class ViewportPanel;
 
 	class AssetPreviewStaticMeshGuiLayer : public ImGuiLayer
 	{
@@ -26,29 +27,17 @@ namespace Drn
 
 		void DrawMenu();
 		void DrawSidePanel();
-		void DrawViewport();
-		void OnViewportSizeChanged( const IntPoint& NewSize );
 		void ShowSourceFileSelection();
 		
 		void OnSelectedSourceFile( std::string FilePath );
 
-		D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;
-
-		IntPoint CachedViewportSize = IntPoint( 1920, 1080 );
-
 		World* PreviewWorld;
-		Scene* PreviewScene;
-		SceneRenderer* MainView;
-
+		Scene* m_Scene;
 		StaticMeshActor* PreviewMesh;
-		CameraActor* Camera;
-
-		ViewportCameraInputHandler CameraInputHandler;
-		float CameraMovementSpeed = 0.01f;
-		float CameraRotationSpeed = 0.01f;
 
 		AssetHandle<StaticMesh> m_OwningAsset;
+		std::unique_ptr<ViewportPanel> m_ViewportPanel;
+
 	private:
 	};
 }

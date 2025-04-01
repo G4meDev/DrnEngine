@@ -8,8 +8,17 @@
 
 namespace Drn
 {
-	ViewportPanel::ViewportPanel()
+	ViewportPanel::ViewportPanel(Scene* InScene)
 	{
+		m_World = InScene->GetWorld();
+		m_Scene = InScene;
+		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
+
+		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
+		m_ViewportCamera->SetActorLocation(XMVectorSet(0, 0, -10, 0));
+
+		m_SceneRenderer->m_CameraActor = m_ViewportCamera;
+
 		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
 
 		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Alloc( &ViewCpuHandle, &ViewGpuHandle );
@@ -22,7 +31,8 @@ namespace Drn
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		
-		pDevice->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
+		//pDevice->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
+		pDevice->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
 
 	ViewportPanel::~ViewportPanel()
@@ -34,8 +44,7 @@ namespace Drn
 	{
 		if (CameraInputHandler.Tick(DeltaTime))
 		{
-			CameraActor* Cam = Renderer::Get()->m_CameraActor;
-			Cam->ApplyViewportInput(CameraInputHandler, CameraMovementSpeed, CameraRotationSpeed);
+			m_ViewportCamera->ApplyViewportInput(CameraInputHandler, CameraMovementSpeed, CameraRotationSpeed);
 		}
 
 		const ImVec2 AvaliableSize = ImGui::GetContentRegionAvail();
@@ -53,9 +62,15 @@ namespace Drn
 		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
 	}
 
+	void ViewportPanel::SetRenderingEnabled( bool Enabled )
+	{
+		m_SceneRenderer->SetRenderingEnabled(Enabled);
+	}
+
 	void ViewportPanel::OnViewportSizeChanged( const IntPoint& NewSize )
 	{
-		Renderer::Get()->MainSceneRenderer->ResizeView( NewSize );
+		//Renderer::Get()->MainSceneRenderer->ResizeView( NewSize );
+		m_SceneRenderer->ResizeView( NewSize );
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
 
@@ -65,7 +80,8 @@ namespace Drn
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
+		//Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
+		Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
 
 }

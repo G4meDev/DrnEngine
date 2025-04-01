@@ -11,8 +11,8 @@ namespace Drn
 {
 	LevelViewportGuiLayer::LevelViewportGuiLayer()
 	{
-		m_ViewportPanel = std::make_unique<ViewportPanel>();
-		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>();
+		m_ViewportPanel = std::make_unique<ViewportPanel>( Renderer::Get()->m_MainScene );
+		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
 	}
 
 	LevelViewportGuiLayer::~LevelViewportGuiLayer()

@@ -7,19 +7,20 @@ namespace Drn
 
 	WorldManager::WorldManager()
 	{
-		
 	}
 
 	void WorldManager::Init()
 	{
 		m_SingletonInstance = new WorldManager();
+		m_SingletonInstance->LoadInitalWorld();
 	}
 
 	void WorldManager::Shutdown()
 	{
-		for (World* W : m_SingletonInstance->m_AllocatedWorlds)
+		if (m_SingletonInstance->m_MainWorld)
 		{
-			delete W;
+			delete m_SingletonInstance->m_MainWorld;
+			m_SingletonInstance->m_MainWorld = nullptr;
 		}
 
 		delete m_SingletonInstance;
@@ -32,6 +33,11 @@ namespace Drn
 		{
 			(*it)->Tick(DeltaTime);
 		}
+	}
+
+	void WorldManager::LoadInitalWorld()
+	{
+		m_SingletonInstance->LoadDefaultWorld();
 	}
 
 	World* WorldManager::AllocateWorld()
@@ -54,4 +60,14 @@ namespace Drn
 		InWorld = nullptr;
 	}
 
+	void WorldManager::LoadDefaultWorld()
+	{
+		m_MainWorld = AllocateWorld();
+
+		AssetHandle<StaticMesh> CubeMesh(Path::ConvertFullPath("BasicShapes\\SM_Cube.drn"));
+		CubeMesh.Load();
+
+		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();
+		CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
+	}
 }

@@ -45,29 +45,20 @@ namespace Drn
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_COPY );
 		m_CommandList = commandQueue.GetCommandList();
 
-// -------------------------------------------------------------------------------
-
-		std::string full = Path::ConvertFullPath( "BasicShapes\\SM_Cube.drn" );
-		AssetHandle<StaticMesh> CubeMesh(Path::ConvertFullPath("BasicShapes\\SM_Cube.drn"));
-		CubeMesh.Load();
-
-		MainWorld = WorldManager::Get()->AllocateWorld();
-
-		m_CubeStaticMeshActor = MainWorld->SpawnActor<StaticMeshActor>();
-		m_CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
-
-		m_CameraActor = MainWorld->SpawnActor<CameraActor>();
-		m_CameraActor->SetActorLocation(XMVectorSet(0, 0, -10, 0));
-
-		MainScene = Renderer::Get()->AllocateScene( MainWorld );
-		MainSceneRenderer = MainScene->AllocateSceneRenderer();
-
-		MainSceneRenderer->m_CameraActor = m_CameraActor;
-
-// -------------------------------------------------------------------------------
-
 		m_SwapChain = m_Device->CreateSwapChain( m_MainWindow->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM );
 		m_SwapChain->SetVSync( false );
+
+#if WITH_EDITOR
+		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
+#else
+		CameraActor* Cam = WorldManager::Get()->GetMainWorld()->SpawnActor<CameraActor>();
+		Cam->SetActorLocation(XMVectorSet(0, 0, -10, 0));
+
+		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
+
+		m_MainSceneRenderer = m_MainScene->AllocateSceneRenderer();
+		m_MainSceneRenderer->m_CameraActor = Cam;
+#endif
 
 		commandQueue.Flush();
 
@@ -80,25 +71,15 @@ namespace Drn
 	{
 		LOG(LogRenderer, Info, "Renderer shutdown.");
 
-		if ( SingletonInstance->MainScene)
-		{
-			if ( SingletonInstance->MainSceneRenderer)
-			{
-				SingletonInstance->MainScene->RemoveAndInvalidateSceneRenderer( SingletonInstance->MainSceneRenderer);
-			}
-
-			Renderer::Get()->RemoveAndInvalidateScene( SingletonInstance->MainScene);
-		}
-
-		if ( SingletonInstance->MainWorld)
-		{
-			WorldManager::Get()->RemoveAndInvalidateWorld(SingletonInstance->MainWorld);
-		}
-
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Shutdown();
 #endif
+
+		for (Scene* S : SingletonInstance->m_AllocatedScenes)
+		{
+			delete S;
+		}
 
 		SingletonInstance->m_CommandList.reset();
 		SingletonInstance->m_SwapChain.reset();
@@ -119,7 +100,7 @@ namespace Drn
 		m_SwapChain->Resize( InWidth, InHeight );
 
 #ifndef WITH_EDITOR
-		MainSceneRenderer->ResizeView(IntPoint(InWidth, InHeight));
+		m_MainSceneRenderer->ResizeView(IntPoint(InWidth, InHeight));
 #endif
 	}
 
@@ -128,8 +109,8 @@ namespace Drn
 		// @TODO: move time to accessible location
 		TotalTime += DeltaTime;
 
-		XMVECTOR Location = XMVectorSet(sin(TotalTime) * 5, 0, 0, 1);
-		m_CubeStaticMeshActor->SetActorLocation(Location);
+		//XMVECTOR Location = XMVectorSet(sin(TotalTime) * 5, 0, 0, 1);
+		//m_CubeStaticMeshActor->SetActorLocation(Location);
 
 		auto& commandQueue = m_Device->GetCommandQueue( D3D12_COMMAND_LIST_TYPE_DIRECT );
 		m_CommandList  = commandQueue.GetCommandList();
@@ -138,9 +119,13 @@ namespace Drn
 
 		auto& swapChainRT         = m_SwapChain->GetRenderTarget();
 		auto  swapChainBackBuffer = swapChainRT.GetTexture( dx12lib::AttachmentPoint::Color0 );
-		auto  msaaRenderTarget    = MainSceneRenderer->m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
+		//auto  msaaRenderTarget    = MainSceneRenderer->m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
 
-		for (Scene* S : AllocatedScenes)
+#ifndef WITH_EDITOR
+		auto  msaaRenderTarget    = m_MainSceneRenderer->m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
+#endif
+
+		for (Scene* S : m_AllocatedScenes)
 		{
 			S->Render(m_CommandList.get());
 		}
@@ -169,14 +154,14 @@ namespace Drn
 	Scene* Renderer::AllocateScene( World* InWorld )
 	{
 		Scene* NewScene = new Scene(InWorld);
-		AllocatedScenes.insert(NewScene);
+		m_AllocatedScenes.insert(NewScene);
 
 		return NewScene;
 	}
 
 	void Renderer::RemoveScene( Scene* InScene )
 	{
-		AllocatedScenes.erase(InScene);
+		m_AllocatedScenes.erase(InScene);
 	}
 
 	void Renderer::RemoveAndInvalidateScene( Scene*& InScene )

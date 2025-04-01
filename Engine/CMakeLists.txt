@@ -49,17 +49,8 @@ set( HEADER_FILES
 	Source/Editor/EditorPanels/ActorDetailPanel.h
 	Source/Editor/EditorPanels/WorldOutlinerPanel.h
 
-	Source/Editor/WorldDetailPanel/WorldDetailPanel.h
-	Source/Editor/WorldDetailPanel/WorldDetailPanelGuiLayer.h
-	
-	Source/Editor/WorldOutliner/WorldOutliner.h
-	Source/Editor/WorldOutliner/WorldOutlinerGuiLayer.h
-
 	Source/Editor/LevelViewport/LevelViewport.h
 	Source/Editor/LevelViewport/LevelViewportGuiLayer.h
-
-	Source/Editor/Viewport/Viewport.h
-	Source/Editor/Viewport/ViewportGuiLayer.h
 	
 	Source/Editor/OutputLog/OutputLog.h
 	Source/Editor/OutputLog/OutputLogGuiLayer.h
@@ -127,15 +118,6 @@ set( SOURCE_FILES
 	Source/Editor/LevelViewport/LevelViewportGuiLayer.cpp
 
 	Source/Editor/Misc/ViewportCameraInputHandler.cpp
-
-	Source/Editor/WorldDetailPanel/WorldDetailPanel.cpp
-	Source/Editor/WorldDetailPanel/WorldDetailPanelGuiLayer.cpp
-
-	Source/Editor/WorldOutliner/WorldOutliner.cpp
-	Source/Editor/WorldOutliner/WorldOutlinerGuiLayer.cpp
-	
-	Source/Editor/Viewport/Viewport.cpp
-	Source/Editor/Viewport/ViewportGuiLayer.cpp
 	
 	Source/Editor/OutputLog/OutputLog.cpp
 	Source/Editor/OutputLog/OutputLogGuiLayer.cpp
