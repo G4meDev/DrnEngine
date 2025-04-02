@@ -69,5 +69,9 @@ namespace Drn
 
 		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();
 		CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
+
+#if WITH_EDITOR
+		CubeStaticMeshActor->SetActorLabel("Cube_1");
+#endif
 	}
 }

@@ -11,6 +11,7 @@ namespace Drn
 {
 	WorldOutlinerPanel::WorldOutlinerPanel(World* InWorld)
 		: m_World(InWorld)
+		, m_ShowTransient(false)
 	{
 		
 	}
@@ -22,10 +23,24 @@ namespace Drn
 
 	void WorldOutlinerPanel::Draw( float DeltaTime )
 	{
+		DrawMenu(DeltaTime);
+
+		ImGui::Separator();
+
 		int i = 0;
 
 		for (const Actor* Actor : m_World->GetActorList())
 		{
+			if (!m_ShowTransient && Actor->IsTransient())
+			{
+				continue;
+			}
+
+			else if (Actor->IsTransient())
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1,1,0,1));
+			}
+
 			std::string ActorLabel = Actor->GetActorLabel();
 
 			ImGui::PushID(i++);
@@ -36,7 +51,17 @@ namespace Drn
 			}
 
 			ImGui::PopID();
+
+			if (Actor->IsTransient())
+			{
+				ImGui::PopStyleColor();
+			}
 		}
+	}
+
+	void WorldOutlinerPanel::DrawMenu( float DeltaTime )
+	{
+		ImGui::Checkbox( "Transient", &m_ShowTransient);
 	}
 
 }

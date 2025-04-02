@@ -37,6 +37,10 @@ namespace Drn
 		
 		std::string GetActorLabel() const;
 		void SetActorLabel(const std::string& InLabel);
+
+		void SetTransient(bool Transient);
+
+		inline bool IsTransient() const { return m_Transient; }
 #endif
 
 	private:
@@ -50,6 +54,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		std::string ActorLabel = "Actor_00";
+		bool m_Transient = false;
 #endif
 
 	};

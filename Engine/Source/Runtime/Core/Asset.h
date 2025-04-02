@@ -9,7 +9,8 @@ namespace Drn
 {
 	enum class EAssetType : uint8
 	{
-		StaticMesh = 0
+		StaticMesh = 0,
+		Level
 	};
 
 	class Asset

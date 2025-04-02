@@ -108,5 +108,11 @@ namespace Drn
 	{
 		ActorLabel = InLabel;
 	}
+
+	void Actor::SetTransient( bool Transient )
+	{
+		m_Transient = Transient;
+	}
+
 #endif
 }

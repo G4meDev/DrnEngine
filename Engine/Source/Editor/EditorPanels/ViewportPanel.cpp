@@ -17,6 +17,9 @@ namespace Drn
 		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
 		m_ViewportCamera->SetActorLocation(XMVectorSet(0, 0, -10, 0));
 
+		m_ViewportCamera->SetActorLabel( "ViewportCamera" );
+		m_ViewportCamera->SetTransient(true);
+
 		m_SceneRenderer->m_CameraActor = m_ViewportCamera;
 
 		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();

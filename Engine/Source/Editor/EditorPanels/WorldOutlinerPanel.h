@@ -16,9 +16,13 @@ namespace Drn
 
 	protected:
 
+		void DrawMenu(float DeltaTime);
+
 		const Actor* SelectedActor;
 
 		World* m_World;
+
+		bool m_ShowTransient;
 
 	private:
 
