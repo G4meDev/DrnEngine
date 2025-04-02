@@ -74,7 +74,7 @@ namespace Drn
 		virtual void PostExecuteCommands();
 
 		static ExampleDescriptorHeapAllocator g_pd3dSrvDescHeapAlloc;
-	
+
 	protected:
 		virtual void BeginDraw();
 		virtual void Draw(float DeltaTime);

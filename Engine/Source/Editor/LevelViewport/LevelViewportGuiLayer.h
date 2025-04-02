@@ -20,8 +20,13 @@ namespace Drn
 
 	protected:
 
+		void DrawMenuBar(float DeltaTime);
+
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;
+
+		bool m_ShowOutliner;
+		bool m_ShowDetail;
 
 	protected:
 	};

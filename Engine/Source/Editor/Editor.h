@@ -25,6 +25,8 @@ namespace Drn
 		std::shared_ptr<FileImportMenu> OpenImportMenu(const std::string& InDisplayText, char* InFilters, std::function<void(std::string)> InOnSelectedFile);
 		void CloseImportMenu();
 
+		float SidePanelSize = 300.0f;
+
 	protected:
 
 		std::shared_ptr<FileImportMenu> m_FileImportMenu;

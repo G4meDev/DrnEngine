@@ -38,6 +38,9 @@ namespace Drn
 		AssetHandle<StaticMesh> m_OwningAsset;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 
+		bool m_ShowSceneSetting;
+		bool m_ShowDetail;
+
 	private:
 	};
 }

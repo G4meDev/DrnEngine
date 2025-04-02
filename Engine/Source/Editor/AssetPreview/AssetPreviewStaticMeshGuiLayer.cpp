@@ -17,6 +17,8 @@ LOG_DEFINE_CATEGORY( LogStaticMeshPreview, "StaticMeshPreview" );
 namespace Drn
 {
 	AssetPreviewStaticMeshGuiLayer::AssetPreviewStaticMeshGuiLayer(StaticMesh* InOwningAsset)
+		: m_ShowSceneSetting(true)
+		, m_ShowDetail(true)
 	{
 		LOG(LogStaticMeshPreview, Info, "opening %s", InOwningAsset->m_Path.c_str());
 
@@ -65,14 +67,38 @@ namespace Drn
 		}
 
 		DrawMenu();
-		
-		m_ViewportPanel->SetRenderingEnabled(true);
-		m_ViewportPanel->Draw(DeltaTime);
 
-		DrawSidePanel();
+		ImVec2 Size = ImGui::GetContentRegionAvail();
+		float BorderSize = ImGui::GetStyle().FramePadding.x;
 
-		ImGui::Begin( "LeftPanel" );
-		ImGui::End();
+		bool bLeftPanel = m_ShowSceneSetting;
+		bool bRightPanel = m_ShowDetail;
+
+		ImVec2 SidePanelSize = ImVec2( Editor::Get()->SidePanelSize, 0.0f );
+		ImVec2 ViewportSize = ImVec2( Size.x - (SidePanelSize.x + 2 * BorderSize) * (bLeftPanel + bRightPanel) , 0.0f );
+
+		if ( m_ShowSceneSetting && ImGui::BeginChild( "Scene Setting", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
+		{
+
+			ImGui::EndChild();
+		}
+
+		ImGui::SameLine();
+		if ( ImGui::BeginChild( "Viewport", ViewportSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened ) )
+		{
+			m_ViewportPanel->SetRenderingEnabled(true);
+			m_ViewportPanel->Draw(DeltaTime);
+		}
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+		if (m_ShowDetail && ImGui::BeginChild( "Detail", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened) )
+		{
+			DrawSidePanel();
+
+			ImGui::EndChild();
+		}
+
 
 		ImGui::End();
 	}
@@ -87,7 +113,15 @@ namespace Drn
 				ImGui::EndMenu();
 			}
 
-			if ( ImGui::BeginMenu( "Asset Manager" ) )
+			if (ImGui::BeginMenu( "Window" ))
+			{
+				ImGui::MenuItem( "Scene Setting", NULL, &m_ShowSceneSetting);
+				ImGui::MenuItem( "Detail", NULL, &m_ShowDetail);
+
+				ImGui::EndMenu();
+			}
+
+			if ( ImGui::BeginMenu( "Debug" ) )
 			{
 				if ( ImGui::MenuItem( "log live assets" ) )
 				{
@@ -103,8 +137,6 @@ namespace Drn
 
 	void AssetPreviewStaticMeshGuiLayer::DrawSidePanel()
 	{
-		ImGui::Begin("Details");
-
 		if (ImGui::Button( "save" ))
 		{
 			m_OwningAsset.Get()->Save();
@@ -127,8 +159,6 @@ namespace Drn
 		ImGui::Separator();
 
 		ImGui::InputFloat( "ImportScale", &m_OwningAsset.Get()->ImportScale);
-		
-		ImGui::End();
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::ShowSourceFileSelection()
