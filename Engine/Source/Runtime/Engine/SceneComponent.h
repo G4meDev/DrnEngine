@@ -38,6 +38,10 @@ namespace Drn
 			}
 		}
 
+#if WITH_EDITOR
+		virtual void DrawDetailPanel(float DeltaTime) override;
+#endif
+
 		// ------------------ location -----------------
 
 		DirectX::XMVECTOR GetRelativeLocation() const;

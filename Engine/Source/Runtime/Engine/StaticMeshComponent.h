@@ -31,6 +31,12 @@ namespace Drn
 		inline StaticMesh* GetMesh() { return Mesh.Get(); }
 		void SetMesh(const AssetHandle<StaticMesh>& InHandle);
 
+#if WITH_EDITOR
+
+		virtual void DrawDetailPanel(float DeltaTime) override;
+
+#endif
+
 	protected:
 
 		AssetHandle<StaticMesh> Mesh;

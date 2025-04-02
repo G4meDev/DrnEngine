@@ -25,6 +25,8 @@ namespace Drn
 
 		//void DrawComponents(float DeltaTime);
 
+		char name[32] = "";
+
 	private:
 
 		Actor* m_SelectedActor;

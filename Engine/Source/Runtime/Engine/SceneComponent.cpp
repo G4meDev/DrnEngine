@@ -1,6 +1,12 @@
 #include "DrnPCH.h"
 #include "SceneComponent.h"
 
+#if WITH_EDITOR
+
+#include "imgui.h"
+
+#endif
+
 namespace Drn
 {
 	SceneComponent::SceneComponent() 
@@ -276,4 +282,32 @@ namespace Drn
 	}
 
 */
+
+// -------------------------------------------------------------------------------------------
+
+#if WITH_EDITOR
+	void SceneComponent::DrawDetailPanel( float DeltaTime )
+	{
+		Component::DrawDetailPanel(DeltaTime);
+
+		float Vector[4];
+		Vector[0] = XMVectorGetX(WorldLocation);
+		Vector[1] = XMVectorGetY(WorldLocation);
+		Vector[2] = XMVectorGetZ(WorldLocation);
+
+		ImGui::DragFloat3( "Location", Vector );
+		WorldLocation = XMVectorSet( Vector[0], Vector[1], Vector[2], 0);
+
+// -------------------------------------------------------------------------------------------
+		Vector[0] = XMVectorGetX(WorldRotation);
+		Vector[1] = XMVectorGetY(WorldRotation);
+		Vector[2] = XMVectorGetZ(WorldRotation);
+		Vector[3] = XMVectorGetW(WorldRotation);
+
+		ImGui::DragFloat4( "Rotation", Vector, 0.01f);
+		WorldRotation = XMVectorSet( Vector[0], Vector[1], Vector[2], Vector[3]);
+
+		WorldRotation = XMQuaternionNormalize(WorldRotation);
+	}
+#endif
 }

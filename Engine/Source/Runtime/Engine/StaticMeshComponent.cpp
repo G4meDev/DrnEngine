@@ -1,6 +1,12 @@
 #include "DrnPCH.h"
 #include "StaticMeshComponent.h"
 
+#if WITH_EDITOR
+
+#include <imgui.h>
+
+#endif
+
 namespace Drn
 {
 	StaticMeshComponent::StaticMeshComponent()
@@ -24,5 +30,14 @@ namespace Drn
 		Mesh = InHandle;
 	}
 
+
+	void StaticMeshComponent::DrawDetailPanel( float DeltaTime )
+	{
+		SceneComponent::DrawDetailPanel(DeltaTime);
+
+		ImGui::Separator();
+
+
+	}
 
 }

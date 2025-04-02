@@ -175,12 +175,13 @@ namespace Drn
 			XMVECTOR Location = Mesh->GetWorldLocation();
 			//LOG(LogSceneRenderer, Info, "%f, %f, %f", XMVectorGetX(Location), XMVectorGetY(Location), XMVectorGetZ(Location));
 
-			float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
-			const XMVECTOR rotationAxis = DirectX::XMVectorSet( 0, 1, 1, 0 );
-			XMMATRIX       RotationMatrix  = XMMatrixRotationAxis( rotationAxis, XMConvertToRadians( angle ) );
+			//float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
+			//const XMVECTOR rotationAxis = DirectX::XMVectorSet( 0, 1, 1, 0 );
+			//XMMATRIX       RotationMatrix  = XMMatrixRotationAxis( rotationAxis, XMConvertToRadians( angle ) );
+			XMMATRIX       RotationMatrix  = XMMatrixRotationQuaternion( Mesh->GetWorldRotation() );
 			XMMATRIX       TranslationMatrix  = XMMatrixTranslation( DirectX::XMVectorGetX(Location), DirectX::XMVectorGetY(Location), DirectX::XMVectorGetZ(Location));
 
-			XMMATRIX modelMatrix = RotationMatrix * TranslationMatrix;
+			XMMATRIX modelMatrix = TranslationMatrix * RotationMatrix;
 
 			auto viewport = m_RenderTarget.GetViewport();
 			float    aspectRatio = viewport.Width / viewport.Height;

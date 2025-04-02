@@ -30,7 +30,9 @@ namespace Drn
 
 #if WITH_EDITOR
 		std::string GetComponentLabel() const;
-		void SetComponentLabel(const std::string& InLabel); 
+		void SetComponentLabel(const std::string& InLabel);
+
+		virtual void DrawDetailPanel(float DeltaTime) {};
 #endif
 
 	private:

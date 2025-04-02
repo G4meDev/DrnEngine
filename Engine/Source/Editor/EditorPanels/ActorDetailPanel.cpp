@@ -25,7 +25,17 @@ namespace Drn
 		{
 			m_SelectedComponent = m_SelectedComponent ? m_SelectedComponent : m_SelectedActor->GetRoot();
 
-			ImGui::Text("%s", m_SelectedActor->GetActorLabel().c_str());
+			ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x );
+
+			if ( ImGui::InputText( "## ", name, 32) )
+			{
+				m_SelectedActor->SetActorLabel(name);
+			}
+
+			if (!ImGui::IsItemFocused())
+			{
+				strcpy(name, m_SelectedActor->GetActorLabel().c_str());
+			}
 
 			ImGui::Separator();
 
@@ -73,7 +83,8 @@ namespace Drn
 
 		if (!Comp->HasChild())
 		tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
-
+	
+		ImGui::SetNextItemOpen( true, ImGuiCond_::ImGuiCond_FirstUseEver);
 		bool node_open = ImGui::TreeNodeEx( "", tree_flags, "%s", Comp->GetComponentLabel().c_str());
 
 		if (ImGui::IsItemFocused())
@@ -100,6 +111,10 @@ namespace Drn
 	{
 		if (ImGui::BeginChild("Details", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 		{
+			if (m_SelectedActor && m_SelectedComponent)
+			{
+				m_SelectedComponent->DrawDetailPanel(DeltaTime);
+			}
 
 			ImGui::EndChild();
 		}
