@@ -17,7 +17,9 @@ namespace Drn
 
 		void AttachSceneComponent(SceneComponent* InComponent);
 
-		const std::vector<std::shared_ptr<SceneComponent>>& GetChilds() const;
+		inline bool HasChild() const { return Childs.size() > 0; }
+
+		std::vector<std::shared_ptr<SceneComponent>> GetChilds() const;
 
 		template<typename T>
 		void GetComponents(std::vector<T*>& OutComponents, EComponentType Type, bool Recursive)

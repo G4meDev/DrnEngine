@@ -12,6 +12,7 @@ namespace Drn
 	WorldOutlinerPanel::WorldOutlinerPanel(World* InWorld)
 		: m_World(InWorld)
 		, m_ShowTransient(false)
+		, m_SelectedActor(nullptr)
 	{
 		
 	}
@@ -29,7 +30,7 @@ namespace Drn
 
 		int i = 0;
 
-		for (const Actor* Actor : m_World->GetActorList())
+		for (Actor* Actor : m_World->GetActorList())
 		{
 			if (!m_ShowTransient && Actor->IsTransient())
 			{
@@ -45,9 +46,9 @@ namespace Drn
 
 			ImGui::PushID(i++);
 
-			if ( ImGui::Selectable(ActorLabel.c_str(), SelectedActor == Actor) )
+			if ( ImGui::Selectable(ActorLabel.c_str(), m_SelectedActor == Actor) )
 			{
-				SelectedActor = Actor;
+				m_SelectedActor = Actor;
 			}
 
 			ImGui::PopID();

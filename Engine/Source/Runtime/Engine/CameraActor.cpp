@@ -8,6 +8,10 @@ namespace Drn
 	{
 		m_CameraComponenet = std::make_unique<CameraComponent>();
 		GetRoot()->AttachSceneComponent(m_CameraComponenet.get());
+
+#if WITH_EDITOR
+		m_CameraComponenet->SetComponentLabel( "Camera" );
+#endif
 	}
 
 	CameraActor::~CameraActor()

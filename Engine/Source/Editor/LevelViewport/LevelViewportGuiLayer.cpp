@@ -7,6 +7,7 @@
 
 #include "Editor/EditorPanels/ViewportPanel.h"
 #include "Editor/EditorPanels/WorldOutlinerPanel.h"
+#include "Editor/EditorPanels/ActorDetailPanel.h"
 #include <imgui.h>
 
 namespace Drn
@@ -17,6 +18,7 @@ namespace Drn
 	{
 		m_ViewportPanel = std::make_unique<ViewportPanel>( Renderer::Get()->m_MainScene );
 		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
+		m_ActorDetailPanel = std::make_unique<ActorDetailPanel>();
 	}
 
 	LevelViewportGuiLayer::~LevelViewportGuiLayer()
@@ -64,7 +66,8 @@ namespace Drn
 		ImGui::SameLine();
 		if (m_ShowDetail && ImGui::BeginChild( "Detail", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened) )
 		{
-			
+			m_ActorDetailPanel->SetSelectedActor(m_WorldOutlinerPanel->GetSelectedActor());
+			m_ActorDetailPanel->Draw(DeltaTime);
 
 			ImGui::EndChild();
 		}

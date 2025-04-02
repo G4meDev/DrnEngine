@@ -36,7 +36,7 @@ namespace Drn
 		Childs.push_back(std::shared_ptr<SceneComponent>(InComponent));
 	}
 
-	const std::vector<std::shared_ptr<SceneComponent>>& SceneComponent::GetChilds() const
+	std::vector<std::shared_ptr<SceneComponent>> SceneComponent::GetChilds() const
 	{
 		return Childs;
 	}

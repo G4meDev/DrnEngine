@@ -14,11 +14,13 @@ namespace Drn
 
 		void Draw(float DeltaTime);
 
+		inline Actor* GetSelectedActor() { return m_SelectedActor; }
+
 	protected:
 
 		void DrawMenu(float DeltaTime);
 
-		const Actor* SelectedActor;
+		Actor* m_SelectedActor;
 
 		World* m_World;
 

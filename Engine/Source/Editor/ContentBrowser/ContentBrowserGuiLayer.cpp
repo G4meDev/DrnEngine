@@ -71,8 +71,6 @@ namespace Drn
 		ImGui::EndChild();
 
 		ImGui::End();
-
-		//ImGui::ShowDemoWindow();
 	}
 
 	void ContentBrowserGuiLayer::DrawNextFolder( SystemFileNode* Node )

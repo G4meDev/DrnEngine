@@ -7,6 +7,10 @@ namespace Drn
 	{
 		Root = std::make_unique<SceneComponent>();
 		Root->SetOwningActor(this);
+
+#if WITH_EDITOR
+		Root->SetComponentLabel( "Root" );
+#endif
 	}
 
 	Actor::~Actor()
