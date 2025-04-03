@@ -8,6 +8,7 @@
 #include "imgui.h"
 
 #include "Editor/Editor.h"
+#include "Editor/EditorConfig.h"
 
 #include "Runtime/Misc/FileSystem.h"
 #include "Editor/FileImportMenu/FileImportMenu.h"
@@ -136,37 +137,29 @@ namespace Drn
 
 	void ContentBrowserGuiLayer::DrawFileView()
 	{
-		if ( ImGui::BeginTable( "FileView_1", 1, ImGuiTableFlags_RowBg ) )
+		for ( SystemFileNode* File: SelectedFolderFiles )
 		{
-			for ( SystemFileNode* File: SelectedFolderFiles )
+			std::string FileName = Path::RemoveFileExtension(File->File.m_ShortPath);
+			if ( ImGui::Selectable(FileName.c_str(), SelectedFile == File) )
 			{
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				ImGui::PushID( File->File.m_FullPath.c_str() );
-
-				ImGuiTreeNodeFlags tree_flags = 0;
-
-				if ( File == SelectedFile )
-					tree_flags |= ImGuiTreeNodeFlags_Selected;
-
-				std::string FileName = Path::RemoveFileExtension(File->File.m_ShortPath);
-				bool node_open = ImGui::TreeNodeEx( "", tree_flags, "%s", FileName.c_str());
-
-				if ( ImGui::IsItemFocused() && SelectedFile != File )
-				{
-					SelectedFile = File;
-					Editor::Get()->OnSelectedFile(SelectedFile->File.m_FullPath);
-				}
-
-				if ( node_open )
-				{
-					ImGui::TreePop();
-				}
-
-				ImGui::PopID();
+				SelectedFile = File;
+				Editor::Get()->OnSelectedFile( SelectedFile->File.m_FullPath );
 			}
-		
-			ImGui::EndTable();
+
+			if (ImGui::BeginDragDropSource())
+			{
+				if ( ImGui::GetDragDropPayload() == NULL )
+				{
+					ImGui::SetDragDropPayload( EditorConfig::Payload_AssetPath(), File->File.m_FullPath.c_str(), File->File.m_FullPath.size() + 1);
+				}
+
+				const ImGuiPayload* Payload = ImGui::GetDragDropPayload();
+				auto PayloadAssets = static_cast<const char *>(Payload->Data);
+
+				ImGui::Text( "1 asset selected:\n \t%s", PayloadAssets);
+
+				ImGui::EndDragDropSource();
+			}
 		}
 	}
 

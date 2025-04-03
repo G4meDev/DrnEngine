@@ -37,6 +37,8 @@ namespace Drn
 
 		void ClearMesh();
 
+		void UpdateMeshWithPath(const char* NewPath);
+
 #endif
 
 	protected:

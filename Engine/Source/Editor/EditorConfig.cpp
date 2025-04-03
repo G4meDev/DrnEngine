@@ -5,4 +5,9 @@ namespace Drn
 {
 	ImVec4 EditorConfig::AssetInputColor = ImVec4(0.3f, 0.5f, 0.9f, 1);
 
+	char* EditorConfig::Payload_AssetPath()
+	{
+		return "ASSET_PATH";
+	}
+
 }

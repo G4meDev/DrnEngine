@@ -52,6 +52,17 @@ namespace Drn
 		ImGui::Text( "%s", AssetName.c_str() );
 		ImGui::PopStyleColor();
 
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
+			{
+				auto AssetPath = static_cast<const char*>(payload->Data);
+				UpdateMeshWithPath(AssetPath);
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
 		ImGui::Separator();
 
 		ImGui::TextWrapped(Mesh.GetPath().c_str());
@@ -60,6 +71,12 @@ namespace Drn
 	void StaticMeshComponent::ClearMesh()
 	{
 		Mesh = AssetHandle<StaticMesh>("");
+	}
+
+	void StaticMeshComponent::UpdateMeshWithPath( const char* NewPath )
+	{
+		Mesh = AssetHandle<StaticMesh>(NewPath);
+		Mesh.Load();
 	}
 
 #endif
