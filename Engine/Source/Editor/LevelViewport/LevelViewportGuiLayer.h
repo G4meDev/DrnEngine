@@ -5,6 +5,8 @@
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
 
+struct ImGuiPayload;
+
 namespace Drn
 {
 	class ViewportPanel;
@@ -22,6 +24,8 @@ namespace Drn
 	protected:
 
 		void DrawMenuBar(float DeltaTime);
+
+		void HandleViewportPayload(const ImGuiPayload* Payload);
 
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;

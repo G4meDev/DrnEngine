@@ -23,6 +23,8 @@ namespace Drn
 
 	protected:
 
+		void OnNewActors(const std::set<Actor*>& NewActor);
+
 		World* m_World;
 
 		std::vector<StaticMeshComponent*> m_StaticMeshComponents;

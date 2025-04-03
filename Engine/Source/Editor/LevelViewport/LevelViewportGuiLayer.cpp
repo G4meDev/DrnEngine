@@ -4,6 +4,7 @@
 #if WITH_EDITOR
 
 #include "Editor/Editor.h"
+#include "Editor/EditorConfig.h"
 
 #include "Editor/EditorPanels/ViewportPanel.h"
 #include "Editor/EditorPanels/WorldOutlinerPanel.h"
@@ -28,7 +29,6 @@ namespace Drn
 
 	void LevelViewportGuiLayer::Draw( float DeltaTime )
 	{
-
 		if (!ImGui::Begin("Level Viewport"))
 		{
 			m_ViewportPanel->SetRenderingEnabled(false);
@@ -58,8 +58,18 @@ namespace Drn
 		ImGui::SameLine();
 		if ( ImGui::BeginChild( "Viewport", ViewportSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened ) )
 		{
-			m_ViewportPanel->Draw(DeltaTime);
 			m_ViewportPanel->SetRenderingEnabled(true);
+			m_ViewportPanel->Draw(DeltaTime);
+
+			if ( ImGui::BeginDragDropTarget() )
+			{
+				if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
+				{
+					HandleViewportPayload(Payload);
+				}
+
+				ImGui::EndDragDropTarget();
+			}
 		}
 		ImGui::EndChild();
 
@@ -105,6 +115,26 @@ namespace Drn
 			}
 
 			ImGui::EndMainMenuBar();
+		}
+	}
+
+	void LevelViewportGuiLayer::HandleViewportPayload( const ImGuiPayload* Payload )
+	{
+		auto AssetPath = static_cast<const char*>(Payload->Data);
+
+		AssetHandle<Asset> asset(AssetPath);
+		EAssetType Type = asset.LoadGeneric();
+
+		if (asset.IsValid())
+		{
+			if (Type == EAssetType::StaticMesh)
+			{
+				StaticMeshActor* NewActor = WorldManager::Get()->GetMainWorld()->SpawnActor<StaticMeshActor>();
+
+				AssetHandle<StaticMesh> MeshAsset(AssetPath);
+				MeshAsset.Load();
+				NewActor->GetMeshComponent()->SetMesh(MeshAsset);
+			}
 		}
 	}
 

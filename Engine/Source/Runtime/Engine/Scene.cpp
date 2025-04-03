@@ -16,6 +16,8 @@ namespace Drn
 				AddStaticMeshCompponent(Mesh);
 			}
 		}
+
+		m_World->BindOnNewActors(std::bind(&Scene::OnNewActors, this, std::placeholders::_1));
 	}
 
 	Scene::~Scene()
@@ -65,4 +67,21 @@ namespace Drn
 	{
 		
 	}
+
+// ----------------------------------------------------------------------------
+
+	void Scene::OnNewActors( const std::set<Actor*>& NewActor )
+	{
+		for (Actor* actor : NewActor)
+		{
+			std::vector<StaticMeshComponent*> StaticMeshComponenets;
+			actor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
+		
+			for (StaticMeshComponent* Mesh : StaticMeshComponenets)
+			{
+				AddStaticMeshCompponent(Mesh);
+			}
+		}
+	}
+
 }

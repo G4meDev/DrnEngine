@@ -63,7 +63,7 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <functional>
+//#include <functional>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

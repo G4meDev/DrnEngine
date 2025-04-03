@@ -19,6 +19,11 @@ namespace Drn
 
 	void World::Tick( float DeltaTime )
 	{
+		m_Actors.insert(m_NewActors.begin(), m_NewActors.end());
+
+		InvokeOnNewActors(m_NewActors);
+		m_NewActors.clear();
+
 		if (!m_ShouldTick)
 		{
 			return;
@@ -27,6 +32,26 @@ namespace Drn
 		for (Actor* actor : m_Actors)
 		{
 			actor->Tick(DeltaTime);
+		}
+	}
+
+// ----------------------------------------------------------------------------------------
+
+	void World::BindOnNewActors( OnNewActors Delegate )
+	{
+		OnNewActorsDelegates.push_back(Delegate);
+	}
+	
+	void World::RemoveFromOnNewActors( OnNewActors Delegate )
+	{
+		//OnNewActorsDelegates.erase(Delegate);
+	}
+	
+	void World::InvokeOnNewActors( const std::set<Actor*>& NewActors )
+	{
+		for (const OnNewActors& Del : OnNewActorsDelegates)
+		{
+			Del(NewActors);
 		}
 	}
 
