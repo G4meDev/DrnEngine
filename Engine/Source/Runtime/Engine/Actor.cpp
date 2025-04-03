@@ -8,6 +8,8 @@ namespace Drn
 		Root = std::make_unique<SceneComponent>();
 		Root->SetOwningActor(this);
 
+		m_PendingKill = false;
+
 #if WITH_EDITOR
 		Root->SetComponentLabel( "Root" );
 #endif
@@ -92,14 +94,14 @@ namespace Drn
 		return Root.get();
 	}
 
-	void Actor::MarkDestroy()
+	void Actor::Destroy()
 	{
-		bDestroy = true;
+		m_PendingKill = true;
 	}
 
-	bool Actor::IsMarkDestroy() const
+	bool Actor::IsMarkedPendingKill() const
 	{
-		return bDestroy;
+		return m_PendingKill;
 	}
 
 #if WITH_EDITOR

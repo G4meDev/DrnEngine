@@ -47,6 +47,11 @@ namespace Drn
 	void ActorDetailPanel::SetSelectedActor( Actor* SelectedActor )
 	{
 		m_SelectedActor = SelectedActor;
+
+		if (!m_SelectedActor)
+		{
+			m_SelectedComponent = nullptr;
+		}
 	}
 
 	void ActorDetailPanel::DrawSceneComponents( float DeltaTime )

@@ -18,6 +18,7 @@ namespace Drn
 		}
 
 		m_World->BindOnNewActors(std::bind(&Scene::OnNewActors, this, std::placeholders::_1));
+		m_World->BindOnRemoveActor(std::bind(&Scene::OnRemoveActor, this, std::placeholders::_1));
 	}
 
 	Scene::~Scene()
@@ -60,19 +61,29 @@ namespace Drn
 
 	void Scene::AddStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
 	{
-		m_StaticMeshComponents.push_back(InStaticMesh);
+		m_StaticMeshComponents.insert(InStaticMesh);
 	}
 
 	void Scene::RemoveStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
 	{
-		
+		for (auto it = m_StaticMeshComponents.begin(); it != m_StaticMeshComponents.end();)
+		{
+			if (*it == InStaticMesh)
+			{
+				it = m_StaticMeshComponents.erase(it);
+			}
+			else
+			{
+				it++;
+			}
+		}
 	}
 
 // ----------------------------------------------------------------------------
 
-	void Scene::OnNewActors( const std::set<Actor*>& NewActor )
+	void Scene::OnNewActors( const std::set<Actor*>& NewActors )
 	{
-		for (Actor* actor : NewActor)
+		for (Actor* actor : NewActors)
 		{
 			std::vector<StaticMeshComponent*> StaticMeshComponenets;
 			actor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
@@ -81,6 +92,17 @@ namespace Drn
 			{
 				AddStaticMeshCompponent(Mesh);
 			}
+		}
+	}
+
+	void Scene::OnRemoveActor( const Actor* RemovedActor )
+	{
+		std::vector<StaticMeshComponent*> StaticMeshComponenets;
+		RemovedActor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
+	
+		for (StaticMeshComponent* Mesh : StaticMeshComponenets)
+		{
+			RemoveStaticMeshCompponent(Mesh);
 		}
 	}
 

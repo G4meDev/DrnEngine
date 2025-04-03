@@ -20,6 +20,8 @@ namespace Drn
 
 		void DrawMenu(float DeltaTime);
 
+		void DeleteActor(Actor* actor);
+
 		Actor* m_SelectedActor;
 
 		World* m_World;
@@ -27,6 +29,8 @@ namespace Drn
 		bool m_ShowTransient;
 
 	private:
+
+		void OnRemovedActorFromWorld(const Actor* RemovedActor);
 
 	};
 }

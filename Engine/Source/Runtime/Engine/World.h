@@ -9,7 +9,7 @@ namespace Drn
 	public:
 
 		using OnNewActors = std::function<void( const std::set<Actor*>& )>;
-		using OnRemoveActors = std::function<void( const std::set<Actor*>& )>;
+		using OnRemoveActor = std::function<void( const Actor* )>;
 
 		World();
 		~World();
@@ -35,6 +35,11 @@ namespace Drn
 		void InvokeOnNewActors(const std::set<Actor*>& NewActors);
 
 
+		void BindOnRemoveActor(OnRemoveActor Delegate);
+		void RemoveFromOnRemoveActor(OnRemoveActor Delegate);
+		void InvokeOnRemoveActor(const Actor* RemovedActor);
+
+
 	protected:
 
 		std::set<Actor*> m_Actors;
@@ -45,6 +50,7 @@ namespace Drn
 		bool m_ShouldTick;
 
 		std::vector<OnNewActors> OnNewActorsDelegates;
+		std::vector<OnRemoveActor> OnRemoveActorDelegates;
 
 		friend Scene;
 

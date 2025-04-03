@@ -29,8 +29,8 @@ namespace Drn
 
 		SceneComponent* GetRoot() const;
 
-		void MarkDestroy();
-		bool IsMarkDestroy() const;
+		void Destroy();
+		bool IsMarkedPendingKill() const;
 
 #if WITH_EDITOR
 		virtual bool IsVisibleInWorldOutliner() const { return true; };
@@ -50,7 +50,7 @@ namespace Drn
 		/** this only contains non scene components */
 		std::vector<std::shared_ptr<Component>> Components;
 
-		bool bDestroy = false;
+		bool m_PendingKill;
 
 #if WITH_EDITOR
 		std::string ActorLabel = "Actor_00";

@@ -23,11 +23,12 @@ namespace Drn
 
 	protected:
 
-		void OnNewActors(const std::set<Actor*>& NewActor);
+		void OnNewActors(const std::set<Actor*>& NewActors);
+		void OnRemoveActor(const Actor* RemovedActor);
 
 		World* m_World;
 
-		std::vector<StaticMeshComponent*> m_StaticMeshComponents;
+		std::set<StaticMeshComponent*> m_StaticMeshComponents;
 
 		std::set<SceneRenderer*> m_SceneRenderers;
 
