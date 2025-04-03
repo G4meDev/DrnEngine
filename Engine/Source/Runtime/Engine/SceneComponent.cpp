@@ -308,6 +308,8 @@ namespace Drn
 		WorldRotation = XMVectorSet( Vector[0], Vector[1], Vector[2], Vector[3]);
 
 		WorldRotation = XMQuaternionNormalize(WorldRotation);
+
+		ImGui::Separator();
 	}
 #endif
 }

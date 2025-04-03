@@ -26,7 +26,13 @@ namespace Drn
 
 		void OnSelectedFileToImport(std::string FilePath);
 
-		std::unique_ptr<SystemFileNode> RootFolder;
+		void ConvertPath(SystemFileNode* Node);
+
+		void GetDirectoryWithPath(SystemFileNode* Node, const std::string& Path, SystemFileNode** Result);
+
+		std::unique_ptr<SystemFileNode> EngineRootFolder;
+		std::unique_ptr<SystemFileNode> GameRootFolder;
+
 		SystemFileNode* SelectedFolder;
 		std::vector<SystemFileNode*> SelectedFolderFiles;
 		SystemFileNode* SelectedFile;

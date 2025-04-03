@@ -45,6 +45,7 @@ set( HEADER_FILES
 	Source/Editor/Misc/ViewportCameraInputHandler.h
 
 	Source/Editor/Editor.h
+	Source/Editor/EditorConfig.h
 	
 	Source/Editor/EditorPanels/ViewportPanel.h
 	Source/Editor/EditorPanels/ActorDetailPanel.h
@@ -111,6 +112,7 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/Path.cpp
 	
 	Source/Editor/Editor.cpp
+	Source/Editor/EditorConfig.cpp
 
 	Source/Editor/EditorPanels/ViewportPanel.cpp
 	Source/Editor/EditorPanels/ActorDetailPanel.cpp

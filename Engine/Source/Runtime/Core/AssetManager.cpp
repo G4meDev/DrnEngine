@@ -42,9 +42,11 @@ namespace Drn
 #if WITH_EDITOR
 	void AssetManager::Create( const std::string& SourceFile, const std::string& TargetFolder )
 	{
-		if ( !FileSystem::DirectoryExists( TargetFolder ) )
+		std::string TargetFolderFullPath = Path::ConvertProjectPath(TargetFolder);
+
+		if ( !FileSystem::DirectoryExists( TargetFolderFullPath ) )
 		{
-			LOG( LogAssetManager, Error, "selected folder in content browser doesnt exist on disk.\n\t%s ", TargetFolder.c_str() );
+			LOG( LogAssetManager, Error, "selected folder in content browser doesnt exist on disk.\n\t%s ", TargetFolderFullPath.c_str() );
 			return;
 		}
 

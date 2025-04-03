@@ -18,7 +18,8 @@ namespace Drn
 		: m_FileImportMenu(InFileImportMenu)
 	{
 		IGFD::FileDialogConfig config;
-		config.path = Path::GetContentPath();
+		//config.path = Path::GetContentPath();
+		config.path = Path::GetProjectPath();
 		ImGuiFileDialog::Instance()->OpenDialog( "ChooseFileDlgKey", m_FileImportMenu->m_DisplayText, m_FileImportMenu->m_Filters, config );
 
 		LOG( LogFileImportMenu, Info, "opened file import menu." );

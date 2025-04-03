@@ -20,6 +20,12 @@ namespace Drn
 {
 	ContentBrowserGuiLayer::ContentBrowserGuiLayer()
 	{
+		EngineRootFolder = nullptr;
+		GameRootFolder = nullptr;
+
+		SelectedFolder = nullptr;
+		SelectedFile = nullptr;
+
 		OnRefresh();
 	}
 	
@@ -46,11 +52,17 @@ namespace Drn
 		{
 			ImGui::BeginGroup();
 
-			if (RootFolder)
+			if (EngineRootFolder)
 			{
 				if (ImGui::BeginTable("##bg", 1, ImGuiTableFlags_RowBg))
 				{
-					DrawNextFolder(RootFolder.get());
+					DrawNextFolder(EngineRootFolder.get());
+					ImGui::EndTable();
+				}
+
+				if (ImGui::BeginTable("##bg", 1, ImGuiTableFlags_RowBg))
+				{
+					DrawNextFolder(GameRootFolder.get());
 					ImGui::EndTable();
 				}
 			}
@@ -63,7 +75,7 @@ namespace Drn
 
 		if (ImGui::BeginChild("FileView", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 		{
-			if (RootFolder)
+			if (SelectedFolder)
 			{
 				DrawFileView();
 			}
@@ -128,8 +140,6 @@ namespace Drn
 		{
 			for ( SystemFileNode* File: SelectedFolderFiles )
 			{
-				
-
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 				ImGui::PushID( File->File.m_FullPath.c_str() );
@@ -170,16 +180,46 @@ namespace Drn
 	void ContentBrowserGuiLayer::OnRefresh()
 	{
 		LOG(LogContentBrowser, Info, "Refresh");
-		
-		FileSystem::GetFilesInDirectory( Path::GetContentPath(), RootFolder, ".drn" );
+	
+		std::string CachedSelectedDirectoryPath = SelectedFolder ? SelectedFolder->File.m_FullPath : "InvalidPath";
 
-		if (!RootFolder)
+		FileSystem::GetFilesInDirectory( Path::GetProjectPath() + "\\Engine\\Content", EngineRootFolder, ".drn" );
+		FileSystem::GetFilesInDirectory( Path::GetProjectPath() + "\\Game\\Content", GameRootFolder, ".drn" );
+
+		EngineRootFolder->File.m_ShortPath = "Engine";
+		GameRootFolder->File.m_ShortPath = "Game";
+
+		ConvertPath(EngineRootFolder.get());
+		ConvertPath(GameRootFolder.get());
+
+		if (!EngineRootFolder)
 		{
-			LOG(LogContentBrowser, Error, "failed to load content folder.");
+			LOG(LogContentBrowser, Error, "failed to load engine content folder.");
 		}
 
-		SelectedFolder = RootFolder.get();
-		SelectedFolderFiles = SelectedFolder->GetFiles();
+		if (!GameRootFolder)
+		{
+			LOG(LogContentBrowser, Error, "failed to load game content folder.");
+		}
+
+		SelectedFolder = nullptr;
+
+		GetDirectoryWithPath( EngineRootFolder.get(), CachedSelectedDirectoryPath, &SelectedFolder);
+		if (!SelectedFolder)
+		{
+			GetDirectoryWithPath( GameRootFolder.get(), CachedSelectedDirectoryPath, &SelectedFolder);
+		}
+		
+		if (SelectedFolder)
+		{
+			SelectedFolderFiles = SelectedFolder->GetFiles();
+		}
+
+		else
+		{
+			SelectedFolderFiles.clear();
+		}
+		
 		SelectedFile = nullptr;
 	}
 
@@ -194,8 +234,35 @@ namespace Drn
 		}
 		
 		AssetManager::Get()->Create( FilePath, SelectedFolder->File.m_FullPath );
+		OnRefresh();
 	}
 
+	void ContentBrowserGuiLayer::ConvertPath( SystemFileNode* Node )
+	{
+		Node->File.m_FullPath = Node->File.m_FullPath.substr(9, Node->File.m_FullPath.size() - 9);
+
+		for (SystemFileNode* Child : Node->Childs)
+		{
+			ConvertPath(Child);
+		}
+	}
+
+	void ContentBrowserGuiLayer::GetDirectoryWithPath(SystemFileNode* Node, const std::string& Path ,SystemFileNode** Result)
+	{
+		if (Node->File.m_FullPath == Path)
+		{
+			*Result = Node;
+			return;
+		}
+
+		for (SystemFileNode* Child : Node->Childs)
+		{
+			if (Child->File.m_IsDirectory)
+			{
+				GetDirectoryWithPath(Child, Path, Result);
+			}
+		}
+	}
 }
 
 #endif

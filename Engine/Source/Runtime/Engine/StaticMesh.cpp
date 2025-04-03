@@ -84,7 +84,7 @@ namespace Drn
 
 	void StaticMesh::Load() 
 	{
-		Archive Ar = Archive(m_Path);
+		Archive Ar = Archive(Path::ConvertProjectPath(m_Path));
 		Serialize(Ar);
 	}
 
@@ -97,7 +97,7 @@ namespace Drn
 
 	void StaticMesh::Save()
 	{
-		Archive Ar = Archive(m_Path, false);
+		Archive Ar = Archive(Path::ConvertProjectPath(m_Path), false);
 		Serialize(Ar);
 	}
 

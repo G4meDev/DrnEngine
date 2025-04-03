@@ -167,6 +167,11 @@ namespace Drn
 	{
 		for (StaticMeshComponent* Mesh : m_Scene->m_StaticMeshComponents)
 		{
+			if (!Mesh->GetMesh())
+			{
+				continue;
+			}
+
 			if (!Mesh->GetMesh()->m_LoadedOnGPU)
 			{
 				Mesh->GetMesh()->UploadResources(CommandList);

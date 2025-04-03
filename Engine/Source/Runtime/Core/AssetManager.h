@@ -39,16 +39,23 @@ namespace Drn
 
 		AssetHandle& operator=(const AssetHandle& other)
 		{
+			if (other.IsValid())
+			{
+				other.m_Asset->AddRef();
+			}
+
+			if (this->IsValid())
+			{
+				this->Release();
+			}
+
 			this->m_Path = other.m_Path;
 			this->m_Asset = other.m_Asset;
 
-			if (this->m_Asset)
-			{
-				this->m_Asset->AddRef();
-			}
-		
 			return *this;
 		}
+
+		inline std::string GetPath() { return m_Path; }
 
 		void Load()
 		{
@@ -63,7 +70,7 @@ namespace Drn
 
 			uint8 TypeByte;
 			{
-				Archive Ar(m_Path);
+				Archive Ar(Path::ConvertProjectPath(m_Path));
 				Ar >> TypeByte;
 			}
 
@@ -91,7 +98,7 @@ namespace Drn
 		}
 
 		inline T* Get() { return m_Asset; }
-		inline bool IsValid() { return m_Asset != nullptr; }
+		inline bool IsValid() const { return m_Asset != nullptr; }
 
 	private:
 		T* m_Asset;

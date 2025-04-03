@@ -144,7 +144,7 @@ namespace Drn
 
 		ImGui::Separator();
 
-		ImGui::Text("source file: %s", m_OwningAsset.Get()->m_SourcePath != NAME_NULL ? m_OwningAsset.Get()->m_SourcePath.c_str() : "...");
+		ImGui::TextWrapped("source file: %s", m_OwningAsset.Get()->m_SourcePath != NAME_NULL ? m_OwningAsset.Get()->m_SourcePath.c_str() : "...");
 		
 		if (ImGui::Button("reimport"))
 		{

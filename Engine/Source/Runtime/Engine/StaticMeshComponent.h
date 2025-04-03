@@ -35,6 +35,8 @@ namespace Drn
 
 		virtual void DrawDetailPanel(float DeltaTime) override;
 
+		void ClearMesh();
+
 #endif
 
 	protected:

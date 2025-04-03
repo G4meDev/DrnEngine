@@ -9,9 +9,9 @@ namespace Drn
 	public:
 		static std::wstring ShaderFullPath(LPCWSTR ShortPath);
 
-		static std::string GetContentPath();
+		static std::string GetProjectPath();
 
-		static std::string ConvertFullPath(const std::string& ShortPath);
+		static std::string ConvertProjectPath(const std::string& Path);
 		static std::string ConvertShortPath(const std::string& FullPath);
 		
 		static std::string GetFileExtension(const std::string& Path);

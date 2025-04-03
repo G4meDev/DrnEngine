@@ -64,7 +64,8 @@ namespace Drn
 	{
 		m_MainWorld = AllocateWorld();
 
-		AssetHandle<StaticMesh> CubeMesh(Path::ConvertFullPath("BasicShapes\\SM_Cube.drn"));
+		//AssetHandle<StaticMesh> CubeMesh(Path::ConvertFullPath("Engine\\Content\\BasicShapes\\SM_Cube.drn"));
+		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
 		CubeMesh.Load();
 
 		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();

@@ -4,6 +4,8 @@
 #if WITH_EDITOR
 
 #include <imgui.h>
+#include "Editor/Editor.h"
+#include "Editor/EditorConfig.h"
 
 #endif
 
@@ -30,14 +32,35 @@ namespace Drn
 		Mesh = InHandle;
 	}
 
+#if WITH_EDITOR
 
 	void StaticMeshComponent::DrawDetailPanel( float DeltaTime )
 	{
 		SceneComponent::DrawDetailPanel(DeltaTime);
 
+		if ( ImGui::Button( "Clear" ) )
+		{
+			ClearMesh();
+		}
+
+		std::string AssetPath	= Mesh.GetPath();
+		std::string AssetName	= Path::ConvertShortPath(AssetPath);
+		AssetName				= Path::RemoveFileExtension(AssetName);
+		AssetName				= AssetName == "" ? "None" : AssetName;
+
+		ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_Text, EditorConfig::AssetInputColor);
+		ImGui::Text( "%s", AssetName.c_str() );
+		ImGui::PopStyleColor();
+
 		ImGui::Separator();
 
-
+		ImGui::TextWrapped(Mesh.GetPath().c_str());
 	}
 
+	void StaticMeshComponent::ClearMesh()
+	{
+		Mesh = AssetHandle<StaticMesh>("");
+	}
+
+#endif
 }

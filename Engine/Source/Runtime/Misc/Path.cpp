@@ -3,7 +3,7 @@
 
 #define SHADER_PATH std::wstring(L"../Engine/Source/Shaders/")
 
-#define PATH_CONTENT "..\\..\\..\\Engine\\Content"
+#define PROJECT_PATH "..\\..\\.."
 
 namespace Drn
 {
@@ -13,18 +13,14 @@ namespace Drn
 	}
 
 
-	std::string Path::GetContentPath()
+	std::string Path::GetProjectPath()
 	{
-#if _DEBUG
-		return PATH_CONTENT;
-#else
-		return PATH_CONTENT;
-#endif
+		return PROJECT_PATH;
 	}
 
-	std::string Path::ConvertFullPath(const std::string& ShortPath)
+	std::string Path::ConvertProjectPath( const std::string& Path )
 	{
-		return std::string(PATH_CONTENT) + "\\" + ShortPath;
+		return std::string(PROJECT_PATH) + "\\" + Path;
 	}
 
 	std::string Path::ConvertShortPath( const std::string& FullPath )
