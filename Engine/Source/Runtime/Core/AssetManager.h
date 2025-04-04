@@ -4,6 +4,7 @@
 #include "Asset.h"
 
 #include "Runtime/Engine/StaticMesh.h"
+#include "Runtime/Engine/Level.h"
 
 LOG_DECLARE_CATEGORY(LogAssetManager)
 
@@ -120,7 +121,12 @@ namespace Drn
 		T* Load(const std::string& Path);
 
 #if WITH_EDITOR
+
 		void Create(const std::string& SourceFile, const std::string& TargetFolder);
+
+		template <typename T>
+		void Create(const std::string& TargetFolder, const std::string& AssetNamePrefix, int Unused);
+
 #endif
 
 		template< typename T >
@@ -156,6 +162,21 @@ namespace Drn
 		asset->AddRef();
 		return static_cast<T*>(asset);
 	}
+
+
+#if WITH_EDITOR
+	template<typename T>
+	void AssetManager::Create( const std::string& TargetFolder, const std::string& AssetNamePrefix, int Unused)
+	{
+		std::string TargetFolderFullPath = Path::ConvertProjectPath(TargetFolder);
+
+		std::string NewAssetName;
+		if (Path::GetNameForNewAsset(TargetFolderFullPath, AssetNamePrefix, NewAssetName))
+		{
+			std::unique_ptr<T> NewAsset = std::make_unique<T>(TargetFolder + "\\" + NewAssetName, "");
+		}
+	}
+#endif
 
 	template<typename T>
 	void AssetManager::InvalidateAsset(T*& InAsset)

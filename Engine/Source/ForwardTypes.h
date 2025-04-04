@@ -51,6 +51,7 @@ namespace Drn
 	struct VertexPosColor;
 
 	class World;
+	class Level;
 	class Scene;
 	class SceneRenderer;
 	class PrimitiveComponent;

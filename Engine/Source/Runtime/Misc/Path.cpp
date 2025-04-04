@@ -5,6 +5,8 @@
 
 #define PROJECT_PATH "..\\..\\.."
 
+LOG_DEFINE_CATEGORY( LogPath, "LogPath" );
+
 namespace Drn
 {
 	std::wstring Path::ShaderFullPath(LPCWSTR ShortPath)
@@ -59,6 +61,44 @@ namespace Drn
 	std::string Path::AddAssetFileExtension( const std::string& Path )
 	{
 		return Path + ".drn";
+	}
+
+	bool Path::GetNameForNewAsset( const std::string& TargetDirectory, const std::string& NamePrefix, std::string& Result)
+	{
+		if ( !FileSystem::DirectoryExists( TargetDirectory ) )
+		{
+			LOG( LogPath, Error, "Selected directory for new asset doesnt exist.\n\t%s ", TargetDirectory.c_str() );
+			return false;
+		}
+
+		std::unique_ptr<SystemFileNode> Root;
+
+		// @TODO: make a non recursive version
+		FileSystem::GetFilesInDirectory(TargetDirectory, Root, ".drn");
+
+		for (int ix = 1; ix < 100; ix++)
+		{
+			std::stringstream ss;
+			ss << std::setw(2) << std::setfill('0') << ix;
+			std::string TargetName = NamePrefix + ss.str() + ".drn";
+
+			bool NameCollision = false;
+			for (SystemFileNode* Child : Root->Childs)
+			{
+				if (!Child->File.m_IsDirectory && Child->File.m_ShortPath == TargetName)
+				{
+					NameCollision = true;
+				}
+			}
+
+			if (!NameCollision)
+			{
+				Result = TargetName;
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

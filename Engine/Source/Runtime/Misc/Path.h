@@ -2,6 +2,8 @@
 
 #include "ForwardTypes.h"
 
+LOG_DECLARE_CATEGORY( LogPath );
+
 namespace Drn
 {
 	class Path
@@ -17,5 +19,7 @@ namespace Drn
 		static std::string GetFileExtension(const std::string& Path);
 		static std::string RemoveFileExtension(const std::string& Path);
 		static std::string AddAssetFileExtension(const std::string& Path);
+
+		static bool GetNameForNewAsset( const std::string& TargetDirectory, const std::string& NamePrefix, std::string& Result);
 	};
 }

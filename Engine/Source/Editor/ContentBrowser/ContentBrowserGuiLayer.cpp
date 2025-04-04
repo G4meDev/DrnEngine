@@ -43,11 +43,7 @@ namespace Drn
 			return;
 		}
 
-		if (ImGui::Button( "Import" ))
-			OnImport();
-		ImGui::SameLine();
-		if (ImGui::Button( "Refresh" ))
-			OnRefresh();
+		DrawMenuButtons();
 
 		if (ImGui::BeginChild("FolderView", ImVec2(300, 0), ImGuiChildFlags_ResizeX | ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 		{
@@ -163,6 +159,45 @@ namespace Drn
 		}
 	}
 
+	void ContentBrowserGuiLayer::DrawMenuButtons()
+	{
+		if (ImGui::Button( "Import" ))
+			OnImport();
+		
+		ImGui::SameLine();
+
+		if (ImGui::Button( "Refresh" ))
+			OnRefresh();
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Add"))
+		{
+			ImGui::OpenPopup("Add Popup");
+		}
+		
+		if (ImGui::BeginPopup("Add Popup"))
+		{
+			if (ImGui::Button("Level"))
+			{
+				ImGui::OpenPopup("Level Popup");
+			}
+
+			if (ImGui::BeginPopup("Level Popup"))
+			{
+				if (ImGui::Button("Empty Level"))
+				{
+					ImGui::CloseCurrentPopup();
+					AddEmptyLevel();
+				}
+
+				ImGui::EndPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+	}
+
 	void ContentBrowserGuiLayer::OnImport()
 	{
 		LOG(LogContentBrowser, Info, "Import");
@@ -256,6 +291,20 @@ namespace Drn
 			}
 		}
 	}
+
+	void ContentBrowserGuiLayer::AddEmptyLevel()
+	{
+		if (!SelectedFolder)
+		{
+			LOG(LogContentBrowser, Warning, "Cloudn`t add level. there is no folder selected.");
+			return;
+		}
+
+		AssetManager::Get()->Create<Level>(SelectedFolder->File.m_FullPath, "Level_", 1);
+
+		OnRefresh();
+	}
+
 }
 
 #endif

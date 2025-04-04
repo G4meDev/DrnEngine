@@ -21,6 +21,8 @@ namespace Drn
 		void DrawNextFolder(SystemFileNode* Node);
 		void DrawFileView();
 
+		void DrawMenuButtons();
+
 		void OnImport();
 		void OnRefresh();
 
@@ -40,6 +42,8 @@ namespace Drn
 		std::shared_ptr<Window> ImportWindow;
 
 		friend class ContentBrowser;
+
+		void AddEmptyLevel();
 	};
 }
 
