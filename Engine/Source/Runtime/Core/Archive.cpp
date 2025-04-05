@@ -3,6 +3,8 @@
 
 LOG_DEFINE_CATEGORY( LogArchive, "Archive" );
 
+#define ARCHIVE_VERSION ((uint8)1)
+
 namespace Drn
 {
 	Archive::Archive( const std::string& InFilePath, bool InIsLoading )
@@ -17,6 +19,8 @@ namespace Drn
 				LOG( LogArchive, Error, "failed to open file for reading. " );
 				return;
 			}
+
+			File >> m_ArchiveVersion;
 		}
 
 		else
@@ -27,6 +31,8 @@ namespace Drn
 				LOG( LogArchive, Error, "failed to open file for writing. " );
 				return;
 			}
+
+			File << ARCHIVE_VERSION;
 		}
 	}
 
@@ -46,19 +52,19 @@ namespace Drn
 
 	Archive& Archive::operator<<( uint16 Value )
 	{
-		File << Value;
+		File.write( (char*)(&Value), 2);
 		return *this;
 	}
 
 	Archive& Archive::operator<<( uint32 Value )
 	{
-		File << Value;
+		File.write( (char*)( &Value ), 4);
 		return *this;
 	}
 
 	Archive& Archive::operator<<( uint64 Value )
 	{
-		File << Value;
+		File.write( (char*)( &Value ), 8);
 		return *this;
 	}
 
@@ -70,7 +76,7 @@ namespace Drn
 	
 	Archive& Archive::operator<<( const std::string& Value )
 	{
-		uint16 size = Value.size();
+		uint32 size = Value.size();
 		File << size << Value;
 
 		return *this;
@@ -93,19 +99,19 @@ namespace Drn
 
 	Archive& Archive::operator>>( uint16& Value )
 	{
-		File >> Value;
+		File.read( (char*)(&Value), 2 );
 		return *this;
 	}
 
 	Archive& Archive::operator>>( uint32& Value )
 	{
-		File >> Value;
+		File.read( (char*)(&Value), 4 );
 		return *this;
 	}
 
 	Archive& Archive::operator>>( uint64& Value )
 	{
-		File >> Value;
+		File.read( (char*)(&Value), 8 );
 		return *this;
 	}
 
@@ -117,7 +123,7 @@ namespace Drn
 
 	Archive& Archive::operator>>( std::string& Value )
 	{
-		uint16 size;
+		uint32 size;
 		File >> size;
 
 		std::vector<char> buffer(size);

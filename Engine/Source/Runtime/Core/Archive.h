@@ -38,6 +38,8 @@ namespace Drn
 		std::string m_FilePath;
 		bool m_IsLoading;
 
+		uint8 m_ArchiveVersion;
+
 		std::fstream File;
 
 	private:

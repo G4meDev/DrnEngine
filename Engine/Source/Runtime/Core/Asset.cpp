@@ -12,11 +12,37 @@ namespace Drn
 		
 	}
 
-	Asset::Asset( const std::string InPath, const std::string InSourcePath )
-		: m_Path(InPath)
-		, m_SourcePath(InSourcePath)
-		, m_RefCount(0)
+	void Asset::Serialize( Archive& Ar )
 	{
-		
+		if (Ar.IsLoading())
+		{
+			Ar >> m_AssetType;
+		}
+
+#if WITH_EDITOR
+
+		else
+		{
+			uint16 AssetType = static_cast<uint16>(GetAssetType());
+			Ar << AssetType;
+		}
+
+#endif
 	}
+
+	void Asset::Load()
+	{
+		Archive Ar(Path::ConvertProjectPath(m_Path));
+		Serialize(Ar);
+	}
+
+#if WITH_EDITOR
+
+	void Asset::Save()
+	{
+		Archive Ar(Path::ConvertProjectPath(m_Path), false);
+		Serialize(Ar);
+	}
+
+#endif
 }

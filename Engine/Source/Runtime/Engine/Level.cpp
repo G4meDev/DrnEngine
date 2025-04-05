@@ -11,7 +11,7 @@ namespace Drn
 
 #if WITH_EDITOR
 	Level::Level( const std::string& InPath, const std::string& InSourcePath )
-		: Asset(InPath, InSourcePath)
+		: Asset(InPath)
 	{
 		Save();
 
@@ -26,6 +26,8 @@ namespace Drn
 
 	void Level::Serialize( Archive& Ar )
 	{
+		Asset::Serialize(Ar);
+
 		if (Ar.IsLoading())
 		{
 			
@@ -34,28 +36,9 @@ namespace Drn
 #if WITH_EDITOR
 		else
 		{
-			Ar << static_cast<uint8>(GetAssetType());
-			Ar << m_AssetVersion;
-			Ar << m_SourcePath;
+
 		}
 #endif
-	}
-
-	void Level::Load()
-	{
-		Archive Ar = Archive(Path::ConvertProjectPath(m_Path), true);
-		Serialize(Ar);
-	}
-
-	void Level::Save()
-	{
-		Archive Ar = Archive(Path::ConvertProjectPath(m_Path), false);
-		Serialize(Ar);
-	}
-
-	void Level::Import()
-	{
-		
 	}
 
 	EAssetType Level::GetAssetType()

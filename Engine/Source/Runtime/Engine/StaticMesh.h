@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
-#include "Runtime/Core/Serializable.h"
+//#include "Runtime/Core/Serializable.h"
 #include "Runtime/Core/Asset.h"
 
 LOG_DECLARE_CATEGORY(LogStaticMesh)
@@ -64,7 +64,7 @@ namespace Drn
 	};
 
 
-	class StaticMesh : public Serializable, public Asset
+	class StaticMesh : public Asset
 	{
 	public:
 		
@@ -81,11 +81,8 @@ namespace Drn
 
 	protected:
 
-		virtual void Load() override;
-
 #if WITH_EDITOR
-		virtual void Save() override;
-		virtual void Import() override;
+		void Import();
 #endif
 
 		virtual EAssetType GetAssetType() override;
@@ -99,6 +96,8 @@ namespace Drn
 		friend class SceneRenderer;
 
 	private:
+
+		std::string m_SourcePath;
 
 		float ImportScale = 1.0f;
 

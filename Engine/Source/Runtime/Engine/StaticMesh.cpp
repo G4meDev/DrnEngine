@@ -19,9 +19,11 @@ namespace Drn
 
 #if WITH_EDITOR
 	StaticMesh::StaticMesh( const std::string& InPath, const std::string& InSourcePath )
-		: Asset(InPath, InSourcePath)
+		: Asset(InPath)
 		, m_LoadedOnGPU(false)
 	{
+		m_SourcePath = InSourcePath;
+
 		Import();
 		Save();
 	}
@@ -32,18 +34,16 @@ namespace Drn
 #if WITH_EDITOR
 		CloseAssetPreview();
 #endif
-
-		
 	}
 
 	void StaticMesh::Serialize( Archive& Ar )
 	{
+		Asset::Serialize(Ar);
+
 		if (Ar.IsLoading())
 		{
 			RenderProxies.clear();
 
-			Ar >> m_AssetType;
-			Ar >> m_AssetVersion;
 			Ar >> m_SourcePath;
 			Data.Serialize( Ar );
 			Ar >> ImportScale;
@@ -62,8 +62,6 @@ namespace Drn
 #if WITH_EDITOR
 		else
 		{
-			Ar << static_cast<uint8>(GetAssetType());
-			Ar << m_AssetVersion;
 			Ar << m_SourcePath;
 			Data.Serialize( Ar );
 			Ar << ImportScale;
@@ -82,24 +80,12 @@ namespace Drn
 		m_LoadedOnGPU = true;
 	}
 
-	void StaticMesh::Load() 
-	{
-		Archive Ar = Archive(Path::ConvertProjectPath(m_Path));
-		Serialize(Ar);
-	}
-
 	EAssetType StaticMesh::GetAssetType()
 	{
 		return EAssetType::StaticMesh;
 	}
 
 #if WITH_EDITOR
-
-	void StaticMesh::Save()
-	{
-		Archive Ar = Archive(Path::ConvertProjectPath(m_Path), false);
-		Serialize(Ar);
-	}
 
 	void StaticMesh::Import()
 	{

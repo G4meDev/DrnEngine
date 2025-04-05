@@ -1,46 +1,45 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/Serializable.h"
 #include "AssetManager.h"
 
 LOG_DECLARE_CATEGORY( LogAsset )
 
 namespace Drn
 {
-	enum class EAssetType : uint8
+	enum class EAssetType : uint16
 	{
 		StaticMesh = 0,
 		Level
 	};
 
-	class Asset
+	class Asset : public Serializable
 	{
 	public:
 		Asset(const std::string InPath);
-		Asset(const std::string InPath, const std::string InSourcePath);
 
 		uint16 m_RefCount;
 
 		inline void AddRef() { m_RefCount++; }
 		inline void RemoveRef() { m_RefCount--; }
 
+		virtual void Serialize( Archive& Ar ) override;
+
 	protected:
 
-		virtual void Load() = 0;
+		virtual void Load();
 
 		virtual EAssetType GetAssetType() = 0;
 
 #if WITH_EDITOR
-		virtual void Save() = 0;
-		virtual void Import() = 0;
+		virtual void Save();
 
 		virtual void OpenAssetPreview() = 0;
 		virtual void CloseAssetPreview() = 0;
 #endif
 
-		uint8 m_AssetType;
-		uint8 m_AssetVersion;
-		std::string m_SourcePath;
+		uint16 m_AssetType;
 		std::string m_Path;
 
 		friend class AssetManager;

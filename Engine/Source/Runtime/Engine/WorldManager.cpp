@@ -64,15 +64,14 @@ namespace Drn
 	{
 		m_MainWorld = AllocateWorld();
 
-		//AssetHandle<StaticMesh> CubeMesh(Path::ConvertFullPath("Engine\\Content\\BasicShapes\\SM_Cube.drn"));
-		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
-		CubeMesh.Load();
-
-		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();
-		CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
-
-#if WITH_EDITOR
-		CubeStaticMeshActor->SetActorLabel("Cube_1");
-#endif
+//		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
+//		CubeMesh.Load();
+//
+//		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();
+//		CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
+//
+//#if WITH_EDITOR
+//		CubeStaticMeshActor->SetActorLabel("Cube_1");
+//#endif
 	}
 }

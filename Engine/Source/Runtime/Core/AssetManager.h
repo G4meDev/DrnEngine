@@ -69,7 +69,7 @@ namespace Drn
 		{
 			Release();
 
-			uint8 TypeByte;
+			uint16 TypeByte;
 			{
 				Archive Ar(Path::ConvertProjectPath(m_Path));
 				Ar >> TypeByte;

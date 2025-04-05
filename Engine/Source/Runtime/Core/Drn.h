@@ -9,5 +9,3 @@ typedef	signed char			int8;
 typedef signed short int	int16;
 typedef signed int	 		int32;
 typedef signed long long	int64;
-
-#define ASSET_VERSION uint8(1)

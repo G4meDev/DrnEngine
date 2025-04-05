@@ -9,7 +9,7 @@ LOG_DECLARE_CATEGORY( LogLevel )
 
 namespace Drn
 {
-	class Level : public Serializable, public Asset
+	class Level : public Asset
 	{
 	public:
 		Level(const std::string& Path);
@@ -20,13 +20,6 @@ namespace Drn
 #endif
 
 		virtual void Serialize(Archive& Ar) override;
-
-		virtual void Load() override;
-
-#if WITH_EDITOR
-		virtual void Save() override;
-		virtual void Import() override;
-#endif
 
 		virtual EAssetType GetAssetType() override;
 
