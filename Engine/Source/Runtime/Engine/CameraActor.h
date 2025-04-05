@@ -17,6 +17,8 @@ namespace Drn
 
 		inline CameraComponent* GetCameraComponent() { return m_CameraComponenet.get(); }
 
+		inline virtual EActorType GetActorType() override { return EActorType::CameraActor; }
+
 #if WITH_EDITOR
 		void ApplyViewportInput( const ViewportCameraInputHandler& CameraInput, float CameraMovementSpeed,
 			float CameraRotationSpeed );

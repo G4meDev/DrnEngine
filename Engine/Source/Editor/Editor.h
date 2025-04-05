@@ -33,6 +33,8 @@ namespace Drn
 
 	private:
 
+		void OnLevelChanged();
+
 		void OnSelectedFile(const std::string Path);
 
 		static std::unique_ptr<Editor> SingletonInstance;

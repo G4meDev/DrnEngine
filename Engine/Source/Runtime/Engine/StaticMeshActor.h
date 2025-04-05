@@ -15,6 +15,10 @@ namespace Drn
 
 		inline StaticMeshComponent* GetMeshComponent() { return m_MeshComponenet.get(); }
 
+		inline virtual EActorType GetActorType() override { return EActorType::StaticMeshActor; }
+
+		virtual void Serialize(Archive& Ar) override;
+
 	protected:
 
 		std::unique_ptr<StaticMeshComponent> m_MeshComponenet;

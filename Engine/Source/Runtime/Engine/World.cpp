@@ -1,10 +1,14 @@
 #include "DrnPCH.h"
 #include "World.h"
 
+LOG_DEFINE_CATEGORY( LogWorld, "LogWorld" );
+
 namespace Drn
 {
 	World::World() 
 		: m_ShouldTick(true)
+		, m_LevelPath("")
+		, m_Transient(false)
 	{
 		
 	}
@@ -15,6 +19,12 @@ namespace Drn
 		{
 			delete actor;
 		}
+
+		if (Renderer::Get())
+		{
+			Renderer::Get()->RemoveWorldScenes(this);
+		}
+
 	}
 
 	void World::Tick( float DeltaTime )
@@ -106,6 +116,35 @@ namespace Drn
 		{
 			Del(RemovedActor);
 		}
+	}
+
+	void World::Save()
+	{
+		if (IsTransient())
+		{
+			LOG(LogWorld, Warning, "trying to save a transient world.");
+			return;
+		}
+
+		AssetHandle<Level> LevelHandle(m_LevelPath);
+		LevelHandle.Load();
+
+		LevelHandle->SaveFromWorld(this);
+	}
+
+	uint32 World::GetNonTransientActorCount()
+	{
+		int result = 0;
+
+		for (Actor* Actor : m_Actors)
+		{
+			if (!Actor->IsTransient())
+			{
+				result++;
+			}
+		}
+
+		return result;
 	}
 
 }

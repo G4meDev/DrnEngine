@@ -38,6 +38,9 @@ namespace Drn
 			}
 		}
 
+		virtual void Serialize( Archive& Ar ) override;
+
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 #endif

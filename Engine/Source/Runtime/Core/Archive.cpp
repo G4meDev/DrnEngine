@@ -70,7 +70,7 @@ namespace Drn
 
 	Archive& Archive::operator<<( float Value )
 	{
-		File << Value;
+		File.write( (char*)( &Value ), sizeof(float));
 		return *this;
 	}
 	
@@ -117,7 +117,8 @@ namespace Drn
 
 	Archive& Archive::operator>>( float& Value )
 	{
-		File >> Value;
+		File.read( (char*)(&Value), sizeof(float) );
+		
 		return *this;
 	}
 

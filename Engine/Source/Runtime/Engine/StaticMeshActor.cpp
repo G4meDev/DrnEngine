@@ -26,4 +26,25 @@ namespace Drn
 
 	}
 
+	void StaticMeshActor::Serialize( Archive& Ar )
+	{
+		Actor::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			m_MeshComponenet->Serialize(Ar);
+			
+		}
+
+#if WITH_EDITOR
+
+		else
+		{
+			m_MeshComponenet->Serialize(Ar);
+
+		}
+
+#endif
+	}
+
 }

@@ -26,10 +26,13 @@ namespace Drn
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;
+
+		void SaveFromWorld(World* InWorld);
 #endif
 
+		void LoadToWorld(World* InWorld);
+
 	protected:
-		
 
 	private:
 

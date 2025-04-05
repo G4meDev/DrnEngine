@@ -14,4 +14,10 @@ namespace Drn
 		
 	}
 
- }
+	void PrimitiveComponent::Serialize( Archive& Ar )
+	{
+		SceneComponent::Serialize(Ar);
+
+	}
+
+}

@@ -171,4 +171,21 @@ namespace Drn
 		InScene = nullptr;
 	}
 
+	void Renderer::RemoveWorldScenes( World* InWorld )
+	{
+		for (auto it = m_AllocatedScenes.begin(); it != m_AllocatedScenes.end();)
+		{
+			if ((*it)->GetWorld() == InWorld)
+			{
+				Scene* ToRemoveScene = *it;
+				it = m_AllocatedScenes.erase(it);
+				delete ToRemoveScene;
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
+
 }

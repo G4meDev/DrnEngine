@@ -104,6 +104,25 @@ namespace Drn
 		return m_PendingKill;
 	}
 
+	void Actor::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			Ar >> ActorLabel;
+			Root->Serialize(Ar);
+		}
+
+#if WITH_EDITOR
+
+		else
+		{
+			Ar << ActorLabel;
+			Root->Serialize(Ar);
+		}
+
+#endif
+	}
+
 #if WITH_EDITOR
 	std::string Actor::GetActorLabel() const
 	{

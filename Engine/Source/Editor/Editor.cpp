@@ -29,6 +29,7 @@ namespace Drn
 		ContentBrowser::Get()->Init();
 		LevelViewport::Get()->Init();
 		
+		WorldManager::Get()->OnLevelChanged = std::bind(&Editor::OnLevelChanged, this);
 	}
 
 	void Editor::Tick(float DeltaTime)
@@ -55,6 +56,14 @@ namespace Drn
 		}
 
 		return SingletonInstance.get();
+	}
+
+	void Editor::OnLevelChanged()
+	{
+		LOG(LogEditor, Info, "Level changed");
+
+		LevelViewport::Get()->Shutdown();
+		LevelViewport::Get()->Init();
 	}
 
 	void Editor::OnSelectedFile( const std::string Path )

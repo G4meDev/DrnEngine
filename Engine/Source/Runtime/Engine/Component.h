@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/Serializable.h"
 
 namespace Drn
 {
@@ -12,7 +13,7 @@ namespace Drn
 		CameraComponent,
 	};
 
-	class Component
+	class Component : public Serializable
 	{
 	public:
 		Component();
@@ -27,6 +28,8 @@ namespace Drn
 
 		bool IsActive() const;
 		void SetActive(bool Active);
+
+		virtual void Serialize( Archive& Ar );
 
 #if WITH_EDITOR
 		std::string GetComponentLabel() const;

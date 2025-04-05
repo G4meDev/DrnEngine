@@ -36,6 +36,7 @@ namespace Drn
 		Scene* AllocateScene(World* InWorld);
 		void RemoveScene(Scene* InScene);
 		void RemoveAndInvalidateScene(Scene*& InScene);
+		void RemoveWorldScenes(World* InWorld);
 
 		float TotalTime = 0;
 

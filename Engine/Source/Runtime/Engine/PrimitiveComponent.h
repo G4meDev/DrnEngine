@@ -11,6 +11,8 @@ namespace Drn
 		PrimitiveComponent();
 		virtual ~PrimitiveComponent();
 
+		virtual void Serialize( Archive& Ar ) override;
+
 	protected:
 
 	private:

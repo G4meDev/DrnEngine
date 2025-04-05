@@ -32,6 +32,27 @@ namespace Drn
 		Mesh = InHandle;
 	}
 
+	void StaticMeshComponent::Serialize( Archive& Ar )
+	{
+		PrimitiveComponent::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			std::string Path;
+			Ar >> Path;
+			
+			Mesh = AssetHandle<StaticMesh>(Path);
+			Mesh.Load();
+			
+			SetMesh(Mesh);
+		}
+		
+		else
+		{
+			Ar << Mesh.GetPath();
+		}
+	}
+
 #if WITH_EDITOR
 
 	void StaticMeshComponent::DrawDetailPanel( float DeltaTime )

@@ -7,7 +7,7 @@ namespace Drn
 	class WorldManager
 	{
 	public:
-	
+
 		WorldManager();
 
 		static void Init();
@@ -24,12 +24,18 @@ namespace Drn
 		void LoadInitalWorld();
 
 		inline World* GetMainWorld() { return m_MainWorld; }
+
+		void LoadLevel(const std::string& LevelPath );
+
+		std::function<void()> OnLevelChanged;
 	
 	protected:
 
 		static WorldManager* m_SingletonInstance;
 
 		std::set<World*> m_AllocatedWorlds;
+
+		World* m_PendingLevel;
 
 		World* m_MainWorld;
 		void LoadDefaultWorld();

@@ -29,7 +29,7 @@ namespace Drn
 
 	void LevelViewportGuiLayer::Draw( float DeltaTime )
 	{
-		if (!ImGui::Begin("Level Viewport"))
+		if (!ImGui::Begin(WorldManager::Get()->GetMainWorld()->m_WorldLabel.c_str()))
 		{
 			m_ViewportPanel->SetRenderingEnabled(false);
 
@@ -91,7 +91,10 @@ namespace Drn
 		{
 			if (ImGui::BeginMenu( "File" ))
 			{
-				ImGui::MenuItem( "Nothing" );
+				if (ImGui::MenuItem( "Save level" ))
+				{
+					WorldManager::Get()->GetMainWorld()->Save();
+				}
 				
 				ImGui::EndMenu();
 			}

@@ -6,6 +6,7 @@ namespace Drn
 	WorldManager* WorldManager::m_SingletonInstance;
 
 	WorldManager::WorldManager()
+		: m_PendingLevel(nullptr)
 	{
 	}
 
@@ -29,6 +30,18 @@ namespace Drn
 
 	void WorldManager::Tick( float DeltaTime )
 	{
+		if (m_PendingLevel)
+		{
+			RemoveAndInvalidateWorld(m_MainWorld);
+			m_MainWorld = m_PendingLevel;
+			m_PendingLevel = nullptr;
+
+			// TODO: move to renderer
+			Renderer::Get()->m_MainScene = Renderer::Get()->AllocateScene(m_MainWorld);
+
+			OnLevelChanged();
+		}
+
 		for (auto it = m_AllocatedWorlds.begin(); it != m_AllocatedWorlds.end(); it++)
 		{
 			(*it)->Tick(DeltaTime);
@@ -38,6 +51,15 @@ namespace Drn
 	void WorldManager::LoadInitalWorld()
 	{
 		m_SingletonInstance->LoadDefaultWorld();
+	}
+
+	void WorldManager::LoadLevel( const std::string& LevelPath )
+	{
+		AssetHandle<Level> NewLevel(LevelPath);
+		NewLevel.Load();
+
+		m_PendingLevel = AllocateWorld();
+		NewLevel->LoadToWorld(m_PendingLevel);
 	}
 
 	World* WorldManager::AllocateWorld()
@@ -63,15 +85,16 @@ namespace Drn
 	void WorldManager::LoadDefaultWorld()
 	{
 		m_MainWorld = AllocateWorld();
+		m_MainWorld->SetTransient(true);
 
-//		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
-//		CubeMesh.Load();
-//
-//		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();
-//		CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
-//
-//#if WITH_EDITOR
-//		CubeStaticMeshActor->SetActorLabel("Cube_1");
-//#endif
+		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
+		CubeMesh.Load();
+
+		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();
+		CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
+
+#if WITH_EDITOR
+		CubeStaticMeshActor->SetActorLabel("Cube_1");
+#endif
 	}
 }

@@ -47,6 +47,40 @@ namespace Drn
 		return Childs;
 	}
 
+	void SceneComponent::Serialize( Archive& Ar )
+	{
+		Component::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			float X, Y, Z, A, B, C, D;
+
+			Ar >> X;
+			Ar >> Y;
+			Ar >> Z;
+
+			Ar >> A;
+			Ar >> B;
+			Ar >> C;
+			Ar >> D;
+
+			WorldLocation = XMVectorSet(X, Y, Z, 0);
+			WorldRotation = XMVectorSet(A, B, C, D);
+		}
+
+		else
+		{
+			Ar << XMVectorGetX(WorldLocation);
+			Ar << XMVectorGetY(WorldLocation);
+			Ar << XMVectorGetZ(WorldLocation);
+
+			Ar << XMVectorGetX(WorldRotation);
+			Ar << XMVectorGetY(WorldRotation);
+			Ar << XMVectorGetZ(WorldRotation);
+			Ar << XMVectorGetW(WorldRotation);
+		}
+	}
+
 	DirectX::XMVECTOR SceneComponent::GetRelativeLocation() const
 	{
 		return RelativeLocation;

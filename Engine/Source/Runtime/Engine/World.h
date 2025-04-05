@@ -2,6 +2,8 @@
 
 #include "ForwardTypes.h"
 
+LOG_DECLARE_CATEGORY(LogWorld);
+
 namespace Drn
 {
 	class World
@@ -39,6 +41,16 @@ namespace Drn
 		void RemoveFromOnRemoveActor(OnRemoveActor Delegate);
 		void InvokeOnRemoveActor(const Actor* RemovedActor);
 
+		inline void SetTransient( bool Transient ) { m_Transient = true; }
+		inline bool IsTransient() { return m_Transient; }
+
+		void Save();
+
+		uint32 GetNonTransientActorCount();
+
+#if WITH_EDITOR
+		std::string m_WorldLabel = "UntitledMap";
+#endif
 
 	protected:
 
@@ -52,7 +64,11 @@ namespace Drn
 		std::vector<OnNewActors> OnNewActorsDelegates;
 		std::vector<OnRemoveActor> OnRemoveActorDelegates;
 
+		std::string m_LevelPath;
+		bool m_Transient;
+
 		friend Scene;
+		friend class Level;
 
 	private:
 	};

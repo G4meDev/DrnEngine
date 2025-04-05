@@ -1,10 +1,17 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/Serializable.h"
 
 namespace Drn
 {
-	class Actor
+	enum class EActorType : uint16
+	{
+		StaticMeshActor = 0,
+		CameraActor
+	};
+
+	class Actor : public Serializable
 	{
 	public:
 
@@ -31,6 +38,10 @@ namespace Drn
 
 		void Destroy();
 		bool IsMarkedPendingKill() const;
+
+		virtual inline EActorType GetActorType() = 0;
+
+		virtual void Serialize(Archive& Ar) override;
 
 #if WITH_EDITOR
 		virtual bool IsVisibleInWorldOutliner() const { return true; };

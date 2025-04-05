@@ -38,6 +38,19 @@ namespace Drn
 		bActive = Active;
 	}
 
+	void Component::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			Ar >> ComponentLabel;
+		}
+
+		else
+		{
+			Ar << ComponentLabel;
+		}
+	}
+
 #if WITH_EDITOR
 	std::string Component::GetComponentLabel() const
 	{
