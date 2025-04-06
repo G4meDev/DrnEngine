@@ -6,7 +6,7 @@ LOG_DEFINE_CATEGORY( LogWorld, "LogWorld" );
 namespace Drn
 {
 	World::World() 
-		: m_ShouldTick(true)
+		: m_ShouldTick(false)
 		, m_LevelPath("")
 		, m_Transient(false)
 	{

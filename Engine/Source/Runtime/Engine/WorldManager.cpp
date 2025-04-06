@@ -55,11 +55,74 @@ namespace Drn
 
 	void WorldManager::LoadLevel( const std::string& LevelPath )
 	{
-		AssetHandle<Level> NewLevel(LevelPath);
-		NewLevel.Load();
+		m_LastLoadedLevel = LevelPath;
 
-		m_PendingLevel = AllocateWorld();
-		NewLevel->LoadToWorld(m_PendingLevel);
+		if (LevelPath != "")
+		{
+			AssetHandle<Level> NewLevel(LevelPath);
+			NewLevel.Load();
+
+			m_PendingLevel = AllocateWorld();
+			NewLevel->LoadToWorld(m_PendingLevel);
+		}
+
+		else
+		{
+			m_PendingLevel = AllocateWorld();
+			m_PendingLevel->SetTransient(true);
+
+			AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
+			CubeMesh.Load();
+
+			StaticMeshActor* CubeStaticMeshActor = m_PendingLevel->SpawnActor<StaticMeshActor>();
+			CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
+
+#if WITH_EDITOR
+			CubeStaticMeshActor->SetActorLabel("Cube_1");
+#endif
+		}
+	}
+
+	void WorldManager::StartPlayInEditor()
+	{
+		if (m_PlayInEditor)
+		{
+			return;
+		}
+
+		m_PlayInEditor = true;
+		m_PlayInEditorPaused = false;
+
+		if (!m_MainWorld->IsTransient())
+		{
+			m_MainWorld->Save();
+		}
+
+		LoadLevel(m_LastLoadedLevel);
+		m_PendingLevel->SetTransient(true);
+		m_PendingLevel->m_ShouldTick = true;
+	}
+
+	void WorldManager::EndPlayInEditor()
+	{
+		if (!m_PlayInEditor)
+		{
+			return;
+		}
+
+		m_PlayInEditor = false;
+
+		LoadLevel(m_LastLoadedLevel);
+	}
+
+	void WorldManager::SetPlayInEditorPaused( bool Paused )
+	{
+		if (m_PlayInEditor)
+		{
+			m_PlayInEditorPaused = Paused;
+
+			m_MainWorld->SetTickEnabled(!m_PlayInEditorPaused);
+		}
 	}
 
 	World* WorldManager::AllocateWorld()
@@ -97,4 +160,5 @@ namespace Drn
 		CubeStaticMeshActor->SetActorLabel("Cube_1");
 #endif
 	}
+
 }

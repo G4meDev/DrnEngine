@@ -58,6 +58,8 @@ namespace Drn
 		ImGui::SameLine();
 		if ( ImGui::BeginChild( "Viewport", ViewportSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened ) )
 		{
+			DrawViewportMenu(DeltaTime);
+
 			m_ViewportPanel->SetRenderingEnabled(true);
 			m_ViewportPanel->Draw(DeltaTime);
 
@@ -121,6 +123,43 @@ namespace Drn
 		}
 	}
 
+	void LevelViewportGuiLayer::DrawViewportMenu( float DeltaTime )
+	{
+		if (WorldManager::Get()->m_PlayInEditor)
+		{
+			if (ImGui::Button("End Play"))
+			{
+				WorldManager::Get()->EndPlayInEditor();
+			}
+
+			ImGui::SameLine();
+
+			if (WorldManager::Get()->m_PlayInEditorPaused)
+			{
+				if (ImGui::Button("Unpause"))
+				{
+					WorldManager::Get()->SetPlayInEditorPaused(false);
+				}
+			}
+
+			else
+			{
+				if (ImGui::Button("Pause"))
+				{
+					WorldManager::Get()->SetPlayInEditorPaused(true);
+				}
+			}
+		}
+
+		else
+		{
+			if (ImGui::Button("Play"))
+			{
+				WorldManager::Get()->StartPlayInEditor();
+			}
+		}
+	}
+
 	void LevelViewportGuiLayer::HandleViewportPayload( const ImGuiPayload* Payload )
 	{
 		auto AssetPath = static_cast<const char*>(Payload->Data);
@@ -139,6 +178,11 @@ namespace Drn
 				NewActor->GetMeshComponent()->SetMesh(MeshAsset);
 			}
 		}
+	}
+
+	void LevelViewportGuiLayer::OnHitPlay()
+	{
+		
 	}
 
 }

@@ -28,7 +28,11 @@ namespace Drn
 		void LoadLevel(const std::string& LevelPath );
 
 		std::function<void()> OnLevelChanged;
-	
+
+		void StartPlayInEditor();
+		void EndPlayInEditor();
+		void SetPlayInEditorPaused(bool Paused);
+
 	protected:
 
 		static WorldManager* m_SingletonInstance;
@@ -39,6 +43,13 @@ namespace Drn
 
 		World* m_MainWorld;
 		void LoadDefaultWorld();
+
+		std::string m_LastLoadedLevel = "";
+
+		bool m_PlayInEditor = false;
+		bool m_PlayInEditorPaused = false;
+
+		friend class LevelViewportGuiLayer;
 
 	private:
 	};

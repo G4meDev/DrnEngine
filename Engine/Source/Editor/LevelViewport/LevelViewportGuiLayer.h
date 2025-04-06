@@ -24,8 +24,11 @@ namespace Drn
 	protected:
 
 		void DrawMenuBar(float DeltaTime);
+		void DrawViewportMenu(float DeltaTime);
 
 		void HandleViewportPayload(const ImGuiPayload* Payload);
+
+		void OnHitPlay();
 
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;
@@ -33,6 +36,8 @@ namespace Drn
 
 		bool m_ShowOutliner;
 		bool m_ShowDetail;
+
+		bool m_PlayingInEditor;
 
 	protected:
 	};

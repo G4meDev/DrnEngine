@@ -69,6 +69,7 @@ namespace Drn
 
 		friend Scene;
 		friend class Level;
+		friend class WorldManager;
 
 	private:
 	};
