@@ -29,6 +29,8 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/D3D12Utils.h
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
+
+	Source/Runtime/Physic/PhysicManager.h
 	
 	Source/Runtime/Containers/List.h
 
@@ -98,6 +100,8 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/D3D12Utils.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp
+
+	Source/Runtime/Physic/PhysicManager.cpp
 	
 	Source/Runtime/Containers/List.cpp
 	
@@ -205,6 +209,7 @@ target_link_libraries( Engine
     PUBLIC PhysXPvdSDK_static_64.lib
     PUBLIC PhysXVehicle_static_64.lib
     PUBLIC PhysXVehicle2_static_64.lib
+    #PUBLIC PVDRuntime_64.lib
 )
 
 # Enable precompiled header files.

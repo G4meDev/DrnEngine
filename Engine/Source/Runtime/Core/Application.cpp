@@ -48,6 +48,9 @@ namespace Drn
 			AssetManager::Get()->Init();
 
 			WorldManager::Get()->Init();
+
+			PhysicManager::Init();
+
 			Renderer::Init( inhInstance, m_MainWindow.get() );
 
 #if WITH_EDITOR
@@ -66,6 +69,9 @@ namespace Drn
 			
 			
 			Renderer::Shutdown();
+
+			PhysicManager::Shutdown();
+
 			WorldManager::Shutdown();
 
 			AssetManager::Shutdown();
@@ -102,6 +108,8 @@ namespace Drn
 		}
 
 		WorldManager::Get()->Tick(e.DeltaTime);
+
+		PhysicManager::Get()->Tick(e.DeltaTime);
 
 		Renderer::Get()->Tick(e.DeltaTime);
 

@@ -48,6 +48,8 @@ namespace Drn
 	struct StaticMeshRenderProxy;
 	struct MaterialData;
 
+	class PhysicManager;
+
 	struct VertexPosColor;
 
 	class World;

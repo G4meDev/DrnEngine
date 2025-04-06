@@ -37,6 +37,9 @@
 #include "Runtime/Math/IntPoint.h"
 #include "Runtime/Containers/List.h"
 
+#include "Runtime/Physic/PhysicManager.h"
+
+
 #include "Runtime/Misc/StringHelper.h"
 #include "Runtime/Misc/Log.h"
 #include "Runtime/Misc/DateTime.h"
