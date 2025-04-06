@@ -394,3 +394,4 @@ FodyWeavers.xsd
 Intermediate/
 Bin/
 build_*/
+/ThirdParty/Physx/lib/*

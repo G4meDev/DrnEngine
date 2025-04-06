@@ -174,8 +174,13 @@ target_include_directories( Engine
     PUBLIC inc ../ThirdParty/ImGui/
     PUBLIC inc ../ThirdParty/DX12Lib/inc/
     PUBLIC inc ../ThirdParty/ImGuiFileDialog/
+    PUBLIC inc ../ThirdParty/Physx/include/
     PUBLIC inc ../GameFramework/inc/
 	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
+)
+
+target_link_directories( Engine
+	PUBLIC ../ThirdParty/Physx/lib/
 )
 
 target_link_libraries( Engine 
@@ -190,6 +195,16 @@ target_link_libraries( Engine
     PUBLIC DX12Lib
     PUBLIC GameFramework
     PUBLIC ImGuiFileDialog
+	
+    PUBLIC PhysX_static_64.lib
+    PUBLIC PhysXCharacterKinematic_static_64.lib
+    PUBLIC PhysXCommon_static_64.lib
+    PUBLIC PhysXCooking_static_64.lib
+    PUBLIC PhysXExtensions_static_64.lib
+    PUBLIC PhysXFoundation_static_64.lib
+    PUBLIC PhysXPvdSDK_static_64.lib
+    PUBLIC PhysXVehicle_static_64.lib
+    PUBLIC PhysXVehicle2_static_64.lib
 )
 
 # Enable precompiled header files.
