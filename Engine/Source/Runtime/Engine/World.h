@@ -44,11 +44,12 @@ namespace Drn
 		inline void SetTransient( bool Transient ) { m_Transient = true; }
 		inline bool IsTransient() { return m_Transient; }
 
+#if WITH_EDITOR
+
 		void Save();
 
 		uint32 GetNonTransientActorCount();
 
-#if WITH_EDITOR
 		std::string m_WorldLabel = "UntitledMap";
 #endif
 

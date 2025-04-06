@@ -83,6 +83,8 @@ namespace Drn
 		}
 	}
 
+#if WITH_EDITOR
+
 	void WorldManager::StartPlayInEditor()
 	{
 		if (m_PlayInEditor)
@@ -124,6 +126,8 @@ namespace Drn
 			m_MainWorld->SetTickEnabled(!m_PlayInEditorPaused);
 		}
 	}
+
+#endif
 
 	World* WorldManager::AllocateWorld()
 	{

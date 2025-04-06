@@ -106,7 +106,13 @@ namespace Drn
 	{
 		if (Ar.IsLoading())
 		{
-			Ar >> ActorLabel;
+			std::string ActorLabelStr;
+			Ar >> ActorLabelStr;
+
+#if WITH_EDITOR
+			ActorLabel = ActorLabelStr;
+#endif
+			
 			Root->Serialize(Ar);
 		}
 

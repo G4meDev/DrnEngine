@@ -42,12 +42,12 @@ namespace Drn
 	{
 		if (Ar.IsLoading())
 		{
-			Ar >> ComponentLabel;
+			//Ar >> ComponentLabel;
 		}
 
 		else
 		{
-			Ar << ComponentLabel;
+			//Ar << ComponentLabel;
 		}
 	}
 

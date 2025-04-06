@@ -86,7 +86,10 @@ namespace Drn
 		LevelLabel = Path::RemoveFileExtension(LevelLabel);
 		
 		InWorld->m_LevelPath = m_Path;
+		
+#if WITH_EDITOR
 		InWorld->m_WorldLabel = LevelLabel;
+#endif
 
 		Archive Ar(Path::ConvertProjectPath(m_Path));
 		Asset::Serialize( Ar );

@@ -29,9 +29,13 @@ namespace Drn
 
 		std::function<void()> OnLevelChanged;
 
+#if WITH_EDITOR
+
 		void StartPlayInEditor();
 		void EndPlayInEditor();
 		void SetPlayInEditorPaused(bool Paused);
+
+#endif
 
 	protected:
 

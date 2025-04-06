@@ -118,6 +118,8 @@ namespace Drn
 		}
 	}
 
+#if WITH_EDITOR
+
 	void World::Save()
 	{
 		if (IsTransient())
@@ -147,4 +149,5 @@ namespace Drn
 		return result;
 	}
 
+#endif
 }

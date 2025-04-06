@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "EditorConfig.h"
 
+#if WITH_EDITOR
+
 namespace Drn
 {
 	ImVec4 EditorConfig::AssetInputColor = ImVec4(0.3f, 0.5f, 0.9f, 1);
@@ -11,3 +13,5 @@ namespace Drn
 	}
 
 }
+
+#endif
