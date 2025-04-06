@@ -56,18 +56,16 @@ namespace Drn
 		//Root->MarkDirtyRotationRecursive();
 	}
 
-/*
-	const Vector3 Actor::GetActorScale()
+	DirectX::XMVECTOR Actor::GetActorScale()
 	{
 		return Root->GetWorldScale();
 	}
 
-	void Actor::SetActorScale(const Vector3& InScale)
+	void Actor::SetActorScale( const DirectX::XMVECTOR& InScale )
 	{
 		Root->SetWorldScale(InScale);
-		Root->MarkDirtyScaleRecursive();
+		//Root->MarkDirtyScaleRecursive();
 	}
-*/
 
 	void Actor::AttachSceneComponent(SceneComponent* InSceneComponent, SceneComponent* Target)
 	{

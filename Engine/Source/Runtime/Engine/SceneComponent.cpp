@@ -14,6 +14,7 @@ namespace Drn
 	{
 		WorldLocation = XMVectorSet(0, 0, 0, 0);
 		WorldRotation = XMQuaternionIdentity();
+		WorldScale = XMVectorSet(1, 1, 1, 0);
 	}
 
 	SceneComponent::~SceneComponent()
@@ -25,7 +26,7 @@ namespace Drn
 	{
 		Component::Tick(DeltaTime);
 
-		UpdateLocation();
+		//UpdateLocation();
 		//UpdateRotation();
 		//UpdateScale();
 
@@ -53,19 +54,23 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			float X, Y, Z, A, B, C, D;
+			float X, Y, Z, W;
 
 			Ar >> X;
 			Ar >> Y;
 			Ar >> Z;
-
-			Ar >> A;
-			Ar >> B;
-			Ar >> C;
-			Ar >> D;
-
 			WorldLocation = XMVectorSet(X, Y, Z, 0);
-			WorldRotation = XMVectorSet(A, B, C, D);
+
+			Ar >> X;
+			Ar >> Y;
+			Ar >> Z;
+			Ar >> W;
+			WorldRotation = XMVectorSet(X, Y, Z, W);
+
+			Ar >> X;
+			Ar >> Y;
+			Ar >> Z;
+			WorldScale = XMVectorSet(X, Y, Z, 0);
 		}
 
 		else
@@ -78,6 +83,10 @@ namespace Drn
 			Ar << XMVectorGetY(WorldRotation);
 			Ar << XMVectorGetZ(WorldRotation);
 			Ar << XMVectorGetW(WorldRotation);
+
+			Ar << XMVectorGetX(WorldScale);
+			Ar << XMVectorGetY(WorldScale);
+			Ar << XMVectorGetZ(WorldScale);
 		}
 	}
 
@@ -241,58 +250,57 @@ namespace Drn
 		//}
 	}
 
-/*
-
-	const Vector3 SceneComponent::GetRelativeScale() const
+	DirectX::XMVECTOR SceneComponent::GetRelativeScale() const
 	{
 		return RelativeScale;
 	}
 
-	const Vector3 SceneComponent::GetLocalScale() const
+	DirectX::XMVECTOR SceneComponent::GetLocalScale() const
 	{
 		return LocalScale;
 	}
 
-	const Vector3 SceneComponent::GetWorldScale() const
+	DirectX::XMVECTOR SceneComponent::GetWorldScale() const
 	{
-		return WorldScale;
-	}
-
-	void SceneComponent::SetRelativeScale(const Vector3& InScale, bool bMarkDirty)
-	{
-		RelativeScale = InScale;
-
-		if (bMarkDirty)
+		if (Parent == nullptr)
 		{
-			MarkDirtyScaleRecursive();
-		}
-	}
-
-	void SceneComponent::SetLocalScale(const Vector3& InScale, bool bMarkDirty)
-	{
-
-	}
-
-	void SceneComponent::SetWorldScale(const Vector3& InScale, bool bMarkDirty)
-	{
-		if (GetOwningActor()->GetRoot() == this)
-		{
-			WorldScale = InScale;
-			RelativeScale = InScale;
+			return WorldScale;
 		}
 
-		MarkDirtyScaleRecursive();
+		return GetOwningActor()->GetActorScale();
+	}
+
+	void SceneComponent::SetRelativeScale( const DirectX::XMVECTOR& InScale, bool bMarkDirty )
+	{
+		//RelativeScale = InScale;
+		//
+		//if (bMarkDirty)
+		//{
+		//	MarkDirtyScaleRecursive();
+		//}
+	}
+
+	void SceneComponent::SetLocalScale( const DirectX::XMVECTOR& InScale, bool bMarkDirty )
+	{
+
+	}
+
+	void SceneComponent::SetWorldScale( const DirectX::XMVECTOR& InScale, bool bMarkDirty )
+	{
+		WorldScale = InScale;
+
+		//MarkDirtyScaleRecursive();
 	}
 
 	void SceneComponent::UpdateScale()
 	{
-		if (bDirtyScale)
-		{
-			WorldScale = RelativeScale * Parent->GetWorldScale();
-			LocalScale = WorldScale / GetOwningActor()->GetActorScale();
-
-			bDirtyScale = false;
-		}
+		//if (bDirtyScale)
+		//{
+		//	WorldScale = RelativeScale * Parent->GetWorldScale();
+		//	LocalScale = WorldScale / GetOwningActor()->GetActorScale();
+		//
+		//	bDirtyScale = false;
+		//}
 	}
 
 	bool SceneComponent::IsDirtyScale() const
@@ -307,15 +315,13 @@ namespace Drn
 
 	void SceneComponent::MarkDirtyScaleRecursive()
 	{
-		MarkDirtyScale();
-
-		for (SceneComponent* Comp : Childs)
-		{
-			Comp->MarkDirtyScaleRecursive();
-		}
+		//MarkDirtyScale();
+		//
+		//for (SceneComponent* Comp : Childs)
+		//{
+		//	Comp->MarkDirtyScaleRecursive();
+		//}
 	}
-
-*/
 
 // -------------------------------------------------------------------------------------------
 
@@ -323,6 +329,9 @@ namespace Drn
 	void SceneComponent::DrawDetailPanel( float DeltaTime )
 	{
 		Component::DrawDetailPanel(DeltaTime);
+
+// location
+// -------------------------------------------------------------------------------------------
 
 		float Vector[4];
 		Vector[0] = XMVectorGetX(WorldLocation);
@@ -332,7 +341,9 @@ namespace Drn
 		ImGui::DragFloat3( "Location", Vector );
 		WorldLocation = XMVectorSet( Vector[0], Vector[1], Vector[2], 0);
 
+// rotation
 // -------------------------------------------------------------------------------------------
+		
 		Vector[0] = XMVectorGetX(WorldRotation);
 		Vector[1] = XMVectorGetY(WorldRotation);
 		Vector[2] = XMVectorGetZ(WorldRotation);
@@ -342,6 +353,18 @@ namespace Drn
 		WorldRotation = XMVectorSet( Vector[0], Vector[1], Vector[2], Vector[3]);
 
 		WorldRotation = XMQuaternionNormalize(WorldRotation);
+
+// scale
+// -------------------------------------------------------------------------------------------
+
+		Vector[0] = XMVectorGetX(WorldScale);
+		Vector[1] = XMVectorGetY(WorldScale);
+		Vector[2] = XMVectorGetZ(WorldScale);
+
+		ImGui::DragFloat3( "Scale", Vector );
+		WorldScale = XMVectorSet( Vector[0], Vector[1], Vector[2], 0);
+	
+// -------------------------------------------------------------------------------------------
 
 		ImGui::Separator();
 	}

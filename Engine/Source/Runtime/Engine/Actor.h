@@ -26,10 +26,9 @@ namespace Drn
 		DirectX::XMVECTOR GetActorRotation();
 		void SetActorRotation(const DirectX::XMVECTOR& InRotator);
 
-/*
-		const Vector3 GetActorScale();
-		void SetActorScale(const Vector3& InScale);
-*/
+		DirectX::XMVECTOR GetActorScale();
+		void SetActorScale(const DirectX::XMVECTOR& InScale);
+
 		
 		void AttachSceneComponent(SceneComponent* InSceneComponent, SceneComponent* Target = nullptr);
 		void AddComponent(Component* InComponent);

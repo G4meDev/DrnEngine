@@ -79,21 +79,19 @@ namespace Drn
 
 		// ------------------ scale ------------------------
 
-/*
-		const Vector3 GetRelativeScale() const;
-		const Vector3 GetLocalScale() const;
-		const Vector3 GetWorldScale() const;
+		DirectX::XMVECTOR GetRelativeScale() const;
+		DirectX::XMVECTOR GetLocalScale() const;
+		DirectX::XMVECTOR GetWorldScale() const;
 
-		void SetRelativeScale(const Vector3& InScale, bool bMarkDirty = true);
-		void SetLocalScale(const Vector3& InScale, bool bMarkDirty = true);
-		void SetWorldScale(const Vector3& InScale, bool bMarkDirty = true);
+		void SetRelativeScale(const DirectX::XMVECTOR& InScale, bool bMarkDirty = true);
+		void SetLocalScale(const DirectX::XMVECTOR& InScale, bool bMarkDirty = true);
+		void SetWorldScale(const DirectX::XMVECTOR& InScale, bool bMarkDirty = true);
 
 		void UpdateScale();
 
 		bool IsDirtyScale() const;
 		void MarkDirtyScale();
 		void MarkDirtyScaleRecursive();
-*/
 
 	private:
 		
@@ -108,11 +106,10 @@ namespace Drn
 		DirectX::XMVECTOR RelativeRotation;
 		DirectX::XMVECTOR LocalRotation;
 
-/*
-		Vector3 WorldScale			= Vector3::Zero;
-		Vector3 RelativeScale		= Vector3::Zero;
-		Vector3 LocalScale			= Vector3::Zero;
-*/
+
+		DirectX::XMVECTOR WorldScale;
+		DirectX::XMVECTOR RelativeScale;
+		DirectX::XMVECTOR LocalScale;
 
 		bool bDirtyLocation = true;
 		bool bDirtyRotation = true;
