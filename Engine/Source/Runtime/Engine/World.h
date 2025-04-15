@@ -44,6 +44,8 @@ namespace Drn
 		inline void SetTransient( bool Transient ) { m_Transient = true; }
 		inline bool IsTransient() { return m_Transient; }
 
+		inline bool IsTicking() const { return m_ShouldTick; }
+
 #if WITH_EDITOR
 
 		void Save();
@@ -67,6 +69,8 @@ namespace Drn
 
 		std::string m_LevelPath;
 		bool m_Transient;
+
+		PhysicScene* m_PhysicScene;
 
 		friend Scene;
 		friend class Level;

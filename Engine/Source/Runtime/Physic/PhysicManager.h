@@ -5,7 +5,6 @@
 #include <PxConfig.h>
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
-//#include <pvd/PxPvdTransport.h>
 
 LOG_DECLARE_CATEGORY(LogPhysicManager)
 
@@ -23,6 +22,13 @@ namespace Drn
 		inline static PhysicManager* Get() { return m_SingletonInstance; }
 
 		void InitalizePhysx();
+		void ShutdownPhysx();
+
+		PhysicScene* AllocateScene(World* InWorld);
+		void RemoveAndInvalidateScene(PhysicScene*& InScene);
+
+		inline physx::PxTolerancesScale GetToleranceScale() const { return m_Physics->getTolerancesScale(); };
+		inline physx::PxPhysics* GetPhysics() { return m_Physics; }
 
 	protected:
 
@@ -32,17 +38,13 @@ namespace Drn
 		physx::PxDefaultAllocator m_DefaultAllocatorCallback;
 
 		physx::PxFoundation* m_Foundation;
-		physx::PxPvd* m_Pvd;
 		physx::PxPhysics* m_Physics;
-	
-		physx::PxDefaultCpuDispatcher* m_Dispatcher;
 
-		physx::PxScene* m_Scene;
-		
-		physx::PxMaterial* m_Material;
+#if WITH_PVD
+		physx::PxPvd* m_Pvd;
+#endif
 
-
-		const physx::PxVec3 m_Gravity = physx::PxVec3( 0.0f, -9.81f, 0.0f );
+		std::set<PhysicScene*> m_AllocatedScenes;
 
 	private:
 	};

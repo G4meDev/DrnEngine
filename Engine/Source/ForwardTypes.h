@@ -49,6 +49,7 @@ namespace Drn
 	struct MaterialData;
 
 	class PhysicManager;
+	class PhysicScene;
 
 	struct VertexPosColor;
 

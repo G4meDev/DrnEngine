@@ -19,6 +19,8 @@ namespace Drn
 	{
 		if (m_SingletonInstance)
 		{
+			m_SingletonInstance->ShutdownPhysx();
+
 			delete m_SingletonInstance;
 			m_SingletonInstance = nullptr;
 		}
@@ -27,8 +29,10 @@ namespace Drn
 
 	void PhysicManager::Tick( float DeltaTime )
 	{
-		m_Scene->simulate(DeltaTime);
-		m_Scene->fetchResults(true);
+		for (PhysicScene* S : m_AllocatedScenes)
+		{
+			S->Tick(DeltaTime);
+		}
 	}
 
 	void PhysicManager::InitalizePhysx()
@@ -39,58 +43,48 @@ namespace Drn
 			LOG(LogPhysicManager, Error, "PxCreateFoundation failed!")
 		}
 
+#if WITH_PVD
 		m_Pvd = PxCreatePvd( *m_Foundation );
 
 		physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate( "127.0.0.1", 5425, 10 );
 		m_Pvd->connect( *transport, physx::PxPvdInstrumentationFlag::eALL );
 		m_Physics = PxCreatePhysics( PX_PHYSICS_VERSION, *m_Foundation, physx::PxTolerancesScale(), true, m_Pvd );
+#else
+		m_Physics = PxCreatePhysics( PX_PHYSICS_VERSION, *m_Foundation, physx::PxTolerancesScale(), true, nullptr );
+#endif
+	}
 
+	void PhysicManager::ShutdownPhysx()
+	{
+		PX_RELEASE(m_Physics);
 
-		physx::PxSceneDesc sceneDesc(m_Physics->getTolerancesScale());
-		sceneDesc.gravity = m_Gravity;
-		
-		physx::PxU32 numWorkers = 1;
-		m_Dispatcher = physx::PxDefaultCpuDispatcherCreate(numWorkers);
-		sceneDesc.cpuDispatcher	= m_Dispatcher;
-		sceneDesc.filterShader	= physx::PxDefaultSimulationFilterShader;
-
-		m_Scene = m_Physics->createScene(sceneDesc);
-		physx::PxPvdSceneClient* pvdClient = m_Scene->getScenePvdClient();
-
-		if ( pvdClient )
+#if WITH_PVD
+		if (m_Pvd)
 		{
-			pvdClient->setScenePvdFlag( physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, false );
-			pvdClient->setScenePvdFlag( physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true );
-			pvdClient->setScenePvdFlag( physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true );
+			physx::PxPvdTransport* transport = m_Pvd->getTransport();
+
+			PX_RELEASE(m_Pvd);
+			PX_RELEASE(transport);
 		}
+#endif
 
-// ------------------------------------------------------------------------------------------------------------------------------------
+		PX_RELEASE(m_Foundation);
+	}
 
-		m_Material = m_Physics->createMaterial( 0.5f, 0.5f, 0.6f );
-		physx::PxU32 size = 20;
-		physx::PxTransform t(physx::PxVec3(0));
+	PhysicScene* PhysicManager::AllocateScene( World* InWorld )
+	{
+		PhysicScene* NewWorld = new PhysicScene(InWorld);
+		m_AllocatedScenes.insert(NewWorld);
 
-		physx::PxRigidStatic* GroundPlane = physx::PxCreatePlane(*m_Physics, physx::PxPlane(0, 1, 0, 1), *m_Material);
-		m_Scene->addActor(*GroundPlane);
-		
-		float halfExtent = 0.5f;
-		physx::PxShape* shape = m_Physics->createShape( physx::PxBoxGeometry( halfExtent, halfExtent, halfExtent ), *m_Material );
-		
-		for ( physx::PxU32 i = 0; i < size; i++ )
-		{
-			for ( physx::PxU32 j = 0; j < size - i; j++ )
-			{
-				physx::PxTransform localTm( physx::PxVec3( physx::PxReal( j * 2 ) - physx::PxReal( size - i ), physx::PxReal( i * 2 + 1 ), 0 ) * halfExtent );
-				physx::PxRigidDynamic* body = m_Physics->createRigidDynamic( t.transform( localTm ) );
-				body->attachShape( *shape );
-				physx::PxRigidBodyExt::updateMassAndInertia( *body, 10.0f );
-				m_Scene->addActor( *body );
-			}
-		}
-		shape->release();
+		return NewWorld;
+	}
 
+	void PhysicManager::RemoveAndInvalidateScene( PhysicScene*& InScene )
+	{
+		m_AllocatedScenes.erase(InScene);
 
-
+		InScene->Release();
+		InScene = nullptr;
 	}
 
 }

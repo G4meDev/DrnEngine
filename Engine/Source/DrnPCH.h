@@ -38,6 +38,7 @@
 #include "Runtime/Containers/List.h"
 
 #include "Runtime/Physic/PhysicManager.h"
+#include "Runtime/Physic/PhysicScene.h"
 
 
 #include "Runtime/Misc/StringHelper.h"

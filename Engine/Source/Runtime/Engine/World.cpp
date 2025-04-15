@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "World.h"
 
+#include "Runtime/Physic/PhysicManager.h"
+
 LOG_DEFINE_CATEGORY( LogWorld, "LogWorld" );
 
 namespace Drn
@@ -10,11 +12,13 @@ namespace Drn
 		, m_LevelPath("")
 		, m_Transient(false)
 	{
-		
+		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
 	}
 
 	World::~World()
 	{
+		PhysicManager::Get()->RemoveAndInvalidateScene(m_PhysicScene);
+
 		for (Actor* actor : m_Actors)
 		{
 			delete actor;

@@ -46,10 +46,9 @@ namespace Drn
 			m_MainWindow->Close += WindowCloseEvent::slot( &Application::OnWindowClose, this );
 
 			AssetManager::Get()->Init();
+			PhysicManager::Init();
 
 			WorldManager::Get()->Init();
-
-			PhysicManager::Init();
 
 			Renderer::Init( inhInstance, m_MainWindow.get() );
 
@@ -70,10 +69,9 @@ namespace Drn
 			
 			Renderer::Shutdown();
 
-			PhysicManager::Shutdown();
-
 			WorldManager::Shutdown();
 
+			PhysicManager::Shutdown();
 			AssetManager::Shutdown();
 
 			m_MainWindow.reset();
@@ -107,9 +105,9 @@ namespace Drn
 			m_MainWindow->SetWindowTitle( buffer );
 		}
 
-		WorldManager::Get()->Tick(e.DeltaTime);
-
 		PhysicManager::Get()->Tick(e.DeltaTime);
+
+		WorldManager::Get()->Tick(e.DeltaTime);
 
 		Renderer::Get()->Tick(e.DeltaTime);
 

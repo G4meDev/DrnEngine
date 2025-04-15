@@ -31,6 +31,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
 
 	Source/Runtime/Physic/PhysicManager.h
+	Source/Runtime/Physic/PhysicScene.h
 	
 	Source/Runtime/Containers/List.h
 
@@ -102,6 +103,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp
 
 	Source/Runtime/Physic/PhysicManager.cpp
+	Source/Runtime/Physic/PhysicScene.cpp
 	
 	Source/Runtime/Containers/List.cpp
 	
@@ -172,6 +174,7 @@ target_compile_definitions( Engine
 )
 
 add_compile_definitions("$<$<CONFIG:Debug>:WITH_EDITOR>")
+add_compile_definitions("$<$<CONFIG:Debug>:WITH_PVD>")
 
 target_include_directories( Engine
     PUBLIC inc Source/
@@ -209,7 +212,6 @@ target_link_libraries( Engine
     PUBLIC PhysXPvdSDK_static_64.lib
     PUBLIC PhysXVehicle_static_64.lib
     PUBLIC PhysXVehicle2_static_64.lib
-    #PUBLIC PVDRuntime_64.lib
 )
 
 # Enable precompiled header files.
