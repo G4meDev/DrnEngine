@@ -2,6 +2,8 @@
 #include "PhysicScene.h"
 #include "PhysicManager.h"
 
+LOG_DEFINE_CATEGORY( LogPhysicScene, "PhysicScene" )
+
 namespace Drn
 {
 	PhysicScene::PhysicScene(World* InWorld)
@@ -46,9 +48,40 @@ namespace Drn
 
 	void PhysicScene::Tick( float DeltaTime )
 	{
-		if (m_PhysxScene && m_OwningWorld && m_OwningWorld->IsTicking())
+		if (IsSimulating())
 		{
 			StepSimulation(DeltaTime);
+		}
+	}
+
+	bool PhysicScene::IsSimulating() const
+	{
+		return m_PhysxScene && m_OwningWorld && m_OwningWorld->IsTicking();
+	}
+
+	void PhysicScene::AddActor( physx::PxActor* InActor )
+	{
+		if (m_PhysxScene)
+		{
+			m_PhysxScene->addActor(*InActor);
+		}
+
+		else
+		{
+			LOG(LogPhysicScene, Error, "tring to add actor to non existing physic scene.")
+		}
+	}
+
+	void PhysicScene::RemoveActor( physx::PxActor* InActor )
+	{
+		if (m_PhysxScene)
+		{
+			m_PhysxScene->removeActor(*InActor);
+		}
+
+		else
+		{
+			LOG(LogPhysicScene, Error, "tring to remove actor from non existing physic scene.")
 		}
 	}
 

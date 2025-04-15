@@ -53,7 +53,13 @@ namespace Drn
 		inline bool IsTransient() const { return m_Transient; }
 #endif
 
+		void RegisterComponents(World* InWorld);
+		void UnRegisterComponents();
+
 	private:
+
+		void RegisterSceneComponentRecursive( SceneComponent* InComponent, World* InWorld );
+		void UnRegisterSceneComponentRecursive( SceneComponent* InComponent);
 
 		std::unique_ptr<SceneComponent> Root;
 
@@ -66,6 +72,5 @@ namespace Drn
 		std::string ActorLabel = "Actor_00";
 		bool m_Transient = false;
 #endif
-
 	};
 }

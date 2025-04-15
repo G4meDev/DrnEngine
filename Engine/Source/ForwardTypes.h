@@ -50,6 +50,8 @@ namespace Drn
 
 	class PhysicManager;
 	class PhysicScene;
+	class BodyInstance;
+	class BodySetup;
 
 	struct VertexPosColor;
 

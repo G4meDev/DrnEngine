@@ -40,6 +40,9 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
+		virtual void RegisterComponent(World* InOwningWorld) override;
+		virtual void UnRegisterComponent() override;
+
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;

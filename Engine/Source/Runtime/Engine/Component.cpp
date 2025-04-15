@@ -62,5 +62,17 @@ namespace Drn
 		ComponentLabel = InLabel;
 	}
 
+	void Component::RegisterComponent( World* InOwningWorld )
+	{
+		m_OwningWorld = InOwningWorld;
+
+
+	}
+
+	void Component::UnRegisterComponent()
+	{
+		m_OwningWorld = nullptr;
+	}
+
 #endif
 }

@@ -23,6 +23,8 @@ namespace Drn
 
 		inline virtual EComponentType GetComponentType() { return EComponentType::Component; }
 
+		inline World* GetWorld() { return m_OwningWorld; }
+
 		Actor* GetOwningActor() const;
 		void SetOwningActor(Actor* InActor);
 
@@ -38,7 +40,12 @@ namespace Drn
 		virtual void DrawDetailPanel(float DeltaTime) {};
 #endif
 
+		virtual void RegisterComponent(World* InOwningWorld);
+		virtual void UnRegisterComponent();
+
 	private:
+
+		World* m_OwningWorld;
 		Actor* Owner = nullptr;
 
 		bool bActive = true;
@@ -46,5 +53,7 @@ namespace Drn
 #if WITH_EDITOR
 		std::string ComponentLabel = "Component_00";
 #endif
+
+		friend class Actor;
 	};
 }

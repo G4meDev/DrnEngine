@@ -21,6 +21,9 @@ namespace Drn
 
 		for (Actor* actor : m_Actors)
 		{
+			//InvokeOnRemoveActor(actor);
+			//actor->UnRegisterComponents();
+
 			delete actor;
 		}
 
@@ -39,7 +42,8 @@ namespace Drn
 			{
 				Actor* ToDelActor = *it;
 				InvokeOnRemoveActor(ToDelActor);
-		
+				ToDelActor->UnRegisterComponents();
+
 				it = m_Actors.erase(it);
 				delete ToDelActor;
 			}
@@ -56,12 +60,15 @@ namespace Drn
 			{
 				Actor* ToDelActor = *it;
 				InvokeOnRemoveActor(ToDelActor);
-		
+				ToDelActor->UnRegisterComponents();
+
 				it = m_NewActors.erase(it);
 				delete ToDelActor;
 			}
 			else
 			{
+				(*it)->RegisterComponents(this);
+
 				it++;
 			}
 		}

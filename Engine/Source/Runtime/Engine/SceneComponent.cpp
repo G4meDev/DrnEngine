@@ -17,6 +17,7 @@ namespace Drn
 		WorldScale = XMVectorSet(1, 1, 1, 0);
 	}
 
+
 	SceneComponent::~SceneComponent()
 	{
 		
@@ -90,7 +91,21 @@ namespace Drn
 		}
 	}
 
-	DirectX::XMVECTOR SceneComponent::GetRelativeLocation() const
+	void SceneComponent::RegisterComponent( World* InOwningWorld )
+	{
+		Component::RegisterComponent(InOwningWorld);
+
+
+	}
+
+	void SceneComponent::UnRegisterComponent()
+	{
+		Component::UnRegisterComponent();
+
+
+	}
+
+DirectX::XMVECTOR SceneComponent::GetRelativeLocation() const
 	{
 		return RelativeLocation;
 	}

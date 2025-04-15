@@ -1,0 +1,52 @@
+#include "DrnPCH.h"
+#include "BodyInstance.h"
+
+#include "Runtime/Physic/PhysicManager.h"
+
+LOG_DEFINE_CATEGORY( LogBodyInstance, "BodyInstance" )
+
+namespace Drn
+{
+	BodyInstance::BodyInstance()
+		: m_RigidActor(nullptr)
+		, m_OwnerComponent(nullptr)
+	{
+		
+	}
+
+	BodyInstance::~BodyInstance()
+	{
+		
+	}
+
+	void BodyInstance::InitBody( BodySetup* Setup, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene )
+	{
+		LOG(LogBodyInstance, Info, "initalizing body for %s", InOwnerComponent->GetComponentLabel().c_str());
+
+		m_OwnerComponent = InOwnerComponent;
+
+		physx::PxPhysics* Physics = PhysicManager::Get()->GetPhysics();
+		m_Material = Physics->createMaterial( 0.5f, 0.5f, 0.6f );
+
+		// TODO: Add body setup
+		float           halfExtent = 0.5f;
+		physx::PxShape* shape = Physics->createShape( physx::PxBoxGeometry( halfExtent, halfExtent, halfExtent ), *m_Material );
+
+		physx::PxTransform t(physx::PxVec3(0));
+
+		m_RigidActor = Physics->createRigidDynamic(t);
+		m_RigidActor->attachShape( *shape );
+
+		InScene->AddActor(m_RigidActor);
+
+		shape->release();
+	}
+
+	void BodyInstance::TermBody()
+	{
+		LOG(LogBodyInstance, Info, "terminating body for %s", m_OwnerComponent->GetComponentLabel().c_str());
+
+		m_OwnerComponent = nullptr;
+	}
+
+}

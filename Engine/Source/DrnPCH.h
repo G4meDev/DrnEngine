@@ -39,6 +39,8 @@
 
 #include "Runtime/Physic/PhysicManager.h"
 #include "Runtime/Physic/PhysicScene.h"
+#include "Runtime/Physic/BodyInstance.h"
+#include "Runtime/Physic/BodySetup.h"
 
 
 #include "Runtime/Misc/StringHelper.h"

@@ -46,6 +46,8 @@ namespace Drn
 
 		inline bool IsTicking() const { return m_ShouldTick; }
 
+		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
+
 #if WITH_EDITOR
 
 		void Save();

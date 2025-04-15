@@ -102,7 +102,9 @@ namespace Drn
 		return m_PendingKill;
 	}
 
-	void Actor::Serialize( Archive& Ar )
+Drn::EActorType Actor::GetActorType() {}
+
+        void Actor::Serialize( Archive& Ar )
 	{
 		if (Ar.IsLoading())
 		{
@@ -141,6 +143,46 @@ namespace Drn
 	void Actor::SetTransient( bool Transient )
 	{
 		m_Transient = Transient;
+	}
+
+	void Actor::RegisterComponents( World* InWorld )
+	{
+		for (auto Comp : Components)
+		{
+			Comp->RegisterComponent(InWorld);
+		}
+
+		RegisterSceneComponentRecursive(Root.get(), InWorld);
+	}
+
+	void Actor::UnRegisterComponents()
+	{
+		for (auto Comp : Components)
+		{
+			Comp->UnRegisterComponent();
+		}
+
+		UnRegisterSceneComponentRecursive(Root.get());
+	}
+
+	void Actor::RegisterSceneComponentRecursive( SceneComponent* InComponent, World* InWorld )
+	{
+		InComponent->RegisterComponent(InWorld);
+
+		for ( auto Child: InComponent->GetChilds() )
+		{
+			RegisterSceneComponentRecursive(Child.get(), InWorld);
+		}
+	}
+
+	void Actor::UnRegisterSceneComponentRecursive( SceneComponent* InComponent )
+	{
+		InComponent->UnRegisterComponent();
+
+		for ( auto Child: InComponent->GetChilds() )
+		{
+			UnRegisterSceneComponentRecursive(Child.get());
+		}
 	}
 
 #endif

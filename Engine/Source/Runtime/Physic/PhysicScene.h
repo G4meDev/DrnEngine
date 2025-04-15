@@ -1,7 +1,8 @@
 #pragma once
-#pragma once
 
 #include "ForwardTypes.h"
+
+LOG_DECLARE_CATEGORY( LogPhysicScene )
 
 namespace Drn
 {
@@ -18,6 +19,11 @@ namespace Drn
 		inline physx::PxScene* GetPhysxScene() { return m_PhysxScene; }
 
 		virtual void Tick(float DeltaTime);
+
+		inline bool IsSimulating() const;
+
+		void AddActor(physx::PxActor* InActor);
+		void RemoveActor(physx::PxActor* InActor);
 
 		//TODO: add force, clear velocity, set target, add actor, ...
 

@@ -32,6 +32,8 @@ set( HEADER_FILES
 
 	Source/Runtime/Physic/PhysicManager.h
 	Source/Runtime/Physic/PhysicScene.h
+	Source/Runtime/Physic/BodyInstance.h
+	Source/Runtime/Physic/BodySetup.h
 	
 	Source/Runtime/Containers/List.h
 
@@ -104,6 +106,8 @@ set( SOURCE_FILES
 
 	Source/Runtime/Physic/PhysicManager.cpp
 	Source/Runtime/Physic/PhysicScene.cpp
+	Source/Runtime/Physic/BodyInstance.cpp
+	Source/Runtime/Physic/BodySetup.cpp
 	
 	Source/Runtime/Containers/List.cpp
 	
