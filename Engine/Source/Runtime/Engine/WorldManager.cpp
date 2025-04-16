@@ -32,12 +32,9 @@ namespace Drn
 	{
 		if (m_PendingLevel)
 		{
-			RemoveAndInvalidateWorld(m_MainWorld);
+			ReleaseWorld(m_MainWorld);
 			m_MainWorld = m_PendingLevel;
 			m_PendingLevel = nullptr;
-
-			// TODO: move to renderer
-			Renderer::Get()->m_MainScene = Renderer::Get()->AllocateScene(m_MainWorld);
 
 			OnLevelChanged();
 		}
@@ -137,15 +134,11 @@ namespace Drn
 		return NewWorld;
 	}
 
-	void WorldManager::RemoveWorld( World* InWorld )
+	void WorldManager::ReleaseWorld( World*& InWorld )
 	{
 		m_AllocatedWorlds.erase(InWorld);
-	}
 
-	void WorldManager::RemoveAndInvalidateWorld( World*& InWorld )
-	{
-		RemoveWorld(InWorld);
-		delete InWorld;
+		InWorld->Release();
 		InWorld = nullptr;
 	}
 

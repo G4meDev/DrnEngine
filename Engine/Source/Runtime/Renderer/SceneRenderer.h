@@ -27,6 +27,8 @@ namespace Drn
 
 	protected:
 
+		inline void Release() { delete this; }
+
 		Scene* m_Scene;
 
 		dx12lib::Device* m_Device;
@@ -42,6 +44,7 @@ namespace Drn
 
 		bool m_RenderingEnabled;
 
+		friend class Scene;
 		friend class Renderer;
 
 	private:

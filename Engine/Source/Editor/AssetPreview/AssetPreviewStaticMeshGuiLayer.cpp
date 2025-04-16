@@ -30,23 +30,16 @@ namespace Drn
 		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
 		PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
 
-		m_Scene = Renderer::Get()->AllocateScene(PreviewWorld);
-
-		m_ViewportPanel = std::make_unique<ViewportPanel>(m_Scene);
+		m_ViewportPanel = std::make_unique<ViewportPanel>(PreviewWorld->GetScene());
 	}
 
 	AssetPreviewStaticMeshGuiLayer::~AssetPreviewStaticMeshGuiLayer()
 	{
 		LOG(LogStaticMeshPreview, Info, "closing %s", m_OwningAsset->m_Path.c_str());
 
-		if (m_Scene)
-		{
-			Renderer::Get()->RemoveAndInvalidateScene(m_Scene);
-		}
-
 		if (PreviewWorld)
 		{
-			WorldManager::Get()->RemoveAndInvalidateWorld(PreviewWorld);
+			WorldManager::Get()->ReleaseWorld(PreviewWorld);
 		}
 
 		m_OwningAsset->GuiLayer = nullptr;

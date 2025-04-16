@@ -32,7 +32,6 @@ namespace Drn
 		void OnSelectedSourceFile( std::string FilePath );
 
 		World* PreviewWorld;
-		Scene* m_Scene;
 		StaticMeshActor* PreviewMesh;
 
 		AssetHandle<StaticMesh> m_OwningAsset;

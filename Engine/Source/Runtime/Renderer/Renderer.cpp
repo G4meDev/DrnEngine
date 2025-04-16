@@ -48,17 +48,17 @@ namespace Drn
 		m_SwapChain = m_Device->CreateSwapChain( m_MainWindow->GetWindowHandle(), DXGI_FORMAT_R8G8B8A8_UNORM );
 		m_SwapChain->SetVSync( false );
 
-#if WITH_EDITOR
-		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
-#else
-		CameraActor* Cam = WorldManager::Get()->GetMainWorld()->SpawnActor<CameraActor>();
-		Cam->SetActorLocation(XMVectorSet(0, 0, -10, 0));
-
-		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
-
-		m_MainSceneRenderer = m_MainScene->AllocateSceneRenderer();
-		m_MainSceneRenderer->m_CameraActor = Cam;
-#endif
+//#if WITH_EDITOR
+//		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
+//#else
+//		CameraActor* Cam = WorldManager::Get()->GetMainWorld()->SpawnActor<CameraActor>();
+//		Cam->SetActorLocation(XMVectorSet(0, 0, -10, 0));
+//
+//		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
+//
+//		m_MainSceneRenderer = m_MainScene->AllocateSceneRenderer();
+//		m_MainSceneRenderer->m_CameraActor = Cam;
+//#endif
 
 		commandQueue.Flush();
 
@@ -159,33 +159,11 @@ namespace Drn
 		return NewScene;
 	}
 
-	void Renderer::RemoveScene( Scene* InScene )
+	void Renderer::ReleaseScene( Scene*& InScene )
 	{
 		m_AllocatedScenes.erase(InScene);
-	}
 
-	void Renderer::RemoveAndInvalidateScene( Scene*& InScene )
-	{
-		RemoveScene(InScene);
-		delete InScene;
+		InScene->Release();
 		InScene = nullptr;
 	}
-
-	void Renderer::RemoveWorldScenes( World* InWorld )
-	{
-		for (auto it = m_AllocatedScenes.begin(); it != m_AllocatedScenes.end();)
-		{
-			if ((*it)->GetWorld() == InWorld)
-			{
-				Scene* ToRemoveScene = *it;
-				it = m_AllocatedScenes.erase(it);
-				delete ToRemoveScene;
-			}
-			else
-			{
-				it++;
-			}
-		}
-	}
-
 }

@@ -10,13 +10,14 @@ namespace Drn
 		Scene(World* InWorld);
 		~Scene();
 
+		inline void Release() { delete this; }
+
 		inline World* GetWorld() { return m_World; }
 
 		void Render(dx12lib::CommandList* CommandList);
 
 		SceneRenderer* AllocateSceneRenderer();
-		void RemoveSceneRenderer(SceneRenderer* InSceneRenderer);
-		void RemoveAndInvalidateSceneRenderer(SceneRenderer*& InSceneRenderer);
+		void ReleaseSceneRenderer(SceneRenderer*& InSceneRenderer);
 
 		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
 		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);

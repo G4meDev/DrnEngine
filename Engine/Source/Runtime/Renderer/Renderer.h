@@ -34,16 +34,12 @@ namespace Drn
 		void Tick(float DeltaTime);
 
 		Scene* AllocateScene(World* InWorld);
-		void RemoveScene(Scene* InScene);
-		void RemoveAndInvalidateScene(Scene*& InScene);
-		void RemoveWorldScenes(World* InWorld);
+		void ReleaseScene(Scene*& InScene);
 
 		float TotalTime = 0;
 
 		std::shared_ptr<dx12lib::CommandList> m_CommandList;
 
-
-		Scene* m_MainScene;
 		SceneRenderer* m_MainSceneRenderer;
 
 

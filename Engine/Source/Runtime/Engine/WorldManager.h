@@ -16,8 +16,7 @@ namespace Drn
 		inline static WorldManager* Get() { return m_SingletonInstance; }
 
 		World* AllocateWorld();
-		void RemoveWorld(World* InWorld);
-		void RemoveAndInvalidateWorld(World*& InWorld);
+		void ReleaseWorld(World*& InWorld);
 
 		void Tick(float DeltaTime);
 

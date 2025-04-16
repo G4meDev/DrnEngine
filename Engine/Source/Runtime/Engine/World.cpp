@@ -13,25 +13,15 @@ namespace Drn
 		, m_Transient(false)
 	{
 		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
+		m_Scene = Renderer::Get()->AllocateScene(this);
 	}
 
 	World::~World()
 	{
+		DestroyWorldActors();
+
 		PhysicManager::Get()->RemoveAndInvalidateScene(m_PhysicScene);
-
-		for (Actor* actor : m_Actors)
-		{
-			//InvokeOnRemoveActor(actor);
-			//actor->UnRegisterComponents();
-
-			delete actor;
-		}
-
-		if (Renderer::Get())
-		{
-			Renderer::Get()->RemoveWorldScenes(this);
-		}
-
+		Renderer::Get()->ReleaseScene(m_Scene);
 	}
 
 	void World::Tick( float DeltaTime )
@@ -158,6 +148,29 @@ namespace Drn
 		}
 
 		return result;
+	}
+
+	void World::DestroyWorldActors()
+	{
+		for (auto it = m_Actors.begin(); it != m_Actors.end(); )
+		{
+			Actor* ToDelActor = *it;
+			InvokeOnRemoveActor(ToDelActor);
+			ToDelActor->UnRegisterComponents();
+			it = m_Actors.erase(it);
+
+			delete ToDelActor;
+		}
+		
+		for (auto it = m_NewActors.begin(); it != m_NewActors.end(); )
+		{
+			Actor* ToDelActor = *it;
+			InvokeOnRemoveActor(ToDelActor);
+			ToDelActor->UnRegisterComponents();
+			it = m_NewActors.erase(it);
+
+			delete ToDelActor;
+		}
 	}
 
 #endif

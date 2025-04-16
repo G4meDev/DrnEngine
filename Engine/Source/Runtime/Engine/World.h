@@ -31,7 +31,6 @@ namespace Drn
 
 		inline const std::set<Actor*>& GetActorList() { return m_Actors; };
 
-
 		void BindOnNewActors(OnNewActors Delegate);
 		void RemoveFromOnNewActors(OnNewActors Delegate);
 		void InvokeOnNewActors(const std::set<Actor*>& NewActors);
@@ -46,7 +45,10 @@ namespace Drn
 
 		inline bool IsTicking() const { return m_ShouldTick; }
 
+
+		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
+
 
 #if WITH_EDITOR
 
@@ -58,6 +60,10 @@ namespace Drn
 #endif
 
 	protected:
+
+		inline void Release() { delete this; }
+
+		void DestroyWorldActors();
 
 		std::set<Actor*> m_Actors;
 
@@ -72,6 +78,7 @@ namespace Drn
 		std::string m_LevelPath;
 		bool m_Transient;
 
+		Scene* m_Scene;
 		PhysicScene* m_PhysicScene;
 
 		friend Scene;

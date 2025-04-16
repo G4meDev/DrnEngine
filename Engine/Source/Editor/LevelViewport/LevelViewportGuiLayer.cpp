@@ -17,7 +17,9 @@ namespace Drn
 		: m_ShowOutliner(true)
 		, m_ShowDetail(true)
 	{
-		m_ViewportPanel = std::make_unique<ViewportPanel>( Renderer::Get()->m_MainScene );
+		//m_ViewportPanel = std::make_unique<ViewportPanel>( Renderer::Get()->m_MainScene );
+		m_ViewportPanel = std::make_unique<ViewportPanel>( WorldManager::Get()->GetMainWorld()->GetScene() );
+		
 		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
 		m_ActorDetailPanel = std::make_unique<ActorDetailPanel>();
 	}

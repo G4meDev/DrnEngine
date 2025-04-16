@@ -47,10 +47,9 @@ namespace Drn
 
 			AssetManager::Get()->Init();
 			PhysicManager::Init();
+			Renderer::Init( inhInstance, m_MainWindow.get() );
 
 			WorldManager::Get()->Init();
-
-			Renderer::Init( inhInstance, m_MainWindow.get() );
 
 #if WITH_EDITOR
 			Editor::Get()->Init();
@@ -65,12 +64,10 @@ namespace Drn
 #if WITH_EDITOR
 			Editor::Get()->Shutdown();
 #endif
-			
-			
-			Renderer::Shutdown();
 
 			WorldManager::Shutdown();
 
+			Renderer::Shutdown();
 			PhysicManager::Shutdown();
 			AssetManager::Shutdown();
 
@@ -106,7 +103,6 @@ namespace Drn
 		}
 
 		PhysicManager::Get()->Tick(e.DeltaTime);
-
 		WorldManager::Get()->Tick(e.DeltaTime);
 
 		Renderer::Get()->Tick(e.DeltaTime);
@@ -118,7 +114,7 @@ namespace Drn
 
 	void Application::OnKeyPressed( KeyEventArgs& e )
 	{
-		LOG( LogApplication, Info, "KeyPressed: %c", e.Char);
+		//LOG( LogApplication, Info, "KeyPressed: %c", e.Char);
 
 		switch ( e.Key )
 		{

@@ -47,15 +47,11 @@ namespace Drn
 		return NewSceneRenderer;
 	}
 
-	void Scene::RemoveSceneRenderer( SceneRenderer* InSceneRenderer )
+	void Scene::ReleaseSceneRenderer( SceneRenderer*& InSceneRenderer )
 	{
 		m_SceneRenderers.erase(InSceneRenderer);
-	}
 
-	void Scene::RemoveAndInvalidateSceneRenderer( SceneRenderer*& InSceneRenderer )
-	{
-		RemoveSceneRenderer(InSceneRenderer);
-		delete InSceneRenderer;
+		InSceneRenderer->Release();
 		InSceneRenderer = nullptr;
 	}
 
