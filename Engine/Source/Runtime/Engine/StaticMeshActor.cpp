@@ -23,10 +23,10 @@ namespace Drn
 	{
 		Actor::Tick(DeltaTime);
 
-		std::cout << "ticking \n";
-
-		XMVECTOR NewLocation = GetActorLocation() + XMVectorSet(0, -9 * DeltaTime, 0, 0);
-		SetActorLocation(NewLocation);
+		//std::cout << "ticking \n";
+		//
+		//XMVECTOR NewLocation = GetActorLocation() + XMVectorSet(0, -9 * DeltaTime, 0, 0);
+		//SetActorLocation(NewLocation);
 	}
 
 	void StaticMeshActor::Serialize( Archive& Ar )

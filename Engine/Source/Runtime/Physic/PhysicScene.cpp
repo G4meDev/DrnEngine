@@ -19,6 +19,8 @@ namespace Drn
 		sceneDesc.cpuDispatcher	= m_Dispatcher;
 		sceneDesc.filterShader	= physx::PxDefaultSimulationFilterShader;
 
+		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+
 		m_PhysxScene = PhysicManager::Get()->GetPhysics()->createScene(sceneDesc);
 
 #if WITH_PVD
@@ -32,7 +34,7 @@ namespace Drn
 		}
 #endif
 
-		AddTestActors();
+		//AddTestActors();
 	}
 
 	PhysicScene::~PhysicScene()
@@ -51,6 +53,7 @@ namespace Drn
 		if (IsSimulating())
 		{
 			StepSimulation(DeltaTime);
+			SyncActors();
 		}
 	}
 
@@ -89,6 +92,26 @@ namespace Drn
 	{
 		m_PhysxScene->simulate(DeltaTime);
 		m_PhysxScene->fetchResults(true);
+	}
+
+	void PhysicScene::SyncActors()
+	{
+		physx::PxU32 ActorCount = 0;
+		physx::PxActor** ActiveActors = m_PhysxScene->getActiveActors(ActorCount);
+
+		for (physx::PxU32 i = 0; i < ActorCount; i++)
+		{
+			physx::PxActor* ActiveActor = ActiveActors[i];
+			physx::PxRigidActor* RigidActor = ActiveActor->is<physx::PxRigidActor>();
+
+			if (BodyInstance* Body = PhysicUserData::Get<BodyInstance>(RigidActor->userData))
+			{
+				physx::PxTransform transform(RigidActor->getGlobalPose());
+
+				DirectX::XMVECTOR NewLocation = DirectX::XMVectorSet( transform.p.x, transform.p.y, transform.p.z, 0);
+				Body->GetOwnerComponent()->GetOwningActor()->SetActorLocation(NewLocation);
+			}
+		}
 	}
 
 	void PhysicScene::AddTestActors()

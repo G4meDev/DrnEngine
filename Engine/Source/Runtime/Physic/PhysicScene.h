@@ -31,6 +31,8 @@ namespace Drn
 
 		void StepSimulation(float DeltaTime);
 
+		void SyncActors();
+
 		void AddTestActors();
 
 		World* m_OwningWorld;

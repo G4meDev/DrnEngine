@@ -15,6 +15,8 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
+		virtual void Tick(float DeltaTime) override;
+
 		inline BodyInstance GetBodyInstance() { return m_BodyInstance; }
 
 		virtual void RegisterComponent(World* InOwningWorld) override;

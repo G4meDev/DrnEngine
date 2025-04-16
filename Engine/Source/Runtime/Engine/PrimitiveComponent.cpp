@@ -20,6 +20,11 @@ namespace Drn
 
 	}
 
+	void PrimitiveComponent::Tick( float DeltaTime )
+	{
+		SceneComponent::Tick(DeltaTime);
+	}
+
 	void PrimitiveComponent::RegisterComponent( World* InOwningWorld )
 	{
 		SceneComponent::RegisterComponent(InOwningWorld);

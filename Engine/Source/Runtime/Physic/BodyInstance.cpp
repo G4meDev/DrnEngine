@@ -29,7 +29,7 @@ namespace Drn
 		m_Material = Physics->createMaterial( 0.5f, 0.5f, 0.6f );
 
 		// TODO: Add body setup
-		float           halfExtent = 0.5f;
+		float halfExtent = 0.5f;
 		physx::PxShape* shape = Physics->createShape( physx::PxBoxGeometry( halfExtent, halfExtent, halfExtent ), *m_Material );
 
 		physx::PxTransform t(physx::PxVec3(0));
@@ -37,6 +37,8 @@ namespace Drn
 		m_RigidActor = Physics->createRigidDynamic(t);
 		m_RigidActor->attachShape( *shape );
 
+		m_PhysicUserData = PhysicUserData(this);
+		m_RigidActor->userData = &m_PhysicUserData;
 		InScene->AddActor(m_RigidActor);
 
 		shape->release();
@@ -47,6 +49,13 @@ namespace Drn
 		LOG(LogBodyInstance, Info, "terminating body for %s", m_OwnerComponent->GetComponentLabel().c_str());
 
 		m_OwnerComponent = nullptr;
+
+		if (m_RigidActor->getScene())
+		{
+			m_RigidActor->getScene()->removeActor(*m_RigidActor);
+		}
+
+		PX_RELEASE(m_RigidActor);
 	}
 
 }
