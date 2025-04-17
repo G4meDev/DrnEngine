@@ -49,27 +49,22 @@ namespace Drn
 		m_Material = Physics->createMaterial( 0.5f, 0.5f, 0.6f );
 
 		// TODO: Add body setup
-		float halfExtent = 0.5f;
-		physx::PxShape* shape = Physics->createShape( physx::PxBoxGeometry( halfExtent, halfExtent, halfExtent ), *m_Material );
-
-		physx::PxTransform t(physx::PxVec3(0));
+		physx::PxShape* shape = Physics->createShape( physx::PxBoxGeometry( Vector2P(m_OwnerComponent->GetWorldScale()) ), *m_Material );
 
 
 		if (m_SimulatePhysic)
 		{
-			m_RigidActor = Physics->createRigidDynamic(t);
+			m_RigidActor = Physics->createRigidDynamic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
 		}
 
 		else
 		{
-			m_RigidActor = Physics->createRigidStatic(t);
+			m_RigidActor = Physics->createRigidStatic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
 		}
 
 		m_RigidActor->attachShape( *shape );
-		m_RigidActor->setGlobalPose( Transform2P(m_OwnerComponent->GetWorldTransform()));
-
+		//m_RigidActor->setGlobalPose( Transform2P(m_OwnerComponent->GetWorldTransform()));
 		//m_RigidActor->is<physx::PxRigidDynamic>()->setMassSpaceInertiaTensor(m_SimulatePhysic ? m_Mass : physx::PxReal(0));
-
 
 		m_PhysicUserData = PhysicUserData(this);
 		m_RigidActor->userData = &m_PhysicUserData;

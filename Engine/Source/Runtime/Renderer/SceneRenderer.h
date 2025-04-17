@@ -53,5 +53,19 @@ namespace Drn
 
 		void BeginRender(dx12lib::CommandList* CommandList);
 		void RenderBasePass(dx12lib::CommandList* CommandList);
+
+#if WITH_EDITOR
+
+		void RenderCollision(dx12lib::CommandList* CommandList);
+
+		std::shared_ptr<dx12lib::PipelineStateObject> m_CollisionPSO = nullptr;
+
+		std::vector<StaticMeshVertexBuffer> CollisionVertexData;
+		std::shared_ptr<dx12lib::VertexBuffer> CollisionVertexBuffer;
+
+		std::vector<uint32> CollisionIndexData;
+		std::shared_ptr<dx12lib::IndexBuffer> CollisionIndexBuffer;
+
+#endif
 	};
 }

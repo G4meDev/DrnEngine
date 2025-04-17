@@ -4,6 +4,8 @@
 
 LOG_DECLARE_CATEGORY( LogPhysicScene )
 
+using namespace physx;
+
 namespace Drn
 {
 	class PhysicScene

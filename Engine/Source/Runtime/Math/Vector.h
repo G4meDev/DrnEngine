@@ -47,6 +47,19 @@ namespace Drn
 			return XMComparisonAllTrue(Result);
 		}
 
+		static Vector FromU32(uint32_t Value)
+		{
+			uint8_t X = 255;
+			uint8_t Y = 255;
+			uint8_t Z = 255;
+
+			X &= Value; 
+			Y &= (Value >> 8); 
+			Z &= (Value >> 16); 
+
+			return Vector( float( X ) / 255.0f, float( Y ) / 255.0f, float( Z ) / 255.0f );
+		}
+
 		static Vector ZeroVector;
 		static Vector OneVector;
 
