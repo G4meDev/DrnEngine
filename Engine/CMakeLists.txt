@@ -30,6 +30,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
 
+	Source/Runtime/Physic/PhysicCore.h
 	Source/Runtime/Physic/PhysicManager.h
 	Source/Runtime/Physic/PhysicScene.h
 	Source/Runtime/Physic/BodyInstance.h
@@ -110,6 +111,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp
 
+	Source/Runtime/Physic/PhysicCore.cpp
 	Source/Runtime/Physic/PhysicManager.cpp
 	Source/Runtime/Physic/PhysicScene.cpp
 	Source/Runtime/Physic/BodyInstance.cpp

@@ -54,8 +54,22 @@ namespace Drn
 
 		physx::PxTransform t(physx::PxVec3(0));
 
-		m_RigidActor = Physics->createRigidDynamic(t);
+
+		if (m_SimulatePhysic)
+		{
+			m_RigidActor = Physics->createRigidDynamic(t);
+		}
+
+		else
+		{
+			m_RigidActor = Physics->createRigidStatic(t);
+		}
+
 		m_RigidActor->attachShape( *shape );
+		m_RigidActor->setGlobalPose( Transform2P(m_OwnerComponent->GetWorldTransform()));
+
+		//m_RigidActor->is<physx::PxRigidDynamic>()->setMassSpaceInertiaTensor(m_SimulatePhysic ? m_Mass : physx::PxReal(0));
+
 
 		m_PhysicUserData = PhysicUserData(this);
 		m_RigidActor->userData = &m_PhysicUserData;

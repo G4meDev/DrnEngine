@@ -111,9 +111,7 @@ namespace Drn
 			if (BodyInstance* Body = PhysicUserData::Get<BodyInstance>(RigidActor->userData))
 			{
 				physx::PxTransform transform(RigidActor->getGlobalPose());
-
-				DirectX::XMVECTOR NewLocation = DirectX::XMVectorSet( transform.p.x, transform.p.y, transform.p.z, 0);
-				Body->GetOwnerComponent()->SetWorldLocation(NewLocation);
+				Body->GetOwnerComponent()->SetWorldTransform(P2Transform(transform));
 			}
 		}
 	}

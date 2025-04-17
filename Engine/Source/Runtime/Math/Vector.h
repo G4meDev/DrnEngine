@@ -47,14 +47,12 @@ namespace Drn
 			return XMComparisonAllTrue(Result);
 		}
 
-		inline static Vector Zero() { return ZeroVector; }
-		inline static Vector One() { return OneVector; }
+		static Vector ZeroVector;
+		static Vector OneVector;
 
 	private:
 		XMFLOAT3 m_Vector;
 
-		static Vector ZeroVector;
-		static Vector OneVector;
 
 		friend class Quat;
 		friend class Transform;

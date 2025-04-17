@@ -14,7 +14,7 @@ namespace Drn
 	{
 	public:
 
-		Transform() : Transform(Vector::Zero(), Quat(), Vector::One()) {};
+		Transform() : Transform(Vector::ZeroVector, Quat(), Vector::OneVector) {};
 		inline Transform(const Vector& InLocation, const Quat& InRotation, const Vector& InScale) : Location(InLocation), Rotation(InRotation), Scale(InScale) {};
 		Transform(const Matrix& InMatrix);
 

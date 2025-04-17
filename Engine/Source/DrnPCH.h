@@ -37,6 +37,7 @@
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/IntPoint.h"
 
+#include "Runtime/Physic/PhysicCore.h"
 #include "Runtime/Physic/PhysicManager.h"
 #include "Runtime/Physic/PhysicScene.h"
 #include "Runtime/Physic/BodyInstance.h"
