@@ -3,6 +3,10 @@
 
 #include "Runtime/Physic/PhysicManager.h"
 
+#if WITH_EDITOR
+#include <imgui.h>
+#endif
+
 LOG_DEFINE_CATEGORY( LogBodyInstance, "BodyInstance" )
 
 namespace Drn
@@ -10,6 +14,8 @@ namespace Drn
 	BodyInstance::BodyInstance()
 		: m_RigidActor(nullptr)
 		, m_OwnerComponent(nullptr)
+		, m_SimulatePhysic(false)
+		, m_Mass(10.0f)
 	{
 		
 	}
@@ -17,6 +23,20 @@ namespace Drn
 	BodyInstance::~BodyInstance()
 	{
 		
+	}
+
+	void BodyInstance::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			Ar >> m_SimulatePhysic;
+			Ar >> m_Mass;
+		}
+		else
+		{
+			Ar << m_SimulatePhysic;
+			Ar << m_Mass;
+		}
 	}
 
 	void BodyInstance::InitBody( BodySetup* Setup, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene )
@@ -57,5 +77,15 @@ namespace Drn
 
 		PX_RELEASE(m_RigidActor);
 	}
+
+#if WITH_EDITOR
+	void BodyInstance::DrawDetailPanel( float DeltaTime )
+	{
+		ImGui::Checkbox( "Simulate Physic", &m_SimulatePhysic );
+		ImGui::InputFloat( "Mass", &m_Mass);
+
+		ImGui::Separator();
+	}
+#endif
 
 }

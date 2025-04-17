@@ -1,6 +1,10 @@
 #include "DrnPCH.h"
 #include "PrimitiveComponent.h"
 
+#if WITH_EDITOR
+#include "imgui.h"
+#endif
+
 namespace Drn
 {
 	PrimitiveComponent::PrimitiveComponent()
@@ -18,6 +22,17 @@ namespace Drn
 	{
 		SceneComponent::Serialize(Ar);
 
+		if (Ar.IsLoading())
+		{
+			m_BodyInstance.Serialize(Ar);
+
+		}
+
+		else
+		{
+			m_BodyInstance.Serialize(Ar);
+
+		}
 	}
 
 	void PrimitiveComponent::Tick( float DeltaTime )
@@ -38,5 +53,15 @@ namespace Drn
 
 		m_BodyInstance.TermBody();
 	}
+
+
+#if WITH_EDITOR
+	void PrimitiveComponent::DrawDetailPanel( float DeltaTime )
+	{
+		SceneComponent::DrawDetailPanel(DeltaTime);
+
+		m_BodyInstance.DrawDetailPanel(DeltaTime);
+	}
+#endif
 
 }

@@ -28,6 +28,12 @@ namespace Drn
 				XMLoadFloat3(&m_Vector), XMLoadFloat3(&other.m_Vector)) );
 		}
 
+		inline Vector operator+( const Vector& other ) const
+		{
+			return Vector( XMVectorAdd(
+				XMLoadFloat3(&m_Vector), XMLoadFloat3(&other.m_Vector)) );
+		}
+
 		inline Vector operator*( const Vector& other )
 		{
 			return Vector( XMVectorMultiply(

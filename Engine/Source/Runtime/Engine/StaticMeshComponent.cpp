@@ -57,7 +57,7 @@ namespace Drn
 
 	void StaticMeshComponent::DrawDetailPanel( float DeltaTime )
 	{
-		SceneComponent::DrawDetailPanel(DeltaTime);
+		PrimitiveComponent::DrawDetailPanel(DeltaTime);
 
 		if ( ImGui::Button( "Clear" ) )
 		{

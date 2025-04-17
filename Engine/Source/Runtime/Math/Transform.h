@@ -18,10 +18,9 @@ namespace Drn
 		inline Transform(const Vector& InLocation, const Quat& InRotation, const Vector& InScale) : Location(InLocation), Rotation(InRotation), Scale(InScale) {};
 		Transform(const Matrix& InMatrix);
 
-		Transform transform(const Transform& InTransform) const;
-		Transform Invtransform(const Transform& InTransform);
+		Transform operator*(const Transform& Other) const;
 
-		Transform GetRelativeTransform(const Transform& Other) const;
+		Transform GetRelativeTransform(const Transform& RelativeTo) const;
 
 		inline Vector GetLocation() const { return Location; }
 		inline Quat GetRotation() const { return Rotation; }

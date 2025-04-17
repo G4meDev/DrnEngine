@@ -48,7 +48,9 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			Ar >> RelativeTransform;
+			Transform T;
+			Ar >> T;
+			SetRelativeTransform(T);
 		}
 
 		else
@@ -198,7 +200,7 @@ namespace Drn
 	{
 		if (Parent)
 		{
-			return Parent->GetWorldTransform().transform(InRelativeTransform);
+			return InRelativeTransform * Parent->GetWorldTransform();
 		}
 
 		return InRelativeTransform;

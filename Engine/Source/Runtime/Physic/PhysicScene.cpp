@@ -113,7 +113,7 @@ namespace Drn
 				physx::PxTransform transform(RigidActor->getGlobalPose());
 
 				DirectX::XMVECTOR NewLocation = DirectX::XMVectorSet( transform.p.x, transform.p.y, transform.p.z, 0);
-				Body->GetOwnerComponent()->GetOwningActor()->SetActorLocation(NewLocation);
+				Body->GetOwnerComponent()->SetWorldLocation(NewLocation);
 			}
 		}
 	}

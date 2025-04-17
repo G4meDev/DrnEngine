@@ -24,6 +24,7 @@ namespace Drn
 		inline bool IsLoading() { return m_IsLoading; };
 		inline std::string GetFilePath() { return m_FilePath; };
 
+		Archive& operator<<(bool Value);
 		Archive& operator<<(uint8 Value);
 		Archive& operator<<(uint16 Value);
 		Archive& operator<<(uint32 Value);
@@ -36,6 +37,7 @@ namespace Drn
 		Archive& operator<<(const std::vector<char>& Value);
 
 
+		Archive& operator>>(bool& Value);
 		Archive& operator>>(uint8& Value);
 		Archive& operator>>(uint16& Value);
 		Archive& operator>>(uint32& Value);

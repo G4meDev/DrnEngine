@@ -22,6 +22,10 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+#if WITH_EDITOR
+		virtual void DrawDetailPanel(float DeltaTime) override;
+#endif
+
 	protected:
 
 		BodyInstance m_BodyInstance;

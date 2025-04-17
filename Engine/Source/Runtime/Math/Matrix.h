@@ -16,9 +16,7 @@ namespace Drn
 
 		inline XMMATRIX Get() { return m_Matrix; }
 
-		inline Matrix operator*( const Matrix& InMatrix ) { return InMatrix.m_Matrix * m_Matrix; }
-
-
+		inline Matrix operator*( const Matrix& InMatrix ) { return XMMatrixMultiply(m_Matrix, InMatrix.m_Matrix); }
 
 	private:
 

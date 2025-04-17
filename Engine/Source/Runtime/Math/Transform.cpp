@@ -16,17 +16,29 @@ namespace Drn
 		Scale = Vector(DecompScale);
 	}
 
-	Transform Transform::transform( const Transform& InTransform ) const
+	Transform Transform::operator*( const Transform& Other ) const
 	{
-		Matrix Mat1(*this);
-		Matrix Mat2(InTransform);
+		//Matrix Mat1(*this);
+		//Matrix Mat2(InTransform);
+		//
+		//return Transform(Mat1 * Mat2);
 
-		return Transform(Mat1 * Mat2);
-	}
-
-	Transform Transform::Invtransform( const Transform& InTransform )
-	{
 		Transform Result;
+
+		Quat Q1 = this->Rotation;
+		Quat Q2 = Other.Rotation;
+		Vector T1 = this->Location;
+		Vector T2 = Other.Location;
+		Vector S1 = this->Scale;
+		Vector S2 = Other.Scale;
+
+		Result.Rotation = Quat::Multiply(Q2, Q1);
+
+		Vector ScaledTransA = T1 * S2;
+		Vector RotatedTranslate = Q2.RotateVector(ScaledTransA);
+		Result.Location = RotatedTranslate + T2;
+
+		Result.Scale = S1 * S2;
 
 		return Result;
 	}
