@@ -1,6 +1,8 @@
 #pragma once
 
 #include <DirectXMath.h>
+#include <string>
+#include <sstream>
 
 using namespace DirectX;
 
@@ -58,6 +60,15 @@ namespace Drn
 			Z &= (Value >> 16); 
 
 			return Vector( float( X ) / 255.0f, float( Y ) / 255.0f, float( Z ) / 255.0f );
+		}
+
+		inline std::string ToString()
+		{
+			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
+			std::stringstream ss;
+			ss << "(X: " << XMVectorGetX(Vec) << ", Y: " << XMVectorGetY(Vec) << ", Z: " << XMVectorGetZ(Vec) << ")";
+
+			return ss.str();
 		}
 
 		static Vector ZeroVector;

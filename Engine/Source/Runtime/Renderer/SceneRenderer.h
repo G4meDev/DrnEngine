@@ -1,11 +1,17 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "DebugViewPhysics.h"
 
 LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
 namespace Drn
 {
+	enum class EDebugViewFlags : uint32
+	{
+		EShowCollision = 1
+	};
+
 	class SceneRenderer
 	{
 	public:
@@ -46,6 +52,7 @@ namespace Drn
 
 		friend class Scene;
 		friend class Renderer;
+		friend class DebugViewPhysics;
 
 	private:
 
@@ -55,17 +62,7 @@ namespace Drn
 		void RenderBasePass(dx12lib::CommandList* CommandList);
 
 #if WITH_EDITOR
-
-		void RenderCollision(dx12lib::CommandList* CommandList);
-
-		std::shared_ptr<dx12lib::PipelineStateObject> m_CollisionPSO = nullptr;
-
-		std::vector<StaticMeshVertexBuffer> CollisionVertexData;
-		std::shared_ptr<dx12lib::VertexBuffer> CollisionVertexBuffer;
-
-		std::vector<uint32> CollisionIndexData;
-		std::shared_ptr<dx12lib::IndexBuffer> CollisionIndexBuffer;
-
+		DebugViewPhysics m_DebugViewPhysic;
 #endif
 	};
 }

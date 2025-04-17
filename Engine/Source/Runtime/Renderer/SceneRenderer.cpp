@@ -17,6 +17,10 @@ namespace Drn
 
 	SceneRenderer::~SceneRenderer()
 	{
+#if WITH_EDITOR
+		m_DebugViewPhysic.Shutdown();
+#endif
+
 		m_PipelineStateObject.reset();
 		m_RootSignature.reset();
 		m_DepthTexture.reset();
@@ -91,10 +95,6 @@ namespace Drn
 
 		m_PipelineStateObject = m_Device->CreatePipelineStateObject( pipelineStateStream );
 
-		PipelineStateStream Stream = pipelineStateStream;
-		Stream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-		m_CollisionPSO = m_Device->CreatePipelineStateObject(Stream);
-
 		auto colorDesc =
 			CD3DX12_RESOURCE_DESC::Tex2D( backBufferFormat, 1920, 1080, 1, 1, sampleDesc.Count,
 											sampleDesc.Quality, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET );
@@ -121,6 +121,8 @@ namespace Drn
 
 		m_RenderTarget.AttachTexture( dx12lib::AttachmentPoint::Color0, colorTexture );
 		m_RenderTarget.AttachTexture( dx12lib::AttachmentPoint::DepthStencil, depthTexture );
+
+		m_DebugViewPhysic.Init(this, CommandList);
 
 		//commandQueue.Flush();
 	}
@@ -207,86 +209,6 @@ namespace Drn
 		}
 	}
 
-	void SceneRenderer::RenderCollision(dx12lib::CommandList* CommandList)
-	{
-		CommandList->SetPipelineState(m_CollisionPSO);
-		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
-
-		PhysicScene* PScene = m_Scene->GetWorld()->GetPhysicScene();
-
-		if (PScene)
-		{
-			const PxRenderBuffer& Rb = PScene->GetPhysxScene()->getRenderBuffer();
-			uint32 NumLines = Rb.getNbLines();
-
-			CollisionVertexData.clear();
-			CollisionVertexData.reserve(NumLines);
-
-			CollisionIndexData.clear();
-			CollisionIndexData.reserve(NumLines);
-
-			StaticMeshVertexBuffer VertexElement;
-			Vector Color;
-
-			for ( PxU32 i = 0; i < NumLines; i++ )
-			{
-				const PxDebugLine& line = Rb.getLines()[i];
-				
-				VertexElement.Pos_X = line.pos0.x;
-				VertexElement.Pos_Y = line.pos0.y;
-				VertexElement.Pos_Z = line.pos0.z;
-
-				Color = Vector::FromU32(line.color0);
-
-				VertexElement.Color_R = Color.GetX();
-				VertexElement.Color_G = Color.GetY();
-				VertexElement.Color_B = Color.GetZ();
-
-				CollisionVertexData.push_back(VertexElement);
-
-				VertexElement.Pos_X = line.pos1.x;
-				VertexElement.Pos_Y = line.pos1.y;
-				VertexElement.Pos_Z = line.pos1.z;
-
-				VertexElement.Color_R = Color.GetX();
-				VertexElement.Color_G = Color.GetY();
-				VertexElement.Color_B = Color.GetZ();
-
-				CollisionVertexData.push_back(VertexElement);
-
-				CollisionIndexData.push_back( i * 2 );
-				CollisionIndexData.push_back( i * 2 + 1 );
-			}
-
-			if (CollisionVertexData.empty())
-			{
-				return;
-			}
-
-			CollisionVertexBuffer = CommandList->CopyVertexBuffer( CollisionVertexData.size(), sizeof(StaticMeshVertexBuffer), CollisionVertexData.data());
-			CollisionIndexBuffer = CommandList->CopyIndexBuffer( CollisionIndexData.size(), DXGI_FORMAT_R32_UINT, CollisionIndexData.data());
-			
-			XMMATRIX modelMatrix = Matrix().Get();
-
-			auto viewport = m_RenderTarget.GetViewport();
-			float    aspectRatio = viewport.Width / viewport.Height;
-		
-			XMMATRIX viewMatrix;
-			XMMATRIX projectionMatrix;
-		
-			m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-		
-			XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
-			mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
-
-			CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
-
-			CommandList->SetVertexBuffer( 0, CollisionVertexBuffer );
-			CommandList->SetIndexBuffer( CollisionIndexBuffer );
-			CommandList->DrawIndexed( NumLines );
-		}
-	}
-
 	void SceneRenderer::Render( dx12lib::CommandList* CommandList )
 	{
 		if (!m_RenderingEnabled)
@@ -298,7 +220,8 @@ namespace Drn
 		RenderBasePass(CommandList);
 
 #if WITH_EDITOR
-		RenderCollision(CommandList);
+		m_DebugViewPhysic.RenderCollisions(CommandList);
+		m_DebugViewPhysic.RenderPhysxDebug(CommandList);
 #endif
 	}
 

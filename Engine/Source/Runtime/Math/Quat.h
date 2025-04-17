@@ -1,6 +1,8 @@
 #pragma once
 
 #include <DirectXMath.h>
+#include <string>
+#include <sstream>
 
 #include "Vector.h"
 
@@ -36,6 +38,14 @@ namespace Drn
 			uint32_t Result;
 			XMVectorEqualR(&Result, m_Vector, Other.m_Vector);
 			return XMComparisonAllTrue(Result);
+		}
+
+		inline std::string ToString()
+		{
+			std::stringstream ss;
+			ss << "(X: " << XMVectorGetX(m_Vector) << ", Y: " << XMVectorGetY(m_Vector) << ", Z: " << XMVectorGetZ(m_Vector) << ", W: " << XMVectorGetW(m_Vector) << ")";
+
+			return ss.str();
 		}
 
 	private:

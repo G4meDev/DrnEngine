@@ -1,6 +1,8 @@
 #pragma once
 
 #include <DirectXMath.h>
+#include <string>
+#include <sstream>
 
 #include "Vector.h"
 #include "Quat.h"
@@ -33,6 +35,14 @@ namespace Drn
 		inline static Vector SubtractTranslations(const Transform& A, const Transform& B) { return A.GetLocation() - B.GetLocation(); }
 
 		inline bool Equals( const Transform& Other ) { return Location.Equals(Other.Location) && Rotation.Equals(Other.Rotation) && Scale.Equals(Other.Scale); }
+
+		inline std::string ToString()
+		{
+			std::stringstream ss;
+			ss << "(T: " << Location.ToString() << ", Q: " << Rotation.ToString() << ", S: " << Scale.ToString() << ")";
+
+			return ss.str();
+		}
 
 	private:
 		Vector Location;

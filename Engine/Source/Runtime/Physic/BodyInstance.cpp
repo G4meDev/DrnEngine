@@ -51,7 +51,6 @@ namespace Drn
 		// TODO: Add body setup
 		physx::PxShape* shape = Physics->createShape( physx::PxBoxGeometry( Vector2P(m_OwnerComponent->GetWorldScale()) ), *m_Material );
 
-
 		if (m_SimulatePhysic)
 		{
 			m_RigidActor = Physics->createRigidDynamic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
