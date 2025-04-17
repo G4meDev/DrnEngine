@@ -9,6 +9,11 @@
 #include <DirectXMath.h>
 
 #include "Runtime/Math/IntPoint.h"
+#include "Runtime/Math/Vector.h"
+#include "Runtime/Math/Quat.h"
+#include "Runtime/Math/Rotator.h"
+#include "Runtime/Math/Transform.h"
+#include "Runtime/Math/Matrix.h"
 
 class UpdateEventArgs;
 class KeyEventArgs;

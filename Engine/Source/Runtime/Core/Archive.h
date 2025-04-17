@@ -3,6 +3,13 @@
 #include "ForwardTypes.h"
 #include <fstream>
 
+#include "Runtime/Math/Vector.h"
+#include "Runtime/Math/Rotator.h"
+#include "Runtime/Math/Matrix.h"
+#include "Runtime/Math/Transform.h"
+
+
+
 LOG_DECLARE_CATEGORY( LogArchive );
 
 namespace Drn
@@ -22,14 +29,21 @@ namespace Drn
 		Archive& operator<<(uint32 Value);
 		Archive& operator<<(uint64 Value);
 		Archive& operator<<(float Value);
+		Archive& operator<<(const Vector& Value);
+		Archive& operator<<(const Quat& Value);
+		Archive& operator<<(const Transform& Value);
 		Archive& operator<<(const std::string& Value);
 		Archive& operator<<(const std::vector<char>& Value);
+
 
 		Archive& operator>>(uint8& Value);
 		Archive& operator>>(uint16& Value);
 		Archive& operator>>(uint32& Value);
 		Archive& operator>>(uint64& Value);
 		Archive& operator>>(float& Value);
+		Archive& operator>>(Vector& Value);
+		Archive& operator>>(Quat& Value);
+		Archive& operator>>(Transform& Value);
 		Archive& operator>>(std::string& Value);
 		Archive& operator>>(std::vector<char>& Value);
 

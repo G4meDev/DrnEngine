@@ -33,38 +33,35 @@ namespace Drn
 		}
 	}
 
-	DirectX::XMVECTOR Actor::GetActorLocation()
+	Vector Actor::GetActorLocation()
 	{
 		return Root->GetWorldLocation();
 	}
 
-	void Actor::SetActorLocation( const DirectX::XMVECTOR& InLocation )
+	void Actor::SetActorLocation( const Vector& InLocation )
 	{
 		Root->SetWorldLocation(InLocation);
-		//Root->MarkDirtyLocationRecursive();
 	}
 
 
-	DirectX::XMVECTOR Actor::GetActorRotation()
+	Quat Actor::GetActorRotation()
 	{
 		return Root->GetWorldRotation();
 	}
 
-	void Actor::SetActorRotation( const DirectX::XMVECTOR& InRotator )
+	void Actor::SetActorRotation( const Quat& InRotator )
 	{
 		Root->SetWorldRotation(InRotator);
-		//Root->MarkDirtyRotationRecursive();
 	}
 
-	DirectX::XMVECTOR Actor::GetActorScale()
+	Vector Actor::GetActorScale()
 	{
 		return Root->GetWorldScale();
 	}
 
-	void Actor::SetActorScale( const DirectX::XMVECTOR& InScale )
+	void Actor::SetActorScale( const Vector& InScale )
 	{
 		Root->SetWorldScale(InScale);
-		//Root->MarkDirtyScaleRecursive();
 	}
 
 	void Actor::AttachSceneComponent(SceneComponent* InSceneComponent, SceneComponent* Target)

@@ -90,8 +90,12 @@ namespace Drn
 
 	void PhysicScene::StepSimulation( float DeltaTime )
 	{
+		m_PhysxScene->lockWrite();
+
 		m_PhysxScene->simulate(DeltaTime);
 		m_PhysxScene->fetchResults(true);
+
+		m_PhysxScene->unlockWrite();
 	}
 
 	void PhysicScene::SyncActors()

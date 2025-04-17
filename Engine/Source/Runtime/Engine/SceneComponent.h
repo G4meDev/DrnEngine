@@ -5,6 +5,13 @@
 
 namespace Drn
 {
+	enum class EUpdateTransformFlags : uint8
+	{
+		None,
+		SkipPhysicUpdate,
+		PropagateFromParent
+	};
+
 	class SceneComponent : public Component
 	{
 	public:
@@ -48,75 +55,43 @@ namespace Drn
 		virtual void DrawDetailPanel(float DeltaTime) override;
 #endif
 
-		// ------------------ location -----------------
+		Transform GetRelativeTransform();
+		Transform GetWorldTransform();
 
-		DirectX::XMVECTOR GetRelativeLocation() const;
-		DirectX::XMVECTOR GetLocalLocation() const;
-		DirectX::XMVECTOR GetWorldLocation() const;
+		void SetRelativeTransform(const Transform& InTransform);
+		void SetWorldTransform(const Transform& InTransform);
 
-		void SetRelativeLocation(const DirectX::XMVECTOR& Inlocation, bool bMarkDirty = true);
-		void SetLocalLocation(const DirectX::XMVECTOR& Inlocation, bool bMarkDirty = true);
-		void SetWorldLocation(const DirectX::XMVECTOR& Inlocation, bool bMarkDirty = true);
-
-		void UpdateLocation();
-
-		bool IsDirtyLocation() const;
-		void MarkDirtyLocation();
-		void MarkDirtyLocationRecursive();
-
-		// ------------------ rotation --------------------
-
-		DirectX::XMVECTOR GetRelativeRotation() const;
-		DirectX::XMVECTOR GetLocalRotation() const;
-		DirectX::XMVECTOR GetWorldRotation() const;
-
-		void SetRelativeRotation(const DirectX::XMVECTOR& InRotator, bool bMarkDirty = true);
-		void SetLocalRotation(const DirectX::XMVECTOR& InRotator, bool bMarkDirty = true);
-		void SetWorldRotation(const DirectX::XMVECTOR& InRotator, bool bMarkDirty = true);
-
-		void UpdateRotation();
-
-		bool IsDirtyRotation() const;
-		void MarkDirtyRotation();
-		void MarkDirtyRotationRecursive();
-
-		// ------------------ scale ------------------------
-
-		DirectX::XMVECTOR GetRelativeScale() const;
-		DirectX::XMVECTOR GetLocalScale() const;
-		DirectX::XMVECTOR GetWorldScale() const;
-
-		void SetRelativeScale(const DirectX::XMVECTOR& InScale, bool bMarkDirty = true);
-		void SetLocalScale(const DirectX::XMVECTOR& InScale, bool bMarkDirty = true);
-		void SetWorldScale(const DirectX::XMVECTOR& InScale, bool bMarkDirty = true);
-
-		void UpdateScale();
-
-		bool IsDirtyScale() const;
-		void MarkDirtyScale();
-		void MarkDirtyScaleRecursive();
+		Vector GetRelativeLocation() const;
+		Vector GetWorldLocation() const;
+		
+		void SetRelativeLocation(const Vector& Inlocation);
+		void SetWorldLocation(const Vector& Inlocation);
+		
+		Quat GetRelativeRotation() const;
+		Quat GetWorldRotation() const;
+		
+		void SetRelativeRotation(const Quat& InRotator);
+		void SetWorldRotation(const Quat& InRotator);
+		
+		Vector GetRelativeScale() const;
+		Vector GetWorldScale() const;
+		
+		void SetRelativeScale(const Vector& InScale);
+		void SetWorldScale(const Vector& InScale);
 
 	private:
-		
+
+		Transform RelativeTransform;
+		Transform CachedWorldTransform;
+
+		void UpdateCachedTransform();
+		Transform CalcNewWorldTransform(const Transform& InRelativeTransform) const;
+
+		void PropagateTransformUpdate();
+		void UpdateChildTransforms();
+
+
 		SceneComponent* Parent = nullptr;
 		std::vector<std::shared_ptr<SceneComponent>> Childs;
-
-		DirectX::XMVECTOR WorldLocation;
-		DirectX::XMVECTOR RelativeLocation;
-		DirectX::XMVECTOR LocalLocation;
-
-		DirectX::XMVECTOR WorldRotation;
-		DirectX::XMVECTOR RelativeRotation;
-		DirectX::XMVECTOR LocalRotation;
-
-
-		DirectX::XMVECTOR WorldScale;
-		DirectX::XMVECTOR RelativeScale;
-		DirectX::XMVECTOR LocalScale;
-
-		bool bDirtyLocation = true;
-		bool bDirtyRotation = true;
-		bool bDirtyScale	= true;
-
 	};
 }

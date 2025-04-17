@@ -20,14 +20,14 @@ namespace Drn
 
 		virtual void Tick(float DeltaTime);
 
-		DirectX::XMVECTOR GetActorLocation();
-		void SetActorLocation(const DirectX::XMVECTOR& InLocation);
+		Vector GetActorLocation();
+		void SetActorLocation(const Vector& InLocation);
 
-		DirectX::XMVECTOR GetActorRotation();
-		void SetActorRotation(const DirectX::XMVECTOR& InRotator);
+		Quat GetActorRotation();
+		void SetActorRotation(const Quat& InRotator);
 
-		DirectX::XMVECTOR GetActorScale();
-		void SetActorScale(const DirectX::XMVECTOR& InScale);
+		Vector GetActorScale();
+		void SetActorScale(const Vector& InScale);
 
 		
 		void AttachSceneComponent(SceneComponent* InSceneComponent, SceneComponent* Target = nullptr);

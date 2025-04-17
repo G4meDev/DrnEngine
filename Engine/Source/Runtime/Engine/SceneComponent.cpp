@@ -12,11 +12,8 @@ namespace Drn
 	SceneComponent::SceneComponent() 
 		: Component() 
 	{
-		WorldLocation = XMVectorSet(0, 0, 0, 0);
-		WorldRotation = XMQuaternionIdentity();
-		WorldScale = XMVectorSet(1, 1, 1, 0);
+		
 	}
-
 
 	SceneComponent::~SceneComponent()
 	{
@@ -26,10 +23,6 @@ namespace Drn
 	void SceneComponent::Tick( float DeltaTime )
 	{
 		Component::Tick(DeltaTime);
-
-		//UpdateLocation();
-		//UpdateRotation();
-		//UpdateScale();
 
 		for (auto SceneComp : Childs)
 		{
@@ -55,39 +48,12 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			float X, Y, Z, W;
-
-			Ar >> X;
-			Ar >> Y;
-			Ar >> Z;
-			WorldLocation = XMVectorSet(X, Y, Z, 0);
-
-			Ar >> X;
-			Ar >> Y;
-			Ar >> Z;
-			Ar >> W;
-			WorldRotation = XMVectorSet(X, Y, Z, W);
-
-			Ar >> X;
-			Ar >> Y;
-			Ar >> Z;
-			WorldScale = XMVectorSet(X, Y, Z, 0);
+			Ar >> RelativeTransform;
 		}
 
 		else
 		{
-			Ar << XMVectorGetX(WorldLocation);
-			Ar << XMVectorGetY(WorldLocation);
-			Ar << XMVectorGetZ(WorldLocation);
-
-			Ar << XMVectorGetX(WorldRotation);
-			Ar << XMVectorGetY(WorldRotation);
-			Ar << XMVectorGetZ(WorldRotation);
-			Ar << XMVectorGetW(WorldRotation);
-
-			Ar << XMVectorGetX(WorldScale);
-			Ar << XMVectorGetY(WorldScale);
-			Ar << XMVectorGetZ(WorldScale);
+			Ar << RelativeTransform;
 		}
 	}
 
@@ -105,237 +71,152 @@ namespace Drn
 
 	}
 
-DirectX::XMVECTOR SceneComponent::GetRelativeLocation() const
+	Transform SceneComponent::GetRelativeTransform()
 	{
-		return RelativeLocation;
+		return RelativeTransform;
 	}
 
-	DirectX::XMVECTOR SceneComponent::GetLocalLocation() const
+	Transform SceneComponent::GetWorldTransform()
 	{
-		return LocalLocation;
+		return CachedWorldTransform;
 	}
 
-	DirectX::XMVECTOR SceneComponent::GetWorldLocation()const
+	void SceneComponent::SetRelativeTransform( const Transform& InTransform )
 	{
-		if (Parent == nullptr)
+		RelativeTransform = InTransform;
+		UpdateCachedTransform();
+	}
+
+	void SceneComponent::SetWorldTransform( const Transform& InTransform )
+	{
+		Transform NewRelativeTransform;
+
+		if (Parent)
 		{
-			return WorldLocation;
+			NewRelativeTransform = InTransform.GetRelativeTransform(Parent->GetWorldTransform());
 		}
 
-		return GetOwningActor()->GetActorLocation();
+		else
+		{
+			NewRelativeTransform = InTransform;
+		}
+
+		SetRelativeTransform(NewRelativeTransform);
 	}
 
-	void SceneComponent::SetRelativeLocation( const DirectX::XMVECTOR& Inlocation, bool bMarkDirty )
+	Vector SceneComponent::GetRelativeLocation() const 
 	{
-		RelativeLocation = Inlocation;
-		if (bMarkDirty)
+		return RelativeTransform.GetLocation();
+	}
+
+	Vector SceneComponent::GetWorldLocation() const 
+	{
+		return CachedWorldTransform.GetLocation();
+	}
+
+	void SceneComponent::SetRelativeLocation( const Vector& Inlocation )
+	{
+		Transform NewTransform = RelativeTransform;
+		NewTransform.SetLocation(Inlocation);
+
+		SetRelativeTransform(NewTransform);
+	}
+
+	void SceneComponent::SetWorldLocation( const Vector& Inlocation )
+	{
+		Transform NewTransform = CachedWorldTransform;
+		NewTransform.SetLocation(Inlocation);
+
+		SetWorldTransform(NewTransform);
+	}
+
+	Quat SceneComponent::GetRelativeRotation() const
+	{
+		return RelativeTransform.GetRotation();
+	}
+
+	Quat SceneComponent::GetWorldRotation() const
+	{
+		return CachedWorldTransform.GetRotation();
+	}
+
+	void SceneComponent::SetRelativeRotation( const Quat& InRotator )
+	{
+		Transform NewTransform = RelativeTransform;
+		NewTransform.SetRotation(InRotator);
+
+		SetRelativeTransform(NewTransform);
+	}
+
+	void SceneComponent::SetWorldRotation( const Quat& InRotator )
+	{
+		Transform NewTransform = CachedWorldTransform;
+		NewTransform.SetRotation(InRotator);
+
+		SetWorldTransform(NewTransform);	
+	}
+
+	Vector SceneComponent::GetRelativeScale() const
+	{
+		return RelativeTransform.GetScale();
+	}
+
+	Vector SceneComponent::GetWorldScale() const
+	{
+		return CachedWorldTransform.GetScale();
+	}
+
+	void SceneComponent::SetRelativeScale( const Vector& InScale )
+	{
+		Transform NewTransform = RelativeTransform;
+		NewTransform.SetScale(InScale);
+
+		SetRelativeTransform(NewTransform);
+	}
+
+	void SceneComponent::SetWorldScale( const Vector& InScale )
+	{
+		Transform NewTransform = CachedWorldTransform;
+		NewTransform.SetScale(InScale);
+
+		SetWorldTransform(NewTransform);
+	}
+
+	void SceneComponent::UpdateCachedTransform()
+	{
+		Transform NewTransform = CalcNewWorldTransform(RelativeTransform);
+		bool HasChanged = !CachedWorldTransform.Equals(NewTransform);
+
+		if (HasChanged)
 		{
-			MarkDirtyLocationRecursive();
+			CachedWorldTransform = NewTransform;
+			PropagateTransformUpdate();
 		}
 	}
 
-	void SceneComponent::SetLocalLocation( const DirectX::XMVECTOR& Inlocation, bool bMarkDirty)
+	Transform SceneComponent::CalcNewWorldTransform( const Transform& InRelativeTransform ) const
 	{
-
-	}
-
-	void SceneComponent::SetWorldLocation( const DirectX::XMVECTOR& Inlocation, bool bMarkDirty )
-	{
-		WorldLocation = Inlocation;
-
-		//if (GetOwningActor()->GetRoot() == this)
-		//{
-		//	WorldLocation = Inlocation;
-		//	RelativeLocation = Inlocation;
-		//}
-		//
-		//if (bMarkDirty)
-		//{
-		//	MarkDirtyLocationRecursive();
-		//}
-	}
-
-	void SceneComponent::UpdateLocation()
-	{
-		if (bDirtyLocation)
+		if (Parent)
 		{
-			//WorldLocation = RelativeLocation + Parent->GetWorldLocation();
-			//LocalLocation = WorldLocation - GetOwningActor()->GetActorLocation();
-			
-			bDirtyLocation = false;
-		}
-	}
-
-	bool SceneComponent::IsDirtyLocation() const
-	{
-		return bDirtyLocation;
-	}
-
-	void SceneComponent::MarkDirtyLocation()
-	{
-		bDirtyLocation = true;
-	}
-
-	void SceneComponent::MarkDirtyLocationRecursive()
-	{
-		MarkDirtyLocation();
-
-		for (auto Comp : Childs)
-		{
-			Comp->MarkDirtyLocationRecursive();
-		}
-	}
-
-
-	DirectX::XMVECTOR SceneComponent::GetRelativeRotation() const
-	{
-		return RelativeRotation;
-	}
-
-	DirectX::XMVECTOR SceneComponent::GetLocalRotation() const
-	{
-		return LocalRotation;
-	}
-
-	DirectX::XMVECTOR SceneComponent::GetWorldRotation() const
-	{
-		if (Parent == nullptr)
-		{
-			return WorldRotation;
+			return Parent->GetWorldTransform().transform(InRelativeTransform);
 		}
 
-		return GetOwningActor()->GetActorRotation();
+		return InRelativeTransform;
 	}
 
-	void SceneComponent::SetRelativeRotation( const DirectX::XMVECTOR& InRotator, bool bMarkDirty )
+	void SceneComponent::PropagateTransformUpdate()
 	{
-		//RelativeRotation = InRotator;
-		//if (bMarkDirty)
-		//{
-		//	MarkDirtyRotationRecursive();
-		//}
+		// TODO: mark render dirty etc
+
+		UpdateChildTransforms();
 	}
 
-	void SceneComponent::SetLocalRotation( const DirectX::XMVECTOR& InRotator, bool bMarkDirty )
+	void SceneComponent::UpdateChildTransforms()
 	{
-
-	}
-
-	void SceneComponent::SetWorldRotation( const DirectX::XMVECTOR& InRotator, bool bMarkDirty )
-	{
-		WorldRotation = InRotator;
-
-		//if (GetOwningActor()->GetRoot() == this)
-		//{
-		//	WorldRotation = InRotator;
-		//	RelativeRotation = InRotator;
-		//}
-		//
-		//MarkDirtyRotationRecursive();
-	}
-
-	void SceneComponent::UpdateRotation()
-	{
-		//if (bDirtyRotation)
-		//{
-		//	WorldRotation = RelativeRotation + Parent->GetWorldRotation();
-		//	LocalRotation = Rotatorf::CombineRotators(WorldRotation, GetOwningActor()->GetActorRotation() * -1);
-		//
-		//	bDirtyRotation = false;
-		//}
-	}
-
-	bool SceneComponent::IsDirtyRotation() const
-	{
-		return bDirtyRotation;
-	}
-
-	void SceneComponent::MarkDirtyRotation()
-	{
-		//bDirtyRotation = true;
-	}
-
-	void SceneComponent::MarkDirtyRotationRecursive()
-	{
-		//MarkDirtyRotation();
-		//
-		//for (SceneComponent* Comp : Childs)
-		//{
-		//	Comp->MarkDirtyRotationRecursive();
-		//}
-	}
-
-	DirectX::XMVECTOR SceneComponent::GetRelativeScale() const
-	{
-		return RelativeScale;
-	}
-
-	DirectX::XMVECTOR SceneComponent::GetLocalScale() const
-	{
-		return LocalScale;
-	}
-
-	DirectX::XMVECTOR SceneComponent::GetWorldScale() const
-	{
-		if (Parent == nullptr)
+		for (auto Child : GetChilds())
 		{
-			return WorldScale;
+			Child->UpdateCachedTransform();
 		}
-
-		return GetOwningActor()->GetActorScale();
-	}
-
-	void SceneComponent::SetRelativeScale( const DirectX::XMVECTOR& InScale, bool bMarkDirty )
-	{
-		//RelativeScale = InScale;
-		//
-		//if (bMarkDirty)
-		//{
-		//	MarkDirtyScaleRecursive();
-		//}
-	}
-
-	void SceneComponent::SetLocalScale( const DirectX::XMVECTOR& InScale, bool bMarkDirty )
-	{
-
-	}
-
-	void SceneComponent::SetWorldScale( const DirectX::XMVECTOR& InScale, bool bMarkDirty )
-	{
-		WorldScale = InScale;
-
-		//MarkDirtyScaleRecursive();
-	}
-
-	void SceneComponent::UpdateScale()
-	{
-		//if (bDirtyScale)
-		//{
-		//	WorldScale = RelativeScale * Parent->GetWorldScale();
-		//	LocalScale = WorldScale / GetOwningActor()->GetActorScale();
-		//
-		//	bDirtyScale = false;
-		//}
-	}
-
-	bool SceneComponent::IsDirtyScale() const
-	{
-		return bDirtyScale;
-	}
-
-	void SceneComponent::MarkDirtyScale()
-	{
-		bDirtyScale = true;
-	}
-
-	void SceneComponent::MarkDirtyScaleRecursive()
-	{
-		//MarkDirtyScale();
-		//
-		//for (SceneComponent* Comp : Childs)
-		//{
-		//	Comp->MarkDirtyScaleRecursive();
-		//}
 	}
 
 // -------------------------------------------------------------------------------------------
@@ -348,38 +229,40 @@ DirectX::XMVECTOR SceneComponent::GetRelativeLocation() const
 // location
 // -------------------------------------------------------------------------------------------
 
-		float Vector[4];
-		Vector[0] = XMVectorGetX(WorldLocation);
-		Vector[1] = XMVectorGetY(WorldLocation);
-		Vector[2] = XMVectorGetZ(WorldLocation);
+		float TempVector[4];
+		TempVector[0] = RelativeTransform.GetLocation().GetX();
+		TempVector[1] = RelativeTransform.GetLocation().GetY();
+		TempVector[2] = RelativeTransform.GetLocation().GetZ();
 
-		ImGui::DragFloat3( "Location", Vector );
-		WorldLocation = XMVectorSet( Vector[0], Vector[1], Vector[2], 0);
+		ImGui::DragFloat3( "Location", TempVector );
+		Vector NewLocation = Vector( TempVector[0], TempVector[1], TempVector[2]);
 
 // rotation
 // -------------------------------------------------------------------------------------------
 		
-		Vector[0] = XMVectorGetX(WorldRotation);
-		Vector[1] = XMVectorGetY(WorldRotation);
-		Vector[2] = XMVectorGetZ(WorldRotation);
-		Vector[3] = XMVectorGetW(WorldRotation);
+		TempVector[0] = RelativeTransform.GetRotation().GetX();
+		TempVector[1] = RelativeTransform.GetRotation().GetY();
+		TempVector[2] = RelativeTransform.GetRotation().GetZ();
+		TempVector[3] = RelativeTransform.GetRotation().GetW();
 
-		ImGui::DragFloat4( "Rotation", Vector, 0.01f);
-		WorldRotation = XMVectorSet( Vector[0], Vector[1], Vector[2], Vector[3]);
+		ImGui::DragFloat4( "Rotation", TempVector, 0.01f);
+		Quat NewRotation = Quat( TempVector[0], TempVector[1], TempVector[2], TempVector[3]);
 
-		WorldRotation = XMQuaternionNormalize(WorldRotation);
+		NewRotation = NewRotation.Normalize();
 
 // scale
 // -------------------------------------------------------------------------------------------
 
-		Vector[0] = XMVectorGetX(WorldScale);
-		Vector[1] = XMVectorGetY(WorldScale);
-		Vector[2] = XMVectorGetZ(WorldScale);
+		TempVector[0] = RelativeTransform.GetScale().GetX();
+		TempVector[1] = RelativeTransform.GetScale().GetY();
+		TempVector[2] = RelativeTransform.GetScale().GetZ();
 
-		ImGui::DragFloat3( "Scale", Vector );
-		WorldScale = XMVectorSet( Vector[0], Vector[1], Vector[2], 0);
+		ImGui::DragFloat3( "Scale", TempVector );
+		Vector NewScale = Vector( TempVector[0], TempVector[1], TempVector[2] );
 	
 // -------------------------------------------------------------------------------------------
+
+		SetRelativeTransform( Transform(NewLocation, NewRotation, NewScale) );
 
 		ImGui::Separator();
 	}

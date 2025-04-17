@@ -29,8 +29,8 @@ namespace Drn
 
 	void CameraComponent::CalculateMatrices( XMMATRIX& InViewMatrix, XMMATRIX& InProjectionMatrix, float AspectRatio )
 	{
-		XMVECTOR CameraPos = GetWorldLocation();
-		XMVECTOR CamearRot = GetWorldRotation();
+		XMVECTOR CameraPos = XMLoadFloat3( GetWorldLocation().Get() );
+		XMVECTOR CamearRot = GetWorldRotation().Get();
 
 		XMVECTOR FocusPointOffset = XMVectorSet( 0, 0, 10, 0 );
 		FocusPointOffset = XMVector3Rotate(FocusPointOffset, CamearRot);

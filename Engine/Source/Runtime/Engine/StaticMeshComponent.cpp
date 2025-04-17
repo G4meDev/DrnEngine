@@ -19,7 +19,7 @@ namespace Drn
 
 	StaticMeshComponent::~StaticMeshComponent()
 	{
-		std::cout << "Remove";
+		
 	}
 
 	void StaticMeshComponent::Tick( float DeltaTime )

@@ -91,6 +91,34 @@ namespace Drn
 		return *this;
 	}
 
+	Archive& Archive::operator<<( const Vector& Value )
+	{
+		File << Value.GetX();
+		File << Value.GetY();
+		File << Value.GetZ();
+
+		return *this;
+	}
+
+	Archive& Archive::operator<<( const Quat& Value )
+	{
+		File << Value.GetX();
+		File << Value.GetY();
+		File << Value.GetZ();
+		File << Value.GetW();
+
+		return *this;
+	}
+
+	Archive& Archive::operator<<( const Transform& Value )
+	{
+		*this << Value.Location;
+		*this << Value.Rotation;
+		*this << Value.Scale;
+
+		return *this;
+	}
+
 	Archive& Archive::operator>>( uint8& Value )
 	{
 		File >> Value;
@@ -142,6 +170,43 @@ namespace Drn
 		Value.resize(size);
 
 		File.read( Value.data(), size );
+		return *this;
+	}
+
+	Archive& Archive::operator>>( Vector& Value )
+	{
+		float X;
+		float Y;
+		float Z;
+
+		File >> X >> Y >> Z;
+		Value = Vector(X, Y, Z);
+
+		return *this;
+	}
+
+	Archive& Archive::operator>>( Quat& Value )
+	{
+		float X;
+		float Y;
+		float Z;
+		float W;
+
+		File >> X >> Y >> Z >> W;
+		Value = Quat(X, Y, Z, W);
+
+		return *this;
+	}
+
+	Archive& Archive::operator>>( Transform& Value )
+	{
+		Vector Location;
+		Quat Rotation;
+		Vector Scale;
+
+		*this >> Location >> Rotation >> Scale;
+		Value = Transform(Location, Rotation, Scale);
+
 		return *this;
 	}
 }

@@ -33,9 +33,9 @@
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/SceneRenderer.h"
 #include "Runtime/Renderer/D3D12Utils.h"
+
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/IntPoint.h"
-#include "Runtime/Containers/List.h"
 
 #include "Runtime/Physic/PhysicManager.h"
 #include "Runtime/Physic/PhysicScene.h"

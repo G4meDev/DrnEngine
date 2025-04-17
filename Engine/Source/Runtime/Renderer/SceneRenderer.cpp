@@ -176,22 +176,14 @@ namespace Drn
 			{
 				Mesh->GetMesh()->UploadResources(CommandList);
 			}
-
-			XMVECTOR Location = Mesh->GetWorldLocation();
-			XMVECTOR Scale = Mesh->GetWorldScale();
-			//LOG(LogSceneRenderer, Info, "%f, %f, %f", XMVectorGetX(Location), XMVectorGetY(Location), XMVectorGetZ(Location));
-
-			//float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
-			//const XMVECTOR rotationAxis = DirectX::XMVectorSet( 0, 1, 1, 0 );
-			//XMMATRIX       RotationMatrix  = XMMatrixRotationAxis( rotationAxis, XMConvertToRadians( angle ) );
 			
-			XMMATRIX RotationMatrix  = XMMatrixRotationQuaternion( Mesh->GetWorldRotation() );
-			XMMATRIX TranslationMatrix  = XMMatrixTranslation( DirectX::XMVectorGetX(Location), DirectX::XMVectorGetY(Location), DirectX::XMVectorGetZ(Location));
-			XMMATRIX ScaleMatrix = XMMatrixScaling( DirectX::XMVectorGetX(Scale), DirectX::XMVectorGetY(Scale), DirectX::XMVectorGetZ(Scale));
-
-			//XMMATRIX modelMatrix = TranslationMatrix * RotationMatrix * ScaleMatrix;
-			XMMATRIX modelMatrix = ScaleMatrix * RotationMatrix * TranslationMatrix;
-
+			//XMMATRIX RotationMatrix  = XMMatrixRotationQuaternion( Mesh->GetWorldRotation().Get() );
+			//XMMATRIX TranslationMatrix  = XMMatrixTranslationFromVector( DirectX::XMLoadFloat3(Mesh->GetWorldLocation().Get()));
+			//XMMATRIX ScaleMatrix = XMMatrixScalingFromVector( DirectX::XMLoadFloat3(Mesh->GetWorldScale().Get()));
+			//
+			//XMMATRIX modelMatrix = ScaleMatrix * RotationMatrix * TranslationMatrix;
+			
+			XMMATRIX modelMatrix = Matrix(Mesh->GetWorldTransform()).Get();
 
 			auto viewport = m_RenderTarget.GetViewport();
 			float    aspectRatio = viewport.Width / viewport.Height;

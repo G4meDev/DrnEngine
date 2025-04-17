@@ -29,8 +29,8 @@ namespace Drn
 	void CameraActor::ApplyViewportInput( const ViewportCameraInputHandler& CameraInput,
 		float CameraMovementSpeed, float CameraRotationSpeed )
 	{
-		XMVECTOR CamPos = GetActorLocation();
-		XMVECTOR CamRot = GetActorRotation();
+		XMVECTOR CamPos = XMLoadFloat3( GetActorLocation().Get() );
+		XMVECTOR CamRot = GetActorRotation().Get();
 
 		XMVECTOR Displacement = XMVector3Rotate( CameraInput.m_Displacement * CameraMovementSpeed, CamRot );
 		SetActorLocation( CamPos + Displacement );
@@ -43,7 +43,7 @@ namespace Drn
 		XMVECTOR Rot_Offset_Y = XMQuaternionRotationAxis( Axis_X, CameraInput.m_MouseDelta.Y * CameraRotationSpeed );
 
 		SetActorRotation( XMQuaternionMultiply( CamRot, Rot_Offset_Y ) );
-		SetActorRotation( XMQuaternionMultiply( GetActorRotation(), Rot_Offset_X ) );
+		SetActorRotation( XMQuaternionMultiply( GetActorRotation().Get(), Rot_Offset_X ) );
 	}
 #endif
 
