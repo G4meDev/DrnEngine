@@ -24,6 +24,13 @@ namespace Drn
 		{
 		}
 
+		CapsuleElem(Archive& Ar)
+		{
+			Serialize(Ar);
+		}
+
+		virtual void Serialize(Archive& Ar) override;
+
 		Vector Center;
 
 		// TODO: replace with rotator

@@ -9,11 +9,11 @@ namespace Drn
 	{
 	public:
 
-		BoxElem(const Vector& InCenter, const Quat& InRotation, const Vector& InScale)
+		BoxElem(const Vector& InCenter, const Quat& InRotation, const Vector& InExtent)
 			: ShapeElem(EAggCollisionShape::Box)
 			, Center(InCenter)
 			, Rotation(InRotation)
-			, Scale(InScale)
+			, Extent(InExtent)
 		{
 		}
 
@@ -21,16 +21,23 @@ namespace Drn
 		{
 		}
 
+		BoxElem(Archive& Ar)
+		{
+			Serialize(Ar);
+		}
+
+		virtual void Serialize(Archive& Ar) override;
+
 		Vector Center;
 
 		// TODO: use rotator
 		Quat Rotation;
 
-		Vector Scale;
+		Vector Extent;
 
 		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery() override
 		{
-			return std::shared_ptr<PxGeometry>( new PxBoxGeometry( Vector2P(Scale) ) );
+			return std::shared_ptr<PxGeometry>( new PxBoxGeometry( Vector2P(Extent) ) );
 		}
 
 	private:

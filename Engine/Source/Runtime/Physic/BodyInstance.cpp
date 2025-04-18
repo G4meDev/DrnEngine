@@ -64,9 +64,9 @@ namespace Drn
 			m_RigidActor = Physics->createRigidStatic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
 		}
 
-		for (int32 i = 0; i < Setup->AggGeo.GetElementCount(); i++)
+		for (int32 i = 0; i < Setup->m_AggGeo.GetElementCount(); i++)
 		{
-			ShapeElem* Element = Setup->AggGeo.GetElement(i);
+			ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
 
 			physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery().get()), *m_Material );
 

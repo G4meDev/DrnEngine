@@ -18,7 +18,7 @@ namespace Drn
 		Unkown
 	};
 
-	class ShapeElem
+	class ShapeElem : public Serializable
 	{
 	public:
 
@@ -35,6 +35,8 @@ namespace Drn
 		}
 
 		virtual ~ShapeElem() {};
+
+		virtual void Serialize(Archive& Ar) override;
 
 		const PhysicUserData* GetUserData() const
 		{

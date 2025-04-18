@@ -8,7 +8,7 @@
 
 namespace Drn
 {
-	class AggregateGeom
+	class AggregateGeom : public Serializable
 	{
 	public:
 
@@ -19,12 +19,14 @@ namespace Drn
 		// TODO: add shape type
 		std::vector<SphereElem> ConvexElems;
 
+		virtual void Serialize(Archive& Ar) override;
+
 		int32 GetElementCount() const 
 		{
 			return SphereElems.size() + BoxElems.size() + CapsuleElems.size() + ConvexElems.size();
 		}
 
-		ShapeElem* GetElement(const EAggCollisionShape Type, const int32 Index)
+		ShapeElem* GetElement(const EAggCollisionShape Type, const uint32 Index)
 		{
 			if		(Type == EAggCollisionShape::Sphere)	{ return &SphereElems[Index]; }
 			else if (Type == EAggCollisionShape::Box)		{ return &BoxElems[Index]; }
@@ -33,7 +35,7 @@ namespace Drn
 			else											{ return nullptr; }
 		}
 
-		ShapeElem* GetElement(int32 InIndex)
+		ShapeElem* GetElement(uint32 InIndex)
 		{
 			int Index = InIndex;
 

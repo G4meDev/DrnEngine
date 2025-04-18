@@ -5,14 +5,16 @@
 
 namespace Drn
 {
-	class BodySetup
+	class BodySetup : public Serializable
 	{
 	public:
 
 		BodySetup() {}
 		virtual ~BodySetup() {}
 
-		AggregateGeom AggGeo;
+		virtual void Serialize( Archive& Ar ) override;
+
+		AggregateGeom m_AggGeo;
 
 		// TODO: Add physic material
 

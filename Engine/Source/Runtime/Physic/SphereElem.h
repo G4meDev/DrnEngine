@@ -29,6 +29,13 @@ namespace Drn
 		{
 		}
 
+		SphereElem(Archive& Ar)
+		{
+			Serialize(Ar);
+		}
+
+		virtual void Serialize(Archive& Ar) override;
+
 		Vector Center;
 		float Radius;
 
