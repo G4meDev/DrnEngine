@@ -30,6 +30,8 @@ namespace Drn
 			return;
 		}
 
+		MeshAsset->m_BodySetup.m_AggGeo.EmptyElements();
+
 		for (int i = 0; i < scene->mNumMeshes; i++)
 		{
 			ProcessMesh( MeshAsset, scene->mMeshes[i], scene, Data);
@@ -40,6 +42,30 @@ namespace Drn
 
 	void AssetImporterStaticMesh::ProcessMesh( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene, ImportedStaticMeshData& BuildingData)
 	{
+		std::string Name( mesh->mName.C_Str() );
+		uint32 i = Name.find_first_of("_");
+		std::string Prefix = Name.substr(0, i);
+
+		if ( Prefix == "CS" )
+		{
+			ProcessCollisionSphere(MeshAsset, mesh, scene);
+			return;
+		}
+
+		else if ( Prefix == "CB" )
+		{
+			ProcessCollisionBox(MeshAsset, mesh, scene);
+			return;
+		}
+
+		else if ( Prefix == "CC" )
+		{
+			ProcessCollisionCapsule(MeshAsset, mesh, scene);
+			return;
+		}
+
+		//LOG(LogStaticMeshImporter, Info, "%s", Prefix.c_str());
+
 		ImportedStaticMeshSlotData MeshData;
 
 		std::vector<StaticMeshVertexData> VertexData;
@@ -48,7 +74,7 @@ namespace Drn
 		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
 		{
 			StaticMeshVertexData Vertex;
-			
+
 			Vertex.Pos_X = mesh->mVertices[i].x * MeshAsset->ImportScale;
 			Vertex.Pos_Y = mesh->mVertices[i].y * MeshAsset->ImportScale;
 			Vertex.Pos_Z = mesh->mVertices[i].z * MeshAsset->ImportScale;
@@ -104,6 +130,7 @@ namespace Drn
 		BuildingData.MeshesData.push_back(MeshData);
 	}
 
+
 	uint8 ImportedStaticMeshData::AddMaterial( std::string& InMaterial )
 	{
 		for ( int i = 0; i < MaterialsData.size(); i++ )
@@ -152,6 +179,47 @@ namespace Drn
 		MeshAsset->Data.Materials = BuildingData.MaterialsData;
 	}
 
-}
 
+	void AssetImporterStaticMesh::ProcessCollisionSphere( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )
+	{
+		if (mesh->mNumVertices <= 0)
+		{
+			return;
+		}
+
+		LOG(LogStaticMeshImporter, Info, "%i", mesh->mNumVertices);
+
+		Vector Pos = Vector::ZeroVector;
+
+		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
+		{
+			float Pos_X = mesh->mVertices[i].x * MeshAsset->ImportScale;
+			float Pos_Y = mesh->mVertices[i].y * MeshAsset->ImportScale;
+			float Pos_Z = mesh->mVertices[i].z * MeshAsset->ImportScale;
+
+			Pos = Pos + Vector(Pos_X, Pos_Y, Pos_Z);
+		}
+
+		float Pos_X = mesh->mVertices[0].x * MeshAsset->ImportScale;
+		float Pos_Y = mesh->mVertices[0].y * MeshAsset->ImportScale;
+		float Pos_Z = mesh->mVertices[0].z * MeshAsset->ImportScale;
+		Vector Pos_0 = Vector(Pos_X, Pos_Y, Pos_Z);
+
+		Vector Center = Pos / mesh->mNumVertices;
+		float Radius = Vector::Distance(Center, Pos_0);
+
+		MeshAsset->m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem(Radius, Center));
+	}
+
+	void AssetImporterStaticMesh::ProcessCollisionBox( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )
+	{
+		
+	}
+
+	void AssetImporterStaticMesh::ProcessCollisionCapsule( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )
+	{
+		
+	}
+
+}
 #endif

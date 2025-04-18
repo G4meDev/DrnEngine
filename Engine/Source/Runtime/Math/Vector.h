@@ -42,12 +42,24 @@ namespace Drn
 			return Vector( XMVectorMultiply(
 				XMLoadFloat3(&m_Vector), XMLoadFloat3(&other.m_Vector)) );
 		}
+
+		inline Vector operator/( float Other )
+		{
+			return Vector( XMVectorDivide(
+				XMLoadFloat3(&m_Vector), XMVectorSet(Other, Other, Other, 0)) );
+		}
 		
 		inline bool Equals( const Vector& Other ) 
 		{
 			uint32_t Result;
 			XMVectorEqualR(&Result, XMLoadFloat3(&m_Vector), XMLoadFloat3(&Other.m_Vector));
 			return XMComparisonAllTrue(Result);
+		}
+
+		inline static float Distance(const Vector& V1, const Vector& V2) 
+		{
+			XMVECTOR Diff = XMVectorSubtract(XMLoadFloat3(&V1.m_Vector), XMLoadFloat3(&V2.m_Vector));
+			return XMVectorGetX( XMVectorSqrt( XMVector3Dot(Diff, Diff) ) );
 		}
 
 		static Vector FromU32(uint32_t Value)
