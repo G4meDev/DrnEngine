@@ -20,7 +20,7 @@ namespace Drn
 				return;
 			}
 
-			File >> m_ArchiveVersion;
+			*this >> m_ArchiveVersion;
 		}
 
 		else
@@ -32,7 +32,7 @@ namespace Drn
 				return;
 			}
 
-			File << ARCHIVE_VERSION;
+			*this << ARCHIVE_VERSION;
 		}
 	}
 
@@ -46,7 +46,7 @@ namespace Drn
 
 	Archive& Archive::operator<<( uint8 Value )
 	{
-		File << Value;
+		File.write( (char*)(&Value), 1);
 		return *this;
 	}
 
@@ -77,7 +77,8 @@ namespace Drn
 	Archive& Archive::operator<<( const std::string& Value )
 	{
 		uint32 size = Value.size();
-		File << size << Value;
+		*this << size;
+		File << Value;
 
 		return *this;
 	}
@@ -85,7 +86,7 @@ namespace Drn
 	Archive& Archive::operator<<( const std::vector<char>& Value )
 	{
 		uint64 size = (uint64)Value.size();
-		File << size;
+		*this << size;
 		File.write(Value.data(), size);
 
 		return *this;
@@ -127,7 +128,7 @@ namespace Drn
 
 	Archive& Archive::operator>>( uint8& Value )
 	{
-		File >> Value;
+		File.read( (char*)(&Value), 1 );
 		return *this;
 	}
 
@@ -159,7 +160,7 @@ namespace Drn
 	Archive& Archive::operator>>( std::string& Value )
 	{
 		uint32 size;
-		File >> size;
+		*this >> size;
 
 		std::vector<char> buffer(size);
 		File.read(buffer.data(), size);
@@ -172,7 +173,7 @@ namespace Drn
 	Archive& Archive::operator>>( std::vector<char>& Value )
 	{
 		uint64 size;
-		File >> size;
+		*this >> size;
 		Value.resize(size);
 
 		File.read( Value.data(), size );

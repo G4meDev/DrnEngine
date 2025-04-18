@@ -4,9 +4,6 @@
 #include "Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h"
 #include "Editor/AssetImporter/AssetImporterStaticMesh.h"
 
-// TODO: remove
-#include "Runtime/Physic/SphereElem.h"
-
 LOG_DEFINE_CATEGORY( LogStaticMesh, "StaticMesh" )
 
 using namespace DirectX;
@@ -18,22 +15,6 @@ namespace Drn
 		, m_LoadedOnGPU(false)
 	{
 		Load();
-
-		// TODO: remove
-		m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem());
-		m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem());
-		m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem());
-		m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem());
-		
-		m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem());
-		m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem());
-		m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem());
-		
-
-		m_BodySetup.m_AggGeo.CapsuleElems.push_back(CapsuleElem());
-		m_BodySetup.m_AggGeo.CapsuleElems.push_back(CapsuleElem());
-		m_BodySetup.m_AggGeo.CapsuleElems.push_back(CapsuleElem());
-		m_BodySetup.m_AggGeo.CapsuleElems.push_back(CapsuleElem());
 	}
 
 #if WITH_EDITOR
@@ -66,6 +47,9 @@ namespace Drn
 			Ar >> m_SourcePath;
 			Data.Serialize( Ar );
 			Ar >> ImportScale;
+			
+			m_BodySetup.Serialize(Ar);
+
 
 			for ( auto& Mesh: Data.MeshesData )
 			{
@@ -85,7 +69,7 @@ namespace Drn
 			Data.Serialize( Ar );
 			Ar << ImportScale;
 
-
+			m_BodySetup.Serialize(Ar);
 		}
 #endif
 	}
