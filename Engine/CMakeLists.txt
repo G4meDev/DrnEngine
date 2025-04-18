@@ -36,6 +36,9 @@ set( HEADER_FILES
 	Source/Runtime/Physic/PhysicScene.h
 	Source/Runtime/Physic/BodyInstance.h
 	Source/Runtime/Physic/BodySetup.h
+	Source/Runtime/Physic/AggregateGeom.h
+	Source/Runtime/Physic/ShapeElem.h
+	Source/Runtime/Physic/SphereElem.h
 	Source/Runtime/Physic/PhysicUserData.h
 	
 	Source/Runtime/Containers/List.h
@@ -117,7 +120,10 @@ set( SOURCE_FILES
 	Source/Runtime/Physic/PhysicManager.cpp
 	Source/Runtime/Physic/PhysicScene.cpp
 	Source/Runtime/Physic/BodyInstance.cpp
+	Source/Runtime/Physic/AggregateGeom.cpp
 	Source/Runtime/Physic/BodySetup.cpp
+	Source/Runtime/Physic/ShapeElem.cpp
+	Source/Runtime/Physic/SphereElem.cpp
 	Source/Runtime/Physic/PhysicUserData.cpp
 	
 	Source/Runtime/Containers/List.cpp

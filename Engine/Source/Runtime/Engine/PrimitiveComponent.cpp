@@ -43,15 +43,11 @@ namespace Drn
 	void PrimitiveComponent::RegisterComponent( World* InOwningWorld )
 	{
 		SceneComponent::RegisterComponent(InOwningWorld);
-
-		m_BodyInstance.InitBody(nullptr, this, GetWorld()->GetPhysicScene());
 	}
 
 	void PrimitiveComponent::UnRegisterComponent()
 	{
 		SceneComponent::UnRegisterComponent();
-
-		m_BodyInstance.TermBody();
 	}
 
 

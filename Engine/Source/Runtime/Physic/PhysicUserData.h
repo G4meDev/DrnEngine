@@ -8,6 +8,7 @@ namespace Drn
 	{
 		Invalid,
 		BodyInstance,
+		AggShape
 	};
 
 	class PhysicUserData
@@ -25,8 +26,15 @@ namespace Drn
 			: Type(EPhysicUserDataType::BodyInstance)
 			, Payload(InBodyInstance) {}
 
+		PhysicUserData(class ShapeElem* InShape)
+			: Type(EPhysicUserDataType::AggShape)
+			, Payload(InShape) {}
+
 		template<typename T>
 		static T* Get(void* UserData);
+
+		template<class T>
+		static void Set( void* UserData, T* Payload );
 	};
 
 	template<>
@@ -39,5 +47,10 @@ namespace Drn
 		return nullptr;
 	}
 
-
+	template<>
+	inline void PhysicUserData::Set( void* UserData, class ShapeElem* Payload )
+	{
+		((PhysicUserData*)UserData)->Type = EPhysicUserDataType::AggShape;
+		((PhysicUserData*)UserData)->Payload = Payload;
+	}
 }

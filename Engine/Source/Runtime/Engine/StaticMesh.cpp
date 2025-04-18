@@ -4,6 +4,9 @@
 #include "Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h"
 #include "Editor/AssetImporter/AssetImporterStaticMesh.h"
 
+// TODO: remove
+#include "Runtime/Physic/SphereElem.h"
+
 LOG_DEFINE_CATEGORY( LogStaticMesh, "StaticMesh" )
 
 using namespace DirectX;
@@ -15,6 +18,10 @@ namespace Drn
 		, m_LoadedOnGPU(false)
 	{
 		Load();
+
+		// TODO: remove
+		SphereElem E(1);
+		m_BodySetup.AggGeo.SphereElems.push_back(E);
 	}
 
 #if WITH_EDITOR

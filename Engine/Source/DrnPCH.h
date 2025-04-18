@@ -42,6 +42,7 @@
 #include "Runtime/Physic/PhysicScene.h"
 #include "Runtime/Physic/BodyInstance.h"
 #include "Runtime/Physic/BodySetup.h"
+#include "Runtime/Physic/AggregateGeom.h"
 #include "Runtime/Physic/PhysicUserData.h"
 
 

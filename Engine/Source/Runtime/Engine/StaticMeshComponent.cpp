@@ -53,6 +53,27 @@ namespace Drn
 		}
 	}
 
+	void StaticMeshComponent::RegisterComponent( World* InOwningWorld )
+	{
+		PrimitiveComponent::RegisterComponent(InOwningWorld);
+
+		if (Mesh.IsValid())
+		{
+			m_BodyInstance.InitBody(Mesh->GetBodySetup(), this, GetWorld()->GetPhysicScene());
+		}
+
+	}
+
+	void StaticMeshComponent::UnRegisterComponent()
+	{
+		PrimitiveComponent::UnRegisterComponent();
+
+		if (Mesh.IsValid())
+		{
+			m_BodyInstance.TermBody();
+		}
+	}
+
 #if WITH_EDITOR
 
 	void StaticMeshComponent::DrawDetailPanel( float DeltaTime )

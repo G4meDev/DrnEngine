@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ForwardTypes.h"
-//#include "Runtime/Core/Serializable.h"
 #include "Runtime/Core/Asset.h"
+#include "Runtime/Physic/BodySetup.h"
 
 LOG_DECLARE_CATEGORY(LogStaticMesh)
 
@@ -79,6 +79,8 @@ namespace Drn
 
 		void UploadResources( dx12lib::CommandList* CommandList );
 
+		inline BodySetup* GetBodySetup() { return &m_BodySetup; }
+
 	protected:
 
 #if WITH_EDITOR
@@ -106,6 +108,8 @@ namespace Drn
 		bool  ImportBiTangent = false;
 		bool  ImportColor     = true;
 		uint8 ImportUvCount   = 0;
+
+		BodySetup m_BodySetup;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

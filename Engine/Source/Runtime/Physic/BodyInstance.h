@@ -38,6 +38,8 @@ namespace Drn
 		PrimitiveComponent* m_OwnerComponent;
 		physx::PxMaterial* m_Material;
 
+		BodySetup* m_BodySetup;
+
 		bool m_SimulatePhysic;
 		float m_Mass;
 
