@@ -2,6 +2,9 @@
 
 #include "ForwardTypes.h"
 #include "PhysicUserData.h"
+#include "PhysicCore.h"
+
+using namespace physx;
 
 namespace Drn
 {
@@ -38,6 +41,10 @@ namespace Drn
 			PhysicUserData::Set<ShapeElem>((void*)&UserData, const_cast<ShapeElem*>(this));
 			return &UserData;
 		}
+
+		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery() = 0;
+
+		inline EAggCollisionShape GetType() const { return Type; }
 
 	private:
 

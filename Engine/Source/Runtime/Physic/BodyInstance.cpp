@@ -64,21 +64,15 @@ namespace Drn
 			m_RigidActor = Physics->createRigidStatic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
 		}
 
-		// TODO: Add body setup
-		//physx::PxShape* shape = Physics->createShape( physx::PxBoxGeometry( Vector2P(m_OwnerComponent->GetWorldScale()) ), *m_Material );
-
 		for (int32 i = 0; i < Setup->AggGeo.GetElementCount(); i++)
 		{
 			ShapeElem* Element = Setup->AggGeo.GetElement(i);
 
-			SphereElem* SE = static_cast<SphereElem*>(Element);
-			physx::PxShape* shape = Physics->createShape( physx::PxSphereGeometry( SE->Radius ), *m_Material );
+			physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery().get()), *m_Material );
 
 			m_RigidActor->attachShape( *shape );
 			shape->release();
 		}
-
-		//m_RigidActor->attachShape( *shape );
 		
 		//m_RigidActor->setGlobalPose( Transform2P(m_OwnerComponent->GetWorldTransform()));
 		//m_RigidActor->is<physx::PxRigidDynamic>()->setMassSpaceInertiaTensor(m_SimulatePhysic ? m_Mass : physx::PxReal(0));
@@ -86,8 +80,6 @@ namespace Drn
 		m_PhysicUserData = PhysicUserData(this);
 		m_RigidActor->userData = &m_PhysicUserData;
 		InScene->AddActor(m_RigidActor);
-
-		//shape->release();
 	}
 
 	void BodyInstance::TermBody()

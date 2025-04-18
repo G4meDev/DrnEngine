@@ -48,6 +48,8 @@ namespace Drn
 			return ss.str();
 		}
 
+		static Quat Identity;
+
 	private:
 		XMVECTOR m_Vector;
 

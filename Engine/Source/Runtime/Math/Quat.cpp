@@ -3,5 +3,6 @@
 
 namespace Drn
 {
+	Quat Quat::Identity = Quat();
 
 }

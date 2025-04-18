@@ -20,8 +20,9 @@ namespace Drn
 		Load();
 
 		// TODO: remove
-		SphereElem E(1);
-		m_BodySetup.AggGeo.SphereElems.push_back(E);
+		m_BodySetup.AggGeo.SphereElems.push_back(SphereElem());
+		//m_BodySetup.AggGeo.BoxElems.push_back(BoxElem());
+		//m_BodySetup.AggGeo.CapsuleElems.push_back(CapsuleElem());
 	}
 
 #if WITH_EDITOR

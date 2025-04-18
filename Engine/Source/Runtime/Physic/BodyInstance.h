@@ -10,6 +10,8 @@
 
 LOG_DECLARE_CATEGORY(LogBodyInstance)
 
+using namespace physx;
+
 namespace Drn
 {
 	class BodyInstance : public Serializable
@@ -22,7 +24,7 @@ namespace Drn
 		virtual void Serialize(Archive& Ar);
 
 		inline PrimitiveComponent* GetOwnerComponent() { return m_OwnerComponent; }
-		inline physx::PxRigidActor* GetRigidActor() { return m_RigidActor; }
+		inline PxRigidActor* GetRigidActor() { return m_RigidActor; }
 
 		void InitBody(BodySetup* Setup, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene);
 		void TermBody();
@@ -34,9 +36,10 @@ namespace Drn
 	protected:
 
 		PhysicUserData m_PhysicUserData;
-		physx::PxRigidActor* m_RigidActor;
+		PxRigidActor* m_RigidActor;
 		PrimitiveComponent* m_OwnerComponent;
-		physx::PxMaterial* m_Material;
+		PxMaterial* m_Material;
+		//PxAggregate* m_Aggregate;
 
 		BodySetup* m_BodySetup;
 

@@ -3,6 +3,8 @@
 #include "ForwardTypes.h"
 
 #include "SphereElem.h"
+#include "BoxElem.h"
+#include "CapsuleElem.h"
 
 namespace Drn
 {
@@ -10,11 +12,11 @@ namespace Drn
 	{
 	public:
 
-		std::vector<SphereElem> SphereElems;
+		std::vector<SphereElem>		SphereElems;
+		std::vector<BoxElem>		BoxElems;
+		std::vector<CapsuleElem>	CapsuleElems;
 
-		// TODO: add shape types
-		std::vector<SphereElem> BoxElems;
-		std::vector<SphereElem> CapsuleElems;
+		// TODO: add shape type
 		std::vector<SphereElem> ConvexElems;
 
 		int32 GetElementCount() const 

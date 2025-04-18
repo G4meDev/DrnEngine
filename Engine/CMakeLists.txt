@@ -39,6 +39,8 @@ set( HEADER_FILES
 	Source/Runtime/Physic/AggregateGeom.h
 	Source/Runtime/Physic/ShapeElem.h
 	Source/Runtime/Physic/SphereElem.h
+	Source/Runtime/Physic/BoxElem.h
+	Source/Runtime/Physic/CapsuleElem.h
 	Source/Runtime/Physic/PhysicUserData.h
 	
 	Source/Runtime/Containers/List.h
@@ -124,6 +126,8 @@ set( SOURCE_FILES
 	Source/Runtime/Physic/BodySetup.cpp
 	Source/Runtime/Physic/ShapeElem.cpp
 	Source/Runtime/Physic/SphereElem.cpp
+	Source/Runtime/Physic/BoxElem.cpp
+	Source/Runtime/Physic/CapsuleElem.cpp
 	Source/Runtime/Physic/PhysicUserData.cpp
 	
 	Source/Runtime/Containers/List.cpp

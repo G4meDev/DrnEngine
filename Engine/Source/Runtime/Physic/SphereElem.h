@@ -3,6 +3,12 @@
 #include "ForwardTypes.h"
 #include "ShapeElem.h"
 
+#include <PxConfig.h>
+#include <PxPhysics.h>
+#include <PxPhysicsAPI.h>
+
+using namespace physx;
+
 namespace Drn
 {
 	class SphereElem : public ShapeElem
@@ -25,6 +31,11 @@ namespace Drn
 
 		Vector Center;
 		float Radius;
+
+		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery() override
+		{
+			return std::shared_ptr<PxGeometry>( new PxSphereGeometry( Radius ) );
+		}
 
 	private:
 
