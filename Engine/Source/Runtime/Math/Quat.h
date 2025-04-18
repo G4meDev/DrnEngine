@@ -50,6 +50,10 @@ namespace Drn
 
 		static Quat Identity;
 
+#if WITH_EDITOR
+		void Draw(const std::string& id);
+#endif
+
 	private:
 		XMVECTOR m_Vector;
 

@@ -18,6 +18,14 @@ namespace Drn
 
 		// TODO: Add physic material
 
+#if WITH_EDITOR
+		void DrawDetailPanel();
+
+		void DrawSphereShapes();
+		void DrawBoxShapes();
+		void DrawCapsuleShapes();
+#endif
+
 	private:
 
 		

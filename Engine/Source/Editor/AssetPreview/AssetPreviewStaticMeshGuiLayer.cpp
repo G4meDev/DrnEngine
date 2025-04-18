@@ -87,7 +87,7 @@ namespace Drn
 		ImGui::SameLine();
 		if (m_ShowDetail && ImGui::BeginChild( "Detail", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened) )
 		{
-			DrawSidePanel();
+			DrawDetailPanel();
 
 			ImGui::EndChild();
 		}
@@ -128,7 +128,7 @@ namespace Drn
 		}
 	}
 
-	void AssetPreviewStaticMeshGuiLayer::DrawSidePanel()
+	void AssetPreviewStaticMeshGuiLayer::DrawDetailPanel()
 	{
 		if (ImGui::Button( "save" ))
 		{
@@ -152,6 +152,10 @@ namespace Drn
 		ImGui::Separator();
 
 		ImGui::InputFloat( "ImportScale", &m_OwningAsset.Get()->ImportScale);
+
+		ImGui::Separator();
+
+		m_OwningAsset->m_BodySetup.DrawDetailPanel();
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::ShowSourceFileSelection()

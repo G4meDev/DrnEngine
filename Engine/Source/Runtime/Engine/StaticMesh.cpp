@@ -21,8 +21,19 @@ namespace Drn
 
 		// TODO: remove
 		m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem());
-		//m_BodySetup.AggGeo.BoxElems.push_back(BoxElem());
-		//m_BodySetup.AggGeo.CapsuleElems.push_back(CapsuleElem());
+		m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem());
+		m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem());
+		m_BodySetup.m_AggGeo.SphereElems.push_back(SphereElem());
+		
+		m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem());
+		m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem());
+		m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem());
+		
+
+		m_BodySetup.m_AggGeo.CapsuleElems.push_back(CapsuleElem());
+		m_BodySetup.m_AggGeo.CapsuleElems.push_back(CapsuleElem());
+		m_BodySetup.m_AggGeo.CapsuleElems.push_back(CapsuleElem());
+		m_BodySetup.m_AggGeo.CapsuleElems.push_back(CapsuleElem());
 	}
 
 #if WITH_EDITOR
@@ -73,6 +84,8 @@ namespace Drn
 			Ar << m_SourcePath;
 			Data.Serialize( Ar );
 			Ar << ImportScale;
+
+
 		}
 #endif
 	}

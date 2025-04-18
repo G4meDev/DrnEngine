@@ -26,7 +26,7 @@ namespace Drn
 	protected:
 
 		void DrawMenu();
-		void DrawSidePanel();
+		void DrawDetailPanel();
 		void ShowSourceFileSelection();
 		
 		void OnSelectedSourceFile( std::string FilePath );

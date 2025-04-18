@@ -23,6 +23,7 @@ namespace Drn
 		inline float GetX() const { return XMVectorGetX( XMLoadFloat3(&m_Vector) ); }
 		inline float GetY() const { return XMVectorGetY( XMLoadFloat3(&m_Vector) ); }
 		inline float GetZ() const { return XMVectorGetZ( XMLoadFloat3(&m_Vector) ); }
+		inline float GetW() const { return XMVectorGetW( XMLoadFloat3(&m_Vector) ); }
 
 		inline Vector operator-( const Vector& other ) const
 		{
@@ -73,6 +74,10 @@ namespace Drn
 
 		static Vector ZeroVector;
 		static Vector OneVector;
+
+#if WITH_EDITOR
+		void Draw(const std::string& id);
+#endif
 
 	private:
 		XMFLOAT3 m_Vector;
