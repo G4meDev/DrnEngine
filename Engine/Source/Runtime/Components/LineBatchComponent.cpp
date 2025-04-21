@@ -48,6 +48,8 @@ namespace Drn
 			GetWorld()->GetScene()->RemovePrimitiveProxy(m_SceneProxy);
 		}
 
+		delete m_SceneProxy;
+
 		PrimitiveComponent::UnRegisterComponent();
 	}
 
@@ -80,7 +82,10 @@ namespace Drn
 
 	LineBatchSceneProxy::~LineBatchSceneProxy()
 	{
-		
+		m_RootSignature.reset();
+		m_PipelineStateObject.reset();
+		m_VertexBuffer.reset();
+		m_IndexBuffer.reset();
 	}
 
 	void LineBatchSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) const

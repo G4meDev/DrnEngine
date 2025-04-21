@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ForwardTypes.h"
-#include "DebugViewPhysics.h"
 
 LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
@@ -61,9 +60,5 @@ namespace Drn
 
 		void BeginRender(dx12lib::CommandList* CommandList);
 		void RenderBasePass(dx12lib::CommandList* CommandList);
-
-#if WITH_EDITOR
-		DebugViewPhysics m_DebugViewPhysic;
-#endif
 	};
 }

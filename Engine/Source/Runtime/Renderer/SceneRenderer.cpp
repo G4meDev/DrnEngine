@@ -17,10 +17,6 @@ namespace Drn
 
 	SceneRenderer::~SceneRenderer()
 	{
-#if WITH_EDITOR
-		m_DebugViewPhysic.Shutdown();
-#endif
-
 		m_PipelineStateObject.reset();
 		m_RootSignature.reset();
 		m_DepthTexture.reset();
@@ -122,8 +118,6 @@ namespace Drn
 		m_RenderTarget.AttachTexture( dx12lib::AttachmentPoint::Color0, colorTexture );
 		m_RenderTarget.AttachTexture( dx12lib::AttachmentPoint::DepthStencil, depthTexture );
 
-		m_DebugViewPhysic.Init(this, CommandList);
-
 		//commandQueue.Flush();
 	}
 
@@ -223,11 +217,6 @@ namespace Drn
 
 		BeginRender(CommandList);
 		RenderBasePass(CommandList);
-
-#if WITH_EDITOR
-		//m_DebugViewPhysic.RenderCollisions(CommandList);
-		//m_DebugViewPhysic.RenderPhysxDebug(CommandList);
-#endif
 	}
 
 	ID3D12Resource* SceneRenderer::GetViewResource()

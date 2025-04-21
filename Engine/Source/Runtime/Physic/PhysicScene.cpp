@@ -166,6 +166,17 @@ namespace Drn
 
 	void PhysicScene::DrawDebugCollisions()
 	{
+		const PxRenderBuffer& Rb = GetPhysxScene()->getRenderBuffer();
+		uint32 NumLines = Rb.getNbLines();
+
+		for ( PxU32 i = 0; i < NumLines; i++ )
+		{
+			const PxDebugLine& line = Rb.getLines()[i];
+			m_OwningWorld->DrawDebugLine(P2Vector(line.pos0), P2Vector(line.pos1), Vector::FromU32(line.color0), 0);
+		}
+
+// ------------------------------------------------------------------------------------------------------------
+
 		PxActorTypeFlags Flags = PxActorTypeFlag::eRIGID_STATIC | PxActorTypeFlag::eRIGID_DYNAMIC;
 	
 		uint32 NumActors = GetPhysxScene()->getNbActors(Flags);

@@ -27,7 +27,6 @@ set( HEADER_FILES
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/SceneRenderer.h
-	Source/Runtime/Renderer/DebugViewPhysics.h
 	Source/Runtime/Renderer/VertexLayout.h
 	Source/Runtime/Renderer/D3D12Utils.h
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
@@ -119,7 +118,6 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/SceneRenderer.cpp
 	Source/Runtime/Renderer/VertexLayout.cpp
-	Source/Runtime/Renderer/DebugViewPhysics.cpp
 	Source/Runtime/Renderer/D3D12Utils.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp
