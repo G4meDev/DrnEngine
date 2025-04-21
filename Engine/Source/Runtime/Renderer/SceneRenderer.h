@@ -53,6 +53,7 @@ namespace Drn
 		friend class Scene;
 		friend class Renderer;
 		friend class DebugViewPhysics;
+		friend class LineBatchSceneProxy;
 
 	private:
 

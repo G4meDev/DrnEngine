@@ -27,6 +27,8 @@ namespace Drn
 		void AddActor(physx::PxActor* InActor);
 		void RemoveActor(physx::PxActor* InActor);
 
+		void DrawDebugCollisions();
+
 		//TODO: add force, clear velocity, set target, add actor, ...
 
 	private:
@@ -43,5 +45,7 @@ namespace Drn
 		physx::PxDefaultCpuDispatcher* m_Dispatcher;
 
 		physx::PxMaterial* m_Material;
+
+		bool m_DrawDebugCollision = true;
 	};
 }

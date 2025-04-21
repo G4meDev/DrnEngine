@@ -47,6 +47,8 @@ namespace Drn
 
 		inline bool IsTicking() const { return m_ShouldTick; }
 
+		void DrawDebugLine(const Vector& Start, const Vector& End, const Vector& Color, float Duration);
+
 
 		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
@@ -63,8 +65,6 @@ namespace Drn
 #endif
 
 	protected:
-
-		inline void Release() { delete this; }
 
 		void DestroyWorldActors();
 

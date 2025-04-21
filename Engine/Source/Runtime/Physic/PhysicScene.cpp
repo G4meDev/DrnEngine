@@ -65,6 +65,11 @@ namespace Drn
 			StepSimulation(DeltaTime);
 			SyncActors();
 		}
+
+		if (m_DrawDebugCollision)
+		{
+			DrawDebugCollisions();
+		}
 	}
 
 	bool PhysicScene::IsSimulating() const
@@ -155,6 +160,38 @@ namespace Drn
 			}
 		}
 		shape->release();
+	}
+
+// ------------------------------------------------------------------------------------------------------------
+
+	void PhysicScene::DrawDebugCollisions()
+	{
+		PxActorTypeFlags Flags = PxActorTypeFlag::eRIGID_STATIC | PxActorTypeFlag::eRIGID_DYNAMIC;
+	
+		uint32 NumActors = GetPhysxScene()->getNbActors(Flags);
+		PxActor** Actors = new PxActor*[NumActors];
+
+		uint32 ActorsNum = GetPhysxScene()->getActors(Flags, Actors, NumActors);
+
+		for (int32 i = 0; i < ActorsNum; i++)
+		{
+			PxActor* Actor = Actors[i];
+				
+			if ( Actor && Actor->getOwnerClient() == PX_DEFAULT_CLIENT )
+			{
+				PxRigidActor* RigidActor = Actor->is<PxRigidActor>();
+
+				if (RigidActor)
+				{
+					Transform RigidTransform = P2Transform(RigidActor->getGlobalPose());
+
+					Vector ActorLocation = RigidTransform.GetLocation();
+					m_OwningWorld->DrawDebugLine(ActorLocation, ActorLocation + Vector::UpVector * 3, Vector::OneVector, 0);
+				}
+			}
+		}
+
+		delete Actors;
 	}
 
 }

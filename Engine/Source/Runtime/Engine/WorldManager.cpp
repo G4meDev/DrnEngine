@@ -137,7 +137,7 @@ namespace Drn
 	{
 		m_AllocatedWorlds.erase(InWorld);
 
-		InWorld->Release();
+		InWorld->Destroy();
 		InWorld = nullptr;
 	}
 

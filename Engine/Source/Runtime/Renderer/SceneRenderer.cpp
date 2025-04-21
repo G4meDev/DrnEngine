@@ -225,8 +225,8 @@ namespace Drn
 		RenderBasePass(CommandList);
 
 #if WITH_EDITOR
-		m_DebugViewPhysic.RenderCollisions(CommandList);
-		m_DebugViewPhysic.RenderPhysxDebug(CommandList);
+		//m_DebugViewPhysic.RenderCollisions(CommandList);
+		//m_DebugViewPhysic.RenderPhysxDebug(CommandList);
 #endif
 	}
 

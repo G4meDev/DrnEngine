@@ -22,12 +22,14 @@ namespace Drn
 
 	World::~World()
 	{
+		
 	}
 
 	void World::Destroy()
 	{
 		m_LineBatchCompponent->UnRegisterComponent();
 		delete m_LineBatchCompponent;
+		m_LineBatchCompponent = nullptr;
 
 		DestroyWorldActors();
 
@@ -81,6 +83,8 @@ namespace Drn
 		InvokeOnNewActors(m_NewActors);
 		m_NewActors.clear();
 
+		m_LineBatchCompponent->TickComponent(DeltaTime);
+
 		if (!m_ShouldTick)
 		{
 			return;
@@ -129,6 +133,14 @@ namespace Drn
 		for (const OnRemoveActor& Del : OnRemoveActorDelegates)
 		{
 			Del(RemovedActor);
+		}
+	}
+
+	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Vector& Color, float Duration )
+	{
+		if (m_LineBatchCompponent)
+		{
+			m_LineBatchCompponent->DrawLine(Start, End, Color, Duration);
 		}
 	}
 

@@ -60,9 +60,20 @@ namespace Drn
 		virtual PrimitiveComponent* GetPrimitive() override { return m_LineComponent; }
 
 	private:
+
+		void UpdateBuffers( dx12lib::CommandList* CommandList );
+
 		LineBatchComponent* m_LineComponent;
 
+		std::shared_ptr<dx12lib::RootSignature> m_RootSignature = nullptr;
+		std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject = nullptr;
+
 		std::shared_ptr<dx12lib::VertexBuffer> m_VertexBuffer;
-		std::shared_ptr<dx12lib::VertexBuffer> m_IndexBuffer;
+		std::shared_ptr<dx12lib::IndexBuffer> m_IndexBuffer;
+
+		std::vector<VertexData_Color> m_VertexData;
+		std::vector<uint32> m_IndexData;
+
+		bool m_HasValidData = false;
 	};
 }

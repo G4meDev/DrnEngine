@@ -86,6 +86,8 @@ namespace Drn
 
 		static Vector ZeroVector;
 		static Vector OneVector;
+		static Vector UpVector;
+		static Vector DownVector;
 
 #if WITH_EDITOR
 		void Draw(const std::string& id);

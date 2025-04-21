@@ -33,6 +33,7 @@
 
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/SceneRenderer.h"
+#include "Runtime/Renderer/VertexLayout.h"
 #include "Runtime/Renderer/D3D12Utils.h"
 
 #include "Runtime/Math/Math.h"
