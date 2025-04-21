@@ -15,6 +15,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/Level.h
 	Source/Runtime/Engine/Scene.h
 	Source/Runtime/Engine/PrimitiveComponent.h
+	Source/Runtime/Engine/PrimitiveSceneProxy.h
 	Source/Runtime/Engine/StaticMeshComponent.h
 	Source/Runtime/Engine/StaticMesh.h
 	Source/Runtime/Engine/CameraComponent.h
@@ -30,6 +31,8 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/D3D12Utils.h
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
+
+	Source/Runtime/Components/LineBatchComponent.h
 
 	Source/Runtime/Physic/PhysicCore.h
 	Source/Runtime/Physic/PhysicManager.h
@@ -102,6 +105,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/Level.cpp
 	Source/Runtime/Engine/Scene.cpp
 	Source/Runtime/Engine/PrimitiveComponent.cpp
+	Source/Runtime/Engine/PrimitiveSceneProxy.cpp
 	Source/Runtime/Engine/StaticMeshComponent.cpp
 	Source/Runtime/Engine/StaticMesh.cpp
 	Source/Runtime/Engine/CameraComponent.cpp
@@ -117,6 +121,8 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/D3D12Utils.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp
+
+	Source/Runtime/Components/LineBatchComponent.cpp
 
 	Source/Runtime/Physic/PhysicCore.cpp
 	Source/Runtime/Physic/PhysicManager.cpp

@@ -65,6 +65,7 @@ namespace Drn
 	class Scene;
 	class SceneRenderer;
 	class PrimitiveComponent;
+	class PrimitiveSceneProxy;
 	class StaticMeshComponent;
 	class StaticMesh;
 	class CameraComponent;

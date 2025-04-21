@@ -20,8 +20,7 @@ namespace Drn
 	{
 		if (m_SingletonInstance->m_MainWorld)
 		{
-			delete m_SingletonInstance->m_MainWorld;
-			m_SingletonInstance->m_MainWorld = nullptr;
+			m_SingletonInstance->m_MainWorld->Destroy();
 		}
 
 		delete m_SingletonInstance;

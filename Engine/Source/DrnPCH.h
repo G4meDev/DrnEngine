@@ -9,6 +9,7 @@
 #include "Runtime/Engine/Level.h"
 #include "Runtime/Engine/Scene.h"
 #include "Runtime/Engine/PrimitiveComponent.h"
+#include "Runtime/Engine/PrimitiveSceneProxy.h"
 #include "Runtime/Engine/StaticMesh.h"
 #include "Runtime/Engine/StaticMeshComponent.h"
 #include "Runtime/Engine/CameraComponent.h"

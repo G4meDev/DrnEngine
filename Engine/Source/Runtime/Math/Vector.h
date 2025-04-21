@@ -59,7 +59,7 @@ namespace Drn
 		inline static float Distance(const Vector& V1, const Vector& V2) 
 		{
 			XMVECTOR Diff = XMVectorSubtract(XMLoadFloat3(&V1.m_Vector), XMLoadFloat3(&V2.m_Vector));
-			return XMVectorGetX( XMVectorSqrt( XMVector3Dot(Diff, Diff) ) );
+			return XMVectorGetX( XMVector3Length( Diff ) );
 		}
 
 		static Vector FromU32(uint32_t Value)

@@ -22,11 +22,20 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
+		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
+		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
+
+		//virtual PrimitiveSceneProxy* AllocateSceneProxy() = 0;
+		//virtual PrimitiveSceneProxy* GetSceneProxy() const = 0;
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 #endif
 
 	protected:
+
+		bool m_RenderStateDirty;
 
 		BodyInstance m_BodyInstance;
 

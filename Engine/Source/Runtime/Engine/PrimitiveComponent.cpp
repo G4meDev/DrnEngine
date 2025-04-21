@@ -9,6 +9,7 @@ namespace Drn
 {
 	PrimitiveComponent::PrimitiveComponent()
 		: SceneComponent()
+		, m_RenderStateDirty(true)
 	{
 		
 	}
@@ -43,11 +44,15 @@ namespace Drn
 	void PrimitiveComponent::RegisterComponent( World* InOwningWorld )
 	{
 		SceneComponent::RegisterComponent(InOwningWorld);
+
+
 	}
 
 	void PrimitiveComponent::UnRegisterComponent()
 	{
 		SceneComponent::UnRegisterComponent();
+
+
 	}
 
 

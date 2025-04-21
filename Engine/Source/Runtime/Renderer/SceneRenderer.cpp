@@ -207,6 +207,11 @@ namespace Drn
 				CommandList->DrawIndexed( RenderProxy.IndexBuffer->GetNumIndices() );
 			}
 		}
+
+		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
+		{
+			Proxy->RenderMainPass(CommandList, this);
+		}
 	}
 
 	void SceneRenderer::Render( dx12lib::CommandList* CommandList )

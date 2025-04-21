@@ -2,6 +2,7 @@
 #include "World.h"
 
 #include "Runtime/Physic/PhysicManager.h"
+#include "Runtime/Components/LineBatchComponent.h"
 
 LOG_DEFINE_CATEGORY( LogWorld, "LogWorld" );
 
@@ -14,14 +15,26 @@ namespace Drn
 	{
 		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
 		m_Scene = Renderer::Get()->AllocateScene(this);
+
+		m_LineBatchCompponent = new LineBatchComponent();
+		m_LineBatchCompponent->RegisterComponent(this);
 	}
 
 	World::~World()
 	{
+	}
+
+	void World::Destroy()
+	{
+		m_LineBatchCompponent->UnRegisterComponent();
+		delete m_LineBatchCompponent;
+
 		DestroyWorldActors();
 
 		PhysicManager::Get()->RemoveAndInvalidateScene(m_PhysicScene);
 		Renderer::Get()->ReleaseScene(m_Scene);
+
+		delete this;
 	}
 
 	void World::Tick( float DeltaTime )

@@ -16,6 +16,8 @@ namespace Drn
 		World();
 		~World();
 
+		void Destroy();
+
 		void Tick(float DeltaTime);
 
 		inline void SetTickEnabled( bool Enabled ) { m_ShouldTick = Enabled; }
@@ -49,6 +51,7 @@ namespace Drn
 		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
 
+		class LineBatchComponent* m_LineBatchCompponent;
 
 #if WITH_EDITOR
 

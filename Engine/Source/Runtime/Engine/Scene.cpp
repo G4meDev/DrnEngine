@@ -6,6 +6,11 @@ namespace Drn
 	Scene::Scene( World* InWorld )
 		: m_World(InWorld)
 	{
+
+
+
+// --------------------------------------------------------------------------------------------------
+
 		for (Actor* actor : m_World->m_Actors)
 		{
 			std::vector<StaticMeshComponent*> StaticMeshComponenets;
@@ -33,6 +38,8 @@ namespace Drn
 
 	void Scene::Render( dx12lib::CommandList* CommandList )
 	{
+		InitSceneRender(CommandList);
+
 		for (SceneRenderer* SceneRen : m_SceneRenderers)
 		{
 			SceneRen->Render(CommandList);
@@ -100,6 +107,33 @@ namespace Drn
 		{
 			RemoveStaticMeshCompponent(Mesh);
 		}
+	}
+
+// ----------------------------------------------------------------------------
+
+	void Scene::InitSceneRender(dx12lib::CommandList* CommandList)
+	{
+		for (auto it = m_PrimitiveProxies.begin(); it != m_PrimitiveProxies.end(); it++)
+		{
+			PrimitiveSceneProxy* Proxy = *it;
+
+			if (Proxy->GetPrimitive()->IsRenderStateDirty())
+			{
+				Proxy->UpdateResources(CommandList);
+				Proxy->GetPrimitive()->ClearRenderStateDirty();
+			}
+
+		}
+	}
+
+	void Scene::AddPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
+	{
+		m_PrimitiveProxies.insert(InPrimitiveSceneProxy);
+	}
+
+	void Scene::RemovePrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
+	{
+		m_PrimitiveProxies.erase(InPrimitiveSceneProxy);
 	}
 
 }
