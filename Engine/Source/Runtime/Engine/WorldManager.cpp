@@ -46,7 +46,19 @@ namespace Drn
 
 	void WorldManager::LoadInitalWorld()
 	{
+#if WITH_EDITOR
 		m_SingletonInstance->LoadDefaultWorld();
+#else
+		//m_SingletonInstance->LoadDefaultWorld();
+
+		AssetHandle<Level> DefaultLevel("Game\\Content\\Level_01.drn");
+		DefaultLevel.Load();
+
+		m_MainWorld = AllocateWorld();
+		m_MainWorld->SetTickEnabled(true);
+
+		DefaultLevel->LoadToWorld(m_MainWorld);
+#endif
 	}
 
 	void WorldManager::LoadLevel( const std::string& LevelPath )

@@ -14,9 +14,9 @@ using namespace Microsoft::WRL;
 
 namespace Drn
 {
-	Renderer* Renderer::SingletonInstance;
+	Renderer* Renderer::SingletonInstance = nullptr;
 
-	Renderer::Renderer() 
+	Renderer::Renderer()
 	{
 		
 	}
@@ -59,6 +59,12 @@ namespace Drn
 //		m_MainSceneRenderer = m_MainScene->AllocateSceneRenderer();
 //		m_MainSceneRenderer->m_CameraActor = Cam;
 //#endif
+
+#ifndef WITH_EDITOR
+
+		
+
+#endif
 
 		commandQueue.Flush();
 

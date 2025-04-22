@@ -41,8 +41,6 @@ namespace Drn
 
 	void BodyInstance::InitBody( BodySetup* Setup, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene )
 	{
-		LOG(LogBodyInstance, Info, "initalizing body for %s", InOwnerComponent->GetComponentLabel().c_str());
-
 		m_OwnerComponent = InOwnerComponent;
 		m_BodySetup = Setup;
 
@@ -84,8 +82,6 @@ namespace Drn
 
 	void BodyInstance::TermBody()
 	{
-		LOG(LogBodyInstance, Info, "terminating body for %s", m_OwnerComponent->GetComponentLabel().c_str());
-
 		m_OwnerComponent = nullptr;
 
 		if (m_RigidActor && m_RigidActor->getScene())

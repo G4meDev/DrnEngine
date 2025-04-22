@@ -61,6 +61,7 @@ namespace Drn
 	{
 		ComponentLabel = InLabel;
 	}
+#endif
 
 	void Component::RegisterComponent( World* InOwningWorld )
 	{
@@ -74,5 +75,4 @@ namespace Drn
 		m_OwningWorld = nullptr;
 	}
 
-#endif
 }

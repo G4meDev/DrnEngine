@@ -141,6 +141,7 @@ Drn::EActorType Actor::GetActorType() {}
 	{
 		m_Transient = Transient;
 	}
+#endif
 
 	void Actor::RegisterComponents( World* InWorld )
 	{
@@ -182,5 +183,4 @@ Drn::EActorType Actor::GetActorType() {}
 		}
 	}
 
-#endif
 }

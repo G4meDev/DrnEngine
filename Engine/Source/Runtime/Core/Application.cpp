@@ -144,7 +144,11 @@ namespace Drn
 		LOG( LogApplication, Info, "Window Resized: %ix%i", e.Width, e.Height);
 
 		GameFramework::Get().SetDisplaySize( e.Width, e.Height );
-		Renderer::Get()->MainWindowResized(e.Width, e.Height);
+
+		if (Renderer::Get())
+		{
+			Renderer::Get()->MainWindowResized(e.Width, e.Height);
+		}
 	}
 
 	void Application::OnWindowClose( WindowCloseEventArgs& e ) 

@@ -24,13 +24,11 @@ namespace Drn
 		m_PhysxScene = PhysicManager::Get()->GetPhysics()->createScene(sceneDesc);
 
 #if WITH_EDITOR
-
 		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eSCALE, 1 );
 		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_DYNAMIC, 1 );
 		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_STATIC, 1 );
 		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_SHAPES, 1 );
 		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_EDGES, 1 );
-
 #endif
 
 #if WITH_PVD
@@ -43,8 +41,6 @@ namespace Drn
 			pvdClient->setScenePvdFlag( physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true );
 		}
 #endif
-
-		//AddTestActors();
 	}
 
 	PhysicScene::~PhysicScene()
@@ -129,37 +125,6 @@ namespace Drn
 				Body->GetOwnerComponent()->SetWorldTransform(P2Transform(transform));
 			}
 		}
-	}
-
-	void PhysicScene::AddTestActors()
-	{
-		physx::PxPhysics* m_Physics = PhysicManager::Get()->GetPhysics();
-
-		m_Material = m_Physics->createMaterial( 0.5f, 0.5f, 0.6f );
-		physx::PxU32 size = 20;
-		physx::PxTransform t(physx::PxVec3(0));
-
-		physx::PxRigidStatic* GroundPlane = physx::PxCreatePlane(*m_Physics, physx::PxPlane(0, 1, 0, 1),
-			*m_Material);
-		m_PhysxScene->addActor(*GroundPlane);
-
-		float halfExtent = 0.5f;
-		physx::PxShape* shape = m_Physics->createShape( physx::PxBoxGeometry( halfExtent, halfExtent,
-		halfExtent ), *m_Material );
-
-		for ( physx::PxU32 i = 0; i < size; i++ )
-		{
-			for ( physx::PxU32 j = 0; j < size - i; j++ )
-			{
-				physx::PxTransform localTm( physx::PxVec3( physx::PxReal( j * 2 ) - physx::PxReal( size - i ), physx::PxReal( i * 2 + 1 ), 0 ) * halfExtent );
-				physx::PxRigidDynamic* body = m_Physics->createRigidDynamic( t.transform( localTm ) );
-				body->attachShape( *shape );
-				
-				physx::PxRigidBodyExt::updateMassAndInertia( *body, 10.0f );
-				m_PhysxScene->addActor( *body );
-			}
-		}
-		shape->release();
 	}
 
 // ------------------------------------------------------------------------------------------------------------

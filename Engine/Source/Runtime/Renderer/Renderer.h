@@ -56,6 +56,7 @@ namespace Drn
 
 
 		friend class ViewportGuiLayer;
+		friend class World;
 
 	private:
 		

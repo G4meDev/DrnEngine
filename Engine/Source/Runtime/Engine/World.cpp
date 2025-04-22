@@ -16,6 +16,15 @@ namespace Drn
 		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
 		m_Scene = Renderer::Get()->AllocateScene(this);
 
+		// TODO: proper camera and scene render managment
+#ifndef WITH_EDITOR
+		CameraActor* Cam = SpawnActor<CameraActor>();
+		Cam->SetActorLocation(XMVectorSet(0, 0, -10, 0));
+
+		Renderer::Get()->m_MainSceneRenderer = m_Scene->AllocateSceneRenderer();
+		Renderer::Get()->m_MainSceneRenderer->m_CameraActor = Cam;		
+#endif
+
 		m_LineBatchCompponent = new LineBatchComponent();
 		m_LineBatchCompponent->RegisterComponent(this);
 	}
@@ -168,6 +177,29 @@ namespace Drn
 		}
 	}
 
+	void World::DestroyWorldActors()
+	{
+		for (auto it = m_Actors.begin(); it != m_Actors.end(); )
+		{
+			Actor* ToDelActor = *it;
+			InvokeOnRemoveActor(ToDelActor);
+			ToDelActor->UnRegisterComponents();
+			it = m_Actors.erase(it);
+
+			delete ToDelActor;
+		}
+		
+		for (auto it = m_NewActors.begin(); it != m_NewActors.end(); )
+		{
+			Actor* ToDelActor = *it;
+			InvokeOnRemoveActor(ToDelActor);
+			ToDelActor->UnRegisterComponents();
+			it = m_NewActors.erase(it);
+
+			delete ToDelActor;
+		}
+	}
+
 #if WITH_EDITOR
 
 	void World::Save()
@@ -199,28 +231,6 @@ namespace Drn
 		return result;
 	}
 
-	void World::DestroyWorldActors()
-	{
-		for (auto it = m_Actors.begin(); it != m_Actors.end(); )
-		{
-			Actor* ToDelActor = *it;
-			InvokeOnRemoveActor(ToDelActor);
-			ToDelActor->UnRegisterComponents();
-			it = m_Actors.erase(it);
-
-			delete ToDelActor;
-		}
-		
-		for (auto it = m_NewActors.begin(); it != m_NewActors.end(); )
-		{
-			Actor* ToDelActor = *it;
-			InvokeOnRemoveActor(ToDelActor);
-			ToDelActor->UnRegisterComponents();
-			it = m_NewActors.erase(it);
-
-			delete ToDelActor;
-		}
-	}
-
 #endif
+
 }
