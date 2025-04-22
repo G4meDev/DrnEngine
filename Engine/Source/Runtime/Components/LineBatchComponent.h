@@ -43,6 +43,8 @@ namespace Drn
 		void DrawCircle(const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Lifetime);
 		void DrawSphere(const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Lifetime);
 
+		void DrawBox(const Box& InBox, const Transform& T, const Vector& Color, float Lifetime);
+
 		void Flush();
 
 		LineBatchSceneProxy* m_SceneProxy;

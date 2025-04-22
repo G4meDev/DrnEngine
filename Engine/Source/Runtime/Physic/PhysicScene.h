@@ -28,7 +28,7 @@ namespace Drn
 		void RemoveActor(physx::PxActor* InActor);
 
 		void DrawDebugCollisions();
-		void DrawDebugForBodyInstance(BodyInstance* Body, const Transform& Trans);
+		void DrawDebugForRigidActor(PxRigidActor* RigidActor);
 
 		//TODO: add force, clear velocity, set target, add actor, ...
 

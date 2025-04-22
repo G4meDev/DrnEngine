@@ -39,7 +39,7 @@ namespace Drn
 		float Radius;
 		float Length;
 
-		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery() override
+		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery( const Vector& Scale ) override
 		{
 			return std::shared_ptr<PxGeometry>( new PxCapsuleGeometry( Radius, Length / 2 ) );
 		}

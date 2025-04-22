@@ -68,7 +68,7 @@ namespace Drn
 		{
 			ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
 
-			physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery().get()), *m_Material );
+			physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(m_OwnerComponent->GetWorldScale()).get()), *m_Material );
 
 			m_RigidActor->attachShape( *shape );
 			shape->release();

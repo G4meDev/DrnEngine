@@ -10,6 +10,7 @@
 
 #include "Runtime/Math/IntPoint.h"
 #include "Runtime/Math/Vector.h"
+#include "Runtime/Math/Box.h"
 #include "Runtime/Math/Quat.h"
 #include "Runtime/Math/Rotator.h"
 #include "Runtime/Math/Transform.h"

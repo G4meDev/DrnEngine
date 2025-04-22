@@ -37,6 +37,7 @@
 #include "Runtime/Renderer/D3D12Utils.h"
 
 #include "Runtime/Math/Math.h"
+#include "Runtime/Math/Box.h"
 #include "Runtime/Math/IntPoint.h"
 
 #include "Runtime/Physic/PhysicCore.h"

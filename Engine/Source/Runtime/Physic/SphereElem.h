@@ -39,9 +39,10 @@ namespace Drn
 		Vector Center;
 		float Radius;
 
-		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery() override
+		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery( const Vector& Scale ) override
 		{
-			return std::shared_ptr<PxGeometry>( new PxSphereGeometry( Radius ) );
+			float ScaledRadius = Radius * Scale.GetMaxComponent();
+			return std::shared_ptr<PxGeometry>( new PxSphereGeometry( ScaledRadius) );
 		}
 
 	private:

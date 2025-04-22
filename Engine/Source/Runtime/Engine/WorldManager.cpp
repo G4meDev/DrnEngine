@@ -18,9 +18,9 @@ namespace Drn
 
 	void WorldManager::Shutdown()
 	{
-		if (m_SingletonInstance->m_MainWorld)
+		for (World* W : m_SingletonInstance->m_AllocatedWorlds)
 		{
-			m_SingletonInstance->m_MainWorld->Destroy();
+			W->Destroy();
 		}
 
 		delete m_SingletonInstance;
@@ -137,8 +137,11 @@ namespace Drn
 	{
 		m_AllocatedWorlds.erase(InWorld);
 
-		InWorld->Destroy();
-		InWorld = nullptr;
+		if (InWorld)
+		{
+			InWorld->Destroy();
+			InWorld = nullptr;
+		}
 	}
 
 	void WorldManager::LoadDefaultWorld()

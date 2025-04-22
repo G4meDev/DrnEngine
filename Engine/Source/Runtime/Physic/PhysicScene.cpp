@@ -166,14 +166,14 @@ namespace Drn
 
 	void PhysicScene::DrawDebugCollisions()
 	{
-		const PxRenderBuffer& Rb = GetPhysxScene()->getRenderBuffer();
-		uint32 NumLines = Rb.getNbLines();
-		
-		for ( PxU32 i = 0; i < NumLines; i++ )
-		{
-			const PxDebugLine& line = Rb.getLines()[i];
-			m_OwningWorld->DrawDebugLine(P2Vector(line.pos0), P2Vector(line.pos1), Vector::FromU32(line.color0), 0);
-		}
+		//const PxRenderBuffer& Rb = GetPhysxScene()->getRenderBuffer();
+		//uint32 NumLines = Rb.getNbLines();
+		//
+		//for ( PxU32 i = 0; i < NumLines; i++ )
+		//{
+		//	const PxDebugLine& line = Rb.getLines()[i];
+		//	m_OwningWorld->DrawDebugLine(P2Vector(line.pos0), P2Vector(line.pos1), Vector::FromU32(line.color0), 0);
+		//}
 
 // ------------------------------------------------------------------------------------------------------------
 
@@ -191,28 +191,45 @@ namespace Drn
 			if ( Actor && Actor->getOwnerClient() == PX_DEFAULT_CLIENT )
 			{
 				PxRigidActor* RigidActor = Actor->is<PxRigidActor>();
+				DrawDebugForRigidActor(RigidActor);
 
-				if (RigidActor)
-				{
-					Transform RigidTransform = P2Transform(RigidActor->getGlobalPose());
-
-					BodyInstance* Body = PhysicUserData::Get<BodyInstance>(RigidActor->userData);
-					DrawDebugForBodyInstance(Body, RigidTransform);
-				}
+				BodyInstance* Body = PhysicUserData::Get<BodyInstance>(RigidActor->userData);
 			}
 		}
 
 		delete Actors;
 	}
 
-	void PhysicScene::DrawDebugForBodyInstance( BodyInstance* Body, const Transform& Trans )
+	void PhysicScene::DrawDebugForRigidActor( PxRigidActor* RigidActor )
 	{
-		if (Body && Body->GetBodySetup())
+		if (RigidActor)
 		{
-			for (SphereElem& Elem : Body->GetBodySetup()->m_AggGeo.SphereElems)
+			Transform RigidTransform = P2Transform(RigidActor->getGlobalPose());
+
+			const uint32 NumShapes = RigidActor->getNbShapes();
+			PxShape** Shapes = new PxShape*[NumShapes];
+			RigidActor->getShapes(Shapes, NumShapes);
+
+			for (int32 i = 0; i < NumShapes; i++)
 			{
-				m_OwningWorld->DrawDebugSphere(Trans.GetLocation(), Trans.GetRotation(), Vector::OneVector, Elem.Radius, 16, 0);
+				PxShape* Shape = Shapes[i];
+
+				if ( Shape->getGeometry().getType() == PxGeometryType::eSPHERE)
+				{
+					const PxSphereGeometry* SphereGeo = static_cast<const PxSphereGeometry*>(&(Shape->getGeometry()));
+					m_OwningWorld->DrawDebugSphere(RigidTransform.GetLocation(), RigidTransform.GetRotation(),
+						Vector::OneVector, SphereGeo->radius, 16, 0);
+				}
+
+				else if ( Shape->getGeometry().getType() == PxGeometryType::eBOX)
+				{
+					const PxBoxGeometry* BoxGeo = static_cast<const PxBoxGeometry*>(&(Shape->getGeometry()));
+					Box box = Box::BuildAABB(Vector::ZeroVector, P2Vector(BoxGeo->halfExtents));
+					m_OwningWorld->DrawDebugBox(box, RigidTransform, Vector(0.3f, 0.7f, 0.2f), 0);
+				}
 			}
+
+			delete Shapes;
 		}
 	}
 

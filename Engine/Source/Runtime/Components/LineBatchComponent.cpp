@@ -92,6 +92,35 @@ namespace Drn
 		DrawCircle(Center, UpVector, ForwardVector, Color, Radius, NumSides, Lifetime);
 	}
 
+	void LineBatchComponent::DrawBox( const Box& InBox, const Transform& T, const Vector& Color, float Lifetime )
+	{
+		Vector	B[2];
+		int32 ai, aj;
+		B[0] = InBox.Min;
+		B[1] = InBox.Max;
+
+		float P_X, P_Y, P_Z, Q_X, Q_Y, Q_Z;
+
+		for( ai=0; ai<2; ai++ ) for( aj=0; aj<2; aj++ )
+		{
+			P_X=B[ai].GetX(); Q_X=B[ai].GetX();
+			P_Y=B[aj].GetY(); Q_Y=B[aj].GetY();
+			P_Z=B[0].GetZ()	; Q_Z=B[1].GetZ();
+			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Lifetime);
+
+			P_Y=B[ai].GetY(); Q_Y=B[ai].GetY();
+			P_Z=B[aj].GetZ(); Q_Z=B[aj].GetZ();
+			P_X=B[0].GetX()	; Q_X=B[1].GetX();
+			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Lifetime);
+
+			P_Z=B[ai].GetZ(); Q_Z=B[ai].GetZ();
+			P_X=B[aj].GetX(); Q_X=B[aj].GetX();
+			P_Y=B[0].GetY()	; Q_Y=B[1].GetY();
+			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Lifetime);
+		}
+		MarkRenderStateDirty();
+	}
+
 	void LineBatchComponent::Flush()
 	{
 		m_Lines.clear();

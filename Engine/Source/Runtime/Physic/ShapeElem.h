@@ -44,7 +44,7 @@ namespace Drn
 			return &UserData;
 		}
 
-		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery() = 0;
+		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery(const Vector& Scale) = 0;
 
 		inline EAggCollisionShape GetType() const { return Type; }
 

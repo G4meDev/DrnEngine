@@ -35,9 +35,10 @@ namespace Drn
 
 		Vector Extent;
 
-		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery() override
+		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery( const Vector& Scale ) override
 		{
-			return std::shared_ptr<PxGeometry>( new PxBoxGeometry( Vector2P(Extent) ) );
+			Vector ScaledExtent = Extent * Scale;
+			return std::shared_ptr<PxGeometry>( new PxBoxGeometry( Vector2P(ScaledExtent) ) );
 		}
 
 	private:

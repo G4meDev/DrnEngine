@@ -160,6 +160,14 @@ namespace Drn
 		}
 	}
 
+	void World::DrawDebugBox( const Box& InBox, const Transform& T, const Vector& Color, float Lifetime )
+	{
+		if (m_LineBatchCompponent)
+		{
+			m_LineBatchCompponent->DrawBox(InBox, T, Color, Lifetime);
+		}
+	}
+
 #if WITH_EDITOR
 
 	void World::Save()
