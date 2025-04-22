@@ -144,6 +144,22 @@ namespace Drn
 		}
 	}
 
+	void World::DrawDebugCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Lifetime )
+	{
+		if (m_LineBatchCompponent)
+		{
+			m_LineBatchCompponent->DrawCircle(Base, X, Z, Color, Radius, NumSides, Lifetime);
+		}
+	}
+
+	void World::DrawDebugSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Lifetime )
+	{
+		if (m_LineBatchCompponent)
+		{
+			m_LineBatchCompponent->DrawSphere(Center, Rotation, Color, Radius, NumSides, Lifetime);
+		}
+	}
+
 #if WITH_EDITOR
 
 	void World::Save()

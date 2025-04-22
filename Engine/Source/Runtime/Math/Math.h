@@ -13,6 +13,8 @@ namespace Drn
 	{
 	public:
 
+		static float PI;
+
 		static float Mod(float A, float B);
 		static float Abs(float A);
 		static 	double TruncToDouble(double A);

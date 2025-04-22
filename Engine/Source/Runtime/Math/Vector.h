@@ -43,6 +43,18 @@ namespace Drn
 				XMLoadFloat3(&m_Vector), XMLoadFloat3(&other.m_Vector)) );
 		}
 
+		inline Vector operator*( float Other ) const
+		{
+			return Vector( XMVectorMultiply(
+				XMLoadFloat3(&m_Vector), XMVectorSet(Other, Other, Other, 0)) );
+		}
+
+		inline Vector operator*( float Other )
+		{
+			return Vector( XMVectorMultiply(
+				XMLoadFloat3(&m_Vector), XMVectorSet(Other, Other, Other, 0)) );
+		}
+
 		inline Vector operator/( float Other )
 		{
 			return Vector( XMVectorDivide(
@@ -88,6 +100,10 @@ namespace Drn
 		static Vector OneVector;
 		static Vector UpVector;
 		static Vector DownVector;
+		static Vector RightVector;
+		static Vector LeftVector;
+		static Vector ForwardVector;
+		static Vector BackwardVector;
 
 #if WITH_EDITOR
 		void Draw(const std::string& id);

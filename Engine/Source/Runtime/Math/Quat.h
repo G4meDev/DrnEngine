@@ -26,6 +26,7 @@ namespace Drn
 
 		inline Quat Inverse() const { return Quat( XMQuaternionInverse(m_Vector) ); }
 		inline Vector RotateVector( const Vector& InVector) { return Vector( XMVector3Rotate( XMLoadFloat3(&InVector.m_Vector), m_Vector) ); }
+		inline Vector RotateVector( const Vector& InVector) const { return Vector( XMVector3Rotate( XMLoadFloat3(&InVector.m_Vector), m_Vector) ); }
 
 		inline XMVECTOR Get() { return m_Vector; }
 

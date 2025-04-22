@@ -7,11 +7,17 @@
 
 namespace Drn
 {
-	Vector Vector::ZeroVector	= Vector(0);
-	Vector Vector::OneVector	= Vector(1);
+	Vector Vector::ZeroVector		= Vector(0);
+	Vector Vector::OneVector		= Vector(1);
 
-	Vector Vector::UpVector		= Vector(0, 1, 0);
-	Vector Vector::DownVector	= Vector(0, -1, 0);
+	Vector Vector::UpVector			= Vector(0, 1, 0);
+	Vector Vector::DownVector		= Vector(0, -1, 0);
+
+	Vector Vector::RightVector		= Vector(1, 0, 0);
+	Vector Vector::LeftVector		= Vector(-1, 0, 0);
+
+	Vector Vector::ForwardVector	= Vector(0, 0, 1);
+	Vector Vector::BackwardVector	= Vector(0, 0, -1);
 
 #if WITH_EDITOR
 	void Vector::Draw(const std::string& id)

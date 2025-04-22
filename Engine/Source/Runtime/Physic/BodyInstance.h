@@ -26,6 +26,8 @@ namespace Drn
 		inline PrimitiveComponent* GetOwnerComponent() { return m_OwnerComponent; }
 		inline PxRigidActor* GetRigidActor() { return m_RigidActor; }
 
+		inline BodySetup* GetBodySetup() const { return m_BodySetup; }
+
 		void InitBody(BodySetup* Setup, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene);
 		void TermBody();
 

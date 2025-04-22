@@ -213,7 +213,7 @@ namespace Drn
 
 	void AssetImporterStaticMesh::ProcessCollisionBox( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )
 	{
-		
+		MeshAsset->m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem(Vector::ZeroVector, Quat::Identity, Vector::OneVector * Vector(10, 1, 10)));
 	}
 
 	void AssetImporterStaticMesh::ProcessCollisionCapsule( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )

@@ -5,7 +5,9 @@ LOG_DEFINE_CATEGORY(LogMath, "Math");
 
 namespace Drn
 {
-	float Math::Mod(float A, float B)
+	float Math::PI = 3.1415926535897932f;
+
+	float Math::Mod( float A, float B )
 	{
 		const float AbsB = Abs(B);
 

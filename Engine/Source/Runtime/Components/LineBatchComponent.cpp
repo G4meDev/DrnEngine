@@ -65,6 +65,33 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
+	void LineBatchComponent::DrawCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Lifetime)
+	{
+		const float	AngleDelta = 2.0f * Math::PI / NumSides;
+		Vector	LastVertex = Base + X * Radius;
+
+		for(int32 SideIndex = 0;SideIndex < NumSides;SideIndex++)
+		{
+			const Vector Vertex = Base + (X * Math::Cos(AngleDelta * (SideIndex + 1)) + Z * Math::Sin(AngleDelta * (SideIndex + 1))) * Radius;
+			m_Lines.push_back(BatchLine(LastVertex, Vertex, Color, Lifetime));
+
+			LastVertex = Vertex;
+		}
+
+		MarkRenderStateDirty();
+	}
+
+	void LineBatchComponent::DrawSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Lifetime )
+	{
+		Vector ForwardVector = Rotation.RotateVector(Vector::ForwardVector);
+		Vector UpVector = Rotation.RotateVector(Vector::UpVector);
+		Vector RightVector = Rotation.RotateVector(Vector::RightVector);
+
+		DrawCircle(Center, ForwardVector, RightVector, Color, Radius, NumSides, Lifetime);
+		DrawCircle(Center, RightVector, UpVector, Color, Radius, NumSides, Lifetime);
+		DrawCircle(Center, UpVector, ForwardVector, Color, Radius, NumSides, Lifetime);
+	}
+
 	void LineBatchComponent::Flush()
 	{
 		m_Lines.clear();

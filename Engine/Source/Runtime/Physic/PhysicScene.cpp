@@ -168,7 +168,7 @@ namespace Drn
 	{
 		const PxRenderBuffer& Rb = GetPhysxScene()->getRenderBuffer();
 		uint32 NumLines = Rb.getNbLines();
-
+		
 		for ( PxU32 i = 0; i < NumLines; i++ )
 		{
 			const PxDebugLine& line = Rb.getLines()[i];
@@ -196,13 +196,24 @@ namespace Drn
 				{
 					Transform RigidTransform = P2Transform(RigidActor->getGlobalPose());
 
-					Vector ActorLocation = RigidTransform.GetLocation();
-					m_OwningWorld->DrawDebugLine(ActorLocation, ActorLocation + Vector::UpVector * 3, Vector::OneVector, 0);
+					BodyInstance* Body = PhysicUserData::Get<BodyInstance>(RigidActor->userData);
+					DrawDebugForBodyInstance(Body, RigidTransform);
 				}
 			}
 		}
 
 		delete Actors;
+	}
+
+	void PhysicScene::DrawDebugForBodyInstance( BodyInstance* Body, const Transform& Trans )
+	{
+		if (Body && Body->GetBodySetup())
+		{
+			for (SphereElem& Elem : Body->GetBodySetup()->m_AggGeo.SphereElems)
+			{
+				m_OwningWorld->DrawDebugSphere(Trans.GetLocation(), Trans.GetRotation(), Vector::OneVector, Elem.Radius, 16, 0);
+			}
+		}
 	}
 
 }

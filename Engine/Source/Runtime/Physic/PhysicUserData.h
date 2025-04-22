@@ -47,6 +47,16 @@ namespace Drn
 		return nullptr;
 	}
 
+	//template<>
+	//inline BodyInstance* PhysicUserData::Get( void* UserData )
+	//{
+	//	if (UserData && ((PhysicUserData*)UserData)->Type == EPhysicUserDataType::BodyInstance)
+	//	{
+	//		return (BodyInstance*)((PhysicUserData*)UserData)->Payload;
+	//	}
+	//	return nullptr;
+	//}
+
 	template<>
 	inline void PhysicUserData::Set( void* UserData, class ShapeElem* Payload )
 	{
