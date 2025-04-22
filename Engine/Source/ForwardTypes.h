@@ -8,6 +8,8 @@
 
 #include <DirectXMath.h>
 
+#include "Runtime/Misc/StatsMisc.h"
+
 #include "Runtime/Math/IntPoint.h"
 #include "Runtime/Math/Vector.h"
 #include "Runtime/Math/Box.h"

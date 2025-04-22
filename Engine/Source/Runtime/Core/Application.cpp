@@ -45,6 +45,8 @@ namespace Drn
 			m_MainWindow->Update += UpdateEvent::slot( &Application::OnUpdate, this );
 			m_MainWindow->Close += WindowCloseEvent::slot( &Application::OnWindowClose, this );
 
+			Time::Init();
+
 			AssetManager::Get()->Init();
 			PhysicManager::Init();
 			Renderer::Init( inhInstance, m_MainWindow.get() );
@@ -110,6 +112,7 @@ namespace Drn
 #if WITH_EDITOR
 		Editor::Get()->Tick(e.DeltaTime);
 #endif
+
 	}
 
 	void Application::OnKeyPressed( KeyEventArgs& e )

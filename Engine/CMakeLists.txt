@@ -9,6 +9,7 @@ set( HEADER_FILES
 	Source/Runtime/Core/AssetManager.h
 	Source/Runtime/Core/Archive.h
 	Source/Runtime/Core/Serializable.h
+	Source/Runtime/Core/Time.h
 	
 	Source/Runtime/Engine/WorldManager.h
 	Source/Runtime/Engine/World.h
@@ -63,6 +64,7 @@ set( HEADER_FILES
 	Source/Runtime/Misc/EnumClassFlags.h
 	Source/Runtime/Misc/Log.h
 	Source/Runtime/Misc/Path.h
+	Source/Runtime/Misc/StatsMisc.h
 	
 	Source/Editor/Misc/ViewportCameraInputHandler.h
 
@@ -100,6 +102,7 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Application.cpp
 	Source/Runtime/Core/Archive.cpp
 	Source/Runtime/Core/Serializable.cpp
+	Source/Runtime/Core/Time.cpp
 	
 	Source/Runtime/Engine/WorldManager.cpp
 	Source/Runtime/Engine/World.cpp
@@ -154,6 +157,7 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/EnumClassFlags.cpp
 	Source/Runtime/Misc/Log.cpp
 	Source/Runtime/Misc/Path.cpp
+	Source/Runtime/Misc/StatsMisc.cpp
 	
 	Source/Editor/Editor.cpp
 	Source/Editor/EditorConfig.cpp

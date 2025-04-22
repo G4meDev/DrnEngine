@@ -3,6 +3,7 @@
 #include "Runtime/Core/Drn.h"
 #include "Runtime/Core/AssetManager.h"
 #include "Runtime/Core/Archive.h"
+#include "Runtime/Core/Time.h"
 
 #include "Runtime/Engine/WorldManager.h"
 #include "Runtime/Engine/World.h"
