@@ -56,6 +56,7 @@
 #include "Runtime/Misc/EnumClassFlags.h"
 #include "Runtime/Misc/Path.h"
 #include "Runtime/Misc/FileSystem.h"
+#include "Runtime/Misc/Profiler.h"
 
 #include <iostream>
 #include <WinUser.h>

@@ -4,14 +4,13 @@
 namespace Drn
 {
 	ScopeTimer::ScopeTimer( ScopeTimerData& InData )
-		: m_StartTime(Time::GetSeconds())
-		, Data(InData)
+		: Data(InData)
 	{
+		InData.m_StartTime = Time::GetSeconds();
 	}
 
 	ScopeTimer::~ScopeTimer()
 	{
-		Data.Time = Time::GetSeconds() - m_StartTime;
+		Data.m_Duration = Time::GetSeconds() - Data.m_StartTime;
 	}
-
 }

@@ -64,7 +64,13 @@ namespace Drn
 
 		if (m_DrawDebugCollision)
 		{
-			DrawDebugCollisions();
+			ScopeTimerData Data;
+			{
+				ScopeTimer Timer(Data);
+				DrawDebugCollisions();
+			}
+
+			Profiler::Get()->WriteToken( ProfileToken( "physx", Data.GetStartTime() * 1000000, Data.GetDuration() * 1000000) );
 		}
 	}
 

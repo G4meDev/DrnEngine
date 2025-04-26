@@ -46,6 +46,7 @@ namespace Drn
 			m_MainWindow->Close += WindowCloseEvent::slot( &Application::OnWindowClose, this );
 
 			Time::Init();
+			Profiler::Init();
 
 			AssetManager::Get()->Init();
 			PhysicManager::Init();
@@ -72,6 +73,8 @@ namespace Drn
 			Renderer::Shutdown();
 			PhysicManager::Shutdown();
 			AssetManager::Shutdown();
+
+			Profiler::Shutdown();
 
 			m_MainWindow.reset();
 		}

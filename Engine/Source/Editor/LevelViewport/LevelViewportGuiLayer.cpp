@@ -117,6 +117,19 @@ namespace Drn
 				{
 					AssetManager::Get()->ReportLiveAssets();
 				}
+
+				bool Profiling = Profiler::Get()->IsProfiling();
+				if ( ImGui::MenuItem( Profiling ? "end profile" : "start profile" ) )
+				{
+					if (Profiling)
+					{
+						Profiler::Get()->EndProfiling();
+					}
+					else
+					{
+						Profiler::Get()->StartProfiling();
+					}
+				}
 				
 				ImGui::EndMenu();
 			}

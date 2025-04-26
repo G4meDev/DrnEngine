@@ -7,15 +7,19 @@ namespace Drn
 	struct ScopeTimerData
 	{
 	public:
+
 		ScopeTimerData()
-			: Time(0)
+			: m_StartTime(0)
+			, m_Duration(0)
 		{
 		}
 
-		inline double GetTime() { return Time; }
+		inline double GetStartTime() { return m_StartTime; }
+		inline double GetDuration() { return m_Duration; }
 
 	private:
-		double Time;
+		double m_StartTime;
+		double m_Duration;
 
 		friend class ScopeTimer;
 	};
@@ -28,6 +32,5 @@ namespace Drn
 		~ScopeTimer();
 
 		ScopeTimerData& Data;
-		double m_StartTime;
 	};
 }
