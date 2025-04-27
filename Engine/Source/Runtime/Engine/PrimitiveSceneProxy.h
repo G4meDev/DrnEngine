@@ -15,6 +15,8 @@ namespace Drn
 	protected:
 
 		virtual void RenderMainPass(dx12lib::CommandList* CommandList, SceneRenderer* Renderer) const = 0;
+
+		virtual void InitResources(dx12lib::CommandList* CommandList) = 0;
 		virtual void UpdateResources(dx12lib::CommandList* CommandList) = 0;
 		virtual PrimitiveComponent* GetPrimitive() = 0;
 

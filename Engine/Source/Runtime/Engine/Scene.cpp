@@ -117,6 +117,14 @@ namespace Drn
 	{
 		SCOPE_STAT(InitSceneRender);
 
+		for (auto it = m_PendingProxies.begin(); it != m_PendingProxies.end(); it++)
+		{
+			PrimitiveSceneProxy* SceneProxy = *it;
+			SceneProxy->InitResources(CommandList);
+			m_PrimitiveProxies.insert(SceneProxy);
+		}
+		m_PendingProxies.clear();
+
 		for (auto it = m_PrimitiveProxies.begin(); it != m_PrimitiveProxies.end(); it++)
 		{
 			PrimitiveSceneProxy* Proxy = *it;
@@ -132,11 +140,12 @@ namespace Drn
 
 	void Scene::AddPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
 	{
-		m_PrimitiveProxies.insert(InPrimitiveSceneProxy);
+		m_PendingProxies.insert(InPrimitiveSceneProxy);
 	}
 
 	void Scene::RemovePrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
 	{
+		m_PendingProxies.erase(InPrimitiveSceneProxy);
 		m_PrimitiveProxies.erase(InPrimitiveSceneProxy);
 	}
 

@@ -3,6 +3,8 @@
 
 using namespace Microsoft::WRL;
 
+#define NUM_MAX_LINES 10000
+
 namespace Drn
 {
 	void LineBatchComponent::TickComponent( float DeltaTime )
@@ -140,8 +142,9 @@ namespace Drn
 	{
 		m_RootSignature.reset();
 		m_PipelineStateObject.reset();
-		m_VertexBuffer.reset();
-		m_IndexBuffer.reset();
+
+		m_VertexBuffer.Reset();
+		m_IndexBuffer.Reset();
 	}
 
 	void LineBatchSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) const
@@ -169,15 +172,14 @@ namespace Drn
 
 		CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
 
-		CommandList->SetVertexBuffer( 0, m_VertexBuffer );
-		CommandList->SetIndexBuffer( m_IndexBuffer );
-		CommandList->DrawIndexed( m_IndexBuffer->GetNumIndices());
+		CommandList->GetD3D12CommandList()->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
+		CommandList->GetD3D12CommandList()->IASetIndexBuffer( &m_IndexBufferView );
+		uint32 VertexCount = m_IndexBufferView.SizeInBytes / sizeof(uint32);
+		CommandList->DrawIndexed( VertexCount );
 	}
 
-	void LineBatchSceneProxy::UpdateResources(dx12lib::CommandList* CommandList)
+	void LineBatchSceneProxy::InitResources( dx12lib::CommandList* CommandList )
 	{
-		SCOPE_STAT(UpdateResourcesLineBatchComponent);
-
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -232,32 +234,76 @@ namespace Drn
 
 		m_PipelineStateObject = CommandList->GetDevice().CreatePipelineStateObject(pipelineStateStream);
 
-		UpdateBuffers(CommandList);
+		CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer( sizeof(VertexData_Color) * NUM_MAX_LINES * 2),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr, IID_PPV_ARGS( &m_VertexBuffer ) );
+
+		CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer( sizeof(uint32) * NUM_MAX_LINES * 2),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr, IID_PPV_ARGS( &m_IndexBuffer ) );
 	}
 
-	void LineBatchSceneProxy::UpdateBuffers( dx12lib::CommandList* CommandList )
+	void LineBatchSceneProxy::UpdateResources( dx12lib::CommandList* CommandList )
 	{
-		m_VertexData.clear();
-		m_VertexData.reserve(m_LineComponent->m_Lines.size() * 2);
+		SCOPE_STAT(UpdateResourcesLineBatchComponent);
 
-		m_IndexData.clear();
-		m_IndexData.reserve(m_LineComponent->m_Lines.size() * 2);
-
-		for (uint32 i = 0; i < m_LineComponent->m_Lines.size(); i++)
 		{
-			const BatchLine& Line = m_LineComponent->m_Lines[i];
+			SCOPE_STAT(RecaulculateData);
+			
+			m_VertexData.clear();
+			m_VertexData.reserve(m_LineComponent->m_Lines.size() * 2);
 
-			m_VertexData.push_back(VertexData_Color(Line.Start, Line.Color));
-			m_VertexData.push_back(VertexData_Color(Line.End, Line.Color));
+			m_IndexData.clear();
+			m_IndexData.reserve(m_LineComponent->m_Lines.size() * 2);
 
-			m_IndexData.push_back( i * 2 );
-			m_IndexData.push_back( i * 2 + 1 );
+			for (uint32 i = 0; i < m_LineComponent->m_Lines.size(); i++)
+			{
+				const BatchLine& Line = m_LineComponent->m_Lines[i];
+
+				m_VertexData.push_back(VertexData_Color(Line.Start, Line.Color));
+				m_VertexData.push_back(VertexData_Color(Line.End, Line.Color));
+
+				m_IndexData.push_back( i * 2 );
+				m_IndexData.push_back( i * 2 + 1 );
+			}
 		}
+
 
 		if (m_VertexData.size() > 0 && m_IndexData.size() > 0)
 		{
-			m_VertexBuffer = CommandList->CopyVertexBuffer( m_VertexData.size(), sizeof(VertexData_Color), m_VertexData.data());
-			m_IndexBuffer = CommandList->CopyIndexBuffer( m_IndexData.size(), DXGI_FORMAT_R32_UINT, m_IndexData.data());
+			SCOPE_STAT(CopyBuffer);
+
+			{
+				UINT8*        pVertexDataBegin;
+				CD3DX12_RANGE readRange( 0, 0 );
+				m_VertexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
+				uint32 ByteSize = m_VertexData.size() * sizeof(VertexData_Color);
+				memcpy( pVertexDataBegin, &m_VertexData[0], ByteSize );
+				m_VertexBuffer->Unmap( 0, nullptr );
+
+				m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
+				m_VertexBufferView.StrideInBytes  = sizeof( VertexData_Color );
+				m_VertexBufferView.SizeInBytes    = ByteSize;
+			}
+
+			{
+				UINT8*        pIndexDataBegin;
+				CD3DX12_RANGE readRange( 0, 0 );
+				m_IndexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
+				uint32 ByteSize = m_IndexData.size() * sizeof(uint32);
+				memcpy( pIndexDataBegin, &m_IndexData[0], ByteSize );
+				m_IndexBuffer->Unmap( 0, nullptr );
+			
+				m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
+				m_IndexBufferView.Format  = DXGI_FORMAT_R32_UINT;
+				m_IndexBufferView.SizeInBytes    = ByteSize;
+			}
 
 			m_HasValidData = true;
 		}
@@ -266,6 +312,7 @@ namespace Drn
 		{
 			m_HasValidData = false;
 		}
+
 	}
 
 }

@@ -38,6 +38,7 @@ namespace Drn
 		World* m_World;
 
 		std::set<PrimitiveSceneProxy*> m_PrimitiveProxies;
+		std::set<PrimitiveSceneProxy*> m_PendingProxies;
 
 		std::set<StaticMeshComponent*> m_StaticMeshComponents;
 		std::set<SceneRenderer*> m_SceneRenderers;

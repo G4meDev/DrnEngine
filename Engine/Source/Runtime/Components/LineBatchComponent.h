@@ -60,21 +60,24 @@ namespace Drn
 	protected:
 
 		virtual void RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) const override;
+		virtual void InitResources(dx12lib::CommandList* CommandList) override;
 		virtual void UpdateResources(dx12lib::CommandList* CommandList) override;
 
 		virtual PrimitiveComponent* GetPrimitive() override { return m_LineComponent; }
 
 	private:
 
-		void UpdateBuffers( dx12lib::CommandList* CommandList );
-
 		LineBatchComponent* m_LineComponent;
 
 		std::shared_ptr<dx12lib::RootSignature> m_RootSignature = nullptr;
 		std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject = nullptr;
 
-		std::shared_ptr<dx12lib::VertexBuffer> m_VertexBuffer;
-		std::shared_ptr<dx12lib::IndexBuffer> m_IndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_VertexBuffer;
+		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+		
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBuffer;
+		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+
 
 		std::vector<VertexData_Color> m_VertexData;
 		std::vector<uint32> m_IndexData;
