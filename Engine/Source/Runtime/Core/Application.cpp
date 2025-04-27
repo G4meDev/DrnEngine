@@ -88,6 +88,8 @@ namespace Drn
 
 	void Application::OnUpdate( UpdateEventArgs& e ) 
 	{
+		SCOPE_STAT(ApplicationTick);
+
 		static uint64_t frameCount = 0;
 		static double   totalTime  = 0.0;
 
@@ -107,6 +109,8 @@ namespace Drn
 			m_MainWindow->SetWindowTitle( buffer );
 		}
 
+		Profiler::Get()->Tick(e.DeltaTime);
+
 		PhysicManager::Get()->Tick(e.DeltaTime);
 		WorldManager::Get()->Tick(e.DeltaTime);
 
@@ -125,23 +129,23 @@ namespace Drn
 		switch ( e.Key )
 		{
 		case KeyCode::V:
-				if (Renderer::Get())
-				{
-					Renderer::Get()->ToggleSwapChain();
-				}
-				break;
+			if (Renderer::Get())
+			{
+				Renderer::Get()->ToggleSwapChain();
+			}
+			break;
 		case KeyCode::Escape:
-				// Stop the application if the Escape key is pressed.
-				GameFramework::Get().Stop();
-				break;
+			// Stop the application if the Escape key is pressed.
+			GameFramework::Get().Stop();
+			break;
 		case KeyCode::Enter:
-				if ( e.Alt )
-				{
-					[[fallthrough]];
-				case KeyCode::F11:
-					m_MainWindow->ToggleFullscreen();
-					break;
-				}
+			if ( e.Alt )
+			{
+				[[fallthrough]];
+			case KeyCode::F11:
+				m_MainWindow->ToggleFullscreen();
+				break;
+			}
 		}
 	}
 

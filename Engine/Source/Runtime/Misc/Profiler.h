@@ -7,10 +7,18 @@ LOG_DECLARE_CATEGORY(LogProfiler);
 
 namespace Drn
 {
+	enum class EProfileMode : uint8
+	{
+		Disabled,
+		Capture_1,
+		Capture_10,
+		Capture_100
+	};
+
 	struct ProfileToken
 	{
 	public:
-		ProfileToken(const std::string& InName, float InStartTime, float InDuration)
+		ProfileToken(const std::string& InName, double InStartTime, double InDuration)
 			: Name(InName)
 			, StartTime(InStartTime)
 			, Duration(InDuration)
@@ -18,8 +26,8 @@ namespace Drn
 		}
 
 		std::string Name;
-		float StartTime;
-		float Duration;
+		double StartTime;
+		double Duration;
 	};
 
 	class Profiler
@@ -27,7 +35,9 @@ namespace Drn
 	public:
 
 		Profiler()
-			: m_Profiling(false)
+			: m_FrameIndex(0)
+			, m_CaptureStartFrameIndex(0)
+			, m_ProfileMode(EProfileMode::Disabled)
 		{
 		}
 
@@ -38,20 +48,24 @@ namespace Drn
 		static void Init();
 		static void Shutdown();
 
+		void Tick(float DeltaTime);
+
 		inline static Profiler* Get() { return m_SingletonInstance; }
-		inline bool IsProfiling() { return m_Profiling; }
+		inline bool IsProfiling() { return m_ProfileMode != EProfileMode::Disabled; }
 
-		void StartProfiling();
-		void EndProfiling();
-
+		void StartProfiling(EProfileMode Mode);
 		void WriteToken(const ProfileToken& Token);
 
 	protected:
 
 	private:
+		void EndProfiling();
+
 		static Profiler* m_SingletonInstance;
 
-		bool m_Profiling;
 		std::fstream m_File;
+		EProfileMode m_ProfileMode;
+		uint64 m_FrameIndex;
+		uint64 m_CaptureStartFrameIndex;
 	};
 }

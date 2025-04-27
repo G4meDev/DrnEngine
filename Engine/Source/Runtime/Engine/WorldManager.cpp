@@ -29,6 +29,8 @@ namespace Drn
 
 	void WorldManager::Tick( float DeltaTime )
 	{
+		SCOPE_STAT(WorldManagerTick);
+
 		if (m_PendingLevel)
 		{
 			ReleaseWorld(m_MainWorld);

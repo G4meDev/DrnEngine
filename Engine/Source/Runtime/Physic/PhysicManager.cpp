@@ -29,6 +29,8 @@ namespace Drn
 
 	void PhysicManager::Tick( float DeltaTime )
 	{
+		SCOPE_STAT(PhysicManagerTick);
+
 		for (PhysicScene* S : m_AllocatedScenes)
 		{
 			S->Tick(DeltaTime);

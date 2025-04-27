@@ -33,4 +33,29 @@ namespace Drn
 
 		ScopeTimerData& Data;
 	};
+
+	class ScopeProfilerStat
+	{
+	public:
+		ScopeProfilerStat(const std::string& InName);
+		~ScopeProfilerStat();
+
+	protected:
+
+	private:
+		std::string Name;
+		double m_StartTime;
+	};
+
+#define PROFILER_ENABLED 1
+
+#if PROFILER_ENABLED
+
+	#define SCOPE_STAT( name ) ScopeProfilerStat Scope_Stat_##name (#name)
+
+#else
+
+	#define SCOPE_STAT( name )
+
+#endif
 }

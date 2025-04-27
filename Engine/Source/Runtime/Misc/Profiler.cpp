@@ -21,11 +21,34 @@ namespace Drn
 		}
 	}
 
-	void Profiler::StartProfiling()
+	void Profiler::Tick( float DeltaTime )
 	{
-		if (!m_Profiling)
+		SCOPE_STAT(ProfilerTick);
+
+		m_FrameIndex++;
+
+		if (IsProfiling())
 		{
-			m_Profiling = true;
+			// TODO: add appending mode to change at start of frame
+			uint64 CaptureDuration = m_FrameIndex - m_CaptureStartFrameIndex;
+
+			if ((m_ProfileMode == EProfileMode::Capture_1 && CaptureDuration > 1) ||
+				(m_ProfileMode == EProfileMode::Capture_10 && CaptureDuration > 10) ||
+				(m_ProfileMode == EProfileMode::Capture_100 && CaptureDuration > 100) )
+			{
+				EndProfiling();
+			}
+		}
+	}
+
+	void Profiler::StartProfiling( EProfileMode Mode )
+	{
+		if (!IsProfiling() && Mode != EProfileMode::Disabled)
+		{
+			LOG(LogProfiler, Warning, "profling started");
+			m_ProfileMode = Mode;
+			m_CaptureStartFrameIndex = m_FrameIndex;
+
 			m_File = std::fstream( ".\\Saved\\Profiler\\profile.json", std::ios::out );
 			if (!m_File)
 			{
@@ -40,18 +63,20 @@ namespace Drn
 
 	void Profiler::EndProfiling()
 	{
-		if (m_Profiling)
+		if (IsProfiling())
 		{
-			m_Profiling = false;
+			m_ProfileMode = EProfileMode::Disabled;
 
 			m_File << "]}";
 			m_File.close();
+
+			LOG(LogProfiler, Warning, "profling finished.");
 		}
 	}
 
 	void Profiler::WriteToken( const ProfileToken& Token )
 	{
-		if (m_Profiling)
+		if (IsProfiling())
 		{
 			std::stringstream json;
 

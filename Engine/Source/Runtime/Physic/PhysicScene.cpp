@@ -56,21 +56,20 @@ namespace Drn
 
 	void PhysicScene::Tick( float DeltaTime )
 	{
+		SCOPE_STAT(PhysicSceneTick);
+
 		if (IsSimulating())
 		{
+			SCOPE_STAT(StepSimulation);
+
 			StepSimulation(DeltaTime);
 			SyncActors();
 		}
 
 		if (m_DrawDebugCollision)
 		{
-			ScopeTimerData Data;
-			{
-				ScopeTimer Timer(Data);
-				DrawDebugCollisions();
-			}
-
-			Profiler::Get()->WriteToken( ProfileToken( "physx", Data.GetStartTime() * 1000000, Data.GetDuration() * 1000000) );
+			SCOPE_STAT(DebugDraw);
+			DrawDebugCollisions();
 		}
 	}
 

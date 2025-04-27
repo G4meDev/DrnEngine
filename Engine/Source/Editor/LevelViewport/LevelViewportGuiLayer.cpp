@@ -118,19 +118,21 @@ namespace Drn
 					AssetManager::Get()->ReportLiveAssets();
 				}
 
-				bool Profiling = Profiler::Get()->IsProfiling();
-				if ( ImGui::MenuItem( Profiling ? "end profile" : "start profile" ) )
+				if ( ImGui::MenuItem( "profile 1 frame" ) )
 				{
-					if (Profiling)
-					{
-						Profiler::Get()->EndProfiling();
-					}
-					else
-					{
-						Profiler::Get()->StartProfiling();
-					}
+					Profiler::Get()->StartProfiling(EProfileMode::Capture_1);
 				}
-				
+
+				if ( ImGui::MenuItem( "profile 10 frame" ) )
+				{
+					Profiler::Get()->StartProfiling(EProfileMode::Capture_10);
+				}
+
+				if ( ImGui::MenuItem( "profile 100 frame" ) )
+				{
+					Profiler::Get()->StartProfiling(EProfileMode::Capture_100);
+				}
+
 				ImGui::EndMenu();
 			}
 

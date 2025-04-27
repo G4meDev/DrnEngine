@@ -112,6 +112,8 @@ namespace Drn
 
 	void Renderer::Tick( float DeltaTime )
 	{
+		SCOPE_STAT(RendererTick);
+
 		// @TODO: move time to accessible location
 		TotalTime += DeltaTime;
 
