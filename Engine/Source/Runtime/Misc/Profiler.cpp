@@ -29,36 +29,46 @@ namespace Drn
 
 		if (IsProfiling())
 		{
-			// TODO: add appending mode to change at start of frame
 			uint64 CaptureDuration = m_FrameIndex - m_CaptureStartFrameIndex;
 
-			if ((m_ProfileMode == EProfileMode::Capture_1 && CaptureDuration > 1) ||
-				(m_ProfileMode == EProfileMode::Capture_10 && CaptureDuration > 10) ||
-				(m_ProfileMode == EProfileMode::Capture_100 && CaptureDuration > 100) )
+			if ((m_ProfileMode == EProfileMode::Capture_1 && CaptureDuration >= 1) ||
+				(m_ProfileMode == EProfileMode::Capture_10 && CaptureDuration >= 10) ||
+				(m_ProfileMode == EProfileMode::Capture_100 && CaptureDuration >= 100) )
 			{
 				EndProfiling();
 			}
 		}
+
+		else if (m_PendingProfileMode != EProfileMode::Disabled)
+		{
+			m_ProfileMode = m_PendingProfileMode;
+			m_PendingProfileMode = EProfileMode::Disabled;
+			StartProfiling();
+		}
 	}
 
-	void Profiler::StartProfiling( EProfileMode Mode )
+	void Profiler::Profile( EProfileMode Mode )
 	{
 		if (!IsProfiling() && Mode != EProfileMode::Disabled)
 		{
-			LOG(LogProfiler, Warning, "profling started");
-			m_ProfileMode = Mode;
-			m_CaptureStartFrameIndex = m_FrameIndex;
-
-			m_File = std::fstream( ".\\Saved\\Profiler\\profile.json", std::ios::out );
-			if (!m_File)
-			{
-				LOG( LogProfiler, Error, "failed to create file. " );
-				return;
-			}
-
-			m_File << "{\"otherData\": {},\"traceEvents\":[{}";
-			m_File.flush();
+			m_PendingProfileMode = Mode;
 		}
+	}
+
+	void Profiler::StartProfiling()
+	{
+		LOG(LogProfiler, Warning, "profling started");
+		m_CaptureStartFrameIndex = m_FrameIndex;
+
+		m_File = std::fstream( ".\\Saved\\Profiler\\profile.json", std::ios::out );
+		if (!m_File)
+		{
+			LOG( LogProfiler, Error, "failed to create file. " );
+			return;
+		}
+
+		m_File << "{\"otherData\": {},\"traceEvents\":[{}";
+		m_File.flush();
 	}
 
 	void Profiler::EndProfiling()

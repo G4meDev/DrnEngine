@@ -123,6 +123,8 @@ namespace Drn
 
 	void SceneRenderer::BeginRender(dx12lib::CommandList* CommandList)
 	{
+		SCOPE_STAT( BeginRender );
+
 /*
 		float          angle        = static_cast<float>( Renderer::Get()->TotalTime * 90.0 );
 		const XMVECTOR rotationAxis = XMVectorSet( 0, 1, 1, 0 );
@@ -165,6 +167,8 @@ namespace Drn
 
 	void SceneRenderer::RenderBasePass(dx12lib::CommandList* CommandList)
 	{
+		SCOPE_STAT( RenderBasePass );
+
 		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
 		for (StaticMeshComponent* Mesh : m_Scene->m_StaticMeshComponents)
@@ -210,6 +214,8 @@ namespace Drn
 
 	void SceneRenderer::Render( dx12lib::CommandList* CommandList )
 	{
+		SCOPE_STAT(SceneRendererRender);
+
 		if (!m_RenderingEnabled)
 		{
 			return;

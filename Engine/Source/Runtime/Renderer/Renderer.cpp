@@ -150,6 +150,7 @@ namespace Drn
 
 #endif
 
+		SCOPE_STAT( RendererExecuteCommandList );
 		commandQueue.ExecuteCommandList( m_CommandList );
 
 #if WITH_EDITOR

@@ -38,6 +38,8 @@ namespace Drn
 
 	void Scene::Render( dx12lib::CommandList* CommandList )
 	{
+		SCOPE_STAT(SceneRender);
+
 		InitSceneRender(CommandList);
 
 		for (SceneRenderer* SceneRen : m_SceneRenderers)
@@ -113,6 +115,8 @@ namespace Drn
 
 	void Scene::InitSceneRender(dx12lib::CommandList* CommandList)
 	{
+		SCOPE_STAT(InitSceneRender);
+
 		for (auto it = m_PrimitiveProxies.begin(); it != m_PrimitiveProxies.end(); it++)
 		{
 			PrimitiveSceneProxy* Proxy = *it;

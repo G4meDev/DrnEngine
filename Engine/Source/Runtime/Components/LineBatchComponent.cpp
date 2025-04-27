@@ -176,6 +176,8 @@ namespace Drn
 
 	void LineBatchSceneProxy::UpdateResources(dx12lib::CommandList* CommandList)
 	{
+		SCOPE_STAT(UpdateResourcesLineBatchComponent);
+
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |

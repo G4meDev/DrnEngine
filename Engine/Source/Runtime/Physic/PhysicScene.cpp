@@ -60,15 +60,12 @@ namespace Drn
 
 		if (IsSimulating())
 		{
-			SCOPE_STAT(StepSimulation);
-
 			StepSimulation(DeltaTime);
 			SyncActors();
 		}
 
 		if (m_DrawDebugCollision)
 		{
-			SCOPE_STAT(DebugDraw);
 			DrawDebugCollisions();
 		}
 	}
@@ -106,6 +103,7 @@ namespace Drn
 
 	void PhysicScene::StepSimulation( float DeltaTime )
 	{
+		SCOPE_STAT(StepSimulation);
 		m_PhysxScene->lockWrite();
 
 		m_PhysxScene->simulate(DeltaTime);
@@ -116,6 +114,8 @@ namespace Drn
 
 	void PhysicScene::SyncActors()
 	{
+		SCOPE_STAT(SyncActors);
+
 		physx::PxU32 ActorCount = 0;
 		physx::PxActor** ActiveActors = m_PhysxScene->getActiveActors(ActorCount);
 
@@ -136,6 +136,8 @@ namespace Drn
 
 	void PhysicScene::DrawDebugCollisions()
 	{
+		SCOPE_STAT(DebugDraw);
+
 		//const PxRenderBuffer& Rb = GetPhysxScene()->getRenderBuffer();
 		//uint32 NumLines = Rb.getNbLines();
 		//

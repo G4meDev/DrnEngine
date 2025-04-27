@@ -120,17 +120,17 @@ namespace Drn
 
 				if ( ImGui::MenuItem( "profile 1 frame" ) )
 				{
-					Profiler::Get()->StartProfiling(EProfileMode::Capture_1);
+					Profiler::Get()->Profile(EProfileMode::Capture_1);
 				}
 
 				if ( ImGui::MenuItem( "profile 10 frame" ) )
 				{
-					Profiler::Get()->StartProfiling(EProfileMode::Capture_10);
+					Profiler::Get()->Profile(EProfileMode::Capture_10);
 				}
 
 				if ( ImGui::MenuItem( "profile 100 frame" ) )
 				{
-					Profiler::Get()->StartProfiling(EProfileMode::Capture_100);
+					Profiler::Get()->Profile(EProfileMode::Capture_100);
 				}
 
 				ImGui::EndMenu();

@@ -82,6 +82,8 @@ namespace Drn
 
 	void ImGuiRenderer::Tick( float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL)
 	{
+		SCOPE_STAT(ImGuiRendererTick);
+
 		BeginDraw();
 		Draw(DeltaTime);
 		EndDraw( SwapChainCpuhandle, CL);
