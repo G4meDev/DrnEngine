@@ -5,6 +5,8 @@
 
 LOG_DECLARE_CATEGORY(LogProfiler);
 
+#define PROFILER_TOKEN_BUFFER_SIZE 1024
+
 namespace Drn
 {
 	enum class EProfileMode : uint8
@@ -25,6 +27,11 @@ namespace Drn
 		{
 		}
 
+		ProfileToken()
+			: ProfileToken("NameNull", 0, 0)
+		{
+		}
+
 		std::string Name;
 		double StartTime;
 		double Duration;
@@ -39,6 +46,7 @@ namespace Drn
 			, m_CaptureStartFrameIndex(0)
 			, m_ProfileMode(EProfileMode::Disabled)
 			, m_PendingProfileMode(EProfileMode::Disabled)
+			, m_TokenBufferCount(0)
 		{
 		}
 
@@ -63,6 +71,10 @@ namespace Drn
 		void StartProfiling();
 		void EndProfiling();
 
+		void FlushBuffer();
+
+		inline bool IsBufferFull() const { return m_TokenBufferCount >= PROFILER_TOKEN_BUFFER_SIZE; }
+
 		static Profiler* m_SingletonInstance;
 
 		std::fstream m_File;
@@ -70,5 +82,8 @@ namespace Drn
 		EProfileMode m_PendingProfileMode;
 		uint64 m_FrameIndex;
 		uint64 m_CaptureStartFrameIndex;
+
+		ProfileToken m_TokenBuffer[PROFILER_TOKEN_BUFFER_SIZE];
+		uint32 m_TokenBufferCount;
 	};
 }

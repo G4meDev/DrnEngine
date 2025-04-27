@@ -77,6 +77,8 @@ namespace Drn
 		{
 			m_ProfileMode = EProfileMode::Disabled;
 
+			FlushBuffer();
+
 			m_File << "]}";
 			m_File.close();
 
@@ -84,13 +86,17 @@ namespace Drn
 		}
 	}
 
-	void Profiler::WriteToken( const ProfileToken& Token )
+	void Profiler::FlushBuffer()
 	{
-		if (IsProfiling())
-		{
-			std::stringstream json;
+		SCOPE_STAT(ProfilerFlushBuffer);
 
-			json << std::setprecision( 3 ) << std::fixed;
+		std::stringstream json;
+		json << std::setprecision( 3 ) << std::fixed;
+		
+		for (uint32 i = 0; i < m_TokenBufferCount; i++)
+		{
+			const ProfileToken& Token = m_TokenBuffer[i];
+
 			json << ",{";
 			json << "\"cat\":\"function\",";
 			json << "\"dur\":" << Token.Duration << ',';
@@ -100,9 +106,24 @@ namespace Drn
 			json << "\"tid\":" << 0 << ",";
 			json << "\"ts\":" << Token.StartTime;
 			json << "}";
+		}
 
-			m_File << json.str();
-			m_File.flush();
+		m_File << json.str();
+		m_File.flush();
+
+		m_TokenBufferCount = 0;
+	}
+
+	void Profiler::WriteToken( const ProfileToken& Token )
+	{
+		if (IsProfiling())
+		{
+			if (IsBufferFull())
+			{
+				FlushBuffer();
+			}
+
+			m_TokenBuffer[m_TokenBufferCount++] = Token;
 		}
 	}
 
