@@ -126,6 +126,23 @@ namespace Drn
 		return *this;
 	}
 
+	Archive& Archive::operator<<( ID3DBlob* Value )
+	{
+		if (Value)
+		{
+			uint64 Size = Value->GetBufferSize();
+			*this << Size;
+			File.write( (char*)(Value->GetBufferPointer()), Size );
+		}
+
+		else
+		{
+			*this << (uint64)(0);
+		}
+
+		return *this;
+	}
+
 	Archive& Archive::operator>>( uint8& Value )
 	{
 		File.read( (char*)(&Value), 1 );
@@ -220,6 +237,22 @@ namespace Drn
 	Archive& Archive::operator>>( bool& Value )
 	{
 		File.read( (char*)(&Value), 1 );
+		return *this;
+	}
+
+	Archive& Archive::operator>>( ID3DBlob*& Value )
+	{
+		Value = nullptr;
+
+		uint64 Size;
+		*this >> Size;
+
+		if (Size > 0)
+		{
+			D3DCreateBlob(Size, &Value);
+			File.read( (char*)(Value->GetBufferPointer()), Size );
+		}
+
 		return *this;
 	}
 

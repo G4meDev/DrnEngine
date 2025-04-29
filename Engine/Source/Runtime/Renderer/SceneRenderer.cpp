@@ -146,11 +146,11 @@ namespace Drn
 
 		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 		{
-				CommandList->ClearTexture( m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ),
-											clearColor );
-				CommandList->ClearDepthStencilTexture(
-					m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::DepthStencil ),
-					D3D12_CLEAR_FLAG_DEPTH );
+			CommandList->ClearTexture( m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 ),
+										clearColor );
+			CommandList->ClearDepthStencilTexture(
+				m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::DepthStencil ),
+				D3D12_CLEAR_FLAG_DEPTH );
 		}
 
 		CommandList->SetPipelineState( m_PipelineStateObject );

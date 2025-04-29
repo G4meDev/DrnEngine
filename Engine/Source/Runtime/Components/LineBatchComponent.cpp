@@ -149,6 +149,8 @@ namespace Drn
 
 	void LineBatchSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) const
 	{
+		SCOPE_STAT(LineBatchSceneProxyRenderMainPass);
+
 		if (!m_HasValidData)
 		{
 			return;
@@ -241,12 +243,16 @@ namespace Drn
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr, IID_PPV_ARGS( &m_VertexBuffer ) );
 
+		m_VertexBuffer->SetName(L"LineBatchVertexBuffer");
+
 		CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer( sizeof(uint32) * NUM_MAX_LINES * 2),
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr, IID_PPV_ARGS( &m_IndexBuffer ) );
+		
+		m_IndexBuffer->SetName(L"LineBatchIndexBuffer");
 	}
 
 	void LineBatchSceneProxy::UpdateResources( dx12lib::CommandList* CommandList )

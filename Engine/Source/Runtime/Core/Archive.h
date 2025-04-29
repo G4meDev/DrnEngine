@@ -8,7 +8,7 @@
 #include "Runtime/Math/Matrix.h"
 #include "Runtime/Math/Transform.h"
 
-
+#include <d3dcommon.h>
 
 LOG_DECLARE_CATEGORY( LogArchive );
 
@@ -35,6 +35,7 @@ namespace Drn
 		Archive& operator<<(const Transform& Value);
 		Archive& operator<<(const std::string& Value);
 		Archive& operator<<(const std::vector<char>& Value);
+		Archive& operator<<(ID3DBlob* Value);
 
 
 		Archive& operator>>(bool& Value);
@@ -48,6 +49,7 @@ namespace Drn
 		Archive& operator>>(Transform& Value);
 		Archive& operator>>(std::string& Value);
 		Archive& operator>>(std::vector<char>& Value);
+		Archive& operator>>(ID3DBlob*& Value);
 
 	protected:
 

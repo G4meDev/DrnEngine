@@ -74,6 +74,12 @@ namespace Drn
 			CreatedAsset    = std::shared_ptr<Asset>(new StaticMesh( AssetFilePath, SourceFile ) );
 		}
 
+		else if ( FileExtension == ".hlsl" )
+		{
+			FormatSupported = true;
+			CreatedAsset    = std::shared_ptr<Asset>(new Material( AssetFilePath, SourceFile ) );
+		}
+
 		if ( !FormatSupported )
 		{
 				LOG( LogAssetManager, Error, "file format %s is not supported. ", FileExtension.c_str() );

@@ -82,9 +82,14 @@ namespace Drn
 				m_Asset = AssetManager::Get()->Load<StaticMesh>(m_Path);
 			}
 
-			if (Type == EAssetType::Level)
+			else if (Type == EAssetType::Level)
 			{
 				m_Asset = AssetManager::Get()->Load<Level>(m_Path);
+			}
+
+			else if (Type == EAssetType::Material)
+			{
+				m_Asset = AssetManager::Get()->Load<Material>(m_Path);
 			}
 
 			return Type;

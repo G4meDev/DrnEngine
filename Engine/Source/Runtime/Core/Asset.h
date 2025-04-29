@@ -11,7 +11,8 @@ namespace Drn
 	enum class EAssetType : uint16
 	{
 		StaticMesh = 0,
-		Level
+		Level,
+		Material
 	};
 
 	class Asset : public Serializable

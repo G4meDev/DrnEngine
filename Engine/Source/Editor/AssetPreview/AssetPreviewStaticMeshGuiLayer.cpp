@@ -37,9 +37,9 @@ namespace Drn
 	{
 		LOG(LogStaticMeshPreview, Info, "closing %s", m_OwningAsset->m_Path.c_str());
 
-		if (WorldManager::Get() && PreviewWorld)
+		if (PreviewWorld)
 		{
-			WorldManager::Get()->ReleaseWorld(PreviewWorld);
+			PreviewWorld->Destroy();
 		}
 
 		m_OwningAsset->GuiLayer = nullptr;

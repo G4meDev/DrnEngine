@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "FileSystem.h"
+#include <fstream>
 
 LOG_DEFINE_CATEGORY( LogFileSystem, "FileSystem" );
 
@@ -100,7 +101,15 @@ namespace Drn
 		RootNode = std::unique_ptr<SystemFileNode>(GetFilesInDirectory_Intern(Path, Filter));
 	}
 
-	SystemFileNode* FileSystem::GetFilesInDirectory_Intern( const std::string& Path, const std::string& Filter)
+	std::string FileSystem::ReadFileAsString( const std::string& Path )
+	{
+		std::ifstream File(Path);
+		std::stringstream buffer;
+		buffer << File.rdbuf();
+		return buffer.str();
+	}
+
+	SystemFileNode* FileSystem::GetFilesInDirectory_Intern( const std::string& Path, const std::string& Filter )
 	{
 		if (DirectoryExists(Path))
 		{

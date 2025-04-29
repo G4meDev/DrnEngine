@@ -12,6 +12,7 @@ namespace Drn
 		: m_ShouldTick(false)
 		, m_LevelPath("")
 		, m_Transient(false)
+		, m_PendingDestory(false)
 	{
 		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
 		m_Scene = Renderer::Get()->AllocateScene(this);
@@ -36,16 +37,7 @@ namespace Drn
 
 	void World::Destroy()
 	{
-		m_LineBatchCompponent->UnRegisterComponent();
-		delete m_LineBatchCompponent;
-		m_LineBatchCompponent = nullptr;
-
-		DestroyWorldActors();
-
-		PhysicManager::Get()->RemoveAndInvalidateScene(m_PhysicScene);
-		Renderer::Get()->ReleaseScene(m_Scene);
-
-		delete this;
+		m_PendingDestory = true;
 	}
 
 	void World::Tick( float DeltaTime )
@@ -175,6 +167,20 @@ namespace Drn
 		{
 			m_LineBatchCompponent->DrawBox(InBox, T, Color, Lifetime);
 		}
+	}
+
+	void World::DestroyInternal()
+	{
+		m_LineBatchCompponent->UnRegisterComponent();
+		delete m_LineBatchCompponent;
+		m_LineBatchCompponent = nullptr;
+
+		DestroyWorldActors();
+
+		PhysicManager::Get()->RemoveAndInvalidateScene(m_PhysicScene);
+		Renderer::Get()->ReleaseScene(m_Scene);
+
+		delete this;
 	}
 
 	void World::DestroyWorldActors()

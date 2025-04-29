@@ -55,6 +55,8 @@ namespace Drn
 		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
 
+		inline bool IsPendingDestroy() const { return m_PendingDestory; }
+
 		class LineBatchComponent* m_LineBatchCompponent;
 
 #if WITH_EDITOR
@@ -68,6 +70,7 @@ namespace Drn
 
 	protected:
 
+		void DestroyInternal();
 		void DestroyWorldActors();
 
 		std::set<Actor*> m_Actors;
@@ -85,6 +88,8 @@ namespace Drn
 
 		Scene* m_Scene;
 		PhysicScene* m_PhysicScene;
+
+		bool m_PendingDestory;
 
 		friend Scene;
 		friend class Level;

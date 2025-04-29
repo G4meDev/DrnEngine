@@ -39,6 +39,8 @@ namespace Drn
 		static bool FileExists(const std::string& Path);
 		static void GetFilesInDirectory(const std::string& Path, std::unique_ptr<SystemFileNode>& RootNode, const std::string& Filter = "*");
 
+		static std::string ReadFileAsString( const std::string& Path );
+
 	private:
 		static SystemFileNode* GetFilesInDirectory_Intern(const std::string& Path, const std::string& Filter);
 	};

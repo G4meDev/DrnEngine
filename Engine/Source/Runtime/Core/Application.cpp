@@ -128,6 +128,27 @@ namespace Drn
 
 		switch ( e.Key )
 		{
+		case KeyCode::D1:
+			if (Profiler::Get())
+			{
+				Profiler::Get()->Profile(EProfileMode::Capture_1);
+			}
+			break;
+
+		case KeyCode::D2:
+			if (Profiler::Get())
+			{
+				Profiler::Get()->Profile(EProfileMode::Capture_10);
+			}
+			break;
+			
+		case KeyCode::D3:
+			if (Profiler::Get())
+			{
+				Profiler::Get()->Profile(EProfileMode::Capture_100);
+			}
+			break;
+
 		case KeyCode::V:
 			if (Renderer::Get())
 			{

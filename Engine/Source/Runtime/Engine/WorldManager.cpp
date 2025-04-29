@@ -20,7 +20,7 @@ namespace Drn
 	{
 		for (World* W : m_SingletonInstance->m_AllocatedWorlds)
 		{
-			W->Destroy();
+			W->DestroyInternal();
 		}
 
 		delete m_SingletonInstance;
@@ -40,9 +40,21 @@ namespace Drn
 			OnLevelChanged();
 		}
 
-		for (auto it = m_AllocatedWorlds.begin(); it != m_AllocatedWorlds.end(); it++)
+		for (auto it = m_AllocatedWorlds.begin(); it != m_AllocatedWorlds.end();)
 		{
-			(*it)->Tick(DeltaTime);
+			World* W = *it;
+
+			if (W->IsPendingDestroy())
+			{
+				it = m_AllocatedWorlds.erase(it);
+				ReleaseWorld(W);
+			}
+
+			else
+			{
+				W->Tick(DeltaTime);
+				it++;
+			}
 		}
 	}
 
@@ -153,7 +165,7 @@ namespace Drn
 
 		if (InWorld)
 		{
-			InWorld->Destroy();
+			InWorld->DestroyInternal();
 			InWorld = nullptr;
 		}
 	}
