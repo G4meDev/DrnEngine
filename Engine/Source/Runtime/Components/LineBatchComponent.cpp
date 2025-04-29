@@ -135,7 +135,8 @@ namespace Drn
 		: PrimitiveSceneProxy(InLineBatchComponent)
 		, m_LineComponent(InLineBatchComponent)
 	{
-		
+		m_LineBatchMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_LineBatch.drn" );
+		m_LineBatchMaterial.Load();
 	}
 
 	LineBatchSceneProxy::~LineBatchSceneProxy()
@@ -197,12 +198,6 @@ namespace Drn
 
 		m_RootSignature = CommandList->GetDevice().CreateRootSignature( rootSignatureDescription.Desc_1_1 );
 
-		ComPtr<ID3DBlob> vertexShaderBlob;
-		ThrowIfFailed( D3DReadFileToBlob( L"TestShader_VS.cso", &vertexShaderBlob ) );
-
-		ComPtr<ID3DBlob> pixelShaderBlob;
-		ThrowIfFailed( D3DReadFileToBlob( L"TestShader_PS.cso", &pixelShaderBlob ) );
-
 		DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
 
@@ -220,6 +215,7 @@ namespace Drn
 			CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY    PrimitiveTopologyType;
 			CD3DX12_PIPELINE_STATE_STREAM_VS                    VS;
 			CD3DX12_PIPELINE_STATE_STREAM_PS                    PS;
+			CD3DX12_PIPELINE_STATE_STREAM_GS                    GS;
 			CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT  DSVFormat;
 			CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
 			CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC           SampleDesc;
@@ -228,8 +224,9 @@ namespace Drn
 		pipelineStateStream.pRootSignature        = m_RootSignature->GetD3D12RootSignature().Get();
 		pipelineStateStream.InputLayout           = { VertexLayout::Color, _countof( VertexLayout::Color) };
 		pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-		pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( vertexShaderBlob.Get() );
-		pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( pixelShaderBlob.Get() );
+		pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( m_LineBatchMaterial->GetVS() );
+		pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( m_LineBatchMaterial->GetPS() );
+		pipelineStateStream.GS                    = CD3DX12_SHADER_BYTECODE( m_LineBatchMaterial->GetGS() );
 		pipelineStateStream.DSVFormat             = depthBufferFormat;
 		pipelineStateStream.RTVFormats            = rtvFormats;
 		pipelineStateStream.SampleDesc            = sampleDesc;

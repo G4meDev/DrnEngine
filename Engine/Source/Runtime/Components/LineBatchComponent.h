@@ -74,13 +74,14 @@ namespace Drn
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_VertexBuffer;
 		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
-		
+
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBuffer;
 		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 
-
 		std::vector<VertexData_Color> m_VertexData;
 		std::vector<uint32> m_IndexData;
+
+		AssetHandle<Material> m_LineBatchMaterial;
 
 		bool m_HasValidData = false;
 	};

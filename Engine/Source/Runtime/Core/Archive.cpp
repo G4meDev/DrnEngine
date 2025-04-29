@@ -130,14 +130,14 @@ namespace Drn
 	{
 		if (Value)
 		{
-			uint64 Size = Value->GetBufferSize();
+			uint32 Size = Value->GetBufferSize();
 			*this << Size;
 			File.write( (char*)(Value->GetBufferPointer()), Size );
 		}
 
 		else
 		{
-			*this << (uint64)(0);
+			*this << (uint32)(0);
 		}
 
 		return *this;
@@ -244,7 +244,7 @@ namespace Drn
 	{
 		Value = nullptr;
 
-		uint64 Size;
+		uint32 Size;
 		*this >> Size;
 
 		if (Size > 0)

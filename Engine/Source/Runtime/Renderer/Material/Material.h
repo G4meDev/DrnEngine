@@ -17,6 +17,12 @@ namespace Drn
 		Material(const std::string& InPath, const std::string& InSourcePath);
 #endif
 
+		inline ID3DBlob* GetVS() const { return m_VS_Blob; }
+		inline ID3DBlob* GetPS() const { return m_PS_Blob; }
+		inline ID3DBlob* GetGS() const { return m_GS_Blob; }
+		inline ID3DBlob* GetHS() const { return m_HS_Blob; }
+		inline ID3DBlob* GetDS() const { return m_DS_Blob; }
+		inline ID3DBlob* GetCS() const { return m_CS_Blob; }
 
 	protected:
 		virtual EAssetType GetAssetType() override;
@@ -35,6 +41,7 @@ namespace Drn
 		ID3DBlob* m_HS_Blob;
 		ID3DBlob* m_DS_Blob;
 		ID3DBlob* m_CS_Blob;
+
 
 		void ReleaseShaderBlobs();
 

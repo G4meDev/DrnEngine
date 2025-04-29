@@ -112,7 +112,10 @@ namespace Drn
 
 	void AssetPreviewMaterialGuiLayer::DrawDetailsPanel()
 	{
-		ImGui::Text("avc");
+		if (ImGui::Button("Import"))
+		{
+			m_OwningAsset->Import();
+		}
 	}
 
 }

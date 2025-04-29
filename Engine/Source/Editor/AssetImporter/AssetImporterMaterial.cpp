@@ -14,7 +14,7 @@ namespace Drn
 
 		bool HasVS = true;
 		bool HasPS = true;
-		bool HasGS = false;
+		bool HasGS = true;
 		bool HasHS = false;
 		bool HasDS = false;
 		bool HasCS = false;
