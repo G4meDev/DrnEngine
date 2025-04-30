@@ -55,7 +55,7 @@ void Main_GS(line VertexShaderOutput input[2], inout TriangleStream<GeometerySha
 	
     float3 Tan		= normalize(input[1].Position.xyz - input[0].Position.xyz);
 	float3 Right;
-	if(Tan.x == 0 && Tan.y == 1 && Tan.z == 0)
+    if (Tan.x == 0 && (Tan.y == 1 || Tan.y == -1) && Tan.z == 0)
         Right = float3(0, 0, 1);
 	else
 		Right = normalize(cross(Tan, float3(0, 1, 0)));

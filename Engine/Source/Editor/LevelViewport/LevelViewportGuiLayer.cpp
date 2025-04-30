@@ -111,6 +111,13 @@ namespace Drn
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu( "View" ))
+			{
+				ImGui::MenuItem( "Collision", NULL, &WorldManager::Get()->GetMainWorld()->GetPhysicScene()->m_DrawDebugCollision);
+
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu( "Debug" ))
 			{
 				if ( ImGui::MenuItem( "log live assets" ) )

@@ -48,5 +48,8 @@ namespace Drn
 		physx::PxMaterial* m_Material;
 
 		bool m_DrawDebugCollision = true;
+
+		friend class LevelViewportGuiLayer;
+		friend class AssetPreviewStaticMeshGuiLayer;
 	};
 }
