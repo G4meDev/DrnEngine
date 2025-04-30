@@ -55,9 +55,9 @@ namespace Drn
 		PrimitiveComponent::UnRegisterComponent();
 	}
 
-	void LineBatchComponent::DrawLine( const Vector& Start, const Vector& End, const Vector& Color, float Lifetime )
+	void LineBatchComponent::DrawLine( const Vector& Start, const Vector& End, const Vector& Color, float Thickness, float Lifetime )
 	{
-		m_Lines.push_back(BatchLine(Start, End, Color, Lifetime));
+		m_Lines.push_back(BatchLine(Start, End, Color, Thickness, Lifetime));
 		MarkRenderStateDirty();
 	}
 
@@ -67,7 +67,7 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
-	void LineBatchComponent::DrawCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Lifetime)
+	void LineBatchComponent::DrawCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime)
 	{
 		const float	AngleDelta = 2.0f * Math::PI / NumSides;
 		Vector	LastVertex = Base + X * Radius;
@@ -75,7 +75,7 @@ namespace Drn
 		for(int32 SideIndex = 0;SideIndex < NumSides;SideIndex++)
 		{
 			const Vector Vertex = Base + (X * Math::Cos(AngleDelta * (SideIndex + 1)) + Z * Math::Sin(AngleDelta * (SideIndex + 1))) * Radius;
-			m_Lines.push_back(BatchLine(LastVertex, Vertex, Color, Lifetime));
+			m_Lines.push_back(BatchLine(LastVertex, Vertex, Color, Thickness, Lifetime));
 
 			LastVertex = Vertex;
 		}
@@ -83,18 +83,18 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
-	void LineBatchComponent::DrawSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Lifetime )
+	void LineBatchComponent::DrawSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
 		Vector ForwardVector = Rotation.RotateVector(Vector::ForwardVector);
 		Vector UpVector = Rotation.RotateVector(Vector::UpVector);
 		Vector RightVector = Rotation.RotateVector(Vector::RightVector);
 
-		DrawCircle(Center, ForwardVector, RightVector, Color, Radius, NumSides, Lifetime);
-		DrawCircle(Center, RightVector, UpVector, Color, Radius, NumSides, Lifetime);
-		DrawCircle(Center, UpVector, ForwardVector, Color, Radius, NumSides, Lifetime);
+		DrawCircle(Center, ForwardVector, RightVector, Color, Radius, NumSides, Thickness, Lifetime);
+		DrawCircle(Center, RightVector, UpVector, Color, Radius, NumSides, Thickness, Lifetime);
+		DrawCircle(Center, UpVector, ForwardVector, Color, Radius, NumSides, Thickness, Lifetime);
 	}
 
-	void LineBatchComponent::DrawBox( const Box& InBox, const Transform& T, const Vector& Color, float Lifetime )
+	void LineBatchComponent::DrawBox( const Box& InBox, const Transform& T, const Vector& Color, float Thickness, float Lifetime )
 	{
 		Vector	B[2];
 		int32 ai, aj;
@@ -108,17 +108,17 @@ namespace Drn
 			P_X=B[ai].GetX(); Q_X=B[ai].GetX();
 			P_Y=B[aj].GetY(); Q_Y=B[aj].GetY();
 			P_Z=B[0].GetZ()	; Q_Z=B[1].GetZ();
-			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Lifetime);
+			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Thickness, Lifetime);
 
 			P_Y=B[ai].GetY(); Q_Y=B[ai].GetY();
 			P_Z=B[aj].GetZ(); Q_Z=B[aj].GetZ();
 			P_X=B[0].GetX()	; Q_X=B[1].GetX();
-			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Lifetime);
+			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Thickness, Lifetime);
 
 			P_Z=B[ai].GetZ(); Q_Z=B[ai].GetZ();
 			P_X=B[aj].GetX(); Q_X=B[aj].GetX();
 			P_Y=B[0].GetY()	; Q_Y=B[1].GetY();
-			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Lifetime);
+			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Thickness, Lifetime);
 		}
 		MarkRenderStateDirty();
 	}
@@ -184,7 +184,7 @@ namespace Drn
 		CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer( sizeof(VertexData_Color) * NUM_MAX_LINES * 2),
+			&CD3DX12_RESOURCE_DESC::Buffer( sizeof(VertexData_LineColorThickness) * NUM_MAX_LINES * 2),
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr, IID_PPV_ARGS( &m_VertexBuffer ) );
 
@@ -232,8 +232,8 @@ namespace Drn
 		{
 			const BatchLine& Line = m_LineComponent->m_Lines[i];
 
-			m_VertexData.push_back( VertexData_Color( Line.Start, Line.Color ) );
-			m_VertexData.push_back( VertexData_Color( Line.End, Line.Color ) );
+			m_VertexData.push_back( VertexData_LineColorThickness( Line.Start, Line.Color, Line.Thickness) );
+			m_VertexData.push_back( VertexData_LineColorThickness( Line.End, Line.Color, Line.Thickness) );
 
 			m_IndexData.push_back( i * 2 );
 			m_IndexData.push_back( i * 2 + 1 );
@@ -250,12 +250,12 @@ namespace Drn
 				UINT8*        pVertexDataBegin;
 				CD3DX12_RANGE readRange( 0, 0 );
 				m_VertexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
-				uint32 ByteSize = m_VertexData.size() * sizeof( VertexData_Color );
+				uint32 ByteSize = m_VertexData.size() * sizeof( VertexData_LineColorThickness );
 				memcpy( pVertexDataBegin, &m_VertexData[0], ByteSize );
 				m_VertexBuffer->Unmap( 0, nullptr );
 
 				m_VertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-				m_VertexBufferView.StrideInBytes  = sizeof( VertexData_Color );
+				m_VertexBufferView.StrideInBytes  = sizeof( VertexData_LineColorThickness );
 				m_VertexBufferView.SizeInBytes    = ByteSize;
 			}
 

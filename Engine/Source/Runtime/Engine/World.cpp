@@ -137,35 +137,35 @@ namespace Drn
 		}
 	}
 
-	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Vector& Color, float Duration )
+	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Vector& Color, float Thickness, float Duration )
 	{
 		if (m_LineBatchCompponent)
 		{
-			m_LineBatchCompponent->DrawLine(Start, End, Color, Duration);
+			m_LineBatchCompponent->DrawLine(Start, End, Color, Thickness, Duration);
 		}
 	}
 
-	void World::DrawDebugCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Lifetime )
+	void World::DrawDebugCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
 		if (m_LineBatchCompponent)
 		{
-			m_LineBatchCompponent->DrawCircle(Base, X, Z, Color, Radius, NumSides, Lifetime);
+			m_LineBatchCompponent->DrawCircle(Base, X, Z, Color, Radius, NumSides, Thickness, Lifetime);
 		}
 	}
 
-	void World::DrawDebugSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Lifetime )
+	void World::DrawDebugSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
 		if (m_LineBatchCompponent)
 		{
-			m_LineBatchCompponent->DrawSphere(Center, Rotation, Color, Radius, NumSides, Lifetime);
+			m_LineBatchCompponent->DrawSphere(Center, Rotation, Color, Radius, NumSides, Thickness, Lifetime);
 		}
 	}
 
-	void World::DrawDebugBox( const Box& InBox, const Transform& T, const Vector& Color, float Lifetime )
+	void World::DrawDebugBox( const Box& InBox, const Transform& T, const Vector& Color, float Thickness, float Lifetime )
 	{
 		if (m_LineBatchCompponent)
 		{
-			m_LineBatchCompponent->DrawBox(InBox, T, Color, Lifetime);
+			m_LineBatchCompponent->DrawBox(InBox, T, Color, Thickness, Lifetime);
 		}
 	}
 

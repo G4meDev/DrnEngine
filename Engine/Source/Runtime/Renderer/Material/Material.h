@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Core/Asset.h"
+#include "Runtime/Renderer/VertexLayout.h"
 
 namespace Drn
 {
@@ -58,6 +59,7 @@ namespace Drn
 		bool m_LoadedOnGPU;
 
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
+		EInputLayoutType m_InputLayoutType;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

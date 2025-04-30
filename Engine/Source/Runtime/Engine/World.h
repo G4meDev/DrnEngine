@@ -47,10 +47,10 @@ namespace Drn
 
 		inline bool IsTicking() const { return m_ShouldTick; }
 
-		void DrawDebugLine(const Vector& Start, const Vector& End, const Vector& Color, float Duration);
-		void DrawDebugCircle(const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Lifetime);
-		void DrawDebugSphere(const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Lifetime);
-		void DrawDebugBox(const Box& InBox, const Transform& T, const Vector& Color, float Lifetime);
+		void DrawDebugLine(const Vector& Start, const Vector& End, const Vector& Color, float Thickness, float Duration);
+		void DrawDebugCircle(const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
+		void DrawDebugSphere(const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
+		void DrawDebugBox(const Box& InBox, const Transform& T, const Vector& Color, float Thickness, float Lifetime);
 
 		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
