@@ -10,14 +10,13 @@ namespace Drn
 	void AssetImporterMaterial::Import( Material* MaterialAsset, const std::string& Path )
 	{
 		std::string ShaderString = FileSystem::ReadFileAsString(Path);
-		//TODO: identify entry points. ex Main_VS, Main_PS, ...
 
-		bool HasVS = true;
-		bool HasPS = true;
-		bool HasGS = true;
-		bool HasHS = false;
-		bool HasDS = false;
-		bool HasCS = false;
+		bool HasVS = ShaderString.find("Main_VS") != std::string::npos;
+		bool HasPS = ShaderString.find("Main_PS") != std::string::npos;
+		bool HasGS = ShaderString.find("Main_GS") != std::string::npos;
+		bool HasHS = ShaderString.find("Main_HS") != std::string::npos;
+		bool HasDS = ShaderString.find("Main_DS") != std::string::npos;
+		bool HasCS = ShaderString.find("Main_CS") != std::string::npos;
 
 		bool Successed = true;
 

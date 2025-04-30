@@ -38,9 +38,6 @@ namespace Drn
 
 		dx12lib::Device* m_Device;
 
-		std::shared_ptr<dx12lib::RootSignature>       m_RootSignature       = nullptr;
-		std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject = nullptr;
-
 		std::shared_ptr<dx12lib::Texture> m_DepthTexture = nullptr;
 
 		dx12lib::RenderTarget m_RenderTarget;
@@ -53,6 +50,7 @@ namespace Drn
 		friend class Renderer;
 		friend class DebugViewPhysics;
 		friend class LineBatchSceneProxy;
+		friend class StaticMeshSceneProxy;
 
 	private:
 

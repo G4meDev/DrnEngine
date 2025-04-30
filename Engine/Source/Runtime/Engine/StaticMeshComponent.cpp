@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "StaticMeshComponent.h"
+#include "Runtime/Renderer/StaticMeshSceneProxy.h"
 
 #if WITH_EDITOR
 
@@ -62,16 +63,24 @@ namespace Drn
 			m_BodyInstance.InitBody(Mesh->GetBodySetup(), this, GetWorld()->GetPhysicScene());
 		}
 
+		m_SceneProxy = new StaticMeshSceneProxy(this);
+		InOwningWorld->GetScene()->AddPrimitiveProxy(m_SceneProxy);
 	}
 
 	void StaticMeshComponent::UnRegisterComponent()
 	{
-		PrimitiveComponent::UnRegisterComponent();
+		if (GetWorld()->GetScene())
+		{
+			GetWorld()->GetScene()->RemovePrimitiveProxy(m_SceneProxy);
+		}
+		delete m_SceneProxy;
 
 		if (Mesh.IsValid())
 		{
 			m_BodyInstance.TermBody();
 		}
+
+		PrimitiveComponent::UnRegisterComponent();
 	}
 
 #if WITH_EDITOR

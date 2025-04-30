@@ -116,6 +116,14 @@ namespace Drn
 		{
 			m_OwningAsset->Import();
 		}
+
+		const char* PrimitiveTypes[] = { "Point", "Line", "Triangle", "Patch" };
+		int CurrentType = static_cast<int>(m_OwningAsset->m_PrimitiveType) - 1;
+		if ( ImGui::Combo( "Type", &CurrentType, PrimitiveTypes, IM_ARRAYSIZE( PrimitiveTypes )))
+		{
+			m_OwningAsset->m_PrimitiveType = static_cast<D3D12_PRIMITIVE_TOPOLOGY_TYPE>(CurrentType + 1);
+		}
+
 	}
 
 }

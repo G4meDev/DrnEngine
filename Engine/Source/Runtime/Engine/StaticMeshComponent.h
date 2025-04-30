@@ -10,6 +10,8 @@ using namespace DirectX;
 
 namespace Drn
 {
+	class StaticMeshSceneProxy;
+
 	struct VertexPosColor
 	{
 		XMFLOAT3 Position;
@@ -49,6 +51,7 @@ namespace Drn
 	protected:
 
 		AssetHandle<StaticMesh> Mesh;
+		StaticMeshSceneProxy* m_SceneProxy;
 
 
 	private:

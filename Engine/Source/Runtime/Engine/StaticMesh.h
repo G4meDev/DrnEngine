@@ -20,11 +20,19 @@ namespace Drn
 		std::vector<uint32> IndexData;
 
 		uint8 Stride;
-
 		uint8 MaterialIndex;
 
 		virtual void Serialize(Archive& Ar) override;
 	};
+
+	//struct MaterialData
+	//{
+	//public:
+	//	MaterialData() {};
+	//
+	//	std::string Name;
+	//	std::string MaterialPath;
+	//};
 
 	struct StaticMeshData : public Serializable
 	{
@@ -81,6 +89,8 @@ namespace Drn
 
 		inline BodySetup* GetBodySetup() { return &m_BodySetup; }
 
+		inline bool IsLoadedOnGpu() const { return m_LoadedOnGPU; }
+
 	protected:
 
 #if WITH_EDITOR
@@ -120,6 +130,7 @@ namespace Drn
 
 		friend class AssetPreviewStaticMeshGuiLayer;
 		friend class AssetImporterStaticMesh;
+		friend class StaticMeshSceneProxy;
 		friend class Editor;
 	};
 }

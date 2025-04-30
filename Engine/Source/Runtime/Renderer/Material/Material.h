@@ -55,6 +55,8 @@ namespace Drn
 		ID3D12PipelineState* m_BasePassPSO;
 		bool m_LoadedOnGPU;
 
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
+
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;
