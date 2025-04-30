@@ -128,13 +128,7 @@ namespace Drn
 		for (auto it = m_PrimitiveProxies.begin(); it != m_PrimitiveProxies.end(); it++)
 		{
 			PrimitiveSceneProxy* Proxy = *it;
-
-			if (Proxy->GetPrimitive()->IsRenderStateDirty())
-			{
-				Proxy->UpdateResources(CommandList);
-				Proxy->GetPrimitive()->ClearRenderStateDirty();
-			}
-
+			Proxy->UpdateResources(CommandList);
 		}
 	}
 

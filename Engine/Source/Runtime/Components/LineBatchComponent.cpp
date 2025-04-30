@@ -141,14 +141,11 @@ namespace Drn
 
 	LineBatchSceneProxy::~LineBatchSceneProxy()
 	{
-		m_RootSignature.reset();
-		m_PipelineStateObject.reset();
-
 		m_VertexBuffer.Reset();
 		m_IndexBuffer.Reset();
 	}
 
-	void LineBatchSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) const
+	void LineBatchSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		SCOPE_STAT(LineBatchSceneProxyRenderMainPass);
 
@@ -157,7 +154,8 @@ namespace Drn
 			return;
 		}
 
-		CommandList->SetPipelineState(m_PipelineStateObject);
+		CommandList->GetD3D12CommandList()->SetPipelineState(m_LineBatchMaterial->GetBasePassPSO());
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(m_LineBatchMaterial->GetRootSignature());
 		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
 
 		XMMATRIX modelMatrix = Matrix().Get();
@@ -183,56 +181,6 @@ namespace Drn
 
 	void LineBatchSceneProxy::InitResources( dx12lib::CommandList* CommandList )
 	{
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
-			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-
-		CD3DX12_ROOT_PARAMETER1 rootParameters[1];
-		rootParameters[0].InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX );
-
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(
-			_countof( rootParameters ), rootParameters, 0, nullptr, rootSignatureFlags );
-
-		m_RootSignature = CommandList->GetDevice().CreateRootSignature( rootSignatureDescription.Desc_1_1 );
-
-		DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
-		DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
-
-		DXGI_SAMPLE_DESC sampleDesc = {};
-		sampleDesc.Count            = 1;
-
-		D3D12_RT_FORMAT_ARRAY rtvFormats = {};
-		rtvFormats.NumRenderTargets      = 1;
-		rtvFormats.RTFormats[0]          = backBufferFormat;
-
-		struct PipelineStateStream
-		{
-			CD3DX12_PIPELINE_STATE_STREAM_ROOT_SIGNATURE        pRootSignature;
-			CD3DX12_PIPELINE_STATE_STREAM_INPUT_LAYOUT          InputLayout;
-			CD3DX12_PIPELINE_STATE_STREAM_PRIMITIVE_TOPOLOGY    PrimitiveTopologyType;
-			CD3DX12_PIPELINE_STATE_STREAM_VS                    VS;
-			CD3DX12_PIPELINE_STATE_STREAM_PS                    PS;
-			CD3DX12_PIPELINE_STATE_STREAM_GS                    GS;
-			CD3DX12_PIPELINE_STATE_STREAM_DEPTH_STENCIL_FORMAT  DSVFormat;
-			CD3DX12_PIPELINE_STATE_STREAM_RENDER_TARGET_FORMATS RTVFormats;
-			CD3DX12_PIPELINE_STATE_STREAM_SAMPLE_DESC           SampleDesc;
-		} pipelineStateStream;
-
-		pipelineStateStream.pRootSignature        = m_RootSignature->GetD3D12RootSignature().Get();
-		pipelineStateStream.InputLayout           = { VertexLayout::Color, _countof( VertexLayout::Color) };
-		pipelineStateStream.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-		pipelineStateStream.VS                    = CD3DX12_SHADER_BYTECODE( m_LineBatchMaterial->GetVS() );
-		pipelineStateStream.PS                    = CD3DX12_SHADER_BYTECODE( m_LineBatchMaterial->GetPS() );
-		pipelineStateStream.GS                    = CD3DX12_SHADER_BYTECODE( m_LineBatchMaterial->GetGS() );
-		pipelineStateStream.DSVFormat             = depthBufferFormat;
-		pipelineStateStream.RTVFormats            = rtvFormats;
-		pipelineStateStream.SampleDesc            = sampleDesc;
-
-		m_PipelineStateObject = CommandList->GetDevice().CreatePipelineStateObject(pipelineStateStream);
-
 		CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
 			D3D12_HEAP_FLAG_NONE,
@@ -256,37 +204,53 @@ namespace Drn
 	{
 		SCOPE_STAT(UpdateResourcesLineBatchComponent);
 
+		if (GetPrimitive()->IsRenderStateDirty())
 		{
-			SCOPE_STAT(RecaulculateData);
-			
-			m_VertexData.clear();
-			m_VertexData.reserve(m_LineComponent->m_Lines.size() * 2);
+			RecalculateVertexData();
+			UploadVertexBuffer();
 
-			m_IndexData.clear();
-			m_IndexData.reserve(m_LineComponent->m_Lines.size() * 2);
-
-			for (uint32 i = 0; i < m_LineComponent->m_Lines.size(); i++)
-			{
-				const BatchLine& Line = m_LineComponent->m_Lines[i];
-
-				m_VertexData.push_back(VertexData_Color(Line.Start, Line.Color));
-				m_VertexData.push_back(VertexData_Color(Line.End, Line.Color));
-
-				m_IndexData.push_back( i * 2 );
-				m_IndexData.push_back( i * 2 + 1 );
-			}
+			GetPrimitive()->ClearRenderStateDirty();
 		}
 
-
-		if (m_VertexData.size() > 0 && m_IndexData.size() > 0)
+		if (!m_LineBatchMaterial->IsLoadedOnGpu())
 		{
-			SCOPE_STAT(CopyBuffer);
+			m_LineBatchMaterial->UploadResources(CommandList);
+		}
+	}
+
+	void LineBatchSceneProxy::RecalculateVertexData()
+	{
+		SCOPE_STAT( RecaulculateData );
+
+		m_VertexData.clear();
+		m_VertexData.reserve( m_LineComponent->m_Lines.size() * 2 );
+
+		m_IndexData.clear();
+		m_IndexData.reserve( m_LineComponent->m_Lines.size() * 2 );
+
+		for ( uint32 i = 0; i < m_LineComponent->m_Lines.size(); i++ )
+		{
+			const BatchLine& Line = m_LineComponent->m_Lines[i];
+
+			m_VertexData.push_back( VertexData_Color( Line.Start, Line.Color ) );
+			m_VertexData.push_back( VertexData_Color( Line.End, Line.Color ) );
+
+			m_IndexData.push_back( i * 2 );
+			m_IndexData.push_back( i * 2 + 1 );
+		}
+	}
+
+	void LineBatchSceneProxy::UploadVertexBuffer()
+	{
+		if ( m_VertexData.size() > 0 && m_IndexData.size() > 0 )
+		{
+			SCOPE_STAT( CopyBuffer );
 
 			{
 				UINT8*        pVertexDataBegin;
 				CD3DX12_RANGE readRange( 0, 0 );
 				m_VertexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
-				uint32 ByteSize = m_VertexData.size() * sizeof(VertexData_Color);
+				uint32 ByteSize = m_VertexData.size() * sizeof( VertexData_Color );
 				memcpy( pVertexDataBegin, &m_VertexData[0], ByteSize );
 				m_VertexBuffer->Unmap( 0, nullptr );
 
@@ -299,12 +263,12 @@ namespace Drn
 				UINT8*        pIndexDataBegin;
 				CD3DX12_RANGE readRange( 0, 0 );
 				m_IndexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
-				uint32 ByteSize = m_IndexData.size() * sizeof(uint32);
+				uint32 ByteSize = m_IndexData.size() * sizeof( uint32 );
 				memcpy( pIndexDataBegin, &m_IndexData[0], ByteSize );
 				m_IndexBuffer->Unmap( 0, nullptr );
-			
+
 				m_IndexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-				m_IndexBufferView.Format  = DXGI_FORMAT_R32_UINT;
+				m_IndexBufferView.Format         = DXGI_FORMAT_R32_UINT;
 				m_IndexBufferView.SizeInBytes    = ByteSize;
 			}
 
@@ -315,7 +279,6 @@ namespace Drn
 		{
 			m_HasValidData = false;
 		}
-
 	}
 
 }

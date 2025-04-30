@@ -59,7 +59,7 @@ namespace Drn
 
 	protected:
 
-		virtual void RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) const override;
+		virtual void RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void InitResources(dx12lib::CommandList* CommandList) override;
 		virtual void UpdateResources(dx12lib::CommandList* CommandList) override;
 
@@ -67,10 +67,10 @@ namespace Drn
 
 	private:
 
-		LineBatchComponent* m_LineComponent;
+		void RecalculateVertexData();
+		void UploadVertexBuffer();
 
-		std::shared_ptr<dx12lib::RootSignature> m_RootSignature = nullptr;
-		std::shared_ptr<dx12lib::PipelineStateObject> m_PipelineStateObject = nullptr;
+		LineBatchComponent* m_LineComponent;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_VertexBuffer;
 		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;

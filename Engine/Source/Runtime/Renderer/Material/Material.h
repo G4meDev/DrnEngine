@@ -24,6 +24,12 @@ namespace Drn
 		inline ID3DBlob* GetDS() const { return m_DS_Blob; }
 		inline ID3DBlob* GetCS() const { return m_CS_Blob; }
 
+		inline ID3D12RootSignature* GetRootSignature() { return m_RootSignature; }
+		inline ID3D12PipelineState* GetBasePassPSO() { return m_BasePassPSO; }
+
+		void UploadResources( dx12lib::CommandList* CommandList );
+		inline bool IsLoadedOnGpu() const { return m_LoadedOnGPU; }
+
 	protected:
 		virtual EAssetType GetAssetType() override;
 		virtual void Serialize( Archive& Ar ) override;
@@ -33,6 +39,9 @@ namespace Drn
 #endif
 
 	private:
+
+		void ReleaseShaderBlobs();
+
 		std::string m_SourcePath;
 
 		ID3DBlob* m_VS_Blob;
@@ -42,8 +51,9 @@ namespace Drn
 		ID3DBlob* m_DS_Blob;
 		ID3DBlob* m_CS_Blob;
 
-
-		void ReleaseShaderBlobs();
+		ID3D12RootSignature* m_RootSignature;
+		ID3D12PipelineState* m_BasePassPSO;
+		bool m_LoadedOnGPU;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
