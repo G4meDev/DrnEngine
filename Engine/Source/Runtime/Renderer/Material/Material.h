@@ -60,6 +60,7 @@ namespace Drn
 
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
+		D3D12_CULL_MODE m_CullMode;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

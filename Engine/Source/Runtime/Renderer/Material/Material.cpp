@@ -18,6 +18,7 @@ namespace Drn
 		, m_LoadedOnGPU(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::Color)
+		, m_CullMode(D3D12_CULL_MODE_BACK)
 	{
 		Load();
 	}
@@ -36,6 +37,7 @@ namespace Drn
 		, m_LoadedOnGPU(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::Color)
+		, m_CullMode(D3D12_CULL_MODE_BACK)
 	{
 		m_SourcePath = InSourcePath;
 		Import();
@@ -69,6 +71,10 @@ namespace Drn
 			uint16 InputlayoutType;
 			Ar >> InputlayoutType;
 			m_InputLayoutType = static_cast<EInputLayoutType>(InputlayoutType);
+
+			uint8 CullMode;
+			Ar >> CullMode;
+			m_CullMode = static_cast<D3D12_CULL_MODE>(CullMode);
 		}
 
 		else
@@ -77,6 +83,7 @@ namespace Drn
 			Ar << m_VS_Blob << m_PS_Blob << m_GS_Blob << m_HS_Blob << m_DS_Blob << m_CS_Blob;
 			Ar << static_cast<uint8>(m_PrimitiveType);
 			Ar << static_cast<uint16>(m_InputLayoutType);
+			Ar << static_cast<uint8>(m_CullMode);
 		}
 	}
 
@@ -169,12 +176,15 @@ namespace Drn
 		DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
 
+		D3D12_RASTERIZER_DESC RasterizerDesc = CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		RasterizerDesc.CullMode = m_CullMode;
+
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
 		PipelineDesc.pRootSignature						= m_RootSignature;
 		//PipelineDesc.InputLayout						= { VertexLayout::Color, _countof( VertexLayout::Color) };
 		PipelineDesc.InputLayout						= VertexLayout::GetLayoutDescriptionForType(m_InputLayoutType);
 		PipelineDesc.PrimitiveTopologyType				= m_PrimitiveType;
-		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		PipelineDesc.RasterizerState					= RasterizerDesc;
 		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
 		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
 		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;

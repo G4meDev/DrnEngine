@@ -130,6 +130,13 @@ namespace Drn
 		{
 			m_OwningAsset->m_InputLayoutType = static_cast<EInputLayoutType>(CurrentType);
 		}
+
+		const char* CullModes[] = { "None", "Front", "Back" };
+		CurrentType = static_cast<int>(m_OwningAsset->m_CullMode) - 1;
+		if ( ImGui::Combo( "Cull Mode", &CurrentType, CullModes, IM_ARRAYSIZE( CullModes )))
+		{
+			m_OwningAsset->m_CullMode = static_cast<D3D12_CULL_MODE>(CurrentType + 1);
+		}
 	}
 
 }

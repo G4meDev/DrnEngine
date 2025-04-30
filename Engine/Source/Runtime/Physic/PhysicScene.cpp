@@ -190,14 +190,14 @@ namespace Drn
 				{
 					const PxSphereGeometry* SphereGeo = static_cast<const PxSphereGeometry*>(&(Shape->getGeometry()));
 					m_OwningWorld->DrawDebugSphere(RigidTransform.GetLocation(), RigidTransform.GetRotation(),
-						Vector::OneVector, SphereGeo->radius, 16, 10.0f, 0);
+						Vector::ZeroVector, SphereGeo->radius, 16, 5.0f, 0);
 				}
 
 				else if ( Shape->getGeometry().getType() == PxGeometryType::eBOX)
 				{
 					const PxBoxGeometry* BoxGeo = static_cast<const PxBoxGeometry*>(&(Shape->getGeometry()));
 					Box box = Box::BuildAABB(Vector::ZeroVector, P2Vector(BoxGeo->halfExtents));
-					m_OwningWorld->DrawDebugBox(box, RigidTransform, Vector(0.3f, 0.7f, 0.2f), 10.0f, 0);
+					m_OwningWorld->DrawDebugBox(box, RigidTransform, Vector(0.3f, 0.7f, 0.2f), 5.0f, 0);
 				}
 			}
 
