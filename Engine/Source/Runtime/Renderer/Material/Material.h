@@ -49,6 +49,8 @@ namespace Drn
 		ID3DBlob* m_GS_Blob;
 		ID3DBlob* m_HS_Blob;
 		ID3DBlob* m_DS_Blob;
+
+		// TODO: maybe remove this?
 		ID3DBlob* m_CS_Blob;
 
 		ID3D12RootSignature* m_RootSignature;
