@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 #include <iosfwd>
 #include <string>
@@ -42,26 +44,14 @@ namespace dx12lib
 	class RenderTarget;
 }
 
-namespace std
-{
-	//class ofstream;
-	//class set;
-}
-
 namespace Drn
 {
-	struct StaticMeshVertexData;
-	struct StaticMeshVertexBuffer;
 	struct StaticMeshData;
-	struct StaticMeshRenderProxy;
-	struct MaterialData;
 
 	class PhysicManager;
 	class PhysicScene;
 	class BodyInstance;
 	class BodySetup;
-
-	struct VertexPosColor;
 
 	class World;
 	class Level;
@@ -71,19 +61,17 @@ namespace Drn
 	class PrimitiveSceneProxy;
 	class StaticMeshComponent;
 	class StaticMesh;
+	class Material;
 	class CameraComponent;
 	class Component;
 	class SceneComponent;
 	class Actor;
 	class StaticMeshActor;
 	class CameraActor;
-	
-	class Archive;
+
 	class AssetPreview;
 	
 	struct SystemFileNode;
-
-	struct IntPoint;
 }
 
 class LogCategory;

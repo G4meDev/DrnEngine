@@ -3,9 +3,6 @@
 #include "ForwardTypes.h"
 #include "Asset.h"
 
-#include "Runtime/Engine/StaticMesh.h"
-#include "Runtime/Engine/Level.h"
-
 LOG_DECLARE_CATEGORY(LogAssetManager)
 
 namespace Drn

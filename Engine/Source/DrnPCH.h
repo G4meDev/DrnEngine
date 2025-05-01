@@ -83,3 +83,5 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
+#define D3D12_Debug_INFO 1

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include <d3d12.h>
 
 namespace Drn
 {
@@ -110,6 +111,10 @@ namespace Drn
 			, V3(InV3)
 			, U4(InU4)
 			, V4(InV4)
+		{
+		}
+
+		VertexData_StaticMesh()
 		{
 		}
 

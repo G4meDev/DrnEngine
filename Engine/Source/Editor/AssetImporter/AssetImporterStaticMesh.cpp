@@ -9,6 +9,8 @@
 
 LOG_DEFINE_CATEGORY( LogStaticMeshImporter, "StaticMeshImporter" );
 
+#define DEFAULT_MATERIAL_PATH "Engine\\Content\\Materials\\M_TestShader.drn"
+
 namespace Drn
 {
 	void AssetImporterStaticMesh::Import( StaticMesh* MeshAsset, const std::string& Path )
@@ -22,7 +24,7 @@ namespace Drn
 		}
 
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs );
+		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes );
 
 		if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
 		{
@@ -68,44 +70,44 @@ namespace Drn
 
 		ImportedStaticMeshSlotData MeshData;
 
-		std::vector<StaticMeshVertexData> VertexData;
+		std::vector<VertexData_StaticMesh> VertexData;
 		std::vector<uint32> indices;
 
 		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
 		{
-			StaticMeshVertexData Vertex;
+			VertexData_StaticMesh Vertex;
 
-			Vertex.Pos_X = mesh->mVertices[i].x * MeshAsset->ImportScale;
-			Vertex.Pos_Y = mesh->mVertices[i].y * MeshAsset->ImportScale;
-			Vertex.Pos_Z = mesh->mVertices[i].z * MeshAsset->ImportScale;
+			Vertex.X = mesh->mVertices[i].x * MeshAsset->ImportScale;
+			Vertex.Y = mesh->mVertices[i].y * MeshAsset->ImportScale;
+			Vertex.Z = mesh->mVertices[i].z * MeshAsset->ImportScale;
 
-			Vertex.Normal_X = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
-			Vertex.Normal_Y = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
-			Vertex.Normal_Z = mesh->HasNormals() ? mesh->mNormals[i].z : 1;
+			Vertex.N_X = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
+			Vertex.N_Y = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
+			Vertex.N_Z = mesh->HasNormals() ? mesh->mNormals[i].z : 1;
 			
-			Vertex.Tangent_X = mesh->HasTangentsAndBitangents() ? mesh->mTangents[i].x : 0;
-			Vertex.Tangent_Y = mesh->HasTangentsAndBitangents() ? mesh->mTangents[i].y : 0;
-			Vertex.Tangent_Z = mesh->HasTangentsAndBitangents() ? mesh->mTangents[i].z : 1;
+			Vertex.T_X = mesh->HasTangentsAndBitangents() ? mesh->mTangents[i].x : 0;
+			Vertex.T_Y = mesh->HasTangentsAndBitangents() ? mesh->mTangents[i].y : 0;
+			Vertex.T_Z = mesh->HasTangentsAndBitangents() ? mesh->mTangents[i].z : 1;
 			
-			Vertex.BiTangent_X = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[i].x : 0;
-			Vertex.BiTangent_Y = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[i].y : 0;
-			Vertex.BiTangent_Z = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[i].z : 1;
+			Vertex.BT_X = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[i].x : 0;
+			Vertex.BT_Y = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[i].y : 0;
+			Vertex.BT_Z = mesh->HasTangentsAndBitangents() ? mesh->mBitangents[i].z : 1;
 
-			Vertex.Color_R = mesh->HasVertexColors(0) ? mesh->mColors[0][i].r : 1;
-			Vertex.Color_G = mesh->HasVertexColors(0) ? mesh->mColors[0][i].g : 1;
-			Vertex.Color_B = mesh->HasVertexColors(0) ? mesh->mColors[0][i].b : 1;
+			Vertex.R = mesh->HasVertexColors(0) ? mesh->mColors[0][i].r : 1;
+			Vertex.G = mesh->HasVertexColors(0) ? mesh->mColors[0][i].g : 1;
+			Vertex.B = mesh->HasVertexColors(0) ? mesh->mColors[0][i].b : 1;
 
-			Vertex.U_1 = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][i].x : 0;
-			Vertex.V_1 = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][i].y : 0;
+			Vertex.U1 = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][i].x : 0;
+			Vertex.V1 = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][i].y : 0;
 
-			Vertex.U_2 = mesh->HasTextureCoords(1) ? mesh->mTextureCoords[1][i].x : 0;
-			Vertex.V_2 = mesh->HasTextureCoords(1) ? mesh->mTextureCoords[1][i].y : 0;
+			Vertex.U2 = mesh->HasTextureCoords(1) ? mesh->mTextureCoords[1][i].x : 0;
+			Vertex.V2 = mesh->HasTextureCoords(1) ? mesh->mTextureCoords[1][i].y : 0;
 
-			Vertex.U_3 = mesh->HasTextureCoords(2) ? mesh->mTextureCoords[2][i].x : 0;
-			Vertex.V_3 = mesh->HasTextureCoords(2) ? mesh->mTextureCoords[2][i].y : 0;
+			Vertex.U3 = mesh->HasTextureCoords(2) ? mesh->mTextureCoords[2][i].x : 0;
+			Vertex.V3 = mesh->HasTextureCoords(2) ? mesh->mTextureCoords[2][i].y : 0;
 
-			Vertex.U_4 = mesh->HasTextureCoords(3) ? mesh->mTextureCoords[3][i].x : 0;
-			Vertex.V_4 = mesh->HasTextureCoords(3) ? mesh->mTextureCoords[3][i].y : 0;
+			Vertex.U4 = mesh->HasTextureCoords(3) ? mesh->mTextureCoords[3][i].x : 0;
+			Vertex.V4 = mesh->HasTextureCoords(3) ? mesh->mTextureCoords[3][i].y : 0;
 
 			VertexData.push_back( Vertex );
 		}
@@ -147,36 +149,56 @@ namespace Drn
 
 	void AssetImporterStaticMesh::Build( StaticMesh* MeshAsset, ImportedStaticMeshData& BuildingData) 
 	{
+		std::vector<MaterialData> OldMaterials;
+		
+		for (const MaterialData& Mat : MeshAsset->Data.Materials)
+		{
+			OldMaterials.push_back({});
+			OldMaterials[OldMaterials.size() - 1].m_Name = Mat.m_Name;
+			OldMaterials[OldMaterials.size() - 1].m_Material = Mat.m_Material;
+		}
+
 		MeshAsset->Data.MeshesData.clear();
 		MeshAsset->Data.Materials.clear();
 
 		for (ImportedStaticMeshSlotData& Mesh : BuildingData.MeshesData)
 		{
-			StaticMeshSlotData Data;
-			StaticMeshVertexBuffer VertexBuffer;
+			MeshAsset->Data.MeshesData.push_back({});
+			StaticMeshSlotData& Data = MeshAsset->Data.MeshesData[MeshAsset->Data.MeshesData.size() - 1];
 
-			for (auto& Vertex : Mesh.Vertices)
-			{
-				VertexBuffer.Pos_X = Vertex.Pos_X;
-				VertexBuffer.Pos_Y = Vertex.Pos_Y;
-				VertexBuffer.Pos_Z = Vertex.Pos_Z;
-				
-				VertexBuffer.Color_R = Vertex.Color_R;
-				VertexBuffer.Color_G = Vertex.Color_G;
-				VertexBuffer.Color_B = Vertex.Color_B;
+			uint32 VertexByteCount = Mesh.Vertices.size() * sizeof(VertexData_StaticMesh);
+			D3DCreateBlob(VertexByteCount, &Data.VertexBufferBlob);
+			memcpy(Data.VertexBufferBlob->GetBufferPointer(), Mesh.Vertices.data(), VertexByteCount);
 
-				Data.VertexData.push_back(VertexBuffer);
-			}
+			uint32 IndexByteCount = Mesh.Indices.size() * sizeof(uint32);
+			D3DCreateBlob(IndexByteCount, &Data.IndexBufferBlob);
+			memcpy(Data.IndexBufferBlob->GetBufferPointer(), Mesh.Indices.data(), IndexByteCount);
 
-			Data.IndexData = Mesh.Indices;
-
-			Data.Stride = 1;
 			Data.MaterialIndex = Mesh.MaterialIndex;
-
-			MeshAsset->Data.MeshesData.push_back(Data);
 		}
 
-		MeshAsset->Data.Materials = BuildingData.MaterialsData;
+		for (const std::string& MatName : BuildingData.MaterialsData)
+		{
+			MaterialData MD;
+			MeshAsset->Data.Materials.push_back(MD);
+
+			MaterialData& M = MeshAsset->Data.Materials[MeshAsset->Data.Materials.size() - 1]; 
+			M.m_Name = MatName;
+			
+			std::string MaterialPath = "";
+			
+			for (MaterialData& OldMaterial : OldMaterials)
+			{
+				if (OldMaterial.m_Name == MatName)
+				{
+					MaterialPath = OldMaterial.m_Material.GetPath();
+				}
+			}
+			
+			MaterialPath = MaterialPath != "" ? MaterialPath : DEFAULT_MATERIAL_PATH;
+			M.m_Material = AssetHandle<Material>(MaterialPath);
+			M.m_Material.Load();
+		}
 	}
 
 

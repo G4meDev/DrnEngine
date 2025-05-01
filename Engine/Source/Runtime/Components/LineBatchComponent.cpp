@@ -196,8 +196,10 @@ namespace Drn
 			&CD3DX12_RESOURCE_DESC::Buffer( sizeof(uint32) * NUM_MAX_LINES * 2),
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr, IID_PPV_ARGS( &m_IndexBuffer ) );
-		
+
+#if D3D12_Debug_INFO
 		m_IndexBuffer->SetName(L"LineBatchIndexBuffer");
+#endif
 	}
 
 	void LineBatchSceneProxy::UpdateResources( dx12lib::CommandList* CommandList )

@@ -22,11 +22,11 @@ namespace Drn
 
 		PreviewWorld = WorldManager::Get()->AllocateWorld();
 
-		AssetHandle<StaticMesh> SphereMesh( "Engine\\Content\\BasicShapes\\SM_Sphere.drn" );
-		SphereMesh.Load();
-
-		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
-		PreviewMesh->GetMeshComponent()->SetMesh( SphereMesh );
+		//AssetHandle<StaticMesh> SphereMesh( "Engine\\Content\\BasicShapes\\SM_Sphere.drn" );
+		//SphereMesh.Load();
+		//
+		//PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
+		//PreviewMesh->GetMeshComponent()->SetMesh( SphereMesh );
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>( PreviewWorld->GetScene() );
 	}

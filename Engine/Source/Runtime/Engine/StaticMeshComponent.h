@@ -12,13 +12,6 @@ namespace Drn
 {
 	class StaticMeshSceneProxy;
 
-	struct VertexPosColor
-	{
-		XMFLOAT3 Position;
-		XMFLOAT3 Color;
-	};
-
-
 	class StaticMeshComponent : public PrimitiveComponent
 	{
 	public:

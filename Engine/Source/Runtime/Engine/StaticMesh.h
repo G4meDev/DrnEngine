@@ -3,6 +3,8 @@
 #include "ForwardTypes.h"
 #include "Runtime/Core/Asset.h"
 #include "Runtime/Physic/BodySetup.h"
+#include "Runtime/Renderer/VertexLayout.h"
+#include "MeshTypes.h"
 
 LOG_DECLARE_CATEGORY(LogStaticMesh)
 
@@ -14,25 +16,26 @@ namespace Drn
 	{
 	public:
 		StaticMeshSlotData() {};
+		~StaticMeshSlotData()
+		{
+			ReleaseBlobs();
+		};
 
-		//std::vector<float>  VertexData;
-		std::vector<StaticMeshVertexBuffer> VertexData;
-		std::vector<uint32> IndexData;
+		ID3DBlob* VertexBufferBlob = nullptr;
+		ID3DBlob* IndexBufferBlob = nullptr;
+		uint8 MaterialIndex = 0;
 
-		uint8 Stride;
-		uint8 MaterialIndex;
+		std::shared_ptr<dx12lib::VertexBuffer> VertexBuffer = nullptr;
+		std::shared_ptr<dx12lib::IndexBuffer>  IndexBuffer  = nullptr;
 
 		virtual void Serialize(Archive& Ar) override;
-	};
 
-	//struct MaterialData
-	//{
-	//public:
-	//	MaterialData() {};
-	//
-	//	std::string Name;
-	//	std::string MaterialPath;
-	//};
+		inline void ReleaseBlobs()
+		{
+			if (VertexBufferBlob) VertexBufferBlob->Release();
+			if (IndexBufferBlob) IndexBufferBlob->Release();
+		}
+	};
 
 	struct StaticMeshData : public Serializable
 	{
@@ -40,37 +43,10 @@ namespace Drn
 		StaticMeshData() {};
 
 		std::vector<StaticMeshSlotData> MeshesData;
-		std::vector<std::string> Materials;
+		std::vector<MaterialData> Materials;
 
 		virtual void Serialize( Archive& Ar ) override;
 	};
-
-	struct StaticMeshVertexBuffer
-	{
-	public:
-		StaticMeshVertexBuffer(){};
-
-		float Pos_X;
-		float Pos_Y;
-		float Pos_Z;
-
-		float Color_R;
-		float Color_G;
-		float Color_B;
-	};
-
-	struct StaticMeshRenderProxy
-	{
-	public:
-		StaticMeshRenderProxy(){};
-
-		std::shared_ptr<dx12lib::VertexBuffer> VertexBuffer = nullptr;
-		std::shared_ptr<dx12lib::IndexBuffer>  IndexBuffer  = nullptr;
-
-		std::vector<StaticMeshVertexBuffer> VertexData;
-		std::vector<uint32> IndexData;
-	};
-
 
 	class StaticMesh : public Asset
 	{
@@ -100,8 +76,6 @@ namespace Drn
 		virtual EAssetType GetAssetType() override;
 
 		StaticMeshData Data;
-		std::vector<StaticMeshRenderProxy> RenderProxies;
-
 		bool m_LoadedOnGPU;
 
 		friend class Renderer;
@@ -112,12 +86,6 @@ namespace Drn
 		std::string m_SourcePath;
 
 		float ImportScale = 1.0f;
-
-		bool  ImportNormal    = false;
-		bool  ImportTangent   = false;
-		bool  ImportBiTangent = false;
-		bool  ImportColor     = true;
-		uint8 ImportUvCount   = 0;
 
 		BodySetup m_BodySetup;
 

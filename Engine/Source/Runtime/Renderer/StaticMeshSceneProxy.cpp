@@ -38,7 +38,7 @@ namespace Drn
 		}
 	}
 
- void StaticMeshSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer )
+	void StaticMeshSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		StaticMesh* Mesh =  m_OwningStaticMeshComponent->GetMesh();
 
@@ -63,7 +63,7 @@ namespace Drn
 
 			CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
 
-			for (const StaticMeshRenderProxy& RenderProxy : Mesh->RenderProxies)
+			for (const StaticMeshSlotData& RenderProxy : Mesh->Data.MeshesData)
 			{
 				CommandList->SetVertexBuffer( 0, RenderProxy.VertexBuffer );
 				CommandList->SetIndexBuffer( RenderProxy.IndexBuffer );
