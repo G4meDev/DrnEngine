@@ -20,12 +20,35 @@ namespace Drn
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
+	D3D12_INPUT_ELEMENT_DESC VertexLayout::StaticMesh[9] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD0", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD1", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD2", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD3", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
 	D3D12_INPUT_LAYOUT_DESC VertexLayout::GetLayoutDescriptionForType( EInputLayoutType Type )
 	{
 		switch ( Type )
 		{
 		case EInputLayoutType::Color:				return { VertexLayout::Color, _countof( VertexLayout::Color) };
 		case EInputLayoutType::LineColorThickness:	return { VertexLayout::LineColorThickness, _countof( VertexLayout::LineColorThickness) };
+		case EInputLayoutType::StandardMesh:		return { VertexLayout::StaticMesh, _countof( VertexLayout::StaticMesh) };
 		default:									return { VertexLayout::Color, _countof( VertexLayout::Color) };
 		}
 	}
@@ -36,6 +59,7 @@ namespace Drn
 		{
 		case EInputLayoutType::Color:				return "Color";
 		case EInputLayoutType::LineColorThickness:	return "LineColorThickness";
+		case EInputLayoutType::StandardMesh:		return "StandardMesh";
 		default:									return "Color";
 		}
 	}

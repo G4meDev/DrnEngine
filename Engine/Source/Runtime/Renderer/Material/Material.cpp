@@ -47,7 +47,7 @@ namespace Drn
 	Material::~Material()
 	{
 		ReleaseShaderBlobs();
-		if (m_RootSignature) m_BasePassPSO->Release();
+		if (m_RootSignature) m_RootSignature->Release();
 		if (m_BasePassPSO) m_BasePassPSO->Release();
 	}
 
