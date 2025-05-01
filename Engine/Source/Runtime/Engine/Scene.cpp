@@ -1,33 +1,24 @@
 #include "DrnPCH.h"
 #include "Scene.h"
 
+LOG_DEFINE_CATEGORY( LogScene, "Scene" );
+
 namespace Drn
 {
 	Scene::Scene( World* InWorld )
 		: m_World(InWorld)
 	{
-
-
-
-// --------------------------------------------------------------------------------------------------
-
-		for (Actor* actor : m_World->m_Actors)
-		{
-			std::vector<StaticMeshComponent*> StaticMeshComponenets;
-			actor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
-		
-			for (StaticMeshComponent* Mesh : StaticMeshComponenets)
-			{
-				AddStaticMeshCompponent(Mesh);
-			}
-		}
-
 		m_World->BindOnNewActors(std::bind(&Scene::OnNewActors, this, std::placeholders::_1));
 		m_World->BindOnRemoveActor(std::bind(&Scene::OnRemoveActor, this, std::placeholders::_1));
 	}
 
 	Scene::~Scene()
 	{
+		for (PrimitiveSceneProxy* Proxy : m_PrimitiveProxies)
+		{
+			delete Proxy;
+		}
+
 		for (auto it = m_SceneRenderers.begin(); it != m_SceneRenderers.end();)
 		{
 			SceneRenderer* SceneRen = *it;
@@ -64,51 +55,21 @@ namespace Drn
 		InSceneRenderer = nullptr;
 	}
 
-	void Scene::AddStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
-	{
-		m_StaticMeshComponents.insert(InStaticMesh);
-	}
-
-	void Scene::RemoveStaticMeshCompponent( StaticMeshComponent* InStaticMesh )
-	{
-		for (auto it = m_StaticMeshComponents.begin(); it != m_StaticMeshComponents.end();)
-		{
-			if (*it == InStaticMesh)
-			{
-				it = m_StaticMeshComponents.erase(it);
-			}
-			else
-			{
-				it++;
-			}
-		}
-	}
-
 // ----------------------------------------------------------------------------
 
 	void Scene::OnNewActors( const std::set<Actor*>& NewActors )
 	{
-		for (Actor* actor : NewActors)
-		{
-			std::vector<StaticMeshComponent*> StaticMeshComponenets;
-			actor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
-		
-			for (StaticMeshComponent* Mesh : StaticMeshComponenets)
-			{
-				AddStaticMeshCompponent(Mesh);
-			}
-		}
+		//for (Actor* actor : NewActors)
+		//{
+		//	std::vector<StaticMeshComponent*> StaticMeshComponenets;
+		//	actor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
+		//}
 	}
 
 	void Scene::OnRemoveActor( const Actor* RemovedActor )
 	{
-		std::vector<StaticMeshComponent*> StaticMeshComponenets;
-		RemovedActor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
-	
-		for (StaticMeshComponent* Mesh : StaticMeshComponenets)
-		{
-			RemoveStaticMeshCompponent(Mesh);
-		}
+		//std::vector<StaticMeshComponent*> StaticMeshComponenets;
+		//RemovedActor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
 	}
 
 // ----------------------------------------------------------------------------

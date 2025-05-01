@@ -141,8 +141,8 @@ namespace Drn
 
 	LineBatchSceneProxy::~LineBatchSceneProxy()
 	{
-		m_VertexBuffer.Reset();
-		m_IndexBuffer.Reset();
+		//m_VertexBuffer.Reset();
+		//m_IndexBuffer.Reset();
 	}
 
 	void LineBatchSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer )

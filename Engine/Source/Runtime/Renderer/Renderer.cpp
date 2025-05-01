@@ -158,6 +158,8 @@ namespace Drn
 #endif
 
 		m_SwapChain->Present();
+
+		commandQueue.Flush();
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )

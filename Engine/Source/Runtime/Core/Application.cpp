@@ -64,6 +64,8 @@ namespace Drn
 		{
 			retCode = GameFramework::Get().Run();
 
+			//Renderer::Get()->GetDevice()->Flush();
+
 #if WITH_EDITOR
 			Editor::Get()->Shutdown();
 #endif
@@ -89,6 +91,12 @@ namespace Drn
 	void Application::OnUpdate( UpdateEventArgs& e ) 
 	{
 		SCOPE_STAT(ApplicationTick);
+
+		if (m_Closing)
+		{
+			GameFramework::Get().Stop();
+			return;
+		}
 
 		static uint64_t frameCount = 0;
 		static double   totalTime  = 0.0;
@@ -157,7 +165,7 @@ namespace Drn
 			break;
 		case KeyCode::Escape:
 			// Stop the application if the Escape key is pressed.
-			GameFramework::Get().Stop();
+			m_Closing = true;
 			break;
 		case KeyCode::Enter:
 			if ( e.Alt )

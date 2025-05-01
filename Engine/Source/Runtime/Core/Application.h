@@ -29,5 +29,7 @@ namespace Drn
 
 		std::shared_ptr<Window> m_MainWindow;
 		HINSTANCE m_hInstance;
+
+		bool m_Closing = false;
 	};
 }

@@ -2,6 +2,8 @@
 
 #include "ForwardTypes.h"
 
+LOG_DECLARE_CATEGORY(LogScene);
+
 namespace Drn
 {
 	class PrimitiveSceneProxy;
@@ -21,9 +23,6 @@ namespace Drn
 		SceneRenderer* AllocateSceneRenderer();
 		void ReleaseSceneRenderer(SceneRenderer*& InSceneRenderer);
 
-		void AddStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
-		void RemoveStaticMeshCompponent(StaticMeshComponent* InStaticMesh);
-
 		void InitSceneRender(dx12lib::CommandList* CommandList);
 
 		void AddPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
@@ -40,7 +39,6 @@ namespace Drn
 		std::set<PrimitiveSceneProxy*> m_PrimitiveProxies;
 		std::set<PrimitiveSceneProxy*> m_PendingProxies;
 
-		std::set<StaticMeshComponent*> m_StaticMeshComponents;
 		std::set<SceneRenderer*> m_SceneRenderers;
 
 		friend class SceneRenderer;

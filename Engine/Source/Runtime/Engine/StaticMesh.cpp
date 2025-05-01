@@ -67,6 +67,17 @@ namespace Drn
 		{
 			Proxy.VertexBuffer = CommandList->CopyVertexBuffer( Proxy.VertexBufferBlob->GetBufferSize() / sizeof(VertexData_StaticMesh), sizeof(VertexData_StaticMesh), Proxy.VertexBufferBlob->GetBufferPointer());
 			Proxy.IndexBuffer = CommandList->CopyIndexBuffer( Proxy.IndexBufferBlob->GetBufferSize() / sizeof(uint32), DXGI_FORMAT_R32_UINT, Proxy.IndexBufferBlob->GetBufferPointer());
+
+#if D3D12_Debug_INFO
+
+			std::string MeshName = m_Path;
+			MeshName = Path::ConvertShortPath(MeshName);
+			MeshName = Path::RemoveFileExtension(MeshName);
+		
+			Proxy.VertexBuffer->SetName( StringHelper::s2ws(std::string("VertexBuffer_") + MeshName) );
+			Proxy.IndexBuffer->SetName( StringHelper::s2ws(std::string("IndexBuffer_") + MeshName) );
+
+#endif
 		}
 
 		m_LoadedOnGPU = true;
