@@ -167,7 +167,9 @@ namespace Drn
 				}
 				else
 				{
-					m_OverrideMaterials.push_back(MaterialOverrideData(MaterialName));
+					MaterialOverrideData MOD;
+					MOD.m_Name = MaterialName;
+					m_OverrideMaterials.push_back(MOD);
 				}
 			}
 

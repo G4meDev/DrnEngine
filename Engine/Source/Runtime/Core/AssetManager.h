@@ -18,7 +18,7 @@ namespace Drn
 			, m_Asset(nullptr) {}
 
 		AssetHandle() 
-			: AssetHandle("") {}
+			: AssetHandle("InvalidPath") {}
 
 		~AssetHandle() 
 		{
@@ -37,6 +37,8 @@ namespace Drn
 
 		AssetHandle(const AssetHandle& other)
 		{
+			m_Asset = nullptr;
+
 			this->m_Path = other.m_Path;
 			if (other.IsValid())
 			{
