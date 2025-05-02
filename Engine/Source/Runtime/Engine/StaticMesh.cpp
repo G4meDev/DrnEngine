@@ -85,6 +85,18 @@ namespace Drn
 		m_LoadedOnGPU = true;
 	}
 
+	AssetHandle<Material> StaticMesh::GetMaterialAtIndex( uint32 Index )
+	{
+		if (Index >= 0 && Index < Data.Materials.size())
+		{
+			AssetHandle<Material> Result;
+			Result = Data.Materials[Index].m_Material;
+			return Result;
+		}
+
+		return AssetHandle<Material>( "InvalidPath" );
+	}
+
 	EAssetType StaticMesh::GetAssetType()
 	{
 		return EAssetType::StaticMesh;

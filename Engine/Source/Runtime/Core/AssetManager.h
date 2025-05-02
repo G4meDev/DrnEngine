@@ -35,20 +35,30 @@ namespace Drn
 			return m_Asset;
 		}
 
-		AssetHandle& operator=(const AssetHandle& other)
+		AssetHandle(const AssetHandle& other)
 		{
+			this->m_Path = other.m_Path;
 			if (other.IsValid())
 			{
 				other.m_Asset->AddRef();
+				this->m_Asset = other.m_Asset;
 			}
+		}
 
+		AssetHandle& operator=(const AssetHandle& other)
+		{
 			if (this->IsValid())
 			{
 				this->Release();
 			}
 
+			if (other.IsValid())
+			{
+				other.m_Asset->AddRef();
+				this->m_Asset = other.m_Asset;
+			}
+
 			this->m_Path = other.m_Path;
-			this->m_Asset = other.m_Asset;
 
 			return *this;
 		}

@@ -14,6 +14,20 @@ namespace Drn
 		{
 		};
 
+		MaterialData(const MaterialData& Other)
+		{
+			m_Name = Other.m_Name;
+			m_Material = Other.m_Material;
+		};
+
+		MaterialData& operator=(const MaterialData& Other)
+		{
+			m_Name = Other.m_Name;
+			m_Material = Other.m_Material;
+
+			return *this;
+		}
+
 		virtual void Serialize( Archive& Ar ) override;
 
 		std::string m_Name;
@@ -28,6 +42,21 @@ namespace Drn
 		MaterialOverrideData(const std::string& InName)
 		{
 			m_Name = InName;
+		}
+
+		MaterialOverrideData(const MaterialOverrideData& Other)
+			: MaterialData(Other)
+		{
+			m_Overriden = Other.m_Overriden;
+		}
+
+		MaterialOverrideData& operator=(const MaterialOverrideData& Other)
+		{
+			m_Name = Other.m_Name;
+			m_Material = Other.m_Material;
+			m_Overriden = Other.m_Overriden;
+
+			return *this;
 		}
 
 		virtual void Serialize( Archive& Ar ) override;

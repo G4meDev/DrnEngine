@@ -122,19 +122,22 @@ namespace Drn
 		ImGui::TextWrapped(Mesh.GetPath().c_str());
 		ImGui::Separator();
 
-		ImGui::BeginChild( "Materials" );
-		ImGui::Text( "Override Materials" );
-
-		if ( ImGui::Button( "Refresh##Materials" ) )
+		if ( ImGui::CollapsingHeader( "Materials", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
 		{
-			RefreshOverrideMaterials();
+			for (int i = 0; i < m_OverrideMaterials.size(); i++)
+			{
+				ImGui::PushID(i);
+				m_OverrideMaterials[i].Draw(this, i);
+				ImGui::PopID();
+			}
+
+			if ( ImGui::Button( "Refresh##Materials" ) )
+			{
+				RefreshOverrideMaterials();
+			}
 		}
 
-		for (int i = 0; i < m_OverrideMaterials.size(); i++)
-		{
-			m_OverrideMaterials[i].Draw(this, i);
-		}
-		ImGui::EndChild();
+
 	}
 
 	void StaticMeshComponent::ClearMesh()

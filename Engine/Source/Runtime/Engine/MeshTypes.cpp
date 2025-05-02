@@ -45,9 +45,6 @@ namespace Drn
 #if WITH_EDITOR
 	void MaterialOverrideData::Draw( StaticMeshComponent* MC, uint32 MaterialIndex)
 	{
-		ImGui::PushID(MaterialIndex);
-		ImGui::BeginChild("##Material");
-
 		ImGui::PushID( "MaterialName" );
 		ImGui::Text(m_Name.c_str());
 		ImGui::PopID();
@@ -85,11 +82,17 @@ namespace Drn
 
 		else
 		{
-			//ImGui::Text(m_Material.GetPath().c_str());
-		}
+			std::string MatPath = "..";
+			if (MC->GetMesh())
+			{
+				AssetHandle<Material> Mat = MC->GetMesh()->GetMaterialAtIndex(MaterialIndex);
+				MatPath = Mat.GetPath();
+			}
 
-		ImGui::EndChild();
-		ImGui::PopID();
+			ImGui::PushID("MaterialPath");
+			ImGui::Text(MatPath.c_str());
+			ImGui::PopID();
+		}
 	}
 #endif
 

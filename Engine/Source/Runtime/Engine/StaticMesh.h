@@ -67,6 +67,8 @@ namespace Drn
 
 		inline bool IsLoadedOnGpu() const { return m_LoadedOnGPU; }
 
+		AssetHandle<Material> GetMaterialAtIndex(uint32 Index);
+
 	protected:
 
 #if WITH_EDITOR
