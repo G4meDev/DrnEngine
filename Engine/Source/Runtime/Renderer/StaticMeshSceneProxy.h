@@ -3,6 +3,8 @@
 #include "ForwardTypes.h"
 #include "Runtime/Engine/PrimitiveSceneProxy.h"
 
+LOG_DECLARE_CATEGORY(LogStaticMeshSceneProxy);
+
 namespace Drn
 {
 	class StaticMeshSceneProxy : public PrimitiveSceneProxy
@@ -24,8 +26,6 @@ namespace Drn
 	private:
 
 		StaticMeshComponent* m_OwningStaticMeshComponent;
-
-		// TODO: Delete
-		AssetHandle<Material> m_TempMat;
+		std::vector<AssetHandle<Material>> m_Materials;
 	};
 }

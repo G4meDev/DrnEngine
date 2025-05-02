@@ -115,8 +115,20 @@ namespace Drn
 		}
 
 		ImGui::Separator();
-
 		ImGui::TextWrapped(Mesh.GetPath().c_str());
+		ImGui::Separator();
+
+		ImGui::Text( "Override Materials" );
+
+		if ( ImGui::Button( "Refresh##Materials" ) )
+		{
+			RefreshOverrideMaterials();
+		}
+
+		for (int i = 0; i < m_OverrideMaterials.size(); i++)
+		{
+			
+		}
 	}
 
 	void StaticMeshComponent::ClearMesh()
@@ -128,6 +140,38 @@ namespace Drn
 	{
 		Mesh = AssetHandle<StaticMesh>(NewPath);
 		Mesh.Load();
+	}
+
+	void StaticMeshComponent::RefreshOverrideMaterials()
+	{
+		MarkRenderStateDirty();
+
+		if (Mesh.IsValid())
+		{
+			for (int i = 0; i < Mesh->Data.Materials.size(); i++)
+			{
+				std::string& MaterialName = Mesh->Data.Materials[i].m_Name;
+
+				if ( i < m_OverrideMaterials.size() )
+				{
+					m_OverrideMaterials[i].m_Name = MaterialName;
+				}
+				else
+				{
+					m_OverrideMaterials.push_back(MaterialOverrideData(MaterialName));
+				}
+			}
+
+			for (int i = Mesh->Data.Materials.size(); i < m_OverrideMaterials.size(); i++)
+			{
+				m_OverrideMaterials.pop_back();
+			}
+		}
+
+		else
+		{
+			m_OverrideMaterials.clear();
+		}
 	}
 
 #endif

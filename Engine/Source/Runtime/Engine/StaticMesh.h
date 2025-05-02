@@ -99,6 +99,7 @@ namespace Drn
 		friend class AssetPreviewStaticMeshGuiLayer;
 		friend class AssetImporterStaticMesh;
 		friend class StaticMeshSceneProxy;
+		friend class StaticMeshComponent;
 		friend class Editor;
 	};
 }

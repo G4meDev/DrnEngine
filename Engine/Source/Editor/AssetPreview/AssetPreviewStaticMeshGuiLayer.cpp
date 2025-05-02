@@ -9,6 +9,7 @@
 #include "imgui_internal.h"
 
 #include "Editor/Editor.h"
+#include "Editor/EditorConfig.h"
 #include "Editor/FileImportMenu/FileImportMenu.h"
 #include "Editor/EditorPanels/ViewportPanel.h"
 
@@ -157,9 +158,34 @@ namespace Drn
 		}
 
 		ImGui::Separator();
+		ImGui::Text("Materials");
+		
+		for (MaterialData& Mat : m_OwningAsset->Data.Materials)
+		{
+			ImGui::Text(Mat.m_Name.c_str());
+			ImGui::Text(Mat.m_Material.GetPath().c_str());
 
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
+				{
+					auto AssetPath = static_cast<const char*>(payload->Data);
+					AssetHandle<Asset> DropedMaterial(AssetPath);
+					EAssetType Type = DropedMaterial.LoadGeneric();
+					
+					if (Type == EAssetType::Material)
+					{
+						Mat.m_Material = AssetHandle<Material>(AssetPath);
+						PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
+					}
+				}
+
+				ImGui::EndDragDropTarget();
+			}
+		}
+
+		ImGui::Separator();
 		ImGui::InputFloat( "ImportScale", &m_OwningAsset.Get()->ImportScale);
-
 		ImGui::Separator();
 
 		m_OwningAsset->m_BodySetup.DrawDetailPanel();

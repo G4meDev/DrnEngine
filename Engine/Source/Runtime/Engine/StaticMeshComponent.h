@@ -38,7 +38,7 @@ namespace Drn
 		void ClearMesh();
 
 		void UpdateMeshWithPath(const char* NewPath);
-
+		void RefreshOverrideMaterials();
 #endif
 
 	protected:
@@ -46,7 +46,11 @@ namespace Drn
 		AssetHandle<StaticMesh> Mesh;
 		StaticMeshSceneProxy* m_SceneProxy;
 
+		std::vector<MaterialOverrideData> m_OverrideMaterials;
+
+		friend class StaticMeshSceneProxy;
 
 	private:
+
 	};
 }

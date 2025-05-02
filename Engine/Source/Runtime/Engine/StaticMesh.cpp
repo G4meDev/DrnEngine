@@ -177,11 +177,6 @@ namespace Drn
 			Ar >> VertexBufferBlob;
 			Ar >> IndexBufferBlob;
 			Ar >> MaterialIndex;
-
-			std::vector<VertexData_StaticMesh> D;
-			D.resize(VertexBufferBlob->GetBufferSize() / sizeof(VertexData_StaticMesh));
-			memcpy(D.data(), VertexBufferBlob->GetBufferPointer(), VertexBufferBlob->GetBufferSize());
-			D.pop_back();
 		}
 		else
 		{
