@@ -51,6 +51,8 @@ namespace Drn
 		Archive& operator>>(std::vector<char>& Value);
 		Archive& operator>>(ID3DBlob*& Value);
 
+		inline bool IsValid() const { return m_ValidArchive; }
+
 	protected:
 
 		std::string m_FilePath;
@@ -59,6 +61,7 @@ namespace Drn
 		uint8 m_ArchiveVersion;
 
 		std::fstream File;
+		bool m_ValidArchive = false;
 
 	private:
 	};

@@ -33,6 +33,8 @@ namespace Drn
 
 	protected:
 		virtual EAssetType GetAssetType() override;
+		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
+
 		virtual void Serialize( Archive& Ar ) override;
 
 #if WITH_EDITOR
@@ -71,5 +73,7 @@ namespace Drn
 
 		friend class AssetPreviewMaterialGuiLayer;
 		friend class AssetImporterMaterial;
+
+		friend class AssetManager;
 	};
 }

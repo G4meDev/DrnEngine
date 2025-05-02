@@ -34,7 +34,7 @@ namespace Drn
 		bool m_Overriden = false;
 
 #if WITH_EDITOR
-		void Draw(StaticMeshComponent* MC);
+		void Draw(StaticMeshComponent* MC, uint32 MaterialIndex);
 #endif
 	};
 }

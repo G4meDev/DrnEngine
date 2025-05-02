@@ -22,6 +22,7 @@ namespace Drn
 		virtual void Serialize(Archive& Ar) override;
 
 		virtual EAssetType GetAssetType() override;
+		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Level; }
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

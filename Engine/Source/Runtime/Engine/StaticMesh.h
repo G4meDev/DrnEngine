@@ -74,6 +74,7 @@ namespace Drn
 #endif
 
 		virtual EAssetType GetAssetType() override;
+		inline static EAssetType GetAssetTypeStatic() { return EAssetType::StaticMesh; }
 
 		StaticMeshData Data;
 		bool m_LoadedOnGPU;

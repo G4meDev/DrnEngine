@@ -191,16 +191,13 @@ namespace Drn
 		AssetHandle<Asset> asset(AssetPath);
 		EAssetType Type = asset.LoadGeneric();
 
-		if (asset.IsValid())
+		if (asset.IsValid() && Type == EAssetType::StaticMesh)
 		{
-			if (Type == EAssetType::StaticMesh)
-			{
-				StaticMeshActor* NewActor = WorldManager::Get()->GetMainWorld()->SpawnActor<StaticMeshActor>();
+			StaticMeshActor* NewActor = WorldManager::Get()->GetMainWorld()->SpawnActor<StaticMeshActor>();
 
-				AssetHandle<StaticMesh> MeshAsset(AssetPath);
-				MeshAsset.Load();
-				NewActor->GetMeshComponent()->SetMesh(MeshAsset);
-			}
+			AssetHandle<StaticMesh> MeshAsset(AssetPath);
+			MeshAsset.Load();
+			NewActor->GetMeshComponent()->SetMesh(MeshAsset);
 		}
 	}
 

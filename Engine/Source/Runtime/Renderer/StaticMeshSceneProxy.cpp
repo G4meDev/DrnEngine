@@ -3,6 +3,8 @@
 
 LOG_DEFINE_CATEGORY( LogStaticMeshSceneProxy, "StaticMeshSceneProxy" );
 
+#define DEFAULT_MATERIAL_PATH "\\Engine\\Content\\Materials\\DefaultMeshShader.drn"
+
 namespace Drn
 {
 	StaticMeshSceneProxy::StaticMeshSceneProxy( StaticMeshComponent* InStaticMeshComponent )
@@ -45,19 +47,18 @@ namespace Drn
 						m_Materials[i] = Mesh->Data.Materials[i].m_Material;
 					}
 
-					m_Materials[i].Load();
-					if (m_Materials[i].IsValid())
+					// TODO: mark this only in with editor builds
+					m_Materials[i].LoadChecked();
+					if (!m_Materials[i].IsValid())
 					{
-						if (!m_Materials[i]->IsLoadedOnGpu())
-						{
-							m_Materials[i]->UploadResources(CommandList);
-						}
+						LOG(LogStaticMeshSceneProxy, Error, "Material is invalid. Using default material.");
+						m_Materials[i] = AssetHandle<Material>(DEFAULT_MATERIAL_PATH);
+						m_Materials[i].Load();
 					}
 
-					else
+					if (!m_Materials[i]->IsLoadedOnGpu())
 					{
-						LOG(LogStaticMeshSceneProxy, Error, "Material is invalid.");
-						// TODO: load a default material
+						m_Materials[i]->UploadResources(CommandList);
 					}
 				}
 			}

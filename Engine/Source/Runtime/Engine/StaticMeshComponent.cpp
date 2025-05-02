@@ -31,6 +31,10 @@ namespace Drn
 	void StaticMeshComponent::SetMesh( const AssetHandle<StaticMesh>& InHandle )
 	{
 		Mesh = InHandle;
+
+#if WITH_EDITOR
+		RefreshOverrideMaterials();
+#endif
 	}
 
 	void StaticMeshComponent::Serialize( Archive& Ar )
@@ -118,6 +122,7 @@ namespace Drn
 		ImGui::TextWrapped(Mesh.GetPath().c_str());
 		ImGui::Separator();
 
+		ImGui::BeginChild( "Materials" );
 		ImGui::Text( "Override Materials" );
 
 		if ( ImGui::Button( "Refresh##Materials" ) )
@@ -127,8 +132,9 @@ namespace Drn
 
 		for (int i = 0; i < m_OverrideMaterials.size(); i++)
 		{
-			
+			m_OverrideMaterials[i].Draw(this, i);
 		}
+		ImGui::EndChild();
 	}
 
 	void StaticMeshComponent::ClearMesh()

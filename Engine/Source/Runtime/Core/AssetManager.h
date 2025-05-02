@@ -59,18 +59,27 @@ namespace Drn
 		{
 			Release();
 			m_Asset = AssetManager::Get()->Load<T>(m_Path);
-			return;
+		}
+
+		void LoadChecked()
+		{
+			Release();
+			m_Asset = AssetManager::Get()->LoadChecked<T>(m_Path);
 		}
 
 		EAssetType LoadGeneric()
 		{
 			Release();
 
-			uint16 TypeByte;
+			Archive Ar(Path::ConvertProjectPath(m_Path));
+			if (!Ar.IsValid())
 			{
-				Archive Ar(Path::ConvertProjectPath(m_Path));
-				Ar >> TypeByte;
+				// TODO: add asset type undefined
+				return EAssetType::Level;
 			}
+
+			uint16 TypeByte;
+			Ar >> TypeByte;
 
 			EAssetType Type = static_cast<EAssetType>(TypeByte);
 
@@ -102,6 +111,8 @@ namespace Drn
 				{
 					AssetManager::Get()->InvalidateAsset(m_Asset);
 				}
+
+				m_Asset = nullptr;
 			}
 		}
 
@@ -126,6 +137,9 @@ namespace Drn
 
 		template< typename T >
 		T* Load(const std::string& Path);
+
+		template< typename T >
+		T* LoadChecked(const std::string& Path);
 
 #if WITH_EDITOR
 
@@ -170,6 +184,43 @@ namespace Drn
 		return static_cast<T*>(asset);
 	}
 
+	template<typename T>
+	T* AssetManager::LoadChecked( const std::string& Path )
+	{
+		Asset* asset = nullptr;
+		auto it = m_AssetRegistery.find(Path);
+
+		if (it != m_AssetRegistery.end())
+		{
+			asset = it->second;
+
+			asset->AddRef();
+			return static_cast<T*>(asset);
+		}
+
+		else
+		{
+			Archive Ar(Path::ConvertProjectPath(Path));
+			
+			if (Ar.IsValid())
+			{
+				uint16 TypeByte;
+				Ar >> TypeByte;
+				EAssetType Type = static_cast<EAssetType>(TypeByte);
+			
+				if ( Type == T::GetAssetTypeStatic() )
+				{
+					asset = new T(Path);
+					m_AssetRegistery[Path] = asset;
+
+					asset->AddRef();
+					return static_cast<T*>(asset);
+				}
+			}
+		}
+
+		return nullptr;
+	}
 
 #if WITH_EDITOR
 	template<typename T>

@@ -17,10 +17,12 @@ namespace Drn
 			if (!File)
 			{
 				LOG( LogArchive, Error, "failed to open file for reading. " );
+				m_ValidArchive = false;
 				return;
 			}
 
 			*this >> m_ArchiveVersion;
+			m_ValidArchive = true;
 		}
 
 		else
@@ -29,10 +31,12 @@ namespace Drn
 			if (!File)
 			{
 				LOG( LogArchive, Error, "failed to open file for writing. " );
+				m_ValidArchive = false;
 				return;
 			}
 
 			*this << ARCHIVE_VERSION;
+			m_ValidArchive = true;
 		}
 	}
 
