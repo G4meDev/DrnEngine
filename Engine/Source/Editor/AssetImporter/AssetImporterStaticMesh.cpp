@@ -24,7 +24,7 @@ namespace Drn
 		}
 
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes );
+		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
 
 		if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
 		{
@@ -161,28 +161,29 @@ namespace Drn
 		MeshAsset->Data.MeshesData.clear();
 		MeshAsset->Data.Materials.clear();
 
-		for (ImportedStaticMeshSlotData& Mesh : BuildingData.MeshesData)
+		MeshAsset->Data.MeshesData.resize(BuildingData.MeshesData.size());
+		for (int i = 0; i < BuildingData.MeshesData.size(); i++)
 		{
-			MeshAsset->Data.MeshesData.push_back({});
-			StaticMeshSlotData& Data = MeshAsset->Data.MeshesData[MeshAsset->Data.MeshesData.size() - 1];
+			ImportedStaticMeshSlotData& IMD = BuildingData.MeshesData[i];
+			StaticMeshSlotData& Data = MeshAsset->Data.MeshesData[i];
 
-			uint32 VertexByteCount = Mesh.Vertices.size() * sizeof(VertexData_StaticMesh);
+			uint32 VertexByteCount = IMD.Vertices.size() * sizeof(VertexData_StaticMesh);
 			D3DCreateBlob(VertexByteCount, &Data.VertexBufferBlob);
-			memcpy(Data.VertexBufferBlob->GetBufferPointer(), Mesh.Vertices.data(), VertexByteCount);
+			memcpy(Data.VertexBufferBlob->GetBufferPointer(), IMD.Vertices.data(), VertexByteCount);
 
-			uint32 IndexByteCount = Mesh.Indices.size() * sizeof(uint32);
+			uint32 IndexByteCount = IMD.Indices.size() * sizeof(uint32);
 			D3DCreateBlob(IndexByteCount, &Data.IndexBufferBlob);
-			memcpy(Data.IndexBufferBlob->GetBufferPointer(), Mesh.Indices.data(), IndexByteCount);
+			memcpy(Data.IndexBufferBlob->GetBufferPointer(), IMD.Indices.data(), IndexByteCount);
 
-			Data.MaterialIndex = Mesh.MaterialIndex;
+			Data.MaterialIndex = IMD.MaterialIndex;
 		}
 
-		for (const std::string& MatName : BuildingData.MaterialsData)
+		MeshAsset->Data.Materials.resize(BuildingData.MaterialsData.size());
+		for (int i = 0; i < BuildingData.MaterialsData.size(); i++)
 		{
-			MaterialData MD;
-			MeshAsset->Data.Materials.push_back(MD);
+			const std::string& MatName = BuildingData.MaterialsData[i];
 
-			MaterialData& M = MeshAsset->Data.Materials[MeshAsset->Data.Materials.size() - 1]; 
+			MaterialData& M = MeshAsset->Data.Materials[i]; 
 			M.m_Name = MatName;
 			
 			std::string MaterialPath = "";

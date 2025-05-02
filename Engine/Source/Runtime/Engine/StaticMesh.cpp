@@ -63,8 +63,10 @@ namespace Drn
 
 	void StaticMesh::UploadResources( dx12lib::CommandList* CommandList )
 	{
-		for (StaticMeshSlotData& Proxy : Data.MeshesData)
+		for (int i = 0; i < Data.MeshesData.size(); i++)
 		{
+			StaticMeshSlotData& Proxy = Data.MeshesData[i];
+
 			Proxy.VertexBuffer = CommandList->CopyVertexBuffer( Proxy.VertexBufferBlob->GetBufferSize() / sizeof(VertexData_StaticMesh), sizeof(VertexData_StaticMesh), Proxy.VertexBufferBlob->GetBufferPointer());
 			Proxy.IndexBuffer = CommandList->CopyIndexBuffer( Proxy.IndexBufferBlob->GetBufferSize() / sizeof(uint32), DXGI_FORMAT_R32_UINT, Proxy.IndexBufferBlob->GetBufferPointer());
 
@@ -130,24 +132,19 @@ namespace Drn
 			Materials.clear();
 
 			uint8 size;
-			Ar >> size;
 
+			Ar >> size;
+			MeshesData.resize(size);
 			for (int i = 0; i < size; i++)
 			{
-				StaticMeshSlotData M;
-				MeshesData.push_back(M);
-
 				StaticMeshSlotData& Slot = MeshesData[i];
 				Slot.Serialize(Ar);
 			}
 
 			Ar >> size;
-
+			Materials.resize(size);
 			for (int i = 0; i < size; i++)
 			{
-				MaterialData M;
-				Materials.push_back(M);
-				
 				MaterialData& Mat = Materials[i];
 				Mat.Serialize(Ar);
 			}
@@ -180,6 +177,11 @@ namespace Drn
 			Ar >> VertexBufferBlob;
 			Ar >> IndexBufferBlob;
 			Ar >> MaterialIndex;
+
+			std::vector<VertexData_StaticMesh> D;
+			D.resize(VertexBufferBlob->GetBufferSize() / sizeof(VertexData_StaticMesh));
+			memcpy(D.data(), VertexBufferBlob->GetBufferPointer(), VertexBufferBlob->GetBufferSize());
+			D.pop_back();
 		}
 		else
 		{
