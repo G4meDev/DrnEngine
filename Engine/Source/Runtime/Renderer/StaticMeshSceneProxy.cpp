@@ -26,6 +26,15 @@ namespace Drn
 	{
 		StaticMesh* Mesh =  m_OwningStaticMeshComponent->GetMesh();
 
+		if (Mesh)
+		{
+			if (!Mesh->IsLoadedOnGpu())
+			{
+				Mesh->UploadResources(CommandList);
+				m_OwningStaticMeshComponent->MarkRenderStateDirty();
+			}
+		}
+
 		if (m_OwningStaticMeshComponent->IsRenderStateDirty())
 		{
 			m_Materials.clear();
@@ -65,15 +74,6 @@ namespace Drn
 
 			m_OwningStaticMeshComponent->ClearRenderStateDirty();
 		}
-
-		if (Mesh)
-		{
-			if (!Mesh->IsLoadedOnGpu())
-			{
-				Mesh->UploadResources(CommandList);
-			}
-		}
-
 	}
 
 	void StaticMeshSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer )

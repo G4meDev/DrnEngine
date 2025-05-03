@@ -10,7 +10,6 @@ namespace Drn
 {
 	void MaterialData::Serialize( Archive& Ar )
 	{
-	
 		if ( Ar.IsLoading() )
 		{
 			Ar >> m_Name;
@@ -18,7 +17,7 @@ namespace Drn
 			std::string MaterialPath;
 			Ar >> MaterialPath;
 			m_Material = AssetHandle<Material>( MaterialPath );
-			m_Material.Load();
+			m_Material.LoadChecked();
 		}
 		else
 		{

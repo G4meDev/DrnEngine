@@ -31,6 +31,7 @@ namespace Drn
 	void StaticMeshComponent::SetMesh( const AssetHandle<StaticMesh>& InHandle )
 	{
 		Mesh = InHandle;
+		MarkRenderStateDirty();
 
 #if WITH_EDITOR
 		RefreshOverrideMaterials();
@@ -46,15 +47,36 @@ namespace Drn
 			std::string Path;
 			Ar >> Path;
 			
-			Mesh = AssetHandle<StaticMesh>(Path);
-			Mesh.Load();
+			AssetHandle<StaticMesh> M = AssetHandle<StaticMesh>(Path);
+			M.Load();
 			
-			SetMesh(Mesh);
+			SetMesh(M);
+
+// --------------------------------------------------------------------
+
+			uint16 size;
+			Ar >> size;
+			
+			m_OverrideMaterials.clear();
+			m_OverrideMaterials.resize(size);
+			
+			for (uint16 i = 0; i < size; i++)
+			{
+				m_OverrideMaterials[i].Serialize(Ar);
+			}
+			
+			RefreshOverrideMaterials();
 		}
 		
 		else
 		{
 			Ar << Mesh.GetPath();
+
+			Ar << uint16(m_OverrideMaterials.size());
+			for (MaterialOverrideData OD : m_OverrideMaterials)
+			{
+				OD.Serialize(Ar);
+			}
 		}
 	}
 
