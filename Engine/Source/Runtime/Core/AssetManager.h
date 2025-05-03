@@ -110,6 +110,22 @@ namespace Drn
 				m_Asset = AssetManager::Get()->Load<Material>(m_Path);
 			}
 
+			else if (Type == EAssetType::Texture2D)
+			{
+				m_Asset = AssetManager::Get()->Load<Texture2D>(m_Path);
+			}
+
+			// TODO: uncomment when defined asset types
+			//else if (Type == EAssetType::TextureVolume)
+			//{
+			//	m_Asset = AssetManager::Get()->Load<Texture2D>(m_Path);
+			//}
+			//
+			//else if (Type == EAssetType::TextureCube)
+			//{
+			//	m_Asset = AssetManager::Get()->Load<TextureCube>(m_Path);
+			//}
+
 			return Type;
 		}
 

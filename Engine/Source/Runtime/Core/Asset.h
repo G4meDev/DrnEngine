@@ -13,7 +13,10 @@ namespace Drn
 		Undefined = 0,
 		StaticMesh,
 		Level,
-		Material
+		Material,
+		Texture2D,
+		TextureVolume,
+		TextureCube
 	};
 
 	class Asset : public Serializable

@@ -62,6 +62,9 @@ namespace Drn
 	class StaticMeshComponent;
 	class StaticMesh;
 	class Material;
+	class Texture2D;
+	class TextureVolume;
+	class TextureCube;
 	class CameraComponent;
 	class Component;
 	class SceneComponent;

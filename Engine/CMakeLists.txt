@@ -34,6 +34,10 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/D3D12Utils.h
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
+	Source/Runtime/Renderer/Texture/Texture.h
+	Source/Runtime/Renderer/Texture/Texture2D.h
+	Source/Runtime/Renderer/Texture/TextureCube.h
+	Source/Runtime/Renderer/Texture/TextureVolume.h
 	Source/Runtime/Renderer/Material/Material.h
 
 	Source/Runtime/Components/LineBatchComponent.h
@@ -93,6 +97,7 @@ set( HEADER_FILES
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.h
 	Source/Editor/AssetImporter/AssetImporterMaterial.h
+	Source/Editor/AssetImporter/AssetImporterTexture.h
 
 	Source/Editor/FileImportMenu/FileImportMenu.h
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.h
@@ -133,6 +138,10 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/D3D12Utils.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp
+	Source/Runtime/Renderer/Texture/Texture.cpp
+	Source/Runtime/Renderer/Texture/Texture2D.cpp
+	Source/Runtime/Renderer/Texture/TextureCube.cpp
+	Source/Runtime/Renderer/Texture/TextureVolume.cpp
 	Source/Runtime/Renderer/Material/Material.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
@@ -192,6 +201,7 @@ set( SOURCE_FILES
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.cpp
 	Source/Editor/AssetImporter/AssetImporterMaterial.cpp
+	Source/Editor/AssetImporter/AssetImporterTexture.cpp
 
 	Source/Editor/FileImportMenu/FileImportMenu.cpp
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.cpp
