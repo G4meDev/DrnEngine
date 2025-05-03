@@ -3,7 +3,7 @@
 #if WITH_EDITOR
 
 #include "ForwardTypes.h"
-#include "Runtime/Renderer/VertexLayout.h"
+#include "Runtime/Renderer/InputLayout.h"
 
 LOG_DECLARE_CATEGORY(LogStaticMeshImporter);
 
@@ -16,7 +16,7 @@ namespace Drn
 	public:
 		ImportedStaticMeshSlotData() {};
 
-		std::vector<VertexData_StaticMesh> Vertices;
+		std::vector<InputLayout_StaticMesh> Vertices;
 
 		std::vector<uint32> Indices;
 		uint8 MaterialIndex;

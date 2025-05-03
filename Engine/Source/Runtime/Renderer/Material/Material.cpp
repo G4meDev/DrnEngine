@@ -17,7 +17,7 @@ namespace Drn
 		, m_BasePassPSO(nullptr)
 		, m_LoadedOnGPU(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
-		, m_InputLayoutType(EInputLayoutType::Color)
+		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
 	{
 		Load();
@@ -36,7 +36,7 @@ namespace Drn
 		, m_BasePassPSO(nullptr)
 		, m_LoadedOnGPU(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
-		, m_InputLayoutType(EInputLayoutType::Color)
+		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
 	{
 		m_SourcePath = InSourcePath;
@@ -70,6 +70,10 @@ namespace Drn
 
 			uint16 InputlayoutType;
 			Ar >> InputlayoutType;
+
+			// TODO: DELETE
+			InputlayoutType = InputlayoutType == 1 ? 1 : 0;
+
 			m_InputLayoutType = static_cast<EInputLayoutType>(InputlayoutType);
 
 			uint8 CullMode;
@@ -181,8 +185,7 @@ namespace Drn
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
 		PipelineDesc.pRootSignature						= m_RootSignature;
-		//PipelineDesc.InputLayout						= { VertexLayout::Color, _countof( VertexLayout::Color) };
-		PipelineDesc.InputLayout						= VertexLayout::GetLayoutDescriptionForType(m_InputLayoutType);
+		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(m_InputLayoutType);
 		PipelineDesc.PrimitiveTopologyType				= m_PrimitiveType;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
 		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );

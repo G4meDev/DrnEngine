@@ -2,7 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Core/Asset.h"
-#include "Runtime/Renderer/VertexLayout.h"
+#include "Runtime/Renderer/InputLayout.h"
 
 namespace Drn
 {

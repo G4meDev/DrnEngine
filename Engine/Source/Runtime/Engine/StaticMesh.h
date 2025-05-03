@@ -3,7 +3,7 @@
 #include "ForwardTypes.h"
 #include "Runtime/Core/Asset.h"
 #include "Runtime/Physic/BodySetup.h"
-#include "Runtime/Renderer/VertexLayout.h"
+#include "Runtime/Renderer/InputLayout.h"
 #include "MeshTypes.h"
 
 LOG_DECLARE_CATEGORY(LogStaticMesh)

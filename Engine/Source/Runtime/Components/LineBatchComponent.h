@@ -80,7 +80,7 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBuffer;
 		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 
-		std::vector<VertexData_LineColorThickness> m_VertexData;
+		std::vector<InputLayout_LineColorThickness> m_VertexData;
 		std::vector<uint32> m_IndexData;
 
 		AssetHandle<Material> m_LineBatchMaterial;

@@ -3,7 +3,7 @@
 
 LOG_DEFINE_CATEGORY( LogStaticMeshSceneProxy, "StaticMeshSceneProxy" );
 
-#define DEFAULT_MATERIAL_PATH "\\Engine\\Content\\Materials\\DefaultMeshShader.drn"
+#define DEFAULT_MATERIAL_PATH "\\Engine\\Content\\Materials\\M_DefaultMeshShader.drn"
 
 namespace Drn
 {

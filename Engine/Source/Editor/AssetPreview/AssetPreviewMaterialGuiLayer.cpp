@@ -124,7 +124,7 @@ namespace Drn
 			m_OwningAsset->m_PrimitiveType = static_cast<D3D12_PRIMITIVE_TOPOLOGY_TYPE>(CurrentType + 1);
 		}
 
-		const char* LayoutTypes[] = { "Color", "LineColorThickness", "StandardMesh" };
+		const char* LayoutTypes[] = { "StandardMesh", "LineColorThickness" };
 		CurrentType = static_cast<int>(m_OwningAsset->m_InputLayoutType);
 		if ( ImGui::Combo( "Layout Type", &CurrentType, LayoutTypes, IM_ARRAYSIZE( LayoutTypes )))
 		{

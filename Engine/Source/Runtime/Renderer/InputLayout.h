@@ -7,50 +7,17 @@ namespace Drn
 {
 	enum class EInputLayoutType : uint16
 	{
-		Color = 0,
+		StandardMesh = 0,
 		LineColorThickness,
-		StandardMesh,
 
 		MAX_TYPE
 	};
 
-	struct VertexData_Color
+	struct InputLayout_LineColorThickness
 	{
 	public:
 
-		VertexData_Color(float InX, float InY, float InZ, float InR, float InG, float InB)
-			: X(InX)
-			, Y(InY)
-			, Z(InZ)
-			, R(InR)
-			, G(InG)
-			, B(InB)
-		{
-		}
-
-		VertexData_Color(const Vector& Pos, const Vector& Color)
-			: VertexData_Color(Pos.GetX(), Pos.GetY(), Pos.GetZ(), Color.GetX(), Color.GetY(), Color.GetZ())
-		{
-		}
-
-		VertexData_Color() : VertexData_Color(0, 0, 0, 1, 1, 1) 
-		{
-		}
-
-		float X;
-		float Y;
-		float Z;
-
-		float R;
-		float G;
-		float B;
-	};
-
-	struct VertexData_LineColorThickness
-	{
-	public:
-
-		VertexData_LineColorThickness(float InX, float InY, float InZ, float InR, float InG, float InB, float InThickness)
+		InputLayout_LineColorThickness(float InX, float InY, float InZ, float InR, float InG, float InB, float InThickness)
 			: X(InX)
 			, Y(InY)
 			, Z(InZ)
@@ -61,12 +28,12 @@ namespace Drn
 		{
 		}
 
-		VertexData_LineColorThickness( const Vector& Pos, const Vector& Color, float InThickness)
-			: VertexData_LineColorThickness(Pos.GetX(), Pos.GetY(), Pos.GetZ(), Color.GetX(), Color.GetY(), Color.GetZ(), InThickness)
+		InputLayout_LineColorThickness( const Vector& Pos, const Vector& Color, float InThickness)
+			: InputLayout_LineColorThickness(Pos.GetX(), Pos.GetY(), Pos.GetZ(), Color.GetX(), Color.GetY(), Color.GetZ(), InThickness)
 		{
 		}
 
-		VertexData_LineColorThickness() : VertexData_LineColorThickness(0, 0, 0, 1, 1, 1, 0.08f)
+		InputLayout_LineColorThickness() : InputLayout_LineColorThickness(0, 0, 0, 1, 1, 1, 0.08f)
 		{
 		}
 
@@ -81,10 +48,10 @@ namespace Drn
 		float Thickness;
 	};
 
-	struct VertexData_StaticMesh
+	struct InputLayout_StaticMesh
 	{
 	public:
-		VertexData_StaticMesh(float InX, float InY, float InZ, float InR, float InG, float InB, 
+		InputLayout_StaticMesh(float InX, float InY, float InZ, float InR, float InG, float InB, 
 			float InN_X, float InN_Y, float InN_Z, float InT_X, float InT_Y, float InT_Z,
 			float InBT_X, float InBT_Y, float InBT_Z, float InU1, float InV1, float InU2, float InV2,
 			float InU3, float InV3, float InU4, float InV4)
@@ -114,7 +81,7 @@ namespace Drn
 		{
 		}
 
-		VertexData_StaticMesh()
+		InputLayout_StaticMesh()
 		{
 		}
 
@@ -151,7 +118,7 @@ namespace Drn
 		float V4;
 	};
 
-	class VertexLayout
+	class InputLayout
 	{
 	public:
 		static D3D12_INPUT_ELEMENT_DESC Color[2];

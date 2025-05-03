@@ -67,7 +67,7 @@ namespace Drn
 		{
 			StaticMeshSlotData& Proxy = Data.MeshesData[i];
 
-			Proxy.VertexBuffer = CommandList->CopyVertexBuffer( Proxy.VertexBufferBlob->GetBufferSize() / sizeof(VertexData_StaticMesh), sizeof(VertexData_StaticMesh), Proxy.VertexBufferBlob->GetBufferPointer());
+			Proxy.VertexBuffer = CommandList->CopyVertexBuffer( Proxy.VertexBufferBlob->GetBufferSize() / sizeof(InputLayout_StaticMesh), sizeof(InputLayout_StaticMesh), Proxy.VertexBufferBlob->GetBufferPointer());
 			Proxy.IndexBuffer = CommandList->CopyIndexBuffer( Proxy.IndexBufferBlob->GetBufferSize() / sizeof(uint32), DXGI_FORMAT_R32_UINT, Proxy.IndexBufferBlob->GetBufferPointer());
 
 #if D3D12_Debug_INFO

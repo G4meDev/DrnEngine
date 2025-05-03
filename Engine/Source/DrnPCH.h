@@ -34,7 +34,7 @@
 
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/SceneRenderer.h"
-#include "Runtime/Renderer/VertexLayout.h"
+#include "Runtime/Renderer/InputLayout.h"
 #include "Runtime/Renderer/D3D12Utils.h"
 #include "Runtime/Renderer/Material/Material.h"
 

@@ -70,12 +70,12 @@ namespace Drn
 
 		ImportedStaticMeshSlotData MeshData;
 
-		std::vector<VertexData_StaticMesh> VertexData;
+		std::vector<InputLayout_StaticMesh> VertexData;
 		std::vector<uint32> indices;
 
 		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
 		{
-			VertexData_StaticMesh Vertex;
+			InputLayout_StaticMesh Vertex;
 
 			Vertex.X = mesh->mVertices[i].x * MeshAsset->ImportScale;
 			Vertex.Y = mesh->mVertices[i].y * MeshAsset->ImportScale;
@@ -167,7 +167,7 @@ namespace Drn
 			ImportedStaticMeshSlotData& IMD = BuildingData.MeshesData[i];
 			StaticMeshSlotData& Data = MeshAsset->Data.MeshesData[i];
 
-			uint32 VertexByteCount = IMD.Vertices.size() * sizeof(VertexData_StaticMesh);
+			uint32 VertexByteCount = IMD.Vertices.size() * sizeof( InputLayout_StaticMesh );
 			D3DCreateBlob(VertexByteCount, &Data.VertexBufferBlob);
 			memcpy(Data.VertexBufferBlob->GetBufferPointer(), IMD.Vertices.data(), VertexByteCount);
 
