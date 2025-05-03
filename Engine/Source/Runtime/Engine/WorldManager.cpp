@@ -93,8 +93,6 @@ namespace Drn
 			m_PendingLevel = AllocateWorld();
 			m_PendingLevel->SetTransient(true);
 
-			return;
-
 			AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
 			CubeMesh.Load();
 
@@ -176,8 +174,6 @@ namespace Drn
 	{
 		m_MainWorld = AllocateWorld();
 		m_MainWorld->SetTransient(true);
-
-		return;
 
 		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
 		CubeMesh.Load();

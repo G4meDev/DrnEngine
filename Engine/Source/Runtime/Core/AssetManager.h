@@ -65,7 +65,7 @@ namespace Drn
 			return *this;
 		}
 
-		inline std::string GetPath() { return m_Path; }
+		inline std::string GetPath() const { return m_Path; }
 
 		void Load()
 		{

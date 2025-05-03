@@ -88,6 +88,26 @@ namespace Drn
 		m_FileImportMenu.reset();
 	}
 
+	void Editor::NotifyMaterialReimported( const AssetHandle<Material>& Mat )
+	{
+		for (World* W : WorldManager::Get()->m_AllocatedWorlds)
+		{
+			for (Actor* actor : W->GetActorList())
+			{
+				std::vector<StaticMeshComponent*> MeshComponents;
+				actor->GetRoot()->GetComponents<StaticMeshComponent>(MeshComponents, EComponentType::StaticMeshComponent, true);
+
+				for (StaticMeshComponent* MC : MeshComponents)
+				{
+					if (MC && MC->IsUsingMaterial(Mat))
+					{
+						MC->MarkRenderStateDirty();
+					}
+				}
+			}
+		}
+	}
+
 }
 
 #endif

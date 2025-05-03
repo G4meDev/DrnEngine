@@ -20,6 +20,12 @@ namespace Drn
 
 		virtual void Tick(float DeltaTime);
 
+		template<typename T>
+		void GetComponents(std::vector<T*>& OutComponents, EComponentType Type, bool Recursive)
+		{
+			return GetRoot()->GetComponents<T>(OutComponents, Type, Recursive);
+		}
+
 		Vector GetActorLocation();
 		void SetActorLocation(const Vector& InLocation);
 

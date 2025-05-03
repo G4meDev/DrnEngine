@@ -70,10 +70,6 @@ namespace Drn
 
 			uint16 InputlayoutType;
 			Ar >> InputlayoutType;
-
-			// TODO: DELETE
-			InputlayoutType = InputlayoutType == 1 ? 1 : 0;
-
 			m_InputLayoutType = static_cast<EInputLayoutType>(InputlayoutType);
 
 			uint8 CullMode;

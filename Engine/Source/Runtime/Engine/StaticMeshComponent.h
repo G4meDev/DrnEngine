@@ -31,6 +31,8 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+		void SetMaterial(uint16 MaterialIndex, AssetHandle<Material>& InMaterial);
+
 #if WITH_EDITOR
 
 		virtual void DrawDetailPanel(float DeltaTime) override;
@@ -39,6 +41,8 @@ namespace Drn
 
 		void UpdateMeshWithPath(const char* NewPath);
 		void RefreshOverrideMaterials();
+
+		bool IsUsingMaterial(const AssetHandle<Material>& Mat);
 #endif
 
 	protected:

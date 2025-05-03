@@ -33,9 +33,7 @@ namespace Drn
 		Mesh = InHandle;
 		MarkRenderStateDirty();
 
-#if WITH_EDITOR
 		RefreshOverrideMaterials();
-#endif
 	}
 
 	void StaticMeshComponent::Serialize( Archive& Ar )
@@ -107,6 +105,16 @@ namespace Drn
 		}
 
 		PrimitiveComponent::UnRegisterComponent();
+	}
+
+	void StaticMeshComponent::SetMaterial( uint16 MaterialIndex, AssetHandle<Material>& InMaterial )
+	{
+		if (MaterialIndex < m_OverrideMaterials.size())
+		{
+			m_OverrideMaterials[MaterialIndex].m_Material = InMaterial;
+			m_OverrideMaterials[MaterialIndex].m_Overriden = true;
+			MarkRenderStateDirty();
+		}
 	}
 
 #if WITH_EDITOR
@@ -205,6 +213,30 @@ namespace Drn
 		{
 			m_OverrideMaterials.clear();
 		}
+	}
+
+	bool StaticMeshComponent::IsUsingMaterial( const AssetHandle<Material>& Mat )
+	{
+		for (const MaterialOverrideData& MD : m_OverrideMaterials)
+		{
+			if (MD.m_Overriden && MD.m_Material.GetPath() == Mat.GetPath())
+			{
+				return true;
+			}
+		}
+
+		if (Mesh.IsValid())
+		{
+			for (const MaterialData& MD : Mesh->Data.Materials)
+			{
+				if (MD.m_Material.GetPath() == Mat.GetPath())
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 #endif

@@ -22,11 +22,12 @@ namespace Drn
 
 		PreviewWorld = WorldManager::Get()->AllocateWorld();
 
-		//AssetHandle<StaticMesh> SphereMesh( "Engine\\Content\\BasicShapes\\SM_Sphere.drn" );
-		//SphereMesh.Load();
-		//
-		//PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
-		//PreviewMesh->GetMeshComponent()->SetMesh( SphereMesh );
+		AssetHandle<StaticMesh> SphereMesh( "Engine\\Content\\BasicShapes\\SM_Sphere.drn" );
+		SphereMesh.Load();
+		
+		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
+		PreviewMesh->GetMeshComponent()->SetMesh( SphereMesh );
+		PreviewMesh->GetMeshComponent()->SetMaterial(0, m_OwningAsset);
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>( PreviewWorld->GetScene() );
 	}
@@ -115,6 +116,10 @@ namespace Drn
 		if (ImGui::Button("Import"))
 		{
 			m_OwningAsset->Import();
+
+#if WITH_EDITOR
+			Editor::Get()->NotifyMaterialReimported(m_OwningAsset);
+#endif
 		}
 
 		const char* PrimitiveTypes[] = { "Point", "Line", "Triangle", "Patch" };

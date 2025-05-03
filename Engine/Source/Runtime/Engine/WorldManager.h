@@ -53,6 +53,7 @@ namespace Drn
 		bool m_PlayInEditorPaused = false;
 
 		friend class LevelViewportGuiLayer;
+		friend class Editor;
 
 	private:
 	};

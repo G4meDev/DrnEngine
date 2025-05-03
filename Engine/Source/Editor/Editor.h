@@ -27,6 +27,8 @@ namespace Drn
 
 		float SidePanelSize = 300.0f;
 
+		void NotifyMaterialReimported(const AssetHandle<Material>& Mat);
+
 	protected:
 
 		std::shared_ptr<FileImportMenu> m_FileImportMenu;

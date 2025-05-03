@@ -28,9 +28,11 @@ namespace Drn
 
 		std::vector<std::shared_ptr<SceneComponent>> GetChilds() const;
 
+		// TODO: make type as a static function
 		template<typename T>
 		void GetComponents(std::vector<T*>& OutComponents, EComponentType Type, bool Recursive)
 		{
+			// TODO: add self to type check
 			for (auto Comp : Childs)
 			{
 				if (Comp->GetComponentType() == Type)
