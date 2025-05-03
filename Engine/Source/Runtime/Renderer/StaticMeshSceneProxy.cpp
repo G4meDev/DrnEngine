@@ -3,8 +3,6 @@
 
 LOG_DEFINE_CATEGORY( LogStaticMeshSceneProxy, "StaticMeshSceneProxy" );
 
-#define DEFAULT_MATERIAL_PATH "\\Engine\\Content\\Materials\\M_DefaultMeshShader.drn"
-
 namespace Drn
 {
 	StaticMeshSceneProxy::StaticMeshSceneProxy( StaticMeshComponent* InStaticMeshComponent )
@@ -64,15 +62,18 @@ namespace Drn
 						m_Materials[i] = AssetHandle<Material>(DEFAULT_MATERIAL_PATH);
 						m_Materials[i].Load();
 					}
-
-					if (!m_Materials[i]->IsLoadedOnGpu())
-					{
-						m_Materials[i]->UploadResources(CommandList);
-					}
 				}
 			}
 
 			m_OwningStaticMeshComponent->ClearRenderStateDirty();
+		}
+
+		for (AssetHandle<Material>& Mat : m_Materials)
+		{
+			if (Mat.IsValid() && !Mat->IsLoadedOnGpu())
+			{
+				Mat->UploadResources(CommandList);
+			}
 		}
 	}
 
@@ -85,7 +86,6 @@ namespace Drn
 			for (size_t i = 0; i < Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = Mesh->Data.MeshesData[i];
-				//MaterialData& Mat = Mesh->Data.Materials[RenderProxy.MaterialIndex];
 				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
 
 				CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Mat->GetRootSignature());

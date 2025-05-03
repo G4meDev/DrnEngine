@@ -9,8 +9,6 @@
 
 LOG_DEFINE_CATEGORY( LogStaticMeshImporter, "StaticMeshImporter" );
 
-#define DEFAULT_MATERIAL_PATH "Engine\\Content\\Materials\\M_TestShader.drn"
-
 namespace Drn
 {
 	void AssetImporterStaticMesh::Import( StaticMesh* MeshAsset, const std::string& Path )

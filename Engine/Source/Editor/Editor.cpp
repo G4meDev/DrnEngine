@@ -90,6 +90,8 @@ namespace Drn
 
 	void Editor::NotifyMaterialReimported( const AssetHandle<Material>& Mat )
 	{
+		return;
+
 		for (World* W : WorldManager::Get()->m_AllocatedWorlds)
 		{
 			for (Actor* actor : W->GetActorList())

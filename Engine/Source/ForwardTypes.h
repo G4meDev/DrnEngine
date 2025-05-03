@@ -80,3 +80,5 @@ class LogCategory;
 	extern LogCategory Category;						\
 
 #define NAME_NULL ""
+
+#define DEFAULT_MATERIAL_PATH "\\Engine\\Content\\Materials\\M_DefaultMeshShader.drn"

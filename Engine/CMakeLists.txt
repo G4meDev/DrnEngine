@@ -197,20 +197,20 @@ set( SOURCE_FILES
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.cpp
 )
 
-set( SHADER_FILES_VS
-    Content/Shaders/TestShader_VS.hlsl
-)
-
-set( SHADER_FILES_PS
-    Content/Shaders/TestShader_PS.hlsl
-)
-
-set( SHADER_FILES
-    ${SHADER_FILES_VS}
-    ${SHADER_FILES_PS}
-)
-
-source_group( "Content\\Shaders" FILES ${SHADER_FILES_VS} ${SHADER_FILES_PS} )
+#set( SHADER_FILES_VS
+#    Content/Shaders/TestShader_VS.hlsl
+#)
+#
+#set( SHADER_FILES_PS
+#    Content/Shaders/TestShader_PS.hlsl
+#)
+#
+#set( SHADER_FILES
+#    ${SHADER_FILES_VS}
+#    ${SHADER_FILES_PS}
+#)
+#
+#source_group( "Content\\Shaders" FILES ${SHADER_FILES_VS} ${SHADER_FILES_PS} )
 
 add_library( Engine STATIC
     ${HEADER_FILES}
@@ -237,7 +237,7 @@ target_include_directories( Engine
     PUBLIC inc ../ThirdParty/ImGuiFileDialog/
     PUBLIC inc ../ThirdParty/Physx/include/
     PUBLIC inc ../GameFramework/inc/
-	PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
+	#PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
 target_link_directories( Engine
@@ -279,32 +279,32 @@ set_source_files_properties( Source/DrnPCH.cpp
         COMPILE_FLAGS /Yc"DrnPCH.h"
 )
 
-set_source_files_properties( ${SHADER_FILES_PS}
-    PROPERTIES
-        VS_SHADER_MODEL 6.0
-        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders/%(Filename).h"
-        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
-        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
-        VS_SHADER_FLAGS $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-Qembed_debug>
-        VS_SHADER_TYPE Pixel
-)
-
-set_source_files_properties( ${SHADER_FILES_VS}
-    PROPERTIES
-        VS_SHADER_MODEL 6.0
-        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders/%(Filename).h"
-        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
-        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
-        VS_SHADER_FLAGS $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-Qembed_debug>
-        VS_SHADER_TYPE Vertex
-)
-
-set_source_files_properties( Content/Shaders/TestShader_VS.hlsl
-    PROPERTIES
-        VS_SHADER_VARIABLE_NAME TestShader_VS
-)
-
-set_source_files_properties( Content/Shaders/TestShader_PS.hlsl
-    PROPERTIES
-        VS_SHADER_VARIABLE_NAME TestShader_PS
-)
+#set_source_files_properties( ${SHADER_FILES_PS}
+#    PROPERTIES
+#        VS_SHADER_MODEL 6.0
+#        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders/%(Filename).h"
+#        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
+#        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
+#        VS_SHADER_FLAGS $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-Qembed_debug>
+#        VS_SHADER_TYPE Pixel
+#)
+#
+#set_source_files_properties( ${SHADER_FILES_VS}
+#    PROPERTIES
+#        VS_SHADER_MODEL 6.0
+#        VS_SHADER_OUTPUT_HEADER_FILE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders/%(Filename).h"
+#        VS_SHADER_DISABLE_OPTIMIZATIONS $<$<CONFIG:Debug>:ON>
+#        VS_SHADER_ENABLE_DEBUG $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:ON>
+#        VS_SHADER_FLAGS $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:-Qembed_debug>
+#        VS_SHADER_TYPE Vertex
+#)
+#
+#set_source_files_properties( Content/Shaders/TestShader_VS.hlsl
+#    PROPERTIES
+#        VS_SHADER_VARIABLE_NAME TestShader_VS
+#)
+#
+#set_source_files_properties( Content/Shaders/TestShader_PS.hlsl
+#    PROPERTIES
+#        VS_SHADER_VARIABLE_NAME TestShader_PS
+#)

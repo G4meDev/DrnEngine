@@ -43,5 +43,5 @@ struct PixelShaderInput
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
-    return IN.Color * 0.7f;
+    return IN.Color * 1.0f;
 }

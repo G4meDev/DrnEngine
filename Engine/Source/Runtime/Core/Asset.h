@@ -10,7 +10,8 @@ namespace Drn
 {
 	enum class EAssetType : uint16
 	{
-		StaticMesh = 0,
+		Undefined = 0,
+		StaticMesh,
 		Level,
 		Material
 	};

@@ -79,6 +79,7 @@ namespace Drn
 			m_Asset = AssetManager::Get()->LoadChecked<T>(m_Path);
 		}
 
+		// TODO: mark this editor only
 		EAssetType LoadGeneric()
 		{
 			Release();
@@ -86,8 +87,7 @@ namespace Drn
 			Archive Ar(Path::ConvertProjectPath(m_Path));
 			if (!Ar.IsValid())
 			{
-				// TODO: add asset type undefined
-				return EAssetType::Level;
+				return EAssetType::Undefined;
 			}
 
 			uint16 TypeByte;

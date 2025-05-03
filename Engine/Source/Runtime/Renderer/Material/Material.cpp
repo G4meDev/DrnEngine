@@ -133,6 +133,9 @@ namespace Drn
 	{
 		SCOPE_STAT(UploadResourceMaterial);
 
+		if (m_RootSignature) m_RootSignature->Release();
+		if (m_BasePassPSO) m_BasePassPSO->Release();
+
 		// TODO: figure something for deny flags
 		//D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
 		//	D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |

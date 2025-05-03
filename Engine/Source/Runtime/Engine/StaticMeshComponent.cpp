@@ -177,8 +177,13 @@ namespace Drn
 
 	void StaticMeshComponent::UpdateMeshWithPath( const char* NewPath )
 	{
-		Mesh = AssetHandle<StaticMesh>(NewPath);
-		Mesh.Load();
+		AssetHandle<Asset> NewMesh(NewPath);
+		EAssetType Type = NewMesh.LoadGeneric();
+
+		if (NewMesh.IsValid() && Type == EAssetType::StaticMesh)
+		{
+			SetMesh(AssetHandle<StaticMesh>(NewPath));
+		}
 	}
 
 	void StaticMeshComponent::RefreshOverrideMaterials()

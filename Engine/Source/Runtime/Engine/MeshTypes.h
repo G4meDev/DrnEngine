@@ -5,12 +5,15 @@
 #include "Runtime/Renderer/Material/Material.h"
 #include "Runtime/Core/AssetManager.h"
 
+
+
 namespace Drn
 {
 	class MaterialData : public Serializable
 	{
 	public:
 		MaterialData()
+			: m_Material(DEFAULT_MATERIAL_PATH)
 		{
 		};
 
@@ -26,6 +29,7 @@ namespace Drn
 	public:
 
 		MaterialOverrideData()
+			: MaterialData()
 		{
 		}
 
