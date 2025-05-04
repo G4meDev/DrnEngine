@@ -29,11 +29,19 @@ namespace Drn
 		std::shared_ptr<dx12lib::IndexBuffer>  IndexBuffer  = nullptr;
 
 		virtual void Serialize(Archive& Ar) override;
-
+		
 		inline void ReleaseBlobs()
 		{
-			if (VertexBufferBlob) VertexBufferBlob->Release();
-			if (IndexBufferBlob) IndexBufferBlob->Release();
+			if (VertexBufferBlob)
+			{
+				VertexBufferBlob->Release();
+				VertexBufferBlob = nullptr;
+			}
+			if (IndexBufferBlob)
+			{
+				IndexBufferBlob->Release();
+				IndexBufferBlob = nullptr;
+			}
 		}
 	};
 

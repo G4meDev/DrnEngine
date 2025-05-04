@@ -99,12 +99,41 @@ namespace Drn
 
 	void Material::ReleaseShaderBlobs()
 	{
-		if (m_VS_Blob) m_VS_Blob->Release();
-		if (m_PS_Blob) m_PS_Blob->Release();
-		if (m_GS_Blob) m_GS_Blob->Release();
-		if (m_HS_Blob) m_HS_Blob->Release();
-		if (m_DS_Blob) m_DS_Blob->Release();
-		if (m_CS_Blob) m_CS_Blob->Release();
+		if (m_VS_Blob)
+		{
+			m_VS_Blob->Release();
+			m_VS_Blob = nullptr;
+		}
+
+		if (m_PS_Blob)
+		{
+			m_PS_Blob->Release();
+			m_PS_Blob = nullptr;
+		}
+
+		if (m_GS_Blob)
+		{
+			m_GS_Blob->Release();
+			m_GS_Blob = nullptr;
+		}
+
+		if (m_HS_Blob)
+		{
+			m_HS_Blob->Release();
+			m_HS_Blob = nullptr;
+		}
+
+		if (m_DS_Blob)
+		{
+			m_DS_Blob->Release();
+			m_DS_Blob = nullptr;
+		}
+
+		if (m_CS_Blob)
+		{
+			m_CS_Blob->Release();
+			m_CS_Blob = nullptr;
+		}
 	}
 
 	void Material::OpenAssetPreview()

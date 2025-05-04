@@ -23,6 +23,7 @@ namespace Drn
 	{
 	public:
 		Asset(const std::string InPath);
+		virtual ~Asset() = default;
 
 		uint16 m_RefCount;
 

@@ -80,6 +80,12 @@ namespace Drn
 			CreatedAsset    = std::shared_ptr<Asset>(new Material( AssetFilePath, SourceFile ) );
 		}
 
+		else if ( FileExtension == ".tga" )
+		{
+			FormatSupported = true;
+			CreatedAsset    = std::shared_ptr<Asset>(new Texture2D( AssetFilePath, SourceFile ) );
+		}
+
 		if ( !FormatSupported )
 		{
 				LOG( LogAssetManager, Error, "file format %s is not supported. ", FileExtension.c_str() );

@@ -5,6 +5,8 @@
 
 namespace Drn
 {
+	class AssetPreviewTexture2DGuiLayer;
+
 	class Texture2D : public Texture
 	{
 	public:
@@ -15,14 +17,26 @@ namespace Drn
 
 		virtual ~Texture2D();
 
+		virtual void Serialize( Archive& Ar ) override;
+
+		void UploadResources( dx12lib::CommandList* CommandList );
+
 
 	protected:
+
 		EAssetType GetAssetType() override { return EAssetType::Texture2D; };
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Texture2D; }
 
 #if WITH_EDITOR
+		void Import();
+
 		void OpenAssetPreview() override;
 		void CloseAssetPreview() override;
+
+		AssetPreviewTexture2DGuiLayer* GuiLayer = nullptr;
 #endif
+
+		friend class AssetPreviewTexture2DGuiLayer;
+
 	};
 }
