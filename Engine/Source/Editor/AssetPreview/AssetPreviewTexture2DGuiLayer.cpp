@@ -5,40 +5,38 @@
 
 #include <imgui.h>
 #include "Editor/Editor.h"
+#include "Editor/EditorPanels/ViewportPanel.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
 namespace Drn
 {
 	AssetPreviewTexture2DGuiLayer::AssetPreviewTexture2DGuiLayer( Texture2D* InOwningAsset )
 	{
-		ViewCpuHandle.ptr = 0;
-		ViewGpuHandle.ptr = 0;
-
 		m_OwningAsset = AssetHandle<Texture2D>( InOwningAsset->m_Path );
 		m_OwningAsset.Load();
+
+		m_PreviewWorld = WorldManager::Get()->AllocateWorld();
+
+		AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
+		PlaneMesh.Load();
+		
+		m_PreviewMeshPlane = m_PreviewWorld->SpawnActor<StaticMeshActor>();
+		m_PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
+		//m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, m_OwningAsset);
+
+		m_ViewportPanel = std::make_unique<ViewportPanel>( m_PreviewWorld->GetScene() );
 	}
 
 	AssetPreviewTexture2DGuiLayer::~AssetPreviewTexture2DGuiLayer()
 	{
-		m_OwningAsset->GuiLayer = nullptr;
-		ReleaseHandles();
-	}
-
-	void AssetPreviewTexture2DGuiLayer::AllocateHandles()
-	{
-		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Alloc( &ViewCpuHandle, &ViewGpuHandle );
-	}
-
-	void AssetPreviewTexture2DGuiLayer::ReleaseHandles()
-	{
-		if (!(ViewCpuHandle.ptr == 0 && ViewGpuHandle.ptr == 0))
+		if (m_PreviewWorld)
 		{
-			ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
-
-			ViewCpuHandle.ptr = 0;
-			ViewGpuHandle.ptr = 0;
+			m_PreviewWorld->Destroy();
 		}
+
+		m_OwningAsset->GuiLayer = nullptr;
 	}
+
 
 	void AssetPreviewTexture2DGuiLayer::Draw( float DeltaTime )
 	{
@@ -48,6 +46,8 @@ namespace Drn
 
 		if (!ImGui::Begin(name.c_str(), &m_Open))
 		{
+			m_ViewportPanel->SetRenderingEnabled(false);
+
 			ImGui::End();
 			return;
 		}
@@ -63,7 +63,8 @@ namespace Drn
 		ImGui::SameLine();
 		if ( ImGui::BeginChild( "Viewport", ViewportSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened ) )
 		{
-			DrawViewportPanel();
+			m_ViewportPanel->SetRenderingEnabled(true);
+			m_ViewportPanel->Draw(DeltaTime);
 		}
 		ImGui::EndChild();
 
@@ -81,36 +82,25 @@ namespace Drn
 
 	void AssetPreviewTexture2DGuiLayer::DrawMenu()
 	{
-		
-	}
-
-	void AssetPreviewTexture2DGuiLayer::DrawViewportPanel()
-	{
-		if (m_OwningAsset.IsValid())
+		if ( ImGui::BeginMainMenuBar() )
 		{
-			ReleaseHandles();
-			m_OwningAsset->UploadResources(Renderer::Get()->GetCommandList().get());
-			
-			// for now reallocate resources
-			ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
-			AllocateHandles();
+			if ( ImGui::BeginMenu( "Debug" ) )
+			{
+				if ( ImGui::MenuItem( "log live assets" ) )
+				{
+					AssetManager::Get()->ReportLiveAssets();
+				}
 
-			D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-			
-			descSRV.Texture2D.MipLevels       = m_OwningAsset->GetMipLevels();
-			descSRV.Texture2D.MostDetailedMip = 0;
-			descSRV.Format                    = m_OwningAsset->m_Format;
-			descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-			descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			
-			pDevice->CreateShaderResourceView( m_OwningAsset->GetResource(), &descSRV, ViewCpuHandle );
-			ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( m_OwningAsset->GetSizeX(), m_OwningAsset->GetSizeY()) );
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMainMenuBar();
 		}
 	}
 
 	void AssetPreviewTexture2DGuiLayer::DrawDetailsPanel()
 	{
-		ImGui::Text("aeraerare");
+		ImGui::Text("Detail Panel");
 	}
 
 }

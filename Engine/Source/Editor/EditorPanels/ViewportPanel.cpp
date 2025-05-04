@@ -15,7 +15,8 @@ namespace Drn
 		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
 
 		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
-		m_ViewportCamera->SetActorLocation(XMVectorSet(0, 0, -10, 0));
+		m_ViewportCamera->SetActorLocation(XMVectorSet(0, 0, 10, 0));
+		m_ViewportCamera->SetActorRotation( Quat(0.0f, 0.0f, Math::PI) );
 
 		m_ViewportCamera->SetActorLabel( "ViewportCamera" );
 		m_ViewportCamera->SetTransient(true);

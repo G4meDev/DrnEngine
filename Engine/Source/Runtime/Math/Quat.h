@@ -15,6 +15,7 @@ namespace Drn
 	public:
 
 		inline Quat( float X, float Y, float Z, float W ) { m_Vector = XMVectorSet(X, Y, Z, W); }
+		inline Quat( float Roll, float Pitch, float Yaw ) { m_Vector = XMQuaternionRotationRollPitchYaw(Pitch, Yaw, Roll); }
 		inline Quat() { m_Vector = XMQuaternionIdentity(); }
 
 		inline Quat( const XMVECTOR& InVector ) { m_Vector = InVector; }
