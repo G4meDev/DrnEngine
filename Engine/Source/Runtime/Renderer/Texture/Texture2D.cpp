@@ -84,7 +84,7 @@ namespace Drn
 			TextureResource.RowPitch = m_RowPitch;
 			TextureResource.SlicePitch = m_SlicePitch;
 
-			uint64 UploadBufferSize = GetRequiredIntermediateSize(m_Resource, 0, 0);
+			uint64 UploadBufferSize = GetRequiredIntermediateSize(m_Resource, 0, 1);
 
 			CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
 				D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer( UploadBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,

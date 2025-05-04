@@ -42,6 +42,8 @@ namespace Drn
 
 		SceneRenderer* m_MainSceneRenderer;
 
+		inline std::shared_ptr<dx12lib::CommandList> GetCommandList() { return m_CommandList; };
+
 
 	protected:
 		static Renderer* SingletonInstance;

@@ -33,6 +33,8 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
+		inline ID3D12Resource* GetResource() { return m_Resource; }
+
 		inline bool IsSRGB() const				{ return m_sRGB; }
 		inline uint16 GetSizeX() const			{ return m_SizeX; }
 		inline uint16 GetSizeY() const			{ return m_SizeY; }
@@ -76,6 +78,8 @@ protected:
 #endif
 
 		ID3D12Resource* m_Resource;
+
+		// TODO: make single and souble buffer structures to delete this at start of next frame
 		ID3D12Resource* m_IntermediateResource;
 
 		bool m_sRGB;
