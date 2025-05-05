@@ -17,9 +17,9 @@ namespace Drn
 
 	protected:
 
-		void RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) override;
-		void InitResources( dx12lib::CommandList* CommandList ) override;
-		void UpdateResources( dx12lib::CommandList* CommandList ) override;
+		void RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		void InitResources( ID3D12GraphicsCommandList2* CommandList ) override;
+		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
 
 		PrimitiveComponent* GetPrimitive() override { return m_OwningStaticMeshComponent; };
 
@@ -27,5 +27,7 @@ namespace Drn
 
 		StaticMeshComponent* m_OwningStaticMeshComponent;
 		std::vector<AssetHandle<Material>> m_Materials;
+
+		AssetHandle<StaticMesh> m_Mesh;
 	};
 }

@@ -12,7 +12,7 @@ namespace Drn
 {
 	StaticMesh::StaticMesh(const std::string& InPath)
 		: Asset(InPath)
-		, m_LoadedOnGPU(false)
+		, m_RenderStateDirty(true)
 	{
 		Load();
 	}
@@ -20,7 +20,7 @@ namespace Drn
 #if WITH_EDITOR
 	StaticMesh::StaticMesh( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath)
-		, m_LoadedOnGPU(false)
+		, m_RenderStateDirty(true)
 	{
 		m_SourcePath = InSourcePath;
 
@@ -61,28 +61,71 @@ namespace Drn
 #endif
 	}
 
-	void StaticMesh::UploadResources( dx12lib::CommandList* CommandList )
+	void StaticMesh::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{
+
+	}
+
+	void StaticMesh::UploadResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		if (!IsRenderStateDirty())
+			return;
+
 		for (int i = 0; i < Data.MeshesData.size(); i++)
 		{
 			StaticMeshSlotData& Proxy = Data.MeshesData[i];
 
-			Proxy.VertexBuffer = CommandList->CopyVertexBuffer( Proxy.VertexBufferBlob->GetBufferSize() / sizeof(InputLayout_StaticMesh), sizeof(InputLayout_StaticMesh), Proxy.VertexBufferBlob->GetBufferPointer());
-			Proxy.IndexBuffer = CommandList->CopyIndexBuffer( Proxy.IndexBufferBlob->GetBufferSize() / sizeof(uint32), DXGI_FORMAT_R32_UINT, Proxy.IndexBufferBlob->GetBufferPointer());
+			Microsoft::WRL::ComPtr<ID3D12Device> Device;
+			CommandList->GetDevice( IID_PPV_ARGS( Device.GetAddressOf() ) );
+
+			Device->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer( Proxy.VertexBufferBlob->GetBufferSize() ),
+				D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS( Proxy.VertexBuffer.ReleaseAndGetAddressOf() ) );
+
+			Device->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer( Proxy.VertexBufferBlob->GetBufferSize() ),
+				D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS( Proxy.IndexBuffer.ReleaseAndGetAddressOf() ) );
 
 #if D3D12_Debug_INFO
-
 			std::string MeshName = m_Path;
 			MeshName = Path::ConvertShortPath(MeshName);
 			MeshName = Path::RemoveFileExtension(MeshName);
-		
-			Proxy.VertexBuffer->SetName( StringHelper::s2ws(std::string("VertexBuffer_") + MeshName) );
-			Proxy.IndexBuffer->SetName( StringHelper::s2ws(std::string("IndexBuffer_") + MeshName) );
 
+			Proxy.VertexBuffer->SetName( StringHelper::s2ws(std::string("VertexBuffer_") + MeshName).c_str() );
+			Proxy.IndexBuffer->SetName( StringHelper::s2ws(std::string("IndexBuffer_") + MeshName).c_str() );
 #endif
+
+			{
+				UINT8*        pVertexDataBegin;
+				CD3DX12_RANGE readRange( 0, 0 );
+				Proxy.VertexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
+				uint32 ByteSize = Proxy.VertexBufferBlob->GetBufferSize();
+				memcpy( pVertexDataBegin, Proxy.VertexBufferBlob->GetBufferPointer(), ByteSize );
+				Proxy.VertexBuffer->Unmap( 0, nullptr );
+
+				Proxy.m_VertexBufferView.BufferLocation = Proxy.VertexBuffer->GetGPUVirtualAddress();
+				Proxy.m_VertexBufferView.StrideInBytes  = sizeof( InputLayout_StaticMesh );
+				Proxy.m_VertexBufferView.SizeInBytes    = ByteSize;
+			}
+
+			{
+				UINT8*        pIndexDataBegin;
+				CD3DX12_RANGE readRange( 0, 0 );
+				Proxy.IndexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
+				uint32 ByteSize = Proxy.IndexBufferBlob->GetBufferSize();
+				memcpy( pIndexDataBegin, Proxy.IndexBufferBlob->GetBufferPointer(), ByteSize );
+				Proxy.IndexBuffer->Unmap( 0, nullptr );
+
+				Proxy.m_IndexBufferView.BufferLocation = Proxy.IndexBuffer->GetGPUVirtualAddress();
+				Proxy.m_IndexBufferView.Format         = DXGI_FORMAT_R32_UINT;
+				Proxy.m_IndexBufferView.SizeInBytes    = ByteSize;
+			}
+
 		}
 
-		m_LoadedOnGPU = true;
+		ClearRenderStateDirty();
 	}
 
 	AssetHandle<Material> StaticMesh::GetMaterialAtIndex( uint32 Index )
@@ -110,7 +153,7 @@ namespace Drn
 		Save();
 		Load();
 
-		m_LoadedOnGPU = false;
+		MarkRenderStateDirty();
 	}
 
 	void StaticMesh::OpenAssetPreview()
@@ -198,4 +241,9 @@ namespace Drn
 		}
 	}
 
+
+	StaticMeshSlotData::~StaticMeshSlotData()
+	{
+		ReleaseBlobs();
+	}
 }

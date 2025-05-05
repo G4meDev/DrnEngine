@@ -2,6 +2,8 @@
 
 #include "ForwardTypes.h"
 
+class ID3D12GraphicsCommandList2;
+
 namespace Drn
 {
 	class PrimitiveSceneProxy
@@ -14,10 +16,10 @@ namespace Drn
 
 	protected:
 
-		virtual void RenderMainPass(dx12lib::CommandList* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderMainPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
 
-		virtual void InitResources(dx12lib::CommandList* CommandList) = 0;
-		virtual void UpdateResources(dx12lib::CommandList* CommandList) = 0;
+		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) = 0;
+		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) = 0;
 		virtual PrimitiveComponent* GetPrimitive() = 0;
 
 	private:

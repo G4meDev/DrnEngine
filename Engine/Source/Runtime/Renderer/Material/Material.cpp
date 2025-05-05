@@ -158,7 +158,7 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------------------------------
 
-	void Material::UploadResources( dx12lib::CommandList* CommandList )
+	void Material::UploadResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT(UploadResourceMaterial);
 
@@ -202,7 +202,11 @@ namespace Drn
 			return;
 		}
 
-		CommandList->GetDevice().GetD3D12Device()->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
+		Microsoft::WRL::ComPtr<ID3D12Device> Device;
+		CommandList->GetDevice( IID_PPV_ARGS( Device.GetAddressOf() ) );
+
+
+		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
 		DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -232,7 +236,7 @@ namespace Drn
 		PipelineDesc.RTVFormats[0]						= backBufferFormat;
 		PipelineDesc.SampleDesc.Count					= 1;
 
-		CommandList->GetDevice().GetD3D12Device()->CreateGraphicsPipelineState(&PipelineDesc, IID_PPV_ARGS(&m_BasePassPSO));
+		Device->CreateGraphicsPipelineState(&PipelineDesc, IID_PPV_ARGS(&m_BasePassPSO));
 		m_LoadedOnGPU = true;
 	}
 

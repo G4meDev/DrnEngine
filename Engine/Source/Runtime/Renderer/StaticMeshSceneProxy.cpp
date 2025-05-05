@@ -15,31 +15,30 @@ namespace Drn
 	{
 	}
 
-	void StaticMeshSceneProxy::InitResources( dx12lib::CommandList* CommandList )
+	void StaticMeshSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 
 	}
 
-	void StaticMeshSceneProxy::UpdateResources( dx12lib::CommandList* CommandList )
+	void StaticMeshSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		StaticMesh* Mesh =  m_OwningStaticMeshComponent->GetMesh();
-
-		if (Mesh)
+		if (m_OwningStaticMeshComponent->IsRenderStateDirty())
 		{
-			if (!Mesh->IsLoadedOnGpu())
-			{
-				Mesh->UploadResources(CommandList);
-				m_OwningStaticMeshComponent->MarkRenderStateDirty();
-			}
+			m_Mesh = m_OwningStaticMeshComponent->GetMesh();
+		}
+
+		if (m_Mesh.IsValid())
+		{
+			m_Mesh->UploadResources(CommandList);
 		}
 
 		if (m_OwningStaticMeshComponent->IsRenderStateDirty())
 		{
 			m_Materials.clear();
 
-			if (Mesh)
+			if (m_Mesh.IsValid())
 			{
-				const uint32 MaterialCount = Mesh->Data.Materials.size();
+				const uint32 MaterialCount = m_Mesh->Data.Materials.size();
 				const uint32 OverrideMaterialCount = m_OwningStaticMeshComponent->m_OverrideMaterials.size();
 				m_Materials.resize(MaterialCount);
 
@@ -51,7 +50,7 @@ namespace Drn
 					}
 					else
 					{
-						m_Materials[i] = Mesh->Data.Materials[i].m_Material;
+						m_Materials[i] = m_Mesh->Data.Materials[i].m_Material;
 					}
 
 					// TODO: mark this only in with editor builds
@@ -65,7 +64,6 @@ namespace Drn
 				}
 			}
 
-			m_OwningStaticMeshComponent->ClearRenderStateDirty();
 		}
 
 		for (AssetHandle<Material>& Mat : m_Materials)
@@ -75,22 +73,22 @@ namespace Drn
 				Mat->UploadResources(CommandList);
 			}
 		}
+
+		m_OwningStaticMeshComponent->ClearRenderStateDirty();
 	}
 
-	void StaticMeshSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer )
+	void StaticMeshSceneProxy::RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		StaticMesh* Mesh =  m_OwningStaticMeshComponent->GetMesh();
-
-		if (Mesh)
+		if (m_Mesh.IsValid())
 		{
-			for (size_t i = 0; i < Mesh->Data.MeshesData.size(); i++)
+			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
-				const StaticMeshSlotData& RenderProxy = Mesh->Data.MeshesData[i];
+				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
-
-				CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Mat->GetRootSignature());
-				CommandList->GetD3D12CommandList()->SetPipelineState(Mat->GetBasePassPSO());
-				CommandList->GetD3D12CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				
+				CommandList->SetGraphicsRootSignature(Mat->GetRootSignature());
+				CommandList->SetPipelineState(Mat->GetBasePassPSO());
+				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 				XMMATRIX modelMatrix = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 
@@ -105,11 +103,11 @@ namespace Drn
 				XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
 				mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
-				CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
+				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
 
-				CommandList->SetVertexBuffer( 0, RenderProxy.VertexBuffer );
-				CommandList->SetIndexBuffer( RenderProxy.IndexBuffer );
-				CommandList->DrawIndexed( RenderProxy.IndexBuffer->GetNumIndices() );
+				CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
+				CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );
+				CommandList->DrawIndexedInstanced( RenderProxy.m_IndexBufferView.SizeInBytes / sizeof(uint32), 1, 0, 0, 0);
 			}
 		}
 	}

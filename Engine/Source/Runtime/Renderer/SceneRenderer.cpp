@@ -92,7 +92,7 @@ namespace Drn
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderMainPass(CommandList, this);
+			Proxy->RenderMainPass(CommandList->GetD3D12CommandList().Get(), this);
 		}
 	}
 

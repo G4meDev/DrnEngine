@@ -2,7 +2,6 @@
 #include <windows.h>
 
 #include "GameApplication.h"
-#include <fstream>
 #include <corecrt_io.h>
 #include <fcntl.h>
 

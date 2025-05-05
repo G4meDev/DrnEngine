@@ -23,7 +23,7 @@ namespace Drn
 
 		inline virtual EComponentType GetComponentType() override { return EComponentType::StaticMeshComponent; }
 
-		inline StaticMesh* GetMesh() { return Mesh.Get(); }
+		inline AssetHandle<StaticMesh> GetMesh() { return Mesh; }
 		void SetMesh(const AssetHandle<StaticMesh>& InHandle);
 
 		virtual void Serialize( Archive& Ar ) override;

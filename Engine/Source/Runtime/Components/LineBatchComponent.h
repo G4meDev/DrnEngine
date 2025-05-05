@@ -61,9 +61,9 @@ namespace Drn
 
 	protected:
 
-		virtual void RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer ) override;
-		virtual void InitResources(dx12lib::CommandList* CommandList) override;
-		virtual void UpdateResources(dx12lib::CommandList* CommandList) override;
+		virtual void RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) override;
+		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) override;
 
 		virtual PrimitiveComponent* GetPrimitive() override { return m_LineComponent; }
 

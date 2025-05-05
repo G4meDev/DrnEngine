@@ -28,7 +28,7 @@ namespace Drn
 		inline ID3D12RootSignature* GetRootSignature() { return m_RootSignature; }
 		inline ID3D12PipelineState* GetBasePassPSO() { return m_BasePassPSO; }
 
-		void UploadResources( dx12lib::CommandList* CommandList );
+		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		inline bool IsLoadedOnGpu() const { return m_LoadedOnGPU; }
 
 	protected:

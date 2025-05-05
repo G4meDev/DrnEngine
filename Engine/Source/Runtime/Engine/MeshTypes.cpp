@@ -82,7 +82,7 @@ namespace Drn
 		else
 		{
 			std::string MatPath = "..";
-			if (MC->GetMesh())
+			if (MC->GetMesh().IsValid())
 			{
 				AssetHandle<Material> Mat = MC->GetMesh()->GetMaterialAtIndex(MaterialIndex);
 				MatPath = Mat.GetPath();

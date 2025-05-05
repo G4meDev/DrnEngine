@@ -145,7 +145,7 @@ namespace Drn
 		//m_IndexBuffer.Reset();
 	}
 
-	void LineBatchSceneProxy::RenderMainPass( dx12lib::CommandList* CommandList, SceneRenderer* Renderer )
+	void LineBatchSceneProxy::RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
 		SCOPE_STAT(LineBatchSceneProxyRenderMainPass);
 
@@ -154,9 +154,9 @@ namespace Drn
 			return;
 		}
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(m_LineBatchMaterial->GetRootSignature());
-		CommandList->GetD3D12CommandList()->SetPipelineState(m_LineBatchMaterial->GetBasePassPSO());
-		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
+		CommandList->SetGraphicsRootSignature(m_LineBatchMaterial->GetRootSignature());
+		CommandList->SetPipelineState(m_LineBatchMaterial->GetBasePassPSO());
+		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
 
 		XMMATRIX modelMatrix = Matrix().Get();
 
@@ -171,26 +171,31 @@ namespace Drn
 		XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
-		CommandList->SetGraphics32BitConstants( 0, mvpMatrix );
+		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0 );
 
-		CommandList->GetD3D12CommandList()->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
-		CommandList->GetD3D12CommandList()->IASetIndexBuffer( &m_IndexBufferView );
+		CommandList->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
+		CommandList->IASetIndexBuffer( &m_IndexBufferView );
 		uint32 VertexCount = m_IndexBufferView.SizeInBytes / sizeof(uint32);
-		CommandList->DrawIndexed( VertexCount );
+		CommandList->DrawIndexedInstanced( VertexCount, 1, 0, 0, 0);
 	}
 
-	void LineBatchSceneProxy::InitResources( dx12lib::CommandList* CommandList )
+	void LineBatchSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource(
+		Microsoft::WRL::ComPtr<ID3D12Device> Device;
+		CommandList->GetDevice(IID_PPV_ARGS(Device.GetAddressOf()));
+
+		Device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer( sizeof(InputLayout_LineColorThickness) * NUM_MAX_LINES * 2),
 			D3D12_RESOURCE_STATE_GENERIC_READ,
 			nullptr, IID_PPV_ARGS( &m_VertexBuffer ) );
 
+#if D3D12_Debug_INFO
 		m_VertexBuffer->SetName(L"LineBatchVertexBuffer");
+#endif
 
-		CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource(
+		Device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer( sizeof(uint32) * NUM_MAX_LINES * 2),
@@ -202,7 +207,7 @@ namespace Drn
 #endif
 	}
 
-	void LineBatchSceneProxy::UpdateResources( dx12lib::CommandList* CommandList )
+	void LineBatchSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT(UpdateResourcesLineBatchComponent);
 
