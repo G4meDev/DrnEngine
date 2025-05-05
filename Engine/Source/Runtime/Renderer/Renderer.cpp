@@ -97,10 +97,10 @@ namespace Drn
 		m_SwapChain->ToggleVSync();
 	}
 
-	void Renderer::MainWindowResized( float InWidth, float InHeight ) 
+	void Renderer::MainWindowResized( const IntPoint& NewSize ) 
 	{
 		m_Device->Flush();
-		m_SwapChain->Resize( InWidth, InHeight );
+		m_SwapChain->Resize( NewSize.X, NewSize.Y );
 
 #ifndef WITH_EDITOR
 		m_MainSceneRenderer->ResizeView(IntPoint(InWidth, InHeight));

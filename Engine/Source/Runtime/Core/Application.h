@@ -23,14 +23,12 @@ namespace Drn
 		
 		virtual void Tick(float DeltaTime);
 
-
-		void OnKeyPressed( KeyEventArgs& e );
-		void OnWindowResized( ResizeEventArgs& e );
-		void OnWindowClose( WindowCloseEventArgs& e );
+		void OnWindowResized( const IntPoint& NewSize );
+		void OnKeyPressed( WPARAM Key );
 
 		Window* m_MainWindow;
 		HINSTANCE m_hInstance;
 
-		bool m_Closing = false;
+		double m_ApplicationTime;
 	};
 }

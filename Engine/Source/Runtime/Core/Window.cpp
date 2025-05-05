@@ -11,6 +11,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT ms
 namespace Drn
 {
 	Window::Window( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize )
+		: m_Closing(false)
+		, OnSizeChangedDelegate(nullptr)
 	{
 		RECT WindowRect = { 0, 0, static_cast<LONG>( WindowSize.X ), static_cast<LONG>( WindowSize.Y) };
 		AdjustWindowRect( &WindowRect, WS_OVERLAPPEDWINDOW, FALSE );
@@ -32,6 +34,8 @@ namespace Drn
 			LOG(LogWindow, Error, "faield to create window.");
 			return;
 		}
+
+		SetWindowLongPtr( m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
 		SetWindowTitle(WindowName);
 		SetFullscreen(false);
@@ -97,6 +101,53 @@ namespace Drn
 		ShowWindow( m_hWnd, SW_HIDE );
 	}
 
+	void Window::SizeChanged( const IntPoint& NewSize )
+	{
+		m_WindowSize = NewSize;
+		InvokeOnSizeChanged(NewSize);
+	}
+
+	void Window::KeyPress( WPARAM Key )
+	{
+		InvokeOnKeyPress(Key);
+	}
+
+	void Window::BindOnSizeChanged( OnSizeChanged Delegate )
+	{
+		OnSizeChangedDelegate = Delegate;
+	}
+
+	void Window::ClearOnSizeChanged()
+	{
+		OnSizeChangedDelegate = nullptr;
+	}
+
+	void Window::InvokeOnSizeChanged( const IntPoint& NewSize )
+	{
+		if (OnSizeChangedDelegate)
+		{
+			OnSizeChangedDelegate(NewSize);
+		}
+	}
+
+	void Window::BindOnKeyPress( OnKeyPress Delegate )
+	{
+		OnKeyPressDelegate = Delegate;
+	}
+
+	void Window::ClearOnKeyPress()
+	{
+		OnKeyPressDelegate = nullptr;
+	}
+
+	void Window::InvokeOnKeyPress( WPARAM Key )
+	{
+		if (OnKeyPressDelegate)
+		{
+			OnKeyPressDelegate(Key);
+		}
+	}
+
 	LRESULT CALLBACK Window::DefaultWndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam )
 	{
 #if WITH_EDITOR
@@ -104,25 +155,39 @@ namespace Drn
 			return true;
 #endif
 
+		// TODO: make a map of registered windows
+		Window* W = nullptr;
+
 		switch ( message )
 		{
-			case WM_PAINT:
-				break;
+			//case WM_PAINT:
+			//	break;
+			//
+			//
+			//case WM_SYSKEYUP:
+			//case WM_KEYUP:
+			//	break;
 
 			case WM_SYSKEYDOWN:
 			case WM_KEYDOWN:
-				break;
+				W = (Window*)GetWindowLongPtrA( hwnd, GWLP_USERDATA );
+				W->InvokeOnKeyPress(wParam);
+				return true;
 
-			case WM_SYSKEYUP:
-			case WM_KEYUP:
-				break;
+			case WM_SIZE:
+				W = (Window*)GetWindowLongPtrA( hwnd, GWLP_USERDATA );
+				W->SizeChanged(IntPoint((int)(short)LOWORD( lParam ), (int)(short)HIWORD( lParam )));
+				return true;
 
-
+			case WM_CLOSE:
+				W = (Window*)GetWindowLongPtrA( hwnd, GWLP_USERDATA );
+				W->m_Closing = true;
+				W->Hide();
+				return true;
 
 			default:
 				return DefWindowProcW( hwnd, message, wParam, lParam );
 		}
-
-		return 0;
 	}
+
 }

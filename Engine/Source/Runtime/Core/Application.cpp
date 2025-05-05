@@ -7,7 +7,6 @@
 
 #include "Editor/Editor.h"
 
-#include <GameFramework/Events.h>
 #include <shlwapi.h>
 
 using namespace DirectX;
@@ -27,83 +26,65 @@ namespace Drn
 
 		Startup();
 
-		while (!m_Closing)
+		while (!m_MainWindow->IsClosing())
 		{
-			Tick(1);
+			double CurrentTime = Time::GetSeconds();
+			double DeltaTime = CurrentTime - m_ApplicationTime;
+			m_ApplicationTime = CurrentTime;
+
+			Tick(DeltaTime);
 		}
 
 		Shutdown();
 		return 0;
+	}
+
+	void Application::OnKeyPressed( WPARAM Key )
+	{
+		switch ( Key )
+		{
+		case VK_F1:
+			if (Profiler::Get())
+			{
+				Profiler::Get()->Profile(EProfileMode::Capture_1);
+			}
+			break;
+		
+		case VK_F2:
+			if (Profiler::Get())
+			{
+				Profiler::Get()->Profile(EProfileMode::Capture_10);
+			}
+			break;
 			
-// 		m_MainWindow->KeyPressed += KeyboardEvent::slot( &Application::OnKeyPressed, this );
-// 		m_MainWindow->Resize += ResizeEvent::slot( &Application::OnWindowResized, this );
-// 		m_MainWindow->Update += UpdateEvent::slot( &Application::OnUpdate, this );
-// 		m_MainWindow->Close += WindowCloseEvent::slot( &Application::OnWindowClose, this );
+		case VK_F3:
+			if (Profiler::Get())
+			{
+				Profiler::Get()->Profile(EProfileMode::Capture_100);
+			}
+			break;
+		
+		case VK_F10:
+			if (Renderer::Get())
+			{
+				Renderer::Get()->ToggleSwapChain();
+			}
+			break;
+		case VK_ESCAPE:
+			m_MainWindow->SetClosing();
+			break;
+		case VK_F11:
+			m_MainWindow->ToggleFullScreen();
+			break;
+		}
 	}
 
-	void Application::OnKeyPressed( KeyEventArgs& e )
+	void Application::OnWindowResized( const IntPoint& NewSize )
 	{
-		//LOG( LogApplication, Info, "KeyPressed: %c", e.Char);
-
-		//switch ( e.Key )
-		//{
-		//case KeyCode::D1:
-		//	if (Profiler::Get())
-		//	{
-		//		Profiler::Get()->Profile(EProfileMode::Capture_1);
-		//	}
-		//	break;
-		//
-		//case KeyCode::D2:
-		//	if (Profiler::Get())
-		//	{
-		//		Profiler::Get()->Profile(EProfileMode::Capture_10);
-		//	}
-		//	break;
-		//	
-		//case KeyCode::D3:
-		//	if (Profiler::Get())
-		//	{
-		//		Profiler::Get()->Profile(EProfileMode::Capture_100);
-		//	}
-		//	break;
-		//
-		//case KeyCode::V:
-		//	if (Renderer::Get())
-		//	{
-		//		Renderer::Get()->ToggleSwapChain();
-		//	}
-		//	break;
-		//case KeyCode::Escape:
-		//	// Stop the application if the Escape key is pressed.
-		//	m_Closing = true;
-		//	break;
-		//case KeyCode::Enter:
-		//	if ( e.Alt )
-		//	{
-		//		[[fallthrough]];
-		//	case KeyCode::F11:
-		//		m_MainWindow->ToggleFullscreen();
-		//		break;
-		//	}
-		//}
-	}
-
-	void Application::OnWindowResized( ResizeEventArgs& e )
-	{
-		//LOG( LogApplication, Info, "Window Resized: %ix%i", e.Width, e.Height);
-		//
-		//GameFramework::Get().SetDisplaySize( e.Width, e.Height );
-		//
-		//if (Renderer::Get())
-		//{
-		//	Renderer::Get()->MainWindowResized(e.Width, e.Height);
-		//}
-	}
-
-	void Application::OnWindowClose( WindowCloseEventArgs& e ) 
-	{
-		//GameFramework::Get().Stop();
+		if (Renderer::Get())
+		{
+			Renderer::Get()->MainWindowResized(NewSize);
+		}
 	}
 
 // ------------------------------------------------------------------------------------------
@@ -122,6 +103,8 @@ namespace Drn
 		m_MainWindow = new Window(m_hInstance, DEFAULT_WINDOW_CLASS_NAME, L"DefaultWindow", IntPoint(1920, 1080));
 
 		Time::Init();
+		m_ApplicationTime = Time::GetSeconds();
+
 		Profiler::Init();
 
 		AssetManager::Get()->Init();
@@ -134,6 +117,8 @@ namespace Drn
 		Editor::Get()->Init();
 #endif
 
+		m_MainWindow->BindOnSizeChanged( std::bind( &Application::OnWindowResized, this, std::placeholders::_1 ) );
+		m_MainWindow->BindOnKeyPress( std::bind( &Application::OnKeyPressed, this, std::placeholders::_1 ) );
 		m_MainWindow->Show();
 	}
 
@@ -162,6 +147,13 @@ namespace Drn
 	void Application::Tick( float DeltaTime )
 	{
 		SCOPE_STAT(ApplicationTick);
+
+		MSG msg;
+		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 
 		static uint64_t frameCount = 0;
 		static double   totalTime  = 0.0;

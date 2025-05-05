@@ -24,7 +24,7 @@ namespace Drn
 
 		void ToggleSwapChain();
 
-		void MainWindowResized(float InWidth, float InHeight);
+		void MainWindowResized(const IntPoint& NewSize);
 
 		static Renderer* Get();
 

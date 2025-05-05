@@ -7,14 +7,21 @@ LOG_DECLARE_CATEGORY(LogWindow);
 
 namespace Drn
 {
+
 	class Window
 	{
 	public:
+
+		using OnSizeChanged = std::function<void( const IntPoint& NewSize )>;
+		using OnKeyPress = std::function<void( WPARAM )>;
 
 		Window( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize );
 		~Window();
 
 		static void RegisterDefaultClass( HINSTANCE hInstance );
+
+		inline bool IsClosing() const { return m_Closing; }
+		inline void SetClosing() { m_Closing = true; }
 
 		inline HWND GetWindowHandle() const { return m_hWnd; }
 		inline const std::wstring& GetWindowName() const { return m_Name; }
@@ -34,12 +41,30 @@ namespace Drn
 
 		static LRESULT CALLBACK DefaultWndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
+		void BindOnSizeChanged(OnSizeChanged Delegate);
+		void ClearOnSizeChanged();
+		void InvokeOnSizeChanged(const IntPoint& NewSize);
+
+		OnSizeChanged OnSizeChangedDelegate;
+
+		void BindOnKeyPress(OnKeyPress Delegate);
+		void ClearOnKeyPress();
+		void InvokeOnKeyPress(WPARAM Key);
+
+		OnKeyPress OnKeyPressDelegate;
+
 	private:
+
+		void SizeChanged(const IntPoint& NewSize);
+		void KeyPress(WPARAM Key);
+
 		HWND m_hWnd;
 
 		std::wstring m_Name;
 		std::wstring m_Title;
 		IntPoint m_WindowSize;
 		bool m_FullScreen;
+
+		bool m_Closing;
 	};
 }
