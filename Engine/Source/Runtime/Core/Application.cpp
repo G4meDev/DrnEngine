@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
+#include <Runtime/Core/Window.h>
 
 #include <GameFramework/Events.h>
 #include <GameFramework/GameFramework.h>
@@ -27,16 +28,22 @@ namespace Drn
 		dx12lib::Device::EnableDebugLayer();
 #endif
 
+		WCHAR   path[MAX_PATH];
+		HMODULE hModule = ::GetModuleHandleW( NULL );
+		if ( ::GetModuleFileNameW( hModule, path, MAX_PATH ) > 0 )
+		{
+			::PathRemoveFileSpecW( path );
+			::SetCurrentDirectoryW( path );
+		}
+
+		TWindow::RegisterDefaultClass(inhInstance);
+		m_Window = new TWindow(inhInstance, DEFAULT_WINDOW_CLASS_NAME, L"DefaultWindow", IntPoint(1920, 1080));
+
+
+
 		int retCode = 0;
 		auto& gf = GameFramework::Create( m_hInstance );
 		{
-			WCHAR   path[MAX_PATH];
-			HMODULE hModule = ::GetModuleHandleW( NULL );
-			if ( ::GetModuleFileNameW( hModule, path, MAX_PATH ) > 0 )
-			{
-				::PathRemoveFileSpecW( path );
-				::SetCurrentDirectoryW( path );
-			}
 
 			m_MainWindow = gf.CreateWindow( L"Clear Screen", 1920, 1080 );
 			

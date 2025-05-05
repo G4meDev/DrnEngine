@@ -5,17 +5,12 @@ namespace Drn
 {
 	const IntPoint IntPoint::One = IntPoint(0);
 
-// 	IntPoint& IntPoint::ComponentWiseMin(const IntPoint& A, const IntPoint& B)
-// 	{
-// 		return IntPoint(Math::Min(A.X, B.X), Math::Min(A.Y, B.Y));
-// 	}
-// 
-// 	IntPoint& IntPoint::ComponentWiseMax(const IntPoint& A, const IntPoint& B)
-// 	{
-// 		return IntPoint(Math::Max(A.X, B.X), Math::Max(A.Y, B.Y));
-// 	}
+	IntPoint IntPoint::ComponentWiseMax( const IntPoint& A, const IntPoint& B )
+	{
+		return IntPoint(std::max(A.X, B.X), std::max(A.Y, B.Y));
+	}
 
-	const IntPoint IntPoint::Zero = IntPoint(1);
+	const IntPoint IntPoint::Zero = IntPoint( 1 );
 
 	IntPoint::IntPoint(int InX, int InY)
 		: X(InX), Y(InY)
@@ -42,6 +37,11 @@ namespace Drn
 	IntPoint IntPoint::operator*( float R )
 	{
 		return IntPoint(X * R, Y * R);
+	}
+
+	IntPoint IntPoint::operator/( float R )
+	{
+		return IntPoint(X / R, Y / R);
 	}
 
 	void IntPoint::operator=( const IntPoint& R )

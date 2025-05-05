@@ -1,0 +1,45 @@
+#pragma once
+
+#include "ForwardTypes.h"
+
+LOG_DECLARE_CATEGORY(LogWindow);
+#define DEFAULT_WINDOW_CLASS_NAME L"DefaultWindowClass"
+
+namespace Drn
+{
+	class TWindow
+	{
+	public:
+
+		TWindow( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize );
+		~TWindow();
+
+		static void RegisterDefaultClass( HINSTANCE hInstance );
+
+		inline HWND GetWindowHandle() const { return m_hWnd; }
+		inline const std::wstring& GetWindowName() const { return m_Name; }
+
+		inline const std::wstring& GetWindowTitle() const { return m_Title; }
+		void SetWindowTitle( const std::wstring& windowTitle );
+
+		inline const IntPoint& GetWindowSize() const { return m_WindowSize; }
+		void SetWindowSize( const IntPoint& windowTitle );
+
+		inline bool IsFullScreen() const { return m_FullScreen; }
+		void SetFullscreen(bool FullScreen);
+		void ToggleFullScreen();
+
+		void Show();
+		void Hide();
+
+		static LRESULT CALLBACK DefaultWndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
+
+	private:
+		HWND m_hWnd;
+
+		std::wstring m_Name;
+		std::wstring m_Title;
+		IntPoint m_WindowSize;
+		bool m_FullScreen;
+	};
+}

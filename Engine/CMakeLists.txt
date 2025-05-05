@@ -10,6 +10,7 @@ set( HEADER_FILES
 	Source/Runtime/Core/Archive.h
 	Source/Runtime/Core/Serializable.h
 	Source/Runtime/Core/Time.h
+	Source/Runtime/Core/Window.h
 	
 	Source/Runtime/Engine/WorldManager.h
 	Source/Runtime/Engine/World.h
@@ -115,6 +116,7 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Archive.cpp
 	Source/Runtime/Core/Serializable.cpp
 	Source/Runtime/Core/Time.cpp
+	Source/Runtime/Core/Window.cpp
 	
 	Source/Runtime/Engine/WorldManager.cpp
 	Source/Runtime/Engine/World.cpp

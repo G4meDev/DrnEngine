@@ -27,9 +27,11 @@ namespace Drn
 		void OnWindowResized( ResizeEventArgs& e );
 		void OnWindowClose( WindowCloseEventArgs& e );
 
-		std::shared_ptr<Window> m_MainWindow;
+		std::shared_ptr<class Window> m_MainWindow;
 		HINSTANCE m_hInstance;
 
 		bool m_Closing = false;
+
+		class TWindow* m_Window;
 	};
 }
