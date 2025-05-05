@@ -263,6 +263,7 @@ target_link_libraries( Engine
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
 	PUBLIC d3dcompiler.lib
+	PUBLIC shlwapi.lib
 	PUBLIC ImGui
     PUBLIC assimp
     PUBLIC DirectXTex

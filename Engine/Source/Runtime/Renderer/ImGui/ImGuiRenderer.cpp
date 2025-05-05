@@ -4,10 +4,8 @@
 #if WITH_EDITOR
 
 #include "ImGuiLayer.h"
+#include "Runtime/Core/Window.h"
 #include "Runtime/Renderer/Renderer.h"
-
-#include <GameFramework/Window.h>
-#include <GameFramework/GameFramework.h>
 
 LOG_DEFINE_CATEGORY( LogImguiRenderer, "ImguiRenderer" );
 
@@ -26,7 +24,7 @@ namespace Drn
 
 	}
 
-	void ImGuiRenderer::Init()
+	void ImGuiRenderer::Init( class Window* MainWindow )
 	{
 		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
 
@@ -57,8 +55,8 @@ namespace Drn
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		auto Wind = GameFramework::Get().GetWindowByName( L"Clear Screen" );
-		ImGui_ImplWin32_Init(Wind->GetWindowHandle());
+		//auto Wind = GameFramework::Get().GetWindowByName( L"Clear Screen" );
+		ImGui_ImplWin32_Init(MainWindow->GetWindowHandle());
 
 		ImGui_ImplDX12_InitInfo init_info = {};
 

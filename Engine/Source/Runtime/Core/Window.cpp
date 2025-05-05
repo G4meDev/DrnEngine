@@ -3,9 +3,14 @@
 
 LOG_DEFINE_CATEGORY( LogWindow, "Window" );
 
+#if WITH_EDITOR
+#include <imgui.h>
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
+#endif
+
 namespace Drn
 {
-	TWindow::TWindow( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize )
+	Window::Window( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize )
 	{
 		RECT WindowRect = { 0, 0, static_cast<LONG>( WindowSize.X ), static_cast<LONG>( WindowSize.Y) };
 		AdjustWindowRect( &WindowRect, WS_OVERLAPPEDWINDOW, FALSE );
@@ -30,21 +35,20 @@ namespace Drn
 
 		SetWindowTitle(WindowName);
 		SetFullscreen(false);
-		Show();
 	}
 
-	TWindow::~TWindow()
+	Window::~Window()
 	{
 		DestroyWindow( m_hWnd );
 	}
 
-	void TWindow::RegisterDefaultClass( HINSTANCE hInstance )
+	void Window::RegisterDefaultClass( HINSTANCE hInstance )
 	{
 		WNDCLASSEXW wndClass = { 0 };
 
 		wndClass.cbSize        = sizeof( WNDCLASSEX );
 		wndClass.style         = CS_HREDRAW | CS_VREDRAW;
-		wndClass.lpfnWndProc   = &TWindow::DefaultWndProc;
+		wndClass.lpfnWndProc   = &Window::DefaultWndProc;
 		wndClass.hInstance     = hInstance;
 		wndClass.hCursor       = LoadCursor( nullptr, IDC_ARROW );
 		wndClass.hbrBackground = (HBRUSH)( COLOR_WINDOW + 1 );
@@ -61,40 +65,45 @@ namespace Drn
 		}
 	}
 
-	void TWindow::SetWindowTitle( const std::wstring& windowTitle )
+	void Window::SetWindowTitle( const std::wstring& windowTitle )
 	{
 		m_Title = windowTitle;
 		SetWindowTextW( m_hWnd, m_Title.c_str() );
 	}
 
 
-	void TWindow::SetWindowSize( const IntPoint& windowTitle )
+	void Window::SetWindowSize( const IntPoint& windowTitle )
 	{
 		
 	}
 
-	void TWindow::SetFullscreen( bool FullScreen )
+	void Window::SetFullscreen( bool FullScreen )
 	{
 		
 	}
 
-	void TWindow::ToggleFullScreen()
+	void Window::ToggleFullScreen()
 	{
 		
 	}
 
-	void TWindow::Show()
+	void Window::Show()
 	{
 		ShowWindow( m_hWnd, SW_SHOW );
 	}
 
-	void TWindow::Hide()
+	void Window::Hide()
 	{
 		ShowWindow( m_hWnd, SW_HIDE );
 	}
 
-	LRESULT CALLBACK TWindow::DefaultWndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam )
+	LRESULT CALLBACK Window::DefaultWndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam )
 	{
+#if WITH_EDITOR
+		if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wParam, lParam))
+			return true;
+#endif
+
 		switch ( message )
 		{
 			case WM_PAINT:

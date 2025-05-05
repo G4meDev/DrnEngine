@@ -1,11 +1,8 @@
 #include "DrnPCH.h"
 #include "Renderer.h"
 
+#include "Runtime/Core/Window.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
-
-#include <GameFramework/Window.h>
-#include <GameFramework/GameFramework.h>
-
 
 LOG_DEFINE_CATEGORY( LogRenderer, "Renderer" );
 
@@ -69,7 +66,7 @@ namespace Drn
 		commandQueue.Flush();
 
 #if WITH_EDITOR
-		ImGuiRenderer::Get()->Init();
+		ImGuiRenderer::Get()->Init(m_MainWindow);
 #endif
 	}
 

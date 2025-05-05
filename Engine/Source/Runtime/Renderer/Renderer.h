@@ -11,6 +11,7 @@ LOG_DECLARE_CATEGORY( LogRenderer );
 namespace Drn
 {
 	class D3D12Scene;
+	class Window;
 
 	class Renderer
 	{

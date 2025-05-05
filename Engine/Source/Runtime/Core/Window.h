@@ -7,12 +7,12 @@ LOG_DECLARE_CATEGORY(LogWindow);
 
 namespace Drn
 {
-	class TWindow
+	class Window
 	{
 	public:
 
-		TWindow( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize );
-		~TWindow();
+		Window( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize );
+		~Window();
 
 		static void RegisterDefaultClass( HINSTANCE hInstance );
 

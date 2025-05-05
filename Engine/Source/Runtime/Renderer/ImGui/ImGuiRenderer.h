@@ -13,6 +13,7 @@ LOG_DECLARE_CATEGORY(LogImguiRenderer);
 namespace Drn
 {
 	class ImGuiLayer;
+	class Window;
 
 	struct ExampleDescriptorHeapAllocator
 		{
@@ -63,7 +64,7 @@ namespace Drn
 		ImGuiRenderer();
 		virtual ~ImGuiRenderer();
 
-		virtual void Init();
+		virtual void Init(Window* MainWindow);
 		virtual void Tick(float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL);
 		virtual void Shutdown();
 

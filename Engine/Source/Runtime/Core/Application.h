@@ -7,31 +7,30 @@
 
 LOG_DECLARE_CATEGORY(LogApplication);
 
-class Window;
 
 namespace Drn
 {
+	class Window;
+
 	class Application
 	{
 	public:
 		virtual int Run(HINSTANCE inhInstance);
 
 	protected:
-		//virtual void Startup();
-		//virtual void Shutdown();
-		//
-		//virtual void Tick(float DeltaTime);
+		virtual void Startup();
+		virtual void Shutdown();
+		
+		virtual void Tick(float DeltaTime);
 
-		void OnUpdate( UpdateEventArgs& e );
+
 		void OnKeyPressed( KeyEventArgs& e );
 		void OnWindowResized( ResizeEventArgs& e );
 		void OnWindowClose( WindowCloseEventArgs& e );
 
-		std::shared_ptr<class Window> m_MainWindow;
+		Window* m_MainWindow;
 		HINSTANCE m_hInstance;
 
 		bool m_Closing = false;
-
-		class TWindow* m_Window;
 	};
 }
