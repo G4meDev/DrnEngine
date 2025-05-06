@@ -20,10 +20,6 @@ namespace Drn
 	{
 		m_hInstance = inhInstance;
 
-#if defined( _DEBUG )
-		dx12lib::Device::EnableDebugLayer();
-#endif
-
 		Startup();
 
 		while (!m_MainWindow->IsClosing())
@@ -124,11 +120,9 @@ namespace Drn
 
 	void Application::Shutdown()
 	{
-		// Renderer::Get()->GetDevice()->Flush();
-
-	#if WITH_EDITOR
+#if WITH_EDITOR
 		Editor::Get()->Shutdown();
-	#endif
+#endif
 
 		WorldManager::Shutdown();
 
@@ -141,7 +135,7 @@ namespace Drn
 		delete m_MainWindow;
 		m_MainWindow = nullptr;
 
-		atexit( &dx12lib::Device::ReportLiveObjects );
+		//atexit( &dx12lib::Device::ReportLiveObjects );
 	}
 
 	void Application::Tick( float DeltaTime )

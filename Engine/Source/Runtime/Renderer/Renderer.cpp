@@ -67,7 +67,7 @@ namespace Drn
 					dxgiAdapterDesc1.DedicatedVideoMemory > maxDedicatedVideoMemory )
 				{
 					maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
-					ThrowIfFailed(dxgiAdapter1.As(&dxgiAdapter4));
+					dxgiAdapter1.As(&dxgiAdapter4);
 				}
 			}
 		}
@@ -226,6 +226,12 @@ namespace Drn
 
 		SingletonInstance->Flush();
 		CloseHandle(SingletonInstance->m_FenceEvent);
+
+		IDXGIDebug1* dxgiDebug;
+		DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
+
+		dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
+		dxgiDebug->Release();
 
 		delete SingletonInstance;
 		SingletonInstance = nullptr;

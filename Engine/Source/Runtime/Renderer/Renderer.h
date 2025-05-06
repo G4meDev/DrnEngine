@@ -9,6 +9,8 @@
 
 LOG_DECLARE_CATEGORY( LogRenderer );
 
+class IDXGISwapChain4;
+
 namespace Drn
 {
 	class D3D12Scene;

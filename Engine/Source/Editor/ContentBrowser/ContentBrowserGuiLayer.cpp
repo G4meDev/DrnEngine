@@ -12,8 +12,6 @@
 
 #include "Runtime/Misc/FileSystem.h"
 #include "Editor/FileImportMenu/FileImportMenu.h"
-#include <GameFramework/GameFramework.h>
-#include <GameFramework/Window.h>
 
 LOG_DEFINE_CATEGORY( LogContentBrowser, "ContentBrowser" );
 

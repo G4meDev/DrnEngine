@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "StringHelper.h"
 
+#include <codecvt>
+
 namespace Drn
 {
 	std::set<std::string> StringHelper::split( const std::string& str, const std::string& delimiter )

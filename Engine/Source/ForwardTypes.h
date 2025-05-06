@@ -31,19 +31,6 @@ struct aiMesh;
 struct aiNode;
 struct aiScene;
 
-namespace dx12lib
-{
-	class Device;
-	class CommandList;
-	class SwapChain;
-	class VertexBuffer;
-	class IndexBuffer;
-	class RootSignature;
-	class PipelineStateObject;
-	class Texture;
-	class RenderTarget;
-}
-
 namespace Drn
 {
 	struct StaticMeshData;

@@ -20,18 +20,6 @@
 #include "Runtime/Engine/StaticMeshActor.h"
 #include "Runtime/Engine/CameraActor.h"
 
-#include <dx12lib/Device.h>
-#include <dx12lib/SwapChain.h>
-#include <dx12lib/CommandList.h>
-#include <dx12lib/CommandQueue.h>
-#include <dx12lib/RenderTarget.h>
-#include <dx12lib/IndexBuffer.h>
-#include <dx12lib/VertexBuffer.h>
-#include <dx12lib/PipelineStateObject.h>
-#include <dx12lib/RootSignature.h>
-#include <dx12lib/Texture.h>
-#include <dx12lib/Helpers.h>
-
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/SceneRenderer.h"
 #include "Runtime/Renderer/InputLayout.h"

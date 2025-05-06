@@ -31,8 +31,6 @@ add_subdirectory( ThirdParty/ImGui )
 add_subdirectory( ThirdParty/assimp )
 add_subdirectory( ThirdParty/DirectXTex )
 add_subdirectory( ThirdParty/gainput )
-add_subdirectory( ThirdParty/DX12Lib )
-add_subdirectory( ThirdParty/GameFramework )
 add_subdirectory( ThirdParty/ImGuiFileDialog )
 add_subdirectory( Game )
 
