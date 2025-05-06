@@ -160,8 +160,7 @@ namespace Drn
 
 		XMMATRIX modelMatrix = Matrix().Get();
 
-		auto viewport = Renderer->m_RenderTarget.GetViewport();
-		float    aspectRatio = viewport.Width / viewport.Height;
+		float aspectRatio = (float)( Renderer->GetViewportSize().X ) / Renderer->GetViewportSize().Y;
 		
 		XMMATRIX viewMatrix;
 		XMMATRIX projectionMatrix;

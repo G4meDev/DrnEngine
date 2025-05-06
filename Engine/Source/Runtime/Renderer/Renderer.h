@@ -5,6 +5,7 @@
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "D3D12Utils.h"
 
 LOG_DECLARE_CATEGORY( LogRenderer );
 
@@ -28,7 +29,9 @@ namespace Drn
 
 		static Renderer* Get();
 
-		inline dx12lib::Device* GetDevice() { return m_Device.get(); }
+		inline ID3D12Device* GetDevice() { return m_Device.Get(); }
+		inline ID3D12CommandQueue* GetCommandQueue() { return m_CommandQueue.Get(); }
+		inline ID3D12CommandAllocator* GetCommandAllocator() { return m_CommandAllocator.Get(); }
 
 		inline Window* GetMainWindow() { return m_MainWindow; }
 
@@ -39,24 +42,40 @@ namespace Drn
 
 		float TotalTime = 0;
 
-		std::shared_ptr<dx12lib::CommandList> m_CommandList;
+		uint64_t m_FenceValue = 0;
+		Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
+		HANDLE m_FenceEvent;
+
+		Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
+		Microsoft::WRL::ComPtr<IDXGISwapChain4> m_SwapChain;
+
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_CommandList;
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
+
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;
+		uint32 m_RTVDescriporSize;
+		uint32 m_CurrentBackbufferIndex;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_BackBuffers[NUM_BACKBUFFERS];
 
 		SceneRenderer* m_MainSceneRenderer;
 
-		inline std::shared_ptr<dx12lib::CommandList> GetCommandList() { return m_CommandList; };
+		//inline std::shared_ptr<dx12lib::CommandList> GetCommandList() { return m_CommandList; };
+		inline ID3D12GraphicsCommandList2* GetCommandList() { return m_CommandList.Get(); };
 
+		void Flush();
 
 	protected:
 		static Renderer* SingletonInstance;
 
 		Window* m_MainWindow = nullptr;
-		
-		std::shared_ptr<::dx12lib::Device> m_Device = nullptr;
-
-		std::shared_ptr<::dx12lib::SwapChain> m_SwapChain = nullptr;
-
 		std::set<Scene*> m_AllocatedScenes;
 
+		void UpdateRenderTargetViews();
+
+		uint64_t Signal();
+		void WaitForFenceValue(uint64 Value);
 
 		friend class ViewportGuiLayer;
 		friend class World;

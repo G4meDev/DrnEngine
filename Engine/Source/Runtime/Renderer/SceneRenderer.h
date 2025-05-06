@@ -20,13 +20,15 @@ namespace Drn
 
 		inline Scene* GetScene() { return m_Scene; }
 
-		void Render(dx12lib::CommandList* CommandList);
+		void Render( ID3D12GraphicsCommandList2* CommandList );
 
 		ID3D12Resource* GetViewResource();
 
 		void ResizeView(const IntPoint& InSize);
 
 		void SetRenderingEnabled(bool Enabled);
+
+		const IntPoint& GetViewportSize() const { return m_RenderSize; }
 
 		CameraActor* m_CameraActor;
 
@@ -36,13 +38,18 @@ namespace Drn
 
 		Scene* m_Scene;
 
-		dx12lib::Device* m_Device;
+		Microsoft::WRL::ComPtr<ID3D12Device> m_Device;
 
-		std::shared_ptr<dx12lib::Texture> m_DepthTexture = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
 
-		dx12lib::RenderTarget m_RenderTarget;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_ColorTarget;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthTarget;
 
-		float m_fieldOfView = 45.0f;
+		D3D12_VIEWPORT m_Viewport;
+		D3D12_RECT m_ScissorRect;
+
+		IntPoint m_RenderSize;
 
 		bool m_RenderingEnabled;
 
@@ -54,9 +61,9 @@ namespace Drn
 
 	private:
 
-		void Init(dx12lib::CommandList* CommandList);
+		void Init(ID3D12GraphicsCommandList2* CommandList);
 
-		void BeginRender(dx12lib::CommandList* CommandList);
-		void RenderBasePass(dx12lib::CommandList* CommandList);
+		void BeginRender(ID3D12GraphicsCommandList2* CommandList);
+		void RenderBasePass(ID3D12GraphicsCommandList2* CommandList);
 	};
 }

@@ -27,7 +27,7 @@ namespace Drn
 		}
 	}
 
-	void Scene::Render( dx12lib::CommandList* CommandList )
+	void Scene::Render( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT(SceneRender);
 
@@ -74,14 +74,14 @@ namespace Drn
 
 // ----------------------------------------------------------------------------
 
-	void Scene::InitSceneRender(dx12lib::CommandList* CommandList)
+	void Scene::InitSceneRender( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT(InitSceneRender);
 
 		for (auto it = m_PendingProxies.begin(); it != m_PendingProxies.end(); it++)
 		{
 			PrimitiveSceneProxy* SceneProxy = *it;
-			SceneProxy->InitResources(CommandList->GetD3D12CommandList().Get());
+			SceneProxy->InitResources(CommandList);
 			m_PrimitiveProxies.insert(SceneProxy);
 		}
 		m_PendingProxies.clear();
@@ -89,7 +89,7 @@ namespace Drn
 		for (auto it = m_PrimitiveProxies.begin(); it != m_PrimitiveProxies.end(); it++)
 		{
 			PrimitiveSceneProxy* Proxy = *it;
-			Proxy->UpdateResources(CommandList->GetD3D12CommandList().Get());
+			Proxy->UpdateResources(CommandList);
 		}
 	}
 

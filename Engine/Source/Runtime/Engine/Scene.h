@@ -4,6 +4,8 @@
 
 LOG_DECLARE_CATEGORY(LogScene);
 
+class ID3D12GraphicsCommandList2;
+
 namespace Drn
 {
 	class PrimitiveSceneProxy;
@@ -18,12 +20,12 @@ namespace Drn
 
 		inline World* GetWorld() { return m_World; }
 
-		void Render(dx12lib::CommandList* CommandList);
+		void Render(ID3D12GraphicsCommandList2* CommandList);
 
 		SceneRenderer* AllocateSceneRenderer();
 		void ReleaseSceneRenderer(SceneRenderer*& InSceneRenderer);
 
-		void InitSceneRender(dx12lib::CommandList* CommandList);
+		void InitSceneRender(ID3D12GraphicsCommandList2* CommandList);
 
 		void AddPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 		void RemovePrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);

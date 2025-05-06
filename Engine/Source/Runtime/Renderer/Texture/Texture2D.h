@@ -19,7 +19,7 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
-		void UploadResources( dx12lib::CommandList* CommandList );
+		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 
 
 	protected:

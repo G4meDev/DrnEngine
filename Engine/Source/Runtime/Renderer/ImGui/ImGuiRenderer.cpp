@@ -26,14 +26,12 @@ namespace Drn
 
 	void ImGuiRenderer::Init( class Window* MainWindow )
 	{
-		ID3D12Device* pDevice = Renderer::Get()->GetDevice()->GetD3D12Device().Get();
-
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		desc.NumDescriptors             = 64;
 		desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		pDevice->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
-		g_pd3dSrvDescHeapAlloc.Create( pDevice, g_pd3dSrvDescHeap );
+		Renderer::Get()->GetDevice()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
+		g_pd3dSrvDescHeapAlloc.Create( Renderer::Get()->GetDevice(), g_pd3dSrvDescHeap );
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -55,13 +53,12 @@ namespace Drn
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		//auto Wind = GameFramework::Get().GetWindowByName( L"Clear Screen" );
 		ImGui_ImplWin32_Init(MainWindow->GetWindowHandle());
 
 		ImGui_ImplDX12_InitInfo init_info = {};
 
-		init_info.Device = pDevice;
-		init_info.CommandQueue         = Renderer::Get()->GetDevice()->GetCommandQueue().GetD3D12CommandQueue().Get();
+		init_info.Device = Renderer::Get()->GetDevice();
+		init_info.CommandQueue         = Renderer::Get()->GetCommandQueue();
 		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;

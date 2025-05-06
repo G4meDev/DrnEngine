@@ -43,13 +43,16 @@ namespace Drn
 		}
 	}
 
-	void Texture2D::UploadResources( dx12lib::CommandList* CommandList )
+	void Texture2D::UploadResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		// TODO: release intermediate resource
 
 		if (IsRenderStateDirty())
 		{
 			ReleaseResources();
+
+			Microsoft::WRL::ComPtr<ID3D12Device> Device;
+			CommandList->GetDevice(IID_PPV_ARGS(Device.GetAddressOf()));
 
 			D3D12_RESOURCE_DESC TextureDesc = {};
 			TextureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -70,7 +73,7 @@ namespace Drn
 			HeapProps.CreationNodeMask = 1;
 			HeapProps.VisibleNodeMask = 1;
 
-			CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &TextureDesc,
+			Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &TextureDesc,
 				D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_Resource));
 
 #if D3D12_Debug_INFO
@@ -86,11 +89,11 @@ namespace Drn
 
 			uint64 UploadBufferSize = GetRequiredIntermediateSize(m_Resource, 0, 1);
 
-			CommandList->GetDevice().GetD3D12Device()->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
+			Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
 				D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer( UploadBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
 				IID_PPV_ARGS( &m_IntermediateResource ) );
 
-			UpdateSubresources(CommandList->GetD3D12CommandList().Get(), m_Resource, m_IntermediateResource, 0, 0, 1, &TextureResource);
+			UpdateSubresources(CommandList, m_Resource, m_IntermediateResource, 0, 0, 1, &TextureResource);
 
 			ClearRenderStateDirty();
 		}
