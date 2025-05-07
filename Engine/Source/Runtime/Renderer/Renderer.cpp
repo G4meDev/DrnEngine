@@ -35,9 +35,15 @@ namespace Drn
 
 	void Renderer::Init_Internal() 
 	{
+#if D3D12_DEBUG_LAYER
+		ComPtr<ID3D12Debug> debugInterface;
+		D3D12GetDebugInterface( IID_PPV_ARGS( &debugInterface ) );
+		debugInterface->EnableDebugLayer();
+#endif
+
 		ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = 0;
-#if WITH_EDITOR
+#if D3D12_DEBUG_LAYER
 		createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 #endif
 		CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory));
@@ -45,7 +51,7 @@ namespace Drn
 		ComPtr<IDXGIAdapter1> dxgiAdapter1;
 		ComPtr<IDXGIAdapter4> dxgiAdapter4;
 
-		bool UseWarp = true;
+		bool UseWarp = false;
 
 		if (UseWarp)
 		{
@@ -72,7 +78,12 @@ namespace Drn
 			}
 		}
 
-		D3D12CreateDevice(dxgiAdapter4.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(m_Device.GetAddressOf()));
+		D3D12CreateDevice(dxgiAdapter4.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(m_Device.GetAddressOf()));
+
+		DXGI_ADAPTER_DESC3 Desc;
+		dxgiAdapter4->GetDesc3(&Desc);
+
+		LOG( LogRenderer, Info, "%s", StringHelper::ws2s(Desc.Description).c_str() );
 
 #if WITH_EDITOR && 0
 		ComPtr<ID3D12InfoQueue> pInfoQueue;
@@ -102,7 +113,7 @@ namespace Drn
 			NewFilter.DenyList.NumIDs = _countof(DenyIds);
 			NewFilter.DenyList.pIDList = DenyIds;
  
-			ThrowIfFailed(pInfoQueue->PushStorageFilter(&NewFilter));
+			pInfoQueue->PushStorageFilter(&NewFilter);
 		}
 #endif
 
@@ -110,9 +121,6 @@ namespace Drn
 		CommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
 		m_Device->CreateCommandQueue(&CommandQueueDesc, IID_PPV_ARGS(m_CommandQueue.GetAddressOf()));
-		m_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_CommandAllocator.GetAddressOf()));
-		m_Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator.Get(), NULL, IID_PPV_ARGS(m_CommandList.GetAddressOf()));
-		//m_CommandList->Close();
 
 		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 		swapChainDesc.Width                 = m_MainWindow->GetWindowSize().X;
@@ -126,6 +134,9 @@ namespace Drn
 		swapChainDesc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		swapChainDesc.AlphaMode             = DXGI_ALPHA_MODE_UNSPECIFIED;
 
+		m_TearingSupported = CheckTearingSupport();
+		swapChainDesc.Flags = m_TearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
 		ComPtr<IDXGISwapChain1> swapChain1;
 		dxgiFactory->CreateSwapChainForHwnd( m_CommandQueue.Get(), m_MainWindow->GetWindowHandle(), &swapChainDesc, nullptr, nullptr, &swapChain1 );
 		swapChain1.As( &m_SwapChain );
@@ -137,6 +148,12 @@ namespace Drn
 
 		m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_RTVDescriptorHeap));
 		UpdateRenderTargetViews();
+
+		for (int i = 0; i < NUM_BACKBUFFERS; i++)
+		{
+			m_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_CommandAllocator[i].GetAddressOf()));
+		}
+		m_Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator[m_CurrentBackbufferIndex].Get(), NULL, IID_PPV_ARGS(m_CommandList.GetAddressOf()));
 
 		m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
 		m_FenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -162,6 +179,28 @@ namespace Drn
 		Flush();
 	}
 
+	bool Renderer::CheckTearingSupport()
+	{
+		BOOL allowTearing = FALSE;
+
+		ComPtr<IDXGIFactory4> factory4;
+		if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
+		{
+			ComPtr<IDXGIFactory5> factory5;
+			if (SUCCEEDED(factory4.As(&factory5)))
+			{
+				if (FAILED(factory5->CheckFeatureSupport(
+					DXGI_FEATURE_PRESENT_ALLOW_TEARING, 
+					&allowTearing, sizeof(allowTearing))))
+				{
+					allowTearing = FALSE;
+				}
+			}
+		}
+
+		return allowTearing == TRUE;
+	}
+
 	void Renderer::UpdateRenderTargetViews()
 	{
 		m_RTVDescriporSize = m_Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -178,42 +217,66 @@ namespace Drn
 		}
 	}
 
-	uint64_t Renderer::Signal()
+	uint64_t Renderer::Signal( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
+			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue )
 	{
-		uint64 fenceValueForSignal = ++m_FenceValue;
-		m_CommandQueue->Signal( m_Fence.Get(), fenceValueForSignal );
+		uint64_t fenceValueForSignal = ++fenceValue;
+		commandQueue->Signal( fence.Get(), fenceValueForSignal );
 
 		return fenceValueForSignal;
 	}
 
-	void Renderer::WaitForFenceValue( uint64 Value )
+	void Renderer::WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent )
 	{
-		if ( m_Fence->GetCompletedValue() < Value )
+		if (fence->GetCompletedValue() < fenceValue)
 		{
-			m_Fence->SetEventOnCompletion( Value, m_FenceEvent );
-			WaitForSingleObject( m_FenceEvent, static_cast<DWORD>( std::chrono::milliseconds::max().count() ) );
+			fence->SetEventOnCompletion(fenceValue, fenceEvent);
+			WaitForSingleObject(fenceEvent, DWORD_MAX);
 		}
+	}
+
+	void Renderer::Flush( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
+			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue, HANDLE fenceEvent )
+	{
+		uint64_t fenceValueForSignal = Signal(commandQueue, fence, fenceValue);
+		WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
 	}
 
 	void Renderer::Flush()
 	{
-		Renderer::Get()->GetCommandList()->Close();
-		ID3D12CommandList* const CommandLists[1] = { m_CommandList.Get() };
-		m_CommandQueue->ExecuteCommandLists(1, CommandLists);
+		Flush(m_CommandQueue, m_Fence, m_FenceValue, m_FenceEvent);
+	}
 
-		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	// void Renderer::Flush()
+	//{
+	//	SCOPE_STAT( RendererFlush );
+	//
+	//	//Renderer::Get()->GetCommandList()->Close();
+	//	//ID3D12CommandList* const CommandLists[1] = { m_CommandList.Get() };
+	//	//m_CommandQueue->ExecuteCommandLists(1, CommandLists);
+	//
+	//	//std::this_thread::sleep_for(std::chrono::milliseconds(1));
+	//
+	//	uint64_t fenceValueForSignal = Signal();
+	//	WaitForFenceValue(fenceValueForSignal);
+	//
+	//	//m_CommandList->Reset( m_CommandAllocator.Get(), NULL );
+	//}
 
-		uint64_t fenceValueForSignal = Signal();
-		WaitForFenceValue(fenceValueForSignal);
 
-		//m_CommandAllocator->Reset();
-		m_CommandList->Reset( m_CommandAllocator.Get(), NULL );
+	void Renderer::ReportLiveObjects()
+	{
+		IDXGIDebug1* dxgiDebug;
+		DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
+
+		dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
+		dxgiDebug->Release();
 	}
 
 	void Renderer::Shutdown()
 	{
 		LOG(LogRenderer, Info, "Renderer shutdown.");
-
+		SingletonInstance->Flush();
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Shutdown();
@@ -224,22 +287,12 @@ namespace Drn
 			delete S;
 		}
 
-		SingletonInstance->Flush();
 		CloseHandle(SingletonInstance->m_FenceEvent);
 
-		IDXGIDebug1* dxgiDebug;
-		DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
-
-		dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
-		dxgiDebug->Release();
+		SingletonInstance->ReportLiveObjects();
 
 		delete SingletonInstance;
 		SingletonInstance = nullptr;
-	}
-
-	void Renderer::ToggleSwapChain() 
-	{
-		//m_SwapChain->ToggleVSync();
 	}
 
 	void Renderer::MainWindowResized( const IntPoint& NewSize ) 
@@ -250,6 +303,7 @@ namespace Drn
 		for ( int i = 0; i < NUM_BACKBUFFERS; ++i )
 		{
 			m_BackBuffers[i].Reset();
+			m_FrameFenceValues[i] = m_FrameFenceValues[m_CurrentBackbufferIndex];
 		}
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
@@ -260,7 +314,7 @@ namespace Drn
 		UpdateRenderTargetViews();
 
 #ifndef WITH_EDITOR
-		m_MainSceneRenderer->ResizeView(IntPoint(InWidth, InHeight));
+		m_MainSceneRenderer->ResizeView(NewSize);
 #endif
 	}
 
@@ -271,9 +325,9 @@ namespace Drn
 		// @TODO: move time to accessible location
 		TotalTime += DeltaTime;
 
-		//m_CommandList->Close();
-		//m_CommandAllocator->Reset();
-		//m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
+		auto commandAllocator = m_CommandAllocator[m_CurrentBackbufferIndex];
+		commandAllocator->Reset();
+		m_CommandList->Reset(commandAllocator.Get(), nullptr);
 
 		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 		auto backBuffer = m_BackBuffers[m_CurrentBackbufferIndex];
@@ -288,11 +342,6 @@ namespace Drn
 
 		m_CommandList->ClearRenderTargetView( rtv, clearColor, 0, nullptr );
 
-		//auto  msaaRenderTarget    = MainSceneRenderer->m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
-#ifndef WITH_EDITOR
-		auto  msaaRenderTarget    = m_MainSceneRenderer->m_RenderTarget.GetTexture( dx12lib::AttachmentPoint::Color0 );
-#endif
-
 		for (Scene* S : m_AllocatedScenes)
 		{
 			S->Render(m_CommandList.Get());
@@ -302,29 +351,47 @@ namespace Drn
 		m_CommandList->OMSetRenderTargets(1, &rtv, false, NULL);
 		ImGuiRenderer::Get()->Tick( 1, rtv, m_CommandList.Get() );
 #else
-		// m_CommandList->ResolveSubresource( swapChainBackBuffer, msaaRenderTarget );
-		m_CommandList->CopyResource( swapChainBackBuffer, msaaRenderTarget );
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->m_ColorTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
+		m_CommandList->ResourceBarrier( 1, &barrier );
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST );
+		m_CommandList->ResourceBarrier( 1, &barrier );
+
+		m_CommandList->CopyResource(backBuffer.Get(), m_MainSceneRenderer->m_ColorTarget.Get());
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->m_ColorTarget.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
+		m_CommandList->ResourceBarrier( 1, &barrier );
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET );
+		m_CommandList->ResourceBarrier( 1, &barrier );
+
 #endif
+
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
 		m_CommandList->ResourceBarrier( 1, &barrier );
 
-		//m_CommandList->Close();
-		//ID3D12CommandList* const commandLists[] = { m_CommandList.Get() };
 		SCOPE_STAT( RendererExecuteCommandList );
-		Flush();
-		//m_CommandQueue->ExecuteCommandLists( 1, commandLists );
-		//Signal();
+		
+		m_CommandList->Close();
+		ID3D12CommandList* const commandLists[] = { m_CommandList.Get() };
+		m_CommandQueue->ExecuteCommandLists( 1, commandLists );
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->PostExecuteCommands();
 #endif
 
-		m_SwapChain->Present( 0, 0);
+		m_FrameFenceValues[m_CurrentBackbufferIndex] = Signal( m_CommandQueue, m_Fence, m_FenceValue );
+
+		UINT syncInterval = m_Vsync ? 1 : 0;
+		UINT presentFlags = m_TearingSupported && !m_Vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+
+		m_SwapChain->Present( syncInterval, presentFlags);
 		m_CurrentBackbufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 
-		//Flush();
+		SCOPE_STAT( RendererWait );
+		WaitForFenceValue( m_Fence, m_FrameFenceValues[m_CurrentBackbufferIndex], m_FenceEvent );
+		//std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )

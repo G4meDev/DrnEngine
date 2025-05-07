@@ -87,16 +87,6 @@ namespace Drn
 		}
 	}
 
-#if WITH_EDITOR
-	void Material::Import()
-	{
-		AssetImporterMaterial::Import( this, m_SourcePath );
-		Save();
-		Load();
-
-		m_LoadedOnGPU = false;
-	}
-
 	void Material::ReleaseShaderBlobs()
 	{
 		if (m_VS_Blob)
@@ -135,6 +125,17 @@ namespace Drn
 			m_CS_Blob = nullptr;
 		}
 	}
+
+#if WITH_EDITOR
+	void Material::Import()
+	{
+		AssetImporterMaterial::Import( this, m_SourcePath );
+		Save();
+		Load();
+
+		m_LoadedOnGPU = false;
+	}
+
 
 	void Material::OpenAssetPreview()
 	{
@@ -189,7 +190,7 @@ namespace Drn
 		{
 			if ( pRootSigError )
 			{
-				LOG(LogAssetImporterMaterial, Error, "Shader compile failed. %s", (char*)pRootSigError->GetBufferPointer());
+				//LOG(LogAssetImporterMaterial, Error, "Shader compile failed. %s", (char*)pRootSigError->GetBufferPointer());
 				pRootSigError->Release();
 			}
 

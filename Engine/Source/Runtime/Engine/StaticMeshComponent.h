@@ -33,6 +33,8 @@ namespace Drn
 
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<Material>& InMaterial);
 
+		void RefreshOverrideMaterials();
+
 #if WITH_EDITOR
 
 		virtual void DrawDetailPanel(float DeltaTime) override;
@@ -40,7 +42,6 @@ namespace Drn
 		void ClearMesh();
 
 		void UpdateMeshWithPath(const char* NewPath);
-		void RefreshOverrideMaterials();
 
 		bool IsUsingMaterial(const AssetHandle<Material>& Mat);
 #endif

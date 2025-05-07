@@ -186,6 +186,33 @@ namespace Drn
 		}
 	}
 
+
+	bool StaticMeshComponent::IsUsingMaterial( const AssetHandle<Material>& Mat )
+	{
+		for (const MaterialOverrideData& MD : m_OverrideMaterials)
+		{
+			if (MD.m_Overriden && MD.m_Material.GetPath() == Mat.GetPath())
+			{
+				return true;
+			}
+		}
+
+		if (Mesh.IsValid())
+		{
+			for (const MaterialData& MD : Mesh->Data.Materials)
+			{
+				if (MD.m_Material.GetPath() == Mat.GetPath())
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+#endif
+
 	void StaticMeshComponent::RefreshOverrideMaterials()
 	{
 		MarkRenderStateDirty();
@@ -220,29 +247,4 @@ namespace Drn
 		}
 	}
 
-	bool StaticMeshComponent::IsUsingMaterial( const AssetHandle<Material>& Mat )
-	{
-		for (const MaterialOverrideData& MD : m_OverrideMaterials)
-		{
-			if (MD.m_Overriden && MD.m_Material.GetPath() == Mat.GetPath())
-			{
-				return true;
-			}
-		}
-
-		if (Mesh.IsValid())
-		{
-			for (const MaterialData& MD : Mesh->Data.Materials)
-			{
-				if (MD.m_Material.GetPath() == Mat.GetPath())
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-#endif
 }

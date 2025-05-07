@@ -30,5 +30,8 @@ namespace Drn
 		HINSTANCE m_hInstance;
 
 		double m_ApplicationTime;
+
+	private:
+		void AllocateCons();
 	};
 }
