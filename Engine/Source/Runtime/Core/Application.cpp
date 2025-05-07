@@ -128,6 +128,8 @@ namespace Drn
 
 	void Application::Shutdown()
 	{
+		Renderer::Get()->Flush();
+
 #if WITH_EDITOR
 		Editor::Get()->Shutdown();
 #endif
@@ -143,7 +145,7 @@ namespace Drn
 		delete m_MainWindow;
 		m_MainWindow = nullptr;
 
-		//atexit( &dx12lib::Device::ReportLiveObjects );
+		std::atexit(Renderer::ReportLiveObjects);
 	}
 
 	void Application::Tick( float DeltaTime )

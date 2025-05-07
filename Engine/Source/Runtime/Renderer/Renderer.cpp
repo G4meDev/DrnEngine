@@ -20,6 +20,11 @@ namespace Drn
 		
 	}
 
+	Renderer::~Renderer()
+	{
+		//m_Device->Release();
+	}
+
 	Renderer* Renderer::Get()
 	{
 		return SingletonInstance;
@@ -69,7 +74,7 @@ namespace Drn
 
 				if ((dxgiAdapterDesc1.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0 &&
 					SUCCEEDED(D3D12CreateDevice(dxgiAdapter1.Get(), 
-						D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr)) && 
+						D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), nullptr)) && 
 					dxgiAdapterDesc1.DedicatedVideoMemory > maxDedicatedVideoMemory )
 				{
 					maxDedicatedVideoMemory = dxgiAdapterDesc1.DedicatedVideoMemory;
@@ -78,7 +83,11 @@ namespace Drn
 			}
 		}
 
-		D3D12CreateDevice(dxgiAdapter4.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(m_Device.GetAddressOf()));
+		D3D12CreateDevice(dxgiAdapter4.Get(), D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(m_Device.GetAddressOf()));
+
+#if D3D12_Debug_INFO
+		m_Device->SetName(L"MainDevice");
+#endif
 
 		DXGI_ADAPTER_DESC3 Desc;
 		dxgiAdapter4->GetDesc3(&Desc);
@@ -154,6 +163,7 @@ namespace Drn
 			m_Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_CommandAllocator[i].GetAddressOf()));
 		}
 		m_Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator[m_CurrentBackbufferIndex].Get(), NULL, IID_PPV_ARGS(m_CommandList.GetAddressOf()));
+		m_CommandList->Close();
 
 		m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
 		m_FenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -176,7 +186,11 @@ namespace Drn
 		ImGuiRenderer::Get()->Init(m_MainWindow);
 #endif
 
-		Flush();
+		auto commandAllocator = m_CommandAllocator[m_CurrentBackbufferIndex];
+		commandAllocator->Reset();
+		m_CommandList->Reset(commandAllocator.Get(), nullptr);
+
+		//Flush();
 	}
 
 	bool Renderer::CheckTearingSupport()
@@ -238,8 +252,18 @@ namespace Drn
 	void Renderer::Flush( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
 			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue, HANDLE fenceEvent )
 	{
+		SCOPE_STAT( RendererFlush );
+
+		//uint64_t fenceValueForSignal = Signal(commandQueue, fence, fenceValue);
+		//WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
+
+		Renderer::Get()->GetCommandList()->Close();
+		ID3D12CommandList* const CommandLists[1] = { m_CommandList.Get() };
+		m_CommandQueue->ExecuteCommandLists(1, CommandLists);
 		uint64_t fenceValueForSignal = Signal(commandQueue, fence, fenceValue);
 		WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
+
+		m_CommandList->Reset( m_CommandAllocator[m_CurrentBackbufferIndex].Get(), NULL );
 	}
 
 	void Renderer::Flush()
@@ -247,36 +271,19 @@ namespace Drn
 		Flush(m_CommandQueue, m_Fence, m_FenceValue, m_FenceEvent);
 	}
 
-	// void Renderer::Flush()
-	//{
-	//	SCOPE_STAT( RendererFlush );
-	//
-	//	//Renderer::Get()->GetCommandList()->Close();
-	//	//ID3D12CommandList* const CommandLists[1] = { m_CommandList.Get() };
-	//	//m_CommandQueue->ExecuteCommandLists(1, CommandLists);
-	//
-	//	//std::this_thread::sleep_for(std::chrono::milliseconds(1));
-	//
-	//	uint64_t fenceValueForSignal = Signal();
-	//	WaitForFenceValue(fenceValueForSignal);
-	//
-	//	//m_CommandList->Reset( m_CommandAllocator.Get(), NULL );
-	//}
-
-
 	void Renderer::ReportLiveObjects()
 	{
 		IDXGIDebug1* dxgiDebug;
 		DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
 
-		dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL );
+		dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL );
 		dxgiDebug->Release();
 	}
 
 	void Renderer::Shutdown()
 	{
 		LOG(LogRenderer, Info, "Renderer shutdown.");
-		SingletonInstance->Flush();
+		//SingletonInstance->Flush();
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Shutdown();
@@ -284,12 +291,10 @@ namespace Drn
 
 		for (Scene* S : SingletonInstance->m_AllocatedScenes)
 		{
-			delete S;
+			S->Release();
 		}
 
 		CloseHandle(SingletonInstance->m_FenceEvent);
-
-		SingletonInstance->ReportLiveObjects();
 
 		delete SingletonInstance;
 		SingletonInstance = nullptr;
@@ -325,9 +330,9 @@ namespace Drn
 		// @TODO: move time to accessible location
 		TotalTime += DeltaTime;
 
-		auto commandAllocator = m_CommandAllocator[m_CurrentBackbufferIndex];
-		commandAllocator->Reset();
-		m_CommandList->Reset(commandAllocator.Get(), nullptr);
+		//auto commandAllocator = m_CommandAllocator[m_CurrentBackbufferIndex];
+		//commandAllocator->Reset();
+		//m_CommandList->Reset(commandAllocator.Get(), nullptr);
 
 		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 		auto backBuffer = m_BackBuffers[m_CurrentBackbufferIndex];
@@ -366,7 +371,6 @@ namespace Drn
 
 #endif
 
-
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
 		m_CommandList->ResourceBarrier( 1, &barrier );
@@ -391,7 +395,10 @@ namespace Drn
 
 		SCOPE_STAT( RendererWait );
 		WaitForFenceValue( m_Fence, m_FrameFenceValues[m_CurrentBackbufferIndex], m_FenceEvent );
-		//std::this_thread::sleep_for(std::chrono::milliseconds(2));
+
+		auto commandAllocator = m_CommandAllocator[m_CurrentBackbufferIndex];
+		commandAllocator->Reset();
+		m_CommandList->Reset(commandAllocator.Get(), nullptr);
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )

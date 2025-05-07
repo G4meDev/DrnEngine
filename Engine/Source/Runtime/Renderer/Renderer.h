@@ -21,6 +21,8 @@ namespace Drn
 	public:
 		
 		Renderer();
+		virtual ~Renderer();
+
 
 		static void Init(HINSTANCE inhInstance, Window* InMainWindow);
 		static void Shutdown();
@@ -29,7 +31,7 @@ namespace Drn
 
 		static Renderer* Get();
 
-		inline ID3D12Device* GetDevice() { return m_Device.Get(); }
+		inline ID3D12Device* GetD3D12Device() { return m_Device.Get(); }
 		inline ID3D12CommandQueue* GetCommandQueue() { return m_CommandQueue.Get(); }
 
 		inline Window* GetMainWindow() { return m_MainWindow; }
@@ -68,7 +70,7 @@ namespace Drn
 
 		void Flush();
 
-		void ReportLiveObjects();
+		static void ReportLiveObjects();
 
 		inline void ToggleVSync()
 		{

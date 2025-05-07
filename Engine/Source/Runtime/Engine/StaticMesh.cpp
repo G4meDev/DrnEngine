@@ -73,10 +73,8 @@ namespace Drn
 
 		for (int i = 0; i < Data.MeshesData.size(); i++)
 		{
+			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 			StaticMeshSlotData& Proxy = Data.MeshesData[i];
-
-			Microsoft::WRL::ComPtr<ID3D12Device> Device;
-			CommandList->GetDevice( IID_PPV_ARGS( Device.GetAddressOf() ) );
 
 			Device->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,

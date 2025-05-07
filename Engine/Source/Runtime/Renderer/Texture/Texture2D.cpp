@@ -51,8 +51,7 @@ namespace Drn
 		{
 			ReleaseResources();
 
-			Microsoft::WRL::ComPtr<ID3D12Device> Device;
-			CommandList->GetDevice(IID_PPV_ARGS(Device.GetAddressOf()));
+			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 			D3D12_RESOURCE_DESC TextureDesc = {};
 			TextureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;

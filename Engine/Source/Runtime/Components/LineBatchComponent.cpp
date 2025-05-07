@@ -180,8 +180,7 @@ namespace Drn
 
 	void LineBatchSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		Microsoft::WRL::ComPtr<ID3D12Device> Device;
-		CommandList->GetDevice(IID_PPV_ARGS(Device.GetAddressOf()));
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		Device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),

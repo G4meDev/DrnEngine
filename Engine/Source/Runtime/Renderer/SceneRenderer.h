@@ -38,8 +38,6 @@ namespace Drn
 
 		Scene* m_Scene;
 
-		Microsoft::WRL::ComPtr<ID3D12Device> m_Device;
-
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
 

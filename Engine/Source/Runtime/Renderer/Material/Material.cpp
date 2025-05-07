@@ -203,9 +203,7 @@ namespace Drn
 			return;
 		}
 
-		Microsoft::WRL::ComPtr<ID3D12Device> Device;
-		CommandList->GetDevice( IID_PPV_ARGS( Device.GetAddressOf() ) );
-
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));

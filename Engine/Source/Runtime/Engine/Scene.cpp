@@ -23,7 +23,7 @@ namespace Drn
 		{
 			SceneRenderer* SceneRen = *it;
 			it = m_SceneRenderers.erase(it);
-			delete SceneRen;
+			SceneRen->Release();
 		}
 	}
 

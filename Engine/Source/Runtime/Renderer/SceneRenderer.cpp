@@ -23,19 +23,19 @@ namespace Drn
 
 	void SceneRenderer::Init(ID3D12GraphicsCommandList2* CommandList)
 	{
-		CommandList->GetDevice(IID_PPV_ARGS(m_Device.ReleaseAndGetAddressOf()));
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
 		dsvHeapDesc.NumDescriptors = 1;
 		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		m_Device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap));
+		Device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap));
 
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
 		rtvHeapDesc.NumDescriptors = 1;
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		m_Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RTVHeap));
+		Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RTVHeap));
 
 		ResizeView(IntPoint(1920, 1080));
 	}
@@ -84,6 +84,7 @@ namespace Drn
 	void SceneRenderer::ResizeView( const IntPoint& InSize )
 	{
 		Renderer::Get()->Flush();
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		m_RenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
 		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(m_RenderSize.X), static_cast<float>(m_RenderSize.Y));
@@ -91,11 +92,10 @@ namespace Drn
 		optimizedClearValue.Format = DEPTH_FORMAT;
 		optimizedClearValue.DepthStencil = { 1.0f, 0 };
 
-		m_Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(DEPTH_FORMAT, m_RenderSize.X, m_RenderSize.Y,
 			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL), D3D12_RESOURCE_STATE_DEPTH_WRITE,
-			//&optimizedClearValue, IID_PPV_ARGS(m_DepthTarget.ReleaseAndGetAddressOf()) );
-			&optimizedClearValue, IID_PPV_ARGS(m_DepthTarget.GetAddressOf()) );
+			&optimizedClearValue, IID_PPV_ARGS(m_DepthTarget.ReleaseAndGetAddressOf()) );
 
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
 		dsv.Format = DEPTH_FORMAT;
@@ -103,7 +103,7 @@ namespace Drn
 		dsv.Texture2D.MipSlice = 0;
 		dsv.Flags = D3D12_DSV_FLAG_NONE;
 
-		m_Device->CreateDepthStencilView(m_DepthTarget.Get(), &dsv, m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
+		Device->CreateDepthStencilView(m_DepthTarget.Get(), &dsv, m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
 
 #if D3D12_Debug_INFO
 		m_DepthTarget->SetName( L"Depth Render Target" );
@@ -118,18 +118,17 @@ namespace Drn
 		colorClearValue.Color[2] = 0.9f;
 		colorClearValue.Color[3] = 1.0f;
 
-		m_Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(DISPLAY_OUTPUT_FORMAT, m_RenderSize.X, m_RenderSize.Y,
 			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET), D3D12_RESOURCE_STATE_RENDER_TARGET,
-			//&colorClearValue, IID_PPV_ARGS(m_ColorTarget.ReleaseAndGetAddressOf()) );
-			&colorClearValue, IID_PPV_ARGS(m_ColorTarget.GetAddressOf()) );
+			&colorClearValue, IID_PPV_ARGS(m_ColorTarget.ReleaseAndGetAddressOf()) );
 
 		D3D12_RENDER_TARGET_VIEW_DESC rtv = {};
 		rtv.Format = DISPLAY_OUTPUT_FORMAT;
 		rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		rtv.Texture2D.MipSlice = 0;
 
-		m_Device->CreateRenderTargetView(m_ColorTarget.Get(), &rtv, m_RTVHeap->GetCPUDescriptorHandleForHeapStart());
+		Device->CreateRenderTargetView(m_ColorTarget.Get(), &rtv, m_RTVHeap->GetCPUDescriptorHandleForHeapStart());
 
 #if D3D12_Debug_INFO
 		m_ColorTarget->SetName( L"Color Render Target" );
