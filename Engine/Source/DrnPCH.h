@@ -20,6 +20,9 @@
 #include "Runtime/Engine/StaticMeshActor.h"
 #include "Runtime/Engine/CameraActor.h"
 
+#include "Runtime/Renderer/Device.h"
+#include "Runtime/Renderer/SwapChain.h"
+
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/SceneRenderer.h"
 #include "Runtime/Renderer/InputLayout.h"

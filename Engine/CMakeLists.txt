@@ -30,6 +30,8 @@ set( HEADER_FILES
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/SceneRenderer.h
+	Source/Runtime/Renderer/Device.h
+	Source/Runtime/Renderer/SwapChain.h
 	Source/Runtime/Renderer/InputLayout.h
 	Source/Runtime/Renderer/StaticMeshSceneProxy.h
 	Source/Runtime/Renderer/D3D12Utils.h
@@ -136,6 +138,8 @@ set( SOURCE_FILES
 	
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/SceneRenderer.cpp
+	Source/Runtime/Renderer/Device.cpp
+	Source/Runtime/Renderer/SwapChain.cpp
 	Source/Runtime/Renderer/InputLayout.cpp
 	Source/Runtime/Renderer/StaticMeshSceneProxy.cpp
 	Source/Runtime/Renderer/D3D12Utils.cpp

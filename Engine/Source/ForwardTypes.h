@@ -41,6 +41,9 @@ namespace Drn
 	class BodyInstance;
 	class BodySetup;
 
+	class Device;
+	class SwapChain;
+
 	class World;
 	class Level;
 	class Scene;
