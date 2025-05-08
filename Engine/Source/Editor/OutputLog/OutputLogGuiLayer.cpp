@@ -10,7 +10,9 @@ namespace Drn
 {
 	void OutputLogGuiLayer::Draw(float DeltaTime)
 	{
-		const std::vector<LogMessage>& Logs = OutputLog::Get()->GetLogMessages();
+		SCOPE_STAT(OutputLogGuiLayerDraw);
+
+		//const std::vector<LogMessage>& Logs = OutputLog::Get()->GetLogMessages();
 
 		if (!ImGui::Begin("OutputLog", (bool*)0, ImGuiWindowFlags_::ImGuiWindowFlags_MenuBar))
 		{

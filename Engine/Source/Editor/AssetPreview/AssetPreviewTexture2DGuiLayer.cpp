@@ -40,6 +40,8 @@ namespace Drn
 
 	void AssetPreviewTexture2DGuiLayer::Draw( float DeltaTime )
 	{
+		SCOPE_STAT(Texture2DPreviewGuiLayerDraw);
+
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);
 		name = Path::RemoveFileExtension(name);

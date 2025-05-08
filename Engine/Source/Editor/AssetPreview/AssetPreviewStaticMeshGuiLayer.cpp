@@ -48,6 +48,8 @@ namespace Drn
 
 	void AssetPreviewStaticMeshGuiLayer::Draw( float DeltaTime )
 	{
+		SCOPE_STAT(StaticMeshPreviewGuiLayerDraw);
+
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);
 		name = Path::RemoveFileExtension(name);

@@ -33,7 +33,7 @@ namespace Drn
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		
-		Renderer::Get()->GetDevice()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
+		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
 
 	ViewportPanel::~ViewportPanel()
@@ -43,6 +43,8 @@ namespace Drn
 
 	void ViewportPanel::Draw( float DeltaTime )
 	{
+		SCOPE_STAT(ViewportPanelDraw);
+
 		if (CameraInputHandler.Tick(DeltaTime))
 		{
 			m_ViewportCamera->ApplyViewportInput(CameraInputHandler, CameraMovementSpeed, CameraRotationSpeed);
@@ -82,7 +84,7 @@ namespace Drn
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
 		//Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
-		Renderer::Get()->GetDevice()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
+		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
 
 }

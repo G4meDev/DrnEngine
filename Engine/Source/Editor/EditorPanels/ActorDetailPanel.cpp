@@ -21,6 +21,8 @@ namespace Drn
 
 	void ActorDetailPanel::Draw( float DeltaTime )
 	{
+		SCOPE_STAT(ActorDetailPanelDraw);
+
 		if (m_SelectedActor)
 		{
 			m_SelectedComponent = m_SelectedComponent ? m_SelectedComponent : m_SelectedActor->GetRoot();

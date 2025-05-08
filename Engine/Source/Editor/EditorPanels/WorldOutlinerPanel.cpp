@@ -24,6 +24,8 @@ namespace Drn
 
 	void WorldOutlinerPanel::Draw( float DeltaTime )
 	{
+		SCOPE_STAT( WorldOutlinerPanelDraw );
+
 		DrawMenu(DeltaTime);
 
 		ImGui::Separator();

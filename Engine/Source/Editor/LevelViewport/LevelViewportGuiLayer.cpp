@@ -30,6 +30,8 @@ namespace Drn
 
 	void LevelViewportGuiLayer::Draw( float DeltaTime )
 	{
+		SCOPE_STAT(LevelViewportGuiLayerDraw);
+
 		if (!ImGui::Begin(WorldManager::Get()->GetMainWorld()->m_WorldLabel.c_str()))
 		{
 			m_ViewportPanel->SetRenderingEnabled(false);

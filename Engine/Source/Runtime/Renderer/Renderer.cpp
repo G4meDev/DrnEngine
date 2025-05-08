@@ -90,6 +90,8 @@ namespace Drn
 	uint64_t Renderer::Signal( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
 			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue )
 	{
+		SCOPE_STAT(RendererSignal);
+
 		uint64_t fenceValueForSignal = ++fenceValue;
 		commandQueue->Signal( fence.Get(), fenceValueForSignal );
 
@@ -98,6 +100,8 @@ namespace Drn
 
 	void Renderer::WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent )
 	{
+		SCOPE_STAT(RendererWait);
+
 		if (fence->GetCompletedValue() < fenceValue)
 		{
 			fence->SetEventOnCompletion(fenceValue, fenceEvent);
@@ -212,19 +216,19 @@ namespace Drn
 			backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
 		m_CommandList->ResourceBarrier( 1, &barrier );
 
-		SCOPE_STAT( RendererExecuteCommandList );
-		
-		m_CommandList->Close();
-		ID3D12CommandList* const commandLists[] = { m_CommandList.Get() };
-		m_CommandQueue->ExecuteCommandLists( 1, commandLists );
+		{
+			SCOPE_STAT( RendererExecuteCommandList );
+			m_CommandList->Close();
+			ID3D12CommandList* const commandLists[] = { m_CommandList.Get() };
+			m_CommandQueue->ExecuteCommandLists( 1, commandLists );
+		}
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->PostExecuteCommands();
 #endif
-		
+
 		m_SwapChain->Present();
 
-		SCOPE_STAT( RendererWait );
 		WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
 
 		auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];

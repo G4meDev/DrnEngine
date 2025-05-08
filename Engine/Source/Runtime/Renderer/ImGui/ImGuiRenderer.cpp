@@ -30,8 +30,8 @@ namespace Drn
 		desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		desc.NumDescriptors             = 64;
 		desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		Renderer::Get()->GetDevice()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
-		g_pd3dSrvDescHeapAlloc.Create( Renderer::Get()->GetDevice(), g_pd3dSrvDescHeap );
+		Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
+		g_pd3dSrvDescHeapAlloc.Create( Renderer::Get()->GetD3D12Device(), g_pd3dSrvDescHeap );
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -57,7 +57,7 @@ namespace Drn
 
 		ImGui_ImplDX12_InitInfo init_info = {};
 
-		init_info.Device = Renderer::Get()->GetDevice();
+		init_info.Device = Renderer::Get()->GetD3D12Device();
 		init_info.CommandQueue         = Renderer::Get()->GetCommandQueue();
 		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -124,6 +124,8 @@ namespace Drn
 
 	void ImGuiRenderer::BeginDraw()
 	{
+		SCOPE_STAT(ImguiBeginDraw);
+
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
@@ -131,6 +133,8 @@ namespace Drn
 
 	void ImGuiRenderer::Draw( float DeltaTime )
 	{
+		SCOPE_STAT(ImguiDraw);
+
 		for ( auto it = Layers.begin(); it != Layers.end(); )
 		{
 			if ((*it)->m_Open == false)
@@ -155,8 +159,9 @@ namespace Drn
 
 	void ImGuiRenderer::EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL )
 	{
-		ImGui::Render();
+		SCOPE_STAT(ImguiEndDraw);
 
+		ImGui::Render();
 		CL->SetDescriptorHeaps( 1, &g_pd3dSrvDescHeap );
 
 		ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), CL );
@@ -164,6 +169,8 @@ namespace Drn
 
 	void ImGuiRenderer::PostExecuteCommands()
 	{
+		SCOPE_STAT(ImguiPostExecuteCommands);
+
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{

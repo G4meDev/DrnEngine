@@ -2,7 +2,7 @@
 
 #include "Windows.h"
 
-#define NUM_BACKBUFFERS 2
+#define NUM_BACKBUFFERS 3
 
 #define D3D12_DEBUG_LAYER 1
 

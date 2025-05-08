@@ -46,6 +46,8 @@ namespace Drn
 
 	void AssetPreviewMaterialGuiLayer::Draw( float DeltaTime )
 	{
+		SCOPE_STAT(MaterialPreviewGuiLayerDraw);
+
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);
 		name = Path::RemoveFileExtension(name);
