@@ -1,18 +1,17 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Renderer/BufferedResource.h"
 
 class ID3D12GraphicsCommandList2;
 
 namespace Drn
 {
-	class PrimitiveSceneProxy
+	class PrimitiveSceneProxy : public BufferedResource
 	{
 	public:
 		PrimitiveSceneProxy( const PrimitiveComponent* InComponent);
 		virtual ~PrimitiveSceneProxy();
-
-		virtual void Destroy();
 
 	protected:
 

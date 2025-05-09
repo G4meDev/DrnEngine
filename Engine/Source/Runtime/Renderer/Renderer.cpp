@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "Renderer.h"
+#include "BufferedResource.h"
 
 #include "Runtime/Core/Window.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
@@ -30,6 +31,7 @@ namespace Drn
 
 	void Renderer::Init( HINSTANCE inhInstance, Window* InMainWindow )
 	{
+		BufferedResourceManager::Init();
 		SingletonInstance = new Renderer();
 
 		SingletonInstance->m_MainWindow = InMainWindow;
@@ -129,6 +131,7 @@ namespace Drn
 	void Renderer::Flush()
 	{
 		Flush(m_CommandQueue, m_Fence, m_FenceValue, m_FenceEvent);
+		BufferedResourceManager::Get()->Flush();
 	}
 
 	void Renderer::ReportLiveObjects()
@@ -158,6 +161,8 @@ namespace Drn
 
 		delete SingletonInstance;
 		SingletonInstance = nullptr;
+
+		BufferedResourceManager::Shutdown();
 	}
 
 	void Renderer::MainWindowResized( const IntPoint& NewSize ) 
@@ -173,6 +178,8 @@ namespace Drn
 	void Renderer::Tick( float DeltaTime )
 	{
 		SCOPE_STAT(RendererTick);
+
+		BufferedResourceManager::Get()->Tick(DeltaTime);
 
 		// @TODO: move time to accessible location
 		TotalTime += DeltaTime;
@@ -246,6 +253,7 @@ namespace Drn
 
 	void Renderer::ReleaseScene( Scene*& InScene )
 	{
+		Flush();
 		m_AllocatedScenes.erase(InScene);
 
 		InScene->Release();

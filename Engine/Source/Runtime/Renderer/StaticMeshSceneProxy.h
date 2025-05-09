@@ -14,6 +14,8 @@ namespace Drn
 		StaticMeshSceneProxy(StaticMeshComponent* InStaticMeshComponent);
 		virtual ~StaticMeshSceneProxy();
 
+		inline bool IsMarkedPendingKill() const { return !m_OwningStaticMeshComponent; }
+		inline void MarkPendingKill() { m_OwningStaticMeshComponent = nullptr; }
 
 	protected:
 

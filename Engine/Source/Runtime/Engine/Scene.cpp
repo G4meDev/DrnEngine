@@ -16,7 +16,11 @@ namespace Drn
 	{
 		for (PrimitiveSceneProxy* Proxy : m_PrimitiveProxies)
 		{
-			delete Proxy;
+			Proxy->ReleaseBufferedResource();
+		}
+		for (PrimitiveSceneProxy* Proxy : m_PendingProxies)
+		{
+			Proxy->ReleaseBufferedResource();
 		}
 
 		for (auto it = m_SceneRenderers.begin(); it != m_SceneRenderers.end();)
@@ -59,17 +63,10 @@ namespace Drn
 
 	void Scene::OnNewActors( const std::set<Actor*>& NewActors )
 	{
-		//for (Actor* actor : NewActors)
-		//{
-		//	std::vector<StaticMeshComponent*> StaticMeshComponenets;
-		//	actor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
-		//}
 	}
 
 	void Scene::OnRemoveActor( const Actor* RemovedActor )
 	{
-		//std::vector<StaticMeshComponent*> StaticMeshComponenets;
-		//RemovedActor->GetRoot()->GetComponents<StaticMeshComponent>(StaticMeshComponenets, EComponentType::StaticMeshComponent, true);
 	}
 
 // ----------------------------------------------------------------------------
@@ -93,15 +90,20 @@ namespace Drn
 		}
 	}
 
-	void Scene::AddPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
+	void Scene::RegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
 	{
 		m_PendingProxies.insert(InPrimitiveSceneProxy);
 	}
 
-	void Scene::RemovePrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
+	void Scene::UnRegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
 	{
-		m_PendingProxies.erase(InPrimitiveSceneProxy);
-		m_PrimitiveProxies.erase(InPrimitiveSceneProxy);
+		if (InPrimitiveSceneProxy)
+		{
+			m_PendingProxies.erase(InPrimitiveSceneProxy);
+			m_PrimitiveProxies.erase(InPrimitiveSceneProxy);
+
+			InPrimitiveSceneProxy->ReleaseBufferedResource();
+		}
 	}
 
 }

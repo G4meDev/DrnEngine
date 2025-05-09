@@ -4,6 +4,7 @@
 namespace Drn
 {
 	PrimitiveSceneProxy::PrimitiveSceneProxy( const PrimitiveComponent* InComponent )
+		: BufferedResource()
 	{
 		
 	}
@@ -11,11 +12,6 @@ namespace Drn
 	PrimitiveSceneProxy::~PrimitiveSceneProxy()
 	{
 		
-	}
-
-	void PrimitiveSceneProxy::Destroy()
-	{
-		delete this;
 	}
 
 }

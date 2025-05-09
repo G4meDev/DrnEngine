@@ -88,16 +88,23 @@ namespace Drn
 		}
 
 		m_SceneProxy = new StaticMeshSceneProxy(this);
-		InOwningWorld->GetScene()->AddPrimitiveProxy(m_SceneProxy);
+		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_SceneProxy);
+
 	}
 
 	void StaticMeshComponent::UnRegisterComponent()
 	{
+		m_SceneProxy->MarkPendingKill();
 		if (GetWorld()->GetScene())
 		{
-			GetWorld()->GetScene()->RemovePrimitiveProxy(m_SceneProxy);
+			GetWorld()->GetScene()->UnRegisterPrimitiveProxy(m_SceneProxy);
 		}
-		delete m_SceneProxy;
+
+		//if (GetWorld()->GetScene())
+		//{
+		//	GetWorld()->GetScene()->RemovePrimitiveProxy(m_SceneProxy);
+		//}
+		//delete m_SceneProxy;
 
 		if (Mesh.IsValid())
 		{

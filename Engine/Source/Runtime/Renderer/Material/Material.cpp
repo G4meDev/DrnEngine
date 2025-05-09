@@ -236,6 +236,13 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState(&PipelineDesc, IID_PPV_ARGS(&m_BasePassPSO));
+
+#if D3D12_Debug_INFO
+		std::string name = Path::ConvertShortPath(m_Path);
+		name = Path::RemoveFileExtension(name);
+		m_BasePassPSO->SetName(StringHelper::s2ws(" BasePassPSO_" + name ).c_str());
+#endif
+
 		m_LoadedOnGPU = true;
 	}
 

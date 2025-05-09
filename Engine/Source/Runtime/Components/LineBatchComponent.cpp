@@ -40,17 +40,18 @@ namespace Drn
 		PrimitiveComponent::RegisterComponent(InOwningWorld);
 
 		m_SceneProxy = new LineBatchSceneProxy(this);
-		InOwningWorld->GetScene()->AddPrimitiveProxy(m_SceneProxy);
+		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_SceneProxy);
 	}
 
 	void LineBatchComponent::UnRegisterComponent()
 	{
+		//m_SceneProxy->
 		if (GetWorld()->GetScene())
 		{
-			GetWorld()->GetScene()->RemovePrimitiveProxy(m_SceneProxy);
+			GetWorld()->GetScene()->UnRegisterPrimitiveProxy(m_SceneProxy);
 		}
 
-		delete m_SceneProxy;
+		//delete m_SceneProxy;
 
 		PrimitiveComponent::UnRegisterComponent();
 	}

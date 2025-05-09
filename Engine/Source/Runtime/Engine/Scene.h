@@ -27,8 +27,8 @@ namespace Drn
 
 		void InitSceneRender(ID3D12GraphicsCommandList2* CommandList);
 
-		void AddPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
-		void RemovePrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
+		void RegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
+		void UnRegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 
 
 	protected:
