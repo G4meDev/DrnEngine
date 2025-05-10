@@ -88,7 +88,7 @@ namespace Drn
 		{
 			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-			desc.NumDescriptors             = 64;
+			desc.NumDescriptors             = 256;
 			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_SrvHeap.GetAddressOf() ) );
 			TempSRVAllocator.Create( Renderer::Get()->GetD3D12Device(), m_SrvHeap.Get() );
@@ -97,7 +97,7 @@ namespace Drn
 		{
 			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-			desc.NumDescriptors             = 64;
+			desc.NumDescriptors             = 256;
 			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_SamplerHeap.GetAddressOf() ) );
 			TempSamplerAllocator.Create( Renderer::Get()->GetD3D12Device(), m_SamplerHeap.Get() );
@@ -207,6 +207,9 @@ namespace Drn
 
 		// @TODO: move time to accessible location
 		TotalTime += DeltaTime;
+
+		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
+		m_CommandList->SetDescriptorHeaps(2, Descs);
 
 		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 		auto backBuffer = m_SwapChain->GetBackBuffer();

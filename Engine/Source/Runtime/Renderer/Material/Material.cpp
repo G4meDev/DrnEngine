@@ -51,11 +51,6 @@ namespace Drn
 		ReleaseShaderBlobs();
 		if (m_RootSignature) m_RootSignature->Release();
 		if (m_BasePassPSO) m_BasePassPSO->Release();
-
-		if (Renderer::Get())
-		{
-			Renderer::Get()->TempSamplerAllocator.Free(TestTextureSamplerCpuHandle, TestTextureSamplerGpuHandle);
-		}
 	}
 
 	EAssetType Material::GetAssetType() { return EAssetType::Material; }
@@ -192,21 +187,13 @@ namespace Drn
 			m_TestTexture.Load();
 			m_TestTexture->UploadResources(CommandList);
 
-			Renderer::Get()->TempSamplerAllocator.Alloc(&TestTextureSamplerCpuHandle, &TestTextureSamplerGpuHandle);
-
-			D3D12_SAMPLER_DESC SamplerDesc = {};
-			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			Device->CreateSampler(&SamplerDesc, TestTextureSamplerCpuHandle);
-
 			CD3DX12_ROOT_PARAMETER1 rootParameters[3];
 			rootParameters[0].InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_ALL );
 
 			CD3DX12_DESCRIPTOR_RANGE1 ranges[2];
 			// TODO: figure flags
-			ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
-			ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+			ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+			ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
 
 			rootParameters[1].InitAsDescriptorTable( 1, &ranges[0], D3D12_SHADER_VISIBILITY_ALL );
 			rootParameters[2].InitAsDescriptorTable( 1, &ranges[1], D3D12_SHADER_VISIBILITY_ALL );
@@ -282,6 +269,15 @@ namespace Drn
 #endif
 
 		m_LoadedOnGPU = true;
+	}
+
+	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		if (TestShader)
+		{
+			CommandList->SetGraphicsRootDescriptorTable( 1, m_TestTexture->SamplerGpuHandle);
+			CommandList->SetGraphicsRootDescriptorTable( 2, m_TestTexture->TextureGpuHandle );
+		}
 	}
 
 }

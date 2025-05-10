@@ -21,8 +21,13 @@ namespace Drn
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 
-		D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle;
+		D3D12_CPU_DESCRIPTOR_HANDLE TextureCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE TextureGpuHandle;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE SamplerCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE SamplerGpuHandle;
+
+		void ReleaseDescriptors();
 
 	protected:
 

@@ -25,9 +25,15 @@ namespace Drn
  
 	Texture2D::~Texture2D()
 	{
+		ReleaseDescriptors();
+	}
+
+	void Texture2D::ReleaseDescriptors()
+	{
 		if (Renderer::Get())
 		{
-			Renderer::Get()->TempSRVAllocator.Free(CpuHandle, GpuHandle);
+			Renderer::Get()->TempSRVAllocator.Free(TextureCpuHandle, TextureGpuHandle);
+			Renderer::Get()->TempSamplerAllocator.Free(SamplerCpuHandle, SamplerGpuHandle);
 		}
 	}
 
@@ -53,6 +59,7 @@ namespace Drn
 		if (IsRenderStateDirty())
 		{
 			ReleaseResources();
+			ReleaseDescriptors();
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
@@ -97,16 +104,30 @@ namespace Drn
 
 			UpdateSubresources(CommandList, m_Resource, m_IntermediateResource, 0, 0, 1, &TextureResource);
 
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				m_Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+			CommandList->ResourceBarrier(1, &barrier);
+
+
 			D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
 			ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			ResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			ResourceViewDesc.Format = m_Format;
-			//ResourceViewDesc.Buffer = ;
 			ResourceViewDesc.Texture2D.MipLevels = m_MipLevels;
 			ResourceViewDesc.Texture2D.MostDetailedMip = 0;
 
-			Renderer::Get()->TempSRVAllocator.Alloc(&CpuHandle, &GpuHandle);
-			Device->CreateShaderResourceView(m_Resource, &ResourceViewDesc, CpuHandle);
+			Renderer::Get()->TempSRVAllocator.Alloc(&TextureCpuHandle, &TextureGpuHandle);
+			Device->CreateShaderResourceView(m_Resource, &ResourceViewDesc, TextureCpuHandle);
+
+// -----------------------------------------------------------------------------------------------------------------------------
+
+			Renderer::Get()->TempSamplerAllocator.Alloc(&SamplerCpuHandle, &SamplerGpuHandle);
+
+			D3D12_SAMPLER_DESC SamplerDesc = {};
+			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			Device->CreateSampler(&SamplerDesc, SamplerCpuHandle);
 
 			ClearRenderStateDirty();
 		}

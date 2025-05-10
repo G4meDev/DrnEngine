@@ -58,7 +58,8 @@ namespace Drn
 		{
 			int cpu_idx = (int)( ( out_cpu_desc_handle.ptr - HeapStartCpu.ptr ) / HeapHandleIncrement );
 			int gpu_idx = (int)( ( out_gpu_desc_handle.ptr - HeapStartGpu.ptr ) / HeapHandleIncrement );
-			FreeIndices.push_back( cpu_idx );
+			if (cpu_idx == gpu_idx)
+				FreeIndices.push_back( cpu_idx );
 		}
 	};
 
@@ -132,6 +133,11 @@ namespace Drn
 
 		TempDescriptorHeapAllocator TempSamplerAllocator;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_SamplerHeap;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE LinearSamplerCpuHandle;
+		D3D12_CPU_DESCRIPTOR_HANDLE LinearSamplerGpuHandle;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE SamplerCpuHandle;
 
 	protected:
 		static Renderer* SingletonInstance;

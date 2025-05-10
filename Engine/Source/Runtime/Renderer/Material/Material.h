@@ -33,13 +33,12 @@ namespace Drn
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		inline bool IsLoadedOnGpu() const { return m_LoadedOnGPU; }
 
+		void BindResources( ID3D12GraphicsCommandList2* CommandList );
+
 		// TODO: Remove
 		bool TestShader;
 
 		AssetHandle<Texture2D> m_TestTexture;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE TestTextureSamplerCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE TestTextureSamplerGpuHandle;
 
 	protected:
 		virtual EAssetType GetAssetType() override;
