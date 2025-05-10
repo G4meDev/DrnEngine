@@ -11,10 +11,56 @@ LOG_DECLARE_CATEGORY( LogRenderer );
 
 class IDXGISwapChain4;
 
+// TODO: remove
+#include <imgui.h>
+
 namespace Drn
 {
 	class D3D12Scene;
 	class Window;
+
+	struct TempDescriptorHeapAllocator
+	{
+		ID3D12DescriptorHeap*       Heap     = nullptr;
+		D3D12_DESCRIPTOR_HEAP_TYPE  HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
+		D3D12_CPU_DESCRIPTOR_HANDLE HeapStartCpu;
+		D3D12_GPU_DESCRIPTOR_HANDLE HeapStartGpu;
+		UINT                        HeapHandleIncrement;
+		ImVector<int>               FreeIndices;
+
+		void Create( ID3D12Device* device, ID3D12DescriptorHeap* heap )
+		{
+			Heap                            = heap;
+			D3D12_DESCRIPTOR_HEAP_DESC desc = heap->GetDesc();
+			HeapType                        = desc.Type;
+			HeapStartCpu                    = Heap->GetCPUDescriptorHandleForHeapStart();
+			HeapStartGpu                    = Heap->GetGPUDescriptorHandleForHeapStart();
+			HeapHandleIncrement             = device->GetDescriptorHandleIncrementSize( HeapType );
+			FreeIndices.reserve( (int)desc.NumDescriptors );
+			for ( int n = desc.NumDescriptors; n > 0; n-- )
+				FreeIndices.push_back( n - 1 );
+		}
+		void Destroy()
+		{
+			Heap = nullptr;
+			FreeIndices.clear();
+		}
+		void Alloc( D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_desc_handle,
+					D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_desc_handle )
+		{
+			int idx = FreeIndices.back();
+			FreeIndices.pop_back();
+			out_cpu_desc_handle->ptr = HeapStartCpu.ptr + ( idx * HeapHandleIncrement );
+			out_gpu_desc_handle->ptr = HeapStartGpu.ptr + ( idx * HeapHandleIncrement );
+		}
+		void Free( D3D12_CPU_DESCRIPTOR_HANDLE out_cpu_desc_handle,
+					D3D12_GPU_DESCRIPTOR_HANDLE out_gpu_desc_handle )
+		{
+			int cpu_idx = (int)( ( out_cpu_desc_handle.ptr - HeapStartCpu.ptr ) / HeapHandleIncrement );
+			int gpu_idx = (int)( ( out_gpu_desc_handle.ptr - HeapStartGpu.ptr ) / HeapHandleIncrement );
+			FreeIndices.push_back( cpu_idx );
+		}
+	};
 
 	class Renderer
 	{
@@ -81,6 +127,12 @@ namespace Drn
 		uint64_t Signal( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
 			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue );
 
+		TempDescriptorHeapAllocator TempSRVAllocator;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_SrvHeap;
+
+		TempDescriptorHeapAllocator TempSamplerAllocator;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_SamplerHeap;
+
 	protected:
 		static Renderer* SingletonInstance;
 
@@ -88,6 +140,7 @@ namespace Drn
 		std::set<Scene*> m_AllocatedScenes;
 
 		void WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent );
+
 
 		friend class ViewportGuiLayer;
 		friend class World;

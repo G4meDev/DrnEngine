@@ -3,6 +3,8 @@
 #include "Editor/AssetPreview/AssetPreviewMaterialGuiLayer.h"
 #include "Editor/AssetImporter/AssetImporterMaterial.h"
 
+LOG_DEFINE_CATEGORY( LogMaterial, "Material" );
+
 namespace Drn
 {
 	Material::Material( const std::string& InPath )
@@ -49,6 +51,11 @@ namespace Drn
 		ReleaseShaderBlobs();
 		if (m_RootSignature) m_RootSignature->Release();
 		if (m_BasePassPSO) m_BasePassPSO->Release();
+
+		if (Renderer::Get())
+		{
+			Renderer::Get()->TempSamplerAllocator.Free(TestTextureSamplerCpuHandle, TestTextureSamplerGpuHandle);
+		}
 	}
 
 	EAssetType Material::GetAssetType() { return EAssetType::Material; }
@@ -163,25 +170,58 @@ namespace Drn
 	{
 		SCOPE_STAT(UploadResourceMaterial);
 
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
 		if (m_RootSignature) m_RootSignature->Release();
 		if (m_BasePassPSO) m_BasePassPSO->Release();
 
-		// TODO: figure something for deny flags
-		//D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
-		//	D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-		//	D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
-		//	D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
-		//	D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
-		//	D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS;
-
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-		CD3DX12_ROOT_PARAMETER1 rootParameters[1];
-		//rootParameters[0].InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX );
-		rootParameters[0].InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_ALL );
+		std::string n = m_Path;
+		n = Path::ConvertShortPath(n);
+		n = Path::RemoveFileExtension(n);
+		TestShader = n == "Test";
 
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(
-			_countof( rootParameters ), rootParameters, 0, nullptr, rootSignatureFlags );
+		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
+
+		if ( TestShader )
+		{
+			std::cout << "TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+
+			m_TestTexture = AssetHandle<Texture2D>( "Engine\\Content\\T_DebugIndexedColor.drn" );
+			m_TestTexture.Load();
+			m_TestTexture->UploadResources(CommandList);
+
+			Renderer::Get()->TempSamplerAllocator.Alloc(&TestTextureSamplerCpuHandle, &TestTextureSamplerGpuHandle);
+
+			D3D12_SAMPLER_DESC SamplerDesc = {};
+			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			Device->CreateSampler(&SamplerDesc, TestTextureSamplerCpuHandle);
+
+			CD3DX12_ROOT_PARAMETER1 rootParameters[3];
+			rootParameters[0].InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_ALL );
+
+			CD3DX12_DESCRIPTOR_RANGE1 ranges[2];
+			// TODO: figure flags
+			ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+			ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+
+			rootParameters[1].InitAsDescriptorTable( 1, &ranges[0], D3D12_SHADER_VISIBILITY_ALL );
+			rootParameters[2].InitAsDescriptorTable( 1, &ranges[1], D3D12_SHADER_VISIBILITY_ALL );
+
+			rootSignatureDescription = CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(_countof( rootParameters ), rootParameters, 0, nullptr, rootSignatureFlags );
+		}
+
+		else
+		{
+			CD3DX12_ROOT_PARAMETER1 rootParameters[1];
+			rootParameters[0].InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_ALL );
+
+			rootSignatureDescription = CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(_countof( rootParameters ), rootParameters, 0, nullptr, rootSignatureFlags );
+		}
+
 
 		ID3DBlob* pSerializedRootSig;
 		ID3DBlob* pRootSigError;
@@ -190,7 +230,7 @@ namespace Drn
 		{
 			if ( pRootSigError )
 			{
-				//LOG(LogAssetImporterMaterial, Error, "Shader compile failed. %s", (char*)pRootSigError->GetBufferPointer());
+				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
 				pRootSigError->Release();
 			}
 
@@ -202,8 +242,6 @@ namespace Drn
 
 			return;
 		}
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));

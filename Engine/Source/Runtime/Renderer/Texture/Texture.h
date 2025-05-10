@@ -78,6 +78,7 @@ protected:
 #endif
 
 		ID3D12Resource* m_Resource;
+		//D3D12_Res m_ResourceView;
 
 		// TODO: make single and souble buffer structures to delete this at start of next frame
 		ID3D12Resource* m_IntermediateResource;

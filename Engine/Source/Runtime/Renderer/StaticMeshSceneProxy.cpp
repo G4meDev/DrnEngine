@@ -79,6 +79,9 @@ namespace Drn
 
 	void StaticMeshSceneProxy::RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
+		ID3D12DescriptorHeap* const Descs[2] = { Renderer::Get()->m_SrvHeap.Get(), Renderer::Get()->m_SamplerHeap.Get() };
+		CommandList->SetDescriptorHeaps(2, Descs);
+
 		if (m_Mesh.IsValid())
 		{
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
@@ -103,6 +106,12 @@ namespace Drn
 				mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
+
+				if (Mat->TestShader)
+				{
+					CommandList->SetGraphicsRootDescriptorTable(1, Mat->m_TestTexture->GpuHandle);
+					CommandList->SetGraphicsRootDescriptorTable(2, Mat->TestTextureSamplerGpuHandle);
+				}
 
 				CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
 				CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );

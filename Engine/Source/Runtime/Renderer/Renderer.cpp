@@ -85,6 +85,24 @@ namespace Drn
 		commandAllocator->Reset();
 		m_CommandList->Reset(commandAllocator.Get(), nullptr);
 
+		{
+			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+			desc.NumDescriptors             = 64;
+			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_SrvHeap.GetAddressOf() ) );
+			TempSRVAllocator.Create( Renderer::Get()->GetD3D12Device(), m_SrvHeap.Get() );
+		}
+
+		{
+			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+			desc.NumDescriptors             = 64;
+			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_SamplerHeap.GetAddressOf() ) );
+			TempSamplerAllocator.Create( Renderer::Get()->GetD3D12Device(), m_SamplerHeap.Get() );
+		}
+
 		//Flush();
 	}
 
@@ -159,13 +177,19 @@ namespace Drn
 
 		CloseHandle(SingletonInstance->m_FenceEvent);
 
+		SingletonInstance->m_SrvHeap.Reset();
+		SingletonInstance->m_SamplerHeap.Reset();
+
+		SingletonInstance->TempSamplerAllocator.Destroy();
+		SingletonInstance->TempSRVAllocator.Destroy();
+
 		delete SingletonInstance;
 		SingletonInstance = nullptr;
 
 		BufferedResourceManager::Shutdown();
 	}
 
-	void Renderer::MainWindowResized( const IntPoint& NewSize ) 
+	void Renderer::MainWindowResized( const IntPoint& NewSize )
 	{
 		Flush();
 		m_SwapChain->Resize(NewSize);

@@ -4,6 +4,8 @@
 #include "Runtime/Core/Asset.h"
 #include "Runtime/Renderer/InputLayout.h"
 
+LOG_DECLARE_CATEGORY(LogMaterial);
+
 namespace Drn
 {
 	class AssetPreviewMaterialGuiLayer;
@@ -30,6 +32,14 @@ namespace Drn
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		inline bool IsLoadedOnGpu() const { return m_LoadedOnGPU; }
+
+		// TODO: Remove
+		bool TestShader;
+
+		AssetHandle<Texture2D> m_TestTexture;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE TestTextureSamplerCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE TestTextureSamplerGpuHandle;
 
 	protected:
 		virtual EAssetType GetAssetType() override;

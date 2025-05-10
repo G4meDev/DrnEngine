@@ -25,7 +25,10 @@ namespace Drn
  
 	Texture2D::~Texture2D()
 	{
-		
+		if (Renderer::Get())
+		{
+			Renderer::Get()->TempSRVAllocator.Free(CpuHandle, GpuHandle);
+		}
 	}
 
 	void Texture2D::Serialize( Archive& Ar )
@@ -93,6 +96,17 @@ namespace Drn
 				IID_PPV_ARGS( &m_IntermediateResource ) );
 
 			UpdateSubresources(CommandList, m_Resource, m_IntermediateResource, 0, 0, 1, &TextureResource);
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
+			ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			ResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			ResourceViewDesc.Format = m_Format;
+			//ResourceViewDesc.Buffer = ;
+			ResourceViewDesc.Texture2D.MipLevels = m_MipLevels;
+			ResourceViewDesc.Texture2D.MostDetailedMip = 0;
+
+			Renderer::Get()->TempSRVAllocator.Alloc(&CpuHandle, &GpuHandle);
+			Device->CreateShaderResourceView(m_Resource, &ResourceViewDesc, CpuHandle);
 
 			ClearRenderStateDirty();
 		}

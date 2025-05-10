@@ -21,6 +21,8 @@ namespace Drn
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 
+		D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle;
 
 	protected:
 
@@ -37,6 +39,5 @@ namespace Drn
 #endif
 
 		friend class AssetPreviewTexture2DGuiLayer;
-
 	};
 }
