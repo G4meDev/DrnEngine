@@ -7,6 +7,8 @@
 
 #include "imgui.h"
 
+LOG_DEFINE_CATEGORY( LogWorldOutliner, "WorldOutliner" );
+
 namespace Drn
 {
 	WorldOutlinerPanel::WorldOutlinerPanel(World* InWorld)
@@ -86,7 +88,7 @@ namespace Drn
 	{
 		if (actor)
 		{
-			std::cout << actor->GetActorLabel().c_str();
+			LOG( LogWorldOutliner, Info, "removing actor \"%s\"", actor->GetActorLabel().c_str());
 			ImGui::CloseCurrentPopup();
 
 			actor->Destroy();

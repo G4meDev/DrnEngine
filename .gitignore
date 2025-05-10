@@ -395,3 +395,9 @@ Intermediate/
 Bin/
 build_*/
 /ThirdParty/Physx/lib/*
+
+# ignored by line 26
+!/ThirdParty/assimp/contrib/zlib/win32/
+
+# ignored by line 31
+!/ThirdParty/assimp/code/Obj/

@@ -99,9 +99,9 @@ namespace Drn
 		return m_PendingKill;
 	}
 
-Drn::EActorType Actor::GetActorType() {}
+	EActorType Actor::GetActorType() {}
 
-        void Actor::Serialize( Archive& Ar )
+	void Actor::Serialize( Archive& Ar )
 	{
 		if (Ar.IsLoading())
 		{
