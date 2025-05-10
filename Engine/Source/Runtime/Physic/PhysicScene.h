@@ -32,6 +32,8 @@ namespace Drn
 
 		//TODO: add force, clear velocity, set target, add actor, ...
 
+		inline void ToggleShowCollision() { m_DrawDebugCollision = !m_DrawDebugCollision; }
+
 	private:
 
 		void StepSimulation(float DeltaTime);

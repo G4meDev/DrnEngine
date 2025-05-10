@@ -105,7 +105,7 @@ namespace Drn
 			json << "\"pid\":0,";
 			json << "\"tid\":" << 0 << ",";
 			json << "\"ts\":" << Token.StartTime;
-			json << "}";
+			json << "}\n";
 		}
 
 		m_File << json.str();

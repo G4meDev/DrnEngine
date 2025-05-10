@@ -47,7 +47,7 @@ namespace Drn
 
 		IntPoint m_Size;
 		bool m_TearingSupported;
-		bool m_Vsync = true;
+		bool m_Vsync = false;
 
 		friend class Renderer;
 	};

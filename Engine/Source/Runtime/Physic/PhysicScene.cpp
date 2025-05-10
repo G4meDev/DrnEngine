@@ -14,7 +14,7 @@ namespace Drn
 		physx::PxSceneDesc sceneDesc(PhysicManager::Get()->GetToleranceScale());
 		sceneDesc.gravity = m_Gravity;
 		
-		physx::PxU32 numWorkers = 8;
+		physx::PxU32 numWorkers = 1;
 		m_Dispatcher = physx::PxDefaultCpuDispatcherCreate(numWorkers);
 		sceneDesc.cpuDispatcher	= m_Dispatcher;
 		sceneDesc.filterShader	= physx::PxDefaultSimulationFilterShader;
@@ -103,8 +103,8 @@ namespace Drn
 
 	void PhysicScene::StepSimulation( float DeltaTime )
 	{
-		SCOPE_STAT(StepSimulation);
 		m_PhysxScene->lockWrite();
+		SCOPE_STAT(StepSimulation);
 
 		m_PhysxScene->simulate(DeltaTime);
 		m_PhysxScene->fetchResults(true);

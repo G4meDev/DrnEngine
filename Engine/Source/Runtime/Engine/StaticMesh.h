@@ -24,8 +24,12 @@ namespace Drn
 		ID3DBlob* IndexBufferBlob = nullptr;
 		uint8 MaterialIndex = 0;
 
+		// TODO: cleanup intermediate resources
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBuffer = nullptr;
-		Microsoft::WRL::ComPtr<ID3D12Resource>  IndexBuffer  = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> IntermediateVertexBuffer = nullptr;
+		
+		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBuffer  = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> IntermediateIndexBuffer  = nullptr;
 
 		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
 		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;

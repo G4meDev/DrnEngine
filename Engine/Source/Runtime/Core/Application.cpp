@@ -63,6 +63,13 @@ namespace Drn
 				Profiler::Get()->Profile(EProfileMode::Capture_100);
 			}
 			break;
+
+		case VK_F4:
+			if (WorldManager::Get())
+			{
+				WorldManager::Get()->GetMainWorld()->GetPhysicScene()->ToggleShowCollision();
+			}
+			break;
 		
 		case VK_SPACE:
 			if (Renderer::Get())
