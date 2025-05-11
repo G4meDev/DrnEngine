@@ -85,12 +85,6 @@ namespace Drn
 			Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &TextureDesc,
 				D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_Resource));
 
-#if D3D12_Debug_INFO
-			std::string TextureName = Path::ConvertShortPath(m_Path);
-			TextureName = Path::RemoveFileExtension(TextureName);
-			m_Resource->SetName(StringHelper::s2ws(TextureName).c_str());
-#endif
-
 			D3D12_SUBRESOURCE_DATA TextureResource;
 			TextureResource.pData = m_ImageBlob->GetBufferPointer();
 			TextureResource.RowPitch = m_RowPitch;
@@ -101,6 +95,13 @@ namespace Drn
 			Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
 				D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer( UploadBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
 				IID_PPV_ARGS( &m_IntermediateResource ) );
+
+#if D3D12_Debug_INFO
+			std::string TextureName = Path::ConvertShortPath(m_Path);
+			TextureName = Path::RemoveFileExtension(TextureName);
+			m_Resource->SetName(StringHelper::s2ws("TextureResource_" + TextureName).c_str());
+			m_IntermediateResource->SetName(StringHelper::s2ws("TextureIntermediateResource_" + TextureName).c_str());
+#endif
 
 			UpdateSubresources(CommandList, m_Resource, m_IntermediateResource, 0, 0, 1, &TextureResource);
 

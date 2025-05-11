@@ -32,14 +32,14 @@ namespace Drn
 		inline ID3D12PipelineState* GetBasePassPSO() { return m_BasePassPSO; }
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
-		inline bool IsLoadedOnGpu() const { return m_LoadedOnGPU; }
-
 		void BindResources( ID3D12GraphicsCommandList2* CommandList );
 
-		// TODO: Remove
-		bool TestShader;
+		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
+		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
 
-		AssetHandle<Texture2D> m_TestTexture;
+		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
+		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
+		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
 	protected:
 		virtual EAssetType GetAssetType() override;
@@ -68,13 +68,14 @@ namespace Drn
 
 		ID3D12RootSignature* m_RootSignature;
 		ID3D12PipelineState* m_BasePassPSO;
-		bool m_LoadedOnGPU;
 
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
 		D3D12_CULL_MODE m_CullMode;
 
 		std::vector<NamedTexture2DSlot> m_Texture2DSlots;
+
+		bool m_RenderStateDirty;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

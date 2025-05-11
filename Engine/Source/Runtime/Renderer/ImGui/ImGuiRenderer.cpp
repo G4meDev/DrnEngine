@@ -33,6 +33,10 @@ namespace Drn
 		Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
 		g_pd3dSrvDescHeapAlloc.Create( Renderer::Get()->GetD3D12Device(), g_pd3dSrvDescHeap );
 
+#if D3D12_Debug_INFO
+		g_pd3dSrvDescHeap->SetName(L"ImguiSrvHeap");
+#endif
+
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;

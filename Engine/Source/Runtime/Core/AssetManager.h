@@ -3,6 +3,8 @@
 #include "ForwardTypes.h"
 #include "Asset.h"
 
+#include "Runtime/Renderer/D3D12Utils.h"
+
 LOG_DECLARE_CATEGORY(LogAssetManager)
 
 namespace Drn
@@ -34,6 +36,12 @@ namespace Drn
 		{
 			return m_Asset;
 		}
+
+		bool operator==(const AssetHandle<T>& Other) const
+		{
+			return m_Path == Other.m_Path;
+		}
+
 
 		AssetHandle(const AssetHandle& other)
 		{
@@ -144,12 +152,25 @@ namespace Drn
 			}
 		}
 
+		inline void ReleaseDeferred()
+		{
+			AssetManager::Get()->RegisterPendingReleaseDeferred(*this);
+		}
+
 		inline T* Get() { return m_Asset; }
 		inline bool IsValid() const { return m_Asset != nullptr; }
 
 	private:
 		T* m_Asset;
 		std::string m_Path;
+	};
+
+	struct StringHasher
+	{
+		size_t operator()(const AssetHandle<Asset>& t) const
+		{
+			return std::hash<std::string>()(t.GetPath());
+		}
 	};
 
 	class AssetManager
@@ -181,9 +202,49 @@ namespace Drn
 		template< typename T >
 		void InvalidateAsset(T*& InAsset);
 
+		template< typename T >
+		void RegisterPendingReleaseDeferred(AssetHandle<T> Handle)
+		{
+			if (Handle.IsValid())
+			{
+				// TODO: improve
+				AssetHandle<Asset> assetHandle(Handle.GetPath());
+				assetHandle.LoadGeneric();
+				auto it = m_PendingReleaseDefferred.find(assetHandle);
+
+				if (it != m_PendingReleaseDefferred.end())
+				{
+					it->second = NUM_BACKBUFFERS;
+				}
+
+				else
+				{
+					m_PendingReleaseDefferred[assetHandle] = NUM_BACKBUFFERS;
+				}
+			}
+		}
+
+		void Tick()
+		{
+			for (auto it = m_PendingReleaseDefferred.begin(); it != m_PendingReleaseDefferred.end(); )
+			{
+				(it->second)--;
+				if (it->second == 0)
+				{
+					it = m_PendingReleaseDefferred.erase(it);
+				}
+
+				else
+				{
+					it++;
+				}
+			}
+		}
+
 	protected:
 
 		std::unordered_map<std::string, Asset*> m_AssetRegistery;
+		std::unordered_map<AssetHandle<Asset>, uint16, StringHasher> m_PendingReleaseDefferred;
 
 		static AssetManager* m_SingletionInstance;
 

@@ -64,6 +64,18 @@ namespace Drn
 		GetD3D12Device()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
 		m_FenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
+#if D3D12_Debug_INFO
+		m_CommandQueue->SetName(L"MainCommandQueue");
+		m_CommandList->SetName(L"MainCommandList");
+
+		for (int i = 0; i < NUM_BACKBUFFERS; i++)
+		{
+			m_CommandAllocator[i]->SetName( (L"CommandAllocator_" + std::to_wstring(i)).c_str() );
+		}
+
+		m_Fence->SetName(L"MainFence");
+#endif
+
 //#if WITH_EDITOR
 //		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
 //#else
@@ -102,6 +114,11 @@ namespace Drn
 			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_SamplerHeap.GetAddressOf() ) );
 			TempSamplerAllocator.Create( Renderer::Get()->GetD3D12Device(), m_SamplerHeap.Get() );
 		}
+
+#if D3D12_Debug_INFO
+		m_SrvHeap->SetName(L"GlobalSrvHeap");
+		m_SamplerHeap->SetName(L"GlobalSamplerHeap");
+#endif
 
 		//Flush();
 	}
@@ -157,7 +174,7 @@ namespace Drn
 		IDXGIDebug1* dxgiDebug;
 		DXGIGetDebugInterface1( 0, IID_PPV_ARGS( &dxgiDebug ) );
 
-		dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL );
+		dxgiDebug->ReportLiveObjects( DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 		dxgiDebug->Release();
 	}
 

@@ -126,6 +126,11 @@ namespace Drn
 					AssetManager::Get()->ReportLiveAssets();
 				}
 
+				if ( ImGui::MenuItem( "log live render objects" ) )
+				{
+					Renderer::Get()->ReportLiveObjects();
+				}
+
 				if ( ImGui::MenuItem( "profile 1 frame" ) )
 				{
 					Profiler::Get()->Profile(EProfileMode::Capture_1);

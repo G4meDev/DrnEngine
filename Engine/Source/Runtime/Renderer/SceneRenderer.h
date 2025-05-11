@@ -30,6 +30,8 @@ namespace Drn
 
 		const IntPoint& GetViewportSize() const { return m_RenderSize; }
 
+		inline void SetName( const std::string& Name ) { m_Name = Name; }
+
 		CameraActor* m_CameraActor;
 
 	protected:
@@ -50,6 +52,8 @@ namespace Drn
 		IntPoint m_RenderSize;
 
 		bool m_RenderingEnabled;
+
+		std::string m_Name;
 
 		friend class Scene;
 		friend class Renderer;

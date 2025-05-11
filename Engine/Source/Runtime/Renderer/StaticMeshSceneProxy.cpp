@@ -68,10 +68,7 @@ namespace Drn
 
 		for (AssetHandle<Material>& Mat : m_Materials)
 		{
-			if (Mat.IsValid() && !Mat->IsLoadedOnGpu())
-			{
-				Mat->UploadResources(CommandList);
-			}
+			Mat->UploadResources(CommandList);
 		}
 
 		m_OwningStaticMeshComponent->ClearRenderStateDirty();

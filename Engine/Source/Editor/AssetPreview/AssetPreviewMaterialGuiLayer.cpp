@@ -156,9 +156,11 @@ namespace Drn
 		{
 			for (int i = 0; i < m_OwningAsset->m_Texture2DSlots.size(); i++)
 			{
-				if (m_OwningAsset->m_Texture2DSlots[i].Draw())
+				AssetHandle<Texture2D> DropedTexture = m_OwningAsset->m_Texture2DSlots[i].Draw();
+
+				if (DropedTexture.IsValid())
 				{
-					m_OwningAsset->m_LoadedOnGPU = false;
+					m_OwningAsset->SetIndexedTexture2D(i, DropedTexture);
 				}
 			}
 		}

@@ -17,7 +17,7 @@ namespace Drn
 		, m_CS_Blob(nullptr)
 		, m_RootSignature(nullptr)
 		, m_BasePassPSO(nullptr)
-		, m_LoadedOnGPU(false)
+		, m_RenderStateDirty(true)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
@@ -36,7 +36,7 @@ namespace Drn
 		, m_CS_Blob(nullptr)
 		, m_RootSignature(nullptr)
 		, m_BasePassPSO(nullptr)
-		, m_LoadedOnGPU(false)
+		, m_RenderStateDirty(true)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
@@ -78,11 +78,6 @@ namespace Drn
 			Ar >> CullMode;
 			m_CullMode = static_cast<D3D12_CULL_MODE>(CullMode);
 
-			//if (Ar.GetVersion() == 1)
-			//{
-			//	return;
-			//}
-
 			uint8 Texture2DCount;
 			Ar >> Texture2DCount;
 			m_Texture2DSlots.clear();
@@ -92,6 +87,11 @@ namespace Drn
 				m_Texture2DSlots.push_back(NamedTexture2DSlot());
 				m_Texture2DSlots[i].Serialize(Ar);
 			}
+
+			//if (m_Texture2DSlots.size() == 1)
+			//{
+			//	m_Texture2DSlots[0].m_Texture2D = AssetHandle<Texture2D>("\\Engine\\Content\\Textures\\Debug\\T_DebugBrickWall.drn");
+			//}
 		}
 
 		else
@@ -157,7 +157,7 @@ namespace Drn
 		Save();
 		Load();
 
-		m_LoadedOnGPU = false;
+		MarkRenderStateDirty();
 	}
 
 
@@ -185,121 +185,146 @@ namespace Drn
 
 	void Material::UploadResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT(UploadResourceMaterial);
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
-		if (m_RootSignature) m_RootSignature->Release();
-		if (m_BasePassPSO) m_BasePassPSO->Release();
-
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		std::string n = m_Path;
-		n = Path::ConvertShortPath(n);
-		n = Path::RemoveFileExtension(n);
-		TestShader = n == "Test";
-
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription;
-
-		if ( TestShader )
+		if (IsRenderStateDirty())
 		{
-			std::cout << "TEST!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+			SCOPE_STAT(UploadResourceMaterial);
 
-			m_TestTexture = AssetHandle<Texture2D>( "Engine\\Content\\T_DebugIndexedColor.drn" );
-			m_TestTexture.Load();
-			m_TestTexture->UploadResources(CommandList);
+			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-			CD3DX12_ROOT_PARAMETER1 rootParameters[3];
-			rootParameters[0].InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_ALL );
+			if (m_RootSignature) m_RootSignature->Release();
+			if (m_BasePassPSO) m_BasePassPSO->Release();
 
-			CD3DX12_DESCRIPTOR_RANGE1 ranges[2];
-			// TODO: figure flags
-			ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
-			ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-			rootParameters[1].InitAsDescriptorTable( 1, &ranges[0], D3D12_SHADER_VISIBILITY_ALL );
-			rootParameters[2].InitAsDescriptorTable( 1, &ranges[1], D3D12_SHADER_VISIBILITY_ALL );
+			std::vector<CD3DX12_ROOT_PARAMETER1> rootParameters;
+			rootParameters.reserve(1 + 2 * m_Texture2DSlots.size());
+			CD3DX12_ROOT_PARAMETER1 Param;
+			Param.InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_ALL );
+			rootParameters.push_back(Param);
 
-			rootSignatureDescription = CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(_countof( rootParameters ), rootParameters, 0, nullptr, rootSignatureFlags );
-		}
-
-		else
-		{
-			CD3DX12_ROOT_PARAMETER1 rootParameters[1];
-			rootParameters[0].InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_ALL );
-
-			rootSignatureDescription = CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(_countof( rootParameters ), rootParameters, 0, nullptr, rootSignatureFlags );
-		}
-
-
-		ID3DBlob* pSerializedRootSig;
-		ID3DBlob* pRootSigError;
-		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
-		if ( FAILED(Result) )
-		{
-			if ( pRootSigError )
+			for (int i = 0; i < m_Texture2DSlots.size(); i++)
 			{
-				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
-				pRootSigError->Release();
+				CD3DX12_DESCRIPTOR_RANGE1 ranges[2];
+				// TODO: figure flags
+				ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+				ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+			
+				Param.InitAsDescriptorTable( 1, &ranges[0], D3D12_SHADER_VISIBILITY_ALL );
+				rootParameters.push_back(Param);
+			
+				Param.InitAsDescriptorTable( 1, &ranges[1], D3D12_SHADER_VISIBILITY_ALL );
+				rootParameters.push_back(Param);
 			}
 
-			if (pSerializedRootSig)
+			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(rootParameters.size(), rootParameters.data(), 0, nullptr, rootSignatureFlags );
+
+			ID3DBlob* pSerializedRootSig;
+			ID3DBlob* pRootSigError;
+			HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
+			if ( FAILED(Result) )
 			{
-				pSerializedRootSig->Release();
-				pSerializedRootSig = nullptr;
+				if ( pRootSigError )
+				{
+					LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
+					pRootSigError->Release();
+				}
+
+				if (pSerializedRootSig)
+				{
+					pSerializedRootSig->Release();
+					pSerializedRootSig = nullptr;
+				}
+
+				return;
 			}
 
-			return;
-		}
+			Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
+				pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
-		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
+			DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
+			DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
 
-		DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
-		DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
+			D3D12_RASTERIZER_DESC RasterizerDesc = CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+			RasterizerDesc.CullMode = m_CullMode;
 
-		D3D12_RASTERIZER_DESC RasterizerDesc = CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-		RasterizerDesc.CullMode = m_CullMode;
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= m_RootSignature;
+			PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(m_InputLayoutType);
+			PipelineDesc.PrimitiveTopologyType				= m_PrimitiveType;
+			PipelineDesc.RasterizerState					= RasterizerDesc;
+			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
+			PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
+			PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
+			PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_LESS;
+			PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
+			PipelineDesc.SampleMask							= UINT_MAX;
+			if (GetVS()) PipelineDesc.VS					= CD3DX12_SHADER_BYTECODE(GetVS());
+			if (GetPS()) PipelineDesc.PS					= CD3DX12_SHADER_BYTECODE(GetPS());
+			if (GetGS()) PipelineDesc.GS					= CD3DX12_SHADER_BYTECODE(GetGS());
+			if (GetHS()) PipelineDesc.HS					= CD3DX12_SHADER_BYTECODE(GetHS());
+			if (GetDS()) PipelineDesc.DS					= CD3DX12_SHADER_BYTECODE(GetDS());
+			PipelineDesc.DSVFormat							= depthBufferFormat;
+			PipelineDesc.NumRenderTargets					= 1;
+			PipelineDesc.RTVFormats[0]						= backBufferFormat;
+			PipelineDesc.SampleDesc.Count					= 1;
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= m_RootSignature;
-		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(m_InputLayoutType);
-		PipelineDesc.PrimitiveTopologyType				= m_PrimitiveType;
-		PipelineDesc.RasterizerState					= RasterizerDesc;
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
-		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
-		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_LESS;
-		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		if (GetVS()) PipelineDesc.VS					= CD3DX12_SHADER_BYTECODE(GetVS());
-		if (GetPS()) PipelineDesc.PS					= CD3DX12_SHADER_BYTECODE(GetPS());
-		if (GetGS()) PipelineDesc.GS					= CD3DX12_SHADER_BYTECODE(GetGS());
-		if (GetHS()) PipelineDesc.HS					= CD3DX12_SHADER_BYTECODE(GetHS());
-		if (GetDS()) PipelineDesc.DS					= CD3DX12_SHADER_BYTECODE(GetDS());
-		PipelineDesc.DSVFormat							= depthBufferFormat;
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= backBufferFormat;
-		PipelineDesc.SampleDesc.Count					= 1;
-
-		Device->CreateGraphicsPipelineState(&PipelineDesc, IID_PPV_ARGS(&m_BasePassPSO));
+			Device->CreateGraphicsPipelineState(&PipelineDesc, IID_PPV_ARGS(&m_BasePassPSO));
 
 #if D3D12_Debug_INFO
-		std::string name = Path::ConvertShortPath(m_Path);
-		name = Path::RemoveFileExtension(name);
-		m_BasePassPSO->SetName(StringHelper::s2ws(" BasePassPSO_" + name ).c_str());
+			std::string name = Path::ConvertShortPath(m_Path);
+			name = Path::RemoveFileExtension(name);
+			m_BasePassPSO->SetName(StringHelper::s2ws(" BasePassPSO_" + name ).c_str());
+			m_RootSignature->SetName(StringHelper::s2ws(" RootSignature_" + name ).c_str());
 #endif
 
-		m_LoadedOnGPU = true;
+			ClearRenderStateDirty();
+		}
+
+		for (uint8 i = 0; i < m_Texture2DSlots.size(); i++)
+		{
+			// TODO: Remove
+			if (!m_Texture2DSlots[i].m_Texture2D.IsValid())
+			{
+				m_Texture2DSlots[i].m_Texture2D.Load();
+			}
+
+			m_Texture2DSlots[i].m_Texture2D->UploadResources(CommandList);
+		}
 	}
 
 	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		if (TestShader)
+		for (int i = 0; i < m_Texture2DSlots.size(); i++)
 		{
-			CommandList->SetGraphicsRootDescriptorTable( 1, m_TestTexture->SamplerGpuHandle);
-			CommandList->SetGraphicsRootDescriptorTable( 2, m_TestTexture->TextureGpuHandle );
+			CommandList->SetGraphicsRootDescriptorTable( 1 + i * 2, m_Texture2DSlots[i].m_Texture2D->SamplerGpuHandle);
+			CommandList->SetGraphicsRootDescriptorTable( 2 + i * 2, m_Texture2DSlots[i].m_Texture2D->TextureGpuHandle );
 		}
 	}
+
+	void Material::SetNamedTexture2D( const std::string& Name, AssetHandle<Texture2D> TextureAsset )
+	{
+		for (uint8 i = 0; i < m_Texture2DSlots.size(); i++)
+		{
+			const NamedTexture2DSlot& TextureSlot = m_Texture2DSlots[i];
+
+			if (TextureSlot.m_Name == Name)
+			{
+				SetIndexedTexture2D(i, TextureAsset);
+				return;
+			}
+		}
+	}
+
+	void Material::SetIndexedTexture2D( uint8 Index, AssetHandle<Texture2D> TextureAsset )
+	{
+		if (TextureAsset.IsValid() && Index >= 0 && Index < m_Texture2DSlots.size())
+		{
+			m_Texture2DSlots[Index].m_Texture2D.ReleaseDeferred();
+			m_Texture2DSlots[Index].m_Texture2D = TextureAsset;
+
+			//MarkRenderStateDirty();
+		}
+	}
+
 
 }

@@ -54,6 +54,9 @@ namespace Drn
 		
 		m_CurrentBackbufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 
+#if D3D12_Debug_INFO
+		m_RTVDescriptorHeap->SetName(L"SwapChainRtvHeap");
+#endif
 		LOG( LogSwapChain, Info, "Successfully created swap chain with %i back buffers", NUM_BACKBUFFERS );
 	}
 

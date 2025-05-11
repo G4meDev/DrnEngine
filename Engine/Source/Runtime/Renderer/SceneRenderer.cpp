@@ -37,6 +37,11 @@ namespace Drn
 		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RTVHeap));
 
+#if D3D12_Debug_INFO
+		m_DSVHeap->SetName( StringHelper::s2ws( m_Name + "_DsvHeap").c_str() );
+		m_RTVHeap->SetName( StringHelper::s2ws( m_Name + "_RtvHeap").c_str() );
+#endif
+
 		ResizeView(IntPoint(1920, 1080));
 	}
 

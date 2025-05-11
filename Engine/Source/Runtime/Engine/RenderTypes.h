@@ -21,7 +21,7 @@ namespace Drn
 		AssetHandle<Texture2D> m_Texture2D;
 
 #if WITH_EDITOR
-		bool Draw();
+		AssetHandle<Texture2D> Draw();
 #endif
 	};
 

@@ -218,10 +218,7 @@ namespace Drn
 			GetPrimitive()->ClearRenderStateDirty();
 		}
 
-		if (!m_LineBatchMaterial->IsLoadedOnGpu())
-		{
-			m_LineBatchMaterial->UploadResources(CommandList);
-		}
+		m_LineBatchMaterial->UploadResources(CommandList);
 	}
 
 	void LineBatchSceneProxy::RecalculateVertexData()

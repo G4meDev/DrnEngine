@@ -26,7 +26,7 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
-	bool NamedTexture2DSlot::Draw()
+	AssetHandle<Texture2D> NamedTexture2DSlot::Draw()
 	{
 		ImGui::Text(m_Name.c_str());
 		ImGui::SameLine();
@@ -43,15 +43,16 @@ namespace Drn
 
 				if (CheckMaterial.IsValid() && Type == EAssetType::Texture2D)
 				{
-					m_Texture2D = AssetHandle<Texture2D>(AssetPath);
-					return true;
+					AssetHandle<Texture2D> Result(AssetPath);
+					Result.Load();
+					return Result;
 				}
 			}
 
 			ImGui::EndDragDropTarget();
 		}
 
-		return false;
+		return AssetHandle<Texture2D>();
 	}
 #endif
 }
