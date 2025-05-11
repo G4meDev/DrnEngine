@@ -144,6 +144,24 @@ namespace Drn
 		{
 			m_OwningAsset->m_CullMode = static_cast<D3D12_CULL_MODE>(CurrentType + 1);
 		}
+
+		DrawParameters();
+	}
+
+	void AssetPreviewMaterialGuiLayer::DrawParameters()
+	{
+		ImGui::Separator();
+
+		if (ImGui::CollapsingHeader( "Texture2D", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
+		{
+			for (int i = 0; i < m_OwningAsset->m_Texture2DSlots.size(); i++)
+			{
+				if (m_OwningAsset->m_Texture2DSlots[i].Draw())
+				{
+					m_OwningAsset->m_LoadedOnGPU = false;
+				}
+			}
+		}
 	}
 
 }

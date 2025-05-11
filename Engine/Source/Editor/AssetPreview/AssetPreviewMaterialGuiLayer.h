@@ -24,6 +24,8 @@ namespace Drn
 		void DrawMenu();
 		void DrawDetailsPanel();
 
+		void DrawParameters();
+
 	private:
 
 		World* PreviewWorld;

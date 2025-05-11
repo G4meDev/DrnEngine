@@ -3,6 +3,7 @@
 #include "ForwardTypes.h"
 #include "Runtime/Core/Asset.h"
 #include "Runtime/Renderer/InputLayout.h"
+#include "Runtime/Engine/RenderTypes.h"
 
 LOG_DECLARE_CATEGORY(LogMaterial);
 
@@ -72,6 +73,8 @@ namespace Drn
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
 		D3D12_CULL_MODE m_CullMode;
+
+		std::vector<NamedTexture2DSlot> m_Texture2DSlots;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

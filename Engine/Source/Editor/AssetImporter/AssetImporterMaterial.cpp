@@ -53,6 +53,8 @@ namespace Drn
 			MaterialAsset->m_HS_Blob = HS_Blob;
 			MaterialAsset->m_DS_Blob = DS_Blob;
 			MaterialAsset->m_CS_Blob = CS_Blob;
+
+			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}
 
 		else
@@ -103,6 +105,55 @@ namespace Drn
 		*ByteBlob = shaderBlob;
 
 		return true;
+	}
+
+	void AssetImporterMaterial::UpdateMaterialParameterSlots( Material* MaterialAsset, const std::string& ShaderCode )
+	{
+		std::vector<NamedTexture2DSlot> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
+		MaterialAsset->m_Texture2DSlots.clear();
+
+		std::vector<std::string> Texture2DNames;
+		FindNamedTokens(ShaderCode, "Texture2D", Texture2DNames);
+
+		for (const std::string& name : Texture2DNames)
+		{
+			std::string Path = DEFAULT_TEXTURE_PATH;
+
+			for (const NamedTexture2DSlot& OldTexture2D : OldTexture2Ds)
+			{
+				if (OldTexture2D.m_Name == name)
+				{
+					Path = OldTexture2D.m_Texture2D.GetPath();
+				}
+			}
+
+			MaterialAsset->m_Texture2DSlots.push_back(NamedTexture2DSlot(name, Path));
+		}
+	}
+
+	void AssetImporterMaterial::FindNamedTokens( const std::string& ShaderCode, const std::string& Token, std::vector<std::string>& Result )
+	{
+		const size_t TokenLength = Token.length();
+
+		size_t pos = ShaderCode.find(Token, 0);
+		while( pos != std::string::npos )
+		{
+			size_t NameStart = pos + TokenLength + 1;
+			size_t NameEnd = ShaderCode.find_first_of( " ;", NameStart);
+
+			if (NameEnd != std::string::npos)
+			{
+				std::string name = ShaderCode.substr(NameStart, NameEnd - NameStart);
+				Result.push_back(name);
+
+				pos = ShaderCode.find(Token, NameEnd);
+			}
+
+			else
+			{
+				pos = std::string::npos;
+			}
+		}
 	}
 
 }

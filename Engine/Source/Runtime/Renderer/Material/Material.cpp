@@ -77,6 +77,21 @@ namespace Drn
 			uint8 CullMode;
 			Ar >> CullMode;
 			m_CullMode = static_cast<D3D12_CULL_MODE>(CullMode);
+
+			//if (Ar.GetVersion() == 1)
+			//{
+			//	return;
+			//}
+
+			uint8 Texture2DCount;
+			Ar >> Texture2DCount;
+			m_Texture2DSlots.clear();
+			m_Texture2DSlots.reserve(Texture2DCount);
+			for (int i = 0; i < Texture2DCount; i++)
+			{
+				m_Texture2DSlots.push_back(NamedTexture2DSlot());
+				m_Texture2DSlots[i].Serialize(Ar);
+			}
 		}
 
 		else
@@ -86,6 +101,13 @@ namespace Drn
 			Ar << static_cast<uint8>(m_PrimitiveType);
 			Ar << static_cast<uint16>(m_InputLayoutType);
 			Ar << static_cast<uint8>(m_CullMode);
+
+			uint8 Texture2DCount = m_Texture2DSlots.size();
+			Ar << Texture2DCount;
+			for (int i = 0; i < Texture2DCount; i++)
+			{
+				m_Texture2DSlots[i].Serialize(Ar);
+			}
 		}
 	}
 

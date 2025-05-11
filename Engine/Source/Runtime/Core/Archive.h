@@ -52,6 +52,7 @@ namespace Drn
 		Archive& operator>>(ID3DBlob*& Value);
 
 		inline bool IsValid() const { return m_ValidArchive; }
+		inline uint8 GetVersion() const { return m_ArchiveVersion; };
 
 	protected:
 

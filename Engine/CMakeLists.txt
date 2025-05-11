@@ -20,6 +20,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/PrimitiveSceneProxy.h
 	Source/Runtime/Engine/StaticMeshComponent.h
 	Source/Runtime/Engine/StaticMesh.h
+	Source/Runtime/Engine/RenderTypes.h
 	Source/Runtime/Engine/MeshTypes.h
 	Source/Runtime/Engine/CameraComponent.h
 	Source/Runtime/Engine/Component.h
@@ -130,6 +131,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/StaticMeshComponent.cpp
 	Source/Runtime/Engine/StaticMesh.cpp
 	Source/Runtime/Engine/MeshTypes.cpp
+	Source/Runtime/Engine/RenderTypes.cpp
 	Source/Runtime/Engine/CameraComponent.cpp
 	Source/Runtime/Engine/Component.cpp
 	Source/Runtime/Engine/SceneComponent.cpp

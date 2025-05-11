@@ -76,3 +76,6 @@ class LogCategory;
 #define NAME_NULL ""
 
 #define DEFAULT_MATERIAL_PATH "\\Engine\\Content\\Materials\\M_DefaultMeshShader.drn"
+
+// TODO: update to actual default texture
+#define DEFAULT_TEXTURE_PATH "\\Engine\\Content\\T_DebugIndexedColor.drn"
