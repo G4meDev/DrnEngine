@@ -8,6 +8,9 @@ ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
 Texture2D TestTexture : register(t0);
 SamplerState TestSampler : register(s0);
 
+Texture2D TestTexture_2 : register(t1);
+SamplerState TestSampler_2 : register(s1);
+
 struct VertexInput
 {
     float3 Position     : POSITION;
@@ -50,5 +53,8 @@ struct PixelShaderInput
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     //return float4(IN.UV, 0, 1);
-    return TestTexture.Sample(TestSampler, IN.UV);
+    float4 Texture1 = TestTexture.Sample(TestSampler, IN.UV);
+    float4 Texture2 = TestTexture_2.Sample(TestSampler_2, IN.UV);
+    return lerp(Texture1, Texture2, float4(0.5f, 0.5f, 0.5f, 1.0f));
+    //return Texture1;
 }

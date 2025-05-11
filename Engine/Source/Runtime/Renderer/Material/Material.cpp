@@ -87,11 +87,6 @@ namespace Drn
 				m_Texture2DSlots.push_back(NamedTexture2DSlot());
 				m_Texture2DSlots[i].Serialize(Ar);
 			}
-
-			//if (m_Texture2DSlots.size() == 1)
-			//{
-			//	m_Texture2DSlots[0].m_Texture2D = AssetHandle<Texture2D>("\\Engine\\Content\\Textures\\Debug\\T_DebugBrickWall.drn");
-			//}
 		}
 
 		else
@@ -153,6 +148,7 @@ namespace Drn
 #if WITH_EDITOR
 	void Material::Import()
 	{
+		Renderer::Get()->Flush();
 		AssetImporterMaterial::Import( this, m_SourcePath );
 		Save();
 		Load();
@@ -191,29 +187,70 @@ namespace Drn
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
+			for (NamedTexture2DSlot& Slot : m_Texture2DSlots)
+			{
+				Slot.m_Texture2D.Load();
+			}
+
 			if (m_RootSignature) m_RootSignature->Release();
 			if (m_BasePassPSO) m_BasePassPSO->Release();
 
 			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-			std::vector<CD3DX12_ROOT_PARAMETER1> rootParameters;
+			std::vector<D3D12_ROOT_PARAMETER> rootParameters;
 			rootParameters.reserve(1 + 2 * m_Texture2DSlots.size());
-			CD3DX12_ROOT_PARAMETER1 Param;
-			Param.InitAsConstants( sizeof( XMMATRIX ) / 4, 0, 0, D3D12_SHADER_VISIBILITY_ALL );
-			rootParameters.push_back(Param);
 
-			for (int i = 0; i < m_Texture2DSlots.size(); i++)
 			{
-				CD3DX12_DESCRIPTOR_RANGE1 ranges[2];
-				// TODO: figure flags
-				ranges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
-				ranges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
-			
-				Param.InitAsDescriptorTable( 1, &ranges[0], D3D12_SHADER_VISIBILITY_ALL );
+				D3D12_ROOT_PARAMETER Param = {};
+				Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+				Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+				Param.Constants.Num32BitValues = sizeof( XMMATRIX ) / 4;
+				Param.Constants.ShaderRegister = 0;
+				Param.Constants.RegisterSpace = 0;
 				rootParameters.push_back(Param);
-			
-				Param.InitAsDescriptorTable( 1, &ranges[1], D3D12_SHADER_VISIBILITY_ALL );
-				rootParameters.push_back(Param);
+			}
+
+			const int NumTexture2Ds = m_Texture2DSlots.size();
+			std::vector<D3D12_DESCRIPTOR_RANGE> Ranges;
+			Ranges.reserve(NumTexture2Ds * 2);
+
+			for (int i = 0; i < NumTexture2Ds; i++)
+			{
+				{
+					D3D12_DESCRIPTOR_RANGE Range = {};
+					Range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+					Range.BaseShaderRegister = i;
+					Range.RegisterSpace = 0;
+					Range.NumDescriptors = 1;
+					Range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+					Ranges.push_back(Range);
+
+					D3D12_ROOT_PARAMETER Param = {};
+					Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+					Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+					Param.DescriptorTable.NumDescriptorRanges = 1;
+					Param.DescriptorTable.pDescriptorRanges = &Ranges[i * 2];
+
+					rootParameters.push_back(Param);
+				}
+
+				{
+					D3D12_DESCRIPTOR_RANGE Range = {};
+					Range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+					Range.BaseShaderRegister = i;
+					Range.RegisterSpace = 0;
+					Range.NumDescriptors = 1;
+					Range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+					Ranges.push_back(Range);
+
+					D3D12_ROOT_PARAMETER Param = {};
+					Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+					Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+					Param.DescriptorTable.NumDescriptorRanges = 1;
+					Param.DescriptorTable.pDescriptorRanges = &Ranges[i * 2 + 1];
+
+					rootParameters.push_back(Param);
+				}
 			}
 
 			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(rootParameters.size(), rootParameters.data(), 0, nullptr, rootSignatureFlags );
@@ -282,21 +319,17 @@ namespace Drn
 
 		for (uint8 i = 0; i < m_Texture2DSlots.size(); i++)
 		{
-			// TODO: Remove
-			if (!m_Texture2DSlots[i].m_Texture2D.IsValid())
-			{
-				m_Texture2DSlots[i].m_Texture2D.Load();
-			}
-
 			m_Texture2DSlots[i].m_Texture2D->UploadResources(CommandList);
 		}
 	}
 
 	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
 	{
+		const int NumTexture2Ds = m_Texture2DSlots.size();
+
 		for (int i = 0; i < m_Texture2DSlots.size(); i++)
 		{
-			CommandList->SetGraphicsRootDescriptorTable( 1 + i * 2, m_Texture2DSlots[i].m_Texture2D->SamplerGpuHandle);
+			CommandList->SetGraphicsRootDescriptorTable( 1 + i * 2, m_Texture2DSlots[i].m_Texture2D->SamplerGpuHandle );
 			CommandList->SetGraphicsRootDescriptorTable( 2 + i * 2, m_Texture2DSlots[i].m_Texture2D->TextureGpuHandle );
 		}
 	}
@@ -321,8 +354,6 @@ namespace Drn
 		{
 			m_Texture2DSlots[Index].m_Texture2D.ReleaseDeferred();
 			m_Texture2DSlots[Index].m_Texture2D = TextureAsset;
-
-			//MarkRenderStateDirty();
 		}
 	}
 
