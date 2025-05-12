@@ -109,7 +109,7 @@ namespace Drn
 
 	void AssetImporterMaterial::UpdateMaterialParameterSlots( Material* MaterialAsset, const std::string& ShaderCode )
 	{
-		std::vector<NamedTexture2DSlot> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
+		std::vector<Texture2DProperty> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
 		MaterialAsset->m_Texture2DSlots.clear();
 
 		std::vector<std::string> Texture2DNames;
@@ -119,7 +119,7 @@ namespace Drn
 		{
 			std::string Path = DEFAULT_TEXTURE_PATH;
 
-			for (const NamedTexture2DSlot& OldTexture2D : OldTexture2Ds)
+			for (const Texture2DProperty& OldTexture2D : OldTexture2Ds)
 			{
 				if (OldTexture2D.m_Name == name)
 				{
@@ -127,7 +127,7 @@ namespace Drn
 				}
 			}
 
-			MaterialAsset->m_Texture2DSlots.push_back(NamedTexture2DSlot(name, Path));
+			MaterialAsset->m_Texture2DSlots.push_back(Texture2DProperty(name, Path));
 		}
 	}
 

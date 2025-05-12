@@ -214,12 +214,12 @@ namespace Drn
 
 				if (it != m_PendingReleaseDefferred.end())
 				{
-					it->second = NUM_BACKBUFFERS;
+					it->second = NUM_BACKBUFFERS + 1;
 				}
 
 				else
 				{
-					m_PendingReleaseDefferred[assetHandle] = NUM_BACKBUFFERS;
+					m_PendingReleaseDefferred[assetHandle] = NUM_BACKBUFFERS + 1;
 				}
 			}
 		}

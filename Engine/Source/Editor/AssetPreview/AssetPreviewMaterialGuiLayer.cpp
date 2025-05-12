@@ -164,6 +164,17 @@ namespace Drn
 				}
 			}
 		}
+
+		if (ImGui::CollapsingHeader( "Float", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
+		{
+			for (int i = 0; i < m_OwningAsset->m_FloatSlots.size(); i++)
+			{
+				if (m_OwningAsset->m_FloatSlots[i].Draw())
+				{
+					m_OwningAsset->MarkRenderStateDirty();
+				}
+			}
+		}
 	}
 
 }

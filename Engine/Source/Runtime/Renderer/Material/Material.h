@@ -3,7 +3,7 @@
 #include "ForwardTypes.h"
 #include "Runtime/Core/Asset.h"
 #include "Runtime/Renderer/InputLayout.h"
-#include "Runtime/Engine/RenderTypes.h"
+#include "Runtime/Engine/NamedProperty.h"
 
 LOG_DECLARE_CATEGORY(LogMaterial);
 
@@ -73,7 +73,8 @@ namespace Drn
 		EInputLayoutType m_InputLayoutType;
 		D3D12_CULL_MODE m_CullMode;
 
-		std::vector<NamedTexture2DSlot> m_Texture2DSlots;
+		std::vector<Texture2DProperty> m_Texture2DSlots;
+		std::vector<FloatProperty> m_FloatSlots;
 
 		bool m_RenderStateDirty;
 

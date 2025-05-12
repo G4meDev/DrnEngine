@@ -84,9 +84,13 @@ namespace Drn
 			m_Texture2DSlots.reserve(Texture2DCount);
 			for (int i = 0; i < Texture2DCount; i++)
 			{
-				m_Texture2DSlots.push_back(NamedTexture2DSlot());
+				m_Texture2DSlots.push_back(Texture2DProperty());
 				m_Texture2DSlots[i].Serialize(Ar);
 			}
+
+			m_FloatSlots.clear();
+			m_FloatSlots.push_back(FloatProperty("ABC", 5));
+			m_FloatSlots.push_back(FloatProperty("R_3BC", 10));
 		}
 
 		else
@@ -187,9 +191,12 @@ namespace Drn
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-			for (NamedTexture2DSlot& Slot : m_Texture2DSlots)
+			for (Texture2DProperty& Slot : m_Texture2DSlots)
 			{
-				Slot.m_Texture2D.Load();
+				if (!Slot.m_Texture2D.IsValid())
+				{
+					Slot.m_Texture2D.Load();
+				}
 			}
 
 			if (m_RootSignature) m_RootSignature->Release();
@@ -338,7 +345,7 @@ namespace Drn
 	{
 		for (uint8 i = 0; i < m_Texture2DSlots.size(); i++)
 		{
-			const NamedTexture2DSlot& TextureSlot = m_Texture2DSlots[i];
+			const Texture2DProperty& TextureSlot = m_Texture2DSlots[i];
 
 			if (TextureSlot.m_Name == Name)
 			{
