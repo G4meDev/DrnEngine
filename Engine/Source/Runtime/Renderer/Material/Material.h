@@ -29,10 +29,9 @@ namespace Drn
 		inline ID3DBlob* GetCS() const { return m_CS_Blob; }
 
 		inline ID3D12RootSignature* GetRootSignature() { return m_RootSignature; }
-		inline ID3D12PipelineState* GetBasePassPSO() { return m_BasePassPSO; }
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
-		void BindResources( ID3D12GraphicsCommandList2* CommandList );
+		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
 
 		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
 		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
@@ -67,7 +66,7 @@ namespace Drn
 		ID3DBlob* m_CS_Blob;
 
 		ID3D12RootSignature* m_RootSignature;
-		ID3D12PipelineState* m_BasePassPSO;
+		//ID3D12PipelineState* m_BasePassPSO;
 
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
@@ -75,6 +74,8 @@ namespace Drn
 
 		std::vector<Texture2DProperty> m_Texture2DSlots;
 		std::vector<FloatProperty> m_FloatSlots;
+
+		PipelineStateObject* m_MainPassPSO;
 
 		bool m_RenderStateDirty;
 

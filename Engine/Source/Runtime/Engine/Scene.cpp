@@ -16,11 +16,11 @@ namespace Drn
 	{
 		for (PrimitiveSceneProxy* Proxy : m_PrimitiveProxies)
 		{
-			Proxy->ReleaseBufferedResource();
+			delete Proxy;
 		}
 		for (PrimitiveSceneProxy* Proxy : m_PendingProxies)
 		{
-			Proxy->ReleaseBufferedResource();
+			delete Proxy;
 		}
 
 		for (auto it = m_SceneRenderers.begin(); it != m_SceneRenderers.end();)
@@ -102,7 +102,8 @@ namespace Drn
 			m_PendingProxies.erase(InPrimitiveSceneProxy);
 			m_PrimitiveProxies.erase(InPrimitiveSceneProxy);
 
-			InPrimitiveSceneProxy->ReleaseBufferedResource();
+			//InPrimitiveSceneProxy->ReleaseBufferedResource();
+			delete InPrimitiveSceneProxy;
 		}
 	}
 

@@ -185,7 +185,6 @@ namespace Drn
 			m_MainWindow->SetWindowTitle( buffer );
 		}
 
-		AssetManager::Get()->Tick();
 		Profiler::Get()->Tick(DeltaTime);
 
 		PhysicManager::Get()->Tick(DeltaTime);

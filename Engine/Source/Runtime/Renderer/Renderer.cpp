@@ -203,6 +203,7 @@ namespace Drn
 		delete SingletonInstance;
 		SingletonInstance = nullptr;
 
+		BufferedResourceManager::Get()->Flush();
 		BufferedResourceManager::Shutdown();
 	}
 

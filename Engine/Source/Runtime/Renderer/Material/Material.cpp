@@ -16,7 +16,7 @@ namespace Drn
 		, m_DS_Blob(nullptr)
 		, m_CS_Blob(nullptr)
 		, m_RootSignature(nullptr)
-		, m_BasePassPSO(nullptr)
+		, m_MainPassPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
@@ -35,7 +35,7 @@ namespace Drn
 		, m_DS_Blob(nullptr)
 		, m_CS_Blob(nullptr)
 		, m_RootSignature(nullptr)
-		, m_BasePassPSO(nullptr)
+		, m_MainPassPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
@@ -50,7 +50,7 @@ namespace Drn
 	{
 		ReleaseShaderBlobs();
 		if (m_RootSignature) m_RootSignature->Release();
-		if (m_BasePassPSO) m_BasePassPSO->Release();
+		if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
 	}
 
 	EAssetType Material::GetAssetType() { return EAssetType::Material; }
@@ -200,7 +200,7 @@ namespace Drn
 			}
 
 			if (m_RootSignature) m_RootSignature->Release();
-			if (m_BasePassPSO) m_BasePassPSO->Release();
+			if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
 
 			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -312,12 +312,13 @@ namespace Drn
 			PipelineDesc.RTVFormats[0]						= backBufferFormat;
 			PipelineDesc.SampleDesc.Count					= 1;
 
-			Device->CreateGraphicsPipelineState(&PipelineDesc, IID_PPV_ARGS(&m_BasePassPSO));
+			m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+				m_PrimitiveType, m_VS_Blob, m_PS_Blob, m_GS_Blob, m_DS_Blob, m_HS_Blob);
 
 #if D3D12_Debug_INFO
 			std::string name = Path::ConvertShortPath(m_Path);
 			name = Path::RemoveFileExtension(name);
-			m_BasePassPSO->SetName(StringHelper::s2ws(" BasePassPSO_" + name ).c_str());
+			m_MainPassPSO->SetName( "MainPassPSO_" + name );
 			m_RootSignature->SetName(StringHelper::s2ws(" RootSignature_" + name ).c_str());
 #endif
 
@@ -330,8 +331,11 @@ namespace Drn
 		}
 	}
 
-	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindMainPass( ID3D12GraphicsCommandList2* CommandList )
 	{
+		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
+
 		const int NumTexture2Ds = m_Texture2DSlots.size();
 
 		for (int i = 0; i < m_Texture2DSlots.size(); i++)
@@ -359,7 +363,6 @@ namespace Drn
 	{
 		if (TextureAsset.IsValid() && Index >= 0 && Index < m_Texture2DSlots.size())
 		{
-			m_Texture2DSlots[Index].m_Texture2D.ReleaseDeferred();
 			m_Texture2DSlots[Index].m_Texture2D = TextureAsset;
 		}
 	}

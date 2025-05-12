@@ -83,8 +83,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				CommandList->SetGraphicsRootSignature(Mat->GetRootSignature());
-				CommandList->SetPipelineState(Mat->GetBasePassPSO());
+				Mat->BindMainPass(CommandList);
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 				XMMATRIX modelMatrix = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
@@ -100,8 +99,6 @@ namespace Drn
 				mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-
-				Mat->BindResources(CommandList);
 
 				CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
 				CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );

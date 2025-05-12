@@ -155,8 +155,7 @@ namespace Drn
 			return;
 		}
 
-		CommandList->SetGraphicsRootSignature(m_LineBatchMaterial->GetRootSignature());
-		CommandList->SetPipelineState(m_LineBatchMaterial->GetBasePassPSO());
+		m_LineBatchMaterial->BindMainPass(CommandList);
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
 
 		XMMATRIX modelMatrix = Matrix().Get();

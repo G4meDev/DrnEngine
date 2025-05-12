@@ -4,7 +4,6 @@
 namespace Drn
 {
 	PrimitiveSceneProxy::PrimitiveSceneProxy( const PrimitiveComponent* InComponent )
-		: BufferedResource()
 	{
 		
 	}

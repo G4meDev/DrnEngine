@@ -53,6 +53,7 @@ namespace Drn
 	class StaticMeshComponent;
 	class StaticMesh;
 	class Material;
+	class PipelineStateObject;
 	class Texture2D;
 	class TextureVolume;
 	class TextureCube;
@@ -74,6 +75,8 @@ class LogCategory;
 	extern LogCategory Category;						\
 
 #define NAME_NULL ""
+
+#define D3D12_Debug_INFO 1
 
 #define DEFAULT_MATERIAL_PATH "\\Engine\\Content\\Materials\\M_DefaultMeshShader.drn"
 #define DEFAULT_TEXTURE_PATH "\\Engine\\Content\\Textures\\Debug\\T_DebugIndexedColor.drn"

@@ -25,6 +25,7 @@
 
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/SceneRenderer.h"
+#include "Runtime/Renderer/PipelineStateObject.h"
 #include "Runtime/Renderer/InputLayout.h"
 #include "Runtime/Renderer/D3D12Utils.h"
 #include "Runtime/Renderer/Material/Material.h"
@@ -78,4 +79,3 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#define D3D12_Debug_INFO 1

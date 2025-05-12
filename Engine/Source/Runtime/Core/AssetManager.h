@@ -152,10 +152,10 @@ namespace Drn
 			}
 		}
 
-		inline void ReleaseDeferred()
-		{
-			AssetManager::Get()->RegisterPendingReleaseDeferred(*this);
-		}
+		//inline void ReleaseDeferred()
+		//{
+		//	AssetManager::Get()->RegisterPendingReleaseDeferred(*this);
+		//}
 
 		inline T* Get() { return m_Asset; }
 		inline bool IsValid() const { return m_Asset != nullptr; }
@@ -202,49 +202,49 @@ namespace Drn
 		template< typename T >
 		void InvalidateAsset(T*& InAsset);
 
-		template< typename T >
-		void RegisterPendingReleaseDeferred(AssetHandle<T> Handle)
-		{
-			if (Handle.IsValid())
-			{
-				// TODO: improve
-				AssetHandle<Asset> assetHandle(Handle.GetPath());
-				assetHandle.LoadGeneric();
-				auto it = m_PendingReleaseDefferred.find(assetHandle);
+		//template< typename T >
+		//void RegisterPendingReleaseDeferred(AssetHandle<T> Handle)
+		//{
+		//	if (Handle.IsValid())
+		//	{
+		//		// TODO: improve
+		//		AssetHandle<Asset> assetHandle(Handle.GetPath());
+		//		assetHandle.LoadGeneric();
+		//		auto it = m_PendingReleaseDefferred.find(assetHandle);
+		//
+		//		if (it != m_PendingReleaseDefferred.end())
+		//		{
+		//			it->second = NUM_BACKBUFFERS;
+		//		}
+		//
+		//		else
+		//		{
+		//			m_PendingReleaseDefferred[assetHandle] = NUM_BACKBUFFERS;
+		//		}
+		//	}
+		//}
 
-				if (it != m_PendingReleaseDefferred.end())
-				{
-					it->second = NUM_BACKBUFFERS + 1;
-				}
-
-				else
-				{
-					m_PendingReleaseDefferred[assetHandle] = NUM_BACKBUFFERS + 1;
-				}
-			}
-		}
-
-		void Tick()
-		{
-			for (auto it = m_PendingReleaseDefferred.begin(); it != m_PendingReleaseDefferred.end(); )
-			{
-				(it->second)--;
-				if (it->second == 0)
-				{
-					it = m_PendingReleaseDefferred.erase(it);
-				}
-
-				else
-				{
-					it++;
-				}
-			}
-		}
+		//void Tick()
+		//{
+		//	for (auto it = m_PendingReleaseDefferred.begin(); it != m_PendingReleaseDefferred.end(); )
+		//	{
+		//		(it->second)--;
+		//		if (it->second == 0)
+		//		{
+		//			it = m_PendingReleaseDefferred.erase(it);
+		//		}
+		//
+		//		else
+		//		{
+		//			it++;
+		//		}
+		//	}
+		//}
 
 	protected:
 
 		std::unordered_map<std::string, Asset*> m_AssetRegistery;
-		std::unordered_map<AssetHandle<Asset>, uint16, StringHasher> m_PendingReleaseDefferred;
+		//std::unordered_map<AssetHandle<Asset>, uint16, StringHasher> m_PendingReleaseDefferred;
 
 		static AssetManager* m_SingletionInstance;
 

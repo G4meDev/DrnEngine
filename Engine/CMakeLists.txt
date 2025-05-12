@@ -34,6 +34,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Device.h
 	Source/Runtime/Renderer/SwapChain.h
 	Source/Runtime/Renderer/BufferedResource.h
+	Source/Runtime/Renderer/PipelineStateObject.h
 	Source/Runtime/Renderer/InputLayout.h
 	Source/Runtime/Renderer/StaticMeshSceneProxy.h
 	Source/Runtime/Renderer/D3D12Utils.h
@@ -144,6 +145,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Device.cpp
 	Source/Runtime/Renderer/SwapChain.cpp
 	Source/Runtime/Renderer/BufferedResource.cpp
+	Source/Runtime/Renderer/PipelineStateObject.cpp
 	Source/Runtime/Renderer/InputLayout.cpp
 	Source/Runtime/Renderer/StaticMeshSceneProxy.cpp
 	Source/Runtime/Renderer/D3D12Utils.cpp
