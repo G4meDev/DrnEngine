@@ -130,14 +130,15 @@ namespace Drn
 			MaterialAsset->m_Texture2DSlots.push_back(Texture2DProperty(name, Path));
 		}
 
-		std::vector<FloatProperty> OldScalars = MaterialAsset->m_FloatSlots;
+		std::vector<MaterialIndexedFloatParameter> OldScalars = MaterialAsset->m_FloatSlots;
 		MaterialAsset->m_FloatSlots.clear();
 
 		NamedTokens.clear();
 		FindNamedTokens(ShaderCode, "//Scalar", NamedTokens);
 
-		for (const std::string& name : NamedTokens)
+		for (int i = 0; i < NamedTokens.size(); i++)
 		{
+			const std::string& name = NamedTokens[i];
 			float Value = 0.0f;
 
 			for (const FloatProperty& OldScalar : OldScalars)
@@ -148,7 +149,7 @@ namespace Drn
 				}
 			}
 
-			MaterialAsset->m_FloatSlots.push_back(FloatProperty(name, Value));
+			MaterialAsset->m_FloatSlots.push_back(MaterialIndexedFloatParameter(name, Value, i));
 		}
 	}
 

@@ -104,9 +104,11 @@ namespace Drn
 			m_FloatSlots.reserve(ScalarCount);
 			for (int i = 0; i < ScalarCount; i++)
 			{
-				m_FloatSlots.push_back(FloatProperty());
+				m_FloatSlots.push_back(MaterialIndexedFloatParameter());
 				m_FloatSlots[i].Serialize(Ar);
 			}
+
+			InitalizeScalarMap();
 		}
 
 		else
@@ -169,6 +171,16 @@ namespace Drn
 		{
 			m_CS_Blob->Release();
 			m_CS_Blob = nullptr;
+		}
+	}
+
+	void Material::InitalizeScalarMap()
+	{
+		m_ScalarMap.clear();
+
+		for ( int i = 0; i < m_FloatSlots.size(); i++ )
+		{
+			m_ScalarMap[m_FloatSlots[i].m_Name] = &m_FloatSlots[i];
 		}
 	}
 
@@ -323,25 +335,21 @@ namespace Drn
 					ScalarValues.push_back(m_FloatSlots[i].m_Value);
 				}
 
-				// 256 padding 
-				for (int i = ScalarValues.size(); i < 64; i++ )
-				{
-					ScalarValues.push_back(0);
-				}
-
 				const size_t ScalarValueBufferSize = ScalarValues.size() * sizeof(float);
+				// 256 padding 
+				const size_t ScalarValueBufferSizePadded = ( ScalarValueBufferSize + 255 ) & ~255;
 
-				m_ScalarCBV = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarValueBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
+				m_ScalarCBV = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarValueBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 				UINT8* ConstantBufferStart;
 				CD3DX12_RANGE readRange( 0, 0 );
 				m_ScalarCBV->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, ScalarValues.data(), ScalarValueBufferSize );
+				memcpy( ConstantBufferStart, ScalarValues.data(), ScalarValueBufferSizePadded );
 				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 				ResourceViewDesc.BufferLocation = m_ScalarCBV->GetD3D12Resource()->GetGPUVirtualAddress();
-				ResourceViewDesc.SizeInBytes = ( ScalarValueBufferSize + 255) & ~255;
+				ResourceViewDesc.SizeInBytes = ScalarValueBufferSizePadded;
 				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarCpuHandle);
 			}
 
@@ -457,5 +465,25 @@ namespace Drn
 		}
 	}
 
+
+	void Material::SetNamedScalar( const std::string& Name, float Value )
+	{
+		auto it = m_ScalarMap.find(Name);
+
+		if ( it != m_ScalarMap.end() )
+		{
+			it->second->m_Value = Value;
+
+			if (m_ScalarCBV && m_ScalarCBV->GetD3D12Resource())
+			{
+				UINT8* ScalarBufferStart;
+				CD3DX12_RANGE readRange( 0, 0 );
+				m_ScalarCBV->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ScalarBufferStart ) );
+				memcpy( ScalarBufferStart + it->second->m_Index * sizeof(float), &Value, sizeof(float) );
+				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
+			}
+		}
+
+	}
 
 }

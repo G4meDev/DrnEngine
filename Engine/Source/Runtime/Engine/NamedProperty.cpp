@@ -94,4 +94,18 @@ namespace Drn
 	}
 #endif
 
+	void MaterialIndexedFloatParameter::Serialize( Archive& Ar )
+	{
+		FloatProperty::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> m_Index;
+		}
+		else
+		{
+			Ar << m_Index;
+		}
+	}
+
 }

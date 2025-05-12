@@ -36,6 +36,8 @@ namespace Drn
 		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
 		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
 
+		void SetNamedScalar(const std::string& Name, float Value);
+
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
@@ -73,7 +75,7 @@ namespace Drn
 		D3D12_CULL_MODE m_CullMode;
 
 		std::vector<Texture2DProperty> m_Texture2DSlots;
-		std::vector<FloatProperty> m_FloatSlots;
+		std::vector<MaterialIndexedFloatParameter> m_FloatSlots;
 
 		Resource* m_ScalarCBV;
 
@@ -82,7 +84,11 @@ namespace Drn
 
 		PipelineStateObject* m_MainPassPSO;
 
+		std::unordered_map<std::string, MaterialIndexedFloatParameter*> m_ScalarMap;
+
 		bool m_RenderStateDirty;
+
+		void InitalizeScalarMap();
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

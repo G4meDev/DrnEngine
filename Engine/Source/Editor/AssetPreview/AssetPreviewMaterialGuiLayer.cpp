@@ -171,7 +171,8 @@ namespace Drn
 			{
 				if (m_OwningAsset->m_FloatSlots[i].Draw())
 				{
-					m_OwningAsset->MarkRenderStateDirty();
+					m_OwningAsset->SetNamedScalar(m_OwningAsset->m_FloatSlots[i].m_Name,
+						m_OwningAsset->m_FloatSlots[i].m_Value);
 				}
 			}
 		}

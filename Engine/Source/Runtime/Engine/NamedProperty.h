@@ -66,4 +66,24 @@ namespace Drn
 #endif
 	};
 
+
+	class MaterialIndexedFloatParameter : public FloatProperty
+	{
+	public:
+		MaterialIndexedFloatParameter()
+			: FloatProperty("", 0.0f)
+			, m_Index(0)
+		{
+		};
+
+		MaterialIndexedFloatParameter(const std::string& Name, float Value, uint16 Index)
+			: FloatProperty(Name, Value)
+			, m_Index(Index)
+		{
+		}
+
+		virtual void Serialize( Archive& Ar ) override;
+		uint16 m_Index;
+	};
+
 }
