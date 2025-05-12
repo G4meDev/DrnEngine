@@ -21,7 +21,6 @@ namespace Drn
 			, m_SlicePitch(1)
 			, m_ImageBlob(nullptr)
 			, m_Resource(nullptr)
-			, m_IntermediateResource(nullptr)
 			, m_RenderStateDirty(true)
 		{
 		}
@@ -34,7 +33,7 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
-		inline ID3D12Resource* GetResource() { return m_Resource; }
+		inline ID3D12Resource* GetResource() { return m_Resource ? m_Resource->GetD3D12Resource() : nullptr; }
 
 		inline bool IsSRGB() const				{ return m_sRGB; }
 		inline uint16 GetSizeX() const			{ return m_SizeX; }
@@ -59,14 +58,7 @@ namespace Drn
 		{
 			if (m_Resource)
 			{
-				m_Resource->Release();
-				m_Resource = nullptr;
-			}
-
-			if (m_IntermediateResource)
-			{
-				m_IntermediateResource->Release();
-				m_IntermediateResource = nullptr;
+				m_Resource->ReleaseBufferedResource();
 			}
 		}
 
@@ -78,11 +70,7 @@ protected:
 		void CloseAssetPreview() override = 0;
 #endif
 
-		ID3D12Resource* m_Resource;
-		//D3D12_Res m_ResourceView;
-
-		// TODO: make single and souble buffer structures to delete this at start of next frame
-		ID3D12Resource* m_IntermediateResource;
+		Resource* m_Resource;
 
 		bool m_sRGB;
 		uint16 m_SizeX;

@@ -54,6 +54,7 @@ namespace Drn
 	class StaticMesh;
 	class Material;
 	class PipelineStateObject;
+	class Resource;
 	class Texture2D;
 	class TextureVolume;
 	class TextureCube;

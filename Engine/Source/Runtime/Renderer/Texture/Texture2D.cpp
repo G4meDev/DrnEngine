@@ -75,38 +75,33 @@ namespace Drn
 			TextureDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 			TextureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-			D3D12_HEAP_PROPERTIES HeapProps;
-			HeapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-			HeapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-			HeapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-			HeapProps.CreationNodeMask = 1;
-			HeapProps.VisibleNodeMask = 1;
-
-			Device->CreateCommittedResource(&HeapProps, D3D12_HEAP_FLAG_NONE, &TextureDesc,
-				D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&m_Resource));
+			m_Resource = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, TextureDesc, D3D12_RESOURCE_STATE_COPY_DEST);
 
 			D3D12_SUBRESOURCE_DATA TextureResource;
 			TextureResource.pData = m_ImageBlob->GetBufferPointer();
 			TextureResource.RowPitch = m_RowPitch;
 			TextureResource.SlicePitch = m_SlicePitch;
 
-			uint64 UploadBufferSize = GetRequiredIntermediateSize(m_Resource, 0, 1);
+			uint64 UploadBufferSize = GetRequiredIntermediateSize(m_Resource->GetD3D12Resource(), 0, 1);
 
-			Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ),
-				D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer( UploadBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-				IID_PPV_ARGS( &m_IntermediateResource ) );
+			Resource* IntermediateResource = Resource::Create(D3D12_HEAP_TYPE_UPLOAD,
+				CD3DX12_RESOURCE_DESC::Buffer( UploadBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+			// TODO: maybe 1 frame lifetime is enough instead of NUM_BACKBUFFER
+			IntermediateResource->ReleaseBufferedResource();
 
 #if D3D12_Debug_INFO
 			std::string TextureName = Path::ConvertShortPath(m_Path);
 			TextureName = Path::RemoveFileExtension(TextureName);
-			m_Resource->SetName(StringHelper::s2ws("TextureResource_" + TextureName).c_str());
-			m_IntermediateResource->SetName(StringHelper::s2ws("TextureIntermediateResource_" + TextureName).c_str());
+			m_Resource->SetName("TextureResource_" + TextureName);
+			IntermediateResource->SetName("TextureIntermediateResource_" + TextureName);
 #endif
 
-			UpdateSubresources(CommandList, m_Resource, m_IntermediateResource, 0, 0, 1, &TextureResource);
+			UpdateSubresources(CommandList, m_Resource->GetD3D12Resource(),
+				IntermediateResource->GetD3D12Resource(), 0, 0, 1, &TextureResource);
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_Resource, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+				m_Resource->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 			CommandList->ResourceBarrier(1, &barrier);
 
 
@@ -118,7 +113,7 @@ namespace Drn
 			ResourceViewDesc.Texture2D.MostDetailedMip = 0;
 
 			Renderer::Get()->TempSRVAllocator.Alloc(&TextureCpuHandle, &TextureGpuHandle);
-			Device->CreateShaderResourceView(m_Resource, &ResourceViewDesc, TextureCpuHandle);
+			Device->CreateShaderResourceView(m_Resource->GetD3D12Resource(), &ResourceViewDesc, TextureCpuHandle);
 
 // -----------------------------------------------------------------------------------------------------------------------------
 
