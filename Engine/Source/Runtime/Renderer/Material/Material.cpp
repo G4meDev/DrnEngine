@@ -88,9 +88,15 @@ namespace Drn
 				m_Texture2DSlots[i].Serialize(Ar);
 			}
 
+			uint8 ScalarCount;
+			Ar >> ScalarCount;
 			m_FloatSlots.clear();
-			m_FloatSlots.push_back(FloatProperty("ABC", 5));
-			m_FloatSlots.push_back(FloatProperty("R_3BC", 10));
+			m_FloatSlots.reserve(ScalarCount);
+			for (int i = 0; i < ScalarCount; i++)
+			{
+				m_FloatSlots.push_back(FloatProperty());
+				m_FloatSlots[i].Serialize(Ar);
+			}
 		}
 
 		else
@@ -106,6 +112,13 @@ namespace Drn
 			for (int i = 0; i < Texture2DCount; i++)
 			{
 				m_Texture2DSlots[i].Serialize(Ar);
+			}
+
+			uint8 ScalarCount = m_FloatSlots.size();
+			Ar << ScalarCount;
+			for (int i = 0; i < ScalarCount; i++)
+			{
+				m_FloatSlots[i].Serialize(Ar);
 			}
 		}
 	}

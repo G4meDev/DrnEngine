@@ -112,10 +112,10 @@ namespace Drn
 		std::vector<Texture2DProperty> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
 		MaterialAsset->m_Texture2DSlots.clear();
 
-		std::vector<std::string> Texture2DNames;
-		FindNamedTokens(ShaderCode, "Texture2D", Texture2DNames);
+		std::vector<std::string> NamedTokens;
+		FindNamedTokens(ShaderCode, "Texture2D", NamedTokens);
 
-		for (const std::string& name : Texture2DNames)
+		for (const std::string& name : NamedTokens)
 		{
 			std::string Path = DEFAULT_TEXTURE_PATH;
 
@@ -129,6 +129,27 @@ namespace Drn
 
 			MaterialAsset->m_Texture2DSlots.push_back(Texture2DProperty(name, Path));
 		}
+
+		std::vector<FloatProperty> OldScalars = MaterialAsset->m_FloatSlots;
+		MaterialAsset->m_FloatSlots.clear();
+
+		NamedTokens.clear();
+		FindNamedTokens(ShaderCode, "//Scalar", NamedTokens);
+
+		for (const std::string& name : NamedTokens)
+		{
+			float Value = 0.0f;
+
+			for (const FloatProperty& OldScalar : OldScalars)
+			{
+				if (OldScalar.m_Name == name)
+				{
+					Value = OldScalar.m_Value;
+				}
+			}
+
+			MaterialAsset->m_FloatSlots.push_back(FloatProperty(name, Value));
+		}
 	}
 
 	void AssetImporterMaterial::FindNamedTokens( const std::string& ShaderCode, const std::string& Token, std::vector<std::string>& Result )
@@ -139,7 +160,7 @@ namespace Drn
 		while( pos != std::string::npos )
 		{
 			size_t NameStart = pos + TokenLength + 1;
-			size_t NameEnd = ShaderCode.find_first_of( " ;", NameStart);
+			size_t NameEnd = ShaderCode.find_first_of( " ;\n", NameStart);
 
 			if (NameEnd != std::string::npos)
 			{

@@ -5,6 +5,16 @@ struct ModelViewProjection
 
 ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
 
+cbuffer MaterialScalars : register(b1)
+{
+    //Scalar Alpha
+    float Alpha;
+    //Scalar Rand
+    float Rand;
+    //Scalar WERWER
+    float WERWER;
+};
+
 Texture2D TestTexture : register(t0);
 SamplerState TestSampler : register(s0);
 
