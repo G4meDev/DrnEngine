@@ -108,7 +108,17 @@ namespace Drn
 				m_FloatSlots[i].Serialize(Ar);
 			}
 
-			InitalizeScalarMap();
+			uint8 Vector4Count;
+			Ar >> Vector4Count;
+			m_Vector4Slots.clear();
+			m_Vector4Slots.reserve(Vector4Count);
+			for (int i = 0; i < Vector4Count; i++)
+			{
+				m_Vector4Slots.push_back(MaterialIndexedVector4Parameter());
+				m_Vector4Slots[i].Serialize(Ar);
+			}
+
+			InitalizeParameterMap();
 		}
 
 		else
@@ -131,6 +141,13 @@ namespace Drn
 			for (int i = 0; i < ScalarCount; i++)
 			{
 				m_FloatSlots[i].Serialize(Ar);
+			}
+
+			uint8 Vector4Count = m_Vector4Slots.size();
+			Ar << Vector4Count;
+			for (int i = 0; i < Vector4Count; i++)
+			{
+				m_Vector4Slots[i].Serialize(Ar);
 			}
 		}
 	}
@@ -174,13 +191,19 @@ namespace Drn
 		}
 	}
 
-	void Material::InitalizeScalarMap()
+	void Material::InitalizeParameterMap()
 	{
 		m_ScalarMap.clear();
+		m_Vector4Map.clear();
 
 		for ( int i = 0; i < m_FloatSlots.size(); i++ )
 		{
 			m_ScalarMap[m_FloatSlots[i].m_Name] = &m_FloatSlots[i];
+		}
+
+		for ( int i = 0; i < m_Vector4Slots.size(); i++ )
+		{
+			m_Vector4Map[m_Vector4Slots[i].m_Name] = &m_Vector4Slots[i];
 		}
 	}
 
@@ -263,9 +286,11 @@ namespace Drn
 
 			const int NumTexture2Ds = m_Texture2DSlots.size();
 			const int ScalarCount = m_FloatSlots.size();
+			const int Vector4Count = m_Vector4Slots.size();
+			const bool NeedsConstantBuffer = ScalarCount > 0 || Vector4Count > 0;
 
 			std::vector<D3D12_DESCRIPTOR_RANGE> Ranges;
-			Ranges.reserve(NumTexture2Ds * 2 + (ScalarCount > 0) );
+			Ranges.reserve(NumTexture2Ds * 2 + NeedsConstantBuffer );
 
 			for (int i = 0; i < NumTexture2Ds; i++)
 			{
@@ -306,7 +331,7 @@ namespace Drn
 				}
 			}
 
-			if (ScalarCount > 0)
+			if (NeedsConstantBuffer)
 			{
 				D3D12_DESCRIPTOR_RANGE Range = {};
 				Range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
@@ -328,28 +353,36 @@ namespace Drn
 
 				Renderer::Get()->TempSRVAllocator.Alloc(&m_ScalarCpuHandle, &m_ScalarGpuHandle);
 
-				std::vector<float> ScalarValues;
-				ScalarValues.reserve(ScalarCount);
+				// TODO: maybe serialize this to asset
+				std::vector<float> ConstantBuffer;
+				ConstantBuffer.reserve(ScalarCount + Vector4Count * 4);
 				for (int i = 0; i < ScalarCount; i++)
 				{
-					ScalarValues.push_back(m_FloatSlots[i].m_Value);
+					ConstantBuffer.push_back(m_FloatSlots[i].m_Value);
+				}
+				for (int i = 0; i < Vector4Count; i++)
+				{
+					ConstantBuffer.push_back(m_Vector4Slots[i].m_Value.GetX());
+					ConstantBuffer.push_back(m_Vector4Slots[i].m_Value.GetY());
+					ConstantBuffer.push_back(m_Vector4Slots[i].m_Value.GetZ());
+					ConstantBuffer.push_back(m_Vector4Slots[i].m_Value.GetW());
 				}
 
-				const size_t ScalarValueBufferSize = ScalarValues.size() * sizeof(float);
+				const size_t ConstantBufferSize = ConstantBuffer.size() * sizeof( float );
 				// 256 padding 
-				const size_t ScalarValueBufferSizePadded = ( ScalarValueBufferSize + 255 ) & ~255;
+				const size_t ConstantBufferSizePadded = ( ConstantBufferSize + 255 ) & ~255;
 
-				m_ScalarCBV = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarValueBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
+				m_ScalarCBV = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ConstantBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 				UINT8* ConstantBufferStart;
 				CD3DX12_RANGE readRange( 0, 0 );
 				m_ScalarCBV->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, ScalarValues.data(), ScalarValueBufferSizePadded );
+				memcpy( ConstantBufferStart, ConstantBuffer.data(), ConstantBufferSizePadded );
 				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 				ResourceViewDesc.BufferLocation = m_ScalarCBV->GetD3D12Resource()->GetGPUVirtualAddress();
-				ResourceViewDesc.SizeInBytes = ScalarValueBufferSizePadded;
+				ResourceViewDesc.SizeInBytes = ConstantBufferSizePadded;
 				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarCpuHandle);
 			}
 
@@ -483,7 +516,27 @@ namespace Drn
 				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
 			}
 		}
+	}
 
+	void Material::SetNamedVector4( const std::string& Name, const Vector4& Value )
+	{
+		auto it = m_Vector4Map.find(Name);
+		
+		if ( it != m_Vector4Map.end() )
+		{
+			it->second->m_Value = Value;
+
+			if (m_ScalarCBV && m_ScalarCBV->GetD3D12Resource())
+			{
+				UINT8* ScalarBufferStart;
+				CD3DX12_RANGE readRange( 0, 0 );
+				m_ScalarCBV->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ScalarBufferStart ) );
+
+				float Buffer[4] = { Value.GetX(), Value.GetY(), Value.GetZ(), Value.GetW() };
+				memcpy( ScalarBufferStart + it->second->m_Index * sizeof(float), &Buffer[0], sizeof(float) * 4 );
+				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
+			}
+		}
 	}
 
 }

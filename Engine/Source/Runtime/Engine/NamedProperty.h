@@ -66,7 +66,6 @@ namespace Drn
 #endif
 	};
 
-
 	class MaterialIndexedFloatParameter : public FloatProperty
 	{
 	public:
@@ -86,4 +85,49 @@ namespace Drn
 		uint16 m_Index;
 	};
 
+// -----------------------------------------------------------------------------------------------
+
+	class Vector4Property : public NamedProperty
+	{
+	public:
+		Vector4Property()
+			: NamedProperty("")
+			, m_Value()
+		{
+		};
+
+		Vector4Property(const std::string& Name, const Vector4& Value)
+			: NamedProperty(Name)
+			, m_Value(Value)
+		{
+		}
+
+		virtual void Serialize( Archive& Ar ) override;
+		Vector4 m_Value;
+
+#if WITH_EDITOR
+		bool Draw();
+#endif
+	};
+	
+
+	// TODO: maybe multiple inheritance
+	class MaterialIndexedVector4Parameter : public Vector4Property
+	{
+	public:
+		MaterialIndexedVector4Parameter()
+			: Vector4Property()
+			, m_Index(0)
+		{
+		};
+
+		MaterialIndexedVector4Parameter(const std::string& Name, const Vector4& Value, uint16 Index)
+			: Vector4Property(Name, Value)
+			, m_Index(Index)
+		{
+		}
+
+		virtual void Serialize( Archive& Ar ) override;
+		uint16 m_Index;
+	};
 }

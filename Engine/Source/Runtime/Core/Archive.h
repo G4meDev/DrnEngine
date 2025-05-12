@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "Runtime/Math/Vector.h"
+#include "Runtime/Math/Vector4.h"
 #include "Runtime/Math/Rotator.h"
 #include "Runtime/Math/Matrix.h"
 #include "Runtime/Math/Transform.h"
@@ -31,6 +32,7 @@ namespace Drn
 		Archive& operator<<(uint64 Value);
 		Archive& operator<<(float Value);
 		Archive& operator<<(const Vector& Value);
+		Archive& operator<<(const Vector4& Value);
 		Archive& operator<<(const Quat& Value);
 		Archive& operator<<(const Transform& Value);
 		Archive& operator<<(const std::string& Value);
@@ -45,6 +47,7 @@ namespace Drn
 		Archive& operator>>(uint64& Value);
 		Archive& operator>>(float& Value);
 		Archive& operator>>(Vector& Value);
+		Archive& operator>>(Vector4& Value);
 		Archive& operator>>(Quat& Value);
 		Archive& operator>>(Transform& Value);
 		Archive& operator>>(std::string& Value);

@@ -165,7 +165,7 @@ namespace Drn
 			}
 		}
 
-		if (ImGui::CollapsingHeader( "Float", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
+		if (ImGui::CollapsingHeader( "Scalar", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
 		{
 			for (int i = 0; i < m_OwningAsset->m_FloatSlots.size(); i++)
 			{
@@ -173,6 +173,18 @@ namespace Drn
 				{
 					m_OwningAsset->SetNamedScalar(m_OwningAsset->m_FloatSlots[i].m_Name,
 						m_OwningAsset->m_FloatSlots[i].m_Value);
+				}
+			}
+		}
+
+		if (ImGui::CollapsingHeader( "Vector4", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
+		{
+			for (int i = 0; i < m_OwningAsset->m_Vector4Slots.size(); i++)
+			{
+				if (m_OwningAsset->m_Vector4Slots[i].Draw())
+				{
+					m_OwningAsset->SetNamedVector4(m_OwningAsset->m_Vector4Slots[i].m_Name,
+						m_OwningAsset->m_Vector4Slots[i].m_Value);
 				}
 			}
 		}

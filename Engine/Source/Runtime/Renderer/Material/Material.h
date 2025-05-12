@@ -37,6 +37,7 @@ namespace Drn
 		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
 
 		void SetNamedScalar(const std::string& Name, float Value);
+		void SetNamedVector4(const std::string& Name, const Vector4& Value);
 
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
@@ -68,7 +69,6 @@ namespace Drn
 		ID3DBlob* m_CS_Blob;
 
 		ID3D12RootSignature* m_RootSignature;
-		//ID3D12PipelineState* m_BasePassPSO;
 
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
@@ -76,6 +76,7 @@ namespace Drn
 
 		std::vector<Texture2DProperty> m_Texture2DSlots;
 		std::vector<MaterialIndexedFloatParameter> m_FloatSlots;
+		std::vector<MaterialIndexedVector4Parameter> m_Vector4Slots;
 
 		Resource* m_ScalarCBV;
 
@@ -85,10 +86,11 @@ namespace Drn
 		PipelineStateObject* m_MainPassPSO;
 
 		std::unordered_map<std::string, MaterialIndexedFloatParameter*> m_ScalarMap;
+		std::unordered_map<std::string, MaterialIndexedVector4Parameter*> m_Vector4Map;
 
 		bool m_RenderStateDirty;
 
-		void InitalizeScalarMap();
+		void InitalizeParameterMap();
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

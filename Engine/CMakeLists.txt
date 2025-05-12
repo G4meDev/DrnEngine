@@ -67,6 +67,7 @@ set( HEADER_FILES
 	Source/Runtime/Math/Math.h
 	Source/Runtime/Math/Box.h
 	Source/Runtime/Math/Vector.h
+	Source/Runtime/Math/Vector4.h
 	Source/Runtime/Math/Quat.h
 	Source/Runtime/Math/Transform.h
 	Source/Runtime/Math/Rotator.h
@@ -179,6 +180,7 @@ set( SOURCE_FILES
 	Source/Runtime/Math/Math.cpp
 	Source/Runtime/Math/Box.cpp
 	Source/Runtime/Math/Vector.cpp
+	Source/Runtime/Math/Vector4.cpp
 	Source/Runtime/Math/Quat.cpp
 	Source/Runtime/Math/Transform.cpp
 	Source/Runtime/Math/Rotator.cpp

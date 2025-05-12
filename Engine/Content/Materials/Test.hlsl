@@ -13,6 +13,17 @@ cbuffer MaterialScalars : register(b1)
     float Rand;
     //Scalar WERWER
     float WERWER;
+
+    //Scalar PAD
+    float PAD;
+    
+// ----------------------------------------------
+
+    //Vector4 LightDir
+    float4 LightDir;
+    
+    //Vector4 ExampleVec4
+    float4 ExampleVec4;
 };
 
 Texture2D TestTexture : register(t0);
@@ -62,13 +73,11 @@ struct PixelShaderInput
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
-    //return float4(IN.UV, 0, 1);
     float A = clamp(Alpha, 0, 1);
     float4 B = float4(WERWER.xxx, 1);
-    
+    float4 C = float4(ExampleVec4.xyz, 1);
+
     float4 Texture1 = TestTexture.Sample(TestSampler, IN.UV);
     float4 Texture2 = TestTexture_2.Sample(TestSampler_2, IN.UV);
-    return lerp(Texture1, Texture2, float4(A, A, A, 1.0f)) * B;
-    //return lerp(Texture1, Texture2, float4(0.5f, 0.5f, 0.5f, 1.0f));
-    //return Texture1;
+    return lerp(Texture1, Texture2, float4(A, A, A, 1.0f)) * B * C;
 }

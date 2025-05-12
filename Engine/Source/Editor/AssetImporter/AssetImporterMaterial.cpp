@@ -130,6 +130,8 @@ namespace Drn
 			MaterialAsset->m_Texture2DSlots.push_back(Texture2DProperty(name, Path));
 		}
 
+// ----------------------------------------------------------------------------------------------------------------------------
+
 		std::vector<MaterialIndexedFloatParameter> OldScalars = MaterialAsset->m_FloatSlots;
 		MaterialAsset->m_FloatSlots.clear();
 
@@ -151,6 +153,34 @@ namespace Drn
 
 			MaterialAsset->m_FloatSlots.push_back(MaterialIndexedFloatParameter(name, Value, i));
 		}
+
+// ----------------------------------------------------------------------------------------------------------------------------
+
+		const uint32 FloatSize = MaterialAsset->m_FloatSlots.size();
+
+		std::vector<MaterialIndexedVector4Parameter> OldVector4s = MaterialAsset->m_Vector4Slots;
+		MaterialAsset->m_Vector4Slots.clear();
+
+		NamedTokens.clear();
+		FindNamedTokens(ShaderCode, "//Vector4", NamedTokens);
+
+		for (int i = 0; i < NamedTokens.size(); i++)
+		{
+			const std::string& name = NamedTokens[i];
+			Vector4 Value = 0.0f;
+
+			for (const Vector4Property& OldVector4 : OldVector4s)
+			{
+				if (OldVector4.m_Name == name)
+				{
+					Value = OldVector4.m_Value;
+				}
+			}
+
+			MaterialAsset->m_Vector4Slots.push_back(MaterialIndexedVector4Parameter(name, Value, FloatSize + i * 4));
+		}
+
+
 	}
 
 	void AssetImporterMaterial::FindNamedTokens( const std::string& ShaderCode, const std::string& Token, std::vector<std::string>& Result )

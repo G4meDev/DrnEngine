@@ -105,6 +105,16 @@ namespace Drn
 		return *this;
 	}
 
+	Archive& Archive::operator<<( const Vector4& Value )
+	{
+		*this << Value.GetX();
+		*this << Value.GetY();
+		*this << Value.GetZ();
+		*this << Value.GetW();
+
+		return *this;
+	}
+
 	Archive& Archive::operator<<( const Quat& Value )
 	{
 		*this << Value.GetX();
@@ -203,26 +213,28 @@ namespace Drn
 
 	Archive& Archive::operator>>( Vector& Value )
 	{
-		float X;
-		float Y;
-		float Z;
-
+		float X, Y, Z;
 		*this >> X >> Y >> Z;
-		Value = Vector(X, Y, Z);
 
+		Value = Vector(X, Y, Z);
+		return *this;
+	}
+
+	Archive& Archive::operator>>( Vector4& Value )
+	{
+		float X, Y, Z, W;
+		*this >> X >> Y >> Z >> W;
+
+		Value = Vector4(X, Y, Z, W);
 		return *this;
 	}
 
 	Archive& Archive::operator>>( Quat& Value )
 	{
-		float X;
-		float Y;
-		float Z;
-		float W;
-
+		float X, Y, Z, W;
 		*this >> X >> Y >> Z >> W;
-		Value = Quat(X, Y, Z, W);
 
+		Value = Quat(X, Y, Z, W);
 		return *this;
 	}
 
@@ -259,5 +271,6 @@ namespace Drn
 
 		return *this;
 	}
+
 
 }

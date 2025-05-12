@@ -119,7 +119,7 @@ namespace Drn
 	private:
 		XMFLOAT3 m_Vector;
 
-
+		friend class Vector4;
 		friend class Quat;
 		friend class Transform;
 		friend class Matrix;

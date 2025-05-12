@@ -108,4 +108,45 @@ namespace Drn
 		}
 	}
 
+	void Vector4Property::Serialize( Archive& Ar )
+	{
+		NamedProperty::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> m_Value;
+		}
+		else
+		{
+			Ar << m_Value;
+		}
+	}
+
+#if WITH_EDITOR
+	bool Vector4Property::Draw()
+	{
+		ImGui::Text(m_Name.c_str());
+		ImGui::SameLine();
+		ImGui::PushID(m_Name.c_str());
+		bool Result = m_Value.Draw();
+		ImGui::PopID();
+
+		return Result;
+	}
+#endif
+
+	void MaterialIndexedVector4Parameter::Serialize( Archive& Ar )
+	{
+		Vector4Property::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> m_Index;
+		}
+		else
+		{
+			Ar << m_Index;
+		}
+	}
+
 }
