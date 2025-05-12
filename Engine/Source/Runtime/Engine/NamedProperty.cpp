@@ -87,7 +87,7 @@ namespace Drn
 		ImGui::Text(m_Name.c_str());
 		ImGui::SameLine();
 		ImGui::PushID(m_Name.c_str());
-		bool Result = ImGui::SliderFloat("##", &m_Value, -100, 100);
+		bool Result = ImGui::SliderFloat("##", &m_Value, -1, 1);
 		ImGui::PopID();
 
 		return Result;

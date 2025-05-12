@@ -38,7 +38,8 @@ namespace Drn
 			HeapHandleIncrement             = device->GetDescriptorHandleIncrementSize( HeapType );
 			FreeIndices.reserve( (int)desc.NumDescriptors );
 			for ( int n = desc.NumDescriptors; n > 0; n-- )
-				FreeIndices.push_back( n - 1 );
+				//FreeIndices.push_back( n - 1 );
+				FreeIndices.push_front( n - 1 );
 		}
 		void Destroy()
 		{
@@ -59,7 +60,8 @@ namespace Drn
 			int cpu_idx = (int)( ( out_cpu_desc_handle.ptr - HeapStartCpu.ptr ) / HeapHandleIncrement );
 			int gpu_idx = (int)( ( out_gpu_desc_handle.ptr - HeapStartGpu.ptr ) / HeapHandleIncrement );
 			if (cpu_idx == gpu_idx)
-				FreeIndices.push_back( cpu_idx );
+				//FreeIndices.push_back( cpu_idx );
+				FreeIndices.push_front( cpu_idx );
 		}
 	};
 

@@ -15,6 +15,7 @@ namespace Drn
 		, m_HS_Blob(nullptr)
 		, m_DS_Blob(nullptr)
 		, m_CS_Blob(nullptr)
+		, m_ScalarCBV(nullptr)
 		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
 		, m_RenderStateDirty(true)
@@ -34,6 +35,7 @@ namespace Drn
 		, m_HS_Blob(nullptr)
 		, m_DS_Blob(nullptr)
 		, m_CS_Blob(nullptr)
+		, m_ScalarCBV(nullptr)
 		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
 		, m_RenderStateDirty(true)
@@ -51,6 +53,14 @@ namespace Drn
 		ReleaseShaderBlobs();
 		if (m_RootSignature) m_RootSignature->Release();
 		if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
+
+		if (m_ScalarCBV)
+		{
+			m_ScalarCBV->ReleaseBufferedResource();
+			m_ScalarCBV = nullptr;
+		}
+
+		Renderer::Get()->TempSRVAllocator.Free(m_ScalarCpuHandle, m_ScalarGpuHandle);
 	}
 
 	EAssetType Material::GetAssetType() { return EAssetType::Material; }
@@ -202,6 +212,7 @@ namespace Drn
 		{
 			SCOPE_STAT(UploadResourceMaterial);
 
+
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 			for (Texture2DProperty& Slot : m_Texture2DSlots)
@@ -214,6 +225,14 @@ namespace Drn
 
 			if (m_RootSignature) m_RootSignature->Release();
 			if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
+			
+			if (m_ScalarCBV)
+			{
+				m_ScalarCBV->ReleaseBufferedResource();
+				m_ScalarCBV = nullptr;
+			}
+
+			Renderer::Get()->TempSRVAllocator.Free(m_ScalarCpuHandle, m_ScalarGpuHandle);
 
 			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -231,8 +250,10 @@ namespace Drn
 			}
 
 			const int NumTexture2Ds = m_Texture2DSlots.size();
+			const int ScalarCount = m_FloatSlots.size();
+
 			std::vector<D3D12_DESCRIPTOR_RANGE> Ranges;
-			Ranges.reserve(NumTexture2Ds * 2);
+			Ranges.reserve(NumTexture2Ds * 2 + (ScalarCount > 0) );
 
 			for (int i = 0; i < NumTexture2Ds; i++)
 			{
@@ -271,6 +292,57 @@ namespace Drn
 
 					rootParameters.push_back(Param);
 				}
+			}
+
+			if (ScalarCount > 0)
+			{
+				D3D12_DESCRIPTOR_RANGE Range = {};
+				Range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+				Range.BaseShaderRegister = 1;
+				Range.RegisterSpace = 0;
+				Range.NumDescriptors = 1;
+				Range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+				Ranges.push_back(Range);
+
+				D3D12_ROOT_PARAMETER Param = {};
+				Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+				Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+				Param.DescriptorTable.NumDescriptorRanges = 1;
+				Param.DescriptorTable.pDescriptorRanges = &Ranges[NumTexture2Ds * 2];
+
+				rootParameters.push_back(Param);
+
+// ---------------------------------------------------------------------------------------------------------
+
+				Renderer::Get()->TempSRVAllocator.Alloc(&m_ScalarCpuHandle, &m_ScalarGpuHandle);
+
+				std::vector<float> ScalarValues;
+				ScalarValues.reserve(ScalarCount);
+				for (int i = 0; i < ScalarCount; i++)
+				{
+					ScalarValues.push_back(m_FloatSlots[i].m_Value);
+				}
+
+				// 256 padding 
+				for (int i = ScalarValues.size(); i < 64; i++ )
+				{
+					ScalarValues.push_back(0);
+				}
+
+				const size_t ScalarValueBufferSize = ScalarValues.size() * sizeof(float);
+
+				m_ScalarCBV = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarValueBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+				UINT8* ConstantBufferStart;
+				CD3DX12_RANGE readRange( 0, 0 );
+				m_ScalarCBV->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+				memcpy( ConstantBufferStart, ScalarValues.data(), ScalarValueBufferSize );
+				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
+
+				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+				ResourceViewDesc.BufferLocation = m_ScalarCBV->GetD3D12Resource()->GetGPUVirtualAddress();
+				ResourceViewDesc.SizeInBytes = ( ScalarValueBufferSize + 255) & ~255;
+				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarCpuHandle);
 			}
 
 			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(rootParameters.size(), rootParameters.data(), 0, nullptr, rootSignatureFlags );
@@ -350,11 +422,16 @@ namespace Drn
 		CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
 
 		const int NumTexture2Ds = m_Texture2DSlots.size();
-
 		for (int i = 0; i < m_Texture2DSlots.size(); i++)
 		{
 			CommandList->SetGraphicsRootDescriptorTable( 1 + i * 2, m_Texture2DSlots[i].m_Texture2D->SamplerGpuHandle );
 			CommandList->SetGraphicsRootDescriptorTable( 2 + i * 2, m_Texture2DSlots[i].m_Texture2D->TextureGpuHandle );
+		}
+
+		const int NumScalars = m_FloatSlots.size();
+		if (NumScalars > 0)
+		{
+			CommandList->SetGraphicsRootDescriptorTable( 1 + NumTexture2Ds * 2, m_ScalarGpuHandle);
 		}
 	}
 

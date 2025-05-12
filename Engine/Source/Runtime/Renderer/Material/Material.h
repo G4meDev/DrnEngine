@@ -75,6 +75,11 @@ namespace Drn
 		std::vector<Texture2DProperty> m_Texture2DSlots;
 		std::vector<FloatProperty> m_FloatSlots;
 
+		Resource* m_ScalarCBV;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_ScalarCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_ScalarGpuHandle;
+
 		PipelineStateObject* m_MainPassPSO;
 
 		bool m_RenderStateDirty;

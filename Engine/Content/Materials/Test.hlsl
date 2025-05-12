@@ -63,8 +63,11 @@ struct PixelShaderInput
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     //return float4(IN.UV, 0, 1);
+    float A = clamp(Alpha, 0, 1);
+    
     float4 Texture1 = TestTexture.Sample(TestSampler, IN.UV);
     float4 Texture2 = TestTexture_2.Sample(TestSampler_2, IN.UV);
-    return lerp(Texture1, Texture2, float4(0.5f, 0.5f, 0.5f, 1.0f));
+    return lerp(Texture1, Texture2, float4(A, A, A, 1.0f));
+    //return lerp(Texture1, Texture2, float4(0.5f, 0.5f, 0.5f, 1.0f));
     //return Texture1;
 }
