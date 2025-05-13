@@ -130,6 +130,8 @@ namespace Drn
 	{
 		PrimitiveComponent::DrawDetailPanel(DeltaTime);
 
+		ImGui::TextWrapped( "Guid: %s", m_Guid.ToString().c_str());
+
 		if ( ImGui::Button( "Clear" ) )
 		{
 			ClearMesh();

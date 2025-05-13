@@ -4,6 +4,7 @@
 namespace Drn
 {
 	Component::Component()
+		: m_Guid(Guid::NewGuid())
 	{
 		
 	}

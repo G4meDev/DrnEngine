@@ -32,6 +32,8 @@ namespace Drn
 
 		inline void SetName( const std::string& Name ) { m_Name = Name; }
 
+		Guid GetGuidAtScreenPosition(const IntPoint& ScrenPosition);
+
 		CameraActor* m_CameraActor;
 
 	protected:
@@ -44,6 +46,7 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_ColorTarget;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_GuidTarget;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthTarget;
 
 		D3D12_VIEWPORT m_Viewport;

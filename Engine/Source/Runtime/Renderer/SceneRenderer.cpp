@@ -32,7 +32,7 @@ namespace Drn
 		Device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap));
 
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-		rtvHeapDesc.NumDescriptors = 1;
+		rtvHeapDesc.NumDescriptors = 2;
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RTVHeap));
@@ -50,10 +50,22 @@ namespace Drn
 		SCOPE_STAT( BeginRender );
 
 		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+		FLOAT GuidColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE GuidHandle(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), RTVDescriporSize);
+
+		D3D12_CPU_DESCRIPTOR_HANDLE const RTVHandles[2] = 
+		{
+			m_RTVHeap->GetCPUDescriptorHandleForHeapStart(),
+			CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize)
+		};
+
 		CommandList->ClearDepthStencilView(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
 		CommandList->ClearRenderTargetView(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
+		CommandList->ClearRenderTargetView(GuidHandle, GuidColor, 0, nullptr);
 
-		CommandList->OMSetRenderTargets(1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), false, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
+		CommandList->OMSetRenderTargets(2, RTVHandles, false, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
 		CommandList->RSSetViewports(1, &m_Viewport);
 		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 	}
@@ -139,8 +151,38 @@ namespace Drn
 		m_ColorTarget->SetName( L"Color Render Target" );
 #endif
 
-		Renderer::Get()->GetCommandList()->OMSetRenderTargets( 1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), false,
-											&m_DSVHeap->GetCPUDescriptorHandleForHeapStart() );
+// ----------------------------------------------------------------------------------------------------------------------------
+
+		D3D12_CLEAR_VALUE GuidClearValue;
+		GuidClearValue.Format   = GBUFFER_GUID_FORMAT;
+		GuidClearValue.Color[0] = 0.0f;
+		GuidClearValue.Color[1] = 0.0f;
+		GuidClearValue.Color[2] = 0.0f;
+		GuidClearValue.Color[3] = 0.0f;
+
+		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_GUID_FORMAT, m_RenderSize.X, m_RenderSize.Y,
+			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET), D3D12_RESOURCE_STATE_RENDER_TARGET,
+			&GuidClearValue, IID_PPV_ARGS(m_GuidTarget.ReleaseAndGetAddressOf()) );
+
+		rtv.Format = GBUFFER_GUID_FORMAT;
+		rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		rtv.Texture2D.MipSlice = 0;
+
+		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		Device->CreateRenderTargetView( m_GuidTarget.Get(), &rtv, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize) );
+
+#if D3D12_Debug_INFO
+		m_GuidTarget->SetName( L"Guid Target" );
+#endif
+
+		D3D12_CPU_DESCRIPTOR_HANDLE const RTVHandles[2] = 
+		{
+			m_RTVHeap->GetCPUDescriptorHandleForHeapStart(),
+			CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize)
+		};
+
+		Renderer::Get()->GetCommandList()->OMSetRenderTargets( 2, RTVHandles, false, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart() );
 		Renderer::Get()->GetCommandList()->RSSetViewports( 1, &m_Viewport );
 		Renderer::Get()->GetCommandList()->RSSetScissorRects( 1, &m_ScissorRect );
 	}
@@ -148,6 +190,13 @@ namespace Drn
 	void SceneRenderer::SetRenderingEnabled( bool Enabled )
 	{
 		m_RenderingEnabled = Enabled;
+	}
+
+	Guid SceneRenderer::GetGuidAtScreenPosition( const IntPoint& ScrenPosition )
+	{
+		Guid Result;
+
+		return Result;
 	}
 
 }

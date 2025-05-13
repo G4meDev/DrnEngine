@@ -74,8 +74,17 @@ struct PixelShaderInput
     float2 UV : TEXCOORD0;
 };
 
-float4 Main_PS(PixelShaderInput IN) : SV_Target
+struct PixelShaderOutput
 {
+    float4 Color : SV_TARGET0;
+    uint4 Guid : SV_TARGET1;
+};
+
+
+PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+{
+    PixelShaderOutput OUT;
+    
     //float A = clamp(Alpha, 0, 1);
     //float4 B = float4(WERWER.xxx, 1);
     //float4 C = float4(ExampleVec4.xyz, 1);
@@ -86,5 +95,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
 
     float L = max(0, dot(IN.Normal, LightDir.xyz));
     
-    return Texture1 * L * Alpha;
+    OUT.Color = Texture1 * L * Alpha;
+    OUT.Guid = uint4(33, 52, 61, 270);
+    
+    return OUT;
 }

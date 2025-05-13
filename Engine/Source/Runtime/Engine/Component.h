@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Core/Serializable.h"
+#include "Runtime/Core/Guid.h"
 
 namespace Drn
 {
@@ -43,12 +44,16 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld);
 		virtual void UnRegisterComponent();
 
+	protected:
+		Guid m_Guid;
+
 	private:
 
 		World* m_OwningWorld;
 		Actor* Owner = nullptr;
 
 		bool bActive = true;
+
 
 #if WITH_EDITOR
 		std::string ComponentLabel = "Component_00";

@@ -44,8 +44,9 @@ namespace Drn
 		if (HS) PipelineDesc.HS							= CD3DX12_SHADER_BYTECODE(HS);
 		if (DS) PipelineDesc.DS							= CD3DX12_SHADER_BYTECODE(DS);
 		PipelineDesc.DSVFormat							= depthBufferFormat;
-		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.NumRenderTargets					= 2;
 		PipelineDesc.RTVFormats[0]						= backBufferFormat;
+		PipelineDesc.RTVFormats[1]						= GBUFFER_GUID_FORMAT;
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( Result->m_PipelineState.GetAddressOf() ) );
