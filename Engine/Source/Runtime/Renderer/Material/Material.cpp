@@ -278,7 +278,7 @@ namespace Drn
 				D3D12_ROOT_PARAMETER Param = {};
 				Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 				Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-				Param.Constants.Num32BitValues = sizeof( XMMATRIX ) / 4;
+				Param.Constants.Num32BitValues = (sizeof( XMMATRIX ) / 4) + (sizeof(Guid) / 4);
 				Param.Constants.ShaderRegister = 0;
 				Param.Constants.RegisterSpace = 0;
 				rootParameters.push_back(Param);

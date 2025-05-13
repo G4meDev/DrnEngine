@@ -1,6 +1,7 @@
 struct ModelViewProjection
 {
     matrix MVP;
+    uint4 Guid;
 };
 
 ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
@@ -41,7 +42,17 @@ struct PixelShaderInput
     float4 Color : COLOR;
 };
 
-float4 Main_PS(PixelShaderInput IN) : SV_Target
+struct PixelShaderOutput
 {
-    return IN.Color * 1.0f;
+    float4 Color : SV_TARGET0;
+    uint4 Guid : SV_TARGET1;
+};
+
+PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+{
+    PixelShaderOutput OUT;
+    OUT.Color = IN.Color * 1.0f;
+    
+    OUT.Guid = ModelViewProjectionCB.Guid;
+    return OUT;
 }

@@ -73,11 +73,11 @@ namespace Drn
 			const IntPoint ClickPos = IntPoint( MousePos.x - RectMin.x, MousePos.y - RectMin.y );
 			Guid SelectedComponentGuid = m_SceneRenderer->GetGuidAtScreenPosition(ClickPos);
 			LOG( LogViewportPanel, Info, "clicked on viewport at: %s\n\t found component with guid: %s", ClickPos.ToString().c_str(), SelectedComponentGuid.ToString().c_str() );
-			
+
 			Component* Comp = m_SceneRenderer->GetScene()->GetWorld()->GetComponentWithGuid(SelectedComponentGuid);
 			if (Comp && Comp->GetOwningActor() && !Comp->GetOwningActor()->IsMarkedPendingKill())
 			{
-				LOG( LogViewportPanel, Info, "\tclicked on actor: %s", Comp->GetOwningActor()->GetActorLabel().c_str() );
+				LOG( LogViewportPanel, Info, "clicked on actor: %s", Comp->GetOwningActor()->GetActorLabel().c_str() );
 			}
 		}
 	}

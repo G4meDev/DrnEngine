@@ -10,6 +10,11 @@ namespace Drn
 		return IntPoint(std::max(A.X, B.X), std::max(A.Y, B.Y));
 	}
 
+	IntPoint IntPoint::ComponentWiseMin( const IntPoint& A, const IntPoint& B )
+	{
+		return IntPoint(std::min(A.X, B.X), std::min(A.Y, B.Y));
+	}
+
 	const IntPoint IntPoint::Zero = IntPoint( 1 );
 
 	IntPoint::IntPoint(int InX, int InY)

@@ -209,7 +209,11 @@ namespace Drn
 				m_GuidTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
 			CommandList->ResourceBarrier(1, &barrier);
 
-			CD3DX12_BOX CopyBox(0, 0, 1, 1);
+			const IntPoint ClampedPos = IntPoint( 
+				std::clamp<int32>(ScreenPosition.X, 0, m_RenderSize.X - 1),
+				std::clamp<int32>(ScreenPosition.Y, 0, m_RenderSize.Y - 1));
+
+			CD3DX12_BOX CopyBox(ClampedPos.X, ClampedPos.Y, ClampedPos.X + 1, ClampedPos.Y + 1);
 
 			D3D12_PLACED_SUBRESOURCE_FOOTPRINT Footprint = {};
 			Footprint.Footprint.Format = GBUFFER_GUID_FORMAT;

@@ -1,6 +1,7 @@
 struct ModelViewProjection
 {
     matrix MVP;
+    uint4 Guid;
 };
 
 ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
@@ -44,7 +45,17 @@ struct PixelShaderInput
     float2 UV : TEXCOORD0;
 };
 
-float4 Main_PS(PixelShaderInput IN) : SV_Target
+struct PixelShaderOutput
 {
-    return Texture.Sample(TextureSampler, IN.UV);
+    float4 Color : SV_TARGET0;
+    uint4 Guid : SV_TARGET1;
+};
+
+PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+{
+    PixelShaderOutput OUT;
+    OUT.Color = Texture.Sample(TextureSampler, IN.UV);
+    
+    OUT.Guid = ModelViewProjectionCB.Guid;
+    return OUT;
 }

@@ -30,6 +30,8 @@ namespace Drn
 		StaticMeshComponent* m_OwningStaticMeshComponent;
 		std::vector<AssetHandle<Material>> m_Materials;
 
+		Guid m_Guid;
+
 		AssetHandle<StaticMesh> m_Mesh;
 	};
 }

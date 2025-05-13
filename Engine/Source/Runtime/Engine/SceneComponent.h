@@ -35,15 +35,19 @@ namespace Drn
 			// TODO: add self to type check
 			for (auto Comp : Childs)
 			{
-				if (Comp->GetComponentType() == Type)
-				{
-					OutComponents.push_back( static_cast<T*>(Comp.get()) );
+				//if (Comp->GetComponentType() == Type)
+				//{
+					T* C = static_cast<T*>(Comp.get());
+					if (C)
+					{
+						OutComponents.push_back( static_cast<T*>(Comp.get()) );
+					}
 
 					if (Recursive)
 					{
 						Comp->GetComponents(OutComponents, Type, true);
 					}
-				}
+				//}
 			}
 		}
 

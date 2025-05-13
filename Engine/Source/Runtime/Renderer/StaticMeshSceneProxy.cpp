@@ -8,6 +8,7 @@ namespace Drn
 	StaticMeshSceneProxy::StaticMeshSceneProxy( StaticMeshComponent* InStaticMeshComponent )
 		: PrimitiveSceneProxy( InStaticMeshComponent )
 		, m_OwningStaticMeshComponent( InStaticMeshComponent )
+		, m_Guid(InStaticMeshComponent->GetGuid())
 	{
 	}
 
@@ -99,6 +100,7 @@ namespace Drn
 				mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 16);
 
 				CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
 				CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );
