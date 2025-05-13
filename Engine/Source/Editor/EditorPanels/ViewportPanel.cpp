@@ -6,12 +6,16 @@
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 #include "Runtime/Renderer/Renderer.h"
 
+#include <ImGuizmo.h>
+
 LOG_DEFINE_CATEGORY( LogViewportPanel, "ViewportPanel" );
 
 namespace Drn
 {
 	ViewportPanel::ViewportPanel(Scene* InScene)
 	{
+		Mat = XMMatrixIdentity();
+
 		m_World = InScene->GetWorld();
 		m_Scene = InScene;
 		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
@@ -79,6 +83,36 @@ namespace Drn
 			{
 				LOG( LogViewportPanel, Info, "clicked on actor: %s", Comp->GetOwningActor()->GetActorLabel().c_str() );
 			}
+		}
+
+		const ImVec2 RectMin = ImGui::GetItemRectMin();
+		const ImVec2 RectMax = ImGui::GetItemRectMax();
+
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(RectMin.x, RectMin.y, RectMax.x - RectMin.x, RectMax.y - RectMin.y);
+
+		float aspectRatio = (float) (m_SceneRenderer->GetViewportSize().X) / m_SceneRenderer->GetViewportSize().Y;
+		
+		XMMATRIX viewMatrix;
+		XMMATRIX projectionMatrix;
+		
+		m_SceneRenderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+
+		XMFLOAT4X4 V;
+		XMStoreFloat4x4(&V, viewMatrix);
+
+		XMFLOAT4X4 P;
+		XMStoreFloat4x4(&P, projectionMatrix);
+
+		XMFLOAT4X4 M;
+		XMStoreFloat4x4(&M, Mat);
+
+		ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], IMGUIZMO_NAMESPACE::TRANSLATE, IMGUIZMO_NAMESPACE::LOCAL, &M.m[0][0] );
+
+		if (ImGuizmo::IsUsing())
+		{
+			Mat = XMLoadFloat4x4(&M);
 		}
 	}
 

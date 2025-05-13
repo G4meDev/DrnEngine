@@ -264,6 +264,7 @@ target_include_directories( Engine
     PUBLIC inc Source/
     PUBLIC inc ../ThirdParty/ImGui/
     PUBLIC inc ../ThirdParty/ImGuiFileDialog/
+    PUBLIC inc ../ThirdParty/ImGuizmo/
     PUBLIC inc ../ThirdParty/Physx/include/
 	#PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
@@ -283,6 +284,7 @@ target_link_libraries( Engine
     PUBLIC DirectXTex
     PUBLIC gainput
     PUBLIC ImGuiFileDialog
+    PUBLIC ImGuizmo
 	
     PUBLIC PhysX_static_64.lib
     PUBLIC PhysXCharacterKinematic_static_64.lib

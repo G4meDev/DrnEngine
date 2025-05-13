@@ -7,6 +7,8 @@
 #include "Runtime/Core/Window.h"
 #include "Runtime/Renderer/Renderer.h"
 
+#include <ImGuizmo.h>
+
 LOG_DEFINE_CATEGORY( LogImguiRenderer, "ImguiRenderer" );
 
 namespace Drn
@@ -133,6 +135,7 @@ namespace Drn
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 	}
 
 	void ImGuiRenderer::Draw( float DeltaTime )
