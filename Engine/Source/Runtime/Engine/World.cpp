@@ -97,6 +97,31 @@ namespace Drn
 		}
 	}
 
+	Component* World::GetComponentWithGuid( const Guid& ID )
+	{
+		if (ID.IsValid())
+		{
+			for (Actor* actor : m_Actors)
+			{
+				if (!actor->IsMarkedPendingKill())
+				{
+					std::vector<Component*> Components;
+					actor->GetComponents<Component>(Components, EComponentType::Component, true);
+
+					for (Component* Comp : Components)
+					{
+						if (Comp->GetGuid() == ID)
+						{
+							return Comp;
+						}
+					}
+				}
+			}
+		}
+
+		return nullptr;
+	}
+
 // ----------------------------------------------------------------------------------------
 
 	void World::BindOnNewActors( OnNewActors Delegate )

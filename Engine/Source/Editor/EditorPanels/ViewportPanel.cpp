@@ -6,6 +6,8 @@
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 #include "Runtime/Renderer/Renderer.h"
 
+LOG_DEFINE_CATEGORY( LogViewportPanel, "ViewportPanel" );
+
 namespace Drn
 {
 	ViewportPanel::ViewportPanel(Scene* InScene)
@@ -63,6 +65,21 @@ namespace Drn
 		}
 
 		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
+
+		if ( ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left) )
+		{
+			const ImVec2 RectMin = ImGui::GetItemRectMin();
+			const ImVec2 MousePos = ImGui::GetMousePos();
+			const IntPoint ClickPos = IntPoint( MousePos.x - RectMin.x, MousePos.y - RectMin.y );
+			Guid SelectedComponentGuid = m_SceneRenderer->GetGuidAtScreenPosition(ClickPos);
+			LOG( LogViewportPanel, Info, "clicked on viewport at: %s\n\t found component with guid: %s", ClickPos.ToString().c_str(), SelectedComponentGuid.ToString().c_str() );
+			
+			Component* Comp = m_SceneRenderer->GetScene()->GetWorld()->GetComponentWithGuid(SelectedComponentGuid);
+			if (Comp && Comp->GetOwningActor() && !Comp->GetOwningActor()->IsMarkedPendingKill())
+			{
+				LOG( LogViewportPanel, Info, "\tclicked on actor: %s", Comp->GetOwningActor()->GetActorLabel().c_str() );
+			}
+		}
 	}
 
 	void ViewportPanel::SetRenderingEnabled( bool Enabled )

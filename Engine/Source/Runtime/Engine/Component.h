@@ -44,6 +44,8 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld);
 		virtual void UnRegisterComponent();
 
+		inline const Guid& GetGuid() const { return m_Guid; }
+
 	protected:
 		Guid m_Guid;
 

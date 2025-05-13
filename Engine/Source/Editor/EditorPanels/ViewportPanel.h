@@ -4,6 +4,8 @@
 
 #include "ForwardTypes.h"
 
+LOG_DECLARE_CATEGORY(LogViewportPanel);
+
 namespace Drn
 {
 	class ViewportPanel

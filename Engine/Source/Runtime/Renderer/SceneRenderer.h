@@ -32,7 +32,7 @@ namespace Drn
 
 		inline void SetName( const std::string& Name ) { m_Name = Name; }
 
-		Guid GetGuidAtScreenPosition(const IntPoint& ScrenPosition);
+		Guid GetGuidAtScreenPosition(const IntPoint& ScreenPosition);
 
 		CameraActor* m_CameraActor;
 
@@ -42,12 +42,12 @@ namespace Drn
 
 		Scene* m_Scene;
 
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVHeap = nullptr;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_ColorTarget;
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_GuidTarget;
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthTarget;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_ColorTarget = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_GuidTarget = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthTarget = nullptr;
 
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_ScissorRect;

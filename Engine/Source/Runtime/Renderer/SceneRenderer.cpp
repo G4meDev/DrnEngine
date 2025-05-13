@@ -192,9 +192,53 @@ namespace Drn
 		m_RenderingEnabled = Enabled;
 	}
 
-	Guid SceneRenderer::GetGuidAtScreenPosition( const IntPoint& ScrenPosition )
+	Guid SceneRenderer::GetGuidAtScreenPosition( const IntPoint& ScreenPosition )
 	{
 		Guid Result;
+
+		if (m_GuidTarget)
+		{
+			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+			ID3D12GraphicsCommandList2* CommandList = Renderer::Get()->GetCommandList();
+
+			Microsoft::WRL::ComPtr<ID3D12Resource> ReadBackResource;
+			Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_READBACK ), D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(16), D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(ReadBackResource.GetAddressOf()));
+
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( 
+				m_GuidTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
+			CommandList->ResourceBarrier(1, &barrier);
+
+			CD3DX12_BOX CopyBox(0, 0, 1, 1);
+
+			D3D12_PLACED_SUBRESOURCE_FOOTPRINT Footprint = {};
+			Footprint.Footprint.Format = GBUFFER_GUID_FORMAT;
+			Footprint.Footprint.Width = 1;
+			Footprint.Footprint.Height = 1;
+			Footprint.Footprint.Depth = 1;
+			Footprint.Footprint.RowPitch = 256;
+			Footprint.Offset = 0;
+
+			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc(m_GuidTarget.Get(), 0);
+			CD3DX12_TEXTURE_COPY_LOCATION DestLoc(ReadBackResource.Get(), Footprint);
+
+			CommandList->CopyTextureRegion(&DestLoc, 0, 0, 0, &SourceLoc, &CopyBox);
+
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition( 
+				m_GuidTarget.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
+			CommandList->ResourceBarrier(1, &barrier);
+
+			Renderer::Get()->Flush();
+
+			UINT8* MemoryStart;
+
+			D3D12_RANGE ReadRange = {};
+			ReadRange.Begin = 0;
+			ReadRange.End = 16;
+			ReadBackResource->Map(0, &ReadRange, reinterpret_cast<void**>(&MemoryStart));
+
+			memcpy(&Result, MemoryStart, 16);
+		}
 
 		return Result;
 	}

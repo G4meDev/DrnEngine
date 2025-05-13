@@ -31,6 +31,8 @@ namespace Drn
 			return NewActor;
 		}
 
+		Component* GetComponentWithGuid(const Guid& ID);
+
 		inline const std::set<Actor*>& GetActorList() { return m_Actors; };
 
 		void BindOnNewActors(OnNewActors Delegate);
