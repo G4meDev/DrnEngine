@@ -20,9 +20,13 @@ namespace Drn
 		AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
 		PlaneMesh.Load();
 		
+		AssetHandle<Material> Texture2DPreviewMaterial( "Engine\\Content\\Materials\\M_Texture2DPreview.drn" );
+		Texture2DPreviewMaterial.Load();
+		Texture2DPreviewMaterial->SetNamedTexture2D("Texture", m_OwningAsset);
+
 		m_PreviewMeshPlane = m_PreviewWorld->SpawnActor<StaticMeshActor>();
 		m_PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
-		//m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, m_OwningAsset);
+		m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, Texture2DPreviewMaterial);
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>( m_PreviewWorld->GetScene() );
 	}

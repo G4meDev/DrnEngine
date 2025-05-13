@@ -47,7 +47,8 @@ struct VertexInput
 
 struct VertexShaderOutput
 {
-    float4 Color : COLOR;
+    float4 Color : COLOR0;
+    float3 Normal : COLOR1;
     float2 UV : TEXCOORD0;
     float4 Position : SV_Position;
 };
@@ -58,6 +59,7 @@ VertexShaderOutput Main_VS(VertexInput IN)
 
     OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
     OUT.Color = float4(IN.UV1, 0.0f, 1.0f);
+    OUT.Normal = IN.Normal;
     OUT.UV = IN.UV1;
     
     return OUT;
@@ -67,17 +69,22 @@ VertexShaderOutput Main_VS(VertexInput IN)
 
 struct PixelShaderInput
 {
-    float4 Color : COLOR;
+    float4 Color : COLOR0;
+    float3 Normal : COLOR1;
     float2 UV : TEXCOORD0;
 };
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
-    float A = clamp(Alpha, 0, 1);
-    float4 B = float4(WERWER.xxx, 1);
-    float4 C = float4(ExampleVec4.xyz, 1);
-
+    //float A = clamp(Alpha, 0, 1);
+    //float4 B = float4(WERWER.xxx, 1);
+    //float4 C = float4(ExampleVec4.xyz, 1);
+    //
     float4 Texture1 = TestTexture.Sample(TestSampler, IN.UV);
-    float4 Texture2 = TestTexture_2.Sample(TestSampler_2, IN.UV);
-    return lerp(Texture1, Texture2, float4(A, A, A, 1.0f)) * B * C;
+    //float4 Texture2 = TestTexture_2.Sample(TestSampler_2, IN.UV);
+    //return lerp(Texture1, Texture2, float4(A, A, A, 1.0f)) * B * C;
+
+    float L = max(0, dot(IN.Normal, LightDir.xyz));
+    
+    return Texture1 * L * Alpha;
 }
