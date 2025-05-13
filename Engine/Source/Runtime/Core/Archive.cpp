@@ -77,7 +77,13 @@ namespace Drn
 		File.write( (char*)( &Value ), sizeof(float));
 		return *this;
 	}
-	
+
+	Archive& Archive::operator<<( Guid Value )
+	{
+		*this << Value.A << Value.B << Value.C << Value.D;
+		return *this;
+	}
+
 	Archive& Archive::operator<<( const std::string& Value )
 	{
 		uint32 size = Value.size();
@@ -188,6 +194,12 @@ namespace Drn
 		return *this;
 	}
 
+	Archive& Archive::operator>>( Guid& Value )
+	{
+		*this >> Value.A >> Value.B >> Value.C >> Value.D;
+		return *this;
+	}
+
 	Archive& Archive::operator>>( std::string& Value )
 	{
 		uint32 size;
@@ -271,6 +283,5 @@ namespace Drn
 
 		return *this;
 	}
-
 
 }

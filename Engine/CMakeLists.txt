@@ -9,6 +9,7 @@ set( HEADER_FILES
 	Source/Runtime/Core/AssetManager.h
 	Source/Runtime/Core/Archive.h
 	Source/Runtime/Core/Serializable.h
+	Source/Runtime/Core/Guid.h
 	Source/Runtime/Core/Time.h
 	Source/Runtime/Core/Window.h
 	
@@ -122,6 +123,7 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Application.cpp
 	Source/Runtime/Core/Archive.cpp
 	Source/Runtime/Core/Serializable.cpp
+	Source/Runtime/Core/Guid.cpp
 	Source/Runtime/Core/Time.cpp
 	Source/Runtime/Core/Window.cpp
 	

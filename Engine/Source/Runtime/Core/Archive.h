@@ -9,6 +9,8 @@
 #include "Runtime/Math/Matrix.h"
 #include "Runtime/Math/Transform.h"
 
+#include "Runtime/Core/Guid.h"
+
 #include <d3dcommon.h>
 
 LOG_DECLARE_CATEGORY( LogArchive );
@@ -31,6 +33,7 @@ namespace Drn
 		Archive& operator<<(uint32 Value);
 		Archive& operator<<(uint64 Value);
 		Archive& operator<<(float Value);
+		Archive& operator<<(Guid Value);
 		Archive& operator<<(const Vector& Value);
 		Archive& operator<<(const Vector4& Value);
 		Archive& operator<<(const Quat& Value);
@@ -46,6 +49,7 @@ namespace Drn
 		Archive& operator>>(uint32& Value);
 		Archive& operator>>(uint64& Value);
 		Archive& operator>>(float& Value);
+		Archive& operator>>(Guid& Value);
 		Archive& operator>>(Vector& Value);
 		Archive& operator>>(Vector4& Value);
 		Archive& operator>>(Quat& Value);
