@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "Transform.h"
 
+#include "Math.h"
+
 namespace Drn
 {
 	Transform::Transform( const Matrix& InMatrix )
@@ -47,7 +49,8 @@ namespace Drn
 	{
 		Transform Result;
 
-		Vector VScale3D = Vector(XMVectorReciprocal( XMLoadFloat3(&Other.Scale.m_Vector)) );
+		Vector VSafeScale3D = GetSafeScaleReciprocal( XMLoadFloat3( &Other.Scale.m_Vector ) );
+		Vector VScale3D = VSafeScale3D * GetScale();
 
 		Vector VQTranslation = Location - Other.Location;
 
@@ -63,6 +66,35 @@ namespace Drn
 		Result.Location = VTranslation;
 
 		return Result;
+	}
+
+	Vector Transform::InverseTransformPosition( const Vector& InVector ) const
+	{
+		Vector TranslatedVector = InVector - Location;
+
+		Vector VR =  Rotation.InverseRotateVector( TranslatedVector );
+		Vector SafeReciprocal = GetSafeScaleReciprocal(Scale);
+
+		std::cout << SafeReciprocal.ToString().c_str() << "\n";
+
+		Vector Result = VR * SafeReciprocal;
+		return Result;
+	}
+
+	Vector Transform::GetSafeScaleReciprocal( const Vector& InScale ) const
+	{
+		XMVECTOR SafeReciprocalScale;
+		XMVECTOR InScaleXmVec = XMLoadFloat3(&InScale.m_Vector);
+
+		float smallnum = 1.e-8f;
+
+		const XMVECTOR ReciprocalScale = XMVectorReciprocal( InScaleXmVec );
+		const XMVECTOR Tolerance = XMVectorSet(smallnum, smallnum, smallnum, smallnum);
+		const XMVECTOR ScaleZeroMask = XMVectorGreaterOrEqual( Tolerance, XMVectorAbs( InScaleXmVec ) );
+
+		SafeReciprocalScale = XMVectorSelect( ReciprocalScale, XMVectorZero(), ScaleZeroMask );
+
+		return SafeReciprocalScale;
 	}
 
 }

@@ -24,6 +24,8 @@ namespace Drn
 
 		Transform GetRelativeTransform(const Transform& RelativeTo) const;
 
+		Vector InverseTransformPosition( const Vector& InVector ) const;
+
 		inline Vector GetLocation() const { return Location; }
 		inline Quat GetRotation() const { return Rotation; }
 		inline Vector GetScale() const { return Scale; }
@@ -40,6 +42,8 @@ namespace Drn
 		{
 			return XMVector3Transform(XMLoadFloat3(&Pos.m_Vector), Matrix(*this).m_Matrix);
 		}
+
+		Vector GetSafeScaleReciprocal( const Vector& InScale ) const;
 
 		inline std::string ToString()
 		{

@@ -109,8 +109,20 @@ namespace Drn
 			UsingGizmo = ImGuizmo::IsUsing();
 			if (UsingGizmo)
 			{
-				SceneComponentWorldTransform = XMLoadFloat4x4(&M);
-				SelectedSceneComponent->SetWorldTransform(Transform(SceneComponentWorldTransform));
+				Transform SceneComponentWorldTransform = Transform( XMLoadFloat4x4(&M) );
+
+				if (m_GizmoState.m_Space == EGizmoSpace::Scale)
+				{
+					std::cout << SceneComponentWorldTransform.GetScale().ToString().c_str() << "\n";
+					//SelectedSceneComponent->SetWorldTransform(SceneComponentWorldTransform);
+				}
+
+				else
+				{
+					SelectedSceneComponent->SetWorldLocationAndRotation(SceneComponentWorldTransform.GetLocation(),
+						SceneComponentWorldTransform.GetRotation());
+				}
+				//SelectedSceneComponent->SetWorldTransform(SceneComponentWorldTransform);
 			}
 		}
 

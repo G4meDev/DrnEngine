@@ -85,8 +85,8 @@ namespace Drn
 
 	void SceneComponent::SetRelativeTransform( const Transform& InTransform )
 	{
-		RelativeTransform = InTransform;
-		UpdateCachedTransform();
+		SetRelativeLocationAndRotation(InTransform.GetLocation(), InTransform.GetRotation());
+		SetRelativeScale(InTransform.GetScale());
 	}
 
 	void SceneComponent::SetWorldTransform( const Transform& InTransform )
@@ -155,7 +155,7 @@ namespace Drn
 		Transform NewTransform = CachedWorldTransform;
 		NewTransform.SetRotation(InRotator);
 
-		SetWorldTransform(NewTransform);	
+		SetWorldTransform(NewTransform);
 	}
 
 	Vector SceneComponent::GetRelativeScale() const
@@ -170,18 +170,42 @@ namespace Drn
 
 	void SceneComponent::SetRelativeScale( const Vector& InScale )
 	{
-		Transform NewTransform = RelativeTransform;
-		NewTransform.SetScale(InScale);
-
-		SetRelativeTransform(NewTransform);
+		RelativeTransform.SetScale(InScale);
+		UpdateCachedTransform();
 	}
 
 	void SceneComponent::SetWorldScale( const Vector& InScale )
 	{
-		Transform NewTransform = CachedWorldTransform;
-		NewTransform.SetScale(InScale);
+		Vector NewRelScale = InScale;
 
-		SetWorldTransform(NewTransform);
+		if( Parent )
+		{
+			Transform ParentToWorld = Parent->GetWorldTransform();
+			NewRelScale = ParentToWorld.GetSafeScaleReciprocal(ParentToWorld.GetScale()) * InScale;
+		}
+
+		SetRelativeScale(NewRelScale);
+	}
+
+	void SceneComponent::SetRelativeLocationAndRotation( const Vector& InLocation, const Quat& InRotation )
+	{
+		RelativeTransform.SetLocation(InLocation);
+		RelativeTransform.SetRotation(InRotation);
+		UpdateCachedTransform();
+	}
+
+	void SceneComponent::SetWorldLocationAndRotation( const Vector& InLocation, const Quat& InRotation )
+	{
+		Vector Location = InLocation;
+		Quat Rotation = InRotation;
+
+		if (Parent)
+		{
+			Location = Parent->GetWorldTransform().InverseTransformPosition(InLocation);
+			Rotation = Parent->GetWorldTransform().GetRotation().Inverse() * InRotation;
+		}
+
+		SetRelativeLocationAndRotation(Location, Rotation);
 	}
 
 	void SceneComponent::UpdateCachedTransform()

@@ -7,7 +7,7 @@
 
 namespace Drn
 {
-	Vector Vector::ZeroVector		= Vector(0);
+	Vector Vector::ZeroVector = Vector( 0 );
 	Vector Vector::OneVector		= Vector(1);
 
 	Vector Vector::UpVector			= Vector(0, 1, 0);

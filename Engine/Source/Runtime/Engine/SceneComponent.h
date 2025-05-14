@@ -85,6 +85,9 @@ namespace Drn
 		void SetRelativeScale(const Vector& InScale);
 		void SetWorldScale(const Vector& InScale);
 
+		void SetRelativeLocationAndRotation(const Vector& InLocation, const Quat& InRotation);
+		void SetWorldLocationAndRotation(const Vector& InLocation, const Quat& InRotation);
+
 	private:
 
 		Transform RelativeTransform;

@@ -25,9 +25,20 @@ namespace Drn
 		inline float GetZ() const { return XMVectorGetZ( m_Vector ); }
 		inline float GetW() const { return XMVectorGetW( m_Vector ); }
 
+		inline Quat operator*(const Quat& Other) const
+		{
+			return XMQuaternionMultiply(Other.m_Vector, m_Vector);
+		}
+
 		inline Quat Inverse() const { return Quat( XMQuaternionInverse(m_Vector) ); }
 		inline Vector RotateVector( const Vector& InVector) { return Vector( XMVector3Rotate( XMLoadFloat3(&InVector.m_Vector), m_Vector) ); }
 		inline Vector RotateVector( const Vector& InVector) const { return Vector( XMVector3Rotate( XMLoadFloat3(&InVector.m_Vector), m_Vector) ); }
+
+		inline Vector InverseRotateVector(const Vector& InVector) const
+		{
+			XMVECTOR Inv = XMQuaternionInverse(m_Vector);
+			return XMVector3Rotate( XMLoadFloat3( &InVector.m_Vector ), Inv );
+		}
 
 		inline XMVECTOR Get() { return m_Vector; }
 
