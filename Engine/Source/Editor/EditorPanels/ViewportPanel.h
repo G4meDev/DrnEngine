@@ -3,7 +3,7 @@
 #if WITH_EDITOR
 
 #include "ForwardTypes.h"
-#include <ImGuizmo.h>
+#include <Editor/Misc/GizmoState.h>
 
 LOG_DECLARE_CATEGORY(LogViewportPanel);
 
@@ -38,8 +38,7 @@ namespace Drn
 		float CameraMovementSpeed = 0.01f;
 		float CameraRotationSpeed = 0.01f;
 
-		IMGUIZMO_NAMESPACE::OPERATION m_Space;
-		IMGUIZMO_NAMESPACE::MODE m_Mode;
+		GizmoState m_GizmoState;
 
 		World* m_World;
 		Scene* m_Scene;

@@ -12,8 +12,6 @@ namespace Drn
 {
 	ViewportPanel::ViewportPanel(Scene* InScene)
 		: m_SelectedComponent(nullptr)
-		, m_Space(ImGuizmo::TRANSLATE)
-		, m_Mode(ImGuizmo::WORLD)
 	{
 		m_World = InScene->GetWorld();
 		m_Scene = InScene;
@@ -103,7 +101,10 @@ namespace Drn
 			Matrix SceneComponentWorldTransform = SelectedSceneComponent->GetWorldTransform();
 			XMStoreFloat4x4(&M, SceneComponentWorldTransform.Get());
 
-			ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], m_Space, m_Mode, &M.m[0][0] );
+			float Snap[3];
+			m_GizmoState.GetSnapValue(Snap);
+			ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], m_GizmoState.GetGuizmoSpace(), m_GizmoState.GetGuizmoMode(), &M.m[0][0],
+				nullptr, Snap[0] == 0 ? nullptr : Snap );
 
 			UsingGizmo = ImGuizmo::IsUsing();
 			if (UsingGizmo)
@@ -139,60 +140,14 @@ namespace Drn
 
 	void ViewportPanel::DrawHeader()
 	{
-		if (ImGui::RadioButton("Translate", m_Space == IMGUIZMO_NAMESPACE::TRANSLATE))
-		{
-			m_Space = IMGUIZMO_NAMESPACE::TRANSLATE;
-		}
-
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Rotate", m_Space == IMGUIZMO_NAMESPACE::ROTATE))
-		{
-			m_Space = IMGUIZMO_NAMESPACE::ROTATE;
-		}
-
-		ImGui::SameLine();
-		if (ImGui::RadioButton("Scale", m_Space == IMGUIZMO_NAMESPACE::SCALE))
-		{
-			m_Space = IMGUIZMO_NAMESPACE::SCALE;
-		}
-
-		ImGui::SameLine(0, 64);
-		if (ImGui::RadioButton("Local", m_Mode == IMGUIZMO_NAMESPACE::LOCAL))
-		{
-			m_Mode = IMGUIZMO_NAMESPACE::LOCAL;
-		}
-
-		ImGui::SameLine();
-		if (ImGui::RadioButton("World", m_Mode == IMGUIZMO_NAMESPACE::WORLD))
-		{
-			m_Mode = IMGUIZMO_NAMESPACE::WORLD;
-		}
+		m_GizmoState.Draw();
 	}
 
 	void ViewportPanel::HandleInputs()
 	{
 		if ( ImGui::IsItemHovered() && !ImGui::IsMouseDown(ImGuiMouseButton_Right) )
 		{
-			if (ImGui::IsKeyPressed(ImGuiKey_W))
-			{
-				m_Space = IMGUIZMO_NAMESPACE::TRANSLATE;
-			}
-
-			else if (ImGui::IsKeyPressed(ImGuiKey_E))
-			{
-				m_Space = IMGUIZMO_NAMESPACE::ROTATE;
-			}
-
-			else if (ImGui::IsKeyPressed(ImGuiKey_R))
-			{
-				m_Space = IMGUIZMO_NAMESPACE::SCALE;
-			}
-
-			else if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent))
-			{
-				m_Mode = m_Mode == IMGUIZMO_NAMESPACE::LOCAL ?
-					IMGUIZMO_NAMESPACE::WORLD : IMGUIZMO_NAMESPACE::LOCAL;
-			}
+			m_GizmoState.HandleInput();
 		}
 	}
 

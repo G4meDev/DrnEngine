@@ -84,6 +84,7 @@ set( HEADER_FILES
 	Source/Runtime/Misc/Profiler.h
 	
 	Source/Editor/Misc/ViewportCameraInputHandler.h
+	Source/Editor/Misc/GizmoState.h
 
 	Source/Editor/Editor.h
 	Source/Editor/EditorConfig.h
@@ -208,6 +209,7 @@ set( SOURCE_FILES
 	Source/Editor/LevelViewport/LevelViewportGuiLayer.cpp
 
 	Source/Editor/Misc/ViewportCameraInputHandler.cpp
+	Source/Editor/Misc/GizmoState.cpp
 	
 	Source/Editor/OutputLog/OutputLog.cpp
 	Source/Editor/OutputLog/OutputLogGuiLayer.cpp
