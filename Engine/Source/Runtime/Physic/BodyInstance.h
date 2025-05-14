@@ -31,11 +31,16 @@ namespace Drn
 		void InitBody(BodySetup* Setup, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene);
 		void TermBody();
 
+		void SetBodyTransform(const Transform& InTransform);
+		void UpdateBodyScale(const Vector& InScale);
+
 #if WITH_EDITOR
 		void DrawDetailPanel(float DeltaTime);
 #endif
 
 	protected:
+
+		int32 GetAllShapes( std::vector<PxShape*>& Result );
 
 		PhysicUserData m_PhysicUserData;
 		PxRigidActor* m_RigidActor;

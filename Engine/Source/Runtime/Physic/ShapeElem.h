@@ -38,10 +38,16 @@ namespace Drn
 
 		virtual void Serialize(Archive& Ar) override;
 
-		const PhysicUserData* GetUserData() const
+		template <typename T>
+		T* GetShape()
+		{
+			return (T*)this;
+		}
+
+		PhysicUserData& GetUserData()
 		{
 			PhysicUserData::Set<ShapeElem>((void*)&UserData, const_cast<ShapeElem*>(this));
-			return &UserData;
+			return UserData;
 		}
 
 		inline virtual std::shared_ptr<PxGeometry> GetPxGeometery(const Vector& Scale) = 0;

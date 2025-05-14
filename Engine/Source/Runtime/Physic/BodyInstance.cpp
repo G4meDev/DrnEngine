@@ -50,6 +50,8 @@ namespace Drn
 		}
 
 		physx::PxPhysics* Physics = PhysicManager::Get()->GetPhysics();
+
+		// TODO: cleanupp memory
 		m_Material = Physics->createMaterial( 0.5f, 0.5f, 0.6f );
 
 		if (m_SimulatePhysic)
@@ -67,6 +69,7 @@ namespace Drn
 			ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
 
 			physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(m_OwnerComponent->GetWorldScale()).get()), *m_Material );
+			shape->userData = &Element->GetUserData();
 
 			m_RigidActor->attachShape( *shape );
 			shape->release();
@@ -92,6 +95,81 @@ namespace Drn
 		PX_RELEASE(m_RigidActor);
 	}
 
+	void BodyInstance::SetBodyTransform( const Transform& InTransform )
+	{
+		
+	}
+
+	void BodyInstance::UpdateBodyScale( const Vector& InScale )
+	{
+		if (m_RigidActor)
+		{
+			physx::PxPhysics* Physics = PhysicManager::Get()->GetPhysics();
+
+			std::vector<PxShape*> Shapes;
+			GetAllShapes(Shapes);
+
+			for (PxShape* Shape : Shapes)
+			{
+				Transform LocalTransform = P2Transform( Shape->getLocalPose() );
+				ShapeElem* Elem = PhysicUserData::Get<ShapeElem>(Shape->userData);
+
+				if (Elem->GetType() == EAggCollisionShape::Sphere)
+				{
+					SphereElem* sphereElem = Elem->GetShape<SphereElem>();
+
+					PxGeometryHolder GeoHolder = Shape->getGeometry();
+					PxSphereGeometry& Sphere = GeoHolder.sphere();
+
+					float MaxAxis = std::max( std::max( InScale.GetX(), InScale.GetY() ), InScale.GetZ() );
+					Sphere.radius = sphereElem->Radius * MaxAxis;
+
+					if (Sphere.isValid())
+					{
+						Shape->setGeometry(Sphere);
+					}
+
+					// TODO: add translation after scale
+				}
+
+				else if (Elem->GetType() == EAggCollisionShape::Box)
+				{
+					BoxElem* boxElem = Elem->GetShape<BoxElem>();
+
+					PxGeometryHolder GeoHolder = Shape->getGeometry();
+					PxBoxGeometry& Box = GeoHolder.box();
+
+					Box.halfExtents.x = boxElem->Extent.GetX() * InScale.GetX();
+					Box.halfExtents.y = boxElem->Extent.GetY() * InScale.GetY();
+					Box.halfExtents.z = boxElem->Extent.GetZ() * InScale.GetZ();
+
+					if (Box.isValid())
+					{
+						Shape->setGeometry(Box);
+					}
+
+					// TODO: add translation after scale
+				}
+			}
+
+		}
+	}
+
+	int32 BodyInstance::GetAllShapes( std::vector<PxShape*>& Result )
+	{
+		uint32 NumShapes = 0;
+
+		if (m_RigidActor)
+		{
+			NumShapes = m_RigidActor->getNbShapes();
+			Result.resize(NumShapes);
+
+			m_RigidActor->getShapes(Result.data(), NumShapes);
+		}
+
+		return NumShapes;
+	}
+
 #if WITH_EDITOR
 	void BodyInstance::DrawDetailPanel( float DeltaTime )
 	{
@@ -100,6 +178,7 @@ namespace Drn
 
 		ImGui::Separator();
 	}
-#endif
 
+
+#endif
 }

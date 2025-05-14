@@ -82,7 +82,7 @@ namespace Drn
 		Vector GetRelativeScale() const;
 		Vector GetWorldScale() const;
 		
-		void SetRelativeScale(const Vector& InScale);
+		virtual void SetRelativeScale(const Vector& InScale);
 		void SetWorldScale(const Vector& InScale);
 
 		void SetRelativeLocationAndRotation(const Vector& InLocation, const Quat& InRotation);

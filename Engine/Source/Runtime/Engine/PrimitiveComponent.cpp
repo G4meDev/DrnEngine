@@ -41,10 +41,15 @@ namespace Drn
 		SceneComponent::Tick(DeltaTime);
 	}
 
+	void PrimitiveComponent::SendPhysicsTransform()
+	{
+		m_BodyInstance.SetBodyTransform(GetWorldTransform());
+		m_BodyInstance.UpdateBodyScale(GetWorldTransform().GetScale());
+	}
+
 	void PrimitiveComponent::RegisterComponent( World* InOwningWorld )
 	{
 		SceneComponent::RegisterComponent(InOwningWorld);
-
 
 	}
 
@@ -52,9 +57,14 @@ namespace Drn
 	{
 		SceneComponent::UnRegisterComponent();
 
-
 	}
 
+	void PrimitiveComponent::SetRelativeScale( const Vector& InScale )
+	{
+		SceneComponent::SetRelativeScale(InScale);
+
+		SendPhysicsTransform();
+	}
 
 #if WITH_EDITOR
 	void PrimitiveComponent::DrawDetailPanel( float DeltaTime )
