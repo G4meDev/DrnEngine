@@ -72,10 +72,10 @@ namespace Drn
 		
 		void SetRelativeLocation(const Vector& Inlocation);
 		void SetWorldLocation(const Vector& Inlocation);
-		
+
 		Quat GetRelativeRotation() const;
 		Quat GetWorldRotation() const;
-		
+
 		void SetRelativeRotation(const Quat& InRotator);
 		void SetWorldRotation(const Quat& InRotator);
 		

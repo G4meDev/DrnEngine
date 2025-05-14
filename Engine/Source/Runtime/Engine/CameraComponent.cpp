@@ -10,7 +10,7 @@ namespace Drn
 		, m_AspectRatio(1.0f)
 		, m_FOV(45.0f)
 		, m_ClipMin(0.1f)
-		, m_ClipMax(100.0f)
+		, m_ClipMax(1000.0f)
 	{
 		m_Rotation = XMQuaternionIdentity();
 	}

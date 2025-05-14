@@ -101,6 +101,11 @@ namespace Drn
 			Matrix SceneComponentWorldTransform = SelectedSceneComponent->GetWorldTransform();
 			XMStoreFloat4x4(&M, SceneComponentWorldTransform.Get());
 
+			XMFLOAT4X4 Iden;
+			XMStoreFloat4x4(&Iden, Matrix::MatrixIdentity.Get());
+
+			ImGuizmo::DrawGrid( &V.m[0][0], &P.m[0][0], &Iden.m[0][0], 100);
+
 			float Snap[3];
 			m_GizmoState.GetSnapValue(Snap);
 			ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], m_GizmoState.GetGuizmoSpace(), m_GizmoState.GetGuizmoMode(), &M.m[0][0],
@@ -113,8 +118,7 @@ namespace Drn
 
 				if (m_GizmoState.m_Space == EGizmoSpace::Scale)
 				{
-					std::cout << SceneComponentWorldTransform.GetScale().ToString().c_str() << "\n";
-					//SelectedSceneComponent->SetWorldTransform(SceneComponentWorldTransform);
+					SelectedSceneComponent->SetRelativeScale(SceneComponentWorldTransform.GetScale());
 				}
 
 				else
@@ -122,7 +126,6 @@ namespace Drn
 					SelectedSceneComponent->SetWorldLocationAndRotation(SceneComponentWorldTransform.GetLocation(),
 						SceneComponentWorldTransform.GetRotation());
 				}
-				//SelectedSceneComponent->SetWorldTransform(SceneComponentWorldTransform);
 			}
 		}
 

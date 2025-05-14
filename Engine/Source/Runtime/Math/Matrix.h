@@ -18,6 +18,8 @@ namespace Drn
 
 		inline Matrix operator*( const Matrix& InMatrix ) { return XMMatrixMultiply(m_Matrix, InMatrix.m_Matrix); }
 
+		static Matrix MatrixIdentity;
+
 	private:
 
 		XMMATRIX m_Matrix;

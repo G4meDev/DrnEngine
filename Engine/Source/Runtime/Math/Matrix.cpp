@@ -3,6 +3,8 @@
 
 namespace Drn
 {
+	Matrix Matrix::MatrixIdentity = Matrix();
+
 	Matrix::Matrix( const Transform& InTransform )
 	{
 		DirectX::XMMATRIX ScaleMat			= DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&InTransform.Scale.m_Vector));

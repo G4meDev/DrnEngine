@@ -118,18 +118,19 @@ namespace Drn
 
 	void SceneComponent::SetRelativeLocation( const Vector& Inlocation )
 	{
-		Transform NewTransform = RelativeTransform;
-		NewTransform.SetLocation(Inlocation);
-
-		SetRelativeTransform(NewTransform);
+		SetRelativeLocationAndRotation(Inlocation, RelativeTransform.GetRotation());
 	}
 
 	void SceneComponent::SetWorldLocation( const Vector& Inlocation )
 	{
-		Transform NewTransform = CachedWorldTransform;
-		NewTransform.SetLocation(Inlocation);
+		Vector NewLocation = Inlocation;
+		
+		if (Parent)
+		{
+			NewLocation = Parent->GetWorldTransform().InverseTransformPosition(NewLocation);
+		}
 
-		SetWorldTransform(NewTransform);
+		SetRelativeLocation(NewLocation);
 	}
 
 	Quat SceneComponent::GetRelativeRotation() const
@@ -144,18 +145,19 @@ namespace Drn
 
 	void SceneComponent::SetRelativeRotation( const Quat& InRotator )
 	{
-		Transform NewTransform = RelativeTransform;
-		NewTransform.SetRotation(InRotator);
-
-		SetRelativeTransform(NewTransform);
+		SetRelativeLocationAndRotation(RelativeTransform.GetLocation(), InRotator);
 	}
 
 	void SceneComponent::SetWorldRotation( const Quat& InRotator )
 	{
-		Transform NewTransform = CachedWorldTransform;
-		NewTransform.SetRotation(InRotator);
+		Quat NewRotation = InRotator;
+		
+		if (Parent)
+		{
+			NewRotation = Parent->GetWorldRotation().Inverse() * NewRotation;
+		}
 
-		SetWorldTransform(NewTransform);
+		SetRelativeRotation(NewRotation);
 	}
 
 	Vector SceneComponent::GetRelativeScale() const

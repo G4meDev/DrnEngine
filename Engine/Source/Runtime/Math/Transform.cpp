@@ -20,11 +20,6 @@ namespace Drn
 
 	Transform Transform::operator*( const Transform& Other ) const
 	{
-		//Matrix Mat1(*this);
-		//Matrix Mat2(InTransform);
-		//
-		//return Transform(Mat1 * Mat2);
-
 		Transform Result;
 
 		Quat Q1 = this->Rotation;
@@ -74,8 +69,6 @@ namespace Drn
 
 		Vector VR =  Rotation.InverseRotateVector( TranslatedVector );
 		Vector SafeReciprocal = GetSafeScaleReciprocal(Scale);
-
-		std::cout << SafeReciprocal.ToString().c_str() << "\n";
 
 		Vector Result = VR * SafeReciprocal;
 		return Result;
