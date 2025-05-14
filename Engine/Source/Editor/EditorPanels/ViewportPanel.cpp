@@ -6,16 +6,15 @@
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 #include "Runtime/Renderer/Renderer.h"
 
-#include <ImGuizmo.h>
-
 LOG_DEFINE_CATEGORY( LogViewportPanel, "ViewportPanel" );
 
 namespace Drn
 {
 	ViewportPanel::ViewportPanel(Scene* InScene)
+		: m_SelectedComponent(nullptr)
+		, m_Space(ImGuizmo::TRANSLATE)
+		, m_Mode(ImGuizmo::WORLD)
 	{
-		Mat = XMMatrixIdentity();
-
 		m_World = InScene->GetWorld();
 		m_Scene = InScene;
 		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
@@ -56,6 +55,8 @@ namespace Drn
 			m_ViewportCamera->ApplyViewportInput(CameraInputHandler, CameraMovementSpeed, CameraRotationSpeed);
 		}
 
+		DrawHeader();
+
 		const ImVec2 AvaliableSize = ImGui::GetContentRegionAvail();
 		IntPoint     ImageSize     = IntPoint( (int)AvaliableSize.x, (int)AvaliableSize.y );
 
@@ -69,8 +70,50 @@ namespace Drn
 		}
 
 		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
+		HandleInputs();
 
-		if ( ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left) )
+		bool UsingGizmo = false;
+
+		SceneComponent* SelectedSceneComponent = static_cast<SceneComponent*>(m_SelectedComponent);
+
+		if (SelectedSceneComponent && SelectedSceneComponent->GetOwningActor() &&
+			!SelectedSceneComponent->GetOwningActor()->IsMarkedPendingKill())
+		{
+			const ImVec2 RectMin = ImGui::GetItemRectMin();
+			const ImVec2 RectMax = ImGui::GetItemRectMax();
+
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(RectMin.x, RectMin.y, RectMax.x - RectMin.x, RectMax.y - RectMin.y);
+
+			float aspectRatio = (float) (m_SceneRenderer->GetViewportSize().X) / m_SceneRenderer->GetViewportSize().Y;
+		
+			XMMATRIX viewMatrix;
+			XMMATRIX projectionMatrix;
+		
+			m_SceneRenderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+
+			XMFLOAT4X4 V;
+			XMStoreFloat4x4(&V, viewMatrix);
+
+			XMFLOAT4X4 P;
+			XMStoreFloat4x4(&P, projectionMatrix);
+
+			XMFLOAT4X4 M;
+			Matrix SceneComponentWorldTransform = SelectedSceneComponent->GetWorldTransform();
+			XMStoreFloat4x4(&M, SceneComponentWorldTransform.Get());
+
+			ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], m_Space, m_Mode, &M.m[0][0] );
+
+			UsingGizmo = ImGuizmo::IsUsing();
+			if (UsingGizmo)
+			{
+				SceneComponentWorldTransform = XMLoadFloat4x4(&M);
+				SelectedSceneComponent->SetWorldTransform(Transform(SceneComponentWorldTransform));
+			}
+		}
+
+		if ( !UsingGizmo && ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left) )
 		{
 			const ImVec2 RectMin = ImGui::GetItemRectMin();
 			const ImVec2 MousePos = ImGui::GetMousePos();
@@ -81,38 +124,75 @@ namespace Drn
 			Component* Comp = m_SceneRenderer->GetScene()->GetWorld()->GetComponentWithGuid(SelectedComponentGuid);
 			if (Comp && Comp->GetOwningActor() && !Comp->GetOwningActor()->IsMarkedPendingKill())
 			{
+				m_SelectedComponent = Comp;
 				LOG( LogViewportPanel, Info, "clicked on actor: %s", Comp->GetOwningActor()->GetActorLabel().c_str() );
+			}
+
+			else
+			{
+				m_SelectedComponent = nullptr;
 			}
 		}
 
-		const ImVec2 RectMin = ImGui::GetItemRectMin();
-		const ImVec2 RectMax = ImGui::GetItemRectMax();
 
-		ImGuizmo::SetOrthographic(false);
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(RectMin.x, RectMin.y, RectMax.x - RectMin.x, RectMax.y - RectMin.y);
+	}
 
-		float aspectRatio = (float) (m_SceneRenderer->GetViewportSize().X) / m_SceneRenderer->GetViewportSize().Y;
-		
-		XMMATRIX viewMatrix;
-		XMMATRIX projectionMatrix;
-		
-		m_SceneRenderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-
-		XMFLOAT4X4 V;
-		XMStoreFloat4x4(&V, viewMatrix);
-
-		XMFLOAT4X4 P;
-		XMStoreFloat4x4(&P, projectionMatrix);
-
-		XMFLOAT4X4 M;
-		XMStoreFloat4x4(&M, Mat);
-
-		ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], IMGUIZMO_NAMESPACE::TRANSLATE, IMGUIZMO_NAMESPACE::LOCAL, &M.m[0][0] );
-
-		if (ImGuizmo::IsUsing())
+	void ViewportPanel::DrawHeader()
+	{
+		if (ImGui::RadioButton("Translate", m_Space == IMGUIZMO_NAMESPACE::TRANSLATE))
 		{
-			Mat = XMLoadFloat4x4(&M);
+			m_Space = IMGUIZMO_NAMESPACE::TRANSLATE;
+		}
+
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Rotate", m_Space == IMGUIZMO_NAMESPACE::ROTATE))
+		{
+			m_Space = IMGUIZMO_NAMESPACE::ROTATE;
+		}
+
+		ImGui::SameLine();
+		if (ImGui::RadioButton("Scale", m_Space == IMGUIZMO_NAMESPACE::SCALE))
+		{
+			m_Space = IMGUIZMO_NAMESPACE::SCALE;
+		}
+
+		ImGui::SameLine(0, 64);
+		if (ImGui::RadioButton("Local", m_Mode == IMGUIZMO_NAMESPACE::LOCAL))
+		{
+			m_Mode = IMGUIZMO_NAMESPACE::LOCAL;
+		}
+
+		ImGui::SameLine();
+		if (ImGui::RadioButton("World", m_Mode == IMGUIZMO_NAMESPACE::WORLD))
+		{
+			m_Mode = IMGUIZMO_NAMESPACE::WORLD;
+		}
+	}
+
+	void ViewportPanel::HandleInputs()
+	{
+		if ( ImGui::IsItemHovered() && !ImGui::IsMouseDown(ImGuiMouseButton_Right) )
+		{
+			if (ImGui::IsKeyPressed(ImGuiKey_W))
+			{
+				m_Space = IMGUIZMO_NAMESPACE::TRANSLATE;
+			}
+
+			else if (ImGui::IsKeyPressed(ImGuiKey_E))
+			{
+				m_Space = IMGUIZMO_NAMESPACE::ROTATE;
+			}
+
+			else if (ImGui::IsKeyPressed(ImGuiKey_R))
+			{
+				m_Space = IMGUIZMO_NAMESPACE::SCALE;
+			}
+
+			else if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent))
+			{
+				m_Mode = m_Mode == IMGUIZMO_NAMESPACE::LOCAL ?
+					IMGUIZMO_NAMESPACE::WORLD : IMGUIZMO_NAMESPACE::LOCAL;
+			}
 		}
 	}
 
@@ -137,7 +217,6 @@ namespace Drn
 		//Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
-
 }
 
 #endif

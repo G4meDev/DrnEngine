@@ -3,6 +3,7 @@
 #if WITH_EDITOR
 
 #include "ForwardTypes.h"
+#include <ImGuizmo.h>
 
 LOG_DECLARE_CATEGORY(LogViewportPanel);
 
@@ -21,6 +22,8 @@ namespace Drn
 	protected:
 
 		void OnViewportSizeChanged( const IntPoint& NewSize );
+		void DrawHeader();
+		void HandleInputs();
 
 		D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;
@@ -29,11 +32,14 @@ namespace Drn
 
 		CameraActor* m_ViewportCamera;
 
-		XMMATRIX Mat;
+		Component* m_SelectedComponent;
 
 		ViewportCameraInputHandler CameraInputHandler;
 		float CameraMovementSpeed = 0.01f;
 		float CameraRotationSpeed = 0.01f;
+
+		IMGUIZMO_NAMESPACE::OPERATION m_Space;
+		IMGUIZMO_NAMESPACE::MODE m_Mode;
 
 		World* m_World;
 		Scene* m_Scene;
