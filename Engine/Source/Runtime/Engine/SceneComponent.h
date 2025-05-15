@@ -82,22 +82,27 @@ namespace Drn
 		Vector GetRelativeScale() const;
 		Vector GetWorldScale() const;
 		
-		virtual void SetRelativeScale(const Vector& InScale);
+		void SetRelativeScale(const Vector& InScale);
 		void SetWorldScale(const Vector& InScale);
 
 		void SetRelativeLocationAndRotation(const Vector& InLocation, const Quat& InRotation);
 		void SetWorldLocationAndRotation(const Vector& InLocation, const Quat& InRotation);
+		void SetWorldLocationAndRotation_SkipPhysic( const Vector& InLocation, const Quat& InRotation );
+
+	protected:
+
+		virtual void OnUpdateTransform( bool SkipPhysic );
 
 	private:
 
 		Transform RelativeTransform;
 		Transform CachedWorldTransform;
 
-		void UpdateCachedTransform();
+		void UpdateCachedTransform( bool SkipPhysic );
 		Transform CalcNewWorldTransform(const Transform& InRelativeTransform) const;
 
-		void PropagateTransformUpdate();
-		void UpdateChildTransforms();
+		void PropagateTransformUpdate( bool SkipPhysic );
+		void UpdateChildTransforms( bool SkipPhysic );
 
 
 		SceneComponent* Parent = nullptr;

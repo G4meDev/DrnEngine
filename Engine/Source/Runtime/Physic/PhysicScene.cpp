@@ -127,7 +127,8 @@ namespace Drn
 			if (BodyInstance* Body = PhysicUserData::Get<BodyInstance>(RigidActor->userData))
 			{
 				physx::PxTransform transform(RigidActor->getGlobalPose());
-				Body->GetOwnerComponent()->SetWorldTransform(P2Transform(transform));
+				Transform WorldTransform = P2Transform( transform );
+				Body->GetOwnerComponent()->SetWorldLocationAndRotation_SkipPhysic(WorldTransform.GetLocation(), WorldTransform.GetRotation());
 			}
 		}
 	}
@@ -185,11 +186,13 @@ namespace Drn
 			for (int32 i = 0; i < NumShapes; i++)
 			{
 				PxShape* Shape = Shapes[i];
+				Transform LocalTransform = P2Transform( Shape->getLocalPose() );
+				Transform WorldTransform = LocalTransform * RigidTransform;
 
 				if ( Shape->getGeometry().getType() == PxGeometryType::eSPHERE)
 				{
 					const PxSphereGeometry* SphereGeo = static_cast<const PxSphereGeometry*>(&(Shape->getGeometry()));
-					m_OwningWorld->DrawDebugSphere(RigidTransform.GetLocation(), RigidTransform.GetRotation(),
+					m_OwningWorld->DrawDebugSphere(WorldTransform.GetLocation(), WorldTransform.GetRotation(),
 						Vector::ZeroVector, SphereGeo->radius, 16, 5.0f, 0);
 				}
 
@@ -197,7 +200,7 @@ namespace Drn
 				{
 					const PxBoxGeometry* BoxGeo = static_cast<const PxBoxGeometry*>(&(Shape->getGeometry()));
 					Box box = Box::BuildAABB(Vector::ZeroVector, P2Vector(BoxGeo->halfExtents));
-					m_OwningWorld->DrawDebugBox(box, RigidTransform, Vector(0.3f, 0.7f, 0.2f), 5.0f, 0);
+					m_OwningWorld->DrawDebugBox(box, WorldTransform, Vector(0.3f, 0.7f, 0.2f), 5.0f, 0);
 				}
 			}
 

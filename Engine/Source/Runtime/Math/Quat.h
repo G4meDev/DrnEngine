@@ -46,11 +46,19 @@ namespace Drn
 
 		inline Quat Normalize() { return Quat(XMQuaternionNormalize(m_Vector)); }
 
-		inline bool Equals( const Quat& Other ) 
+		inline bool Equals( const Quat& Other, float Tolerance = KINDA_SMALL_NUMBER ) 
 		{
-			uint32_t Result;
-			XMVectorEqualR(&Result, m_Vector, Other.m_Vector);
-			return XMComparisonAllTrue(Result);
+			const XMVECTOR ToleranceV = XMVectorReplicatePtr( (const float*)(&Tolerance) );
+			const XMVECTOR RotationSub = XMVectorAbs( m_Vector - Other.m_Vector );
+			const XMVECTOR RotationAdd = XMVectorAbs( m_Vector + Other.m_Vector );
+
+			uint32_t A = XMVector4GreaterR( RotationSub, ToleranceV );
+			A = XMComparisonAnyTrue( A );
+
+			uint32_t B = XMVector4GreaterR( RotationAdd, ToleranceV );
+			B = XMComparisonAnyTrue( B );
+
+			return !A || !B;
 		}
 
 		inline std::string ToString()

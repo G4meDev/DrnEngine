@@ -173,7 +173,7 @@ namespace Drn
 	void SceneComponent::SetRelativeScale( const Vector& InScale )
 	{
 		RelativeTransform.SetScale(InScale);
-		UpdateCachedTransform();
+		UpdateCachedTransform( false );
 	}
 
 	void SceneComponent::SetWorldScale( const Vector& InScale )
@@ -193,7 +193,7 @@ namespace Drn
 	{
 		RelativeTransform.SetLocation(InLocation);
 		RelativeTransform.SetRotation(InRotation);
-		UpdateCachedTransform();
+		UpdateCachedTransform( false );
 	}
 
 	void SceneComponent::SetWorldLocationAndRotation( const Vector& InLocation, const Quat& InRotation )
@@ -210,7 +210,28 @@ namespace Drn
 		SetRelativeLocationAndRotation(Location, Rotation);
 	}
 
-	void SceneComponent::UpdateCachedTransform()
+	void SceneComponent::SetWorldLocationAndRotation_SkipPhysic( const Vector& InLocation, const Quat& InRotation )
+	{
+		Vector Location = InLocation;
+		Quat Rotation = InRotation;
+
+		if (Parent)
+		{
+			Location = Parent->GetWorldTransform().InverseTransformPosition(InLocation);
+			Rotation = Parent->GetWorldTransform().GetRotation().Inverse() * InRotation;
+		}
+
+		RelativeTransform.SetLocation(Location);
+		RelativeTransform.SetRotation(Rotation);
+		UpdateCachedTransform( true );
+	}
+
+	void SceneComponent::OnUpdateTransform( bool SkipPhysic )
+	{
+		
+	}
+
+	void SceneComponent::UpdateCachedTransform( bool SkipPhysic )
 	{
 		Transform NewTransform = CalcNewWorldTransform(RelativeTransform);
 		bool HasChanged = !CachedWorldTransform.Equals(NewTransform);
@@ -218,7 +239,7 @@ namespace Drn
 		if (HasChanged)
 		{
 			CachedWorldTransform = NewTransform;
-			PropagateTransformUpdate();
+			PropagateTransformUpdate( SkipPhysic );
 		}
 	}
 
@@ -232,18 +253,19 @@ namespace Drn
 		return InRelativeTransform;
 	}
 
-	void SceneComponent::PropagateTransformUpdate()
+	void SceneComponent::PropagateTransformUpdate( bool SkipPhysic )
 	{
 		// TODO: mark render dirty etc
+		OnUpdateTransform(SkipPhysic);
 
-		UpdateChildTransforms();
+		UpdateChildTransforms( SkipPhysic );
 	}
 
-	void SceneComponent::UpdateChildTransforms()
+	void SceneComponent::UpdateChildTransforms( bool SkipPhysic )
 	{
 		for (auto Child : GetChilds())
 		{
-			Child->UpdateCachedTransform();
+			Child->UpdateCachedTransform( SkipPhysic );
 		}
 	}
 

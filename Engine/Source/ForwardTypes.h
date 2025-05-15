@@ -13,6 +13,7 @@
 
 #include "Runtime/Misc/StatsMisc.h"
 
+#include "Runtime/Math/MathHelper.h"
 #include "Runtime/Math/IntPoint.h"
 #include "Runtime/Math/Vector.h"
 #include "Runtime/Math/Vector4.h"

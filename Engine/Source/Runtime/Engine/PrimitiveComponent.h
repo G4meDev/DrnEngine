@@ -28,7 +28,7 @@ namespace Drn
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 
-		virtual void SetRelativeScale( const Vector& InScale ) override;
+		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
 		//virtual PrimitiveSceneProxy* AllocateSceneProxy() = 0;
 		//virtual PrimitiveSceneProxy* GetSceneProxy() const = 0;

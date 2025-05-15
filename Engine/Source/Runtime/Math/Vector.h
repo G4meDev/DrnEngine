@@ -94,6 +94,13 @@ namespace Drn
 			return Vector( float( X ) / 255.0f, float( Y ) / 255.0f, float( Z ) / 255.0f );
 		}
 
+		inline bool IsZero() const
+		{
+			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
+
+			return XMVectorGetX(Vec) == 0.0f && XMVectorGetY(Vec) == 0.0f && XMVectorGetZ(Vec) == 0.0f;
+		}
+
 		inline std::string ToString()
 		{
 			XMVECTOR Vec = XMLoadFloat3(&m_Vector);

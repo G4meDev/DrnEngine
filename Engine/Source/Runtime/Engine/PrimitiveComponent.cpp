@@ -59,11 +59,14 @@ namespace Drn
 
 	}
 
-	void PrimitiveComponent::SetRelativeScale( const Vector& InScale )
+	void PrimitiveComponent::OnUpdateTransform( bool SkipPhysic )
 	{
-		SceneComponent::SetRelativeScale(InScale);
-
-		SendPhysicsTransform();
+		SceneComponent::OnUpdateTransform( SkipPhysic );
+		
+		if (!SkipPhysic)
+		{
+			SendPhysicsTransform();
+		}
 	}
 
 #if WITH_EDITOR

@@ -18,13 +18,14 @@ namespace Drn
 
 		Transform() : Transform(Vector::ZeroVector, Quat(), Vector::OneVector) {};
 		inline Transform(const Vector& InLocation, const Quat& InRotation, const Vector& InScale) : Location(InLocation), Rotation(InRotation), Scale(InScale) {};
+		inline Transform(const Vector& InLocation, const Quat& InRotation) : Location(InLocation), Rotation(InRotation) {};
 		Transform(const Matrix& InMatrix);
 
 		Transform operator*(const Transform& Other) const;
 
 		Transform GetRelativeTransform(const Transform& RelativeTo) const;
-
 		Vector InverseTransformPosition( const Vector& InVector ) const;
+		inline static Vector SubtractTranslations( const Transform& A, const Transform& B) { return A.Location - B.Location; }
 
 		inline Vector GetLocation() const { return Location; }
 		inline Quat GetRotation() const { return Rotation; }
@@ -33,8 +34,6 @@ namespace Drn
 		inline void SetLocation( const Vector& InLocation ) { Location = InLocation; }
 		inline void SetRotation( const Quat& InRotation) { Rotation = InRotation; }
 		inline void SetScale( const Vector& InScale ) { Scale = InScale; }
-
-		inline static Vector SubtractTranslations(const Transform& A, const Transform& B) { return A.GetLocation() - B.GetLocation(); }
 
 		inline bool Equals( const Transform& Other ) { return Location.Equals(Other.Location) && Rotation.Equals(Other.Rotation) && Scale.Equals(Other.Scale); }
 

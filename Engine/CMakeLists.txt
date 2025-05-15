@@ -64,8 +64,9 @@ set( HEADER_FILES
 	
 	Source/Runtime/Containers/List.h
 
-	Source/Runtime/Math/IntPoint.h
 	Source/Runtime/Math/Math.h
+	Source/Runtime/Math/MathHelper.h
+	Source/Runtime/Math/IntPoint.h
 	Source/Runtime/Math/Box.h
 	Source/Runtime/Math/Vector.h
 	Source/Runtime/Math/Vector4.h
@@ -179,8 +180,9 @@ set( SOURCE_FILES
 	
 	Source/Runtime/Containers/List.cpp
 	
-	Source/Runtime/Math/IntPoint.cpp
 	Source/Runtime/Math/Math.cpp
+	Source/Runtime/Math/MathHelper.cpp
+	Source/Runtime/Math/IntPoint.cpp
 	Source/Runtime/Math/Box.cpp
 	Source/Runtime/Math/Vector.cpp
 	Source/Runtime/Math/Vector4.cpp

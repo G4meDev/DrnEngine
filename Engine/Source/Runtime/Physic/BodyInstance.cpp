@@ -51,7 +51,7 @@ namespace Drn
 
 		physx::PxPhysics* Physics = PhysicManager::Get()->GetPhysics();
 
-		// TODO: cleanupp memory
+		// TODO: cleanup memory
 		m_Material = Physics->createMaterial( 0.5f, 0.5f, 0.6f );
 
 		if (m_SimulatePhysic)
@@ -71,11 +71,16 @@ namespace Drn
 			physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(m_OwnerComponent->GetWorldScale()).get()), *m_Material );
 			shape->userData = &Element->GetUserData();
 
+			if (Element->GetType() == EAggCollisionShape::Sphere)
+			{
+				SphereElem* SphereEl = Element->GetShape<SphereElem>();
+				shape->setLocalPose(Transform2P( Transform(SphereEl->Center, Quat(), Vector::OneVector ) ) );
+			}
+
 			m_RigidActor->attachShape( *shape );
 			shape->release();
 		}
 		
-		//m_RigidActor->setGlobalPose( Transform2P(m_OwnerComponent->GetWorldTransform()));
 		//m_RigidActor->is<physx::PxRigidDynamic>()->setMassSpaceInertiaTensor(m_SimulatePhysic ? m_Mass : physx::PxReal(0));
 
 		m_PhysicUserData = PhysicUserData(this);
@@ -97,7 +102,10 @@ namespace Drn
 
 	void BodyInstance::SetBodyTransform( const Transform& InTransform )
 	{
-		
+		if (m_RigidActor)
+		{
+			m_RigidActor->setGlobalPose(Transform2P(InTransform));
+		}
 	}
 
 	void BodyInstance::UpdateBodyScale( const Vector& InScale )
