@@ -6,21 +6,27 @@ LOG_DEFINE_CATEGORY( LogPhysicScene, "PhysicScene" )
 
 namespace Drn
 {
+
+
 	PhysicScene::PhysicScene(World* InWorld)
 		: m_OwningWorld(InWorld)
+		, m_SimEventCallback(nullptr)
 	{
 		const physx::PxVec3 m_Gravity = physx::PxVec3( 0.0f, -9.81f, 0.0f );
 
 		physx::PxSceneDesc sceneDesc(PhysicManager::Get()->GetToleranceScale());
 		sceneDesc.gravity = m_Gravity;
-		
+
+		m_SimEventCallback = new PhysXSimEventCallback(this);
+
 		physx::PxU32 numWorkers = 1;
 		m_Dispatcher = physx::PxDefaultCpuDispatcherCreate(numWorkers);
 		sceneDesc.cpuDispatcher	= m_Dispatcher;
+		sceneDesc.simulationEventCallback = m_SimEventCallback;
 		sceneDesc.filterShader	= physx::PxDefaultSimulationFilterShader;
+		//sceneDesc.filterShader = ;
 
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-
 		m_PhysxScene = PhysicManager::Get()->GetPhysics()->createScene(sceneDesc);
 
 #if WITH_EDITOR
@@ -47,6 +53,11 @@ namespace Drn
 	{
 		PX_RELEASE(m_PhysxScene);
 		PX_RELEASE(m_Dispatcher);
+		if (m_SimEventCallback)
+		{
+			delete m_SimEventCallback;
+			m_SimEventCallback = nullptr;
+		}
 	}
 
 	void PhysicScene::Release()
@@ -206,6 +217,93 @@ namespace Drn
 
 			delete Shapes;
 		}
+	}
+
+	void PhysXSimEventCallback::onContact( const PxContactPairHeader& PairHeader, const PxContactPair* Pairs, PxU32 NumPairs )
+	{
+		if ( PairHeader.flags & ( PxContactPairHeaderFlag::eREMOVED_ACTOR_0 | PxContactPairHeaderFlag::eREMOVED_ACTOR_1 ) )
+		{
+			LOG( LogPhysicScene, Info, TEXT( "onContact(): Actors have been deleted!" ) );
+			return;
+		}
+
+		const PxActor* PActor0 = PairHeader.actors[0];
+		const PxActor* PActor1 = PairHeader.actors[1];
+
+		if (!PActor0 || !PActor1)
+			__debugbreak();
+
+		const PxRigidBody* PRigidBody0 = PActor0->is<PxRigidBody>();
+		const PxRigidBody* PRigidBody1 = PActor1->is<PxRigidBody>();
+
+		const BodyInstance* BodyInst0 = PhysicUserData::Get<BodyInstance>(PActor0->userData);
+		const BodyInstance* BodyInst1 = PhysicUserData::Get<BodyInstance>(PActor1->userData);
+	
+		if(BodyInst0 == nullptr || BodyInst1 == nullptr || BodyInst0 == BodyInst1)
+		{
+			return;
+		}
+
+		AddCollisionNotifyInfo(BodyInst0, BodyInst1, Pairs, NumPairs, m_OwningScene->m_PendingCollisionNotifies);
+	}
+
+	bool CollisionNotifyInfo::IsValidForNotify() const
+	{
+		return (Info0.m_Component && Info1.m_Component);
+	}
+
+	void PhysXSimEventCallback::AddCollisionNotifyInfo( const BodyInstance* Body0, const BodyInstance* Body1,
+		const physx::PxContactPair * Pairs, uint32 NumPairs, std::vector<CollisionNotifyInfo>& PendingNotifyInfos)
+	{
+		for(uint32 PairIdx = 0; PairIdx < NumPairs; ++PairIdx)
+		{
+			const PxContactPair* Pair = Pairs + PairIdx;
+
+			if(!Pair->events.isSet(PxPairFlag::eNOTIFY_TOUCH_LOST) &&
+				!Pair->events.isSet(PxPairFlag::eNOTIFY_THRESHOLD_FORCE_LOST) &&
+				!Pair->flags.isSet(PxContactPairFlag::eREMOVED_SHAPE_0) &&
+				!Pair->flags.isSet(PxContactPairFlag::eREMOVED_SHAPE_1))
+			{
+				const PxShape* Shape0 = Pair->shapes[0];
+				if ( !Shape0 ) __debugbreak();
+				const PxShape* Shape1 = Pair->shapes[1];
+				if ( !Shape1 ) __debugbreak();
+
+				CollisionNotifyInfo NotifyInfo;
+				NotifyInfo.bCallEvent0 = true;
+				NotifyInfo.Info0.SetFrom(Body0);
+				NotifyInfo.bCallEvent1 = true;
+				NotifyInfo.Info1.SetFrom(Body1);
+				
+				PendingNotifyInfos.push_back(NotifyInfo);
+			}
+		}
+	}
+
+	void RigidBodyCollisionInfo::SetFrom( const BodyInstance* BodyInst )
+	{
+		if (BodyInst)
+		{
+			m_Component = BodyInst->GetOwnerComponent();
+			m_Actor = m_Component->GetOwningActor();
+		}
+		else
+		{
+			m_Component = nullptr;
+			m_Actor = nullptr;
+		}
+	}
+
+	BodyInstance* RigidBodyCollisionInfo::GetBodyInstance() const
+	{
+		BodyInstance* Result = nullptr;
+		
+		if (m_Component)
+		{
+			Result = &m_Component->GetBodyInstance();
+		}
+
+		return Result;
 	}
 
 }

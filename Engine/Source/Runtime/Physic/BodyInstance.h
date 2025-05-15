@@ -23,7 +23,7 @@ namespace Drn
 
 		virtual void Serialize(Archive& Ar);
 
-		inline PrimitiveComponent* GetOwnerComponent() { return m_OwnerComponent; }
+		inline PrimitiveComponent* GetOwnerComponent() const { return m_OwnerComponent; }
 		inline PxRigidActor* GetRigidActor() { return m_RigidActor; }
 
 		inline BodySetup* GetBodySetup() const { return m_BodySetup; }

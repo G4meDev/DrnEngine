@@ -68,7 +68,14 @@ namespace Drn
 		{
 			ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
 
+			//PxFilterData filterData;
+			//filterData.setToDefault();
+			//filterData.word0 = UINT32_MAX;
+			//filterData.word1 = UINT32_MAX;
+
 			physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(m_OwnerComponent->GetWorldScale()).get()), *m_Material );
+			//shape->setSimulationFilterData( filterData );
+
 			shape->userData = &Element->GetUserData();
 
 			if (Element->GetType() == EAggCollisionShape::Sphere)
@@ -80,7 +87,9 @@ namespace Drn
 			m_RigidActor->attachShape( *shape );
 			shape->release();
 		}
-		
+
+		//m_RigidActor->
+
 		//m_RigidActor->is<physx::PxRigidDynamic>()->setMassSpaceInertiaTensor(m_SimulatePhysic ? m_Mass : physx::PxReal(0));
 
 		m_PhysicUserData = PhysicUserData(this);
