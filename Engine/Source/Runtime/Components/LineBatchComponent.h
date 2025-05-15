@@ -74,10 +74,10 @@ namespace Drn
 
 		LineBatchComponent* m_LineComponent;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_VertexBuffer;
+		Resource* m_VertexBufferResource;
 		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_IndexBuffer;
+		Resource* m_IndexBufferResource;
 		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 
 		std::vector<InputLayout_LineColorThickness> m_VertexData;
