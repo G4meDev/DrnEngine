@@ -25,4 +25,5 @@ struct ViewBuffer
     matrix LocalToProjection;
     matrix LocalToWorld;
     uint4 Guid;
+    matrix LocalToView;
 };

@@ -40,7 +40,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float2 FracEdge = abs(Frac - 0.5f) - 0.45f;
     float Alpha = max(FracEdge.x, FracEdge.y) * 4;
     
-    OUT.Color = float4( Alpha.xxx, 1.0f );
+    OUT.Color = Alpha.xxxx;
     //OUT.Color = float4(Alpha.xxx, 0.5f);
     return OUT;
 }

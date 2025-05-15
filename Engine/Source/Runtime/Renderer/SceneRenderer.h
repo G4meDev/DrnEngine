@@ -49,6 +49,9 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_GuidTarget = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthTarget = nullptr;
 
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_EditorColorTarget = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_EditorDepthTarget = nullptr;
+
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_ScissorRect;
 
@@ -70,5 +73,7 @@ namespace Drn
 
 		void BeginRender(ID3D12GraphicsCommandList2* CommandList);
 		void RenderBasePass(ID3D12GraphicsCommandList2* CommandList);
+		void RenderEditorPrimitives(ID3D12GraphicsCommandList2* CommandList);
+
 	};
 }

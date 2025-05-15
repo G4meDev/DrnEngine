@@ -26,13 +26,13 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-		dsvHeapDesc.NumDescriptors = 1;
+		dsvHeapDesc.NumDescriptors = 2;
 		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		Device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_DSVHeap));
 
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-		rtvHeapDesc.NumDescriptors = 2;
+		rtvHeapDesc.NumDescriptors = 3;
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&m_RTVHeap));
@@ -78,12 +78,52 @@ namespace Drn
 		{
 			Proxy->RenderMainPass(CommandList, this);
 		}
+	}
 
-		// TODO: render to separate target
+	void SceneRenderer::RenderEditorPrimitives( ID3D12GraphicsCommandList2* CommandList )
+	{
+		SCOPE_STAT( RenderEditorPrimitives );
+
+		FLOAT clearColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		uint32 DSVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+		CD3DX12_CPU_DESCRIPTOR_HANDLE EditorColorHandle(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 2, RTVDescriporSize);
+		CD3DX12_CPU_DESCRIPTOR_HANDLE EditorDepthHandle(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), 1, DSVDescriporSize);
+
+		D3D12_CPU_DESCRIPTOR_HANDLE const RTVHandles[1] = 
+		{
+			EditorColorHandle
+		};
+
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_DepthTarget.Get(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COPY_SOURCE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_EditorDepthTarget.Get(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COPY_DEST );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		CommandList->CopyResource(m_EditorDepthTarget.Get(), m_DepthTarget.Get());
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_DepthTarget.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_EditorDepthTarget.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		CommandList->ClearRenderTargetView(EditorColorHandle, clearColor, 0, nullptr);
+		CommandList->OMSetRenderTargets(1, RTVHandles, false, &EditorDepthHandle);
+
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_EditorPrimitiveProxies)
 		{
 			Proxy->RenderMainPass(CommandList, this);
 		}
+
+
 	}
 
 	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )
@@ -97,6 +137,7 @@ namespace Drn
 
 		BeginRender(CommandList);
 		RenderBasePass(CommandList);
+		RenderEditorPrimitives(CommandList);
 	}
 
 	ID3D12Resource* SceneRenderer::GetViewResource()
@@ -176,11 +217,64 @@ namespace Drn
 		rtv.Texture2D.MipSlice = 0;
 
 		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		uint32 DSVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 		Device->CreateRenderTargetView( m_GuidTarget.Get(), &rtv, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize) );
 
 #if D3D12_Debug_INFO
 		m_GuidTarget->SetName( L"Guid Target" );
 #endif
+
+// ----------------------------------------------------------------------------------------------------------------------------
+
+		DXGI_FORMAT EditorColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+		D3D12_CLEAR_VALUE EditorcolorClearValue;
+		EditorcolorClearValue.Format   = EditorColorFormat;
+		EditorcolorClearValue.Color[0] = 0.0f;
+		EditorcolorClearValue.Color[1] = 0.0f;
+		EditorcolorClearValue.Color[2] = 0.0f;
+		EditorcolorClearValue.Color[3] = 0.0f;
+
+		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(EditorColorFormat, m_RenderSize.X, m_RenderSize.Y,
+			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET), D3D12_RESOURCE_STATE_RENDER_TARGET,
+			&EditorcolorClearValue, IID_PPV_ARGS(m_EditorColorTarget.ReleaseAndGetAddressOf()) );
+
+		D3D12_RENDER_TARGET_VIEW_DESC rtv2 = {};
+		rtv2.Format = EditorColorFormat;
+		rtv2.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		rtv2.Texture2D.MipSlice = 0;
+
+		Device->CreateRenderTargetView(m_EditorColorTarget.Get(), &rtv2, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 2, RTVDescriporSize) );
+
+#if D3D12_Debug_INFO
+		m_EditorColorTarget->SetName( L"Editor Color Render Target" );
+#endif
+
+// ----------------------------------------------------------------------------------------------------------------------------
+
+		D3D12_CLEAR_VALUE EditorDepthClearValue = {};
+		EditorDepthClearValue.Format = DEPTH_FORMAT;
+		EditorDepthClearValue.DepthStencil = { 1.0f, 0 };
+
+		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(DEPTH_FORMAT, m_RenderSize.X, m_RenderSize.Y,
+			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL), D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			&EditorDepthClearValue, IID_PPV_ARGS(m_EditorDepthTarget.ReleaseAndGetAddressOf()) );
+
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsv2 = {};
+		dsv2.Format = DEPTH_FORMAT;
+		dsv2.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsv2.Texture2D.MipSlice = 0;
+		dsv2.Flags = D3D12_DSV_FLAG_NONE;
+
+		Device->CreateDepthStencilView(m_EditorDepthTarget.Get(), &dsv2, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), 1, DSVDescriporSize) );
+
+#if D3D12_Debug_INFO
+		m_EditorDepthTarget->SetName( L"Editor Depth Render Target" );
+#endif
+
+// ----------------------------------------------------------------------------------------------------------------------------
 
 		D3D12_CPU_DESCRIPTOR_HANDLE const RTVHandles[2] = 
 		{
