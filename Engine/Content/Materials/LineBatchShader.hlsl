@@ -1,15 +1,6 @@
-struct ModelViewProjection
-{
-	matrix MVP;
-};
+#include "Common.hlsl"
 
-ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
-
-struct VertexPosColor
-{
-	float3 Position : POSITION;
-	float4 Color : COLOR;
-};
+ConstantBuffer<ViewBuffer> View : register(b0);
 
 struct VertexShaderOutput
 {
@@ -22,7 +13,6 @@ VertexShaderOutput Main_VS(VertexPosColor IN)
 {
 	VertexShaderOutput OUT;
 
-	//OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
 	OUT.Position = float4(IN.Position, 1);
 	OUT.Color = float4(IN.Color.xyz, 1.0f);
 	OUT.Thickness = IN.Color.a;
@@ -68,28 +58,28 @@ void Main_GS(line VertexShaderOutput input[2], inout TriangleStream<GeometerySha
     float3 Pos;
 	
     Pos = StartPos + Up * Thickness * 0.5f;
-	V1.Position = mul(ModelViewProjectionCB.MVP, float4(Pos, 1.0f));
+	V1.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
 	
     Pos = StartPos + Right * Thickness * 0.5f;
-	V2.Position = mul(ModelViewProjectionCB.MVP, float4(Pos, 1.0f));
+    V2.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
 
     Pos = StartPos - Up * Thickness * 0.5f;
-    V3.Position = mul(ModelViewProjectionCB.MVP, float4(Pos, 1.0f));
+    V3.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
 	
     Pos = StartPos - Right * Thickness * 0.5f;
-    V4.Position = mul(ModelViewProjectionCB.MVP, float4(Pos, 1.0f));
+    V4.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
 	
     Pos = EndPos + Up * Thickness * 0.5f;
-    V5.Position = mul(ModelViewProjectionCB.MVP, float4(Pos, 1.0f));
+    V5.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
 
     Pos = EndPos + Right * Thickness * 0.5f;
-    V6.Position = mul(ModelViewProjectionCB.MVP, float4(Pos, 1.0f));
+    V6.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
 	
     Pos = EndPos - Up * Thickness * 0.5f;
-    V7.Position = mul(ModelViewProjectionCB.MVP, float4(Pos, 1.0f));
+    V7.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
 	
     Pos = EndPos - Right * Thickness * 0.5f;
-    V8.Position = mul(ModelViewProjectionCB.MVP, float4(Pos, 1.0f));
+    V8.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
 
 	OutputStream.Append(V1);
 	OutputStream.Append(V2);

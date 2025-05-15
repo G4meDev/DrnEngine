@@ -1,24 +1,6 @@
-struct ModelViewProjection
-{
-    matrix MVP;
-    matrix ModelToWorld;
-    uint4 Guid;
-};
+#include "Common.hlsl"
 
-ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
-
-struct VertexInput
-{
-    float3 Position     : POSITION;
-    float3 Color        : COLOR;
-    float3 Normal       : NORMAL;
-    float3 Tangent      : TANGENT;
-    float3 Bitangent    : BINORMAL;
-    float2 UV1          : TEXCOORD0;
-    float2 UV2          : TEXCOORD1;
-    float2 UV3          : TEXCOORD2;
-    float2 UV4          : TEXCOORD3;
-};
+ConstantBuffer<ViewBuffer> View : register(b0);
 
 struct VertexShaderOutput
 {
@@ -26,12 +8,12 @@ struct VertexShaderOutput
     float4 Position : SV_Position;
 };
 
-VertexShaderOutput Main_VS(VertexInput IN)
+VertexShaderOutput Main_VS(StaticMeshVertexInput IN)
 {
     VertexShaderOutput OUT;
 
-    OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
-    OUT.WorldPos = mul(ModelViewProjectionCB.ModelToWorld, float4(IN.Position, 1.0f));
+    OUT.Position = mul(View.LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.WorldPos = mul(View.LocalToWorld, float4(IN.Position, 1.0f));
 
     return OUT;
 }

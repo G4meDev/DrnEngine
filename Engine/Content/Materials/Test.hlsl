@@ -1,10 +1,6 @@
-struct ModelViewProjection
-{
-    matrix MVP;
-    uint4 Guid;
-};
+#include "Common.hlsl"
 
-ConstantBuffer<ModelViewProjection> ModelViewProjectionCB : register(b0);
+ConstantBuffer<ViewBuffer> View : register(b0);
 
 cbuffer MaterialScalars : register(b1)
 {
@@ -33,19 +29,6 @@ SamplerState TestSampler : register(s0);
 Texture2D TestTexture_2 : register(t1);
 SamplerState TestSampler_2 : register(s1);
 
-struct VertexInput
-{
-    float3 Position     : POSITION;
-    float3 Color        : COLOR;
-    float3 Normal       : NORMAL;
-    float3 Tangent      : TANGENT;
-    float3 Bitangent    : BINORMAL;
-    float2 UV1          : TEXCOORD0;
-    float2 UV2          : TEXCOORD1;
-    float2 UV3          : TEXCOORD2;
-    float2 UV4          : TEXCOORD3;
-};
-
 struct VertexShaderOutput
 {
     float4 Color : COLOR0;
@@ -54,11 +37,11 @@ struct VertexShaderOutput
     float4 Position : SV_Position;
 };
 
-VertexShaderOutput Main_VS(VertexInput IN)
+VertexShaderOutput Main_VS(StaticMeshVertexInput IN)
 {
     VertexShaderOutput OUT;
 
-    OUT.Position = mul(ModelViewProjectionCB.MVP, float4(IN.Position, 1.0f));
+    OUT.Position = mul(View.LocalToProjection, float4(IN.Position, 1.0f));
     OUT.Color = float4(IN.UV1, 0.0f, 1.0f);
     OUT.Normal = IN.Normal;
     OUT.UV = IN.UV1;
@@ -97,7 +80,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float L = max(0, dot(IN.Normal, LightDir.xyz));
 
     OUT.Color = Texture1 * L * Alpha;
-    OUT.Guid = ModelViewProjectionCB.Guid;
+    OUT.Guid = View.Guid;
     
     return OUT;
 }
