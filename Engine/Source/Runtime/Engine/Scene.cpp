@@ -18,6 +18,10 @@ namespace Drn
 		{
 			delete Proxy;
 		}
+		for (PrimitiveSceneProxy* Proxy : m_EditorPrimitiveProxies)
+		{
+			delete Proxy;
+		}
 		for (PrimitiveSceneProxy* Proxy : m_PendingProxies)
 		{
 			delete Proxy;
@@ -79,11 +83,24 @@ namespace Drn
 		{
 			PrimitiveSceneProxy* SceneProxy = *it;
 			SceneProxy->InitResources(CommandList);
-			m_PrimitiveProxies.insert(SceneProxy);
+			if (SceneProxy->m_EditorPrimitive)
+			{
+				m_EditorPrimitiveProxies.insert(SceneProxy);
+			}
+			else
+			{
+				m_PrimitiveProxies.insert(SceneProxy);
+			}
 		}
 		m_PendingProxies.clear();
 
 		for (auto it = m_PrimitiveProxies.begin(); it != m_PrimitiveProxies.end(); it++)
+		{
+			PrimitiveSceneProxy* Proxy = *it;
+			Proxy->UpdateResources(CommandList);
+		}
+
+		for (auto it = m_EditorPrimitiveProxies.begin(); it != m_EditorPrimitiveProxies.end(); it++)
 		{
 			PrimitiveSceneProxy* Proxy = *it;
 			Proxy->UpdateResources(CommandList);
@@ -101,6 +118,7 @@ namespace Drn
 		{
 			m_PendingProxies.erase(InPrimitiveSceneProxy);
 			m_PrimitiveProxies.erase(InPrimitiveSceneProxy);
+			m_EditorPrimitiveProxies.erase(InPrimitiveSceneProxy);
 
 			//InPrimitiveSceneProxy->ReleaseBufferedResource();
 			delete InPrimitiveSceneProxy;

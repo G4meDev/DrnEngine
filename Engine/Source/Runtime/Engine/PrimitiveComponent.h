@@ -33,6 +33,9 @@ namespace Drn
 		//virtual PrimitiveSceneProxy* AllocateSceneProxy() = 0;
 		//virtual PrimitiveSceneProxy* GetSceneProxy() const = 0;
 
+		inline bool IsEditorPrimitive() const { return m_EditorPrimitive; }
+		inline void SetEditorPrimitive(bool EditorPrimitive) { m_EditorPrimitive = EditorPrimitive; }
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 #endif
@@ -40,6 +43,7 @@ namespace Drn
 	protected:
 
 		bool m_RenderStateDirty;
+		bool m_EditorPrimitive;
 
 		BodyInstance m_BodyInstance;
 

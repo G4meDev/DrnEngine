@@ -1,5 +1,5 @@
 
-struct StaticMeshVertexInput
+struct VertexInputStaticMesh
 {
     float3 Position : POSITION;
     float3 Color : COLOR;
@@ -12,7 +12,7 @@ struct StaticMeshVertexInput
     float2 UV4 : TEXCOORD3;
 };
 
-struct VertexPosColor
+struct VertexInputPosColor
 {
     float3 Position : POSITION;
     float4 Color : COLOR;

@@ -10,6 +10,7 @@ namespace Drn
 	PrimitiveComponent::PrimitiveComponent()
 		: SceneComponent()
 		, m_RenderStateDirty(true)
+		, m_EditorPrimitive(false)
 	{
 		
 	}

@@ -37,7 +37,7 @@ struct VertexShaderOutput
     float4 Position : SV_Position;
 };
 
-VertexShaderOutput Main_VS(StaticMeshVertexInput IN)
+VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 

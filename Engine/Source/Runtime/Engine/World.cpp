@@ -23,7 +23,24 @@ namespace Drn
 		Cam->SetActorLocation(XMVectorSet(0, 0, -10, 0));
 
 		Renderer::Get()->m_MainSceneRenderer = m_Scene->AllocateSceneRenderer();
-		Renderer::Get()->m_MainSceneRenderer->m_CameraActor = Cam;		
+		Renderer::Get()->m_MainSceneRenderer->m_CameraActor = Cam;
+#endif
+
+#if WITH_EDITOR
+
+		AssetHandle<StaticMesh> AxisGridMesh( "Engine\\Content\\BasicShapes\\SM_Plane.drn" );
+		AxisGridMesh.Load();
+		AssetHandle<Material> AxisGridMaterial( "Engine\\Content\\Materials\\M_AxisGridMaterial.drn" );
+		AxisGridMaterial.Load();
+
+		m_AxisGridPlane = SpawnActor<StaticMeshActor>();
+		m_AxisGridPlane->SetTransient(true);
+		m_AxisGridPlane->SetActorScale(Vector( 10000.0f ));
+		m_AxisGridPlane->SetActorLocation(Vector::DownVector * 2);
+		m_AxisGridPlane->GetMeshComponent()->SetMesh(AxisGridMesh);
+		m_AxisGridPlane->GetMeshComponent()->SetMaterial(0, AxisGridMaterial);
+		m_AxisGridPlane->GetMeshComponent()->SetEditorPrimitive(true);
+
 #endif
 
 		m_LineBatchCompponent = new LineBatchComponent();

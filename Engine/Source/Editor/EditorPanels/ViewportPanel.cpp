@@ -26,13 +26,6 @@ namespace Drn
 
 		m_SceneRenderer->m_CameraActor = m_ViewportCamera;
 
-		AssetHandle<StaticMesh> Mesh( "Engine\\Content\\BasicShapes\\SM_Plane.drn" );
-		Mesh.Load();
-		m_GridActor = m_World->SpawnActor<StaticMeshActor>();
-		m_GridActor->SetActorScale(Vector( 10000.0f ));
-		m_GridActor->SetActorLocation(Vector::DownVector * 2);
-		m_GridActor->GetMeshComponent()->SetMesh(Mesh);
-
 		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Alloc( &ViewCpuHandle, &ViewGpuHandle );
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};

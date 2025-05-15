@@ -8,7 +8,7 @@ struct VertexShaderOutput
     float4 Position : SV_Position;
 };
 
-VertexShaderOutput Main_VS(StaticMeshVertexInput IN)
+VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 
@@ -41,5 +41,6 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float Alpha = max(FracEdge.x, FracEdge.y) * 4;
     
     OUT.Color = float4( Alpha.xxx, 1.0f );
+    //OUT.Color = float4(Alpha.xxx, 0.5f);
     return OUT;
 }

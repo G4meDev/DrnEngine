@@ -10,6 +10,7 @@ namespace Drn
 		, m_OwningStaticMeshComponent( InStaticMeshComponent )
 		, m_Guid(InStaticMeshComponent->GetGuid())
 	{
+		m_EditorPrimitive = InStaticMeshComponent->IsEditorPrimitive();
 	}
 
 	StaticMeshSceneProxy::~StaticMeshSceneProxy()

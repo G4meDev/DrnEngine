@@ -39,7 +39,6 @@ namespace Drn
 		void RemoveFromOnNewActors(OnNewActors Delegate);
 		void InvokeOnNewActors(const std::set<Actor*>& NewActors);
 
-
 		void BindOnRemoveActor(OnRemoveActor Delegate);
 		void RemoveFromOnRemoveActor(OnRemoveActor Delegate);
 		void InvokeOnRemoveActor(const Actor* RemovedActor);
@@ -90,6 +89,10 @@ namespace Drn
 
 		Scene* m_Scene;
 		PhysicScene* m_PhysicScene;
+
+#if WITH_EDITOR
+		StaticMeshActor* m_AxisGridPlane;
+#endif
 
 		bool m_PendingDestory;
 

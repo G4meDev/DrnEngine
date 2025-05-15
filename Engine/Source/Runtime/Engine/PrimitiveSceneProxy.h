@@ -20,6 +20,8 @@ namespace Drn
 		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) = 0;
 		virtual PrimitiveComponent* GetPrimitive() = 0;
 
+		bool m_EditorPrimitive;
+
 	private:
 
 		friend class Scene;

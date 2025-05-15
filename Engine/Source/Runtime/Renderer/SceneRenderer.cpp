@@ -78,6 +78,12 @@ namespace Drn
 		{
 			Proxy->RenderMainPass(CommandList, this);
 		}
+
+		// TODO: render to separate target
+		for (PrimitiveSceneProxy* Proxy : m_Scene->m_EditorPrimitiveProxies)
+		{
+			Proxy->RenderMainPass(CommandList, this);
+		}
 	}
 
 	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )
