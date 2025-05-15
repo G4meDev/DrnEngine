@@ -23,8 +23,8 @@ namespace Drn
 		m_Dispatcher = physx::PxDefaultCpuDispatcherCreate(numWorkers);
 		sceneDesc.cpuDispatcher	= m_Dispatcher;
 		sceneDesc.simulationEventCallback = m_SimEventCallback;
-		sceneDesc.filterShader	= physx::PxDefaultSimulationFilterShader;
-		//sceneDesc.filterShader = ;
+		//sceneDesc.filterShader	= physx::PxDefaultSimulationFilterShader;
+		sceneDesc.filterShader = contactReportFilterShader;
 
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 		m_PhysxScene = PhysicManager::Get()->GetPhysics()->createScene(sceneDesc);
@@ -73,6 +73,7 @@ namespace Drn
 		{
 			StepSimulation(DeltaTime);
 			SyncActors();
+			DispatchPhysicEvents();
 		}
 
 		if (m_DrawDebugCollision)
@@ -144,7 +145,42 @@ namespace Drn
 		}
 	}
 
-// ------------------------------------------------------------------------------------------------------------
+	void PhysicScene::DispatchPhysicEvents()
+	{
+		SCOPE_STAT( DispatchPhysicEvents );
+
+		for (int32 i = 0; i < m_PendingCollisionNotifies.size(); i++)
+		{
+			CollisionNotifyInfo& NotifyInfo = m_PendingCollisionNotifies[i];
+			if (NotifyInfo.RigidCollisionData.ContactInfos.size() > 0)
+			{
+				if (NotifyInfo.bCallEvent0 && NotifyInfo.IsValidForNotify() && NotifyInfo.Info0.m_Actor)
+				{
+					NotifyInfo.Info0.m_Actor->DispatchPhysicsCollisionHit(NotifyInfo.Info0, NotifyInfo.Info1, NotifyInfo.RigidCollisionData);
+				}
+
+				if (NotifyInfo.bCallEvent1 && NotifyInfo.IsValidForNotify() && NotifyInfo.Info1.m_Actor)
+				{
+					NotifyInfo.RigidCollisionData.SwapContactOrders();
+					NotifyInfo.Info1.m_Actor->DispatchPhysicsCollisionHit(NotifyInfo.Info1, NotifyInfo.Info0, NotifyInfo.RigidCollisionData);
+				}
+			}
+		}
+
+		m_PendingCollisionNotifies.clear();
+	}
+
+	PxFilterFlags PhysicScene::contactReportFilterShader( PxFilterObjectAttributes attributes0, PxFilterData filterData0,
+		PxFilterObjectAttributes attributes1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize )
+	{
+		pairFlags = PxPairFlag::eSOLVE_CONTACT | PxPairFlag::eDETECT_DISCRETE_CONTACT
+			| PxPairFlag::eNOTIFY_TOUCH_FOUND 
+			| PxPairFlag::eNOTIFY_TOUCH_PERSISTS
+			| PxPairFlag::eNOTIFY_CONTACT_POINTS;
+		return PxFilterFlag::eDEFAULT;
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
 
 	void PhysicScene::DrawDebugCollisions()
 	{
@@ -219,6 +255,8 @@ namespace Drn
 		}
 	}
 
+// ------------------------------------------------------------------------------------------------------------
+
 	void PhysXSimEventCallback::onContact( const PxContactPairHeader& PairHeader, const PxContactPair* Pairs, PxU32 NumPairs )
 	{
 		if ( PairHeader.flags & ( PxContactPairHeaderFlag::eREMOVED_ACTOR_0 | PxContactPairHeaderFlag::eREMOVED_ACTOR_1 ) )
@@ -274,36 +312,24 @@ namespace Drn
 				NotifyInfo.Info0.SetFrom(Body0);
 				NotifyInfo.bCallEvent1 = true;
 				NotifyInfo.Info1.SetFrom(Body1);
-				
+
+				PxContactPairPoint ContactPointBuffer[16];
+				int NumContactPoints = Pairs->extractContacts(ContactPointBuffer, 16);
+
+				RigidBodyContactInfo ContactInfo;
+				for (int i = 0; i < NumContactPoints; i++)
+				{
+					const PxContactPairPoint& Point = ContactPointBuffer[i];
+
+					ContactInfo.ContactPosition = P2Vector( Point.position );
+					ContactInfo.ContactNormal = P2Vector( Point.normal );
+
+					NotifyInfo.RigidCollisionData.ContactInfos.push_back(ContactInfo);
+				}
+
 				PendingNotifyInfos.push_back(NotifyInfo);
 			}
 		}
-	}
-
-	void RigidBodyCollisionInfo::SetFrom( const BodyInstance* BodyInst )
-	{
-		if (BodyInst)
-		{
-			m_Component = BodyInst->GetOwnerComponent();
-			m_Actor = m_Component->GetOwningActor();
-		}
-		else
-		{
-			m_Component = nullptr;
-			m_Actor = nullptr;
-		}
-	}
-
-	BodyInstance* RigidBodyCollisionInfo::GetBodyInstance() const
-	{
-		BodyInstance* Result = nullptr;
-		
-		if (m_Component)
-		{
-			Result = &m_Component->GetBodyInstance();
-		}
-
-		return Result;
 	}
 
 }

@@ -2,6 +2,9 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Core/Serializable.h"
+#include "Runtime/Engine/EngineTypes.h"
+
+LOG_DECLARE_CATEGORY( LogActor );
 
 namespace Drn
 {
@@ -61,6 +64,8 @@ namespace Drn
 
 		void RegisterComponents(World* InWorld);
 		void UnRegisterComponents();
+
+		void DispatchPhysicsCollisionHit(const RigidBodyCollisionInfo& MyInfo, const RigidBodyCollisionInfo& OtherInfo, const CollisionImpactData& RigidCollisionData);
 
 	private:
 

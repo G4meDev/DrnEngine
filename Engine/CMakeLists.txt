@@ -13,6 +13,7 @@ set( HEADER_FILES
 	Source/Runtime/Core/Time.h
 	Source/Runtime/Core/Window.h
 	
+	Source/Runtime/Engine/EngineTypes.h
 	Source/Runtime/Engine/WorldManager.h
 	Source/Runtime/Engine/World.h
 	Source/Runtime/Engine/Level.h
@@ -129,6 +130,7 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Time.cpp
 	Source/Runtime/Core/Window.cpp
 	
+	Source/Runtime/Engine/EngineTypes.cpp
 	Source/Runtime/Engine/WorldManager.cpp
 	Source/Runtime/Engine/World.cpp
 	Source/Runtime/Engine/Level.cpp

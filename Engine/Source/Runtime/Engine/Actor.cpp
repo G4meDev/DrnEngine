@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "Actor.h"
 
+LOG_DEFINE_CATEGORY( LogActor, "Actor" );
+
 namespace Drn
 {
 	Actor::Actor()
@@ -161,6 +163,16 @@ namespace Drn
 		}
 
 		UnRegisterSceneComponentRecursive(Root.get());
+	}
+
+	void Actor::DispatchPhysicsCollisionHit( const RigidBodyCollisionInfo& MyInfo,
+		const RigidBodyCollisionInfo& OtherInfo, const CollisionImpactData& RigidCollisionData )
+	{
+		for ( const RigidBodyContactInfo& ContactInfo : RigidCollisionData.ContactInfos )
+		{
+			Root->GetWorld()->DrawDebugSphere( ContactInfo.ContactPosition, Quat::Identity, Vector(0.1f, 0.5f, 0.3f), 0.2f, 8, 5, 0 );
+			Root->GetWorld()->DrawDebugLine( ContactInfo.ContactPosition, ContactInfo.ContactPosition + ContactInfo.ContactNormal * 0.5, Vector(0.7f, 0.9f, 0.4f), 5.0f, 0 );
+		}
 	}
 
 	void Actor::RegisterSceneComponentRecursive( SceneComponent* InComponent, World* InWorld )

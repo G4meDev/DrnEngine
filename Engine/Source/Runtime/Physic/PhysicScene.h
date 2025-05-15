@@ -8,38 +8,6 @@ using namespace physx;
 
 namespace Drn
 {
-	struct RigidBodyCollisionInfo
-	{
-		RigidBodyCollisionInfo()
-			: m_Actor(nullptr)
-			, m_Component(nullptr)
-		{}
-		
-		Actor* m_Actor;
-		PrimitiveComponent* m_Component;
-
-		void SetFrom(const BodyInstance* BodyInst);
-		BodyInstance* GetBodyInstance() const;
-	};
-
-	struct CollisionNotifyInfo
-	{
-		CollisionNotifyInfo() :
-			bCallEvent0(true),
-			bCallEvent1(true)
-		{}
-
-		bool bCallEvent0;
-		bool bCallEvent1;
-
-		RigidBodyCollisionInfo Info0;
-		RigidBodyCollisionInfo Info1;
-
-		//CollisionImpactData RigidCollisionData;
-
-		bool IsValidForNotify() const;
-	};
-
 	class PhysXSimEventCallback : public PxSimulationEventCallback
 	{
 	public:
@@ -91,10 +59,13 @@ namespace Drn
 	private:
 
 		void StepSimulation(float DeltaTime);
-
 		void SyncActors();
 
-		//void AddTestActors();
+		void DispatchPhysicEvents();
+
+		static PxFilterFlags contactReportFilterShader(PxFilterObjectAttributes attributes0, PxFilterData filterData0, 
+												PxFilterObjectAttributes attributes1, PxFilterData filterData1,
+												PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize);
 
 		World* m_OwningWorld;
 		physx::PxScene* m_PhysxScene;
