@@ -30,16 +30,16 @@ namespace Drn
 		m_PhysxScene = PhysicManager::Get()->GetPhysics()->createScene(sceneDesc);
 
 #if WITH_EDITOR
-		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eSCALE, 1 );
-		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_DYNAMIC, 1 );
-		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_STATIC, 1 );
-		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_SHAPES, 1 );
-		m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_EDGES, 1 );
+		//m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eSCALE, 1 );
+		//m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_DYNAMIC, 1 );
+		//m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_STATIC, 1 );
+		//m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_SHAPES, 1 );
+		//m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eCOLLISION_EDGES, 1 );
 #endif
 
 #if WITH_PVD
 		physx::PxPvdSceneClient* pvdClient = m_PhysxScene->getScenePvdClient();
-
+		
 		if ( pvdClient )
 		{
 			pvdClient->setScenePvdFlag( physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, false );

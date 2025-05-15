@@ -100,7 +100,8 @@ namespace Drn
 				mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 16);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
 				CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
 				CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );
