@@ -34,6 +34,10 @@ namespace Drn
 		void SetBodyTransform(const Transform& InTransform);
 		void UpdateBodyScale(const Vector& InScale);
 
+		void AddForce(const Vector& Force, bool AccelChange);
+		void AddImpulse(const Vector& Impulse, bool AccelChange);
+
+
 #if WITH_EDITOR
 		void DrawDetailPanel(float DeltaTime);
 #endif
@@ -46,8 +50,6 @@ namespace Drn
 		PxRigidActor* m_RigidActor;
 		PrimitiveComponent* m_OwnerComponent;
 		PxMaterial* m_Material;
-		//PxAggregate* m_Aggregate;
-
 		BodySetup* m_BodySetup;
 
 		bool m_SimulatePhysic;

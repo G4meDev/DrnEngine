@@ -39,6 +39,8 @@ namespace Drn
 	void PrimitiveComponent::Tick( float DeltaTime )
 	{
 		SceneComponent::Tick(DeltaTime);
+
+		//m_BodyInstance.AddForce(Vector::ForwardVector * 10, false);
 	}
 
 	void PrimitiveComponent::SendPhysicsTransform()

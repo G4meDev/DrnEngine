@@ -172,6 +172,24 @@ namespace Drn
 		}
 	}
 
+	void BodyInstance::AddForce( const Vector& Force, bool AccelChange )
+	{
+		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;
+		if (RigidBody)
+		{
+			RigidBody->addForce(Vector2P( Force ), AccelChange ? PxForceMode::eACCELERATION : PxForceMode::eFORCE);
+		}
+	}
+
+	void BodyInstance::AddImpulse( const Vector& Impulse, bool AccelChange )
+	{
+		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;
+		if (RigidBody)
+		{
+			RigidBody->addForce(Vector2P( Impulse ), AccelChange ? PxForceMode::eVELOCITY_CHANGE : PxForceMode::eIMPULSE);
+		}
+	}
+
 	int32 BodyInstance::GetAllShapes( std::vector<PxShape*>& Result )
 	{
 		uint32 NumShapes = 0;
