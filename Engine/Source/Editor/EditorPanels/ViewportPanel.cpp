@@ -104,7 +104,7 @@ namespace Drn
 			XMFLOAT4X4 Iden;
 			XMStoreFloat4x4(&Iden, Matrix::MatrixIdentity.Get());
 
-			ImGuizmo::DrawGrid( &V.m[0][0], &P.m[0][0], &Iden.m[0][0], 100);
+			//ImGuizmo::DrawGrid( &V.m[0][0], &P.m[0][0], &Iden.m[0][0], 100);
 
 			float Snap[3];
 			m_GizmoState.GetSnapValue(Snap);

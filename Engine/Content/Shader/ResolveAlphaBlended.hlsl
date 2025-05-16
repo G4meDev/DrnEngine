@@ -11,8 +11,8 @@ struct ViewBuffer
 
 ConstantBuffer<ViewBuffer> View : register(b0);
 
-//Texture2D ResolveTexture : register(t0);
-//SamplerState ResolveSampler : register(s0);
+Texture2D ResolveTexture : register(t0);
+SamplerState ResolveSampler : register(s0);
 
 struct VertexShaderOutput
 {
@@ -25,8 +25,10 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN)
     VertexShaderOutput OUT;
 
     OUT.Position = mul(View.LocalToView, float4(IN.Position, 1.0f));
+    OUT.Position.z = 0;
     OUT.UV = IN.UV;
-    
+    //OUT.UV = IN.UV * 2;
+
     return OUT;
 }
 
@@ -37,7 +39,9 @@ struct PixelShaderInput
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
-    //return ResolveTexture.Sample(ResolveSampler, IN.UV);
-    float Alpha = 0.6f;
-    return Alpha.xxxx;
+    float4 Texture = ResolveTexture.Sample(ResolveSampler, IN.UV);
+    //float Alpha = 0.0f;
+    //return float4(Alpha.xxx, 0.2f);
+    
+    return Texture;
 }

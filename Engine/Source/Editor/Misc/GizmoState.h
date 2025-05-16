@@ -56,9 +56,9 @@ namespace Drn
 		GizmoState()
 			: m_Space(EGizmoSpace::Translation)
 			, m_Mode(EGizmoMode::Local)
-			, m_TransitionSnap(ETranslationSnap::NoSnap)
-			, m_ScaleSnap(EScaleSnap::NoSnap)
-			, m_RotationSnap(ERotationSnap::NoSnap)
+			, m_TransitionSnap(ETranslationSnap::Snap_1)
+			, m_ScaleSnap(EScaleSnap::Snap_025)
+			, m_RotationSnap(ERotationSnap::Snap_30)
 		{
 		}
 

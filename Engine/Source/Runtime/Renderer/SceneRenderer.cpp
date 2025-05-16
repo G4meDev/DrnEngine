@@ -19,6 +19,7 @@ namespace Drn
 
 	SceneRenderer::~SceneRenderer()
 	{
+		Renderer::Get()->TempSRVAllocator.Free(m_EditorColorCpuHandle, m_EditorColorGpuHandle);
 	}
 
 	void SceneRenderer::Init(ID3D12GraphicsCommandList2* CommandList)
@@ -41,6 +42,8 @@ namespace Drn
 		m_DSVHeap->SetName( StringHelper::s2ws( m_Name + "_DsvHeap").c_str() );
 		m_RTVHeap->SetName( StringHelper::s2ws( m_Name + "_RtvHeap").c_str() );
 #endif
+
+		Renderer::Get()->TempSRVAllocator.Alloc(&m_EditorColorCpuHandle, &m_EditorColorGpuHandle);
 
 		ResizeView(IntPoint(1920, 1080));
 	}
@@ -127,23 +130,30 @@ namespace Drn
 
 		CommandList->OMSetRenderTargets(1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), true, NULL);
 
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_EditorColorTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+		CommandList->ResourceBarrier(1, &barrier);
+
 		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_RootSignature );
 		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
 		XMMATRIX modelMatrix = Matrix( m_CameraActor->GetActorTransform() ).Get();
-
-		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
-		
 		XMMATRIX viewMatrix;
 		XMMATRIX projectionMatrix;
+		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
 		m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
 		XMMATRIX LocalToView = XMMatrixMultiply( modelMatrix, viewMatrix );
 
 		CommandList->SetGraphicsRoot32BitConstants(0, 16, &LocalToView, 0);
+		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorColorGpuHandle);
 
 		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
 		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
 		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_EditorColorTarget.Get(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
+		CommandList->ResourceBarrier(1, &barrier);
 	}
 
 	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )
@@ -296,6 +306,16 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
+		D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+		SrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		SrvDesc.Texture2D.MipLevels = 1;
+		SrvDesc.Texture2D.MostDetailedMip = 0;
+
+		Device->CreateShaderResourceView( m_EditorColorTarget.Get(), &SrvDesc, m_EditorColorCpuHandle );
+
+// ----------------------------------------------------------------------------------------------------------------------------
 		D3D12_CPU_DESCRIPTOR_HANDLE const RTVHandles[2] = 
 		{
 			m_RTVHeap->GetCPUDescriptorHandleForHeapStart(),
