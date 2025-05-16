@@ -33,14 +33,19 @@ struct PixelShaderOutput
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
-    
+
     float2 Pos_xz = IN.WorldPos.xz;
-    
-    float2 Frac = frac(Pos_xz);    
-    float2 FracEdge = abs(Frac - 0.5f) - 0.45f;
-    float Alpha = max(FracEdge.x, FracEdge.y) * 4;
+
+    float2 Frac1 = frac(Pos_xz);
+    float2 FracEdge1 = abs(Frac1 - 0.5f) - 0.47f;
+    float Alpha1 = max(FracEdge1.x, FracEdge1.y) * 4;
+
+    float2 Frac2 = frac(Pos_xz / 10);
+    float2 FracEdge2 = abs(Frac2 - 0.5f) - 0.49f;
+    float Alpha2 = max(FracEdge2.x, FracEdge2.y) * 20;
+
+    float Alpha = max(Alpha1, Alpha2);
     
     OUT.Color = Alpha.xxxx;
-    //OUT.Color = float4(Alpha.xxx, 0.5f);
     return OUT;
 }

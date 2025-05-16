@@ -64,7 +64,7 @@ namespace Drn
 			CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize)
 		};
 
-		CommandList->ClearDepthStencilView(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
+		CommandList->ClearDepthStencilView(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr);
 		CommandList->ClearRenderTargetView(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
 		CommandList->ClearRenderTargetView(GuidHandle, GuidColor, 0, nullptr);
 
@@ -184,7 +184,7 @@ namespace Drn
 		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(m_RenderSize.X), static_cast<float>(m_RenderSize.Y));
 		D3D12_CLEAR_VALUE optimizedClearValue = {};
 		optimizedClearValue.Format = DEPTH_FORMAT;
-		optimizedClearValue.DepthStencil = { 1.0f, 0 };
+		optimizedClearValue.DepthStencil = { 0.0f, 0 };
 
 		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(DEPTH_FORMAT, m_RenderSize.X, m_RenderSize.Y,
@@ -285,7 +285,7 @@ namespace Drn
 
 		D3D12_CLEAR_VALUE EditorDepthClearValue = {};
 		EditorDepthClearValue.Format = DEPTH_FORMAT;
-		EditorDepthClearValue.DepthStencil = { 1.0f, 0 };
+		EditorDepthClearValue.DepthStencil = { 0.0f, 0 };
 
 		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(DEPTH_FORMAT, m_RenderSize.X, m_RenderSize.Y,

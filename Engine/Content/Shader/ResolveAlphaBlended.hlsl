@@ -27,7 +27,6 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN)
     OUT.Position = mul(View.LocalToView, float4(IN.Position, 1.0f));
     OUT.Position.z = 0;
     OUT.UV = IN.UV;
-    //OUT.UV = IN.UV * 2;
 
     return OUT;
 }
@@ -40,8 +39,5 @@ struct PixelShaderInput
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     float4 Texture = ResolveTexture.Sample(ResolveSampler, IN.UV);
-    //float Alpha = 0.0f;
-    //return float4(Alpha.xxx, 0.2f);
-    
     return Texture;
 }

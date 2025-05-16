@@ -411,56 +411,6 @@ namespace Drn
 			Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 				pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
-			DXGI_FORMAT backBufferFormat  = DXGI_FORMAT_R8G8B8A8_UNORM;
-			DXGI_FORMAT depthBufferFormat = DXGI_FORMAT_D32_FLOAT;
-
-			D3D12_RASTERIZER_DESC RasterizerDesc = CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-			RasterizerDesc.CullMode = m_CullMode;
-
-			//D3D12_BLEND_DESC BlendDesc = {};
-			//BlendDesc.AlphaToCoverageEnable = FALSE;
-			//BlendDesc.IndependentBlendEnable = TRUE;
-			//
-			//std::string w = Path::ConvertShortPath(m_Path);
-			//if (w == "M_AxisGridMaterial.drn")
-			//{
-			//	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
-			//	BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
-			//	BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
-			//	BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-			//	BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-			//	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
-			//	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-			//	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-			//
-			//	for (int i = 1; i < 8; i++)
-			//	{
-			//		BlendDesc.RenderTarget[i].BlendEnable = FALSE;
-			//	}
-			//}
-
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= m_RootSignature;
-			PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(m_InputLayoutType);
-			PipelineDesc.PrimitiveTopologyType				= m_PrimitiveType;
-			PipelineDesc.RasterizerState					= RasterizerDesc;
-			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
-			//PipelineDesc.BlendState						= BlendDesc;
-			PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
-			PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-			PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_LESS;
-			PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
-			PipelineDesc.SampleMask							= UINT_MAX;
-			if (GetVS()) PipelineDesc.VS					= CD3DX12_SHADER_BYTECODE(GetVS());
-			if (GetPS()) PipelineDesc.PS					= CD3DX12_SHADER_BYTECODE(GetPS());
-			if (GetGS()) PipelineDesc.GS					= CD3DX12_SHADER_BYTECODE(GetGS());
-			if (GetHS()) PipelineDesc.HS					= CD3DX12_SHADER_BYTECODE(GetHS());
-			if (GetDS()) PipelineDesc.DS					= CD3DX12_SHADER_BYTECODE(GetDS());
-			PipelineDesc.DSVFormat							= depthBufferFormat;
-			PipelineDesc.NumRenderTargets					= 1;
-			PipelineDesc.RTVFormats[0]						= backBufferFormat;
-			PipelineDesc.SampleDesc.Count					= 1;
-
 			m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
 				m_PrimitiveType, m_VS_Blob, m_PS_Blob, m_GS_Blob, m_DS_Blob, m_HS_Blob);
 

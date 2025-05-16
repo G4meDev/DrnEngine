@@ -10,7 +10,7 @@ namespace Drn
 		, m_AspectRatio(1.0f)
 		, m_FOV(45.0f)
 		, m_ClipMin(0.1f)
-		, m_ClipMax(1000.0f)
+		, m_ClipMax(10000.0f)
 	{
 		m_Rotation = XMQuaternionIdentity();
 	}
@@ -38,7 +38,8 @@ namespace Drn
 		m_FocusPoint = CameraPos + FocusPointOffset;
 
 		InViewMatrix = XMMatrixLookAtLH( CameraPos, m_FocusPoint, m_UpVector);
-		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMin, m_ClipMax);
+		//InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMin, m_ClipMax);
+		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMax, m_ClipMin);
 	}
 
 }
