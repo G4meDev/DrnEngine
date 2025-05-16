@@ -32,6 +32,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/CameraActor.h
 	
 	Source/Runtime/Renderer/Renderer.h
+	Source/Runtime/Renderer/CommonResources.h
 	Source/Runtime/Renderer/SceneRenderer.h
 	Source/Runtime/Renderer/Device.h
 	Source/Runtime/Renderer/SwapChain.h
@@ -149,6 +150,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/CameraActor.cpp
 	
 	Source/Runtime/Renderer/Renderer.cpp
+	Source/Runtime/Renderer/CommonResources.cpp
 	Source/Runtime/Renderer/SceneRenderer.cpp
 	Source/Runtime/Renderer/Device.cpp
 	Source/Runtime/Renderer/SwapChain.cpp
