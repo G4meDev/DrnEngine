@@ -38,6 +38,8 @@ namespace Drn
 		Vector GetActorScale();
 		void SetActorScale(const Vector& InScale);
 
+		Transform GetActorTransform();
+		void SetActorTransform( const Transform& InTransform );
 		
 		void AttachSceneComponent(SceneComponent* InSceneComponent, SceneComponent* Target = nullptr);
 		void AddComponent(Component* InComponent);

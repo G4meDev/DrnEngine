@@ -66,7 +66,17 @@ namespace Drn
 		Root->SetWorldScale(InScale);
 	}
 
-	void Actor::AttachSceneComponent(SceneComponent* InSceneComponent, SceneComponent* Target)
+	Transform Actor::GetActorTransform()
+	{
+		return Root->GetWorldTransform();
+	}
+
+	void Actor::SetActorTransform( const Transform& InTransform )
+	{
+		Root->SetWorldTransform(InTransform);
+	}
+
+	void Actor::AttachSceneComponent( SceneComponent* InSceneComponent, SceneComponent* Target )
 	{
 		if (!Target)
 		{

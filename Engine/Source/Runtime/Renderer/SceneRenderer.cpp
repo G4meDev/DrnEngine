@@ -123,7 +123,27 @@ namespace Drn
 			Proxy->RenderMainPass(CommandList, this);
 		}
 
+// ------------------------------------------------------------------------------------------
 
+		CommandList->OMSetRenderTargets(1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), true, NULL);
+
+		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_RootSignature );
+		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
+
+		XMMATRIX modelMatrix = Matrix( m_CameraActor->GetActorTransform() ).Get();
+
+		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
+		
+		XMMATRIX viewMatrix;
+		XMMATRIX projectionMatrix;
+		m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+		XMMATRIX LocalToView = XMMatrixMultiply( modelMatrix, viewMatrix );
+
+		CommandList->SetGraphicsRoot32BitConstants(0, 16, &LocalToView, 0);
+
+		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
+		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
+		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
 	}
 
 	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )
