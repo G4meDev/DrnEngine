@@ -18,8 +18,10 @@ namespace Drn
 		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
 
 		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
-		m_ViewportCamera->SetActorLocation(XMVectorSet(0, 0, 10, 0));
-		m_ViewportCamera->SetActorRotation( Quat(0.0f, 0.0f, Math::PI) );
+		m_ViewportCamera->SetActorLocation(XMVectorSet(-20, 28, 20, 0));
+
+		XMVECTOR CameraRotation = XMQuaternionRotationRollPitchYaw(Math::PI / 4, Math::PI * 3 / 4, 0);
+		m_ViewportCamera->SetActorRotation( CameraRotation );
 
 		m_ViewportCamera->SetActorLabel( "ViewportCamera" );
 		m_ViewportCamera->SetTransient(true);

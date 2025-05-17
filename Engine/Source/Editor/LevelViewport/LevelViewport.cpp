@@ -9,27 +9,49 @@ LOG_DEFINE_CATEGORY( LogLevelViewport, "LevelViewport" );
 
 namespace Drn
 {
-	std::unique_ptr<Drn::LevelViewport> LevelViewport::SingletonInstance;
+	LevelViewport* LevelViewport::SingletonInstance = nullptr;
 
-	LevelViewport::LevelViewport()
+	LevelViewport::LevelViewport( World* InOwningWorld )
 		: m_SelectedComponent(nullptr)
 	{
+		LevelViewportLayer = std::make_unique<LevelViewportGuiLayer>( this );
+		LevelViewportLayer->Attach();
+
+		m_OwningWorld = InOwningWorld;
+		if (m_OwningWorld)
+		{
+			m_OwningWorld->OnRemoveActors.Add( this, &LevelViewport::OnRemovedActorsFromWorld, "OnRemoveActorFromWorld" );
+		}
 	}
 
 	LevelViewport::~LevelViewport()
 	{
+		LevelViewportLayer->DeAttach();
+		LevelViewportLayer.reset();
+
+		if (m_OwningWorld)
+		{
+			m_OwningWorld->OnRemoveActors.Remove( this, "OnRemoveActorFromWorld" );
+		}
 	}
 
-	void LevelViewport::Init()
+	void LevelViewport::Init( World* InOwningWorld )
 	{
-		LevelViewportLayer = std::make_unique<LevelViewportGuiLayer>( this );
-		LevelViewportLayer->Attach();
+		Shutdown();
+
+		if (InOwningWorld)
+		{
+			SingletonInstance = new LevelViewport( InOwningWorld );
+		}
 	}
 
 	void LevelViewport::Shutdown()
 	{
-		LevelViewportLayer->DeAttach();
-		LevelViewportLayer.reset();
+		if (SingletonInstance)
+		{
+			delete SingletonInstance;
+			SingletonInstance = nullptr;
+		}
 	}
 
 	void LevelViewport::Tick( float DeltaTime )
@@ -39,18 +61,29 @@ namespace Drn
 
 	LevelViewport* LevelViewport::Get()
 	{
-		if ( !SingletonInstance )
-		{
-			SingletonInstance = std::make_unique<LevelViewport>();
-		}
-
-		return SingletonInstance.get();
+		return SingletonInstance;
 	}
 
 	void LevelViewport::OnSelectedNewComponent( Component* NewComponent )
 	{
 		m_SelectedComponent = NewComponent;
-		std::cout << "??????????????????????????????????????????????????\n";
+	}
+
+	void LevelViewport::OnRemovedActorsFromWorld( std::vector<Actor*> RemovedActors )
+	{
+		if (m_SelectedComponent)
+		{
+			for (Actor* actor : RemovedActors)
+			{
+				if (actor == m_SelectedComponent->GetOwningActor())
+				{
+					m_SelectedComponent = nullptr;
+					break;
+				}
+			}
+		}
+
+
 	}
 
 }

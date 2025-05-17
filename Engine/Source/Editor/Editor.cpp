@@ -18,18 +18,28 @@ namespace Drn
 	std::unique_ptr<Editor> Editor::SingletonInstance;
 
 	Editor::Editor()
-	{ }
+	{
+		if (WorldManager::Get())
+		{
+			WorldManager::Get()->OnOpenLevel.Add( this, &Editor::OnOpenLevel, "OnOpenLevel" );
+			WorldManager::Get()->OnCloseLevel.Add( this, &Editor::OnCloseLevel, "OnCloseLevel" );
+		}
+	}
 
 	Editor::~Editor()
-	{ }
+	{
+		if (WorldManager::Get())
+		{
+			WorldManager::Get()->OnOpenLevel.Remove( this, "OnOpenLevel" );
+			WorldManager::Get()->OnCloseLevel.Remove( this, "OnCloseLevel" );
+		}
+	}
 
 	void Editor::Init()
 	{
 		OutputLog::Get()->Init();
 		ContentBrowser::Get()->Init();
-		LevelViewport::Get()->Init();
-		
-		WorldManager::Get()->OnLevelChanged = std::bind(&Editor::OnLevelChanged, this);
+		LevelViewport::Get()->Init( WorldManager::Get()->GetMainWorld() );
 	}
 
 	void Editor::Tick(float DeltaTime)
@@ -38,7 +48,7 @@ namespace Drn
 
 		OutputLog::Get()->Tick(DeltaTime);
 		ContentBrowser::Get()->Tick(DeltaTime);
-		LevelViewport::Get()->Tick(DeltaTime);
+		//LevelViewport::Get()->Tick(DeltaTime);
 	}
 
 	void Editor::Shutdown() 
@@ -58,14 +68,6 @@ namespace Drn
 		}
 
 		return SingletonInstance.get();
-	}
-
-	void Editor::OnLevelChanged()
-	{
-		LOG(LogEditor, Info, "Level changed");
-
-		LevelViewport::Get()->Shutdown();
-		LevelViewport::Get()->Init();
 	}
 
 	void Editor::OnSelectedFile( const std::string Path )
@@ -110,6 +112,15 @@ namespace Drn
 		}
 	}
 
+	void Editor::OnOpenLevel( World* OpenedWorld )
+	{
+		LevelViewport::Init( OpenedWorld );
+	}
+
+	void Editor::OnCloseLevel( World* ClosedWorld )
+	{
+		LevelViewport::Shutdown();
+	}
 }
 
 #endif

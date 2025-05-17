@@ -29,13 +29,14 @@ namespace Drn
 
 		void NotifyMaterialReimported(const AssetHandle<Material>& Mat);
 
+		void OnOpenLevel( World* OpenedWorld );
+		void OnCloseLevel( World* ClosedWorld );
+
 	protected:
 
 		std::shared_ptr<FileImportMenu> m_FileImportMenu;
 
 	private:
-
-		void OnLevelChanged();
 
 		void OnSelectedFile(const std::string Path);
 

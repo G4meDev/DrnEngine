@@ -1,9 +1,13 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/Delegate.h"
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnOpenLevelDelegate, World*)
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnCloseLevelDelegate, World*)
+
 	class WorldManager
 	{
 	public:
@@ -26,7 +30,9 @@ namespace Drn
 
 		void LoadLevel(const std::string& LevelPath );
 
-		std::function<void()> OnLevelChanged;
+		OnOpenLevelDelegate OnOpenLevel;
+		OnCloseLevelDelegate OnCloseLevel;
+
 
 #if WITH_EDITOR
 

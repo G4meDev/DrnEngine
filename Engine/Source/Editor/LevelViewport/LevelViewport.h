@@ -12,27 +12,30 @@ namespace Drn
 	{
 	public:
 
-		LevelViewport();
+		LevelViewport( World* InOwningWorld );
 		~LevelViewport();
 
-		void Init();
-		void Shutdown();
-		void Tick( float DeltaTime );
+		static void Init( World* InOwningWorld );
+		static void Shutdown();
+		static void Tick( float DeltaTime );
 
 		static LevelViewport* Get();
 
 		void OnSelectedNewComponent( Component* NewComponent );
 		Component* GetSelectedComponent() { return m_SelectedComponent; }
 
+		void OnRemovedActorsFromWorld( std::vector<Actor*> RemovedActors );
+
 	protected:
 
 		std::unique_ptr<LevelViewportGuiLayer> LevelViewportLayer;
 
 		Component* m_SelectedComponent;
+		World* m_OwningWorld;
 
 	private:
 
-		static std::unique_ptr<LevelViewport> SingletonInstance;
+		static LevelViewport* SingletonInstance;
 
 		friend class LevelViewportGuiLayer;
 	};

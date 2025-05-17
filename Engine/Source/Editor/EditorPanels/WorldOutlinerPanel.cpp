@@ -14,9 +14,7 @@ namespace Drn
 	WorldOutlinerPanel::WorldOutlinerPanel(World* InWorld)
 		: m_World(InWorld)
 		, m_ShowTransient(false)
-		, m_SelectedActor(nullptr)
 	{
-		InWorld->BindOnRemoveActor(std::bind(&WorldOutlinerPanel::OnRemovedActorFromWorld, this, std::placeholders::_1));
 	}
 
 	WorldOutlinerPanel::~WorldOutlinerPanel()
@@ -32,8 +30,13 @@ namespace Drn
 
 		ImGui::Separator();
 
-		int i = 0;
+		Component* SelectedComponent = nullptr;
+		if (GetSelectedComponentDel.IsBound())
+		{
+			SelectedComponent = GetSelectedComponentDel.Execute();
+		}
 
+		int i = 0;
 		for (Actor* actor : m_World->GetActorList())
 		{
 			if (!m_ShowTransient && actor->IsTransient())
@@ -50,9 +53,13 @@ namespace Drn
 
 			ImGui::PushID(i++);
 
-			if ( ImGui::Selectable(ActorLabel.c_str(), m_SelectedActor == actor) )
+			const bool ActorIsSelected = SelectedComponent ? SelectedComponent->GetOwningActor() == actor : false;
+			if ( ImGui::Selectable(ActorLabel.c_str(), ActorIsSelected) )
 			{
-				m_SelectedActor = actor;
+				if (!ActorIsSelected)
+				{
+					OnSelectedNewComponent.Braodcast( actor->GetRoot() );
+				}
 			}
 
 			if ( ImGui::BeginPopupContextItem( "Actor pop up") )
@@ -92,14 +99,6 @@ namespace Drn
 			ImGui::CloseCurrentPopup();
 
 			actor->Destroy();
-		}
-	}
-
-	void WorldOutlinerPanel::OnRemovedActorFromWorld( const Actor* RemovedActor )
-	{
-		if (m_SelectedActor == RemovedActor)
-		{
-			m_SelectedActor = nullptr;
 		}
 	}
 

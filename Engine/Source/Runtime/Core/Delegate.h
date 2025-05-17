@@ -60,7 +60,6 @@ namespace Drn
 			return false;
 		}
 
-
 		template<class UserClass, class Func>
 		inline void Bind( UserClass* UClass, Func&& F)
 		{

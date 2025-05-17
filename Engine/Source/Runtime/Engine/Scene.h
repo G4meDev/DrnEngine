@@ -30,11 +30,7 @@ namespace Drn
 		void RegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 		void UnRegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 
-
 	protected:
-
-		void OnNewActors(const std::set<Actor*>& NewActors);
-		void OnRemoveActor(const Actor* RemovedActor);
 
 		World* m_World;
 

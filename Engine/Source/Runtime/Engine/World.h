@@ -1,18 +1,18 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/Delegate.h"
 
 LOG_DECLARE_CATEGORY(LogWorld);
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnAddActorsDelegate, const std::set<Actor*>&);
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnRemoveActorsDelegate, const std::vector<Actor*>&);
+
 	class World
 	{
 	public:
-
-		using OnNewActors = std::function<void( const std::set<Actor*>& )>;
-		using OnRemoveActor = std::function<void( const Actor* )>;
-
 		World();
 		~World();
 
@@ -35,13 +35,8 @@ namespace Drn
 
 		inline const std::set<Actor*>& GetActorList() { return m_Actors; };
 
-		void BindOnNewActors(OnNewActors Delegate);
-		void RemoveFromOnNewActors(OnNewActors Delegate);
-		void InvokeOnNewActors(const std::set<Actor*>& NewActors);
-
-		void BindOnRemoveActor(OnRemoveActor Delegate);
-		void RemoveFromOnRemoveActor(OnRemoveActor Delegate);
-		void InvokeOnRemoveActor(const Actor* RemovedActor);
+		OnAddActorsDelegate OnAddActors;
+		OnRemoveActorsDelegate OnRemoveActors;
 
 		inline void SetTransient( bool Transient ) { m_Transient = true; }
 		inline bool IsTransient() { return m_Transient; }
@@ -80,9 +75,6 @@ namespace Drn
 		std::set<Actor*> m_NewActors;
 
 		bool m_ShouldTick;
-
-		std::vector<OnNewActors> OnNewActorsDelegates;
-		std::vector<OnRemoveActor> OnRemoveActorDelegates;
 
 		std::string m_LevelPath;
 		bool m_Transient;

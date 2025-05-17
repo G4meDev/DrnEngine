@@ -17,7 +17,7 @@ namespace Drn
 		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
 		m_Scene = Renderer::Get()->AllocateScene(this);
 
-		// TODO: proper camera and scene render managment
+		// TODO: proper camera and scene render management
 #ifndef WITH_EDITOR
 		CameraActor* Cam = SpawnActor<CameraActor>();
 		Cam->SetActorLocation(XMVectorSet(0, 0, -10, 0));
@@ -34,9 +34,10 @@ namespace Drn
 		AxisGridMaterial.Load();
 
 		m_AxisGridPlane = SpawnActor<StaticMeshActor>();
+		m_AxisGridPlane->SetActorLabel("AxisGrid");
 		m_AxisGridPlane->SetTransient(true);
 		m_AxisGridPlane->SetActorScale(Vector( 10000.0f ));
-		m_AxisGridPlane->SetActorLocation(Vector::DownVector * 2);
+		m_AxisGridPlane->SetActorLocation(Vector::ZeroVector);
 		m_AxisGridPlane->GetMeshComponent()->SetMesh(AxisGridMesh);
 		m_AxisGridPlane->GetMeshComponent()->SetMaterial(0, AxisGridMaterial);
 		m_AxisGridPlane->GetMeshComponent()->SetEditorPrimitive(true);
@@ -64,7 +65,11 @@ namespace Drn
 			if (*it && (*it)->IsMarkedPendingKill())
 			{
 				Actor* ToDelActor = *it;
-				InvokeOnRemoveActor(ToDelActor);
+
+				std::vector<Actor*> RemovedActorList;
+				RemovedActorList.push_back(ToDelActor);
+				OnRemoveActors.Braodcast( RemovedActorList );
+
 				ToDelActor->UnRegisterComponents();
 
 				it = m_Actors.erase(it);
@@ -82,7 +87,11 @@ namespace Drn
 			if (*it && (*it)->IsMarkedPendingKill())
 			{
 				Actor* ToDelActor = *it;
-				InvokeOnRemoveActor(ToDelActor);
+
+				std::vector<Actor*> RemovedActorList;
+				RemovedActorList.push_back(ToDelActor);
+				OnRemoveActors.Braodcast( RemovedActorList );
+
 				ToDelActor->UnRegisterComponents();
 
 				it = m_NewActors.erase(it);
@@ -98,7 +107,7 @@ namespace Drn
 
 		m_Actors.insert(m_NewActors.begin(), m_NewActors.end());
 
-		InvokeOnNewActors(m_NewActors);
+		OnAddActors.Braodcast(m_NewActors);
 		m_NewActors.clear();
 
 		m_LineBatchCompponent->TickComponent(DeltaTime);
@@ -140,44 +149,6 @@ namespace Drn
 	}
 
 // ----------------------------------------------------------------------------------------
-
-	void World::BindOnNewActors( OnNewActors Delegate )
-	{
-		OnNewActorsDelegates.push_back(Delegate);
-	}
-	
-	void World::RemoveFromOnNewActors( OnNewActors Delegate )
-	{
-		//OnNewActorsDelegates.erase(Delegate);
-	}
-	
-	void World::InvokeOnNewActors( const std::set<Actor*>& NewActors )
-	{
-		for (const OnNewActors& Del : OnNewActorsDelegates)
-		{
-			Del(NewActors);
-		}
-	}
-
-// ----------------------------------------------------------------------------------------
-
-	void World::BindOnRemoveActor( OnRemoveActor Delegate )
-	{
-		OnRemoveActorDelegates.push_back(Delegate);
-	}
-
-	void World::RemoveFromOnRemoveActor( OnRemoveActor Delegate )
-	{
-		
-	}
-
-	void World::InvokeOnRemoveActor( const Actor* RemovedActor )
-	{
-		for (const OnRemoveActor& Del : OnRemoveActorDelegates)
-		{
-			Del(RemovedActor);
-		}
-	}
 
 	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Vector& Color, float Thickness, float Duration )
 	{
@@ -230,7 +201,11 @@ namespace Drn
 		for (auto it = m_Actors.begin(); it != m_Actors.end(); )
 		{
 			Actor* ToDelActor = *it;
-			InvokeOnRemoveActor(ToDelActor);
+
+			std::vector<Actor*> RemovedActorList;
+			RemovedActorList.push_back(ToDelActor);
+			OnRemoveActors.Braodcast( RemovedActorList );
+
 			ToDelActor->UnRegisterComponents();
 			it = m_Actors.erase(it);
 
@@ -240,7 +215,11 @@ namespace Drn
 		for (auto it = m_NewActors.begin(); it != m_NewActors.end(); )
 		{
 			Actor* ToDelActor = *it;
-			InvokeOnRemoveActor(ToDelActor);
+
+			std::vector<Actor*> RemovedActorList;
+			RemovedActorList.push_back(ToDelActor);
+			OnRemoveActors.Braodcast( RemovedActorList );
+
 			ToDelActor->UnRegisterComponents();
 			it = m_NewActors.erase(it);
 

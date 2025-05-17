@@ -20,12 +20,14 @@ namespace Drn
 		, m_ShowDetail(true)
 	{
 		m_ViewportPanel = std::make_unique<ViewportPanel>( WorldManager::Get()->GetMainWorld()->GetScene() );
-		
-		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
-		m_ActorDetailPanel = std::make_unique<ActorDetailPanel>();
-
 		m_ViewportPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent, "SelectedNewComponent" );
 		m_ViewportPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent);
+		
+		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
+		m_WorldOutlinerPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent, "SelectedNewComponent" );
+		m_WorldOutlinerPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent);
+
+		m_ActorDetailPanel = std::make_unique<ActorDetailPanel>();
 	}
 
 	LevelViewportGuiLayer::~LevelViewportGuiLayer()
@@ -86,7 +88,6 @@ namespace Drn
 		ImGui::SameLine();
 		if (m_ShowDetail && ImGui::BeginChild( "Detail", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened) )
 		{
-			m_ActorDetailPanel->SetSelectedActor(m_WorldOutlinerPanel->GetSelectedActor());
 			m_ActorDetailPanel->Draw(DeltaTime);
 
 			ImGui::EndChild();

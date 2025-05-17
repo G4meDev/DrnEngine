@@ -18,6 +18,8 @@ namespace Drn
 
 	void WorldManager::Shutdown()
 	{
+		m_SingletonInstance->OnCloseLevel.Braodcast( m_SingletonInstance->m_MainWorld );
+
 		for (World* W : m_SingletonInstance->m_AllocatedWorlds)
 		{
 			W->DestroyInternal();
@@ -33,11 +35,13 @@ namespace Drn
 
 		if (m_PendingLevel)
 		{
+			OnCloseLevel.Braodcast( m_MainWorld );
+
 			ReleaseWorld(m_MainWorld);
 			m_MainWorld = m_PendingLevel;
 			m_PendingLevel = nullptr;
 
-			OnLevelChanged();
+			OnOpenLevel.Braodcast( m_MainWorld );
 		}
 
 		for (auto it = m_AllocatedWorlds.begin(); it != m_AllocatedWorlds.end();)

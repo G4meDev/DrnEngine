@@ -8,8 +8,6 @@ namespace Drn
 	Scene::Scene( World* InWorld )
 		: m_World(InWorld)
 	{
-		m_World->BindOnNewActors(std::bind(&Scene::OnNewActors, this, std::placeholders::_1));
-		m_World->BindOnRemoveActor(std::bind(&Scene::OnRemoveActor, this, std::placeholders::_1));
 	}
 
 	Scene::~Scene()
@@ -61,16 +59,6 @@ namespace Drn
 
 		InSceneRenderer->Release();
 		InSceneRenderer = nullptr;
-	}
-
-// ----------------------------------------------------------------------------
-
-	void Scene::OnNewActors( const std::set<Actor*>& NewActors )
-	{
-	}
-
-	void Scene::OnRemoveActor( const Actor* RemovedActor )
-	{
 	}
 
 // ----------------------------------------------------------------------------
