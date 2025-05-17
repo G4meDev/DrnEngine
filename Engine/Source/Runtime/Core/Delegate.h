@@ -95,9 +95,8 @@ namespace Drn
 
 		struct InvocationElement
 		{
-			InvocationElement(void* InClass, char* InName, InvokationListType InInvokation)
+			InvocationElement(void* InClass, InvokationListType InInvokation)
 				: Class(InClass)
-				, Name(InName)
 				, Invokation(InInvokation) { }
 
 			void* Class;
@@ -118,26 +117,26 @@ namespace Drn
 		}
 
 		template<class UserClass, class Func>
-		inline void Add( UserClass* UClass, Func&& F, char* Name)
+		inline void Add( UserClass* UClass, Func&& F)
 		{
 			if constexpr ( sizeof...( DelegateSignature ) == 0)
 			{
-				InvokationList.emplace_back( UClass, Name, std::bind( F, UClass ) );
+				InvokationList.emplace_back( UClass, std::bind( F, UClass ) );
 			}
 
 			if constexpr ( sizeof...( DelegateSignature ) == 1)
 			{
-				InvokationList.emplace_back( UClass, Name, std::bind( F, UClass, std::placeholders::_1 ) );
+				InvokationList.emplace_back( UClass, std::bind( F, UClass, std::placeholders::_1 ) );
 			}
 
 		}
 
 		template<class UserClass>
-		inline void Remove( UserClass* UClass, const char* Name)
+		inline void Remove( UserClass* UClass )
 		{
 			for ( auto it = InvokationList.begin(); it != InvokationList.end(); )
 			{
-				if (it->Class == UClass && strcmp( it->Name, Name) == 0 )
+				if (it->Class == UClass )
 				{
 					it = InvokationList.erase(it);
 				}

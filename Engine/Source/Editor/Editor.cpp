@@ -21,8 +21,8 @@ namespace Drn
 	{
 		if (WorldManager::Get())
 		{
-			WorldManager::Get()->OnOpenLevel.Add( this, &Editor::OnOpenLevel, "OnOpenLevel" );
-			WorldManager::Get()->OnCloseLevel.Add( this, &Editor::OnCloseLevel, "OnCloseLevel" );
+			WorldManager::Get()->OnOpenLevel.Add( this, &Editor::OnOpenLevel);
+			WorldManager::Get()->OnCloseLevel.Add( this, &Editor::OnCloseLevel);
 		}
 	}
 
@@ -30,8 +30,8 @@ namespace Drn
 	{
 		if (WorldManager::Get())
 		{
-			WorldManager::Get()->OnOpenLevel.Remove( this, "OnOpenLevel" );
-			WorldManager::Get()->OnCloseLevel.Remove( this, "OnCloseLevel" );
+			WorldManager::Get()->OnOpenLevel.Remove( this);
+			WorldManager::Get()->OnCloseLevel.Remove( this);
 		}
 	}
 

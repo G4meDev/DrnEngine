@@ -20,7 +20,7 @@ namespace Drn
 		m_OwningWorld = InOwningWorld;
 		if (m_OwningWorld)
 		{
-			m_OwningWorld->OnRemoveActors.Add( this, &LevelViewport::OnRemovedActorsFromWorld, "OnRemoveActorFromWorld" );
+			m_OwningWorld->OnRemoveActors.Add( this, &LevelViewport::OnRemovedActorsFromWorld);
 		}
 	}
 
@@ -31,7 +31,7 @@ namespace Drn
 
 		if (m_OwningWorld)
 		{
-			m_OwningWorld->OnRemoveActors.Remove( this, "OnRemoveActorFromWorld" );
+			m_OwningWorld->OnRemoveActors.Remove( this );
 		}
 	}
 
