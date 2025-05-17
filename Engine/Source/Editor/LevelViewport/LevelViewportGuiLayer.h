@@ -9,6 +9,7 @@ struct ImGuiPayload;
 
 namespace Drn
 {
+	class LevelViewport;
 	class ViewportPanel;
 	class WorldOutlinerPanel;
 	class ActorDetailPanel;
@@ -16,7 +17,7 @@ namespace Drn
 	class LevelViewportGuiLayer : public ImGuiLayer
 	{
 	public:
-		LevelViewportGuiLayer();
+		LevelViewportGuiLayer( LevelViewport* InOwningLevelViewport );
 		virtual ~LevelViewportGuiLayer();
 
 		virtual void Draw(float DeltaTime);
@@ -30,11 +31,11 @@ namespace Drn
 
 		void OnHitPlay();
 
-		void OnSelectedNewComponent(Component* SelectedComponent);
-
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;
 		std::unique_ptr<ActorDetailPanel> m_ActorDetailPanel;
+
+		LevelViewport* m_OwningLevelViewport;
 
 		bool m_ShowOutliner;
 		bool m_ShowDetail;

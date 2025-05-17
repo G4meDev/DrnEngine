@@ -2,6 +2,8 @@
 
 #if WITH_EDITOR
 
+LOG_DECLARE_CATEGORY(LogLevelViewport);
+
 namespace Drn
 {
 	class LevelViewportGuiLayer;
@@ -19,9 +21,14 @@ namespace Drn
 
 		static LevelViewport* Get();
 
+		void OnSelectedNewComponent( Component* NewComponent );
+		Component* GetSelectedComponent() { return m_SelectedComponent; }
+
 	protected:
 
 		std::unique_ptr<LevelViewportGuiLayer> LevelViewportLayer;
+
+		Component* m_SelectedComponent;
 
 	private:
 

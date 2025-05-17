@@ -6,6 +6,7 @@
 #include "Editor/Editor.h"
 #include "Editor/EditorConfig.h"
 
+#include "Editor/LevelViewport/LevelViewport.h"
 #include "Editor/EditorPanels/ViewportPanel.h"
 #include "Editor/EditorPanels/WorldOutlinerPanel.h"
 #include "Editor/EditorPanels/ActorDetailPanel.h"
@@ -13,8 +14,9 @@
 
 namespace Drn
 {
-	LevelViewportGuiLayer::LevelViewportGuiLayer()
-		: m_ShowOutliner(true)
+	LevelViewportGuiLayer::LevelViewportGuiLayer(LevelViewport* InOwningLevelViewport)
+		: m_OwningLevelViewport(InOwningLevelViewport)
+		, m_ShowOutliner(true)
 		, m_ShowDetail(true)
 	{
 		m_ViewportPanel = std::make_unique<ViewportPanel>( WorldManager::Get()->GetMainWorld()->GetScene() );
@@ -22,19 +24,13 @@ namespace Drn
 		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
 		m_ActorDetailPanel = std::make_unique<ActorDetailPanel>();
 
-		m_ViewportPanel->OnSelectedNewComponent.Add( this, &LevelViewportGuiLayer::OnSelectedNewComponent, "Wer" );
+		m_ViewportPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent, "SelectedNewComponent" );
+		m_ViewportPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent);
 	}
 
 	LevelViewportGuiLayer::~LevelViewportGuiLayer()
 	{
-		
-	}
-
-	void LevelViewportGuiLayer::OnSelectedNewComponent( Component* SelectedComponent )
-	{
-		std::cout << "aerawerawerawerawer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
-
-		m_ViewportPanel->OnSelectedNewComponent.Remove( this, "Wer" );
+		m_ViewportPanel->OnSelectedNewComponent.Remove( this, "SelectedNewComponent" );
 	}
 
 	void LevelViewportGuiLayer::Draw( float DeltaTime )

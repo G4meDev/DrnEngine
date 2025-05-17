@@ -11,7 +11,7 @@ LOG_DEFINE_CATEGORY( LogViewportPanel, "ViewportPanel" );
 namespace Drn
 {
 	ViewportPanel::ViewportPanel(Scene* InScene)
-		: m_SelectedComponent(nullptr)
+		//: m_SelectedComponent(nullptr)
 	{
 		m_World = InScene->GetWorld();
 		m_Scene = InScene;
@@ -72,7 +72,11 @@ namespace Drn
 
 		bool UsingGizmo = false;
 
-		SceneComponent* SelectedSceneComponent = static_cast<SceneComponent*>(m_SelectedComponent);
+		SceneComponent* SelectedSceneComponent = nullptr;
+		if (GetSelectedComponentDel.IsBound())
+		{
+			SelectedSceneComponent = static_cast<SceneComponent*>(GetSelectedComponentDel.Execute());
+		}
 
 		if (SelectedSceneComponent && SelectedSceneComponent->GetOwningActor() &&
 			!SelectedSceneComponent->GetOwningActor()->IsMarkedPendingKill())
@@ -103,8 +107,6 @@ namespace Drn
 
 			XMFLOAT4X4 Iden;
 			XMStoreFloat4x4(&Iden, Matrix::MatrixIdentity.Get());
-
-			//ImGuizmo::DrawGrid( &V.m[0][0], &P.m[0][0], &Iden.m[0][0], 100);
 
 			float Snap[3];
 			m_GizmoState.GetSnapValue(Snap);
@@ -138,18 +140,19 @@ namespace Drn
 			LOG( LogViewportPanel, Info, "clicked on viewport at: %s\n\t found component with guid: %s", ClickPos.ToString().c_str(), SelectedComponentGuid.ToString().c_str() );
 
 			Component* Comp = m_SceneRenderer->GetScene()->GetWorld()->GetComponentWithGuid(SelectedComponentGuid);
+
 			if (Comp && Comp->GetOwningActor() && !Comp->GetOwningActor()->IsMarkedPendingKill())
 			{
-				m_SelectedComponent = Comp;
+				OnSelectedNewComponent.Braodcast(Comp);
 				LOG( LogViewportPanel, Info, "clicked on actor: %s", Comp->GetOwningActor()->GetActorLabel().c_str() );
 			}
 
 			else
 			{
-				m_SelectedComponent = nullptr;
+				OnSelectedNewComponent.Braodcast(nullptr);
 			}
 
-			OnSelectedNewComponent.Braodcast(m_SelectedComponent);
+
 		}
 
 

@@ -2,28 +2,104 @@
 
 #include "ForwardTypes.h"
 
-#define FUNC_DECLARE_MULTICAST_DELEGATE( MulticastDelegateName, ... ) \
-	typedef MulticastDelegate<__VA_ARGS__> MulticastDelegateName;
+#define FUNC_DECLARE_DELEGATE( DelegateName, ReturnType, ... )							\
+	typedef Delegate<ReturnType, __VA_ARGS__> DelegateName;
 
-#define DECLARE_MULTICAST_DELEGATE_OneParam( DelegateName, Param1Type )			\
-	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, Param1Type )
+#define DECLARE_DELEGATE_RetVal( ReturnValueType, DelegateName )						\
+	FUNC_DECLARE_DELEGATE( DelegateName, ReturnValueType )
+
+// ---------------------------------------------------------------------------------------------
+
+#define FUNC_DECLARE_MULTICAST_DELEGATE( MulticastDelegateName, ReturnType, ... )		\
+	typedef MulticastDelegate<ReturnType, __VA_ARGS__> MulticastDelegateName;
+
+#define DECLARE_MULTICAST_DELEGATE_OneParam( DelegateName, Param1Type )					\
+	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type )
 
 namespace Drn
 {
-	template <typename ...DelegateSignature>
+	template <typename ReturnType, typename ...DelegateSignature>
+	class Delegate
+	{
+	protected:
+		using InvokationListType = std::function<ReturnType(DelegateSignature...)>;
+
+		struct InvocationElement
+		{
+			InvocationElement(void* InClass, InvokationListType InInvokation)
+				: Class(InClass)
+				, Invokation(InInvokation) { }
+
+			InvocationElement()
+				: Class(nullptr) { }
+
+			void* Class;
+			InvokationListType Invokation;
+		};
+
+	public:
+
+		void Unbind()
+		{
+			InvocationElement.Class = nullptr;
+		}
+
+		inline bool IsBound() const
+		{
+			return Element.Class != nullptr;
+		}
+
+		template<class UserClass>
+		inline bool IsBoundToClass( UserClass* UClass ) const
+		{
+			if (UClass && Element.Class == UClass)
+			{
+				return True;
+			}
+
+			return false;
+		}
+
+
+		template<class UserClass, class Func>
+		inline void Bind( UserClass* UClass, Func&& F)
+		{
+			if constexpr ( sizeof...( DelegateSignature ) == 0)
+			{
+				Element = InvocationElement( UClass, std::bind( F, UClass ) );
+			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 1)
+			{
+				Element = InvocationElement( UClass, std::bind( F, UClass, std::placeholders::_1 ) );
+			}
+
+		}
+
+		inline ReturnType Execute( DelegateSignature... Pack ) const
+		{
+			return Element.Invokation(Pack...);
+		}
+
+	private:
+
+		InvocationElement Element;
+	};
+
+// -----------------------------------------------------------------------------------------------------
+
+	template <typename ReturnType, typename ...DelegateSignature>
 	class MulticastDelegate
 	{
 	protected:
-		using InvokationListType = std::function<void(DelegateSignature...)>;
+		using InvokationListType = std::function<ReturnType(DelegateSignature...)>;
 
 		struct InvocationElement
 		{
 			InvocationElement(void* InClass, char* InName, InvokationListType InInvokation)
 				: Class(InClass)
 				, Name(InName)
-				, Invokation(InInvokation)
-			{
-			}
+				, Invokation(InInvokation) { }
 
 			void* Class;
 			InvokationListType Invokation;
@@ -47,15 +123,12 @@ namespace Drn
 		{
 			if constexpr ( sizeof...( DelegateSignature ) == 0)
 			{
-				InvocationElement e = InvocationElement( UClass, Name, std::bind( F, UClass) );
-				InvokationList.push_back( e );
+				InvokationList.emplace_back( UClass, Name, std::bind( F, UClass ) );
 			}
 
 			if constexpr ( sizeof...( DelegateSignature ) == 1)
 			{
-				// TODO: add move constructor
-				InvocationElement e = InvocationElement( UClass, Name, std::bind( F, UClass, std::placeholders::_1 ) );
-				InvokationList.push_back( e );
+				InvokationList.emplace_back( UClass, Name, std::bind( F, UClass, std::placeholders::_1 ) );
 			}
 
 		}

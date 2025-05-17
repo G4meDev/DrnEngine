@@ -5,23 +5,24 @@
 
 #include "LevelViewportGuiLayer.h"
 
+LOG_DEFINE_CATEGORY( LogLevelViewport, "LevelViewport" );
+
 namespace Drn
 {
 	std::unique_ptr<Drn::LevelViewport> LevelViewport::SingletonInstance;
 
 	LevelViewport::LevelViewport()
+		: m_SelectedComponent(nullptr)
 	{
-		
 	}
 
 	LevelViewport::~LevelViewport()
 	{
-		
 	}
 
 	void LevelViewport::Init()
 	{
-		LevelViewportLayer = std::make_unique<LevelViewportGuiLayer>();
+		LevelViewportLayer = std::make_unique<LevelViewportGuiLayer>( this );
 		LevelViewportLayer->Attach();
 	}
 
@@ -45,6 +46,13 @@ namespace Drn
 
 		return SingletonInstance.get();
 	}
+
+	void LevelViewport::OnSelectedNewComponent( Component* NewComponent )
+	{
+		m_SelectedComponent = NewComponent;
+		std::cout << "??????????????????????????????????????????????????\n";
+	}
+
 }
 
 #endif

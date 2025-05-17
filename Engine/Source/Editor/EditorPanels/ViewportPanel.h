@@ -11,6 +11,7 @@ LOG_DECLARE_CATEGORY(LogViewportPanel);
 namespace Drn
 {
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, Component* );
+	DECLARE_DELEGATE_RetVal( Component*, GetSelectedComponentDelegate );
 
 	class ViewportPanel
 	{
@@ -23,6 +24,7 @@ namespace Drn
 		void SetRenderingEnabled(bool Enabled);
 
 		OnSelectedNewComponentDelegate OnSelectedNewComponent;
+		GetSelectedComponentDelegate GetSelectedComponentDel;
 
 	protected:
 
@@ -37,8 +39,6 @@ namespace Drn
 
 		CameraActor* m_ViewportCamera;
 		StaticMeshActor* m_GridActor;
-
-		Component* m_SelectedComponent;
 
 
 		ViewportCameraInputHandler CameraInputHandler;
