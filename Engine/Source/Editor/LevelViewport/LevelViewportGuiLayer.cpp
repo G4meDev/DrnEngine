@@ -22,7 +22,7 @@ namespace Drn
 		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
 		m_ActorDetailPanel = std::make_unique<ActorDetailPanel>();
 
-		m_ViewportPanel->OnSelectedNewComponent.Add( this, &LevelViewportGuiLayer::OnSelectedNewComponent );
+		m_ViewportPanel->OnSelectedNewComponent.Add( this, &LevelViewportGuiLayer::OnSelectedNewComponent, "Wer" );
 	}
 
 	LevelViewportGuiLayer::~LevelViewportGuiLayer()
@@ -34,7 +34,7 @@ namespace Drn
 	{
 		std::cout << "aerawerawerawerawer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 
-		m_ViewportPanel->OnSelectedNewComponent.Remove( this, &LevelViewportGuiLayer::OnSelectedNewComponent );
+		m_ViewportPanel->OnSelectedNewComponent.Remove( this, "Wer" );
 	}
 
 	void LevelViewportGuiLayer::Draw( float DeltaTime )

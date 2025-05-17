@@ -14,7 +14,21 @@ namespace Drn
 	class MulticastDelegate
 	{
 	protected:
-		using InvocationListType = std::function<void(DelegateSignature...)>;
+		using InvokationListType = std::function<void(DelegateSignature...)>;
+
+		struct InvocationElement
+		{
+			InvocationElement(void* InClass, char* InName, InvokationListType InInvokation)
+				: Class(InClass)
+				, Name(InName)
+				, Invokation(InInvokation)
+			{
+			}
+
+			void* Class;
+			InvokationListType Invokation;
+			char* Name;
+		};
 
 	public:
 
@@ -25,54 +39,53 @@ namespace Drn
 
 		inline bool IsBound() const
 		{
-			return true;
+			return InvokationList.size() > 0;
 		}
 
 		template<class UserClass, class Func>
-		inline void Add( UserClass* UClass, Func&& F)
+		inline void Add( UserClass* UClass, Func&& F, char* Name)
 		{
 			if constexpr ( sizeof...( DelegateSignature ) == 0)
 			{
-				InvocationList.push_back( std::bind( F, UClass ) );
+				InvocationElement e = InvocationElement( UClass, Name, std::bind( F, UClass) );
+				InvokationList.push_back( e );
 			}
 
 			if constexpr ( sizeof...( DelegateSignature ) == 1)
 			{
-				InvocationList.push_back( std::bind( F, UClass, std::placeholders::_1 ) );
+				// TODO: add move constructor
+				InvocationElement e = InvocationElement( UClass, Name, std::bind( F, UClass, std::placeholders::_1 ) );
+				InvokationList.push_back( e );
 			}
 
 		}
 
-		template<class UserClass, class Func>
-		inline void Remove( UserClass* UClass, Func&& F)
+		template<class UserClass>
+		inline void Remove( UserClass* UClass, const char* Name)
 		{
-			//InvocationList.erase( UClass );
-
-			//auto a = std::bind( F, UClass, std::placeholders::_1 ); 
-			//InvocationList.erase(  );
-			
-			//if constexpr ( sizeof...( DelegateSignature ) == 0)
-			//{
-			//	InvocationList.erase( std::bind( F, UClass ) );
-			//}
-			//
-			//if constexpr ( sizeof...( DelegateSignature ) == 1)
-			//{
-			//	InvocationList.erase( std::bind( F, UClass, std::placeholders::_1 ) );
-			//}
-
+			for ( auto it = InvokationList.begin(); it != InvokationList.end(); )
+			{
+				if (it->Class == UClass && strcmp( it->Name, Name) == 0 )
+				{
+					it = InvokationList.erase(it);
+				}
+				else
+				{
+					it++;
+				}
+			}
 		}
 
 		inline void Braodcast( DelegateSignature... Pack ) const
 		{
-			for (auto& A : InvocationList)
+			for (auto& A : InvokationList)
 			{
-				A(Pack...);
+				A.Invokation(Pack...);
 			}
 		}
 
 	private:
 
-		std::vector<InvocationListType> InvocationList;
+		std::vector<InvocationElement> InvokationList;
 	};
 }
