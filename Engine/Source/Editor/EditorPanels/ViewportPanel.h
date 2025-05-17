@@ -4,11 +4,14 @@
 
 #include "ForwardTypes.h"
 #include <Editor/Misc/GizmoState.h>
+#include "Runtime/Core/Delegate.h"
 
 LOG_DECLARE_CATEGORY(LogViewportPanel);
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, Component* );
+
 	class ViewportPanel
 	{
 	public:
@@ -18,6 +21,8 @@ namespace Drn
 		void Draw(float DeltaTime);
 
 		void SetRenderingEnabled(bool Enabled);
+
+		OnSelectedNewComponentDelegate OnSelectedNewComponent;
 
 	protected:
 
@@ -34,6 +39,7 @@ namespace Drn
 		StaticMeshActor* m_GridActor;
 
 		Component* m_SelectedComponent;
+
 
 		ViewportCameraInputHandler CameraInputHandler;
 		float CameraMovementSpeed = 0.01f;

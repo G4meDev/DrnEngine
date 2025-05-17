@@ -148,6 +148,8 @@ namespace Drn
 			{
 				m_SelectedComponent = nullptr;
 			}
+
+			OnSelectedNewComponent.Braodcast(m_SelectedComponent);
 		}
 
 

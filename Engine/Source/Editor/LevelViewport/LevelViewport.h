@@ -23,8 +23,6 @@ namespace Drn
 
 		std::unique_ptr<LevelViewportGuiLayer> LevelViewportLayer;
 
-		
-
 	private:
 
 		static std::unique_ptr<LevelViewport> SingletonInstance;
