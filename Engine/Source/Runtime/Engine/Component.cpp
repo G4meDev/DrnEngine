@@ -62,6 +62,12 @@ namespace Drn
 	{
 		ComponentLabel = InLabel;
 	}
+
+	void Component::SetSelectedInEditor( bool SelectedInEditor )
+	{
+		m_SelectedInEditor = SelectedInEditor;
+	}
+
 #endif
 
 	void Component::RegisterComponent( World* InOwningWorld )

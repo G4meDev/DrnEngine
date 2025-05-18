@@ -220,6 +220,16 @@ namespace Drn
 		return false;
 	}
 
+	void StaticMeshComponent::SetSelectedInEditor( bool SelectedInEditor )
+	{
+		PrimitiveComponent::SetSelectedInEditor(SelectedInEditor);
+	
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->SetSelectedInEditor( SelectedInEditor );
+		}
+	}
+
 #endif
 
 	void StaticMeshComponent::RefreshOverrideMaterials()

@@ -316,5 +316,13 @@ namespace Drn
 
 		ImGui::Separator();
 	}
+
+	void SceneComponent::SetSelectedInEditor( bool SelectedInEditor )
+	{
+		Component::SetSelectedInEditor(SelectedInEditor);
+
+		
+	}
+
 #endif
 }

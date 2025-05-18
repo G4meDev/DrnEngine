@@ -38,6 +38,8 @@ namespace Drn
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
+
+		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
 #endif
 
 	protected:

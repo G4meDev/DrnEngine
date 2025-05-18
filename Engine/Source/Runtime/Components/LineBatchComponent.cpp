@@ -187,6 +187,11 @@ namespace Drn
 		CommandList->DrawIndexedInstanced( VertexCount, 1, 0, 0, 0);
 	}
 
+	void LineBatchSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 	void LineBatchSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();

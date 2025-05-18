@@ -53,6 +53,7 @@ namespace Drn
 		ReleaseShaderBlobs();
 		if (m_RootSignature) m_RootSignature->Release();
 		if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
+		if (m_SelectionPassPSO) m_SelectionPassPSO->ReleaseBufferedResource();
 
 		if (m_ScalarCBV)
 		{
@@ -414,11 +415,20 @@ namespace Drn
 			m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
 				m_PrimitiveType, m_VS_Blob, m_PS_Blob, m_GS_Blob, m_DS_Blob, m_HS_Blob);
 
+#if WITH_EDITOR
+			m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+				m_PrimitiveType, m_VS_Blob, m_GS_Blob, m_DS_Blob, m_HS_Blob);
+#endif
+
 #if D3D12_Debug_INFO
 			std::string name = Path::ConvertShortPath(m_Path);
 			name = Path::RemoveFileExtension(name);
 			m_MainPassPSO->SetName( "MainPassPSO_" + name );
 			m_RootSignature->SetName(StringHelper::s2ws(" RootSignature_" + name ).c_str());
+
+#if WITH_EDITOR
+			m_SelectionPassPSO->SetName( "SelectionPassPSO_" + name );
+#endif
 #endif
 
 			ClearRenderStateDirty();
@@ -435,6 +445,20 @@ namespace Drn
 		CommandList->SetGraphicsRootSignature(m_RootSignature);
 		CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
 
+		BindResources(CommandList);
+	}
+
+	void Material::BindSelectionPass( ID3D12GraphicsCommandList2* CommandList )
+	{
+		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetPipelineState(m_SelectionPassPSO->GetD3D12PSO());
+		CommandList->OMSetStencilRef( 255 );
+
+		BindResources(CommandList);
+	}
+
+	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
+	{
 		const int NumTexture2Ds = m_Texture2DSlots.size();
 		for (int i = 0; i < m_Texture2DSlots.size(); i++)
 		{

@@ -20,6 +20,8 @@ namespace Drn
 	protected:
 
 		void RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		void RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+
 		void InitResources( ID3D12GraphicsCommandList2* CommandList ) override;
 		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
 
@@ -33,5 +35,7 @@ namespace Drn
 		Guid m_Guid;
 
 		AssetHandle<StaticMesh> m_Mesh;
+
+
 	};
 }

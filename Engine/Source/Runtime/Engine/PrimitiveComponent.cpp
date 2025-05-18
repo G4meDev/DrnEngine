@@ -79,6 +79,14 @@ namespace Drn
 
 		m_BodyInstance.DrawDetailPanel(DeltaTime);
 	}
+
+	void PrimitiveComponent::SetSelectedInEditor( bool SelectedInEditor )
+	{
+		SceneComponent::SetSelectedInEditor( SelectedInEditor );
+
+
+	}
+
 #endif
 
 }

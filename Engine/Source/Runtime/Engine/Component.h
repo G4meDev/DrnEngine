@@ -46,8 +46,18 @@ namespace Drn
 
 		inline const Guid& GetGuid() const { return m_Guid; }
 
+#if WITH_EDITOR
+		inline bool IsSelectedInEditor() const { return m_SelectedInEditor; }
+		virtual void SetSelectedInEditor( bool SelectedInEditor );
+#endif
+
+
 	protected:
 		Guid m_Guid;
+
+#if WITH_EDITOR
+		bool m_SelectedInEditor = false;
+#endif
 
 	private:
 

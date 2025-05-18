@@ -53,6 +53,50 @@ namespace Drn
 		return Result;
 	}
 
+	PipelineStateObject* PipelineStateObject::CreateSelectionPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, ID3DBlob* VS, ID3DBlob* GS, ID3DBlob* DS, ID3DBlob* HS)
+	{
+		PipelineStateObject* Result = new PipelineStateObject();
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		D3D12_RASTERIZER_DESC RasterizerDesc = CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		RasterizerDesc.CullMode = CullMode;
+
+		D3D12_DEPTH_STENCILOP_DESC StencilDesc = {};
+		StencilDesc.StencilDepthFailOp = D3D12_STENCIL_OP_REPLACE;
+		StencilDesc.StencilFailOp = D3D12_STENCIL_OP_REPLACE;
+		StencilDesc.StencilPassOp = D3D12_STENCIL_OP_REPLACE;
+		StencilDesc.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= RootSignature;
+		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(InputLayoutType);
+		PipelineDesc.PrimitiveTopologyType				= PrimitiveType;
+		PipelineDesc.RasterizerState					= RasterizerDesc;
+		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
+		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
+		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
+		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
+		PipelineDesc.DepthStencilState.StencilEnable	= TRUE;
+		PipelineDesc.DepthStencilState.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+		PipelineDesc.DepthStencilState.StencilReadMask	= D3D12_DEFAULT_STENCIL_READ_MASK;
+		PipelineDesc.DepthStencilState.FrontFace		= StencilDesc;
+		PipelineDesc.DepthStencilState.BackFace			= StencilDesc;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		if (VS) PipelineDesc.VS							= CD3DX12_SHADER_BYTECODE(VS);
+		if (GS) PipelineDesc.GS							= CD3DX12_SHADER_BYTECODE(GS);
+		if (HS) PipelineDesc.HS							= CD3DX12_SHADER_BYTECODE(HS);
+		if (DS) PipelineDesc.DS							= CD3DX12_SHADER_BYTECODE(DS);
+		PipelineDesc.DSVFormat							= DEPTH_STENCIL_FORMAT;
+		PipelineDesc.NumRenderTargets					= 0;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( Result->m_PipelineState.GetAddressOf() ) );
+		return Result;
+	}
+
+
 #if D3D12_Debug_INFO
 	void PipelineStateObject::SetName( const std::string& Name )
 	{

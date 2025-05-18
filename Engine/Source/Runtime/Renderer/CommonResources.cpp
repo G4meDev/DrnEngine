@@ -18,12 +18,14 @@ namespace Drn
 	{
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
 		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList);
+		m_ResolveEditorSelectionPSO = new ResolveEditorSelectionPSO(CommandList);
 	}
 
 	CommonResources::~CommonResources()
 	{
 		delete m_ScreenTriangle;
 		delete m_ResolveAlphaBlendedPSO;
+		delete m_ResolveEditorSelectionPSO;
 	}
 
 	void CommonResources::Init( ID3D12GraphicsCommandList2* CommandList )
@@ -230,6 +232,99 @@ namespace Drn
 		m_PSO->Release();
 	}
 
+// --------------------------------------------------------------------------------------
+
+	ResolveEditorSelectionPSO::ResolveEditorSelectionPSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_RootSignature = nullptr;
+		m_PSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		CD3DX12_ROOT_PARAMETER1 rootParameters[2] = {};
+		rootParameters[0].InitAsConstants(24, 0);
+		CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		rootParameters[1].InitAsDescriptorTable(1, &Range);
+
+		CD3DX12_STATIC_SAMPLER_DESC SamplerDesc = {};
+		SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+		SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		SamplerDesc.ShaderRegister = 0;
+		SamplerDesc.RegisterSpace = 0;
+
+		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(2, rootParameters, 1, &SamplerDesc, rootSignatureFlags );
+
+		ID3DBlob* pSerializedRootSig;
+		ID3DBlob* pRootSigError;
+		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
+		if ( FAILED(Result) )
+		{
+			if ( pRootSigError )
+			{
+				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
+				pRootSigError->Release();
+			}
+
+			if (pSerializedRootSig)
+			{
+				pSerializedRootSig->Release();
+				pSerializedRootSig = nullptr;
+			}
+
+			return;
+		}
+
+		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
+			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
+
+		std::string ShaderCode = FileSystem::ReadFileAsString( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveEditorSelection.hlsl" ) );
+
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+
+		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
+		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+
+		CD3DX12_BLEND_DESC BlendDesc = {};
+		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+		BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.InputLayout						= VertexLayout_PosUV;
+		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		PipelineDesc.BlendState							= BlendDesc;
+		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+		PipelineDesc.DSVFormat							= DXGI_FORMAT_R32_FLOAT;
+		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R8G8B8A8_UNORM;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+	}
+
+	ResolveEditorSelectionPSO::~ResolveEditorSelectionPSO()
+	{
+		m_RootSignature->Release();
+		m_PSO->Release();
+	}
+
 	void CompileShaderString( const std::string& ShaderCode, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob )
 	{
 		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -253,5 +348,6 @@ namespace Drn
 				ShaderBlob->Release();
 		}
 	}
+
 
 }

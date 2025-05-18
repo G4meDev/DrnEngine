@@ -44,6 +44,8 @@ namespace Drn
 		void UpdateMeshWithPath(const char* NewPath);
 
 		bool IsUsingMaterial(const AssetHandle<Material>& Mat);
+
+		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
 #endif
 
 	protected:

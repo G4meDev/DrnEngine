@@ -66,6 +66,8 @@ namespace Drn
 
 	void LevelViewport::OnSelectedNewComponent( Component* NewComponent )
 	{
+		Component* OldComponent = m_SelectedComponent;
+
 		if ( NewComponent == nullptr )
 		{
 			m_SelectedComponent = nullptr;
@@ -79,6 +81,16 @@ namespace Drn
 		else
 		{
 			m_SelectedComponent = NewComponent->GetOwningActor()->GetRoot();
+		}
+
+		if (OldComponent)
+		{
+			OldComponent->SetSelectedInEditor(false);
+		}
+
+		if (m_SelectedComponent)
+		{
+			m_SelectedComponent->SetSelectedInEditor(true);
 		}
 	}
 

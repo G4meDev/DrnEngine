@@ -88,6 +88,7 @@ namespace Drn
 				Mat->BindMainPass(CommandList);
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+				// TODO: remove dependency and only copy from parent side
 				XMMATRIX modelMatrix = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 
 				float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
@@ -110,4 +111,41 @@ namespace Drn
 			}
 		}
 	}
+
+	void StaticMeshSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		if (!m_SelectedInEditor)
+			return;
+
+		for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
+		{
+			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
+			AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+				
+			Mat->BindSelectionPass(CommandList);
+			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+			// TODO: remove dependency and only copy from parent side
+			XMMATRIX modelMatrix = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+
+			float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
+		
+			XMMATRIX viewMatrix;
+			XMMATRIX projectionMatrix;
+		
+			Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+
+			XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
+			mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
+
+			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
+			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
+			CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
+
+			CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
+			CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );
+			CommandList->DrawIndexedInstanced( RenderProxy.m_IndexBufferView.SizeInBytes / sizeof(uint32), 1, 0, 0, 0);
+		}
+	}
+
 }

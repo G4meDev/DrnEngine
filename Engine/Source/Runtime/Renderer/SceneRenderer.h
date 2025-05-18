@@ -52,8 +52,13 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_EditorColorTarget = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_EditorDepthTarget = nullptr;
 
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_EditorSelectionDepthStencilTarget = nullptr;
+
 		D3D12_CPU_DESCRIPTOR_HANDLE m_EditorColorCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE m_EditorColorGpuHandle;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_EditorSelectionDepthStencilCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_EditorSelectionDepthStencilGpuHandle;
 
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_ScissorRect;

@@ -32,6 +32,9 @@ namespace Drn
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindSelectionPass( ID3D12GraphicsCommandList2* CommandList );
+
+		void BindResources( ID3D12GraphicsCommandList2* CommandList );
 
 		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
 		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
@@ -84,6 +87,10 @@ namespace Drn
 		D3D12_GPU_DESCRIPTOR_HANDLE m_ScalarGpuHandle;
 
 		PipelineStateObject* m_MainPassPSO;
+
+#if WITH_EDITOR
+		PipelineStateObject* m_SelectionPassPSO;
+#endif
 
 		std::unordered_map<std::string, MaterialIndexedFloatParameter*> m_ScalarMap;
 		std::unordered_map<std::string, MaterialIndexedVector4Parameter*> m_Vector4Map;
