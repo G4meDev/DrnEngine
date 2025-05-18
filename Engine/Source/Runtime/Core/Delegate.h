@@ -11,6 +11,9 @@
 #define DECLARE_DELEGATE( DelegateName )												\
 	FUNC_DECLARE_DELEGATE( DelegateName, void )
 
+#define DECLARE_DELEGATE_OneParam( DelegateName, Param1Type )							\
+	FUNC_DECLARE_DELEGATE( DelegateName, void, Param1Type )
+
 // ---------------------------------------------------------------------------------------------
 
 #define FUNC_DECLARE_MULTICAST_DELEGATE( MulticastDelegateName, ReturnType, ... )		\

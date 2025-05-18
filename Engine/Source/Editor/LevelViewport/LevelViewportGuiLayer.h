@@ -28,10 +28,13 @@ namespace Drn
 		void DrawViewportMenu(float DeltaTime);
 
 		void HandleViewportPayload(const ImGuiPayload* Payload);
+		void HandleViewportInputs();
 
 		void OnHitPlay();
-		void ShowContextPopup();
 		void DrawContextPopup();
+
+		void DeleteSelectedActor();
+		void AlignSelectedComponentToSurfaceBelow();
 
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;

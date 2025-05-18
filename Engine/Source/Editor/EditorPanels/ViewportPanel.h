@@ -10,7 +10,7 @@ LOG_DECLARE_CATEGORY(LogViewportPanel);
 
 namespace Drn
 {
-	DECLARE_DELEGATE( OnOpenContextMenuDelegate );
+	DECLARE_DELEGATE( HandleInputDelegate );
 
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, Component* );
 	DECLARE_DELEGATE_RetVal( Component*, GetSelectedComponentDelegate );
@@ -25,7 +25,7 @@ namespace Drn
 
 		void SetRenderingEnabled(bool Enabled);
 
-		OnOpenContextMenuDelegate OnOpenContextMenu;
+		HandleInputDelegate HandleInputDel;
 
 		OnSelectedNewComponentDelegate OnSelectedNewComponent;
 		GetSelectedComponentDelegate GetSelectedComponentDel;

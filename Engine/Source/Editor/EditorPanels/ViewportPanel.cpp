@@ -69,6 +69,7 @@ namespace Drn
 		}
 
 		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
+
 		HandleInputs();
 
 		bool UsingGizmo = false;
@@ -179,12 +180,9 @@ namespace Drn
 				m_GizmoState.HandleInput();
 			}
 
-			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Right) )
+			if (HandleInputDel.IsBound())
 			{
-				if ( OnOpenContextMenu.IsBound() )
-				{
-					OnOpenContextMenu.Execute();
-				}
+				HandleInputDel.Execute();
 			}
 		}
 	}

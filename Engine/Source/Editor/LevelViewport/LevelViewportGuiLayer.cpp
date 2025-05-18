@@ -22,7 +22,7 @@ namespace Drn
 		m_ViewportPanel = std::make_unique<ViewportPanel>( WorldManager::Get()->GetMainWorld()->GetScene() );
 		m_ViewportPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent );
 		m_ViewportPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent );
-		m_ViewportPanel->OnOpenContextMenu.Bind( this, &LevelViewportGuiLayer::ShowContextPopup );
+		m_ViewportPanel->HandleInputDel.Bind( this, &LevelViewportGuiLayer::HandleViewportInputs );
 		
 		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
 		m_WorldOutlinerPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent );
@@ -218,6 +218,25 @@ namespace Drn
 		}
 	}
 
+	void LevelViewportGuiLayer::HandleViewportInputs()
+	{
+		if (ImGui::IsMouseDoubleClicked( ImGuiMouseButton_Right ))
+		{
+			ImGui::OpenPopup( "ContextMenuPopup" );
+		}
+
+		if ( ImGui::IsKeyPressed(ImGuiKey_Delete) )
+		{
+			DeleteSelectedActor();
+		}
+
+		if ( ImGui::IsKeyPressed(ImGuiKey_End) )
+		{
+			AlignSelectedComponentToSurfaceBelow();
+		}
+
+	}
+
 	void LevelViewportGuiLayer::OnHitPlay()
 	{
 		
@@ -236,20 +255,13 @@ namespace Drn
 			{
 				if (ImGui::Button( "Delete" ))
 				{
-					Actor* SelectedActor = m_OwningLevelViewport->GetSelectedComponent() ?
-						m_OwningLevelViewport->GetSelectedComponent()->GetOwningActor() : nullptr;
-
-					if ( SelectedActor )
-					{
-						SelectedActor->Destroy();
-					}
-
+					DeleteSelectedActor();
 					ImGui::CloseCurrentPopup();
 				}
 
-				ImGui::Button( "unsed_1" );
-				ImGui::Button( "unsed_2" );
-				ImGui::Button( "unsed_3" );
+				ImGui::Button( "unused_1" );
+				ImGui::Button( "unused_2" );
+				ImGui::Button( "unused_3" );
 
 				ImGui::Separator();
 
@@ -265,9 +277,21 @@ namespace Drn
 		}
 	}
 
-	void LevelViewportGuiLayer::ShowContextPopup()
+	void LevelViewportGuiLayer::DeleteSelectedActor()
 	{
-		ImGui::OpenPopup( "ContextMenuPopup" );
+		Actor* SelectedActor = m_OwningLevelViewport->GetSelectedComponent() ?
+		m_OwningLevelViewport->GetSelectedComponent()->GetOwningActor() : nullptr;
+
+		if ( SelectedActor )
+		{
+			SelectedActor->Destroy();
+		}
+	}
+
+
+	void LevelViewportGuiLayer::AlignSelectedComponentToSurfaceBelow()
+	{
+		
 	}
 
 }
