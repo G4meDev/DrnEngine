@@ -28,6 +28,8 @@ namespace Drn
 		m_WorldOutlinerPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent);
 
 		m_ActorDetailPanel = std::make_unique<ActorDetailPanel>();
+		m_ActorDetailPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent );
+		m_ActorDetailPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent);
 	}
 
 	LevelViewportGuiLayer::~LevelViewportGuiLayer()

@@ -40,7 +40,6 @@ namespace Drn
 		CameraActor* m_ViewportCamera;
 		StaticMeshActor* m_GridActor;
 
-
 		ViewportCameraInputHandler CameraInputHandler;
 		float CameraMovementSpeed = 0.01f;
 		float CameraRotationSpeed = 0.01f;

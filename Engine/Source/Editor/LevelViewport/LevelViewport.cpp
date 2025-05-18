@@ -66,7 +66,20 @@ namespace Drn
 
 	void LevelViewport::OnSelectedNewComponent( Component* NewComponent )
 	{
-		m_SelectedComponent = NewComponent;
+		if ( NewComponent == nullptr )
+		{
+			m_SelectedComponent = nullptr;
+		}
+
+		else if (m_SelectedComponent && m_SelectedComponent->GetOwningActor() == NewComponent->GetOwningActor())
+		{
+			m_SelectedComponent = NewComponent;
+		}
+
+		else
+		{
+			m_SelectedComponent = NewComponent->GetOwningActor()->GetRoot();
+		}
 	}
 
 	void LevelViewport::OnRemovedActorsFromWorld( std::vector<Actor*> RemovedActors )

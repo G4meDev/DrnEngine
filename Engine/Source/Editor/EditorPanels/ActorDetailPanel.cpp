@@ -8,8 +8,6 @@
 namespace Drn
 {
 	ActorDetailPanel::ActorDetailPanel()
-		: m_SelectedActor(nullptr)
-		, m_SelectedComponent(nullptr)
 	{
 		
 	}
@@ -23,10 +21,17 @@ namespace Drn
 	{
 		SCOPE_STAT(ActorDetailPanelDraw);
 
-		if (m_SelectedActor)
-		{
-			m_SelectedComponent = m_SelectedComponent ? m_SelectedComponent : m_SelectedActor->GetRoot();
+		m_SelectedComponent = nullptr;
+		m_SelectedActor = nullptr;
 
+		if (GetSelectedComponentDel.IsBound())
+		{
+			m_SelectedComponent = GetSelectedComponentDel.Execute();
+			m_SelectedActor = m_SelectedComponent ? m_SelectedComponent->GetOwningActor() : nullptr;
+		}
+
+		if (m_SelectedComponent && m_SelectedActor && !m_SelectedActor->IsMarkedPendingKill())
+		{
 			ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x );
 
 			if ( ImGui::InputText( "## ", name, 32) )
@@ -46,16 +51,6 @@ namespace Drn
 		}
 	}
 
-	void ActorDetailPanel::SetSelectedActor( Actor* SelectedActor )
-	{
-		m_SelectedActor = SelectedActor;
-
-		if (!m_SelectedActor)
-		{
-			m_SelectedComponent = nullptr;
-		}
-	}
-
 	void ActorDetailPanel::DrawSceneComponents( float DeltaTime )
 	{
 		if (ImGui::BeginChild("SceneComponent", ImVec2(0, 200), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
@@ -71,7 +66,6 @@ namespace Drn
 			ImGui::EndGroup();
 		}
 		ImGui::EndChild();
-
 	}
 
 	void ActorDetailPanel::DrawNextSceneComponent( SceneComponent* Comp )
@@ -96,7 +90,7 @@ namespace Drn
 
 		if (ImGui::IsItemFocused())
 		{
-			m_SelectedComponent = Comp;
+			OnSelectedNewComponent.Braodcast(Comp);
 		}
 
 		if ( node_open )

@@ -3,9 +3,13 @@
 #if WITH_EDITOR
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/Delegate.h"
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, Component* );
+	DECLARE_DELEGATE_RetVal( Component*, GetSelectedComponentDelegate);
+
 	class ActorDetailPanel
 	{
 	public:
@@ -14,7 +18,9 @@ namespace Drn
 
 		void Draw(float DeltaTime);
 
-		void SetSelectedActor(Actor* SelectedActor);
+
+		OnSelectedNewComponentDelegate OnSelectedNewComponent;
+		GetSelectedComponentDelegate GetSelectedComponentDel;
 
 	protected:
 
@@ -23,14 +29,13 @@ namespace Drn
 		
 		void DrawDetails(float DeltaTime);
 
-		//void DrawComponents(float DeltaTime);
+		// for caching not actual state
+		Component* m_SelectedComponent;
+		Actor* m_SelectedActor;
 
 		char name[32] = "";
 
 	private:
-
-		Actor* m_SelectedActor;
-		Component* m_SelectedComponent;
 	};
 }
 
