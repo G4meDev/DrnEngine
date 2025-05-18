@@ -36,6 +36,8 @@ namespace Drn
 		void DrawHeader();
 		void HandleInputs();
 
+		void OnRendererPickedComponent( Component* PickedComponent );
+
 		D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;
 

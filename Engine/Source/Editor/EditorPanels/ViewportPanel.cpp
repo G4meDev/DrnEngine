@@ -15,6 +15,7 @@ namespace Drn
 		m_World = InScene->GetWorld();
 		m_Scene = InScene;
 		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
+		m_SceneRenderer->OnPickedComponent.Add( this, &ViewportPanel::OnRendererPickedComponent );
 
 		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
 		m_ViewportCamera->SetActorLocation(XMVectorSet(-20, 28, 20, 0));
@@ -138,23 +139,7 @@ namespace Drn
 			const ImVec2 RectMin = ImGui::GetItemRectMin();
 			const ImVec2 MousePos = ImGui::GetMousePos();
 			const IntPoint ClickPos = IntPoint( MousePos.x - RectMin.x, MousePos.y - RectMin.y );
-			Guid SelectedComponentGuid = m_SceneRenderer->GetGuidAtScreenPosition(ClickPos);
-			LOG( LogViewportPanel, Info, "clicked on viewport at: %s\n\t found component with guid: %s", ClickPos.ToString().c_str(), SelectedComponentGuid.ToString().c_str() );
-
-			Component* Comp = m_SceneRenderer->GetScene()->GetWorld()->GetComponentWithGuid(SelectedComponentGuid);
-
-			if (Comp && Comp->GetOwningActor() && !Comp->GetOwningActor()->IsMarkedPendingKill())
-			{
-				OnSelectedNewComponent.Braodcast(Comp);
-				LOG( LogViewportPanel, Info, "clicked on actor: %s", Comp->GetOwningActor()->GetActorLabel().c_str() );
-			}
-
-			else
-			{
-				OnSelectedNewComponent.Braodcast(nullptr);
-			}
-
-
+			m_SceneRenderer->QueueMousePickEvent(ClickPos);
 		}
 
 
@@ -185,6 +170,12 @@ namespace Drn
 				HandleInputDel.Execute();
 			}
 		}
+	}
+
+	void ViewportPanel::OnRendererPickedComponent( Component* PickedComponent )
+	{
+		// broadcast to others. e.g. level viewport
+		OnSelectedNewComponent.Braodcast( PickedComponent );
 	}
 
 	void ViewportPanel::SetRenderingEnabled( bool Enabled )

@@ -1,14 +1,42 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Renderer/Resource.h"
+#include "Runtime/Core/Delegate.h"
 
 LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnPickedComponentDelegate, Component*);
+
 	enum class EDebugViewFlags : uint32
 	{
 		EShowCollision = 1
+	};
+
+	struct MousePickEvent
+	{
+		MousePickEvent( const IntPoint& InScreenPos )
+			: ScreenPos(InScreenPos)
+		{
+		}
+
+		MousePickEvent() {}
+
+		~MousePickEvent()
+		{
+			if (ReadbackBuffer)
+			{
+				ReadbackBuffer->ReleaseBufferedResource();
+			}
+		}
+
+		// TODO: Add event to trigger
+		IntPoint ScreenPos;
+		bool Initalized = false;
+		Resource* ReadbackBuffer = nullptr;
+		uint64 FenceValue = 0;
 	};
 
 	class SceneRenderer
@@ -32,7 +60,13 @@ namespace Drn
 
 		inline void SetName( const std::string& Name ) { m_Name = Name; }
 
-		Guid GetGuidAtScreenPosition(const IntPoint& ScreenPosition);
+#if WITH_EDITOR
+		OnPickedComponentDelegate OnPickedComponent;
+
+		void QueueMousePickEvent( const IntPoint& ScreenPosition );
+		Microsoft::WRL::ComPtr<ID3D12Fence> m_MousePickFence;
+		uint64 m_FenceValue = 0;
+#endif
 
 		CameraActor* m_CameraActor;
 
@@ -68,6 +102,12 @@ namespace Drn
 		bool m_RenderingEnabled;
 
 		std::string m_Name;
+
+#if WITH_EDITOR
+		void ProccessMousePickQueue(ID3D12GraphicsCommandList2* CommandList);
+		void KickstartMousePickEvent( MousePickEvent& Event );
+		std::vector<MousePickEvent> m_MousePickQueue;
+#endif
 
 		friend class Scene;
 		friend class Renderer;
