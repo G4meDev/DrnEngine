@@ -11,7 +11,6 @@ LOG_DEFINE_CATEGORY( LogViewportPanel, "ViewportPanel" );
 namespace Drn
 {
 	ViewportPanel::ViewportPanel(Scene* InScene)
-		//: m_SelectedComponent(nullptr)
 	{
 		m_World = InScene->GetWorld();
 		m_Scene = InScene;
@@ -162,14 +161,31 @@ namespace Drn
 
 	void ViewportPanel::DrawHeader()
 	{
+		float CameraSpeed = CameraMovementSpeed * 100;
+		ImGui::SetNextItemWidth(128);
+		ImGui::SliderFloat( "CameraSpeed", &CameraSpeed, 0.1f, 10, "%.3f");
+		CameraMovementSpeed = CameraSpeed / 100;
+		ImGui::SameLine(0, 32);
+
 		m_GizmoState.Draw();
 	}
 
 	void ViewportPanel::HandleInputs()
 	{
-		if ( ImGui::IsItemHovered() && !ImGui::IsMouseDown(ImGuiMouseButton_Right) )
+		if ( ImGui::IsItemHovered() )
 		{
-			m_GizmoState.HandleInput();
+			if (!ImGui::IsMouseDown(ImGuiMouseButton_Right))
+			{
+				m_GizmoState.HandleInput();
+			}
+
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Right) )
+			{
+				if ( OnOpenContextMenu.IsBound() )
+				{
+					OnOpenContextMenu.Execute();
+				}
+			}
 		}
 	}
 

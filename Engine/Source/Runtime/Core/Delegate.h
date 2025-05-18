@@ -8,6 +8,9 @@
 #define DECLARE_DELEGATE_RetVal( ReturnValueType, DelegateName )						\
 	FUNC_DECLARE_DELEGATE( DelegateName, ReturnValueType )
 
+#define DECLARE_DELEGATE( DelegateName )												\
+	FUNC_DECLARE_DELEGATE( DelegateName, void )
+
 // ---------------------------------------------------------------------------------------------
 
 #define FUNC_DECLARE_MULTICAST_DELEGATE( MulticastDelegateName, ReturnType, ... )		\

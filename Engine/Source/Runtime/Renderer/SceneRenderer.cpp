@@ -332,6 +332,7 @@ namespace Drn
 		m_RenderingEnabled = Enabled;
 	}
 
+	// TODO: support box selection
 	Guid SceneRenderer::GetGuidAtScreenPosition( const IntPoint& ScreenPosition )
 	{
 		Guid Result;
@@ -372,6 +373,7 @@ namespace Drn
 				m_GuidTarget.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
 			CommandList->ResourceBarrier(1, &barrier);
 
+			// TODO: remove flush and deferre bind event via delegates
 			Renderer::Get()->Flush();
 
 			UINT8* MemoryStart;

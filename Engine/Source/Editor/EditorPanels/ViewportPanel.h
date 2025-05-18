@@ -10,6 +10,8 @@ LOG_DECLARE_CATEGORY(LogViewportPanel);
 
 namespace Drn
 {
+	DECLARE_DELEGATE( OnOpenContextMenuDelegate );
+
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, Component* );
 	DECLARE_DELEGATE_RetVal( Component*, GetSelectedComponentDelegate );
 
@@ -22,6 +24,8 @@ namespace Drn
 		void Draw(float DeltaTime);
 
 		void SetRenderingEnabled(bool Enabled);
+
+		OnOpenContextMenuDelegate OnOpenContextMenu;
 
 		OnSelectedNewComponentDelegate OnSelectedNewComponent;
 		GetSelectedComponentDelegate GetSelectedComponentDel;

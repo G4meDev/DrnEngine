@@ -30,6 +30,8 @@ namespace Drn
 		void HandleViewportPayload(const ImGuiPayload* Payload);
 
 		void OnHitPlay();
+		void ShowContextPopup();
+		void DrawContextPopup();
 
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;

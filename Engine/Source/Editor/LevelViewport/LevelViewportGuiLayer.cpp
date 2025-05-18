@@ -21,7 +21,8 @@ namespace Drn
 	{
 		m_ViewportPanel = std::make_unique<ViewportPanel>( WorldManager::Get()->GetMainWorld()->GetScene() );
 		m_ViewportPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent );
-		m_ViewportPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent);
+		m_ViewportPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent );
+		m_ViewportPanel->OnOpenContextMenu.Bind( this, &LevelViewportGuiLayer::ShowContextPopup );
 		
 		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
 		m_WorldOutlinerPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent );
@@ -84,6 +85,8 @@ namespace Drn
 
 				ImGui::EndDragDropTarget();
 			}
+
+			DrawContextPopup();
 		}
 		ImGui::EndChild();
 
@@ -218,6 +221,53 @@ namespace Drn
 	void LevelViewportGuiLayer::OnHitPlay()
 	{
 		
+	}
+
+	void LevelViewportGuiLayer::DrawContextPopup()
+	{
+		if ( ImGui::BeginPopup( "ContextMenuPopup" ) )
+		{
+			if (ImGui::Button("Edit"))
+			{
+				ImGui::OpenPopup( "EditPopup" );
+			}
+
+			if (ImGui::BeginPopup( "EditPopup" ))
+			{
+				if (ImGui::Button( "Delete" ))
+				{
+					Actor* SelectedActor = m_OwningLevelViewport->GetSelectedComponent() ?
+						m_OwningLevelViewport->GetSelectedComponent()->GetOwningActor() : nullptr;
+
+					if ( SelectedActor )
+					{
+						SelectedActor->Destroy();
+					}
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::Button( "unsed_1" );
+				ImGui::Button( "unsed_2" );
+				ImGui::Button( "unsed_3" );
+
+				ImGui::Separator();
+
+				std::string SelectedActorName = m_OwningLevelViewport->GetSelectedComponent() ?
+					m_OwningLevelViewport->GetSelectedComponent()->GetOwningActor()->GetActorLabel() : "Nothing Selected";
+
+				ImGui::Text( SelectedActorName.c_str() );
+
+				ImGui::EndPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+	}
+
+	void LevelViewportGuiLayer::ShowContextPopup()
+	{
+		ImGui::OpenPopup( "ContextMenuPopup" );
 	}
 
 }
