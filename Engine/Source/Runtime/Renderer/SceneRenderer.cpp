@@ -140,6 +140,7 @@ namespace Drn
 			Proxy->RenderMainPass(CommandList, this);
 		}
 
+#if WITH_EDITOR
 // ------------------------------------------------------------------------------------------
 
 		CommandList->OMSetRenderTargets(1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), true, NULL);
@@ -202,6 +203,7 @@ namespace Drn
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			m_EditorSelectionDepthStencilTarget.Get(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
 		CommandList->ResourceBarrier(1, &barrier);
+#endif
 	}
 
 	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )

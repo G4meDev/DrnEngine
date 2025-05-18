@@ -53,7 +53,9 @@ namespace Drn
 		ReleaseShaderBlobs();
 		if (m_RootSignature) m_RootSignature->Release();
 		if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
+#if WITH_EDITOR
 		if (m_SelectionPassPSO) m_SelectionPassPSO->ReleaseBufferedResource();
+#endif
 
 		if (m_ScalarCBV)
 		{
@@ -448,6 +450,7 @@ namespace Drn
 		BindResources(CommandList);
 	}
 
+#if WITH_EDITOR
 	void Material::BindSelectionPass( ID3D12GraphicsCommandList2* CommandList )
 	{
 		CommandList->SetGraphicsRootSignature(m_RootSignature);
@@ -456,6 +459,7 @@ namespace Drn
 
 		BindResources(CommandList);
 	}
+#endif
 
 	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
 	{

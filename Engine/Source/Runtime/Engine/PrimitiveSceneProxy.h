@@ -20,7 +20,6 @@ namespace Drn
 	protected:
 
 		virtual void RenderMainPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
-		virtual void RenderSelectionPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
 
 		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) = 0;
 		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) = 0;
@@ -29,6 +28,7 @@ namespace Drn
 		bool m_EditorPrimitive;
 
 #if WITH_EDITOR
+		virtual void RenderSelectionPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
 		bool m_SelectedInEditor = false;
 #endif
 

@@ -187,10 +187,12 @@ namespace Drn
 		CommandList->DrawIndexedInstanced( VertexCount, 1, 0, 0, 0);
 	}
 
+#if WITH_EDITOR
 	void LineBatchSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
 		
 	}
+#endif
 
 	void LineBatchSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{

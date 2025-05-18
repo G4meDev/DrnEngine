@@ -62,7 +62,9 @@ namespace Drn
 	protected:
 
 		virtual void RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+#if WITH_EDITOR
 		virtual void RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+#endif
 
 		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) override;
 		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) override;

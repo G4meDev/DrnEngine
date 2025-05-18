@@ -112,6 +112,7 @@ namespace Drn
 		}
 	}
 
+#if WITH_EDITOR
 	void StaticMeshSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
 		if (!m_SelectedInEditor)
@@ -147,5 +148,6 @@ namespace Drn
 			CommandList->DrawIndexedInstanced( RenderProxy.m_IndexBufferView.SizeInBytes / sizeof(uint32), 1, 0, 0, 0);
 		}
 	}
+#endif
 
 }
