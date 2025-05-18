@@ -255,6 +255,52 @@ namespace Drn
 		}
 	}
 
+	void PhysicScene::RaycastSingle( HitResult& Result, const Vector& Start, const Vector& Dir, float MaxDistance )
+	{
+		PxRaycastBuffer RaycastBuffer;
+		bool Hit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), MaxDistance, RaycastBuffer);
+
+		if (Hit)
+		{
+			BodyInstance* Body = PhysicUserData::Get<BodyInstance>( RaycastBuffer.block.actor->userData );
+			PrimitiveComponent* HitPrimitive = Body ? Body->GetOwnerComponent() : nullptr;
+			Actor* HitActor     = HitPrimitive ? HitPrimitive->GetOwningActor() : nullptr;
+
+			if ( HitActor && !HitActor->IsMarkedPendingKill() )
+			{
+				Result = HitResult( Vector::ZeroVector, Vector::ZeroVector, P2Vector( RaycastBuffer.block.position ),
+					P2Vector( RaycastBuffer.block.normal ), HitActor, HitPrimitive );
+			}
+		}
+	}
+
+	void PhysicScene::RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance )
+	{
+		const PxU32 bufferSize = 256;
+		PxRaycastHit hitBuffer[bufferSize];
+		PxRaycastBuffer buf(hitBuffer, bufferSize);
+
+		bool Hit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), MaxDistance, buf );
+		Results.clear();
+		Results.reserve( buf.getNbAnyHits() );
+
+		if ( Hit )
+		{
+			for (uint32 i = 0; i < buf.getNbTouches(); i++)
+			{
+				BodyInstance* Body = PhysicUserData::Get<BodyInstance>(buf.touches[i].actor->userData);
+				PrimitiveComponent* HitPrimitive = Body ? Body->GetOwnerComponent() : nullptr;
+				Actor* HitActor = HitPrimitive ? HitPrimitive->GetOwningActor() : nullptr;
+
+				if ( HitActor && !HitActor->IsMarkedPendingKill() )
+				{
+					Results.emplace_back( Vector::ZeroVector, Vector::ZeroVector, P2Vector( buf.touches[i].position ),
+						P2Vector( buf.touches[i].normal ), HitActor, HitPrimitive );
+				}
+			}
+		}
+	}
+
 // ------------------------------------------------------------------------------------------------------------
 
 	void PhysXSimEventCallback::onContact( const PxContactPairHeader& PairHeader, const PxContactPair* Pairs, PxU32 NumPairs )

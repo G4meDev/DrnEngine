@@ -230,7 +230,7 @@ namespace Drn
 			DeleteSelectedActor();
 		}
 
-		if ( ImGui::IsKeyPressed(ImGuiKey_End) )
+		if ( ImGui::IsKeyPressed(ImGuiKey_C) )
 		{
 			AlignSelectedComponentToSurfaceBelow();
 		}
@@ -291,7 +291,21 @@ namespace Drn
 
 	void LevelViewportGuiLayer::AlignSelectedComponentToSurfaceBelow()
 	{
-		
+		SceneComponent* SelectedSceneComponent = static_cast<SceneComponent*>( m_OwningLevelViewport->GetSelectedComponent() );
+		if ( SelectedSceneComponent )
+		{
+			std::vector<HitResult> Results;
+			SelectedSceneComponent->GetWorld()->GetPhysicScene()->RaycastMulti(Results, SelectedSceneComponent->GetWorldLocation(), Vector::DownVector, 10000);
+
+			for (uint32 i = 0; i < Results.size(); i++)
+			{
+				if ( Results[i].HitActor != SelectedSceneComponent->GetOwningActor() )
+				{
+					SelectedSceneComponent->SetWorldLocation(Results[i].Location);
+					return;
+				}
+			}
+		}
 	}
 
 }

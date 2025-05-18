@@ -4,6 +4,34 @@
 
 namespace Drn
 {
+	struct HitResult
+	{
+		HitResult(const Vector& InTraceStart, const Vector& InTraceEnd, const Vector& InLocation,
+			const Vector& InNormal, Actor* InHitActor, PrimitiveComponent* InHitComponent)
+			: TraceStart(InTraceStart)
+			, TraceEnd(InTraceEnd)
+			, Location(InLocation)
+			, Normal(InNormal)
+			, HitActor(InHitActor)
+			, HitComponent(InHitComponent)
+		{
+		}
+
+		HitResult() : HitResult(Vector::ZeroVector, Vector::ZeroVector, Vector::ZeroVector,
+			Vector::ZeroVector, nullptr, nullptr)
+		{
+		}
+
+		Vector TraceStart;
+		Vector TraceEnd;
+
+		Vector Location;
+		Vector Normal;
+
+		Actor* HitActor;
+		PrimitiveComponent* HitComponent;
+	};
+
 	struct RigidBodyContactInfo
 	{
 		RigidBodyContactInfo()

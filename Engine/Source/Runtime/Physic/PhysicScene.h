@@ -52,7 +52,8 @@ namespace Drn
 		void DrawDebugCollisions();
 		void DrawDebugForRigidActor(PxRigidActor* RigidActor);
 
-		//TODO: add force, clear velocity, set target, add actor, ...
+		void RaycastSingle( HitResult& Result, const Vector& Start, const Vector& Dir, float MaxDistance );
+		void RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance );
 
 		inline void ToggleShowCollision() { m_DrawDebugCollision = !m_DrawDebugCollision; }
 
