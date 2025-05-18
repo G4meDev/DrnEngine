@@ -83,14 +83,16 @@ namespace Drn
 			m_SelectedComponent = NewComponent->GetOwningActor()->GetRoot();
 		}
 
-		if (OldComponent)
+		if (OldComponent && OldComponent->GetOwningActor())
 		{
-			OldComponent->SetSelectedInEditor(false);
+			//OldComponent->SetSelectedInEditor(false);
+			OldComponent->GetOwningActor()->SetComponentsSelectedInEditor(false);
 		}
 
-		if (m_SelectedComponent)
+		if (m_SelectedComponent && m_SelectedComponent->GetOwningActor())
 		{
-			m_SelectedComponent->SetSelectedInEditor(true);
+			//m_SelectedComponent->SetSelectedInEditor(true);
+			m_SelectedComponent->GetOwningActor()->SetComponentsSelectedInEditor(true);
 		}
 	}
 

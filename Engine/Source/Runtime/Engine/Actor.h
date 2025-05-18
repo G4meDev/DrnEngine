@@ -62,6 +62,8 @@ namespace Drn
 		void SetTransient(bool Transient);
 
 		inline bool IsTransient() const { return m_Transient; }
+
+		void SetComponentsSelectedInEditor( bool SelectedInEditor );
 #endif
 
 		void RegisterComponents(World* InWorld);
