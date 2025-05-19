@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "SceneRenderer.h"
 
+#include "Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.h"
+
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
 using namespace DirectX;
@@ -36,6 +38,9 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 #if WITH_EDITOR
+		// mouse picking components
+		m_HitProxyRenderBuffer = std::make_shared<class HitProxyRenderBuffer>();
+		m_HitProxyRenderBuffer->Init();
 		Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_MousePickFence.GetAddressOf()));
 #endif
 
@@ -97,6 +102,7 @@ namespace Drn
 		}
 	}
 
+#if WITH_EDITOR
 	void SceneRenderer::RenderEditorPrimitives( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT( RenderEditorPrimitives );
@@ -140,7 +146,6 @@ namespace Drn
 			Proxy->RenderMainPass(CommandList, this);
 		}
 
-#if WITH_EDITOR
 // ------------------------------------------------------------------------------------------
 
 		CommandList->OMSetRenderTargets(1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), true, NULL);
@@ -203,8 +208,8 @@ namespace Drn
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			m_EditorSelectionDepthStencilTarget.Get(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
 		CommandList->ResourceBarrier(1, &barrier);
-#endif
 	}
+#endif
 
 	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )
 	{
@@ -221,7 +226,10 @@ namespace Drn
 
 		BeginRender(CommandList);
 		RenderBasePass(CommandList);
+
+#if WITH_EDITOR
 		RenderEditorPrimitives(CommandList);
+#endif
 	}
 
 	ID3D12Resource* SceneRenderer::GetViewResource()
@@ -236,6 +244,13 @@ namespace Drn
 
 		m_RenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
 		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(m_RenderSize.X), static_cast<float>(m_RenderSize.Y));
+
+#if WITH_EDITOR
+		m_HitProxyRenderBuffer->Resize( InSize );
+#endif
+
+// ----------------------------------------------------------------------------------------------------------------------------
+
 		D3D12_CLEAR_VALUE optimizedClearValue = {};
 		optimizedClearValue.Format = DEPTH_FORMAT;
 		optimizedClearValue.DepthStencil = { 0.0f, 0 };

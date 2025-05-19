@@ -52,7 +52,7 @@ namespace Drn
 
 		ID3D12Resource* GetViewResource();
 
-		void ResizeView(const IntPoint& InSize);
+		void ResizeView( const IntPoint& InSize );
 
 		void SetRenderingEnabled(bool Enabled);
 
@@ -107,6 +107,8 @@ namespace Drn
 		void ProccessMousePickQueue(ID3D12GraphicsCommandList2* CommandList);
 		void KickstartMousePickEvent( MousePickEvent& Event );
 		std::vector<MousePickEvent> m_MousePickQueue;
+
+		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
 #endif
 
 		friend class Scene;
@@ -121,7 +123,9 @@ namespace Drn
 
 		void BeginRender(ID3D12GraphicsCommandList2* CommandList);
 		void RenderBasePass(ID3D12GraphicsCommandList2* CommandList);
-		void RenderEditorPrimitives(ID3D12GraphicsCommandList2* CommandList);
 
+#if WITH_EDITOR
+		void RenderEditorPrimitives(ID3D12GraphicsCommandList2* CommandList);
+#endif
 	};
 }

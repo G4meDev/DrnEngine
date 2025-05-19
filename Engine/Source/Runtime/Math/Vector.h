@@ -20,10 +20,9 @@ namespace Drn
 
 		inline const XMFLOAT3* Get() { return &m_Vector; }
 
-		inline float GetX() const { return XMVectorGetX( XMLoadFloat3(&m_Vector) ); }
-		inline float GetY() const { return XMVectorGetY( XMLoadFloat3(&m_Vector) ); }
-		inline float GetZ() const { return XMVectorGetZ( XMLoadFloat3(&m_Vector) ); }
-		inline float GetW() const { return XMVectorGetW( XMLoadFloat3(&m_Vector) ); }
+		inline float GetX() const { return m_Vector.x; }
+		inline float GetY() const { return m_Vector.y; }
+		inline float GetZ() const { return m_Vector.z; }
 
 		inline Vector operator-( const Vector& other ) const
 		{
