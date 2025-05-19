@@ -113,6 +113,12 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+
+	void StaticMeshSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		//RenderMainPass(CommandList, Renderer);
+	}
+
 	void StaticMeshSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
 		if (!m_SelectedInEditor)

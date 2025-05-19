@@ -188,6 +188,11 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+	void LineBatchSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 	void LineBatchSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
 		

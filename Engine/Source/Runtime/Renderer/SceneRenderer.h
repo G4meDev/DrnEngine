@@ -80,7 +80,7 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVHeap = nullptr;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_ColorTarget = nullptr;
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_GuidTarget = nullptr;
+		//Microsoft::WRL::ComPtr<ID3D12Resource> m_GuidTarget = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthTarget = nullptr;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_EditorColorTarget = nullptr;
@@ -104,6 +104,8 @@ namespace Drn
 		std::string m_Name;
 
 #if WITH_EDITOR
+		void RenderHitProxyPass(ID3D12GraphicsCommandList2* CommandList);
+
 		void ProccessMousePickQueue(ID3D12GraphicsCommandList2* CommandList);
 		void KickstartMousePickEvent( MousePickEvent& Event );
 		std::vector<MousePickEvent> m_MousePickQueue;

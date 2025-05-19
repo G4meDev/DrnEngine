@@ -9,6 +9,7 @@ namespace Drn
 		: RenderBuffer()
 		, m_GuidTarget(nullptr)
 		, m_DepthTarget(nullptr)
+		, m_ScissorRect(CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ))
 	{
 		m_GuidClearValue.Format   = GBUFFER_GUID_FORMAT;
 		m_GuidClearValue.Color[0] = 0.0f;
@@ -57,6 +58,7 @@ namespace Drn
 	{
 		RenderBuffer::Resize(Size);
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Size.X), static_cast<float>(Size.Y));
 
 		if (m_GuidTarget)
 			m_GuidTarget->ReleaseBufferedResource();
@@ -107,6 +109,9 @@ namespace Drn
 
 	void HitProxyRenderBuffer::Bind( ID3D12GraphicsCommandList2* CommandList )
 	{
+		CommandList->RSSetViewports(1, &m_Viewport);
+		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+
 		CommandList->OMSetRenderTargets( 1, &m_GuidDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), 1, &m_DepthHeap->GetCPUDescriptorHandleForHeapStart() );
 	}
 

@@ -71,30 +71,34 @@ namespace Drn
 	{
 		SCOPE_STAT( BeginRender );
 
-		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-		FLOAT GuidColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		CD3DX12_CPU_DESCRIPTOR_HANDLE GuidHandle(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), RTVDescriporSize);
-
-		D3D12_CPU_DESCRIPTOR_HANDLE const RTVHandles[2] = 
-		{
-			m_RTVHeap->GetCPUDescriptorHandleForHeapStart(),
-			CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize)
-		};
-
-		CommandList->ClearDepthStencilView(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr);
-		CommandList->ClearRenderTargetView(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
-		CommandList->ClearRenderTargetView(GuidHandle, GuidColor, 0, nullptr);
-
-		CommandList->OMSetRenderTargets(2, RTVHandles, false, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
-		CommandList->RSSetViewports(1, &m_Viewport);
-		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 	}
+
+#if WITH_EDITOR
+	void SceneRenderer::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_HitProxyRenderBuffer->Clear(CommandList);
+		m_HitProxyRenderBuffer->Bind(CommandList);
+
+		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
+		{
+			Proxy->RenderHitProxyPass(CommandList, this);
+		}
+	}
+#endif
 
 	void SceneRenderer::RenderBasePass( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT( RenderBasePass );
+
+		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
+		FLOAT GuidColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		CommandList->ClearDepthStencilView(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr);
+		CommandList->ClearRenderTargetView(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
+
+		CommandList->OMSetRenderTargets(1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), true, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
+		CommandList->RSSetViewports(1, &m_Viewport);
+		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
@@ -224,6 +228,10 @@ namespace Drn
 			return;
 		}
 
+#if WITH_EDITOR
+		RenderHitProxyPass(CommandList);
+#endif
+
 		BeginRender(CommandList);
 		RenderBasePass(CommandList);
 
@@ -299,29 +307,32 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
-		D3D12_CLEAR_VALUE GuidClearValue;
-		GuidClearValue.Format   = GBUFFER_GUID_FORMAT;
-		GuidClearValue.Color[0] = 0.0f;
-		GuidClearValue.Color[1] = 0.0f;
-		GuidClearValue.Color[2] = 0.0f;
-		GuidClearValue.Color[3] = 0.0f;
-
-		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_GUID_FORMAT, m_RenderSize.X, m_RenderSize.Y,
-			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET), D3D12_RESOURCE_STATE_RENDER_TARGET,
-			&GuidClearValue, IID_PPV_ARGS(m_GuidTarget.ReleaseAndGetAddressOf()) );
-
-		rtv.Format = GBUFFER_GUID_FORMAT;
-		rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		rtv.Texture2D.MipSlice = 0;
+//		D3D12_CLEAR_VALUE GuidClearValue;
+//		GuidClearValue.Format   = GBUFFER_GUID_FORMAT;
+//		GuidClearValue.Color[0] = 0.0f;
+//		GuidClearValue.Color[1] = 0.0f;
+//		GuidClearValue.Color[2] = 0.0f;
+//		GuidClearValue.Color[3] = 0.0f;
+//
+//		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+//			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_GUID_FORMAT, m_RenderSize.X, m_RenderSize.Y,
+//			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET), D3D12_RESOURCE_STATE_RENDER_TARGET,
+//			&GuidClearValue, IID_PPV_ARGS(m_GuidTarget.ReleaseAndGetAddressOf()) );
+//
+//		rtv.Format = GBUFFER_GUID_FORMAT;
+//		rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+//		rtv.Texture2D.MipSlice = 0;
+//
+//		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+//		uint32 DSVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+//		Device->CreateRenderTargetView( m_GuidTarget.Get(), &rtv, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize) );
+//
+//#if D3D12_Debug_INFO
+//		m_GuidTarget->SetName( L"Guid Target" );
+//#endif
 
 		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		uint32 DSVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-		Device->CreateRenderTargetView( m_GuidTarget.Get(), &rtv, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize) );
-
-#if D3D12_Debug_INFO
-		m_GuidTarget->SetName( L"Guid Target" );
-#endif
 
 // ----------------------------------------------------------------------------------------------------------------------------
 
@@ -430,13 +441,8 @@ namespace Drn
 		//DsvSelectionDesc.Texture2D.MostDetailedMip = 0;
 
 // ----------------------------------------------------------------------------------------------------------------------------
-		D3D12_CPU_DESCRIPTOR_HANDLE const RTVHandles[2] = 
-		{
-			m_RTVHeap->GetCPUDescriptorHandleForHeapStart(),
-			CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize)
-		};
 
-		Renderer::Get()->GetCommandList()->OMSetRenderTargets( 2, RTVHandles, false, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart() );
+		Renderer::Get()->GetCommandList()->OMSetRenderTargets( 1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), true, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart() );
 		Renderer::Get()->GetCommandList()->RSSetViewports( 1, &m_Viewport );
 		Renderer::Get()->GetCommandList()->RSSetScissorRects( 1, &m_ScissorRect );
 	}
@@ -502,7 +508,7 @@ namespace Drn
 
 	void SceneRenderer::KickstartMousePickEvent( MousePickEvent& Event )
 	{
-		if ( m_GuidTarget )
+		if ( m_HitProxyRenderBuffer && m_HitProxyRenderBuffer->m_GuidTarget)
 		{
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 			ID3D12GraphicsCommandList2* CommandList = Renderer::Get()->GetCommandList();
@@ -511,7 +517,7 @@ namespace Drn
 				CD3DX12_RESOURCE_DESC::Buffer( 16 ), D3D12_RESOURCE_STATE_COPY_DEST);
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_GuidTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,
+				m_HitProxyRenderBuffer->m_GuidTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET,
 				D3D12_RESOURCE_STATE_COPY_SOURCE );
 			CommandList->ResourceBarrier( 1, &barrier );
 
@@ -528,12 +534,12 @@ namespace Drn
 			Footprint.Footprint.RowPitch                 = 256;
 			Footprint.Offset                             = 0;
 
-			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc( m_GuidTarget.Get(), 0 );
+			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc( m_HitProxyRenderBuffer->m_GuidTarget->GetD3D12Resource(), 0 );
 			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( Event.ReadbackBuffer->GetD3D12Resource(), Footprint );
 
 			CommandList->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
 
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_GuidTarget.Get(),
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_HitProxyRenderBuffer->m_GuidTarget->GetD3D12Resource(),
 															D3D12_RESOURCE_STATE_COPY_SOURCE,
 															D3D12_RESOURCE_STATE_RENDER_TARGET );
 			CommandList->ResourceBarrier( 1, &barrier );

@@ -19,8 +19,6 @@ namespace Drn
 		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
 		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
 
-	protected:
-
 		Resource* m_GuidTarget;
 		Resource* m_DepthTarget;
 
@@ -30,6 +28,9 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_GuidDescriptorHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DepthHeap;
 		//D3D12_CPU_DESCRIPTOR_HANDLE m_GuidCpuHandle;
+
+		D3D12_VIEWPORT m_Viewport;
+		D3D12_RECT m_ScissorRect;
 
 	private:
 
