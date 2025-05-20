@@ -56,7 +56,8 @@ namespace Drn
 
 		std::string m_SourcePath;
 
-		ShaderBlob m_ShaderBlob;
+		ShaderBlob m_MainShaderBlob;
+		ShaderBlob m_HitProxyShaderBlob;
 
 		ID3D12RootSignature* m_RootSignature;
 

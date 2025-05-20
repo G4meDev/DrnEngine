@@ -15,7 +15,7 @@ namespace Drn
 
 
 	PipelineStateObject* PipelineStateObject::CreateMainPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, ID3DBlob* VS, ID3DBlob* PS, ID3DBlob* GS, ID3DBlob* DS, ID3DBlob* HS)
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders)
 	{
 		PipelineStateObject* Result = new PipelineStateObject();
 
@@ -38,11 +38,11 @@ namespace Drn
 		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
 		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
 		PipelineDesc.SampleMask							= UINT_MAX;
-		if (VS) PipelineDesc.VS							= CD3DX12_SHADER_BYTECODE(VS);
-		if (PS) PipelineDesc.PS							= CD3DX12_SHADER_BYTECODE(PS);
-		if (GS) PipelineDesc.GS							= CD3DX12_SHADER_BYTECODE(GS);
-		if (HS) PipelineDesc.HS							= CD3DX12_SHADER_BYTECODE(HS);
-		if (DS) PipelineDesc.DS							= CD3DX12_SHADER_BYTECODE(DS);
+		if (Shaders.m_VS) PipelineDesc.VS				= CD3DX12_SHADER_BYTECODE(Shaders.m_VS);
+		if (Shaders.m_PS) PipelineDesc.PS				= CD3DX12_SHADER_BYTECODE(Shaders.m_PS);
+		if (Shaders.m_GS) PipelineDesc.GS				= CD3DX12_SHADER_BYTECODE(Shaders.m_GS);
+		if (Shaders.m_HS) PipelineDesc.HS				= CD3DX12_SHADER_BYTECODE(Shaders.m_HS);
+		if (Shaders.m_DS) PipelineDesc.DS				= CD3DX12_SHADER_BYTECODE(Shaders.m_DS);
 		PipelineDesc.DSVFormat							= depthBufferFormat;
 		PipelineDesc.NumRenderTargets					= 2;
 		PipelineDesc.RTVFormats[0]						= backBufferFormat;
@@ -54,7 +54,7 @@ namespace Drn
 	}
 
 	PipelineStateObject* PipelineStateObject::CreateSelectionPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, ID3DBlob* VS, ID3DBlob* GS, ID3DBlob* DS, ID3DBlob* HS)
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders)
 	{
 		PipelineStateObject* Result = new PipelineStateObject();
 
@@ -84,10 +84,10 @@ namespace Drn
 		PipelineDesc.DepthStencilState.FrontFace		= StencilDesc;
 		PipelineDesc.DepthStencilState.BackFace			= StencilDesc;
 		PipelineDesc.SampleMask							= UINT_MAX;
-		if (VS) PipelineDesc.VS							= CD3DX12_SHADER_BYTECODE(VS);
-		if (GS) PipelineDesc.GS							= CD3DX12_SHADER_BYTECODE(GS);
-		if (HS) PipelineDesc.HS							= CD3DX12_SHADER_BYTECODE(HS);
-		if (DS) PipelineDesc.DS							= CD3DX12_SHADER_BYTECODE(DS);
+		if (Shaders.m_VS) PipelineDesc.VS				= CD3DX12_SHADER_BYTECODE(Shaders.m_VS);
+		if (Shaders.m_GS) PipelineDesc.GS				= CD3DX12_SHADER_BYTECODE(Shaders.m_GS);
+		if (Shaders.m_HS) PipelineDesc.HS				= CD3DX12_SHADER_BYTECODE(Shaders.m_HS);
+		if (Shaders.m_DS) PipelineDesc.DS				= CD3DX12_SHADER_BYTECODE(Shaders.m_DS);
 		PipelineDesc.DSVFormat							= DEPTH_STENCIL_FORMAT;
 		PipelineDesc.NumRenderTargets					= 0;
 		PipelineDesc.SampleDesc.Count					= 1;

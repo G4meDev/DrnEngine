@@ -17,6 +17,28 @@ namespace Drn
 		ReleaseBlobs();
 	}
 
+	ShaderBlob& ShaderBlob::operator=( ShaderBlob& Other )
+	{
+		ReleaseBlobs();
+
+		auto CopyBlobConditional = [&]( ID3DBlob*& Source, ID3DBlob*& Dest )
+		{
+			if (Source)
+			{
+				D3DCreateBlob( Source->GetBufferSize(), &Dest );
+				memcpy( Dest->GetBufferPointer(), Source->GetBufferPointer(), Source->GetBufferSize() );
+			}
+		};
+
+		CopyBlobConditional( Other.m_VS, m_VS );
+		CopyBlobConditional( Other.m_PS, m_PS );
+		CopyBlobConditional( Other.m_GS, m_GS );
+		CopyBlobConditional( Other.m_HS, m_HS );
+		CopyBlobConditional( Other.m_DS, m_DS );
+
+		return *this;
+	}
+
 	void ShaderBlob::Serialize( Archive& Ar )
 	{
 		if (Ar.IsLoading())

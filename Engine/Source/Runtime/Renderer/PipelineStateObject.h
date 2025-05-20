@@ -9,10 +9,10 @@ namespace Drn
 	{
 	public:
 		static PipelineStateObject* CreateMainPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, ID3DBlob* VS, ID3DBlob* PS, ID3DBlob* GS, ID3DBlob* DS, ID3DBlob* HS);
+			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
 		static PipelineStateObject* CreateSelectionPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, ID3DBlob* VS, ID3DBlob* GS, ID3DBlob* DS, ID3DBlob* HS);
+			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
 		inline ID3D12PipelineState* GetD3D12PSO() { return m_PipelineState.Get(); }
 

@@ -65,7 +65,9 @@ namespace Drn
 			ReleaseShaderBlobs();
 
 			Ar >> m_SourcePath;
-			m_ShaderBlob.Serialize(Ar);
+
+			m_MainShaderBlob.Serialize(Ar);
+			m_HitProxyShaderBlob.Serialize(Ar);
 
 			uint8 PrimitiveType;
 			Ar >> PrimitiveType;
@@ -115,7 +117,10 @@ namespace Drn
 		else
 		{
 			Ar << m_SourcePath; 
-			m_ShaderBlob.Serialize(Ar);
+			
+			m_MainShaderBlob.Serialize(Ar);
+			m_HitProxyShaderBlob.Serialize(Ar);
+
 			Ar << static_cast<uint8>(m_PrimitiveType);
 			Ar << static_cast<uint16>(m_InputLayoutType);
 			Ar << static_cast<uint8>(m_CullMode);
@@ -145,7 +150,8 @@ namespace Drn
 
 	void Material::ReleaseShaderBlobs()
 	{
-		m_ShaderBlob.ReleaseBlobs();
+		m_MainShaderBlob.ReleaseBlobs();
+		m_HitProxyShaderBlob.ReleaseBlobs();
 	}
 
 	void Material::InitalizeParameterMap()
@@ -369,11 +375,11 @@ namespace Drn
 				pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
 			m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_ShaderBlob.m_VS, m_ShaderBlob.m_PS, m_ShaderBlob.m_GS, m_ShaderBlob.m_DS, m_ShaderBlob.m_HS);
+				m_PrimitiveType, m_MainShaderBlob);
 
 #if WITH_EDITOR
 			m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_ShaderBlob.m_VS, m_ShaderBlob.m_GS, m_ShaderBlob.m_DS, m_ShaderBlob.m_HS);
+				m_PrimitiveType, m_MainShaderBlob);
 #endif
 
 #if D3D12_Debug_INFO

@@ -19,12 +19,7 @@ namespace Drn
 		bool HasCS = ShaderString.find("Main_CS") != std::string::npos;
 
 		bool Successed = true;
-
-		ID3DBlob* VS_Blob = nullptr;
-		ID3DBlob* PS_Blob = nullptr;
-		ID3DBlob* GS_Blob = nullptr;
-		ID3DBlob* HS_Blob = nullptr;
-		ID3DBlob* DS_Blob = nullptr;
+		ShaderBlob MainShaderBlob;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath, char* InEntryPoint, char* InProfile, ID3DBlob** InByteBlob) 
 		{
@@ -35,32 +30,18 @@ namespace Drn
 		};
 
 		//TODO: increase shader models
-		CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", &VS_Blob);
-		CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", &PS_Blob);
-		CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", &GS_Blob);
-		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", &HS_Blob);
-		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", &DS_Blob);
+		CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", &MainShaderBlob.m_VS);
+		CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", &MainShaderBlob.m_PS);
+		CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", &MainShaderBlob.m_GS);
+		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", &MainShaderBlob.m_HS);
+		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", &MainShaderBlob.m_DS);
 
 		if (Successed)
 		{
 			MaterialAsset->ReleaseShaderBlobs();
-
-			MaterialAsset->m_ShaderBlob.m_VS = VS_Blob;
-			MaterialAsset->m_ShaderBlob.m_PS = PS_Blob;
-			MaterialAsset->m_ShaderBlob.m_GS = GS_Blob;
-			MaterialAsset->m_ShaderBlob.m_HS = HS_Blob;
-			MaterialAsset->m_ShaderBlob.m_DS = DS_Blob;
+			MaterialAsset->m_MainShaderBlob = MainShaderBlob;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
-		}
-
-		else
-		{
-			if (VS_Blob) VS_Blob->Release();
-			if (PS_Blob) PS_Blob->Release();
-			if (GS_Blob) GS_Blob->Release();
-			if (HS_Blob) HS_Blob->Release();
-			if (DS_Blob) DS_Blob->Release();
 		}
 	}
 
