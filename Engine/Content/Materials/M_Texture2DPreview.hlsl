@@ -34,11 +34,21 @@ struct PixelShaderOutput
     uint4 Guid : SV_TARGET1;
 };
 
+
+#if HitProxyPass
+uint4 Main_PS(PixelShaderInput IN) : SV_Target
+#else
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+#endif
 {
     PixelShaderOutput OUT;
     OUT.Color = Texture.Sample(TextureSampler, IN.UV);
     
     OUT.Guid = View.Guid;
+
+#if HitProxyPass
+    return View.Guid;
+#else
     return OUT;
+#endif
 }

@@ -30,7 +30,11 @@ struct PixelShaderOutput
     float4 Color : SV_TARGET0;
 };
 
+#if HitProxyPass
+uint4 Main_PS(PixelShaderInput IN) : SV_Target
+#else
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+#endif
 {
     PixelShaderOutput OUT;
 
@@ -47,5 +51,10 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float Alpha = max(Alpha1, Alpha2);
     
     OUT.Color = Alpha.xxxx;
+
+#if HitProxyPass
+    return View.Guid;
+#else
     return OUT;
+#endif
 }

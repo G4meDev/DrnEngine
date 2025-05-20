@@ -20,32 +20,44 @@ namespace Drn
 
 		bool Successed = true;
 		ShaderBlob MainShaderBlob;
+		ShaderBlob HitProxyShaderBlob;
 
-		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath, char* InEntryPoint, char* InProfile, ID3DBlob** InByteBlob) 
+		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath,
+			char* InEntryPoint, char* InProfile, const D3D_SHADER_MACRO* Macros, ID3DBlob** InByteBlob) 
 		{
 			if (Condition)
 			{
-				Successed &= CompileShader( StringHelper::s2ws(InPath), InEntryPoint, InProfile, InByteBlob);
+				Successed &= CompileShader( StringHelper::s2ws(InPath), InEntryPoint, InProfile, Macros, InByteBlob);
 			}
 		};
 
-		//TODO: increase shader models
-		CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", &MainShaderBlob.m_VS);
-		CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", &MainShaderBlob.m_PS);
-		CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", &MainShaderBlob.m_GS);
-		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", &MainShaderBlob.m_HS);
-		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", &MainShaderBlob.m_DS);
+		D3D_SHADER_MACRO MainMacros[] = { "EXAMPLE_DEFINE", "1", NULL, NULL };
+
+		CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", MainMacros, &MainShaderBlob.m_VS);
+		CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", MainMacros, &MainShaderBlob.m_PS);
+		CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", MainMacros, &MainShaderBlob.m_GS);
+		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", MainMacros, &MainShaderBlob.m_HS);
+		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", MainMacros, &MainShaderBlob.m_DS);
+
+		D3D_SHADER_MACRO HitProxyMacros[] = { "HitProxyPass", "1", NULL, NULL };
+
+		CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_VS);
+		CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", HitProxyMacros, &HitProxyShaderBlob.m_PS);
+		CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_GS);
+		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_HS);
+		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", HitProxyMacros, &HitProxyShaderBlob.m_DS);
 
 		if (Successed)
 		{
 			MaterialAsset->ReleaseShaderBlobs();
 			MaterialAsset->m_MainShaderBlob = MainShaderBlob;
+			MaterialAsset->m_HitProxyShaderBlob = HitProxyShaderBlob;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}
 	}
 
-	bool AssetImporterMaterial::CompileShader( const std::wstring& ShaderPath, char* EntryPoint, char* Profile, ID3DBlob** ByteBlob )
+	bool AssetImporterMaterial::CompileShader( const std::wstring& ShaderPath, char* EntryPoint, char* Profile, const D3D_SHADER_MACRO* Macros, ID3DBlob** ByteBlob )
 	{
 		*ByteBlob = nullptr;
 
@@ -54,15 +66,9 @@ namespace Drn
 		flags |= D3DCOMPILE_DEBUG;
 #endif
 
-		const D3D_SHADER_MACRO defines[] = 
-		{
-			"EXAMPLE_DEFINE", "1",
-			NULL, NULL
-		};
-
 		ID3DBlob* shaderBlob = nullptr;
 		ID3DBlob* errorBlob = nullptr;
-		HRESULT hr = D3DCompileFromFile( ShaderPath.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, 
+		HRESULT hr = D3DCompileFromFile( ShaderPath.c_str(), Macros, D3D_COMPILE_STANDARD_FILE_INCLUDE, 
 			EntryPoint, Profile, flags, 0, &shaderBlob, &errorBlob );
 
 		if ( FAILED(hr) )
