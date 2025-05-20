@@ -51,6 +51,8 @@ namespace Drn
 		D3D12_COMMAND_QUEUE_DESC CommandQueueDesc = { };
 		CommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		m_Device->GetD3D12Device()->CreateCommandQueue(&CommandQueueDesc, IID_PPV_ARGS(m_CommandQueue.GetAddressOf()));
+
+		m_RtvIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_RTV );
 		
 		m_SwapChain = std::make_unique<SwapChain>(m_Device.get(), m_MainWindow->GetWindowHandle(), m_CommandQueue.Get(), m_MainWindow->GetWindowSize());
 

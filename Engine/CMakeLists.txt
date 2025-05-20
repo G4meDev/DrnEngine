@@ -38,6 +38,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/SceneRenderer.h
 	Source/Runtime/Renderer/RenderBuffer/RenderBuffer.h
 	Source/Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.h
+	Source/Runtime/Renderer/RenderBuffer/GBuffer.h
 	Source/Runtime/Renderer/Device.h
 	Source/Runtime/Renderer/SwapChain.h
 	Source/Runtime/Renderer/BufferedResource.h
@@ -160,6 +161,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/SceneRenderer.cpp
 	Source/Runtime/Renderer/RenderBuffer/RenderBuffer.cpp
 	Source/Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.cpp
+	Source/Runtime/Renderer/RenderBuffer/GBuffer.cpp
 	Source/Runtime/Renderer/Device.cpp
 	Source/Runtime/Renderer/SwapChain.cpp
 	Source/Runtime/Renderer/BufferedResource.cpp

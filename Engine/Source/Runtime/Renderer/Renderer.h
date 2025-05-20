@@ -130,6 +130,8 @@ namespace Drn
 		uint64_t Signal( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
 			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue );
 
+		inline uint32 GetRtvIncrementSize() const { return m_RtvIncrementSize; }
+
 		TempDescriptorHeapAllocator TempSRVAllocator;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_SrvHeap;
 
@@ -149,6 +151,7 @@ namespace Drn
 
 		void WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent );
 
+		uint32 m_RtvIncrementSize;
 
 		friend class ViewportGuiLayer;
 		friend class World;
