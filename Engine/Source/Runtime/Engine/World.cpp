@@ -36,6 +36,7 @@ namespace Drn
 		m_AxisGridPlane = SpawnActor<StaticMeshActor>();
 		m_AxisGridPlane->SetActorLabel("AxisGrid");
 		m_AxisGridPlane->SetTransient(true);
+		m_AxisGridPlane->GetMeshComponent()->SetSelectable(false);
 		m_AxisGridPlane->SetActorScale(Vector( 1000.0f ));
 		m_AxisGridPlane->SetActorLocation(Vector::ZeroVector);
 		m_AxisGridPlane->GetMeshComponent()->SetMesh(AxisGridMesh);

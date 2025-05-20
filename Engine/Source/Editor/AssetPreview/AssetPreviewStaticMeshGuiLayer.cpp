@@ -29,6 +29,7 @@ namespace Drn
 		PreviewWorld = WorldManager::Get()->AllocateWorld();
 
 		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
+		PreviewMesh->GetMeshComponent()->SetSelectable(false);
 		PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>(PreviewWorld->GetScene());

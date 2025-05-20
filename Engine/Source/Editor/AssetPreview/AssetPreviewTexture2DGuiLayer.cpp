@@ -25,6 +25,7 @@ namespace Drn
 		Texture2DPreviewMaterial->SetNamedTexture2D("Texture", m_OwningAsset);
 
 		m_PreviewMeshPlane = m_PreviewWorld->SpawnActor<StaticMeshActor>();
+		m_PreviewMeshPlane->GetMeshComponent()->SetSelectable( false );
 		m_PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
 		m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, Texture2DPreviewMaterial);
 

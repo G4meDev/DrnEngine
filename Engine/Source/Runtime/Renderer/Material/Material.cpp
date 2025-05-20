@@ -15,6 +15,7 @@ namespace Drn
 		, m_SelectionPassPSO(nullptr)
 		, m_HitProxyPassPSO(nullptr)
 		, m_RenderStateDirty(true)
+		, m_SupportHitProxyPass(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
@@ -31,6 +32,7 @@ namespace Drn
 		, m_SelectionPassPSO(nullptr)
 		, m_HitProxyPassPSO(nullptr)
 		, m_RenderStateDirty(true)
+		, m_SupportHitProxyPass(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
@@ -42,7 +44,6 @@ namespace Drn
 	
 	Material::~Material()
 	{
-		//ReleaseShaderBlobs();
 		if (m_RootSignature) m_RootSignature->Release();
 		if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
 #if WITH_EDITOR
@@ -116,6 +117,8 @@ namespace Drn
 				m_Vector4Slots[i].Serialize(Ar);
 			}
 
+			Ar >> m_SupportHitProxyPass;
+
 			InitalizeParameterMap();
 		}
 
@@ -150,6 +153,8 @@ namespace Drn
 			{
 				m_Vector4Slots[i].Serialize(Ar);
 			}
+
+			Ar << m_SupportHitProxyPass;
 		}
 	}
 
@@ -382,25 +387,31 @@ namespace Drn
 			m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
 				m_PrimitiveType, m_MainShaderBlob);
 
-#if WITH_EDITOR
-			m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_MainShaderBlob);
-
-			m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_HitProxyShaderBlob);
-#endif
-
 #if D3D12_Debug_INFO
 			std::string name = Path::ConvertShortPath(m_Path);
 			name = Path::RemoveFileExtension(name);
 			m_MainPassPSO->SetName( "MainPassPSO_" + name );
 			m_RootSignature->SetName(StringHelper::s2ws(" RootSignature_" + name ).c_str());
+#endif
 
 #if WITH_EDITOR
+			m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+				m_PrimitiveType, m_MainShaderBlob);
+#if D3D12_Debug_INFO
 			m_SelectionPassPSO->SetName( "SelectionPassPSO_" + name );
-			m_HitProxyPassPSO->SetName( "HitProxyPassPSO_" + name );
 #endif
+
+			if (IsSupportingHitProxyPass())
+			{
+				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+					m_PrimitiveType, m_HitProxyShaderBlob);
+
+#if D3D12_Debug_INFO
+				m_HitProxyPassPSO->SetName( "HitProxyPassPSO_" + name );
 #endif
+			}
+#endif
+
 
 			ClearRenderStateDirty();
 		}

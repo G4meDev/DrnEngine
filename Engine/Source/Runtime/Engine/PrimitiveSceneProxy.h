@@ -15,6 +15,12 @@ namespace Drn
 #if WITH_EDITOR
 		inline bool IsSelectedInEditor() const { return m_SelectedInEditor; }
 		void SetSelectedInEditor( bool Selected ) { m_SelectedInEditor = Selected; }
+
+		inline bool IsSelectable() const { return m_Selectable; }
+		inline void SetSelectable( bool Selectable )
+		{
+			m_Selectable = Selectable;
+		}
 #endif
 
 	protected:
@@ -31,6 +37,7 @@ namespace Drn
 		virtual void RenderHitProxyPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
 		virtual void RenderSelectionPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
 		bool m_SelectedInEditor = false;
+		bool m_Selectable = false;
 #endif
 
 	private:

@@ -72,6 +72,11 @@ namespace Drn
 		}
 	}
 
+	void PrimitiveComponent::SetSelectable( bool Selectable )
+	{
+		m_Selectable = Selectable;
+	}
+
 #if WITH_EDITOR
 	void PrimitiveComponent::DrawDetailPanel( float DeltaTime )
 	{

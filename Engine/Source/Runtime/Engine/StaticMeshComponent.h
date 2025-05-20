@@ -46,6 +46,7 @@ namespace Drn
 		bool IsUsingMaterial(const AssetHandle<Material>& Mat);
 
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+		virtual void SetSelectable( bool Selectable ) override;
 #endif
 
 	protected:

@@ -11,6 +11,7 @@ namespace Drn
 		, m_Guid(InStaticMeshComponent->GetGuid())
 	{
 		m_EditorPrimitive = InStaticMeshComponent->IsEditorPrimitive();
+		m_Selectable = InStaticMeshComponent->m_Selectable;
 	}
 
 	StaticMeshSceneProxy::~StaticMeshSceneProxy()
@@ -116,11 +117,21 @@ namespace Drn
 
 	void StaticMeshSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
+		if (!m_Selectable)
+		{
+			return;
+		}
+
 		for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 		{
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
-				
+
+			if (!Mat->IsSupportingHitProxyPass())
+			{
+				continue;
+			}
+
 			Mat->BindHitProxyPass(CommandList);
 			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

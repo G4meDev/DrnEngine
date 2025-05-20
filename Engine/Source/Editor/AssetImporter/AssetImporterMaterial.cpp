@@ -18,6 +18,8 @@ namespace Drn
 		bool HasDS = ShaderString.find("Main_DS") != std::string::npos;
 		bool HasCS = ShaderString.find("Main_CS") != std::string::npos;
 
+		bool SupportHitProxyPass = ShaderString.find( "SUPPORT_HIT_PROXY_PASS" ) != std::string::npos;
+
 		bool Successed = true;
 		ShaderBlob MainShaderBlob;
 		ShaderBlob HitProxyShaderBlob;
@@ -39,19 +41,23 @@ namespace Drn
 		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", MainMacros, &MainShaderBlob.m_HS);
 		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", MainMacros, &MainShaderBlob.m_DS);
 
-		D3D_SHADER_MACRO HitProxyMacros[] = { "HitProxyPass", "1", NULL, NULL };
-
-		CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_VS);
-		CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", HitProxyMacros, &HitProxyShaderBlob.m_PS);
-		CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_GS);
-		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_HS);
-		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", HitProxyMacros, &HitProxyShaderBlob.m_DS);
+		if (SupportHitProxyPass)
+		{
+			D3D_SHADER_MACRO HitProxyMacros[] = { "HitProxyPass", "1", NULL, NULL };
+			CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_VS);
+			CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", HitProxyMacros, &HitProxyShaderBlob.m_PS);
+			CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_GS);
+			CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_HS);
+			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", HitProxyMacros, &HitProxyShaderBlob.m_DS);
+		}
 
 		if (Successed)
 		{
 			MaterialAsset->ReleaseShaderBlobs();
 			MaterialAsset->m_MainShaderBlob = MainShaderBlob;
 			MaterialAsset->m_HitProxyShaderBlob = HitProxyShaderBlob;
+
+			MaterialAsset->m_SupportHitProxyPass = SupportHitProxyPass;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

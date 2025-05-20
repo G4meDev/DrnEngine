@@ -41,6 +41,8 @@ namespace Drn
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
+		inline bool IsSupportingHitProxyPass() const { return m_SupportHitProxyPass; }
+
 	protected:
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
@@ -86,6 +88,8 @@ namespace Drn
 		std::unordered_map<std::string, MaterialIndexedVector4Parameter*> m_Vector4Map;
 
 		bool m_RenderStateDirty;
+
+		bool m_SupportHitProxyPass;
 
 		void InitalizeParameterMap();
 

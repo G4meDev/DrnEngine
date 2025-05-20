@@ -26,6 +26,7 @@ namespace Drn
 		SphereMesh.Load();
 		
 		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
+		PreviewMesh->GetMeshComponent()->SetSelectable( false );
 		PreviewMesh->GetMeshComponent()->SetMesh( SphereMesh );
 		PreviewMesh->GetMeshComponent()->SetMaterial(0, m_OwningAsset);
 

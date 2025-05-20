@@ -14,6 +14,7 @@ namespace Drn
 {
 	StaticMeshComponent::StaticMeshComponent()
 		: PrimitiveComponent()
+		, m_SceneProxy(nullptr)
 	{
 		
 	}
@@ -227,6 +228,16 @@ namespace Drn
 		if (m_SceneProxy)
 		{
 			m_SceneProxy->SetSelectedInEditor( SelectedInEditor );
+		}
+	}
+
+	void StaticMeshComponent::SetSelectable( bool Selectable )
+	{
+		PrimitiveComponent::SetSelectable(Selectable);
+
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->SetSelectable(Selectable);
 		}
 	}
 

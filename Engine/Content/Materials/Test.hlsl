@@ -1,5 +1,7 @@
 #include "Common.hlsl"
 
+// SUPPORT_HIT_PROXY_PASS
+
 ConstantBuffer<ViewBuffer> View : register(b0);
 
 cbuffer MaterialScalars : register(b1)
