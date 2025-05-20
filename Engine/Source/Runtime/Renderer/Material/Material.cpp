@@ -12,8 +12,6 @@ namespace Drn
 		, m_ScalarCBV(nullptr)
 		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
-		, m_SelectionPassPSO(nullptr)
-		, m_HitProxyPassPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_SupportHitProxyPass(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
@@ -45,11 +43,7 @@ namespace Drn
 	Material::~Material()
 	{
 		if (m_RootSignature) m_RootSignature->Release();
-		if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
-#if WITH_EDITOR
-		if (m_SelectionPassPSO) m_SelectionPassPSO->ReleaseBufferedResource();
-		if (m_HitProxyPassPSO) m_HitProxyPassPSO->ReleaseBufferedResource();
-#endif
+		ReleasePSOs();
 
 		if (m_ScalarCBV)
 		{
@@ -164,6 +158,29 @@ namespace Drn
 		m_HitProxyShaderBlob.ReleaseBlobs();
 	}
 
+	void Material::ReleasePSOs()
+	{
+		if (m_MainPassPSO)
+		{
+			m_MainPassPSO->ReleaseBufferedResource();
+			m_MainPassPSO = nullptr;
+		}
+
+#if WITH_EDITOR
+		if (m_SelectionPassPSO)
+		{
+			m_SelectionPassPSO->ReleaseBufferedResource();
+			m_SelectionPassPSO = nullptr;
+		}
+
+		if (m_HitProxyPassPSO)
+		{
+			m_HitProxyPassPSO->ReleaseBufferedResource();
+			m_HitProxyPassPSO = nullptr;
+		}
+#endif
+	}
+
 	void Material::InitalizeParameterMap()
 	{
 		m_ScalarMap.clear();
@@ -232,7 +249,7 @@ namespace Drn
 			}
 
 			if (m_RootSignature) m_RootSignature->Release();
-			if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
+			ReleasePSOs();
 			
 			if (m_ScalarCBV)
 			{

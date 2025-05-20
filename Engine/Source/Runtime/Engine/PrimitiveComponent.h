@@ -36,12 +36,13 @@ namespace Drn
 		inline bool IsEditorPrimitive() const { return m_EditorPrimitive; }
 		inline void SetEditorPrimitive(bool EditorPrimitive) { m_EditorPrimitive = EditorPrimitive; }
 
-		inline bool IsSelectable() const { return m_Selectable; }
-		virtual void SetSelectable( bool Selectable );
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+
+		inline bool IsSelectable() const { return m_Selectable; }
+		virtual void SetSelectable( bool Selectable );
 #endif
 
 	protected:

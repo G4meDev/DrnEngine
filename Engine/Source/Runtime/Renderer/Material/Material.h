@@ -56,6 +56,7 @@ namespace Drn
 	private:
 
 		void ReleaseShaderBlobs();
+		void ReleasePSOs();
 
 		std::string m_SourcePath;
 
@@ -80,8 +81,8 @@ namespace Drn
 		PipelineStateObject* m_MainPassPSO;
 
 #if WITH_EDITOR
-		PipelineStateObject* m_SelectionPassPSO;
-		PipelineStateObject* m_HitProxyPassPSO;
+		PipelineStateObject* m_SelectionPassPSO = nullptr;
+		PipelineStateObject* m_HitProxyPassPSO = nullptr;
 #endif
 
 		std::unordered_map<std::string, MaterialIndexedFloatParameter*> m_ScalarMap;

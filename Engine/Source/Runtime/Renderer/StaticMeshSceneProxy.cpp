@@ -11,7 +11,9 @@ namespace Drn
 		, m_Guid(InStaticMeshComponent->GetGuid())
 	{
 		m_EditorPrimitive = InStaticMeshComponent->IsEditorPrimitive();
+#if WITH_EDITOR
 		m_Selectable = InStaticMeshComponent->m_Selectable;
+#endif
 	}
 
 	StaticMeshSceneProxy::~StaticMeshSceneProxy()
