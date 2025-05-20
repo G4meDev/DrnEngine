@@ -282,11 +282,13 @@ target_include_directories( Engine
     PUBLIC inc ../ThirdParty/ImGuiFileDialog/
     PUBLIC inc ../ThirdParty/ImGuizmo/
     PUBLIC inc ../ThirdParty/Physx/include/
+    PUBLIC inc ../ThirdParty/PixEvent/include/
 	#PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
 target_link_directories( Engine
 	PUBLIC ../ThirdParty/Physx/lib/
+	PUBLIC ../ThirdParty/PixEvent/bin/
 )
 
 target_link_libraries( Engine 
@@ -295,6 +297,7 @@ target_link_libraries( Engine
     PUBLIC dxguid.lib
 	PUBLIC d3dcompiler.lib
 	PUBLIC shlwapi.lib
+    PUBLIC WinPixEventRuntime.lib
 	PUBLIC ImGui
     PUBLIC assimp
     PUBLIC DirectXTex
@@ -323,6 +326,13 @@ set_source_files_properties( Source/DrnPCH.cpp
     PROPERTIES
         COMPILE_FLAGS /Yc"DrnPCH.h"
 )
+
+add_custom_command(TARGET Engine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/bin/WinPixEventRuntime.dll
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
+)
+
 
 #set_source_files_properties( ${SHADER_FILES_PS}
 #    PROPERTIES

@@ -76,6 +76,8 @@ namespace Drn
 #if WITH_EDITOR
 	void SceneRenderer::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList )
 	{
+		PIXBeginEvent(CommandList, 1, "HitProxy");
+
 		m_HitProxyRenderBuffer->Clear(CommandList);
 		m_HitProxyRenderBuffer->Bind(CommandList);
 
@@ -83,12 +85,16 @@ namespace Drn
 		{
 			Proxy->RenderHitProxyPass(CommandList, this);
 		}
+
+		PIXEndEvent(CommandList);
 	}
 #endif
 
 	void SceneRenderer::RenderBasePass( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT( RenderBasePass );
+
+		PIXBeginEvent( CommandList, 1, "BasePass" );
 
 		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
 		FLOAT GuidColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -104,12 +110,16 @@ namespace Drn
 		{
 			Proxy->RenderMainPass(CommandList, this);
 		}
+
+		PIXEndEvent( CommandList );
 	}
 
 #if WITH_EDITOR
 	void SceneRenderer::RenderEditorPrimitives( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT( RenderEditorPrimitives );
+
+		PIXBeginEvent( CommandList, 1, "EditorPrimitive" );
 
 		FLOAT clearColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -179,7 +189,11 @@ namespace Drn
 			m_EditorColorTarget.Get(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		CommandList->ResourceBarrier(1, &barrier);
 
+		PIXEndEvent( CommandList );
+
 // ------------------------------------------------------------------------------------------
+
+		PIXBeginEvent( CommandList, 1, "Selection" );
 
 		CD3DX12_CPU_DESCRIPTOR_HANDLE EditorSelectionDepthHandle(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), 2, DSVDescriporSize);
 
@@ -212,6 +226,8 @@ namespace Drn
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			m_EditorSelectionDepthStencilTarget.Get(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
 		CommandList->ResourceBarrier(1, &barrier);
+
+		PIXEndEvent( CommandList );
 	}
 #endif
 

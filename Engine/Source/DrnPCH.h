@@ -71,6 +71,7 @@
 #include "Runtime/Renderer/d3dx12.h"
 #include <dxgidebug.h>
 #include <wrl.h>
+#include <pix3.h>
 
 #include <chrono>
 

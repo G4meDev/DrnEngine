@@ -85,9 +85,13 @@ namespace Drn
 	{
 		SCOPE_STAT(ImGuiRendererTick);
 
+		PIXBeginEvent( CL, 1, "Imgui" );
+
 		BeginDraw();
 		Draw(DeltaTime);
 		EndDraw( SwapChainCpuhandle, CL);
+
+		PIXEndEvent( CL );
 	}
 
 	void ImGuiRenderer::Shutdown()
