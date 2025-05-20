@@ -4,6 +4,7 @@
 #include "Runtime/Core/Asset.h"
 #include "Runtime/Renderer/InputLayout.h"
 #include "Runtime/Engine/NamedProperty.h"
+#include "Runtime/Renderer/ShaderBlob.h"
 
 LOG_DECLARE_CATEGORY(LogMaterial);
 
@@ -20,13 +21,6 @@ namespace Drn
 #if WITH_EDITOR
 		Material(const std::string& InPath, const std::string& InSourcePath);
 #endif
-
-		inline ID3DBlob* GetVS() const { return m_VS_Blob; }
-		inline ID3DBlob* GetPS() const { return m_PS_Blob; }
-		inline ID3DBlob* GetGS() const { return m_GS_Blob; }
-		inline ID3DBlob* GetHS() const { return m_HS_Blob; }
-		inline ID3DBlob* GetDS() const { return m_DS_Blob; }
-		inline ID3DBlob* GetCS() const { return m_CS_Blob; }
 
 		inline ID3D12RootSignature* GetRootSignature() { return m_RootSignature; }
 
@@ -62,14 +56,7 @@ namespace Drn
 
 		std::string m_SourcePath;
 
-		ID3DBlob* m_VS_Blob;
-		ID3DBlob* m_PS_Blob;
-		ID3DBlob* m_GS_Blob;
-		ID3DBlob* m_HS_Blob;
-		ID3DBlob* m_DS_Blob;
-
-		// TODO: maybe remove this?
-		ID3DBlob* m_CS_Blob;
+		ShaderBlob m_ShaderBlob;
 
 		ID3D12RootSignature* m_RootSignature;
 

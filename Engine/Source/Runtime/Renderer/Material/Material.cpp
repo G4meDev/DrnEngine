@@ -9,12 +9,6 @@ namespace Drn
 {
 	Material::Material( const std::string& InPath )
 		: Asset(InPath)
-		, m_VS_Blob(nullptr)
-		, m_PS_Blob(nullptr)
-		, m_GS_Blob(nullptr)
-		, m_HS_Blob(nullptr)
-		, m_DS_Blob(nullptr)
-		, m_CS_Blob(nullptr)
 		, m_ScalarCBV(nullptr)
 		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
@@ -29,12 +23,6 @@ namespace Drn
 #if WITH_EDITOR
 	Material::Material( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath)
-		, m_VS_Blob(nullptr)
-		, m_PS_Blob(nullptr)
-		, m_GS_Blob(nullptr)
-		, m_HS_Blob(nullptr)
-		, m_DS_Blob(nullptr)
-		, m_CS_Blob(nullptr)
 		, m_ScalarCBV(nullptr)
 		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
@@ -50,7 +38,7 @@ namespace Drn
 	
 	Material::~Material()
 	{
-		ReleaseShaderBlobs();
+		//ReleaseShaderBlobs();
 		if (m_RootSignature) m_RootSignature->Release();
 		if (m_MainPassPSO) m_MainPassPSO->ReleaseBufferedResource();
 #if WITH_EDITOR
@@ -77,7 +65,7 @@ namespace Drn
 			ReleaseShaderBlobs();
 
 			Ar >> m_SourcePath;
-			Ar >> m_VS_Blob >> m_PS_Blob >> m_GS_Blob >> m_HS_Blob >> m_DS_Blob >> m_CS_Blob;
+			m_ShaderBlob.Serialize(Ar);
 
 			uint8 PrimitiveType;
 			Ar >> PrimitiveType;
@@ -127,7 +115,7 @@ namespace Drn
 		else
 		{
 			Ar << m_SourcePath; 
-			Ar << m_VS_Blob << m_PS_Blob << m_GS_Blob << m_HS_Blob << m_DS_Blob << m_CS_Blob;
+			m_ShaderBlob.Serialize(Ar);
 			Ar << static_cast<uint8>(m_PrimitiveType);
 			Ar << static_cast<uint16>(m_InputLayoutType);
 			Ar << static_cast<uint8>(m_CullMode);
@@ -157,41 +145,7 @@ namespace Drn
 
 	void Material::ReleaseShaderBlobs()
 	{
-		if (m_VS_Blob)
-		{
-			m_VS_Blob->Release();
-			m_VS_Blob = nullptr;
-		}
-
-		if (m_PS_Blob)
-		{
-			m_PS_Blob->Release();
-			m_PS_Blob = nullptr;
-		}
-
-		if (m_GS_Blob)
-		{
-			m_GS_Blob->Release();
-			m_GS_Blob = nullptr;
-		}
-
-		if (m_HS_Blob)
-		{
-			m_HS_Blob->Release();
-			m_HS_Blob = nullptr;
-		}
-
-		if (m_DS_Blob)
-		{
-			m_DS_Blob->Release();
-			m_DS_Blob = nullptr;
-		}
-
-		if (m_CS_Blob)
-		{
-			m_CS_Blob->Release();
-			m_CS_Blob = nullptr;
-		}
+		m_ShaderBlob.ReleaseBlobs();
 	}
 
 	void Material::InitalizeParameterMap()
@@ -415,11 +369,11 @@ namespace Drn
 				pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
 			m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_VS_Blob, m_PS_Blob, m_GS_Blob, m_DS_Blob, m_HS_Blob);
+				m_PrimitiveType, m_ShaderBlob.m_VS, m_ShaderBlob.m_PS, m_ShaderBlob.m_GS, m_ShaderBlob.m_DS, m_ShaderBlob.m_HS);
 
 #if WITH_EDITOR
 			m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_VS_Blob, m_GS_Blob, m_DS_Blob, m_HS_Blob);
+				m_PrimitiveType, m_ShaderBlob.m_VS, m_ShaderBlob.m_GS, m_ShaderBlob.m_DS, m_ShaderBlob.m_HS);
 #endif
 
 #if D3D12_Debug_INFO

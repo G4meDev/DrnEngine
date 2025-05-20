@@ -25,7 +25,6 @@ namespace Drn
 		ID3DBlob* GS_Blob = nullptr;
 		ID3DBlob* HS_Blob = nullptr;
 		ID3DBlob* DS_Blob = nullptr;
-		ID3DBlob* CS_Blob = nullptr;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath, char* InEntryPoint, char* InProfile, ID3DBlob** InByteBlob) 
 		{
@@ -41,18 +40,16 @@ namespace Drn
 		CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", &GS_Blob);
 		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", &HS_Blob);
 		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", &DS_Blob);
-		CompileShaderBlobConditional(HasCS, Path, "Main_CS", "cs_5_1", &CS_Blob);
 
 		if (Successed)
 		{
 			MaterialAsset->ReleaseShaderBlobs();
 
-			MaterialAsset->m_VS_Blob = VS_Blob;
-			MaterialAsset->m_PS_Blob = PS_Blob;
-			MaterialAsset->m_GS_Blob = GS_Blob;
-			MaterialAsset->m_HS_Blob = HS_Blob;
-			MaterialAsset->m_DS_Blob = DS_Blob;
-			MaterialAsset->m_CS_Blob = CS_Blob;
+			MaterialAsset->m_ShaderBlob.m_VS = VS_Blob;
+			MaterialAsset->m_ShaderBlob.m_PS = PS_Blob;
+			MaterialAsset->m_ShaderBlob.m_GS = GS_Blob;
+			MaterialAsset->m_ShaderBlob.m_HS = HS_Blob;
+			MaterialAsset->m_ShaderBlob.m_DS = DS_Blob;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}
@@ -64,7 +61,6 @@ namespace Drn
 			if (GS_Blob) GS_Blob->Release();
 			if (HS_Blob) HS_Blob->Release();
 			if (DS_Blob) DS_Blob->Release();
-			if (CS_Blob) CS_Blob->Release();
 		}
 	}
 
