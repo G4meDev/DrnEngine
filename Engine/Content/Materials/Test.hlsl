@@ -1,5 +1,6 @@
 #include "Common.hlsl"
 
+// SUPPORT_MAIN_PASS
 // SUPPORT_HIT_PROXY_PASS
 
 ConstantBuffer<ViewBuffer> View : register(b0);
@@ -60,17 +61,7 @@ struct PixelShaderInput
     float2 UV : TEXCOORD0;
 };
 
-struct PixelShaderOutput
-{
-    float4 Color : SV_TARGET0;
-    uint4 Guid : SV_TARGET1;
-};
-
-#if HitProxyPass
-uint4 Main_PS(PixelShaderInput IN) : SV_Target
-#else
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
-#endif
 {
     PixelShaderOutput OUT;
 
@@ -84,12 +75,16 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 
     float L = max(0, dot(IN.Normal, LightDir.xyz));
 
-    OUT.Color = Texture1 * L * Alpha;
-    OUT.Guid = View.Guid;
+    float4 Result = Texture1 * L * Alpha;
     
-#if HitProxyPass
-    return View.Guid;
-#else
-    return OUT;
+#if MAIN_PASS
+    OUT.ColorDeferred = Result;
+    OUT.BaseColor = float4(0.7, 0.5, 1, 1);
+    OUT.WorldNormal = float4(0, 1, 0, 1);
+    OUT.Masks = float4(0.2, 1, 0.4, 1);
+#elif HitProxyPass
+    OUT.Guid = View.Guid;
 #endif
+
+    return OUT;
 }

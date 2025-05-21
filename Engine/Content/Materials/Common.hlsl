@@ -33,7 +33,24 @@ struct BasePassPixelShaderOutput
     float4 Masks : SV_TARGET3;
 };
 
-// ------------------------------------------------------------
+//struct EditorPrimitivePixelOutput
+//{
+//    float4 Color;
+//};
+
+struct PixelShaderOutput
+{
+#if MAIN_PASS
+    float4 ColorDeferred : SV_TARGET0;
+    float4 BaseColor : SV_TARGET1;
+    float4 WorldNormal : SV_TARGET2;
+    float4 Masks : SV_TARGET3;
+#elif HitProxyPass
+    uint4 Guid;
+#elif EDITOR_PRIMITIVE_PASS
+    float4 Color;
+#endif
+};
 
 struct ViewBuffer
 {
@@ -42,3 +59,4 @@ struct ViewBuffer
     uint4 Guid;
     matrix LocalToView;
 };
+

@@ -1,5 +1,7 @@
 #include "Common.hlsl"
 
+// SUPPORT_EDITOR_PRIMITIVE_PASS
+
 ConstantBuffer<ViewBuffer> View : register(b0);
 
 struct VertexShaderOutput
@@ -25,16 +27,7 @@ struct PixelShaderInput
     float3 WorldPos : WORLD_POS;
 };
 
-struct PixelShaderOutput
-{
-    float4 Color : SV_TARGET0;
-};
-
-#if HitProxyPass
-uint4 Main_PS(PixelShaderInput IN) : SV_Target
-#else
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
-#endif
 {
     PixelShaderOutput OUT;
 
@@ -52,9 +45,5 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     OUT.Color = float4(1, 1, 1, Alpha.x);
 
-#if HitProxyPass
-    return View.Guid;
-#else
     return OUT;
-#endif
 }

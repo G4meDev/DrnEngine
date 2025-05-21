@@ -26,6 +26,7 @@ namespace Drn
 
 		m_PreviewMeshPlane = m_PreviewWorld->SpawnActor<StaticMeshActor>();
 		m_PreviewMeshPlane->GetMeshComponent()->SetSelectable( false );
+		m_PreviewMeshPlane->GetMeshComponent()->SetEditorPrimitive( true);
 		m_PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
 		m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, Texture2DPreviewMaterial);
 

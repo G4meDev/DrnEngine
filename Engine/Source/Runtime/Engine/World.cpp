@@ -32,7 +32,7 @@ namespace Drn
 		AxisGridMesh.Load();
 		AssetHandle<Material> AxisGridMaterial( "Engine\\Content\\Materials\\M_AxisGridMaterial.drn" );
 		AxisGridMaterial.Load();
-
+		
 		m_AxisGridPlane = SpawnActor<StaticMeshActor>();
 		m_AxisGridPlane->SetActorLabel("AxisGrid");
 		m_AxisGridPlane->SetTransient(true);

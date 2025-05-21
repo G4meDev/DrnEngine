@@ -42,7 +42,9 @@ namespace Drn
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
+		inline bool IsSupportingMainPass() const { return m_SupportMainPass; }
 		inline bool IsSupportingHitProxyPass() const { return m_SupportHitProxyPass; }
+		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
 
 	protected:
 		virtual EAssetType GetAssetType() override;
@@ -63,6 +65,7 @@ namespace Drn
 
 		ShaderBlob m_MainShaderBlob;
 		ShaderBlob m_HitProxyShaderBlob;
+		ShaderBlob m_EditorPrimitiveShaderBlob;
 
 		ID3D12RootSignature* m_RootSignature;
 
@@ -92,7 +95,9 @@ namespace Drn
 
 		bool m_RenderStateDirty;
 
+		bool m_SupportMainPass;
 		bool m_SupportHitProxyPass;
+		bool m_SupportEditorPrimitivePass;
 
 		void InitalizeParameterMap();
 

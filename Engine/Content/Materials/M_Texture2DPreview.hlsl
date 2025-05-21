@@ -1,5 +1,7 @@
 #include "Common.hlsl"
 
+// SUPPORT_EDITOR_PRIMITIVE_PASS
+
 ConstantBuffer<ViewBuffer> View : register(b0);
 
 Texture2D Texture : register(t0);
@@ -28,27 +30,10 @@ struct PixelShaderInput
     float2 UV : TEXCOORD0;
 };
 
-struct PixelShaderOutput
-{
-    float4 Color : SV_TARGET0;
-    uint4 Guid : SV_TARGET1;
-};
-
-
-#if HitProxyPass
-uint4 Main_PS(PixelShaderInput IN) : SV_Target
-#else
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
-#endif
 {
     PixelShaderOutput OUT;
     OUT.Color = Texture.Sample(TextureSampler, IN.UV);
-    
-    OUT.Guid = View.Guid;
 
-#if HitProxyPass
-    return View.Guid;
-#else
     return OUT;
-#endif
 }

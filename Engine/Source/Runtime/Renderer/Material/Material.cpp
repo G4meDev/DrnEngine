@@ -13,7 +13,9 @@ namespace Drn
 		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
 		, m_RenderStateDirty(true)
+		, m_SupportMainPass(true)
 		, m_SupportHitProxyPass(false)
+		, m_SupportEditorPrimitivePass(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
@@ -31,7 +33,9 @@ namespace Drn
 		, m_HitProxyPassPSO(nullptr)
 		, m_EditorProxyPSO(nullptr)
 		, m_RenderStateDirty(true)
+		, m_SupportMainPass(true)
 		, m_SupportHitProxyPass(false)
+		, m_SupportEditorPrimitivePass(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
@@ -113,6 +117,10 @@ namespace Drn
 			}
 
 			Ar >> m_SupportHitProxyPass;
+			Ar >> m_SupportMainPass;
+			Ar >> m_SupportEditorPrimitivePass;
+
+			m_EditorPrimitiveShaderBlob.Serialize(Ar);
 
 			InitalizeParameterMap();
 		}
@@ -150,6 +158,9 @@ namespace Drn
 			}
 
 			Ar << m_SupportHitProxyPass;
+			Ar << m_SupportMainPass;
+			Ar << m_SupportEditorPrimitivePass;
+			m_EditorPrimitiveShaderBlob.Serialize(Ar);
 		}
 	}
 
@@ -157,6 +168,7 @@ namespace Drn
 	{
 		m_MainShaderBlob.ReleaseBlobs();
 		m_HitProxyShaderBlob.ReleaseBlobs();
+		m_EditorPrimitiveShaderBlob.ReleaseBlobs();
 	}
 
 	void Material::ReleasePSOs()
@@ -405,18 +417,25 @@ namespace Drn
 				return;
 			}
 
-			Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-				pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
-
-			m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_MainShaderBlob);
-
-#if D3D12_Debug_INFO
 			std::string name = Path::ConvertShortPath(m_Path);
 			name = Path::RemoveFileExtension(name);
-			m_MainPassPSO->SetName( "MainPassPSO_" + name );
+
+			Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
+				pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
+#if D3D12_Debug_INFO
 			m_RootSignature->SetName(StringHelper::s2ws(" RootSignature_" + name ).c_str());
 #endif
+
+			if (m_SupportMainPass)
+			{
+				m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+					m_PrimitiveType, m_MainShaderBlob);
+
+#if D3D12_Debug_INFO
+				m_MainPassPSO->SetName( "MainPassPSO_" + name );
+#endif
+			}
+
 
 #if WITH_EDITOR
 			m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
@@ -436,12 +455,14 @@ namespace Drn
 			}
 #endif
 
-			m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_MainShaderBlob);
-
+			if (m_SupportEditorPrimitivePass)
+			{
+				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
 #if D3D12_Debug_INFO
-			m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
+				m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
 #endif
+			}
 
 			ClearRenderStateDirty();
 		}

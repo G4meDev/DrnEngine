@@ -88,6 +88,11 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
+				if (!Mat->IsSupportingMainPass())
+				{
+					continue;
+				}
+
 				Mat->BindMainPass(CommandList);
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -205,6 +210,11 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
+				if (!Mat->IsSupportingEditorPrimitivePass())
+				{
+					continue;
+				}
+
 				Mat->BindEditorPrimitivePass(CommandList);
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

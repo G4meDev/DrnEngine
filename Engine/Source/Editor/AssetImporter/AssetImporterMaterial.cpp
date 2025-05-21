@@ -18,11 +18,14 @@ namespace Drn
 		bool HasDS = ShaderString.find("Main_DS") != std::string::npos;
 		bool HasCS = ShaderString.find("Main_CS") != std::string::npos;
 
+		bool SupportMainPass = ShaderString.find( "SUPPORT_MAIN_PASS" ) != std::string::npos;
 		bool SupportHitProxyPass = ShaderString.find( "SUPPORT_HIT_PROXY_PASS" ) != std::string::npos;
+		bool SupportEditorPrimitivePass = ShaderString.find( "SUPPORT_EDITOR_PRIMITIVE_PASS" ) != std::string::npos;
 
 		bool Successed = true;
 		ShaderBlob MainShaderBlob;
 		ShaderBlob HitProxyShaderBlob;
+		ShaderBlob EditorPrimitiveShaderBlob;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath,
 			char* InEntryPoint, char* InProfile, const D3D_SHADER_MACRO* Macros, ID3DBlob** InByteBlob) 
@@ -33,13 +36,16 @@ namespace Drn
 			}
 		};
 
-		D3D_SHADER_MACRO MainMacros[] = { "EXAMPLE_DEFINE", "1", NULL, NULL };
+		D3D_SHADER_MACRO MainMacros[] = { "MAIN_PASS", "1", NULL, NULL };
 
-		CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", MainMacros, &MainShaderBlob.m_VS);
-		CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", MainMacros, &MainShaderBlob.m_PS);
-		CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", MainMacros, &MainShaderBlob.m_GS);
-		CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", MainMacros, &MainShaderBlob.m_HS);
-		CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", MainMacros, &MainShaderBlob.m_DS);
+		if (SupportMainPass)
+		{
+			CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", MainMacros, &MainShaderBlob.m_VS);
+			CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", MainMacros, &MainShaderBlob.m_PS);
+			CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", MainMacros, &MainShaderBlob.m_GS);
+			CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", MainMacros, &MainShaderBlob.m_HS);
+			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", MainMacros, &MainShaderBlob.m_DS);
+		}
 
 		if (SupportHitProxyPass)
 		{
@@ -51,13 +57,26 @@ namespace Drn
 			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", HitProxyMacros, &HitProxyShaderBlob.m_DS);
 		}
 
+		if (SupportEditorPrimitivePass)
+		{
+			D3D_SHADER_MACRO HitProxyMacros[] = { "EDITOR_PRIMITIVE_PASS", "1", NULL, NULL };
+			CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_VS);
+			CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_PS);
+			CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_GS);
+			CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_HS);
+			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_DS);
+		}
+
 		if (Successed)
 		{
 			MaterialAsset->ReleaseShaderBlobs();
 			MaterialAsset->m_MainShaderBlob = MainShaderBlob;
 			MaterialAsset->m_HitProxyShaderBlob = HitProxyShaderBlob;
+			MaterialAsset->m_EditorPrimitiveShaderBlob = EditorPrimitiveShaderBlob;
 
+			MaterialAsset->m_SupportMainPass = SupportMainPass;
 			MaterialAsset->m_SupportHitProxyPass = SupportHitProxyPass;
+			MaterialAsset->m_SupportEditorPrimitivePass = SupportEditorPrimitivePass;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

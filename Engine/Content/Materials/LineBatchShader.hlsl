@@ -1,5 +1,7 @@
 #include "Common.hlsl"
 
+// SUPPORT_MAIN_PASS
+
 ConstantBuffer<ViewBuffer> View : register(b0);
 
 struct VertexShaderOutput
@@ -135,7 +137,14 @@ struct PixelShaderInput
 	float4 Color : COLOR;
 };
 
-float4 Main_PS(PixelShaderInput IN) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
-	return IN.Color;
+    PixelShaderOutput OUT;
+	
+    OUT.ColorDeferred = IN.Color;
+    OUT.BaseColor = float4(0.7, 0.5, 1, 1);
+    OUT.WorldNormal = float4(0, 1, 0, 1);
+    OUT.Masks = float4(0.2, 1, 0.4, 1);
+	
+	return OUT;
 }
