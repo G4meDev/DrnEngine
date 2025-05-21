@@ -33,6 +33,10 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE m_ColorDeferredCpuHandle;
+		
+		D3D12_CPU_DESCRIPTOR_HANDLE m_ColorDeferredSrvCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_ColorDeferredSrvGpuHandle;
+		
 		D3D12_CPU_DESCRIPTOR_HANDLE m_BaseColorCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_WorldNormalCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_MasksCpuHandle;

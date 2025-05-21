@@ -3,6 +3,7 @@
 
 #include "Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/GBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/TonemapRenderBuffer.h"
 
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
@@ -40,6 +41,9 @@ namespace Drn
 
 		m_GBuffer = std::make_shared<class GBuffer>();
 		m_GBuffer->Init();
+
+		m_TonemapBuffer = std::make_shared<class TonemapRenderBuffer>();
+		m_TonemapBuffer->Init();
 
 #if WITH_EDITOR
 		// mouse picking components
@@ -107,6 +111,51 @@ namespace Drn
 		{
 			Proxy->RenderMainPass(CommandList, this);
 		}
+
+		PIXEndEvent( CommandList );
+	}
+
+	void SceneRenderer::RenderPostProcess( ID3D12GraphicsCommandList2* CommandList )
+	{
+		PIXBeginEvent( CommandList, 1, "Post Process" );
+
+		PostProcess_Tonemapping(CommandList);
+
+		PIXEndEvent( CommandList );
+	}
+
+	void SceneRenderer::PostProcess_Tonemapping( ID3D12GraphicsCommandList2* CommandList )
+	{
+		PIXBeginEvent( CommandList, 1, "Tone mapping" );
+
+		m_TonemapBuffer->Bind(CommandList);
+		
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+		CommandList->ResourceBarrier(1, &barrier);
+		
+		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_TonemapPSO->m_RootSignature );
+		CommandList->SetPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
+		
+		XMMATRIX modelMatrix = Matrix( m_CameraActor->GetActorTransform() ).Get();
+		XMMATRIX viewMatrix;
+		XMMATRIX projectionMatrix;
+		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
+		m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+		XMMATRIX LocalToView = XMMatrixMultiply( modelMatrix, viewMatrix );
+		
+		uint32 RenderSize[2] = { (uint32)m_RenderSize.X, (uint32)m_RenderSize.Y};
+		CommandList->SetGraphicsRoot32BitConstants(0, 16, &LocalToView, 0);
+		CommandList->SetGraphicsRoot32BitConstants(0, 8, &RenderSize[0], 16);
+		CommandList->SetGraphicsRootDescriptorTable(1, m_GBuffer->m_ColorDeferredSrvGpuHandle);
+
+		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
+		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
+		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
+		
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
+		CommandList->ResourceBarrier(1, &barrier);
 
 		PIXEndEvent( CommandList );
 	}
@@ -250,6 +299,7 @@ namespace Drn
 
 		BeginRender(CommandList);
 		RenderBasePass(CommandList);
+		RenderPostProcess(CommandList);
 
 #if WITH_EDITOR
 		RenderEditorPrimitives(CommandList);
@@ -258,8 +308,7 @@ namespace Drn
 
 	ID3D12Resource* SceneRenderer::GetViewResource()
 	{
-		// TODO: swap to actual buffer
-		return m_GBuffer->m_BaseColorTarget->GetD3D12Resource();
+		return m_TonemapBuffer->m_TonemapTarget->GetD3D12Resource();
 	}
 
 	void SceneRenderer::ResizeView( const IntPoint& InSize )
@@ -271,6 +320,7 @@ namespace Drn
 		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(m_RenderSize.X), static_cast<float>(m_RenderSize.Y));
 
 		m_GBuffer->Resize( m_RenderSize );
+		m_TonemapBuffer->Resize( m_RenderSize );
 
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( m_RenderSize );

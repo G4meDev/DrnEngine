@@ -31,6 +31,17 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class TonemapPSO
+	{
+	public:
+
+		TonemapPSO( ID3D12GraphicsCommandList2* CommandList );
+		~TonemapPSO();
+		
+		ID3D12RootSignature* m_RootSignature;
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class ResolveEditorSelectionPSO
 	{
 	public:
@@ -57,6 +68,7 @@ namespace Drn
 		ScreenTriangle* m_ScreenTriangle;
 		ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
 		ResolveEditorSelectionPSO* m_ResolveEditorSelectionPSO;
+		TonemapPSO* m_TonemapPSO;
 
 	private:
 

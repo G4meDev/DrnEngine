@@ -77,6 +77,7 @@ namespace Drn
 		Scene* m_Scene;
 
 		std::shared_ptr<class GBuffer> m_GBuffer;
+		std::shared_ptr<class TonemapRenderBuffer> m_TonemapBuffer;
 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVHeap = nullptr;
@@ -126,6 +127,8 @@ namespace Drn
 
 		void BeginRender(ID3D12GraphicsCommandList2* CommandList);
 		void RenderBasePass(ID3D12GraphicsCommandList2* CommandList);
+		void RenderPostProcess(ID3D12GraphicsCommandList2* CommandList);
+		void PostProcess_Tonemapping(ID3D12GraphicsCommandList2* CommandList);
 
 #if WITH_EDITOR
 		void RenderEditorPrimitives(ID3D12GraphicsCommandList2* CommandList);

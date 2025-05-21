@@ -32,6 +32,8 @@ namespace Drn
 		
 		m_DepthClearValue.Format = DEPTH_FORMAT;
 		m_DepthClearValue.DepthStencil = { 0, 0 };
+
+		Renderer::Get()->TempSRVAllocator.Alloc(&m_ColorDeferredSrvCpuHandle, &m_ColorDeferredSrvGpuHandle);
 	}
 
 	GBuffer::~GBuffer()
@@ -41,6 +43,8 @@ namespace Drn
 		if (m_WorldNormalTarget) { m_WorldNormalTarget->ReleaseBufferedResource(); }
 		if (m_MasksTarget) { m_MasksTarget->ReleaseBufferedResource(); }
 		if (m_DepthTarget) { m_DepthTarget->ReleaseBufferedResource(); }
+
+		Renderer::Get()->TempSRVAllocator.Free(m_ColorDeferredSrvCpuHandle, m_ColorDeferredSrvGpuHandle);
 	}
 
 	void GBuffer::Init()
@@ -85,6 +89,15 @@ namespace Drn
 			RenderTargetViewDesc.Texture2D.MipSlice = 0;
 
 			Device->CreateRenderTargetView( m_ColorDeferredTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_ColorDeferredCpuHandle );
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+			SrvDesc.Format = GBUFFER_COLOR_DEFERRED_FORMAT;
+			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			SrvDesc.Texture2D.MipLevels = 1;
+			SrvDesc.Texture2D.MostDetailedMip = 0;
+
+			Device->CreateShaderResourceView( m_ColorDeferredTarget->GetD3D12Resource(), &SrvDesc, m_ColorDeferredSrvCpuHandle );
 		}
 
 		{
