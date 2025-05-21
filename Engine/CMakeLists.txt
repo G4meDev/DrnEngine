@@ -31,6 +31,9 @@ set( HEADER_FILES
 	Source/Runtime/Engine/Actor.h
 	Source/Runtime/Engine/StaticMeshActor.h
 	Source/Runtime/Engine/CameraActor.h
+	Source/Runtime/Engine/PointLightActor.h
+	Source/Runtime/Engine/LightSceneProxy.h
+	Source/Runtime/Engine/PointLightSceneProxy.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/CommonResources.h
@@ -59,6 +62,8 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Material/Material.h
 
 	Source/Runtime/Components/LineBatchComponent.h
+	Source/Runtime/Components/LightComponent.h
+	Source/Runtime/Components/PointLightComponent.h
 
 	Source/Runtime/Physic/PhysicCore.h
 	Source/Runtime/Physic/PhysicManager.h
@@ -157,6 +162,9 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/Actor.cpp
 	Source/Runtime/Engine/StaticMeshActor.cpp
 	Source/Runtime/Engine/CameraActor.cpp
+	Source/Runtime/Engine/PointLightActor.cpp
+	Source/Runtime/Engine/LightSceneProxy.cpp
+	Source/Runtime/Engine/PointLightSceneProxy.cpp
 	
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/CommonResources.cpp
@@ -185,6 +193,8 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Material/Material.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
+	Source/Runtime/Components/LightComponent.cpp
+	Source/Runtime/Components/PointLightComponent.cpp
 
 	Source/Runtime/Physic/PhysicCore.cpp
 	Source/Runtime/Physic/PhysicManager.cpp
