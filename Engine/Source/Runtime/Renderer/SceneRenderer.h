@@ -114,6 +114,7 @@ namespace Drn
 
 		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
 		std::shared_ptr<class EditorPrimitiveRenderBuffer> m_EditorPrimitiveBuffer;
+		std::shared_ptr<class EditorSelectionRenderBuffer> m_EditorSelectionBuffer;
 #endif
 
 		friend class Scene;
@@ -133,6 +134,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		void RenderEditorPrimitives(ID3D12GraphicsCommandList2* CommandList);
+		void RenderEditorSelection(ID3D12GraphicsCommandList2* CommandList);
 #endif
 	};
 }

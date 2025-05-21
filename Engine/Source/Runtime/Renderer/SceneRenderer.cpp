@@ -5,6 +5,7 @@
 #include "Runtime/Renderer/RenderBuffer/GBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/TonemapRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/EditorPrimitiveRenderBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.h"
 
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
@@ -54,6 +55,9 @@ namespace Drn
 
 		m_EditorPrimitiveBuffer = std::make_shared<class EditorPrimitiveRenderBuffer>();
 		m_EditorPrimitiveBuffer->Init();
+
+		m_EditorSelectionBuffer = std::make_shared<class EditorSelectionRenderBuffer>();
+		m_EditorSelectionBuffer->Init();
 #endif
 
 		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
@@ -170,6 +174,8 @@ namespace Drn
 	{
 		SCOPE_STAT( RenderEditorPrimitives );
 
+		PIXBeginEvent( CommandList, 1, "Editor Primitives" );
+
 		ID3D12Resource* GBufferDepth = m_GBuffer->m_DepthTarget->GetD3D12Resource();
 		ID3D12Resource* EditorPrimitiveDepth = m_EditorPrimitiveBuffer->m_DepthTarget->GetD3D12Resource();
 
@@ -191,6 +197,7 @@ namespace Drn
 			EditorPrimitiveDepth, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_DEPTH_WRITE );
 		CommandList->ResourceBarrier(1, &barrier);
 
+		m_EditorPrimitiveBuffer->Clear(CommandList);
 		m_EditorPrimitiveBuffer->Bind(CommandList);
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_EditorPrimitiveProxies)
@@ -228,6 +235,8 @@ namespace Drn
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorPrimitiveColor, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		CommandList->ResourceBarrier(1, &barrier);
+
+		PIXEndEvent( CommandList );
 
 		/*
 		PIXBeginEvent( CommandList, 1, "EditorPrimitive" );
@@ -342,6 +351,56 @@ namespace Drn
 
 		*/
 	}
+
+	void SceneRenderer::RenderEditorSelection( ID3D12GraphicsCommandList2* CommandList )
+	{
+		SCOPE_STAT(RenderEditorSelection);
+		
+		PIXBeginEvent( CommandList, 1, "Editor Selection" );
+
+		XMMATRIX modelMatrix = Matrix( m_CameraActor->GetActorTransform() ).Get();
+		XMMATRIX viewMatrix;
+		XMMATRIX projectionMatrix;
+		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
+		m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+		XMMATRIX LocalToView = XMMatrixMultiply( modelMatrix, viewMatrix );
+
+		m_EditorSelectionBuffer->Clear(CommandList);
+		m_EditorSelectionBuffer->Bind(CommandList);
+
+		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
+		{
+			Proxy->RenderSelectionPass( CommandList, this);
+		}
+
+		ID3D12Resource* EditorSelectionDepth = m_EditorSelectionBuffer->m_DepthStencilTarget->GetD3D12Resource();
+
+		CommandList->OMSetRenderTargets( 1, &m_TonemapBuffer->m_TonemapRtvHeap->GetCPUDescriptorHandleForHeapStart(), true, NULL );
+
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			EditorSelectionDepth, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_RootSignature );
+		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
+
+		uint32 RenderSize[2] = { (uint32)m_RenderSize.X, (uint32)m_RenderSize.Y};
+		CommandList->SetGraphicsRoot32BitConstants(0, 16, &LocalToView, 0);
+		CommandList->SetGraphicsRoot32BitConstants(0, 8, &RenderSize[0], 16);
+		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorSelectionBuffer->m_DepthStencilSrvGpuHandle);
+
+		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
+		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
+		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			EditorSelectionDepth, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		PIXEndEvent( CommandList );
+	}
+
 #endif
 
 	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )
@@ -367,6 +426,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		RenderEditorPrimitives(CommandList);
+		RenderEditorSelection(CommandList);
 #endif
 	}
 
@@ -389,6 +449,7 @@ namespace Drn
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( m_RenderSize );
 		m_EditorPrimitiveBuffer->Resize( m_RenderSize );
+		m_EditorSelectionBuffer->Resize( m_RenderSize );
 #endif
 
 /*

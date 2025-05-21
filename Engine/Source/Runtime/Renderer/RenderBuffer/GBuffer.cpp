@@ -13,9 +13,9 @@ namespace Drn
 		, m_ScissorRect(CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ))
 	{
 		m_ColorDeferredClearValue.Format   = GBUFFER_COLOR_DEFERRED_FORMAT;
-		m_ColorDeferredClearValue.Color[0] = 0.0f;
-		m_ColorDeferredClearValue.Color[1] = 0.0f;
-		m_ColorDeferredClearValue.Color[2] = 0.0f;
+		m_ColorDeferredClearValue.Color[0] = 0.2f;
+		m_ColorDeferredClearValue.Color[1] = 0.4f;
+		m_ColorDeferredClearValue.Color[2] = 0.7f;
 		m_ColorDeferredClearValue.Color[3] = 1.0f;
 
 		m_BaseColorClearValue.Format   = GBUFFER_BASE_COLOR_FORMAT;
