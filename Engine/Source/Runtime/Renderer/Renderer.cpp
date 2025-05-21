@@ -256,14 +256,14 @@ namespace Drn
 		ImGuiRenderer::Get()->Tick( 1, rtv, m_CommandList.Get() );
 #else
 
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->m_ColorTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
 		m_CommandList->ResourceBarrier( 1, &barrier );
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST );
 		m_CommandList->ResourceBarrier( 1, &barrier );
 
-		m_CommandList->CopyResource(backBuffer, m_MainSceneRenderer->m_ColorTarget.Get());
+		m_CommandList->CopyResource(backBuffer, m_MainSceneRenderer->GetViewResource());
 
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->m_ColorTarget.Get(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		m_CommandList->ResourceBarrier( 1, &barrier );
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		m_CommandList->ResourceBarrier( 1, &barrier );

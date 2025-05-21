@@ -42,8 +42,10 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float Alpha2 = max(FracEdge2.x, FracEdge2.y) * 20;
 
     float Alpha = max(Alpha1, Alpha2);
+    clip(Alpha < 0.0f ? -1 : 1);
     
     OUT.Color = float4(1, 1, 1, Alpha.x);
 
+    
     return OUT;
 }

@@ -151,6 +151,8 @@ namespace Drn
 		SCOPE_STAT( RenderEditorPrimitives );
 
 		PIXBeginEvent( CommandList, 1, "Editor Primitives" );
+		m_EditorPrimitiveBuffer->Clear(CommandList);
+		m_EditorPrimitiveBuffer->Bind(CommandList);
 
 		ID3D12Resource* GBufferDepth = m_GBuffer->m_DepthTarget->GetD3D12Resource();
 		ID3D12Resource* EditorPrimitiveDepth = m_EditorPrimitiveBuffer->m_DepthTarget->GetD3D12Resource();
@@ -173,8 +175,6 @@ namespace Drn
 			EditorPrimitiveDepth, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_DEPTH_WRITE );
 		CommandList->ResourceBarrier(1, &barrier);
 
-		m_EditorPrimitiveBuffer->Clear(CommandList);
-		m_EditorPrimitiveBuffer->Bind(CommandList);
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_EditorPrimitiveProxies)
 		{

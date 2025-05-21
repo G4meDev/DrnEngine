@@ -462,7 +462,6 @@ namespace Drn
 				m_HitProxyPassPSO->SetName( "HitProxyPassPSO_" + name );
 #endif
 			}
-#endif
 
 			if (m_SupportEditorPrimitivePass)
 			{
@@ -472,6 +471,8 @@ namespace Drn
 				m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
 #endif
 			}
+
+#endif
 
 			ClearRenderStateDirty();
 		}
@@ -490,6 +491,7 @@ namespace Drn
 		BindResources(CommandList);
 	}
 
+#if WITH_EDITOR
 	void Material::BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList )
 	{
 		CommandList->SetGraphicsRootSignature(m_RootSignature);
@@ -498,7 +500,6 @@ namespace Drn
 		BindResources(CommandList);
 	}
 
-#if WITH_EDITOR
 	void Material::BindSelectionPass( ID3D12GraphicsCommandList2* CommandList )
 	{
 		CommandList->SetGraphicsRootSignature(m_RootSignature);
