@@ -65,6 +65,7 @@ namespace Drn
 #if WITH_EDITOR
 		virtual void RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 #endif
 
 		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) override;

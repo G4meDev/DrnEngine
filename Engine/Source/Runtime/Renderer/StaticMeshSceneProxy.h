@@ -24,6 +24,7 @@ namespace Drn
 #if WITH_EDITOR
 		void RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 		void RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		void RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 #endif
 
 		void InitResources( ID3D12GraphicsCommandList2* CommandList ) override;

@@ -50,7 +50,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 
     float Alpha = max(Alpha1, Alpha2);
     
-    OUT.Color = Alpha.xxxx;
+    OUT.Color = float4(1, 1, 1, Alpha.x);
 
 #if HitProxyPass
     return View.Guid;

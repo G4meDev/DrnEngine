@@ -113,6 +113,7 @@ namespace Drn
 		std::vector<MousePickEvent> m_MousePickQueue;
 
 		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
+		std::shared_ptr<class EditorPrimitiveRenderBuffer> m_EditorPrimitiveBuffer;
 #endif
 
 		friend class Scene;

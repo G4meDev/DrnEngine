@@ -4,6 +4,7 @@
 #include "Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/GBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/TonemapRenderBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/EditorPrimitiveRenderBuffer.h"
 
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
@@ -50,6 +51,9 @@ namespace Drn
 		m_HitProxyRenderBuffer = std::make_shared<class HitProxyRenderBuffer>();
 		m_HitProxyRenderBuffer->Init();
 		Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_MousePickFence.GetAddressOf()));
+
+		m_EditorPrimitiveBuffer = std::make_shared<class EditorPrimitiveRenderBuffer>();
+		m_EditorPrimitiveBuffer->Init();
 #endif
 
 		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
@@ -149,6 +153,7 @@ namespace Drn
 		CommandList->SetGraphicsRoot32BitConstants(0, 8, &RenderSize[0], 16);
 		CommandList->SetGraphicsRootDescriptorTable(1, m_GBuffer->m_ColorDeferredSrvGpuHandle);
 
+		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
 		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
 		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
@@ -164,6 +169,65 @@ namespace Drn
 	void SceneRenderer::RenderEditorPrimitives( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT( RenderEditorPrimitives );
+
+		ID3D12Resource* GBufferDepth = m_GBuffer->m_DepthTarget->GetD3D12Resource();
+		ID3D12Resource* EditorPrimitiveDepth = m_EditorPrimitiveBuffer->m_DepthTarget->GetD3D12Resource();
+
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			GBufferDepth, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COPY_SOURCE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			EditorPrimitiveDepth, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COPY_DEST );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		CommandList->CopyResource(EditorPrimitiveDepth, GBufferDepth);
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			GBufferDepth, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			EditorPrimitiveDepth, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		m_EditorPrimitiveBuffer->Bind(CommandList);
+
+		for (PrimitiveSceneProxy* Proxy : m_Scene->m_EditorPrimitiveProxies)
+		{
+			Proxy->RenderEditorPrimitivePass(CommandList, this);
+		}
+
+// ------------------------------------------------------------------------------------------
+
+		ID3D12Resource* EditorPrimitiveColor = m_EditorPrimitiveBuffer->m_ColorTarget->GetD3D12Resource();
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			EditorPrimitiveColor, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+		CommandList->ResourceBarrier(1, &barrier);
+
+		CommandList->OMSetRenderTargets(1, &m_TonemapBuffer->m_TonemapRtvHeap->GetCPUDescriptorHandleForHeapStart(), true, NULL);
+		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_RootSignature );
+		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
+
+		XMMATRIX modelMatrix = Matrix( m_CameraActor->GetActorTransform() ).Get();
+		XMMATRIX viewMatrix;
+		XMMATRIX projectionMatrix;
+		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
+		m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+		XMMATRIX LocalToView = XMMatrixMultiply( modelMatrix, viewMatrix );
+
+		CommandList->SetGraphicsRoot32BitConstants(0, 16, &LocalToView, 0);
+		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorPrimitiveBuffer->m_ColorSrvGpuHandle);
+
+		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
+		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
+		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			EditorPrimitiveColor, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
+		CommandList->ResourceBarrier(1, &barrier);
 
 		/*
 		PIXBeginEvent( CommandList, 1, "EditorPrimitive" );
@@ -324,6 +388,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( m_RenderSize );
+		m_EditorPrimitiveBuffer->Resize( m_RenderSize );
 #endif
 
 /*

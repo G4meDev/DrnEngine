@@ -29,6 +29,7 @@ namespace Drn
 		, m_MainPassPSO(nullptr)
 		, m_SelectionPassPSO(nullptr)
 		, m_HitProxyPassPSO(nullptr)
+		, m_EditorProxyPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_SupportHitProxyPass(false)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
@@ -176,6 +177,12 @@ namespace Drn
 		if (m_HitProxyPassPSO)
 		{
 			m_HitProxyPassPSO->ReleaseBufferedResource();
+			m_HitProxyPassPSO = nullptr;
+		}
+
+		if (m_EditorProxyPSO)
+		{
+			m_EditorProxyPSO->ReleaseBufferedResource();
 			m_HitProxyPassPSO = nullptr;
 		}
 #endif
@@ -429,6 +436,12 @@ namespace Drn
 			}
 #endif
 
+			m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+				m_PrimitiveType, m_MainShaderBlob);
+
+#if D3D12_Debug_INFO
+			m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
+#endif
 
 			ClearRenderStateDirty();
 		}
@@ -443,6 +456,14 @@ namespace Drn
 	{
 		CommandList->SetGraphicsRootSignature(m_RootSignature);
 		CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
+
+		BindResources(CommandList);
+	}
+
+	void Material::BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList )
+	{
+		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetPipelineState(m_EditorProxyPSO->GetD3D12PSO());
 
 		BindResources(CommandList);
 	}
@@ -464,7 +485,6 @@ namespace Drn
 
 		BindResources(CommandList);
 	}
-
 #endif
 
 	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )

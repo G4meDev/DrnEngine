@@ -12,7 +12,7 @@ namespace Drn
 		m_TonemapClearValue.Color[0] = 0.0f;
 		m_TonemapClearValue.Color[1] = 0.0f;
 		m_TonemapClearValue.Color[2] = 0.0f;
-		m_TonemapClearValue.Color[3] = 0.0f;
+		m_TonemapClearValue.Color[3] = 1.0f;
 
 	}
 

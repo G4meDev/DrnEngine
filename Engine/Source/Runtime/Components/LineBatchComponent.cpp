@@ -197,6 +197,12 @@ namespace Drn
 	{
 		
 	}
+
+	void LineBatchSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 #endif
 
 	void LineBatchSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )

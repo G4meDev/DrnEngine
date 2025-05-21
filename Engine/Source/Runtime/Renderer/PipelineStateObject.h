@@ -17,6 +17,9 @@ namespace Drn
 		static PipelineStateObject* CreateHitProxyPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
+		static PipelineStateObject* CreateEditorPrimitivePassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
+
 		inline ID3D12PipelineState* GetD3D12PSO() { return m_PipelineState.Get(); }
 
 #if D3D12_Debug_INFO

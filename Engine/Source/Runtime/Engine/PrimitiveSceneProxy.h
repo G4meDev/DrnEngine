@@ -36,6 +36,7 @@ namespace Drn
 #if WITH_EDITOR
 		virtual void RenderHitProxyPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
 		virtual void RenderSelectionPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderEditorPrimitivePass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
 		bool m_SelectedInEditor = false;
 		bool m_Selectable = false;
 #endif

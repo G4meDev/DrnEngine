@@ -26,6 +26,7 @@ namespace Drn
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList );
 		void BindSelectionPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList );
 
@@ -83,6 +84,7 @@ namespace Drn
 #if WITH_EDITOR
 		PipelineStateObject* m_SelectionPassPSO = nullptr;
 		PipelineStateObject* m_HitProxyPassPSO = nullptr;
+		PipelineStateObject* m_EditorProxyPSO = nullptr;
 #endif
 
 		std::unordered_map<std::string, MaterialIndexedFloatParameter*> m_ScalarMap;

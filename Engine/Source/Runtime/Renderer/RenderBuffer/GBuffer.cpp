@@ -16,19 +16,19 @@ namespace Drn
 		m_ColorDeferredClearValue.Color[0] = 0.0f;
 		m_ColorDeferredClearValue.Color[1] = 0.0f;
 		m_ColorDeferredClearValue.Color[2] = 0.0f;
-		m_ColorDeferredClearValue.Color[3] = 0.0f;
+		m_ColorDeferredClearValue.Color[3] = 1.0f;
 
 		m_BaseColorClearValue.Format   = GBUFFER_BASE_COLOR_FORMAT;
 		m_BaseColorClearValue.Color[0] = 0.0f;
 		m_BaseColorClearValue.Color[1] = 0.0f;
 		m_BaseColorClearValue.Color[2] = 0.0f;
-		m_BaseColorClearValue.Color[3] = 0.0f;
+		m_BaseColorClearValue.Color[3] = 1.0f;
 
 		m_WorldNormalClearValue.Format   = GBUFFER_WORLD_NORMAL_FORMAT;
 		m_WorldNormalClearValue.Color[0] = 0.0f;
 		m_WorldNormalClearValue.Color[1] = 0.0f;
 		m_WorldNormalClearValue.Color[2] = 0.0f;
-		m_WorldNormalClearValue.Color[3] = 0.0f;
+		m_WorldNormalClearValue.Color[3] = 1.0f;
 		
 		m_DepthClearValue.Format = DEPTH_FORMAT;
 		m_DepthClearValue.DepthStencil = { 0, 0 };
