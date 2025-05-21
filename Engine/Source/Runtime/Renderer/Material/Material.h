@@ -45,6 +45,7 @@ namespace Drn
 		inline bool IsSupportingMainPass() const { return m_SupportMainPass; }
 		inline bool IsSupportingHitProxyPass() const { return m_SupportHitProxyPass; }
 		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
+		inline bool IsSupportingEditorSelectionPass() const { return m_SupportEditorSelectionPass; }
 
 	protected:
 		virtual EAssetType GetAssetType() override;
@@ -98,6 +99,7 @@ namespace Drn
 		bool m_SupportMainPass;
 		bool m_SupportHitProxyPass;
 		bool m_SupportEditorPrimitivePass;
+		bool m_SupportEditorSelectionPass;
 
 		void InitalizeParameterMap();
 

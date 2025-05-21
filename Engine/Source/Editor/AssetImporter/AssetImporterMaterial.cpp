@@ -21,6 +21,7 @@ namespace Drn
 		bool SupportMainPass = ShaderString.find( "SUPPORT_MAIN_PASS" ) != std::string::npos;
 		bool SupportHitProxyPass = ShaderString.find( "SUPPORT_HIT_PROXY_PASS" ) != std::string::npos;
 		bool SupportEditorPrimitivePass = ShaderString.find( "SUPPORT_EDITOR_PRIMITIVE_PASS" ) != std::string::npos;
+		bool SupportEditorSelectionPass = ShaderString.find( "SUPPORT_EDITOR_SELECTION_PASS" ) != std::string::npos;
 
 		bool Successed = true;
 		ShaderBlob MainShaderBlob;
@@ -77,6 +78,7 @@ namespace Drn
 			MaterialAsset->m_SupportMainPass = SupportMainPass;
 			MaterialAsset->m_SupportHitProxyPass = SupportHitProxyPass;
 			MaterialAsset->m_SupportEditorPrimitivePass = SupportEditorPrimitivePass;
+			MaterialAsset->m_SupportEditorSelectionPass = SupportEditorSelectionPass;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

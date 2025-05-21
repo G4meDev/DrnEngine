@@ -16,6 +16,7 @@ namespace Drn
 		, m_SupportMainPass(true)
 		, m_SupportHitProxyPass(false)
 		, m_SupportEditorPrimitivePass(false)
+		, m_SupportEditorSelectionPass(true)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
@@ -36,6 +37,7 @@ namespace Drn
 		, m_SupportMainPass(true)
 		, m_SupportHitProxyPass(false)
 		, m_SupportEditorPrimitivePass(false)
+		, m_SupportEditorSelectionPass(true)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
@@ -122,6 +124,8 @@ namespace Drn
 
 			m_EditorPrimitiveShaderBlob.Serialize(Ar);
 
+			Ar >> m_SupportEditorSelectionPass;
+
 			InitalizeParameterMap();
 		}
 
@@ -161,6 +165,7 @@ namespace Drn
 			Ar << m_SupportMainPass;
 			Ar << m_SupportEditorPrimitivePass;
 			m_EditorPrimitiveShaderBlob.Serialize(Ar);
+			Ar << m_SupportEditorSelectionPass;
 		}
 	}
 
@@ -438,11 +443,15 @@ namespace Drn
 
 
 #if WITH_EDITOR
-			m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
-				m_PrimitiveType, m_MainShaderBlob);
+
+			if (m_SupportEditorSelectionPass)
+			{
+				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+					m_PrimitiveType, m_MainShaderBlob);
 #if D3D12_Debug_INFO
-			m_SelectionPassPSO->SetName( "SelectionPassPSO_" + name );
+				m_SelectionPassPSO->SetName( "SelectionPassPSO_" + name );
 #endif
+			}
 
 			if (IsSupportingHitProxyPass())
 			{

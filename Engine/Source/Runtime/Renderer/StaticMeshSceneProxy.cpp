@@ -174,7 +174,12 @@ namespace Drn
 		{
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
-				
+
+			if (!Mat->IsSupportingEditorSelectionPass())
+			{
+				continue;
+			}
+
 			Mat->BindSelectionPass(CommandList);
 			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

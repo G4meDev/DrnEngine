@@ -2,6 +2,7 @@
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_HIT_PROXY_PASS
+// SUPPORT_EDITOR_SELECTION_PASS
 
 ConstantBuffer<ViewBuffer> View : register(b0);
 
