@@ -11,7 +11,8 @@ namespace Drn
 	enum class EActorType : uint16
 	{
 		StaticMeshActor = 0,
-		CameraActor
+		CameraActor,
+		PointLight,
 	};
 
 	class Actor : public Serializable
@@ -19,7 +20,7 @@ namespace Drn
 	public:
 
 		Actor();
-		~Actor();
+		virtual ~Actor();
 
 		virtual void Tick(float DeltaTime);
 

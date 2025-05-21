@@ -34,10 +34,10 @@ namespace Drn
 	{
 		InComponent->Parent = this;
 		InComponent->SetOwningActor(GetOwningActor());
-		Childs.push_back(std::shared_ptr<SceneComponent>(InComponent));
+		Childs.push_back(InComponent);
 	}
 
-	std::vector<std::shared_ptr<SceneComponent>> SceneComponent::GetChilds() const
+	std::vector<SceneComponent*> SceneComponent::GetChilds() const
 	{
 		return Childs;
 	}

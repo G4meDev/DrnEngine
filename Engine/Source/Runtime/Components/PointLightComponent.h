@@ -14,6 +14,10 @@ namespace Drn
 		inline float GetRadius() const { return m_Radius; }
 
 	protected:
+
+		virtual void RegisterComponent(World* InOwningWorld) override;
+		virtual void UnRegisterComponent() override;
+
 		float m_Radius;
 
 	private:

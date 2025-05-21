@@ -26,7 +26,7 @@ namespace Drn
 
 		inline bool HasChild() const { return Childs.size() > 0; }
 
-		std::vector<std::shared_ptr<SceneComponent>> GetChilds() const;
+		std::vector<SceneComponent*> GetChilds() const;
 
 		// TODO: make type as a static function
 		template<typename T>
@@ -37,10 +37,10 @@ namespace Drn
 			{
 				//if (Comp->GetComponentType() == Type)
 				//{
-					T* C = static_cast<T*>(Comp.get());
+					T* C = static_cast<T*>(Comp);
 					if (C)
 					{
-						OutComponents.push_back( static_cast<T*>(Comp.get()) );
+						OutComponents.push_back( static_cast<T*>(Comp) );
 					}
 
 					if (Recursive)
@@ -108,6 +108,6 @@ namespace Drn
 
 
 		SceneComponent* Parent = nullptr;
-		std::vector<std::shared_ptr<SceneComponent>> Childs;
+		std::vector<SceneComponent*> Childs;
 	};
 }

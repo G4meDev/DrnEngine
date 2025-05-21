@@ -95,11 +95,11 @@ namespace Drn
 
 		if ( node_open )
 		{
-			for (std::shared_ptr<SceneComponent> child : Comp->GetChilds())
+			for (SceneComponent* child : Comp->GetChilds())
 			{
 				if (child)
 				{
-					DrawNextSceneComponent( child.get() );
+					DrawNextSceneComponent( child );
 				}
 			}
 			ImGui::TreePop();

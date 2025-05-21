@@ -33,6 +33,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/CameraActor.h
 	Source/Runtime/Engine/PointLightActor.h
 	Source/Runtime/Engine/LightSceneProxy.h
+	Source/Runtime/Engine/LightActor.h
 	Source/Runtime/Engine/PointLightSceneProxy.h
 	
 	Source/Runtime/Renderer/Renderer.h
@@ -162,6 +163,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/Actor.cpp
 	Source/Runtime/Engine/StaticMeshActor.cpp
 	Source/Runtime/Engine/CameraActor.cpp
+	Source/Runtime/Engine/LightActor.cpp
 	Source/Runtime/Engine/PointLightActor.cpp
 	Source/Runtime/Engine/LightSceneProxy.cpp
 	Source/Runtime/Engine/PointLightSceneProxy.cpp

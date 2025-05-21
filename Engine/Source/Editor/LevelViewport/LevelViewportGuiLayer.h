@@ -36,6 +36,8 @@ namespace Drn
 		void DeleteSelectedActor();
 		void AlignSelectedComponentToSurfaceBelow();
 
+		void AddPointLight();
+
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;
 		std::unique_ptr<ActorDetailPanel> m_ActorDetailPanel;

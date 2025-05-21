@@ -15,4 +15,18 @@ namespace Drn
 		
 	}
 
+	void PointLightComponent::RegisterComponent( World* InOwningWorld )
+	{
+		LightComponent::RegisterComponent(InOwningWorld);
+
+
+	}
+
+	void PointLightComponent::UnRegisterComponent()
+	{
+		LightComponent::UnRegisterComponent();
+
+
+	}
+
 }

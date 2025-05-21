@@ -16,7 +16,6 @@ namespace Drn
 
 	StaticMeshActor::~StaticMeshActor()
 	{
-		
 	}
 
 	void StaticMeshActor::Tick( float DeltaTime )

@@ -203,7 +203,7 @@ namespace Drn
 
 		for ( auto Child: InComponent->GetChilds() )
 		{
-			RegisterSceneComponentRecursive(Child.get(), InWorld);
+			RegisterSceneComponentRecursive(Child, InWorld);
 		}
 	}
 
@@ -213,7 +213,7 @@ namespace Drn
 
 		for ( auto Child: InComponent->GetChilds() )
 		{
-			UnRegisterSceneComponentRecursive(Child.get());
+			UnRegisterSceneComponentRecursive(Child);
 		}
 	}
 
