@@ -30,14 +30,19 @@ namespace Drn
 		void RegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 		void UnRegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 
+		void RegisterLightProxy( class LightSceneProxy* InLightProxy );
+		void UnRegisterLightProxy( class LightSceneProxy* InLightProxy );
+
 	protected:
 
 		World* m_World;
 
 		std::set<PrimitiveSceneProxy*> m_PrimitiveProxies;
 		std::set<PrimitiveSceneProxy*> m_EditorPrimitiveProxies;
-
 		std::set<PrimitiveSceneProxy*> m_PendingProxies;
+
+		std::set<class LightSceneProxy*> m_LightProxies;
+		std::set<class LightSceneProxy*> m_PendingLightProxies;
 
 		std::set<SceneRenderer*> m_SceneRenderers;
 

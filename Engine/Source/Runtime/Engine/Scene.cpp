@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "Scene.h"
 
+#include "Runtime/Engine/LightSceneProxy.h"
+
 LOG_DEFINE_CATEGORY( LogScene, "Scene" );
 
 namespace Drn
@@ -23,6 +25,11 @@ namespace Drn
 		for (PrimitiveSceneProxy* Proxy : m_PendingProxies)
 		{
 			delete Proxy;
+		}
+
+		for (LightSceneProxy* Proxy : m_PendingLightProxies)
+		{
+			Proxy->Release();
 		}
 
 		for (auto it = m_SceneRenderers.begin(); it != m_SceneRenderers.end();)
@@ -93,6 +100,14 @@ namespace Drn
 			PrimitiveSceneProxy* Proxy = *it;
 			Proxy->UpdateResources(CommandList);
 		}
+
+// ----------------------------------------------------------------------------------
+
+		for (auto it = m_PendingLightProxies.begin(); it != m_PendingLightProxies.end(); it++)
+		{
+			m_LightProxies.insert(*it);
+		}
+		m_PendingLightProxies.clear();
 	}
 
 	void Scene::RegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
@@ -110,6 +125,22 @@ namespace Drn
 
 			//InPrimitiveSceneProxy->ReleaseBufferedResource();
 			delete InPrimitiveSceneProxy;
+		}
+	}
+
+	void Scene::RegisterLightProxy( LightSceneProxy* InLightProxy )
+	{
+		m_PendingLightProxies.insert(InLightProxy);
+	}
+
+	void Scene::UnRegisterLightProxy( LightSceneProxy* InLightProxy )
+	{
+		if (InLightProxy)
+		{
+			m_PendingLightProxies.erase(InLightProxy);
+			m_LightProxies.erase(InLightProxy);
+
+			InLightProxy->Release();
 		}
 	}
 

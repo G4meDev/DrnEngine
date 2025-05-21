@@ -20,6 +20,8 @@ namespace Drn
 
 		float m_Radius;
 
+		class PointLightSceneProxy* m_SceneProxy;
+
 	private:
 	};
 }

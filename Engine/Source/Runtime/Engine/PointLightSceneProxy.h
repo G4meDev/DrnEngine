@@ -14,6 +14,10 @@ namespace Drn
 	protected:
 		float m_Radius;
 
+#if WITH_EDITOR
+		virtual void DrawAttenuation(World* InWorld) override;
+#endif
+
 	private:
 
 	};

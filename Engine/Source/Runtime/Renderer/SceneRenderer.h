@@ -109,6 +109,7 @@ namespace Drn
 
 		void BeginRender(ID3D12GraphicsCommandList2* CommandList);
 		void RenderBasePass(ID3D12GraphicsCommandList2* CommandList);
+		void RenderLights(ID3D12GraphicsCommandList2* CommandList);
 		void RenderPostProcess(ID3D12GraphicsCommandList2* CommandList);
 		void PostProcess_Tonemapping(ID3D12GraphicsCommandList2* CommandList);
 

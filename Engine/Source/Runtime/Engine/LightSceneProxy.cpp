@@ -8,6 +8,7 @@ namespace Drn
 		: m_LightComponent( InComponent )
 		, m_WorldPosition( InComponent->GetWorldLocation() )
 		, m_LightColor( InComponent->GetLightColor() )
+		, m_SelectedInEditor( InComponent->IsSelectedInEditor() )
 	{
 	}
 

@@ -6,6 +6,13 @@ namespace Drn
 	{
 	public:
 
+		inline void Release() { delete this; }
+
+#if WITH_EDITOR
+		virtual void DrawAttenuation(World* InWorld) = 0;
+		bool m_SelectedInEditor = false;
+#endif
+
 	protected:
 		LightSceneProxy( class LightComponent* InComponent );
 		virtual ~LightSceneProxy();

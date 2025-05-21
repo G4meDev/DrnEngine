@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "PointLightComponent.h"
+#include "Runtime/Engine/PointLightSceneProxy.h"
 
 namespace Drn
 {
@@ -19,14 +20,18 @@ namespace Drn
 	{
 		LightComponent::RegisterComponent(InOwningWorld);
 
-
+		m_SceneProxy = new PointLightSceneProxy(this);
+		InOwningWorld->GetScene()->RegisterLightProxy(m_SceneProxy);
 	}
 
 	void PointLightComponent::UnRegisterComponent()
 	{
+		if (GetWorld())
+		{
+			GetWorld()->GetScene()->UnRegisterLightProxy( m_SceneProxy );
+		}
+
 		LightComponent::UnRegisterComponent();
-
-
 	}
 
 }

@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "SceneRenderer.h"
 
+#include "Runtime/Engine/LightSceneProxy.h"
 #include "Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/GBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/TonemapRenderBuffer.h"
@@ -97,6 +98,16 @@ namespace Drn
 		}
 
 		PIXEndEvent( CommandList );
+	}
+
+	void SceneRenderer::RenderLights( ID3D12GraphicsCommandList2* CommandList )
+	{
+		SCOPE_STAT( RenderLights );
+
+		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
+		{
+			Proxy->DrawAttenuation( m_Scene->GetWorld() );
+		}
 	}
 
 	void SceneRenderer::RenderPostProcess( ID3D12GraphicsCommandList2* CommandList )
@@ -285,6 +296,7 @@ namespace Drn
 
 		BeginRender(CommandList);
 		RenderBasePass(CommandList);
+		RenderLights(CommandList);
 		RenderPostProcess(CommandList);
 
 #if WITH_EDITOR
