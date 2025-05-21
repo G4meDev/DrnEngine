@@ -2,6 +2,7 @@
 #include "SceneRenderer.h"
 
 #include "Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/GBuffer.h"
 
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
@@ -36,6 +37,9 @@ namespace Drn
 	void SceneRenderer::Init( ID3D12GraphicsCommandList2* CommandList )
 	{
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		m_GBuffer = std::make_shared<class GBuffer>();
+		m_GBuffer->Init();
 
 #if WITH_EDITOR
 		// mouse picking components
@@ -96,15 +100,8 @@ namespace Drn
 
 		PIXBeginEvent( CommandList, 1, "BasePass" );
 
-		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-		FLOAT GuidColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-		CommandList->ClearDepthStencilView(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr);
-		CommandList->ClearRenderTargetView(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), clearColor, 0, nullptr);
-
-		CommandList->OMSetRenderTargets(1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), true, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
-		CommandList->RSSetViewports(1, &m_Viewport);
-		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+		m_GBuffer->Clear(CommandList);
+		m_GBuffer->Bind(CommandList);
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
@@ -119,6 +116,7 @@ namespace Drn
 	{
 		SCOPE_STAT( RenderEditorPrimitives );
 
+		/*
 		PIXBeginEvent( CommandList, 1, "EditorPrimitive" );
 
 		FLOAT clearColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -228,6 +226,8 @@ namespace Drn
 		CommandList->ResourceBarrier(1, &barrier);
 
 		PIXEndEvent( CommandList );
+
+		*/
 	}
 #endif
 
@@ -258,7 +258,8 @@ namespace Drn
 
 	ID3D12Resource* SceneRenderer::GetViewResource()
 	{
-		return m_ColorTarget.Get();
+		// TODO: swap to actual buffer
+		return m_GBuffer->m_BaseColorTarget->GetD3D12Resource();
 	}
 
 	void SceneRenderer::ResizeView( const IntPoint& InSize )
@@ -269,89 +270,13 @@ namespace Drn
 		m_RenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
 		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(m_RenderSize.X), static_cast<float>(m_RenderSize.Y));
 
+		m_GBuffer->Resize( m_RenderSize );
+
 #if WITH_EDITOR
-		m_HitProxyRenderBuffer->Resize( InSize );
+		m_HitProxyRenderBuffer->Resize( m_RenderSize );
 #endif
 
-// ----------------------------------------------------------------------------------------------------------------------------
-
-		D3D12_CLEAR_VALUE optimizedClearValue = {};
-		optimizedClearValue.Format = DEPTH_FORMAT;
-		optimizedClearValue.DepthStencil = { 0.0f, 0 };
-
-		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(DEPTH_FORMAT, m_RenderSize.X, m_RenderSize.Y,
-			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL), D3D12_RESOURCE_STATE_DEPTH_WRITE,
-			&optimizedClearValue, IID_PPV_ARGS(m_DepthTarget.ReleaseAndGetAddressOf()) );
-
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsv = {};
-		dsv.Format = DEPTH_FORMAT;
-		dsv.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		dsv.Texture2D.MipSlice = 0;
-		dsv.Flags = D3D12_DSV_FLAG_NONE;
-
-		Device->CreateDepthStencilView(m_DepthTarget.Get(), &dsv, m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
-
-#if D3D12_Debug_INFO
-		m_DepthTarget->SetName( L"Depth Render Target" );
-#endif
-
-// ----------------------------------------------------------------------------------------------------------------------------
-
-		D3D12_CLEAR_VALUE colorClearValue;
-		colorClearValue.Format   = DISPLAY_OUTPUT_FORMAT;
-		colorClearValue.Color[0] = 0.4f;
-		colorClearValue.Color[1] = 0.6f;
-		colorClearValue.Color[2] = 0.9f;
-		colorClearValue.Color[3] = 1.0f;
-
-		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(DISPLAY_OUTPUT_FORMAT, m_RenderSize.X, m_RenderSize.Y,
-			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET), D3D12_RESOURCE_STATE_RENDER_TARGET,
-			&colorClearValue, IID_PPV_ARGS(m_ColorTarget.ReleaseAndGetAddressOf()) );
-
-		D3D12_RENDER_TARGET_VIEW_DESC rtv = {};
-		rtv.Format = DISPLAY_OUTPUT_FORMAT;
-		rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		rtv.Texture2D.MipSlice = 0;
-
-		Device->CreateRenderTargetView(m_ColorTarget.Get(), &rtv, m_RTVHeap->GetCPUDescriptorHandleForHeapStart());
-
-#if D3D12_Debug_INFO
-		m_ColorTarget->SetName( L"Color Render Target" );
-#endif
-
-// ----------------------------------------------------------------------------------------------------------------------------
-
-//		D3D12_CLEAR_VALUE GuidClearValue;
-//		GuidClearValue.Format   = GBUFFER_GUID_FORMAT;
-//		GuidClearValue.Color[0] = 0.0f;
-//		GuidClearValue.Color[1] = 0.0f;
-//		GuidClearValue.Color[2] = 0.0f;
-//		GuidClearValue.Color[3] = 0.0f;
-//
-//		Device->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-//			D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_GUID_FORMAT, m_RenderSize.X, m_RenderSize.Y,
-//			1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET), D3D12_RESOURCE_STATE_RENDER_TARGET,
-//			&GuidClearValue, IID_PPV_ARGS(m_GuidTarget.ReleaseAndGetAddressOf()) );
-//
-//		rtv.Format = GBUFFER_GUID_FORMAT;
-//		rtv.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-//		rtv.Texture2D.MipSlice = 0;
-//
-//		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-//		uint32 DSVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-//		Device->CreateRenderTargetView( m_GuidTarget.Get(), &rtv, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize) );
-//
-//#if D3D12_Debug_INFO
-//		m_GuidTarget->SetName( L"Guid Target" );
-//#endif
-
-		uint32 RTVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		uint32 DSVDescriporSize = Renderer::Get()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-
-// ----------------------------------------------------------------------------------------------------------------------------
-
+/*
 		DXGI_FORMAT EditorColorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 		D3D12_CLEAR_VALUE EditorcolorClearValue;
@@ -378,6 +303,7 @@ namespace Drn
 #endif
 
 // ----------------------------------------------------------------------------------------------------------------------------
+
 
 		D3D12_CLEAR_VALUE EditorDepthClearValue = {};
 		EditorDepthClearValue.Format = DEPTH_FORMAT;
@@ -461,6 +387,7 @@ namespace Drn
 		Renderer::Get()->GetCommandList()->OMSetRenderTargets( 1, &m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), true, &m_DSVHeap->GetCPUDescriptorHandleForHeapStart() );
 		Renderer::Get()->GetCommandList()->RSSetViewports( 1, &m_Viewport );
 		Renderer::Get()->GetCommandList()->RSSetScissorRects( 1, &m_ScissorRect );
+*/
 	}
 
 	void SceneRenderer::SetRenderingEnabled( bool Enabled )

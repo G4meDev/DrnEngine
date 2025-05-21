@@ -18,6 +18,21 @@ struct VertexInputPosColor
     float4 Color : COLOR;
 };
 
+struct GBuffer
+{
+    float4 BaseColor;
+    float4 WorldNormal;
+    float4 Mask;
+};
+
+struct BasePassPixelShaderOutput
+{
+    float4 ColorDeferred : SV_TARGET0;
+    float4 BaseColor : SV_TARGET1;
+    float4 WorldNormal : SV_TARGET2;
+    float4 Masks : SV_TARGET3;
+};
+
 // ------------------------------------------------------------
 
 struct ViewBuffer

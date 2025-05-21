@@ -7,6 +7,7 @@ namespace Drn
 {
 	class GBuffer : public RenderBuffer
 	{
+	public:
 		GBuffer();
 		virtual ~GBuffer();
 

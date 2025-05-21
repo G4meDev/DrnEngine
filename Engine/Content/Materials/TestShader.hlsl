@@ -27,22 +27,19 @@ struct PixelShaderInput
     float4 Color : COLOR;
 };
 
-struct PixelShaderOutput
-{
-    float4 Color : SV_TARGET0;
-    uint4 Guid : SV_TARGET1;
-};
-
 #if HitProxyPass
 uint4 Main_PS(PixelShaderInput IN) : SV_Target
 #else
-PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+BasePassPixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 #endif
 {
-    PixelShaderOutput OUT;
-    OUT.Color = IN.Color;
-    OUT.Guid = View.Guid;
+    BasePassPixelShaderOutput OUT;
  
+    OUT.ColorDeferred = float4(1, 1, 1, 1);
+    OUT.BaseColor = float4(0.7, 0.5, 1, 1);
+    OUT.WorldNormal = float4(0, 1, 0, 1);
+    OUT.Masks = float4(0.2, 1, 0.4, 1);
+    
 #if HitProxyPass
     return View.Guid;
 #else

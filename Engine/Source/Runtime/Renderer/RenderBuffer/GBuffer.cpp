@@ -91,7 +91,7 @@ namespace Drn
 			if (m_BaseColorTarget)
 				m_BaseColorTarget->ReleaseBufferedResource();
 
-			m_ColorDeferredTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
+			m_BaseColorTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
 				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_BASE_COLOR_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
 				D3D12_RESOURCE_STATE_RENDER_TARGET, m_BaseColorClearValue);
 

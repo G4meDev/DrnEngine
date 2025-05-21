@@ -76,12 +76,13 @@ namespace Drn
 
 		Scene* m_Scene;
 
+		std::shared_ptr<class GBuffer> m_GBuffer;
+
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DSVHeap = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVHeap = nullptr;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_ColorTarget = nullptr;
-		//Microsoft::WRL::ComPtr<ID3D12Resource> m_GuidTarget = nullptr;
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthTarget = nullptr;
+		//Microsoft::WRL::ComPtr<ID3D12Resource> m_ColorTarget = nullptr;
+		//Microsoft::WRL::ComPtr<ID3D12Resource> m_DepthTarget = nullptr;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_EditorColorTarget = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_EditorDepthTarget = nullptr;
