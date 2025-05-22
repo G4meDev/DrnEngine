@@ -34,4 +34,14 @@ namespace Drn
 		LightComponent::UnRegisterComponent();
 	}
 
+	void PointLightComponent::OnUpdateTransform( bool SkipPhysic )
+	{
+		LightComponent::OnUpdateTransform(SkipPhysic);
+
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->SetWorldPosition( GetWorldLocation() );
+		}
+	}
+
 }

@@ -18,6 +18,8 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+		virtual void OnUpdateTransform( bool SkipPhysic ) override;
+
 		float m_Radius;
 
 		class PointLightSceneProxy* m_SceneProxy;

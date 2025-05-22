@@ -26,4 +26,10 @@ namespace Drn
 		SceneComponent::UnRegisterComponent();
 
 	}
+
+	void LightComponent::OnUpdateTransform( bool SkipPhysic )
+	{
+		SceneComponent::OnUpdateTransform(SkipPhysic);
+	}
+
 }

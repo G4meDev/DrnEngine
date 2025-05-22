@@ -19,6 +19,8 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+		virtual void OnUpdateTransform( bool SkipPhysic ) override;
+
 		Vector m_LightColor;
 		float m_Intensity;
 		bool m_CastShadow;
