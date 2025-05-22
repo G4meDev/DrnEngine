@@ -13,8 +13,13 @@ namespace Drn
 		inline Matrix() { m_Matrix = XMMatrixIdentity(); }
 		inline Matrix(const XMMATRIX& InMatrix) { m_Matrix = InMatrix; }
 		Matrix(const Transform& InTransform);
+		Matrix(const Vector& X, const Vector& Y, const Vector& Z, const Vector& W);
 
 		inline XMMATRIX Get() { return m_Matrix; }
+
+		static Matrix MakeFromX( const Vector& XAxis);
+		static Matrix MakeFromY( const Vector& YAxis);
+		static Matrix MakeFromZ( const Vector& ZAxis);
 
 		inline Matrix operator*( const Matrix& InMatrix ) { return XMMatrixMultiply(m_Matrix, InMatrix.m_Matrix); }
 

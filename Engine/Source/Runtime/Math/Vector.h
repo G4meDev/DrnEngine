@@ -19,6 +19,7 @@ namespace Drn
 		inline Vector( const XMVECTOR& InVector ) { XMStoreFloat3(&m_Vector, InVector); }
 
 		inline const XMFLOAT3* Get() { return &m_Vector; }
+		inline const XMFLOAT3* Get() const { return &m_Vector; }
 
 		inline float GetX() const { return m_Vector.x; }
 		inline float GetY() const { return m_Vector.y; }

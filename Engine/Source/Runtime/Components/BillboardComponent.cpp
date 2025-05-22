@@ -90,7 +90,18 @@ namespace Drn
 		
 		Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
 
-		XMMATRIX mvpMatrix = XMMatrixMultiply( m_LocalToWorld.Get(), viewMatrix );
+		XMVECTOR Translation;
+		XMVECTOR Scale;
+		XMVECTOR Rotation;
+		XMMatrixDecompose( &Scale, &Rotation, &Translation, m_LocalToWorld.Get() );
+
+		XMVECTOR CameraLocation =  XMLoadFloat3( Renderer->m_CameraActor->GetActorLocation().Get() );
+
+		XMVECTOR Direction = CameraLocation - Translation;
+		XMMATRIX LookAtCamera = Matrix::MakeFromZ( Vector(Direction) ).Get();
+		XMMATRIX CameraRotated = XMMatrixMultiply( LookAtCamera, m_LocalToWorld.Get() );
+
+		XMMATRIX mvpMatrix = XMMatrixMultiply( CameraRotated, viewMatrix );
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
