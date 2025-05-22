@@ -58,8 +58,8 @@ namespace Drn
 		inline virtual bool HasSprite() const { return false; }
 #endif
 
-		Transform GetRelativeTransform();
-		Transform GetWorldTransform();
+		Transform GetRelativeTransform() const;
+		Transform GetWorldTransform() const;
 
 		void SetRelativeTransform(const Transform& InTransform);
 		void SetWorldTransform(const Transform& InTransform);
@@ -109,5 +109,7 @@ namespace Drn
 
 		SceneComponent* Parent = nullptr;
 		std::vector<SceneComponent*> Childs;
+
+		friend class Actor;
 	};
 }

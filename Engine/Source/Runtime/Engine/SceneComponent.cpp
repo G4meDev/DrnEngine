@@ -70,6 +70,8 @@ namespace Drn
 			m_Sprite = std::make_unique<BillboardComponent>();
 			AttachSceneComponent(m_Sprite.get());
 			//m_Sprite->RegisterComponent( InOwningWorld );
+
+			m_Sprite->UpdateCachedTransform( true );
 		}
 #endif
 	}
@@ -81,12 +83,12 @@ namespace Drn
 
 	}
 
-	Transform SceneComponent::GetRelativeTransform()
+	Transform SceneComponent::GetRelativeTransform() const
 	{
 		return RelativeTransform;
 	}
 
-	Transform SceneComponent::GetWorldTransform()
+	Transform SceneComponent::GetWorldTransform() const
 	{
 		return CachedWorldTransform;
 	}

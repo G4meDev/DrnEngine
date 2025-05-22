@@ -9,6 +9,7 @@ namespace Drn
 		, m_BillboardSceneProxy(nullptr)
 	{
 		SetEditorPrimitive(true);
+
 	}
 
 	BillboardComponent::~BillboardComponent()
@@ -60,7 +61,6 @@ namespace Drn
 		, m_Sprite( InBillboardComponent->GetSprite() )
 		, m_Guid( InBillboardComponent->GetParent() ? InBillboardComponent->GetParent()->GetGuid() : InBillboardComponent->GetGuid() )
 	{
-		
 	}
 
 	BillboardSceneProxy::~BillboardSceneProxy()
