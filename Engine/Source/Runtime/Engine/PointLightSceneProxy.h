@@ -11,6 +11,8 @@ namespace Drn
 		PointLightSceneProxy( class PointLightComponent* InComponent );
 		virtual ~PointLightSceneProxy();
 
+		inline void SetRadius( float Radius ) { m_Radius = Radius; }
+
 	protected:
 		float m_Radius;
 

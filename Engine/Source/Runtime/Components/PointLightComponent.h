@@ -11,6 +11,8 @@ namespace Drn
 		PointLightComponent();
 		virtual ~PointLightComponent();
 
+		virtual void Serialize( Archive& Ar ) override;
+
 		inline float GetRadius() const { return m_Radius; }
 
 	protected:
@@ -20,9 +22,14 @@ namespace Drn
 
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
-		float m_Radius;
+		void SetRadius( float Radius );
 
-		class PointLightSceneProxy* m_SceneProxy;
+		float m_Radius;
+		class PointLightSceneProxy* m_PointLightSceneProxy;
+
+#if WITH_EDITOR
+		virtual void DrawDetailPanel(float DeltaTime) override;
+#endif
 
 	private:
 	};

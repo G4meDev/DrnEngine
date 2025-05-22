@@ -110,6 +110,12 @@ namespace Drn
 				StaticMeshActor* NewActor = InWorld->SpawnActor<StaticMeshActor>();
 				NewActor->Serialize(Ar);
 			}
+
+			else if ( ActorType == EActorType::PointLight )
+			{
+				PointLightActor* NewPointLightActor = InWorld->SpawnActor<PointLightActor>();
+				NewPointLightActor->Serialize(Ar);
+			}
 		}
 	
 	}

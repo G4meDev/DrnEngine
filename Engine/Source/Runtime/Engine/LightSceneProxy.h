@@ -9,6 +9,9 @@ namespace Drn
 		inline void Release() { delete this; }
 
 		inline void SetWorldPosition( const Vector& InWorldPosition ) { m_WorldPosition = InWorldPosition; }
+		inline void SetColor ( const Vector& Color ) { m_LightColor = Color; }
+		inline void SetCastShadow( bool CastShadow ) { m_CastShadow = CastShadow; }
+
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) = 0;
@@ -23,7 +26,7 @@ namespace Drn
 
 		Vector m_WorldPosition;
 		Vector m_LightColor;
-
+		bool m_CastShadow;
 
 	private:
 

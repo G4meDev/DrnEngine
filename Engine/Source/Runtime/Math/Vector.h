@@ -80,6 +80,13 @@ namespace Drn
 			return XMMax(XMMax(XMVectorGetX(Vec), XMVectorGetY(Vec)), XMVectorGetZ(Vec));
 		}
 
+		inline float GetMinComponent() const 
+		{
+			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
+
+			return XMMin(XMMin(XMVectorGetX(Vec), XMVectorGetY(Vec)), XMVectorGetZ(Vec));
+		}
+
 		static Vector FromU32(uint32_t Value)
 		{
 			uint8_t X = 255;

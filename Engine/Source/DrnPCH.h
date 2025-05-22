@@ -19,6 +19,7 @@
 #include "Runtime/Engine/Actor.h"
 #include "Runtime/Engine/StaticMeshActor.h"
 #include "Runtime/Engine/CameraActor.h"
+#include "Runtime/Engine/PointLightActor.h"
 
 #include "Runtime/Renderer/Device.h"
 #include "Runtime/Renderer/SwapChain.h"
