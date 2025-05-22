@@ -7,7 +7,8 @@ namespace Drn
 		: Actor()
 	{
 		m_MeshComponenet = std::make_unique<StaticMeshComponent>();
-		GetRoot()->AttachSceneComponent(m_MeshComponenet.get());
+		SetRootComponent(m_MeshComponenet.get());
+		//GetRoot()->AttachSceneComponent(m_MeshComponenet.get());
 
 #if WITH_EDITOR
 		m_MeshComponenet->SetComponentLabel( "Mesh" );

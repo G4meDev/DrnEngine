@@ -6,15 +6,10 @@ LOG_DEFINE_CATEGORY( LogActor, "Actor" );
 namespace Drn
 {
 	Actor::Actor()
+		: Root(nullptr)
+		, m_PendingKill(false)
 	{
-		Root = std::make_unique<SceneComponent>();
-		Root->SetOwningActor(this);
 
-		m_PendingKill = false;
-
-#if WITH_EDITOR
-		Root->SetComponentLabel( "Root" );
-#endif
 	}
 
 	Actor::~Actor()
@@ -80,7 +75,7 @@ namespace Drn
 	{
 		if (!Target)
 		{
-			Target = Root.get();
+			Target = Root;
 		}
 
 		if (Target->GetOwningActor() == this)
@@ -98,7 +93,7 @@ namespace Drn
 
 	SceneComponent* Actor::GetRoot() const
 	{
-		return Root.get();
+		return Root;
 	}
 
 	void Actor::Destroy()
@@ -174,7 +169,7 @@ namespace Drn
 			Comp->RegisterComponent(InWorld);
 		}
 
-		RegisterSceneComponentRecursive(Root.get(), InWorld);
+		RegisterSceneComponentRecursive(Root, InWorld);
 	}
 
 	void Actor::UnRegisterComponents()
@@ -184,7 +179,7 @@ namespace Drn
 			Comp->UnRegisterComponent();
 		}
 
-		UnRegisterSceneComponentRecursive(Root.get());
+		UnRegisterSceneComponentRecursive(Root);
 	}
 
 	void Actor::DispatchPhysicsCollisionHit( const RigidBodyCollisionInfo& MyInfo,

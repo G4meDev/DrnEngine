@@ -42,6 +42,12 @@ namespace Drn
 		Transform GetActorTransform();
 		void SetActorTransform( const Transform& InTransform );
 		
+		inline void SetRootComponent( SceneComponent* InRootComponent )
+		{
+			Root = InRootComponent;
+			Root->SetOwningActor(this);
+		}
+
 		void AttachSceneComponent(SceneComponent* InSceneComponent, SceneComponent* Target = nullptr);
 		void AddComponent(Component* InComponent);
 
@@ -77,7 +83,8 @@ namespace Drn
 		void RegisterSceneComponentRecursive( SceneComponent* InComponent, World* InWorld );
 		void UnRegisterSceneComponentRecursive( SceneComponent* InComponent);
 
-		std::unique_ptr<SceneComponent> Root;
+		//std::unique_ptr<SceneComponent> Root;
+		SceneComponent* Root;
 
 		/** this only contains non scene components */
 		std::vector<std::shared_ptr<Component>> Components;

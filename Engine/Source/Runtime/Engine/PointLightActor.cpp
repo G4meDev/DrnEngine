@@ -9,7 +9,8 @@ namespace Drn
 	{
 		m_PointLightComponent = std::make_unique<class PointLightComponent>();
 		m_PointLightComponent->SetComponentLabel( "LightComponent" );
-		GetRoot()->AttachSceneComponent(m_PointLightComponent.get());
+		SetRootComponent(m_PointLightComponent.get());
+		//GetRoot()->AttachSceneComponent(m_PointLightComponent.get());
 		SetLightComponent(m_PointLightComponent.get());
 	}
 
