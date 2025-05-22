@@ -118,7 +118,7 @@ namespace Drn
 #if WITH_EDITOR
 			ActorLabel = ActorLabelStr;
 #endif
-			
+
 			Root->Serialize(Ar);
 		}
 

@@ -49,8 +49,9 @@ namespace Drn
 #if WITH_EDITOR
 		inline bool IsSelectedInEditor() const { return m_SelectedInEditor; }
 		virtual void SetSelectedInEditor( bool SelectedInEditor );
-#endif
 
+		inline virtual bool ShouldDrawInComponentHeirarchy() const { return true; }
+#endif
 
 	protected:
 		Guid m_Guid;

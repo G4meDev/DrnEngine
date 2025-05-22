@@ -16,6 +16,11 @@ namespace Drn
 		
 	}
 
+	void BillboardComponent::Serialize( Archive& Ar )
+	{
+		// editor only component. no need to serialize
+	}
+
 	void BillboardComponent::SetSprite( AssetHandle<Texture2D> NewSprite )
 	{
 		m_Sprite = NewSprite;
@@ -53,6 +58,7 @@ namespace Drn
 	BillboardSceneProxy::BillboardSceneProxy( class BillboardComponent* InBillboardComponent )
 		: PrimitiveSceneProxy( InBillboardComponent )
 		, m_Sprite( InBillboardComponent->GetSprite() )
+		, m_Guid( InBillboardComponent->GetParent() ? InBillboardComponent->GetParent()->GetGuid() : InBillboardComponent->GetGuid() )
 	{
 		
 	}
@@ -69,7 +75,15 @@ namespace Drn
 
 	void BillboardSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		
+		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CommandList->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
+		CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_SpriteHitProxyPSO->m_RootSignature);
+
+		SetConstantAndSrv(CommandList, Renderer);
+
+		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_UniformQuad->m_VertexBufferView);
+		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_UniformQuad->m_IndexBufferView );
+		CommandList->DrawIndexedInstanced( 6, 1, 0, 0, 0);
 	}
 
 	void BillboardSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
@@ -83,6 +97,25 @@ namespace Drn
 		CommandList->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
 		CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_RootSignature);
 
+		SetConstantAndSrv(CommandList, Renderer);
+
+		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_UniformQuad->m_VertexBufferView);
+		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_UniformQuad->m_IndexBufferView );
+		CommandList->DrawIndexedInstanced( 6, 1, 0, 0, 0);
+	}
+
+	void BillboardSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		
+	}
+
+	void BillboardSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		
+	}
+
+	void BillboardSceneProxy::SetConstantAndSrv( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
 		float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
 		
 		XMMATRIX viewMatrix;
@@ -105,8 +138,7 @@ namespace Drn
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-		//CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
-		//CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 16);
 
 		if (m_Sprite.IsValid())
 		{
@@ -118,19 +150,10 @@ namespace Drn
 			CommandList->SetGraphicsRootDescriptorTable( 1, m_Sprite->TextureGpuHandle );
 		}
 
-		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_UniformQuad->m_VertexBufferView);
-		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_UniformQuad->m_IndexBufferView );
-		CommandList->DrawIndexedInstanced( 6, 1, 0, 0, 0);
-	}
-
-	void BillboardSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
-	{
-		
-	}
-
-	void BillboardSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
-	{
-		
+		else
+		{
+			// TODO: set default texture if null
+		}
 	}
 
 	PrimitiveComponent* BillboardSceneProxy::GetPrimitive()

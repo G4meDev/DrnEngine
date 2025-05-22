@@ -5,7 +5,8 @@
 namespace Drn
 {
 	LightComponent::LightComponent()
-		: m_LightColor(Vector::OneVector)
+		: SceneComponent()
+		, m_LightColor(Vector::OneVector)
 		, m_Intensity(1.0f)
 		, m_CastShadow(false)
 	{

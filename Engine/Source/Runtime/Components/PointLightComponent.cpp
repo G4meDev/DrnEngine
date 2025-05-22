@@ -12,7 +12,6 @@ namespace Drn
 		: LightComponent()
 		, m_Radius(3.0f)
 	{
-		
 	}
 
 	PointLightComponent::~PointLightComponent()
@@ -42,6 +41,13 @@ namespace Drn
 		m_PointLightSceneProxy = new PointLightSceneProxy(this);
 		InOwningWorld->GetScene()->RegisterLightProxy(m_PointLightSceneProxy);
 		m_LightSceneProxy = m_PointLightSceneProxy;
+
+#if WITH_EDITOR
+		AssetHandle<Texture2D> PointLightIcon( "Engine\\Content\\EditorResources\\LightIcons\\T_PointLightIcon.drn" );
+		PointLightIcon.Load();
+
+		m_Sprite->SetSprite( PointLightIcon );
+#endif
 	}
 
 	void PointLightComponent::UnRegisterComponent()

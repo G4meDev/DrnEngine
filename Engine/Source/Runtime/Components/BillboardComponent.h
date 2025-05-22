@@ -24,10 +24,13 @@ namespace Drn
 		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) override;
 		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) override;
 
+		virtual void SetConstantAndSrv(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer);
+
 		virtual PrimitiveComponent* GetPrimitive() override;
 
 	protected:
 		AssetHandle<Texture2D> m_Sprite;
+		Guid m_Guid;
 
 		class BillboardComponent* m_BillboardComponent;
 	};
@@ -38,11 +41,17 @@ namespace Drn
 		BillboardComponent();
 		virtual ~BillboardComponent();
 
+		virtual void Serialize( Archive& Ar ) override;
+
 		void SetSprite(AssetHandle<Texture2D> NewSprite);
 		inline AssetHandle<Texture2D> GetSprite() const { return m_Sprite; }
 
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
+
+#if WITH_EDITOR
+		inline virtual bool ShouldDrawInComponentHeirarchy() const override { return false; }
+#endif
 
 	protected:
 		AssetHandle<Texture2D> m_Sprite;

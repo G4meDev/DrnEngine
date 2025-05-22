@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "SceneComponent.h"
+#include "Runtime/Components/BillboardComponent.h"
 
 #if WITH_EDITOR
 
@@ -12,7 +13,7 @@ namespace Drn
 	SceneComponent::SceneComponent() 
 		: Component() 
 	{
-		
+
 	}
 
 	SceneComponent::~SceneComponent()
@@ -63,7 +64,14 @@ namespace Drn
 	{
 		Component::RegisterComponent(InOwningWorld);
 
-
+#if WITH_EDITOR
+		if (HasSprite())
+		{
+			m_Sprite = std::make_unique<BillboardComponent>();
+			AttachSceneComponent(m_Sprite.get());
+			//m_Sprite->RegisterComponent( InOwningWorld );
+		}
+#endif
 	}
 
 	void SceneComponent::UnRegisterComponent()

@@ -70,6 +70,11 @@ namespace Drn
 
 	void ActorDetailPanel::DrawNextSceneComponent( SceneComponent* Comp )
 	{
+		if (!Comp->ShouldDrawInComponentHeirarchy())
+		{
+			return;
+		}
+
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
 		ImGui::PushID( Comp->GetComponentLabel().c_str() );

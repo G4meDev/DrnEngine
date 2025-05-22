@@ -79,6 +79,17 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class SpriteHitProxyPSO
+	{
+	public:
+
+		SpriteHitProxyPSO( ID3D12GraphicsCommandList2* CommandList );
+		~SpriteHitProxyPSO();
+		
+		ID3D12RootSignature* m_RootSignature;
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class CommonResources
 	{
 	public:
@@ -96,12 +107,14 @@ namespace Drn
 		ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
 		ResolveEditorSelectionPSO* m_ResolveEditorSelectionPSO;
 		TonemapPSO* m_TonemapPSO;
+
 		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
+		SpriteHitProxyPSO* m_SpriteHitProxyPSO;
 
 	private:
 
 		static CommonResources* m_SingletonInstance;
 	};
 
-	void CompileShaderString(const std::string& ShaderCode, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob);
+	void CompileShaderString(const std::string& ShaderCode, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob, const D3D_SHADER_MACRO* Macros = NULL);
 }

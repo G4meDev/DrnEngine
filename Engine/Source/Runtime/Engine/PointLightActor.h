@@ -16,8 +16,6 @@ namespace Drn
 		virtual EActorType GetActorType() override { return EActorType::PointLight; }
 		std::unique_ptr<class PointLightComponent> m_PointLightComponent;
 
-		std::unique_ptr<class BillboardComponent> m_SpriteComponent;
-
 	private:
 	};
 }

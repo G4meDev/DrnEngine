@@ -28,6 +28,8 @@ namespace Drn
 		class PointLightSceneProxy* m_PointLightSceneProxy;
 
 #if WITH_EDITOR
+		inline virtual bool HasSprite() const override { return true; }
+
 		virtual void DrawDetailPanel(float DeltaTime) override;
 #endif
 

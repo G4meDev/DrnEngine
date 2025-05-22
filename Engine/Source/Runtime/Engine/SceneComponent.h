@@ -51,11 +51,11 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
-
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
-
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+
+		inline virtual bool HasSprite() const { return false; }
 #endif
 
 		Transform GetRelativeTransform();
@@ -86,9 +86,15 @@ namespace Drn
 		void SetWorldLocationAndRotation(const Vector& InLocation, const Quat& InRotation);
 		void SetWorldLocationAndRotation_SkipPhysic( const Vector& InLocation, const Quat& InRotation );
 
+		inline SceneComponent* GetParent() const { return Parent; }
+
 	protected:
 
 		virtual void OnUpdateTransform( bool SkipPhysic );
+
+#if WITH_EDITOR
+		std::unique_ptr<class BillboardComponent> m_Sprite = nullptr;
+#endif
 
 	private:
 
@@ -100,7 +106,6 @@ namespace Drn
 
 		void PropagateTransformUpdate( bool SkipPhysic );
 		void UpdateChildTransforms( bool SkipPhysic );
-
 
 		SceneComponent* Parent = nullptr;
 		std::vector<SceneComponent*> Childs;

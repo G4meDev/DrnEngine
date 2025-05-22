@@ -79,6 +79,11 @@ namespace Drn
 			Proxy->RenderHitProxyPass(CommandList, this);
 		}
 
+		for (PrimitiveSceneProxy* Proxy : m_Scene->m_EditorPrimitiveProxies)
+		{
+			Proxy->RenderHitProxyPass(CommandList, this);
+		}
+
 		PIXEndEvent(CommandList);
 	}
 #endif
