@@ -65,6 +65,7 @@ set( HEADER_FILES
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
 	Source/Runtime/Components/PointLightComponent.h
+	Source/Runtime/Components/BillboardComponent.h
 
 	Source/Runtime/Physic/PhysicCore.h
 	Source/Runtime/Physic/PhysicManager.h
@@ -197,6 +198,7 @@ set( SOURCE_FILES
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp
 	Source/Runtime/Components/PointLightComponent.cpp
+	Source/Runtime/Components/BillboardComponent.cpp
 
 	Source/Runtime/Physic/PhysicCore.cpp
 	Source/Runtime/Physic/PhysicManager.cpp

@@ -47,6 +47,8 @@ namespace Drn
 
 	protected:
 
+		class PrimitiveSceneProxy* m_SceneProxy;
+
 		bool m_RenderStateDirty;
 		bool m_EditorPrimitive;
 

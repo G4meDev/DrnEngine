@@ -23,6 +23,8 @@ namespace Drn
 		}
 #endif
 
+		inline void SetLocalToWorld( const Matrix& InMatrix ) { m_LocalToWorld = InMatrix; }
+
 	protected:
 
 		virtual void RenderMainPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
@@ -32,6 +34,7 @@ namespace Drn
 		virtual PrimitiveComponent*  GetPrimitive() = 0;
 
 		bool m_EditorPrimitive;
+		Matrix m_LocalToWorld;
 
 #if WITH_EDITOR
 		virtual void RenderHitProxyPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;

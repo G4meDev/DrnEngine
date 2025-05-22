@@ -11,6 +11,7 @@ namespace Drn
 		: SceneComponent()
 		, m_RenderStateDirty(true)
 		, m_EditorPrimitive(false)
+		, m_SceneProxy(nullptr)
 	{
 		
 	}
@@ -65,7 +66,12 @@ namespace Drn
 	void PrimitiveComponent::OnUpdateTransform( bool SkipPhysic )
 	{
 		SceneComponent::OnUpdateTransform( SkipPhysic );
-		
+
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->SetLocalToWorld(GetWorldTransform());
+		}
+
 		if (!SkipPhysic)
 		{
 			SendPhysicsTransform();

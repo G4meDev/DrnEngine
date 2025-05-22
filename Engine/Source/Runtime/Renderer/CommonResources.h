@@ -20,6 +20,21 @@ namespace Drn
 		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 	};
 
+	class UniformQuad
+	{
+	public:
+
+		UniformQuad( ID3D12GraphicsCommandList2* CommandList );
+		~UniformQuad();
+
+		Resource* m_VertexBuffer;
+		Resource* m_IndexBuffer;
+
+		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+	};
+
+
 	class ResolveAlphaBlendedPSO
 	{
 	public:
@@ -53,6 +68,17 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class SpriteEditorPrimitivePSO
+	{
+	public:
+
+		SpriteEditorPrimitivePSO( ID3D12GraphicsCommandList2* CommandList );
+		~SpriteEditorPrimitivePSO();
+		
+		ID3D12RootSignature* m_RootSignature;
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class CommonResources
 	{
 	public:
@@ -66,9 +92,11 @@ namespace Drn
 		inline static CommonResources* Get() { return m_SingletonInstance; }
 
 		ScreenTriangle* m_ScreenTriangle;
+		UniformQuad* m_UniformQuad;
 		ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
 		ResolveEditorSelectionPSO* m_ResolveEditorSelectionPSO;
 		TonemapPSO* m_TonemapPSO;
+		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
 
 	private:
 

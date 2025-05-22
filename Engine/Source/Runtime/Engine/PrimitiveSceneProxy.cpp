@@ -4,7 +4,7 @@
 namespace Drn
 {
 	PrimitiveSceneProxy::PrimitiveSceneProxy( const PrimitiveComponent* InComponent )
-		: m_EditorPrimitive(false)
+		: m_EditorPrimitive( InComponent->IsEditorPrimitive() )
 	{
 		
 	}

@@ -18,9 +18,9 @@ namespace Drn
 		m_SceneRenderer->OnPickedComponent.Add( this, &ViewportPanel::OnRendererPickedComponent );
 
 		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
-		m_ViewportCamera->SetActorLocation(XMVectorSet(-20, 28, 20, 0));
+		m_ViewportCamera->SetActorLocation(XMVectorSet(20, 28, 20, 0));
 
-		XMVECTOR CameraRotation = XMQuaternionRotationRollPitchYaw(Math::PI / 4, Math::PI * 3 / 4, 0);
+		XMVECTOR CameraRotation = XMQuaternionRotationRollPitchYaw(Math::PI / 4, Math::PI * 5 / 4, 0);
 		m_ViewportCamera->SetActorRotation( CameraRotation );
 
 		m_ViewportCamera->SetActorLabel( "ViewportCamera" );
