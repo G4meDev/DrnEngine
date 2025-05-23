@@ -9,7 +9,9 @@ struct LightConstantBuffer
 {
     matrix LocalToProjection;
     matrix ProjectionToWorld;
-    float3 Position;
+    float3 CameraPosition;
+    float A;
+    float3 LightPosition;
     float Radius;
     float3 Color;
     float InvRadius;
@@ -61,19 +63,35 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 N = DecodeNormal(WorldNormal);
     
-    float3 ToLight = CB.Position - WorldPos.xyz;
+    float3 ToLight = CB.LightPosition - WorldPos.xyz;
     float DistanceSquare = dot(ToLight, ToLight);
     
     float3 L = ToLight * rsqrt(DistanceSquare);
     float NoL = saturate(dot( N, L ));
+    
+    float3 V = CB.CameraPosition - WorldPos.xyz;
+    float3 H = normalize(normalize(V) + normalize(ToLight));
 
-    float Distance = distance(WorldPos.xyz, CB.Position);
+    float Distance = distance(WorldPos.xyz, CB.LightPosition);
     float Attenuation = 1 - Distance / CB.Radius;
     Attenuation = saturate(Attenuation);
 
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, BaseColor.rgb, Masks.r);
+    
+    float NDF = DistributionGGX(N, H, Masks.g);
+    float G = GeometrySmith(N, V, L, Masks.g);
+    float3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+    
+    float3 kS = F;
+    float3 kD = float3(1, 1, 1) - kS;
+    kD *= 1.0 - Masks.r;
+    
+    float3 Specular = NDF * G * F / (max(dot(N, V), 0) * max(dot(N, L), 0) + 0.0001);
     
     
-    float3 Result = CB.Color * Attenuation * NoL;
+    //float3 Result = CB.Color * Attenuation * NoL * BaseColor.xyz;
+    float3 Result = (kD * BaseColor.xyz / PI + Specular) * NoL * Attenuation * CB.Color;
     
     return float4(Result, 1);
     

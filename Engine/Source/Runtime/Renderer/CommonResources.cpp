@@ -811,7 +811,7 @@ namespace Drn
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 		CD3DX12_ROOT_PARAMETER1 rootParameters[5] = {};
-		rootParameters[0].InitAsConstants(40, 0);
+		rootParameters[0].InitAsConstants(44, 0);
 		//CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		//rootParameters[1].InitAsDescriptorTable(1, &Range);
 

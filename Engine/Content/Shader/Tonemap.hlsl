@@ -42,5 +42,9 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     //uint2 ScreenPos = IN.UV * View.RenderTargetSize;
 
     float4 HdrColor = HdrImage.Sample(TextureSampler, IN.UV);
+    HdrColor = HdrColor / 1 + HdrColor;
+    
+    float a = 1.0 / 2.2;
+    HdrColor.xyz = pow(HdrColor.xyz, a.xxx);
     return HdrColor;
 }

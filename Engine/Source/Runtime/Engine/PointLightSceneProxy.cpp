@@ -22,6 +22,8 @@ namespace Drn
 		XMMATRIX viewMatrix;
 		XMMATRIX projectionMatrix;
 		
+		Vector CameraPosition = Renderer->m_CameraActor->GetActorLocation();
+
 		Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
 		XMMATRIX LocalToWorld = XMMatrixTranslationFromVector( XMLoadFloat3( m_WorldPosition.Get() ) );
 
@@ -30,8 +32,9 @@ namespace Drn
 
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &XMMatrixInverse(NULL, XMMatrixMultiply(viewMatrix, projectionMatrix)), 16);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_WorldPosition, m_Radius), 32);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_LightColor, 1), 36);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(CameraPosition, 1), 32);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_WorldPosition, m_Radius), 36);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_LightColor, 1), 40);
 
 
 		//if (m_Sprite.IsValid())
