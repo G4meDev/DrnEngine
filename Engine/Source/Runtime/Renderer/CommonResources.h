@@ -34,6 +34,21 @@ namespace Drn
 		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 	};
 
+	class PointLightSphere
+	{
+	public:
+
+		PointLightSphere( ID3D12GraphicsCommandList2* CommandList );
+		~PointLightSphere();
+
+		Resource* m_VertexBuffer;
+		Resource* m_IndexBuffer;
+
+		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+
+		uint16 m_IndexCount;
+	};
 
 	class ResolveAlphaBlendedPSO
 	{
@@ -90,6 +105,17 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class LightPassPSO
+	{
+	public:
+
+		LightPassPSO( ID3D12GraphicsCommandList2* CommandList );
+		~LightPassPSO();
+		
+		ID3D12RootSignature* m_RootSignature;
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class CommonResources
 	{
 	public:
@@ -104,9 +130,12 @@ namespace Drn
 
 		ScreenTriangle* m_ScreenTriangle;
 		UniformQuad* m_UniformQuad;
+		PointLightSphere* m_PointLightSphere;
+
 		ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
 		ResolveEditorSelectionPSO* m_ResolveEditorSelectionPSO;
 		TonemapPSO* m_TonemapPSO;
+		LightPassPSO* m_LightPassPSO;
 
 		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
 		SpriteHitProxyPSO* m_SpriteHitProxyPSO;

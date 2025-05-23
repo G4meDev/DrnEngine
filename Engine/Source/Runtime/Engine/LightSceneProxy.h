@@ -12,6 +12,7 @@ namespace Drn
 		inline void SetColor ( const Vector& Color ) { m_LightColor = Color; }
 		inline void SetCastShadow( bool CastShadow ) { m_CastShadow = CastShadow; }
 
+		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) = 0;
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) = 0;

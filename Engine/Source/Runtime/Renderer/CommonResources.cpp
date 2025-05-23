@@ -1,6 +1,9 @@
 #include "DrnPCH.h"
 #include "CommonResources.h"
 
+#define PAR_SHAPES_IMPLEMENTATION
+#include "ThirdParty/par/par_shapes.h"
+
 LOG_DEFINE_CATEGORY( LogCommonResources, "CommonResources" );
 
 namespace Drn
@@ -14,26 +17,35 @@ namespace Drn
 
 	D3D12_INPUT_LAYOUT_DESC VertexLayout_PosUV = { InputElement_PosUV, _countof( InputElement_PosUV ) };
 
+	D3D12_INPUT_ELEMENT_DESC InputElement_Pos[1] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }};
+
+	D3D12_INPUT_LAYOUT_DESC VertexLayout_Pos = { InputElement_Pos, _countof( InputElement_Pos ) };
+
 	CommonResources::CommonResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
 		m_UniformQuad = new UniformQuad( CommandList );
+		m_PointLightSphere = new PointLightSphere( CommandList );
 		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList);
 		m_ResolveEditorSelectionPSO = new ResolveEditorSelectionPSO(CommandList);
 		m_TonemapPSO = new TonemapPSO(CommandList);
 		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList);
 		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList);
+		m_LightPassPSO = new LightPassPSO(CommandList);
 	}
 
 	CommonResources::~CommonResources()
 	{
 		delete m_ScreenTriangle;
 		delete m_UniformQuad;
+		delete m_PointLightSphere;
 		delete m_ResolveAlphaBlendedPSO;
 		delete m_ResolveEditorSelectionPSO;
 		delete m_TonemapPSO;
 		delete m_SpriteEditorPrimitivePSO;
 		delete m_SpriteHitProxyPSO;
+		delete m_LightPassPSO;
 	}
 
 	void CommonResources::Init( ID3D12GraphicsCommandList2* CommandList )
@@ -232,6 +244,92 @@ namespace Drn
 	}
 
 	UniformQuad::~UniformQuad()
+	{
+		if (m_VertexBuffer) { m_VertexBuffer->ReleaseBufferedResource(); }
+		if (m_IndexBuffer) { m_IndexBuffer->ReleaseBufferedResource(); }
+	}
+
+// --------------------------------------------------------------------------------------
+
+	PointLightSphere::PointLightSphere( ID3D12GraphicsCommandList2* CommandList )
+	{
+		par_shapes_mesh* SphereMesh = par_shapes_create_subdivided_sphere( 1 );
+
+		m_IndexCount = SphereMesh->ntriangles * 3;
+
+		const uint32 VertexBufferSize = SphereMesh->npoints * 3 * sizeof( float );
+		const uint32 IndexBufferSize = m_IndexCount * sizeof(PAR_SHAPES_T);
+
+		Resource* IntermediateVertexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
+			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+		m_VertexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
+			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
+		Resource* IntermediateIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
+			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+		m_IndexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
+			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+
+#if D3D12_Debug_INFO
+		IntermediateVertexBuffer->SetName( "PointLightSphere_IntermediateVertexBuffer" );
+		m_VertexBuffer->SetName( "PointLightSphere_VertexBuffer" );
+		IntermediateIndexBuffer->SetName( "PointLightSphere_IntermediateIndexBuffer" );
+		m_IndexBuffer->SetName( "PointLightSphere_IndexBuffer"  );
+#endif
+
+		{
+			UINT8*        pVertexDataBegin;
+			CD3DX12_RANGE readRange( 0, 0 );
+			IntermediateVertexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
+			memcpy( pVertexDataBegin, SphereMesh->points, VertexBufferSize );
+			IntermediateVertexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
+
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+			CommandList->ResourceBarrier(1, &barrier);
+
+			CommandList->CopyResource(m_VertexBuffer->GetD3D12Resource(), IntermediateVertexBuffer->GetD3D12Resource());
+
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
+			CommandList->ResourceBarrier(1, &barrier);
+
+			m_VertexBufferView.BufferLocation = m_VertexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+			m_VertexBufferView.StrideInBytes  = 12;
+			m_VertexBufferView.SizeInBytes    = VertexBufferSize;
+		}
+
+		{
+			UINT8*        pIndexDataBegin;
+			CD3DX12_RANGE readRange( 0, 0 );
+			IntermediateIndexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
+			memcpy( pIndexDataBegin, SphereMesh->triangles, IndexBufferSize );
+			IntermediateIndexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
+
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_INDEX_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+			CommandList->ResourceBarrier(1, &barrier);
+
+			CommandList->CopyResource(m_IndexBuffer->GetD3D12Resource(), IntermediateIndexBuffer->GetD3D12Resource());
+
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER );
+			CommandList->ResourceBarrier(1, &barrier);
+
+			m_IndexBufferView.BufferLocation = m_IndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+			m_IndexBufferView.Format         = DXGI_FORMAT_R16_UINT;
+			m_IndexBufferView.SizeInBytes    = IndexBufferSize;
+		}
+
+		IntermediateVertexBuffer->ReleaseBufferedResource();
+		IntermediateIndexBuffer->ReleaseBufferedResource();
+
+		par_shapes_free_mesh(SphereMesh);
+	}
+
+	PointLightSphere::~PointLightSphere()
 	{
 		if (m_VertexBuffer) { m_VertexBuffer->ReleaseBufferedResource(); }
 		if (m_IndexBuffer) { m_IndexBuffer->ReleaseBufferedResource(); }
@@ -703,6 +801,100 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
+	LightPassPSO::LightPassPSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_RootSignature = nullptr;
+		m_PSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		CD3DX12_ROOT_PARAMETER1 rootParameters[2] = {};
+		rootParameters[0].InitAsConstants(16, 0);
+		CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
+		rootParameters[1].InitAsDescriptorTable(1, &Range);
+
+		CD3DX12_STATIC_SAMPLER_DESC SamplerDesc = {};
+		SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+		SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		SamplerDesc.ShaderRegister = 0;
+		SamplerDesc.RegisterSpace = 0;
+
+		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(2, rootParameters, 1, &SamplerDesc, rootSignatureFlags );
+
+		ID3DBlob* pSerializedRootSig;
+		ID3DBlob* pRootSigError;
+		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
+		if ( FAILED(Result) )
+		{
+			if ( pRootSigError )
+			{
+				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
+				pRootSigError->Release();
+			}
+
+			if (pSerializedRootSig)
+			{
+				pSerializedRootSig->Release();
+				pSerializedRootSig = nullptr;
+			}
+
+			return;
+		}
+
+		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
+			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
+
+		std::string ShaderCode = FileSystem::ReadFileAsString( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightPassDeferred.hlsl" ) );
+
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+
+		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
+		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+
+		CD3DX12_BLEND_DESC BlendDesc = {};
+		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+		BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.InputLayout						= VertexLayout_Pos;
+		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		//PipelineDesc.BlendState							= BlendDesc;
+		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
+		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
+		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.RTVFormats[0]						= GBUFFER_COLOR_DEFERRED_FORMAT;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+	}
+
+	LightPassPSO::~LightPassPSO()
+	{
+		m_RootSignature->Release();
+		m_PSO->Release();
+	}
+
+// --------------------------------------------------------------------------------------
+
 	void CompileShaderString( const std::string& ShaderCode, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob, const D3D_SHADER_MACRO* Macros)
 	{
 		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -726,8 +918,6 @@ namespace Drn
 				ShaderBlob->Release();
 		}
 	}
-
-
 
 
 

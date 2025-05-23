@@ -34,6 +34,10 @@ namespace Drn
 		m_DepthClearValue.DepthStencil = { 0, 0 };
 
 		Renderer::Get()->TempSRVAllocator.Alloc(&m_ColorDeferredSrvCpuHandle, &m_ColorDeferredSrvGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Alloc(&m_BaseColorSrvCpuHandle, &m_BaseColorSrvGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Alloc(&m_WorldNormalSrvCpuHandle, &m_WorldNormalSrvGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Alloc(&m_MasksSrvCpuHandle, &m_WorldNormalSrvGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Alloc(&m_DepthSrvCpuHandle, &m_DepthSrvGpuHandle);
 	}
 
 	GBuffer::~GBuffer()
@@ -45,6 +49,10 @@ namespace Drn
 		if (m_DepthTarget) { m_DepthTarget->ReleaseBufferedResource(); }
 
 		Renderer::Get()->TempSRVAllocator.Free(m_ColorDeferredSrvCpuHandle, m_ColorDeferredSrvGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Free(m_BaseColorSrvCpuHandle, m_BaseColorSrvGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Free(m_WorldNormalSrvCpuHandle, m_WorldNormalSrvGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Free(m_MasksSrvCpuHandle, m_WorldNormalSrvGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Free(m_DepthSrvCpuHandle, m_DepthSrvGpuHandle);
 	}
 
 	void GBuffer::Init()
@@ -114,6 +122,15 @@ namespace Drn
 			RenderTargetViewDesc.Texture2D.MipSlice = 0;
 
 			Device->CreateRenderTargetView( m_BaseColorTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_BaseColorCpuHandle );
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+			SrvDesc.Format = GBUFFER_BASE_COLOR_FORMAT;
+			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			SrvDesc.Texture2D.MipLevels = 1;
+			SrvDesc.Texture2D.MostDetailedMip = 0;
+
+			Device->CreateShaderResourceView( m_BaseColorTarget->GetD3D12Resource(), &SrvDesc, m_BaseColorSrvCpuHandle );
 		}
 
 		{
@@ -130,6 +147,15 @@ namespace Drn
 			RenderTargetViewDesc.Texture2D.MipSlice = 0;
 
 			Device->CreateRenderTargetView( m_WorldNormalTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_WorldNormalCpuHandle );
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+			SrvDesc.Format = GBUFFER_WORLD_NORMAL_FORMAT;
+			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			SrvDesc.Texture2D.MipLevels = 1;
+			SrvDesc.Texture2D.MostDetailedMip = 0;
+
+			Device->CreateShaderResourceView( m_WorldNormalTarget->GetD3D12Resource(), &SrvDesc, m_WorldNormalSrvCpuHandle );
 		}
 
 		{
@@ -146,6 +172,15 @@ namespace Drn
 			RenderTargetViewDesc.Texture2D.MipSlice = 0;
 
 			Device->CreateRenderTargetView( m_MasksTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_MasksCpuHandle );
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+			SrvDesc.Format = GBUFFER_MASKS_FORMAT;
+			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			SrvDesc.Texture2D.MipLevels = 1;
+			SrvDesc.Texture2D.MostDetailedMip = 0;
+
+			Device->CreateShaderResourceView( m_MasksTarget->GetD3D12Resource(), &SrvDesc, m_MasksSrvCpuHandle );
 		}
 
 		{
@@ -162,6 +197,15 @@ namespace Drn
 			DepthViewDesc.Texture2D.MipSlice = 0;
 		
 			Device->CreateDepthStencilView( m_DepthTarget->GetD3D12Resource(), &DepthViewDesc, m_DsvHeap->GetCPUDescriptorHandleForHeapStart() );
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+			SrvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			SrvDesc.Texture2D.MipLevels = 1;
+			SrvDesc.Texture2D.MostDetailedMip = 0;
+
+			Device->CreateShaderResourceView( m_DepthTarget->GetD3D12Resource(), &SrvDesc, m_DepthSrvCpuHandle );
 		}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -199,6 +243,14 @@ namespace Drn
 		};
 
 		CommandList->OMSetRenderTargets( 4, RenderTargets, false, &m_DepthCpuHandle );
+	}
+
+	void GBuffer::BindLightPass( ID3D12GraphicsCommandList2* CommandList )
+	{
+		CommandList->RSSetViewports(1, &m_Viewport);
+		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+
+		CommandList->OMSetRenderTargets( 1, &m_ColorDeferredCpuHandle, true, nullptr );
 	}
 
 }

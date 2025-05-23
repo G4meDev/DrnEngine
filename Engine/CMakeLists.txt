@@ -130,6 +130,8 @@ set( HEADER_FILES
 
 	Source/Editor/FileImportMenu/FileImportMenu.h
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.h
+	
+	Source/ThirdParty/par/par_shapes.h
 )
 
 set( SOURCE_FILES

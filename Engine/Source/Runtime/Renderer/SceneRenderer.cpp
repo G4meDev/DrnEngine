@@ -109,9 +109,13 @@ namespace Drn
 	{
 		SCOPE_STAT( RenderLights );
 
+		m_GBuffer->BindLightPass(CommandList);
+
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{
 			Proxy->DrawAttenuation( m_Scene->GetWorld() );
+
+			Proxy->Render(CommandList, this);
 		}
 	}
 
