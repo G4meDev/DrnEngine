@@ -68,3 +68,13 @@ float2 VSPosToScreenUV(float4 VSPos)
     
     return UV;
 }
+
+float3 EncodeNormal(float3 Normal)
+{
+    return Normal * 0.5 + 0.5;
+}
+
+float3 DecodeNormal(float3 Normal)
+{
+    return Normal * 2 - 1;
+}

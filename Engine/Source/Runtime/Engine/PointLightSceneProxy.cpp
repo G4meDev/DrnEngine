@@ -29,8 +29,9 @@ namespace Drn
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_WorldPosition, m_Radius), 16);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_LightColor, 1), 20);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &XMMatrixInverse(NULL, XMMatrixMultiply(viewMatrix, projectionMatrix)), 16);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_WorldPosition, m_Radius), 32);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_LightColor, 1), 36);
 
 
 		//if (m_Sprite.IsValid())

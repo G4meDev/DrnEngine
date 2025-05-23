@@ -811,7 +811,7 @@ namespace Drn
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 		CD3DX12_ROOT_PARAMETER1 rootParameters[5] = {};
-		rootParameters[0].InitAsConstants(24, 0);
+		rootParameters[0].InitAsConstants(40, 0);
 		//CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		//rootParameters[1].InitAsDescriptorTable(1, &Range);
 
@@ -879,11 +879,14 @@ namespace Drn
 		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
 		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
+		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
+		RasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
+
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
 		PipelineDesc.pRootSignature						= m_RootSignature;
 		PipelineDesc.InputLayout						= VertexLayout_Pos;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		PipelineDesc.RasterizerState					= RasterizerDesc;
 		PipelineDesc.BlendState							= BlendDesc;
 		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
 		PipelineDesc.SampleMask							= UINT_MAX;
