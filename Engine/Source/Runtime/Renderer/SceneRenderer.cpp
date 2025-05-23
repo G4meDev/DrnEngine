@@ -109,6 +109,10 @@ namespace Drn
 	{
 		SCOPE_STAT( RenderLights );
 
+		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CommandList->SetPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
+		CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_LightPassPSO->m_RootSignature);
+
 		m_GBuffer->BindLightPass(CommandList);
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
@@ -117,6 +121,8 @@ namespace Drn
 
 			Proxy->Render(CommandList, this);
 		}
+
+		m_GBuffer->UnBindLightPass(CommandList);
 	}
 
 	void SceneRenderer::RenderPostProcess( ID3D12GraphicsCommandList2* CommandList )

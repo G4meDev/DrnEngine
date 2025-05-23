@@ -16,12 +16,8 @@ namespace Drn
 
 	void PointLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		CommandList->SetPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
-		CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_LightPassPSO->m_RootSignature);
-
 		float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
-		
+
 		XMMATRIX viewMatrix;
 		XMMATRIX projectionMatrix;
 		
@@ -33,6 +29,7 @@ namespace Drn
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
+
 
 		//if (m_Sprite.IsValid())
 		//{
