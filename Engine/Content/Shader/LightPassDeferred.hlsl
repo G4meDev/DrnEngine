@@ -89,12 +89,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 Specular = NDF * G * F / (max(dot(N, V), 0) * max(dot(N, L), 0) + 0.0001);
     
-    
-    //float3 Result = CB.Color * Attenuation * NoL * BaseColor.xyz;
     float3 Result = (kD * BaseColor.xyz / PI + Specular) * NoL * Attenuation * CB.Color;
-    
+
     return float4(Result, 1);
-    
-    //return BaseColor + WorldNormal + Masks + Depth;
-    //return WorldNormal;
 }

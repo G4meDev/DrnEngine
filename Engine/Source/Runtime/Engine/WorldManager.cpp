@@ -97,7 +97,7 @@ namespace Drn
 			m_PendingLevel = AllocateWorld();
 			m_PendingLevel->SetTransient(true);
 
-			AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
+			AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Sphere.drn");
 			CubeMesh.Load();
 
 			StaticMeshActor* CubeStaticMeshActor = m_PendingLevel->SpawnActor<StaticMeshActor>();
@@ -179,11 +179,14 @@ namespace Drn
 		m_MainWorld = AllocateWorld();
 		m_MainWorld->SetTransient(true);
 
-		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
+		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Sphere.drn");
 		CubeMesh.Load();
 
 		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();
 		CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
+
+		//PointLightActor* PointLight = m_MainWorld->SpawnActor<PointLightActor>();
+		//PointLight->SetActorLocation( Vector(0, 5, 0) );
 
 #if WITH_EDITOR
 		CubeStaticMeshActor->SetActorLabel("Cube_1");
