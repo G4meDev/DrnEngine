@@ -34,6 +34,11 @@ namespace Drn
 		}
 	}
 
+	Matrix PointLightComponent::GetLocalToWorld() const
+	{
+		return Transform( GetWorldLocation(), Quat::Identity, GetRadius() );
+	}
+
 	void PointLightComponent::RegisterComponent( World* InOwningWorld )
 	{
 		LightComponent::RegisterComponent(InOwningWorld);
@@ -67,16 +72,19 @@ namespace Drn
 	{
 		LightComponent::OnUpdateTransform(SkipPhysic);
 
+		SetRelativeRotation(Quat::Identity);
+		SetRelativeScale(Vector::OneVector);
+		
 		if ( m_PointLightSceneProxy )
 		{
-			SetRelativeRotation(Quat::Identity);
+			m_PointLightSceneProxy->SetLocalToWorld(GetLocalToWorld());
+
 			//Vector Scale = GetWorldScale() - Vector(1);
 			//float Min = Scale.GetMinComponent();
 			//float Max = Scale.GetMaxComponent();
 			//float Addition = std::abs(Min) > Max ? Min : Max;
 			//
 			//SetRadius(m_Radius + Addition);
-			SetRelativeScale(Vector::OneVector);
 		}
 	}
 
@@ -86,6 +94,7 @@ namespace Drn
 		if (m_PointLightSceneProxy)
 		{
 			m_PointLightSceneProxy->SetRadius(Radius);
+			m_PointLightSceneProxy->SetLocalToWorld(GetLocalToWorld());
 		}
 	}
 

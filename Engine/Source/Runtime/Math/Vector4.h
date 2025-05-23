@@ -6,6 +6,7 @@ namespace Drn
 	{
 	public:
 		inline Vector4(float X, float Y, float Z, float W) { m_Vector = XMVectorSet(X, Y, Z, W); }
+		inline Vector4(Vector Vec, float W) { m_Vector = XMVectorSet(Vec.GetX(), Vec.GetY(), Vec.GetZ(), W); }
 		inline Vector4(float X) : Vector4(X, X, X, X) {}
 		inline Vector4() : Vector4(0) {}
 

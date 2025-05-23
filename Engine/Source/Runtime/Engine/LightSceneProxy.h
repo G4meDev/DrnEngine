@@ -8,6 +8,7 @@ namespace Drn
 
 		inline void Release() { delete this; }
 
+		inline void SetLocalToWorld( const Matrix& InLocalToWorld ) { m_LocalToWorld = InLocalToWorld.Get(); }
 		inline void SetWorldPosition( const Vector& InWorldPosition ) { m_WorldPosition = InWorldPosition; }
 		inline void SetColor ( const Vector& Color ) { m_LightColor = Color; }
 		inline void SetCastShadow( bool CastShadow ) { m_CastShadow = CastShadow; }
@@ -24,6 +25,8 @@ namespace Drn
 		virtual ~LightSceneProxy();
 
 		class LightComponent* m_LightComponent;
+
+		XMMATRIX m_LocalToWorld;
 
 		Vector m_WorldPosition;
 		Vector m_LightColor;

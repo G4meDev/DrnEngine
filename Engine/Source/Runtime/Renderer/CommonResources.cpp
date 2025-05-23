@@ -386,13 +386,13 @@ namespace Drn
 		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
-		std::string ShaderCode = FileSystem::ReadFileAsString( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveAlphaBlended.hlsl" ) );
+		std::wstring ShaderPath = StringHelper::s2ws(Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveAlphaBlended.hlsl" ));
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 
-		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
-		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+		CompileShaderString( ShaderPath, "Main_VS", "vs_5_1", VertexShaderBlob);
+		CompileShaderString( ShaderPath, "Main_PS", "ps_5_1", PixelShaderBlob);
 
 		CD3DX12_BLEND_DESC BlendDesc = {};
 		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -479,7 +479,7 @@ namespace Drn
 		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
-		std::string ShaderCode = FileSystem::ReadFileAsString( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveEditorSelection.hlsl" ) );
+		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveEditorSelection.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
@@ -572,7 +572,7 @@ namespace Drn
 		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
-		std::string ShaderCode = FileSystem::ReadFileAsString( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Tonemap.hlsl" ) );
+		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Tonemap.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
@@ -655,7 +655,7 @@ namespace Drn
 		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
-		std::string ShaderCode = FileSystem::ReadFileAsString( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Sprite.hlsl" ) );
+		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Sprite.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
@@ -752,7 +752,7 @@ namespace Drn
 		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
-		std::string ShaderCode = FileSystem::ReadFileAsString( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Sprite.hlsl" ) );
+		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Sprite.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
@@ -811,7 +811,7 @@ namespace Drn
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 		CD3DX12_ROOT_PARAMETER1 rootParameters[5] = {};
-		rootParameters[0].InitAsConstants(16, 0);
+		rootParameters[0].InitAsConstants(24, 0);
 		//CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 		//rootParameters[1].InitAsDescriptorTable(1, &Range);
 
@@ -861,7 +861,7 @@ namespace Drn
 		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
 
-		std::string ShaderCode = FileSystem::ReadFileAsString( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightPassDeferred.hlsl" ) );
+		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightPassDeferred.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
@@ -905,7 +905,7 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	void CompileShaderString( const std::string& ShaderCode, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob, const D3D_SHADER_MACRO* Macros)
+	void CompileShaderString( const std::wstring& ShaderPath, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob, const D3D_SHADER_MACRO* Macros)
 	{
 		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
 #if defined( DEBUG ) || defined( _DEBUG )
@@ -913,7 +913,7 @@ namespace Drn
 #endif
 
 		ID3DBlob* errorBlob = nullptr;
-		HRESULT hr = D3DCompile( ShaderCode.c_str(), ShaderCode.size(), NULL, Macros, D3D_COMPILE_STANDARD_FILE_INCLUDE, 
+		HRESULT hr = D3DCompileFromFile( ShaderPath.c_str(), Macros, D3D_COMPILE_STANDARD_FILE_INCLUDE, 
 			EntryPoint, Profile, flags, 0, &ShaderBlob, &errorBlob );
 
 		if ( FAILED(hr) )

@@ -1,14 +1,20 @@
+#include "../Materials/Common.hlsl"
+
 struct VertexInputPosUV
 {
     float3 Position : POSITION;
 };
 
-struct ViewBuffer
+struct LightConstantBuffer
 {
     matrix LocalToProjection;
+    float3 Position;
+    float Radius;
+    float3 Color;
+    float InvRadius;
 };
 
-ConstantBuffer<ViewBuffer> View : register(b0);
+ConstantBuffer<LightConstantBuffer> CB : register(b0);
 
 Texture2D BaseColorTexture : register(t0);
 Texture2D WorldNormalTexture : register(t1);
@@ -19,6 +25,7 @@ SamplerState TextureSampler : register(s0);
 
 struct VertexShaderOutput
 {
+    float2 UV : TEXCOORD;
     float4 Position : SV_Position;
 };
 
@@ -26,22 +33,29 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN)
 {
     VertexShaderOutput OUT;
 
-    OUT.Position = mul(View.LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.Position = mul(CB.LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.UV = VSPosToScreenUV(OUT.Position);
 
     return OUT;
 }
 
 struct PixelShaderInput
 {
+    float2 UV : TEXCOORD;
 };
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
-    float4 BaseColor = BaseColorTexture.Sample(TextureSampler, float2(2, 2));
-    float4 WorldNormal = WorldNormalTexture.Sample(TextureSampler, float2(2, 2));
-    float4 Masks = MasksTexture.Sample(TextureSampler, float2(2, 2));
-    float4 Depth = DepthTexture.Sample(TextureSampler, float2(2, 2));
+    float4 BaseColor = BaseColorTexture.Sample(TextureSampler, IN.UV);
+    float4 WorldNormal = WorldNormalTexture.Sample(TextureSampler, IN.UV);
+    float4 Masks = MasksTexture.Sample(TextureSampler, IN.UV);
+    float4 Depth = DepthTexture.Sample(TextureSampler, IN.UV);
     
-    return BaseColor + WorldNormal + Masks + Depth;
-    //return float4(0.5, 0, 0, 0.4);
+    
+    
+    //return float4(CB.Color, 1);
+    return Depth.xxxx;
+    
+    //return BaseColor + WorldNormal + Masks + Depth;
+    //return WorldNormal;
 }

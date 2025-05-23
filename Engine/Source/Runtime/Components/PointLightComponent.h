@@ -14,6 +14,7 @@ namespace Drn
 		virtual void Serialize( Archive& Ar ) override;
 
 		inline float GetRadius() const { return m_Radius; }
+		Matrix GetLocalToWorld() const;
 
 	protected:
 

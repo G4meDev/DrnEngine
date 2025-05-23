@@ -8,6 +8,7 @@ namespace Drn
 		: LightSceneProxy(InComponent)
 		, m_Radius(InComponent->GetRadius())
 	{
+		SetLocalToWorld(InComponent->GetLocalToWorld());
 	}
 
 	PointLightSceneProxy::~PointLightSceneProxy()
@@ -22,13 +23,14 @@ namespace Drn
 		XMMATRIX projectionMatrix;
 		
 		Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-
 		XMMATRIX LocalToWorld = XMMatrixTranslationFromVector( XMLoadFloat3( m_WorldPosition.Get() ) );
 
-		XMMATRIX mvpMatrix = XMMatrixMultiply( LocalToWorld, viewMatrix );
+		XMMATRIX mvpMatrix = XMMatrixMultiply( m_LocalToWorld, viewMatrix );
 		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
 
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_WorldPosition, m_Radius), 16);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Vector4(m_LightColor, 1), 20);
 
 
 		//if (m_Sprite.IsValid())

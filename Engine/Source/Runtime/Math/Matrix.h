@@ -15,7 +15,7 @@ namespace Drn
 		Matrix(const Transform& InTransform);
 		Matrix(const Vector& X, const Vector& Y, const Vector& Z, const Vector& W);
 
-		inline XMMATRIX Get() { return m_Matrix; }
+		inline XMMATRIX Get() const { return m_Matrix; }
 
 		static Matrix MakeFromX( const Vector& XAxis);
 		static Matrix MakeFromY( const Vector& YAxis);

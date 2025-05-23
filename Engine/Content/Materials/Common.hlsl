@@ -60,3 +60,11 @@ struct ViewBuffer
     matrix LocalToView;
 };
 
+float2 VSPosToScreenUV(float4 VSPos)
+{
+    float2 UV = VSPos.xy / VSPos.w;
+    UV = UV / 2 + 0.5f;
+    UV.y = 1 - UV.y;
+    
+    return UV;
+}
