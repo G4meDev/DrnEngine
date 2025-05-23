@@ -11,6 +11,7 @@ namespace Drn
 	PointLightComponent::PointLightComponent()
 		: LightComponent()
 		, m_Radius(3.0f)
+		, m_PointLightSceneProxy(nullptr)
 	{
 	}
 

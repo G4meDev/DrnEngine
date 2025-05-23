@@ -17,6 +17,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) = 0;
+		inline void SetSelectedInEditor( bool Selected ) { m_SelectedInEditor = Selected; }
 		bool m_SelectedInEditor = false;
 #endif
 

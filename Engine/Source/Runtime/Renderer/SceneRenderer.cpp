@@ -117,7 +117,10 @@ namespace Drn
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{
-			Proxy->DrawAttenuation( m_Scene->GetWorld() );
+			if (Proxy->m_SelectedInEditor)
+			{
+				Proxy->DrawAttenuation( m_Scene->GetWorld() );
+			}
 
 			Proxy->Render(CommandList, this);
 		}

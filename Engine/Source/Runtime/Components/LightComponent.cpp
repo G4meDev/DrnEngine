@@ -53,6 +53,16 @@ namespace Drn
 		SceneComponent::OnUpdateTransform(SkipPhysic);
 	}
 
+	void LightComponent::SetSelectedInEditor( bool SelectedInEditor )
+	{
+		SceneComponent::SetSelectedInEditor(SelectedInEditor);
+
+		if (m_LightSceneProxy)
+		{
+			m_LightSceneProxy->SetSelectedInEditor(SelectedInEditor);
+		}
+	}
+
 	void LightComponent::SetColor( const Vector& Color )
 	{
 		m_LightColor = Color;

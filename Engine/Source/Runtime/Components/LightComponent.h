@@ -13,6 +13,10 @@ namespace Drn
 		inline bool IsCastingShadow() const { return m_CastShadow; }
 		Vector GetScaledColor() { return m_LightColor * m_Intensity; }
 
+		void SetColor( const Vector& Color );
+		void SetIntensity( float Intensity );
+		void SetCastShadow( bool CastShadow );
+
 	protected:
 		LightComponent();
 		virtual ~LightComponent();
@@ -24,9 +28,8 @@ namespace Drn
 
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
-		void SetColor( const Vector& Color );
-		void SetIntensity( float Intensity );
-		void SetCastShadow( bool CastShadow );
+		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+
 
 
 #if WITH_EDITOR

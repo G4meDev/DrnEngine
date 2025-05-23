@@ -185,8 +185,9 @@ namespace Drn
 		StaticMeshActor* CubeStaticMeshActor = m_MainWorld->SpawnActor<StaticMeshActor>();
 		CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
 
-		//PointLightActor* PointLight = m_MainWorld->SpawnActor<PointLightActor>();
-		//PointLight->SetActorLocation( Vector(0, 5, 0) );
+		PointLightActor* PointLight = m_MainWorld->SpawnActor<PointLightActor>();
+		PointLight->SetActorLocation( Vector(2, 5, 3) );
+		PointLight->SetRadius(10);
 
 #if WITH_EDITOR
 		CubeStaticMeshActor->SetActorLabel("Cube_1");

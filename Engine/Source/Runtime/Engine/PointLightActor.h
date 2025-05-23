@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "LightActor.h"
+#include "Runtime/Components/PointLightComponent.h"
 
 namespace Drn
 {
@@ -10,6 +11,15 @@ namespace Drn
 	public:
 		PointLightActor();
 		virtual ~PointLightActor();
+
+		inline float GetRadius() const { return m_PointLightComponent ? m_PointLightComponent->GetRadius() : 1.0f; }
+		inline void SetRadius(float InRadius) 
+		{
+			if (m_PointLightComponent)
+			{
+				m_PointLightComponent->SetRadius( InRadius);
+			}
+		}
 
 	protected:
 

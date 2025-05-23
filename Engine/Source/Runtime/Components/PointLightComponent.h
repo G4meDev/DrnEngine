@@ -16,6 +16,8 @@ namespace Drn
 		inline float GetRadius() const { return m_Radius; }
 		Matrix GetLocalToWorld() const;
 
+		void SetRadius( float Radius );
+
 	protected:
 
 		virtual void RegisterComponent(World* InOwningWorld) override;
@@ -23,7 +25,6 @@ namespace Drn
 
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
-		void SetRadius( float Radius );
 
 		float m_Radius;
 		class PointLightSceneProxy* m_PointLightSceneProxy;
