@@ -32,6 +32,8 @@ namespace Drn
 	{
 	public:
 		LineBatchComponent() : PrimitiveComponent()
+			, m_Thickness(false)
+			, m_SceneProxy(nullptr)
 		{
 			SetEditorPrimitive(true);
 		}
@@ -54,6 +56,10 @@ namespace Drn
 
 		void Flush();
 
+		virtual void SetThickness( bool InThickness );
+
+		bool m_Thickness;
+
 		LineBatchSceneProxy* m_SceneProxy;
 	};
 
@@ -64,6 +70,7 @@ namespace Drn
 		LineBatchSceneProxy(LineBatchComponent* InLineBatchComponent);
 		virtual ~LineBatchSceneProxy();
 
+		bool m_Thickness;
 	protected:
 
 		virtual void RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;

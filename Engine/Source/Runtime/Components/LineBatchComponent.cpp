@@ -130,6 +130,15 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
+	void LineBatchComponent::SetThickness( bool InThickness )
+	{
+		m_Thickness = InThickness;
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->m_Thickness = m_Thickness;
+		}
+	}
+
 // --------------------------------------------------------------------------------------------------------------------------------
 
 	LineBatchSceneProxy::LineBatchSceneProxy( LineBatchComponent* InLineBatchComponent )
@@ -137,6 +146,7 @@ namespace Drn
 		, m_LineComponent(InLineBatchComponent)
 		, m_VertexBufferResource(nullptr)
 		, m_IndexBufferResource(nullptr)
+		, m_Thickness(InLineBatchComponent->m_Thickness)
 	{
 	}
 
@@ -179,9 +189,17 @@ namespace Drn
 			return;
 		}
 
-		CommandList->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
-		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLineThicknessPSO->m_RootSignature );
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
+		if (m_Thickness)
+		{
+			CommandList->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
+			CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLineThicknessPSO->m_RootSignature );
+		}
+		else
+		{
+			CommandList->SetPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
+			CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLinePSO->m_RootSignature );
+		}
 
 		XMMATRIX modelMatrix = Matrix().Get();
 

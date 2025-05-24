@@ -54,6 +54,7 @@ namespace Drn
 		inline bool IsPendingDestroy() const { return m_PendingDestory; }
 
 		class LineBatchComponent* m_LineBatchCompponent;
+		class LineBatchComponent* m_LineBatchThicknessCompponent;
 
 #if WITH_EDITOR
 

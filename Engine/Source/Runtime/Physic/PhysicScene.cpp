@@ -242,14 +242,14 @@ namespace Drn
 				{
 					const PxSphereGeometry* SphereGeo = static_cast<const PxSphereGeometry*>(&(Shape->getGeometry()));
 					m_OwningWorld->DrawDebugSphere(WorldTransform.GetLocation(), WorldTransform.GetRotation(),
-						DebugDrawColor, SphereGeo->radius, 16, 5.0f, 0);
+						DebugDrawColor, SphereGeo->radius + 0.02, 16, 0.0f, 0);
 				}
 
 				else if ( Shape->getGeometry().getType() == PxGeometryType::eBOX)
 				{
 					const PxBoxGeometry* BoxGeo = static_cast<const PxBoxGeometry*>(&(Shape->getGeometry()));
-					Box box = Box::BuildAABB(Vector::ZeroVector, P2Vector(BoxGeo->halfExtents));
-					m_OwningWorld->DrawDebugBox(box, WorldTransform, DebugDrawColor, 5.0f, 0);
+					Box box = Box::BuildAABB(Vector::ZeroVector, P2Vector(BoxGeo->halfExtents) + Vector(0.02));
+					m_OwningWorld->DrawDebugBox(box, WorldTransform, DebugDrawColor, 0.0f, 0);
 				}
 			}
 

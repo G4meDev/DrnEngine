@@ -47,6 +47,7 @@ namespace Drn
 		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList);
 		m_LightPassPSO = new LightPassPSO(CommandList);
 		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList);
+		m_DebugLinePSO = new DebugLinePSO(CommandList);
 	}
 
 	CommonResources::~CommonResources()
@@ -61,6 +62,7 @@ namespace Drn
 		delete m_SpriteHitProxyPSO;
 		delete m_LightPassPSO;
 		delete m_DebugLineThicknessPSO;
+		delete m_DebugLinePSO;
 	}
 
 	void CommonResources::Init( ID3D12GraphicsCommandList2* CommandList )
@@ -1003,6 +1005,83 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
+	DebugLinePSO::DebugLinePSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_RootSignature = nullptr;
+		m_PSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		CD3DX12_ROOT_PARAMETER1 rootParameters[1] = {};
+		rootParameters[0].InitAsConstants(52, 0);
+
+		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(1, rootParameters, 0, NULL, rootSignatureFlags );
+
+		ID3DBlob* pSerializedRootSig;
+		ID3DBlob* pRootSigError;
+		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
+		if ( FAILED(Result) )
+		{
+			if ( pRootSigError )
+			{
+				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
+				pRootSigError->Release();
+			}
+
+			if (pSerializedRootSig)
+			{
+				pSerializedRootSig->Release();
+				pSerializedRootSig = nullptr;
+			}
+
+			return;
+		}
+
+		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
+			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
+
+		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\DebugLineShader.hlsl" ) );
+
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+
+		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
+		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+
+		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
+		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.InputLayout						= VertexLayout_PosColor;
+		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+		PipelineDesc.RasterizerState					= RasterizerDesc;
+		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
+		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
+		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
+		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
+		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.RTVFormats[0]						= GBUFFER_BASE_COLOR_FORMAT;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+	}
+
+	DebugLinePSO::~DebugLinePSO()
+	{
+		m_RootSignature->Release();
+		m_PSO->Release();
+	}
+
+// --------------------------------------------------------------------------------------
+
 	void CompileShaderString( const std::wstring& ShaderPath, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob, const D3D_SHADER_MACRO* Macros)
 	{
 		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -1026,7 +1105,6 @@ namespace Drn
 				ShaderBlob->Release();
 		}
 	}
-
 
 
 

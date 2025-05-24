@@ -46,7 +46,12 @@ namespace Drn
 #endif
 
 		m_LineBatchCompponent = new LineBatchComponent();
+		m_LineBatchCompponent->SetThickness(false);
 		m_LineBatchCompponent->RegisterComponent(this);
+
+		m_LineBatchThicknessCompponent = new class LineBatchComponent();
+		m_LineBatchThicknessCompponent->SetThickness(true);
+		m_LineBatchThicknessCompponent->RegisterComponent(this);
 	}
 
 	World::~World()
@@ -112,6 +117,7 @@ namespace Drn
 		m_NewActors.clear();
 
 		m_LineBatchCompponent->TickComponent(DeltaTime);
+		m_LineBatchThicknessCompponent->TickComponent(DeltaTime);
 
 		if (!m_ShouldTick)
 		{
@@ -153,25 +159,37 @@ namespace Drn
 
 	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Vector& Color, float Thickness, float Duration )
 	{
-		if (m_LineBatchCompponent)
+		if (m_LineBatchCompponent && Thickness == 0)
 		{
 			m_LineBatchCompponent->DrawLine(Start, End, Color, Thickness, Duration);
+		}
+		else if(m_LineBatchThicknessCompponent && Thickness != 0)
+		{
+			m_LineBatchThicknessCompponent->DrawLine(Start, End, Color, Thickness, Duration);
 		}
 	}
 
 	void World::DrawDebugCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
-		if (m_LineBatchCompponent)
+		if (m_LineBatchCompponent && Thickness == 0)
 		{
 			m_LineBatchCompponent->DrawCircle(Base, X, Z, Color, Radius, NumSides, Thickness, Lifetime);
+		}
+		else if(m_LineBatchThicknessCompponent && Thickness != 0)
+		{
+			m_LineBatchThicknessCompponent->DrawCircle(Base, X, Z, Color, Radius, NumSides, Thickness, Lifetime);
 		}
 	}
 
 	void World::DrawDebugSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
-		if (m_LineBatchCompponent)
+		if (m_LineBatchCompponent && Thickness == 0)
 		{
 			m_LineBatchCompponent->DrawSphere(Center, Rotation, Color, Radius, NumSides, Thickness, Lifetime);
+		}
+		else if(m_LineBatchThicknessCompponent && Thickness != 0)
+		{
+			m_LineBatchThicknessCompponent->DrawSphere(Center, Rotation, Color, Radius, NumSides, Thickness, Lifetime);
 		}
 	}
 
@@ -180,6 +198,10 @@ namespace Drn
 		if (m_LineBatchCompponent)
 		{
 			m_LineBatchCompponent->DrawBox(InBox, T, Color, Thickness, Lifetime);
+		}
+		else if(m_LineBatchThicknessCompponent && Thickness != 0)
+		{
+			m_LineBatchThicknessCompponent->DrawBox(InBox, T, Color, Thickness, Lifetime);
 		}
 	}
 

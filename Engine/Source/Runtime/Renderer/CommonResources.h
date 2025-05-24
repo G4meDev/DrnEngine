@@ -127,6 +127,17 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class DebugLinePSO
+	{
+	public:
+
+		DebugLinePSO( ID3D12GraphicsCommandList2* CommandList );
+		~DebugLinePSO();
+		
+		ID3D12RootSignature* m_RootSignature;
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class CommonResources
 	{
 	public:
@@ -152,6 +163,7 @@ namespace Drn
 		SpriteHitProxyPSO* m_SpriteHitProxyPSO;
 
 		DebugLineThicknessPSO* m_DebugLineThicknessPSO;
+		DebugLinePSO* m_DebugLinePSO;
 
 	private:
 
