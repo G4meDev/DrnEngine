@@ -138,8 +138,6 @@ namespace Drn
 		, m_VertexBufferResource(nullptr)
 		, m_IndexBufferResource(nullptr)
 	{
-		m_LineBatchMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_LineBatch.drn" );
-		m_LineBatchMaterial.Load();
 	}
 
 	LineBatchSceneProxy::~LineBatchSceneProxy()
@@ -159,12 +157,30 @@ namespace Drn
 	{
 		SCOPE_STAT(LineBatchSceneProxyRenderMainPass);
 
+	}
+
+#if WITH_EDITOR
+	void LineBatchSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
+	void LineBatchSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
+	void LineBatchSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		SCOPE_STAT(LineBatchSceneRenderEditorPrimitivePass);
+
 		if (!m_HasValidData)
 		{
 			return;
 		}
 
-		m_LineBatchMaterial->BindMainPass(CommandList);
+		CommandList->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
+		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLineThicknessPSO->m_RootSignature );
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
 
 		XMMATRIX modelMatrix = Matrix().Get();
@@ -185,22 +201,6 @@ namespace Drn
 		CommandList->IASetIndexBuffer( &m_IndexBufferView );
 		uint32 VertexCount = m_IndexBufferView.SizeInBytes / sizeof(uint32);
 		CommandList->DrawIndexedInstanced( VertexCount, 1, 0, 0, 0);
-	}
-
-#if WITH_EDITOR
-	void LineBatchSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
-	{
-		
-	}
-
-	void LineBatchSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
-	{
-		
-	}
-
-	void LineBatchSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
-	{
-		
 	}
 
 #endif
@@ -237,8 +237,6 @@ namespace Drn
 
 			GetPrimitive()->ClearRenderStateDirty();
 		}
-
-		m_LineBatchMaterial->UploadResources(CommandList);
 	}
 
 	void LineBatchSceneProxy::RecalculateVertexData()

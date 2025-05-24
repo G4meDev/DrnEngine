@@ -21,6 +21,8 @@ namespace Drn
 
 		Vector Start;
 		Vector End;
+
+		// TODO: make color class of 8 bit
 		Vector Color;
 		float Thickness;
 		float RemainingLifetime;
@@ -29,7 +31,10 @@ namespace Drn
 	class LineBatchComponent : public PrimitiveComponent
 	{
 	public:
-		LineBatchComponent() : PrimitiveComponent() {}
+		LineBatchComponent() : PrimitiveComponent()
+		{
+			SetEditorPrimitive(true);
+		}
 		virtual ~LineBatchComponent() {};
 
 		void TickComponent(float DeltaTime);
@@ -88,8 +93,6 @@ namespace Drn
 
 		std::vector<InputLayout_LineColorThickness> m_VertexData;
 		std::vector<uint32> m_IndexData;
-
-		AssetHandle<Material> m_LineBatchMaterial;
 
 		bool m_HasValidData = false;
 	};

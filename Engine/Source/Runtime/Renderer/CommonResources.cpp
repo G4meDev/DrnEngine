@@ -17,10 +17,23 @@ namespace Drn
 
 	D3D12_INPUT_LAYOUT_DESC VertexLayout_PosUV = { InputElement_PosUV, _countof( InputElement_PosUV ) };
 
+// --------------------------------------------------------------------------------------------------------------------------------------------
+
 	D3D12_INPUT_ELEMENT_DESC InputElement_Pos[1] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }};
 
 	D3D12_INPUT_LAYOUT_DESC VertexLayout_Pos = { InputElement_Pos, _countof( InputElement_Pos ) };
+
+// --------------------------------------------------------------------------------------------------------------------------------------------
+
+	D3D12_INPUT_ELEMENT_DESC InputElement_PosColor[2] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	D3D12_INPUT_LAYOUT_DESC VertexLayout_PosColor = { InputElement_PosColor, _countof( InputElement_PosColor ) };
+
+// --------------------------------------------------------------------------------------------------------------------------------------------
 
 	CommonResources::CommonResources( ID3D12GraphicsCommandList2* CommandList )
 	{
@@ -33,6 +46,7 @@ namespace Drn
 		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList);
 		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList);
 		m_LightPassPSO = new LightPassPSO(CommandList);
+		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList);
 	}
 
 	CommonResources::~CommonResources()
@@ -46,6 +60,7 @@ namespace Drn
 		delete m_SpriteEditorPrimitivePSO;
 		delete m_SpriteHitProxyPSO;
 		delete m_LightPassPSO;
+		delete m_DebugLineThicknessPSO;
 	}
 
 	void CommonResources::Init( ID3D12GraphicsCommandList2* CommandList )
@@ -908,6 +923,86 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
+	DebugLineThicknessPSO::DebugLineThicknessPSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_RootSignature = nullptr;
+		m_PSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		CD3DX12_ROOT_PARAMETER1 rootParameters[1] = {};
+		rootParameters[0].InitAsConstants(52, 0);
+
+		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(1, rootParameters, 0, NULL, rootSignatureFlags );
+
+		ID3DBlob* pSerializedRootSig;
+		ID3DBlob* pRootSigError;
+		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
+		if ( FAILED(Result) )
+		{
+			if ( pRootSigError )
+			{
+				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
+				pRootSigError->Release();
+			}
+
+			if (pSerializedRootSig)
+			{
+				pSerializedRootSig->Release();
+				pSerializedRootSig = nullptr;
+			}
+
+			return;
+		}
+
+		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
+			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
+
+		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\DebugLineThicknessShader.hlsl" ) );
+
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+		ID3DBlob* GeometeryShaderBlob;
+
+		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
+		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+		CompileShaderString( ShaderCode, "Main_GS", "gs_5_1", GeometeryShaderBlob);
+
+		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
+		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.InputLayout						= VertexLayout_PosColor;
+		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+		PipelineDesc.RasterizerState					= RasterizerDesc;
+		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
+		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
+		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
+		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+		PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
+		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
+		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.RTVFormats[0]						= GBUFFER_BASE_COLOR_FORMAT;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+	}
+
+	DebugLineThicknessPSO::~DebugLineThicknessPSO()
+	{
+		m_RootSignature->Release();
+		m_PSO->Release();
+	}
+
+// --------------------------------------------------------------------------------------
+
 	void CompileShaderString( const std::wstring& ShaderPath, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob, const D3D_SHADER_MACRO* Macros)
 	{
 		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -934,4 +1029,6 @@ namespace Drn
 
 
 
-}
+
+
+ }  // namespace Drn

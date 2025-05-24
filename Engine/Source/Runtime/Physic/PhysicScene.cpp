@@ -222,6 +222,8 @@ namespace Drn
 
 	void PhysicScene::DrawDebugForRigidActor( PxRigidActor* RigidActor )
 	{
+		const Vector DebugDrawColor = Vector(0.3f, 0.7f, 0.2f);
+
 		if (RigidActor)
 		{
 			Transform RigidTransform = P2Transform(RigidActor->getGlobalPose());
@@ -240,14 +242,14 @@ namespace Drn
 				{
 					const PxSphereGeometry* SphereGeo = static_cast<const PxSphereGeometry*>(&(Shape->getGeometry()));
 					m_OwningWorld->DrawDebugSphere(WorldTransform.GetLocation(), WorldTransform.GetRotation(),
-						Vector::ZeroVector, SphereGeo->radius, 16, 5.0f, 0);
+						DebugDrawColor, SphereGeo->radius, 16, 5.0f, 0);
 				}
 
 				else if ( Shape->getGeometry().getType() == PxGeometryType::eBOX)
 				{
 					const PxBoxGeometry* BoxGeo = static_cast<const PxBoxGeometry*>(&(Shape->getGeometry()));
 					Box box = Box::BuildAABB(Vector::ZeroVector, P2Vector(BoxGeo->halfExtents));
-					m_OwningWorld->DrawDebugBox(box, WorldTransform, Vector(0.3f, 0.7f, 0.2f), 5.0f, 0);
+					m_OwningWorld->DrawDebugBox(box, WorldTransform, DebugDrawColor, 5.0f, 0);
 				}
 			}
 
