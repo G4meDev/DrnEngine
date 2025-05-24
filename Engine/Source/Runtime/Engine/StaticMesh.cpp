@@ -84,7 +84,7 @@ namespace Drn
 			Device->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ), D3D12_HEAP_FLAG_NONE,
 				&CD3DX12_RESOURCE_DESC::Buffer( Proxy.VertexBufferBlob->GetBufferSize() ),
-				D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, nullptr, IID_PPV_ARGS( Proxy.VertexBuffer.ReleaseAndGetAddressOf() ) );
+				D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS( Proxy.VertexBuffer.ReleaseAndGetAddressOf() ) );
 
 			Device->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,
@@ -94,7 +94,7 @@ namespace Drn
 			Device->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ), D3D12_HEAP_FLAG_NONE,
 				&CD3DX12_RESOURCE_DESC::Buffer( Proxy.VertexBufferBlob->GetBufferSize() ),
-				D3D12_RESOURCE_STATE_INDEX_BUFFER, nullptr, IID_PPV_ARGS( Proxy.IndexBuffer.ReleaseAndGetAddressOf() ) );
+				D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS( Proxy.IndexBuffer.ReleaseAndGetAddressOf() ) );
 
 #if D3D12_Debug_INFO
 			std::string MeshName = m_Path;
@@ -116,7 +116,7 @@ namespace Drn
 				Proxy.IntermediateVertexBuffer->Unmap( 0, nullptr );
 
 				CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-					Proxy.VertexBuffer.Get(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+					Proxy.VertexBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
 				CommandList->ResourceBarrier(1, &barrier);
 
 				CommandList->CopyResource(Proxy.VertexBuffer.Get(), Proxy.IntermediateVertexBuffer.Get());
@@ -139,7 +139,7 @@ namespace Drn
 				Proxy.IntermediateIndexBuffer->Unmap( 0, nullptr );
 
 				CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-					Proxy.IndexBuffer.Get(), D3D12_RESOURCE_STATE_INDEX_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+					Proxy.IndexBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
 				CommandList->ResourceBarrier(1, &barrier);
 
 				CommandList->CopyResource(Proxy.IndexBuffer.Get(), Proxy.IntermediateIndexBuffer.Get());

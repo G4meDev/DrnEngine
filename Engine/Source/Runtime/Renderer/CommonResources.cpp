@@ -101,13 +101,13 @@ namespace Drn
 			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		m_VertexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
 
 		Resource* IntermediateIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
 			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		m_IndexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
 
 #if D3D12_Debug_INFO
 		IntermediateVertexBuffer->SetName( "ScreenTriangle_IntermediateVertexBuffer" );
@@ -124,7 +124,7 @@ namespace Drn
 			IntermediateVertexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
 			CommandList->ResourceBarrier(1, &barrier);
 
 			CommandList->CopyResource(m_VertexBuffer->GetD3D12Resource(), IntermediateVertexBuffer->GetD3D12Resource());
@@ -146,7 +146,7 @@ namespace Drn
 			IntermediateIndexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_INDEX_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
 			CommandList->ResourceBarrier(1, &barrier);
 
 			CommandList->CopyResource(m_IndexBuffer->GetD3D12Resource(), IntermediateIndexBuffer->GetD3D12Resource());
@@ -198,13 +198,13 @@ namespace Drn
 			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		m_VertexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
 
 		Resource* IntermediateIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
 			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		m_IndexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
 
 #if D3D12_Debug_INFO
 		IntermediateVertexBuffer->SetName( "UniformQuad_IntermediateVertexBuffer" );
@@ -221,7 +221,7 @@ namespace Drn
 			IntermediateVertexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
 			CommandList->ResourceBarrier(1, &barrier);
 
 			CommandList->CopyResource(m_VertexBuffer->GetD3D12Resource(), IntermediateVertexBuffer->GetD3D12Resource());
@@ -243,7 +243,7 @@ namespace Drn
 			IntermediateIndexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_INDEX_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
 			CommandList->ResourceBarrier(1, &barrier);
 
 			CommandList->CopyResource(m_IndexBuffer->GetD3D12Resource(), IntermediateIndexBuffer->GetD3D12Resource());
@@ -282,13 +282,13 @@ namespace Drn
 			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		m_VertexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
 
 		Resource* IntermediateIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
 			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		m_IndexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
 
 #if D3D12_Debug_INFO
 		IntermediateVertexBuffer->SetName( "PointLightSphere_IntermediateVertexBuffer" );
@@ -305,7 +305,7 @@ namespace Drn
 			IntermediateVertexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
 			CommandList->ResourceBarrier(1, &barrier);
 
 			CommandList->CopyResource(m_VertexBuffer->GetD3D12Resource(), IntermediateVertexBuffer->GetD3D12Resource());
@@ -327,7 +327,7 @@ namespace Drn
 			IntermediateIndexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_INDEX_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST );
+				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
 			CommandList->ResourceBarrier(1, &barrier);
 
 			CommandList->CopyResource(m_IndexBuffer->GetD3D12Resource(), IntermediateIndexBuffer->GetD3D12Resource());

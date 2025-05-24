@@ -1852,6 +1852,10 @@ struct osn_context {
     int16_t* permGradIndex3D;
 };
 
+#ifdef ARRAYSIZE
+#undef ARRAYSIZE
+#endif
+
 #define ARRAYSIZE(x) (sizeof((x)) / sizeof((x)[0]))
 
 /*
