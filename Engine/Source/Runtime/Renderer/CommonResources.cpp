@@ -94,87 +94,28 @@ namespace Drn
 
 	ScreenTriangle::ScreenTriangle( ID3D12GraphicsCommandList2* CommandList )
 	{
-		const uint32 VertexBufferSize = sizeof( TriangleVertexData );
-		const uint32 IndexBufferSize = sizeof( TriangleIndexData );
-
-		Resource* IntermediateVertexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
-
-		m_VertexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
-
-		Resource* IntermediateIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
-
-		m_IndexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
-
-#if D3D12_Debug_INFO
-		IntermediateVertexBuffer->SetName( "ScreenTriangle_IntermediateVertexBuffer" );
-		m_VertexBuffer->SetName( "ScreenTriangle_VertexBuffer" );
-		IntermediateIndexBuffer->SetName( "ScreenTriangle_IntermediateIndexBuffer" );
-		m_IndexBuffer->SetName( "ScreenTriangle_IndexBuffer"  );
-#endif
-
-		{
-			UINT8*        pVertexDataBegin;
-			CD3DX12_RANGE readRange( 0, 0 );
-			IntermediateVertexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
-			memcpy( pVertexDataBegin, &TriangleVertexData[0], VertexBufferSize );
-			IntermediateVertexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
-
-			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			CommandList->CopyResource(m_VertexBuffer->GetD3D12Resource(), IntermediateVertexBuffer->GetD3D12Resource());
-
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			m_VertexBufferView.BufferLocation = m_VertexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			m_VertexBufferView.StrideInBytes  = VertexBufferSize/3;
-			m_VertexBufferView.SizeInBytes    = VertexBufferSize;
-		}
-
-		{
-			UINT8*        pIndexDataBegin;
-			CD3DX12_RANGE readRange( 0, 0 );
-			IntermediateIndexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
-			memcpy( pIndexDataBegin, &TriangleIndexData[0], IndexBufferSize );
-			IntermediateIndexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
-
-			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			CommandList->CopyResource(m_IndexBuffer->GetD3D12Resource(), IntermediateIndexBuffer->GetD3D12Resource());
-
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			m_IndexBufferView.BufferLocation = m_IndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			m_IndexBufferView.Format         = DXGI_FORMAT_R32_UINT;
-			m_IndexBufferView.SizeInBytes    = IndexBufferSize;
-		}
-
-		IntermediateVertexBuffer->ReleaseBufferedResource();
-		IntermediateIndexBuffer->ReleaseBufferedResource();
+		m_VertexBuffer = VertexBuffer::Create(CommandList, TriangleVertexData, 3, sizeof(TriangleVertexData) / 3, "ScreenTriangle");
+		m_IndexBuffer = IndexBuffer::Create(CommandList, TriangleIndexData, 3, sizeof(TriangleIndexData), DXGI_FORMAT_R32_UINT, "ScreenTriangle");
 	}
 
 	ScreenTriangle::~ScreenTriangle()
 	{
 		if (m_VertexBuffer)
 		{
-			m_VertexBuffer->ReleaseBufferedResource();
+			delete m_VertexBuffer;
 		}
 
 		if (m_IndexBuffer)
 		{
-			m_IndexBuffer->ReleaseBufferedResource();
+			delete m_IndexBuffer;
 		}
+	}
+
+	void ScreenTriangle::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------

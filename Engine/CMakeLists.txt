@@ -61,6 +61,8 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Texture/TextureCube.h
 	Source/Runtime/Renderer/Texture/TextureVolume.h
 	Source/Runtime/Renderer/Material/Material.h
+	Source/Runtime/Renderer/VertexBuffer.h
+	Source/Runtime/Renderer/IndexBuffer.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -197,6 +199,8 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Texture/TextureCube.cpp
 	Source/Runtime/Renderer/Texture/TextureVolume.cpp
 	Source/Runtime/Renderer/Material/Material.cpp
+	Source/Runtime/Renderer/VertexBuffer.cpp
+	Source/Runtime/Renderer/IndexBuffer.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

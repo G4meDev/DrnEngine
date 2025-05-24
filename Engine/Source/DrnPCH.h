@@ -31,6 +31,8 @@
 #include "Runtime/Renderer/SceneRenderer.h"
 #include "Runtime/Renderer/PipelineStateObject.h"
 #include "Runtime/Renderer/Resource.h"
+#include "Runtime/Renderer/VertexBuffer.h"
+#include "Runtime/Renderer/IndexBuffer.h"
 #include "Runtime/Renderer/InputLayout.h"
 #include "Runtime/Renderer/D3D12Utils.h"
 #include "Runtime/Renderer/Material/Material.h"

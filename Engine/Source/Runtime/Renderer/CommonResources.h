@@ -13,11 +13,10 @@ namespace Drn
 		ScreenTriangle( ID3D12GraphicsCommandList2* CommandList );
 		~ScreenTriangle();
 
-		Resource* m_VertexBuffer;
-		Resource* m_IndexBuffer;
+		class VertexBuffer* m_VertexBuffer;
+		class IndexBuffer* m_IndexBuffer;
 
-		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
-		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
 	};
 
 	class UniformQuad

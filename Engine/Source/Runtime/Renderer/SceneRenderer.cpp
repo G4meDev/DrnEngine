@@ -163,10 +163,8 @@ namespace Drn
 		CommandList->SetGraphicsRootDescriptorTable(1, m_GBuffer->m_ColorDeferredSrvGpuHandle);
 
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
-		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
-		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
-		
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(CommandList);
+
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		CommandList->ResourceBarrier(1, &barrier);
@@ -233,9 +231,7 @@ namespace Drn
 		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorPrimitiveBuffer->m_ColorSrvGpuHandle);
 
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
-		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
-		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(CommandList);
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorPrimitiveColor, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
@@ -282,9 +278,7 @@ namespace Drn
 		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorSelectionBuffer->m_DepthStencilSrvGpuHandle);
 
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_ScreenTriangle->m_VertexBufferView );
-		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_ScreenTriangle->m_IndexBufferView );
-		CommandList->DrawIndexedInstanced( 3, 1, 0, 0, 0 );
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(CommandList);
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorSelectionDepth, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
