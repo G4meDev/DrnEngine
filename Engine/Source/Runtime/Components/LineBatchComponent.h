@@ -10,7 +10,7 @@ namespace Drn
 
 	struct BatchLine
 	{
-		BatchLine(const Vector& InStart, const Vector& InEnd, const Vector& InColor, float InThickness, float InLifetime)
+		BatchLine(const Vector& InStart, const Vector& InEnd, const Color& InColor, float InThickness, float InLifetime)
 			: Start(InStart)
 			, End(InEnd)
 			, Color(InColor)
@@ -23,7 +23,7 @@ namespace Drn
 		Vector End;
 
 		// TODO: make color class of 8 bit
-		Vector Color;
+		Color Color;
 		float Thickness;
 		float RemainingLifetime;
 	};
@@ -46,13 +46,13 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
-		void DrawLine(const Vector& Start, const Vector& End, const Vector& Color, float Thickness, float Lifetime);
+		void DrawLine(const Vector& Start, const Vector& End, const Color& Color, float Thickness, float Lifetime);
 		void DrawLines(const std::vector<BatchLine>& InLines);
 
-		void DrawCircle(const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
-		void DrawSphere(const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
+		void DrawCircle(const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
+		void DrawSphere(const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
 
-		void DrawBox(const Box& InBox, const Transform& T, const Vector& Color, float Thickness, float Lifetime);
+		void DrawBox(const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime);
 
 		void Flush();
 

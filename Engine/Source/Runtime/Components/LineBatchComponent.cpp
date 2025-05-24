@@ -56,7 +56,7 @@ namespace Drn
 		PrimitiveComponent::UnRegisterComponent();
 	}
 
-	void LineBatchComponent::DrawLine( const Vector& Start, const Vector& End, const Vector& Color, float Thickness, float Lifetime )
+	void LineBatchComponent::DrawLine( const Vector& Start, const Vector& End, const Color& Color, float Thickness, float Lifetime )
 	{
 		m_Lines.push_back(BatchLine(Start, End, Color, Thickness, Lifetime));
 		MarkRenderStateDirty();
@@ -68,7 +68,7 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
-	void LineBatchComponent::DrawCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime)
+	void LineBatchComponent::DrawCircle( const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime)
 	{
 		const float	AngleDelta = 2.0f * Math::PI / NumSides;
 		Vector	LastVertex = Base + X * Radius;
@@ -84,7 +84,7 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
-	void LineBatchComponent::DrawSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
+	void LineBatchComponent::DrawSphere( const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
 		Vector ForwardVector = Rotation.RotateVector(Vector::ForwardVector);
 		Vector UpVector = Rotation.RotateVector(Vector::UpVector);
@@ -95,7 +95,7 @@ namespace Drn
 		DrawCircle(Center, UpVector, ForwardVector, Color, Radius, NumSides, Thickness, Lifetime);
 	}
 
-	void LineBatchComponent::DrawBox( const Box& InBox, const Transform& T, const Vector& Color, float Thickness, float Lifetime )
+	void LineBatchComponent::DrawBox( const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime )
 	{
 		Vector	B[2];
 		int32 ai, aj;

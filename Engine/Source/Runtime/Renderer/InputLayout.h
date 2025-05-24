@@ -17,23 +17,24 @@ namespace Drn
 	{
 	public:
 
-		InputLayout_LineColorThickness(float InX, float InY, float InZ, float InR, float InG, float InB, float InThickness)
+		InputLayout_LineColorThickness(float InX, float InY, float InZ, uint8 InR, uint8 InG, uint8 InB, uint8 InA, float InThickness)
 			: X(InX)
 			, Y(InY)
 			, Z(InZ)
 			, R(InR)
 			, G(InG)
 			, B(InB)
+			, A(InA)
 			, Thickness(InThickness)
 		{
 		}
 
-		InputLayout_LineColorThickness( const Vector& Pos, const Vector& Color, float InThickness)
-			: InputLayout_LineColorThickness(Pos.GetX(), Pos.GetY(), Pos.GetZ(), Color.GetX(), Color.GetY(), Color.GetZ(), InThickness)
+		InputLayout_LineColorThickness( const Vector& Pos, const Color& Color, float InThickness)
+			: InputLayout_LineColorThickness(Pos.GetX(), Pos.GetY(), Pos.GetZ(), Color.R, Color.G, Color.B, Color.A, InThickness)
 		{
 		}
 
-		InputLayout_LineColorThickness() : InputLayout_LineColorThickness(0, 0, 0, 1, 1, 1, 0.08f)
+		InputLayout_LineColorThickness() : InputLayout_LineColorThickness(0, 0, 0, 1, 1, 1, 1, 0.08f)
 		{
 		}
 
@@ -41,9 +42,10 @@ namespace Drn
 		float Y;
 		float Z;
 
-		float R;
-		float G;
-		float B;
+		uint8 R;
+		uint8 G;
+		uint8 B;
+		uint8 A;
 
 		float Thickness;
 	};

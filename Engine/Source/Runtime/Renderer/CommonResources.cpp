@@ -26,12 +26,13 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------------------------------------------------
 
-	D3D12_INPUT_ELEMENT_DESC InputElement_PosColor[2] = {
+	D3D12_INPUT_ELEMENT_DESC InputElement_LineColorThickness[3] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "THICKNESS", 0, DXGI_FORMAT_R32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
-	D3D12_INPUT_LAYOUT_DESC VertexLayout_PosColor = { InputElement_PosColor, _countof( InputElement_PosColor ) };
+	D3D12_INPUT_LAYOUT_DESC VertexLayout_LineColorThickness = { InputElement_LineColorThickness, _countof( InputElement_LineColorThickness ) };
 
 // --------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -977,7 +978,7 @@ namespace Drn
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
 		PipelineDesc.pRootSignature						= m_RootSignature;
-		PipelineDesc.InputLayout						= VertexLayout_PosColor;
+		PipelineDesc.InputLayout						= VertexLayout_LineColorThickness;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
 		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
@@ -1055,7 +1056,7 @@ namespace Drn
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
 		PipelineDesc.pRootSignature						= m_RootSignature;
-		PipelineDesc.InputLayout						= VertexLayout_PosColor;
+		PipelineDesc.InputLayout						= VertexLayout_LineColorThickness;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
 		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);

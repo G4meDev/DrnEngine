@@ -55,7 +55,7 @@ namespace Drn
 #if WITH_EDITOR
 	void PointLightSceneProxy::DrawAttenuation(World* InWorld)
 	{
-		InWorld->DrawDebugSphere( m_WorldPosition, Quat::Identity, Vector::OneVector, m_Radius, 12, 5, 0 );
+		InWorld->DrawDebugSphere( m_WorldPosition, Quat::Identity, Color::White, m_Radius, 36, 0.0, 0 );
 	}
 #endif
 }

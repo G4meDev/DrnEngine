@@ -91,6 +91,7 @@ set( HEADER_FILES
 	Source/Runtime/Math/Transform.h
 	Source/Runtime/Math/Rotator.h
 	Source/Runtime/Math/Matrix.h
+	Source/Runtime/Math/Color.h
 	
 	Source/Runtime/Misc/StringHelper.h
 	Source/Runtime/Misc/FileSystem.h
@@ -226,6 +227,7 @@ set( SOURCE_FILES
 	Source/Runtime/Math/Transform.cpp
 	Source/Runtime/Math/Rotator.cpp
 	Source/Runtime/Math/Matrix.cpp
+	Source/Runtime/Math/Color.cpp
 	
 	Source/Runtime/Misc/StringHelper.cpp
 	Source/Runtime/Misc/FileSystem.cpp

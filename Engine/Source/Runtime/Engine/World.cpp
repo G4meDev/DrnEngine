@@ -157,7 +157,7 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------------
 
-	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Vector& Color, float Thickness, float Duration )
+	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Color& Color, float Thickness, float Duration )
 	{
 		if (m_LineBatchCompponent && Thickness == 0)
 		{
@@ -169,7 +169,7 @@ namespace Drn
 		}
 	}
 
-	void World::DrawDebugCircle( const Vector& Base, const Vector& X, const Vector& Z, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
+	void World::DrawDebugCircle( const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
 		if (m_LineBatchCompponent && Thickness == 0)
 		{
@@ -181,7 +181,7 @@ namespace Drn
 		}
 	}
 
-	void World::DrawDebugSphere( const Vector& Center, const Quat& Rotation, const Vector& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
+	void World::DrawDebugSphere( const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
 		if (m_LineBatchCompponent && Thickness == 0)
 		{
@@ -193,7 +193,7 @@ namespace Drn
 		}
 	}
 
-	void World::DrawDebugBox( const Box& InBox, const Transform& T, const Vector& Color, float Thickness, float Lifetime )
+	void World::DrawDebugBox( const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime )
 	{
 		if (m_LineBatchCompponent)
 		{

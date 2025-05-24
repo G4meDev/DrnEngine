@@ -2,6 +2,13 @@
 
 ConstantBuffer<ViewBuffer> View : register(b0);
 
+struct VertexInput
+{
+    float3 Position : POSITION;
+    float4 Color : COLOR;
+    float Thickness : THICKNESS;
+};
+
 struct VertexShaderOutput
 {
 	float4 Color : COLOR;
@@ -9,13 +16,13 @@ struct VertexShaderOutput
 	float4 Position : SV_Position;
 };
 
-VertexShaderOutput Main_VS(VertexInputPosColor IN)
+VertexShaderOutput Main_VS(VertexInput IN)
 {
 	VertexShaderOutput OUT;
 
 	OUT.Position = float4(IN.Position, 1);
 	OUT.Color = float4(IN.Color.xyz, 1.0f);
-	OUT.Thickness = IN.Color.a;
+	OUT.Thickness = IN.Thickness;
 	
 	return OUT;
 }
@@ -31,7 +38,7 @@ struct GeometeryShaderOutput
 [maxvertexcount(24)]
 void Main_GS(line VertexShaderOutput input[2], inout TriangleStream<GeometeryShaderOutput> OutputStream)
 {
-	float Thickness = input[0].Thickness;
+	float Thickness = input[0].Thickness * 255;
 
 	GeometeryShaderOutput V1;
 	GeometeryShaderOutput V2;

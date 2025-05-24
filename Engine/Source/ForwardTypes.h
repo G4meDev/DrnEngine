@@ -22,6 +22,7 @@
 #include "Runtime/Math/Rotator.h"
 #include "Runtime/Math/Transform.h"
 #include "Runtime/Math/Matrix.h"
+#include "Runtime/Math/Color.h"
 
 class UpdateEventArgs;
 class KeyEventArgs;

@@ -222,7 +222,7 @@ namespace Drn
 
 	void PhysicScene::DrawDebugForRigidActor( PxRigidActor* RigidActor )
 	{
-		const Vector DebugDrawColor = Vector(0.3f, 0.7f, 0.2f);
+		const Color DebugDrawColor = Color::Emerald;
 
 		if (RigidActor)
 		{
