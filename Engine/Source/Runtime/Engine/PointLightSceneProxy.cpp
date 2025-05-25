@@ -47,9 +47,7 @@ namespace Drn
 		//	CommandList->SetGraphicsRootDescriptorTable( 1, m_Sprite->TextureGpuHandle );
 		//}
 
-		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_PointLightSphere->m_VertexBufferView);
-		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_PointLightSphere->m_IndexBufferView );
-		CommandList->DrawIndexedInstanced( CommonResources::Get()->m_PointLightSphere->m_IndexCount, 1, 0, 0, 0);
+		CommonResources::Get()->m_PointLightSphere->BindAndDraw(CommandList);
 	}
 
 #if WITH_EDITOR

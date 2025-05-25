@@ -81,9 +81,7 @@ namespace Drn
 
 		SetConstantAndSrv(CommandList, Renderer);
 
-		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_UniformQuad->m_VertexBufferView);
-		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_UniformQuad->m_IndexBufferView );
-		CommandList->DrawIndexedInstanced( 6, 1, 0, 0, 0);
+		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
 
 	void BillboardSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
@@ -99,9 +97,7 @@ namespace Drn
 
 		SetConstantAndSrv(CommandList, Renderer);
 
-		CommandList->IASetVertexBuffers( 0, 1, &CommonResources::Get()->m_UniformQuad->m_VertexBufferView);
-		CommandList->IASetIndexBuffer( &CommonResources::Get()->m_UniformQuad->m_IndexBufferView );
-		CommandList->DrawIndexedInstanced( 6, 1, 0, 0, 0);
+		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
 
 	void BillboardSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )

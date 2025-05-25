@@ -17,22 +17,15 @@ namespace Drn
 	struct StaticMeshSlotData : public Serializable
 	{
 	public:
-		StaticMeshSlotData() {};
+		StaticMeshSlotData();
 		~StaticMeshSlotData();
 
 		ID3DBlob* VertexBufferBlob = nullptr;
 		ID3DBlob* IndexBufferBlob = nullptr;
 		uint8 MaterialIndex = 0;
 
-		// TODO: cleanup intermediate resources
-		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBuffer = nullptr;
-		Microsoft::WRL::ComPtr<ID3D12Resource> IntermediateVertexBuffer = nullptr;
-		
-		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBuffer  = nullptr;
-		Microsoft::WRL::ComPtr<ID3D12Resource> IntermediateIndexBuffer  = nullptr;
-
-		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
-		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
+		class VertexBuffer* m_VertexBuffer;
+		class IndexBuffer* m_IndexBuffer;
 
 		virtual void Serialize(Archive& Ar) override;
 		
@@ -49,6 +42,10 @@ namespace Drn
 				IndexBufferBlob = nullptr;
 			}
 		}
+
+		inline void ReleaseBuffers();
+
+		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList ) const;
 	};
 
 	struct StaticMeshData : public Serializable

@@ -113,9 +113,7 @@ namespace Drn
 				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
 				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
-				CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
-				CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );
-				CommandList->DrawIndexedInstanced( RenderProxy.m_IndexBufferView.SizeInBytes / sizeof(uint32), 1, 0, 0, 0);
+				RenderProxy.BindAndDraw(CommandList);
 			}
 		}
 	}
@@ -159,9 +157,7 @@ namespace Drn
 			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
 			CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
-			CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
-			CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );
-			CommandList->DrawIndexedInstanced( RenderProxy.m_IndexBufferView.SizeInBytes / sizeof(uint32), 1, 0, 0, 0);
+			RenderProxy.BindAndDraw( CommandList );
 		}
 	}
 
@@ -200,9 +196,7 @@ namespace Drn
 			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
 			CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
-			CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
-			CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );
-			CommandList->DrawIndexedInstanced( RenderProxy.m_IndexBufferView.SizeInBytes / sizeof(uint32), 1, 0, 0, 0);
+			RenderProxy.BindAndDraw(CommandList);
 		}
 	}
 
@@ -240,9 +234,7 @@ namespace Drn
 				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
 				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
-				CommandList->IASetVertexBuffers( 0, 1, &RenderProxy.m_VertexBufferView );
-				CommandList->IASetIndexBuffer( &RenderProxy.m_IndexBufferView );
-				CommandList->DrawIndexedInstanced( RenderProxy.m_IndexBufferView.SizeInBytes / sizeof(uint32), 1, 0, 0, 0);
+				RenderProxy.BindAndDraw( CommandList );
 			}
 		}
 	}

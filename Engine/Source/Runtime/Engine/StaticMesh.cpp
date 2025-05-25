@@ -76,83 +76,22 @@ namespace Drn
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 			StaticMeshSlotData& Proxy = Data.MeshesData[i];
 
-			Device->CreateCommittedResource(
-				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,
-				&CD3DX12_RESOURCE_DESC::Buffer( Proxy.VertexBufferBlob->GetBufferSize() ),
-				D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS( Proxy.IntermediateVertexBuffer.ReleaseAndGetAddressOf() ) );
-
-			Device->CreateCommittedResource(
-				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ), D3D12_HEAP_FLAG_NONE,
-				&CD3DX12_RESOURCE_DESC::Buffer( Proxy.VertexBufferBlob->GetBufferSize() ),
-				D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS( Proxy.VertexBuffer.ReleaseAndGetAddressOf() ) );
-
-			Device->CreateCommittedResource(
-				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD ), D3D12_HEAP_FLAG_NONE,
-				&CD3DX12_RESOURCE_DESC::Buffer( Proxy.VertexBufferBlob->GetBufferSize() ),
-				D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS( Proxy.IntermediateIndexBuffer.ReleaseAndGetAddressOf() ) );
-
-			Device->CreateCommittedResource(
-				&CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_DEFAULT ), D3D12_HEAP_FLAG_NONE,
-				&CD3DX12_RESOURCE_DESC::Buffer( Proxy.VertexBufferBlob->GetBufferSize() ),
-				D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS( Proxy.IndexBuffer.ReleaseAndGetAddressOf() ) );
-
+			std::string MeshName = "";
 #if D3D12_Debug_INFO
-			std::string MeshName = m_Path;
+			MeshName = m_Path;
 			MeshName = Path::ConvertShortPath(MeshName);
 			MeshName = Path::RemoveFileExtension(MeshName);
-
-			Proxy.IntermediateVertexBuffer->SetName( StringHelper::s2ws(std::string("IntermediateVertexBuffer_") + MeshName).c_str() );
-			Proxy.VertexBuffer->SetName( StringHelper::s2ws(std::string("VertexBuffer_") + MeshName).c_str() );
-			Proxy.IntermediateIndexBuffer->SetName( StringHelper::s2ws(std::string("IntermediateIndexBuffer_") + MeshName).c_str() );
-			Proxy.IndexBuffer->SetName( StringHelper::s2ws(std::string("IndexBuffer_") + MeshName).c_str() );
 #endif
 
-			{
-				UINT8*        pVertexDataBegin;
-				CD3DX12_RANGE readRange( 0, 0 );
-				Proxy.IntermediateVertexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
-				uint32 ByteSize = Proxy.VertexBufferBlob->GetBufferSize();
-				memcpy( pVertexDataBegin, Proxy.VertexBufferBlob->GetBufferPointer(), ByteSize );
-				Proxy.IntermediateVertexBuffer->Unmap( 0, nullptr );
+			Proxy.ReleaseBuffers();
 
-				CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-					Proxy.VertexBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
-				CommandList->ResourceBarrier(1, &barrier);
+			uint32 Stride = sizeof(InputLayout_StaticMesh);
+			Proxy.m_VertexBuffer = VertexBuffer::Create(CommandList, Proxy.VertexBufferBlob->GetBufferPointer(),
+				Proxy.VertexBufferBlob->GetBufferSize() / Stride, Stride, MeshName);
 
-				CommandList->CopyResource(Proxy.VertexBuffer.Get(), Proxy.IntermediateVertexBuffer.Get());
-
-				barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-					Proxy.VertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
-				CommandList->ResourceBarrier(1, &barrier);
-
-				Proxy.m_VertexBufferView.BufferLocation = Proxy.VertexBuffer->GetGPUVirtualAddress();
-				Proxy.m_VertexBufferView.StrideInBytes  = sizeof( InputLayout_StaticMesh );
-				Proxy.m_VertexBufferView.SizeInBytes    = ByteSize;
-			}
-
-			{
-				UINT8*        pIndexDataBegin;
-				CD3DX12_RANGE readRange( 0, 0 );
-				Proxy.IntermediateIndexBuffer->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
-				uint32 ByteSize = Proxy.IndexBufferBlob->GetBufferSize();
-				memcpy( pIndexDataBegin, Proxy.IndexBufferBlob->GetBufferPointer(), ByteSize );
-				Proxy.IntermediateIndexBuffer->Unmap( 0, nullptr );
-
-				CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-					Proxy.IndexBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
-				CommandList->ResourceBarrier(1, &barrier);
-
-				CommandList->CopyResource(Proxy.IndexBuffer.Get(), Proxy.IntermediateIndexBuffer.Get());
-
-				barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-					Proxy.IndexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER );
-				CommandList->ResourceBarrier(1, &barrier);
-
-				Proxy.m_IndexBufferView.BufferLocation = Proxy.IndexBuffer->GetGPUVirtualAddress();
-				Proxy.m_IndexBufferView.Format         = DXGI_FORMAT_R32_UINT;
-				Proxy.m_IndexBufferView.SizeInBytes    = ByteSize;
-			}
-
+			uint32 IndexCount = Proxy.IndexBufferBlob->GetBufferSize() / sizeof(uint32);
+			Proxy.m_IndexBuffer = IndexBuffer::Create(CommandList, Proxy.IndexBufferBlob->GetBufferPointer(),
+				IndexCount, Proxy.IndexBufferBlob->GetBufferSize(), DXGI_FORMAT_R32_UINT, MeshName);
 		}
 
 		ClearRenderStateDirty();
@@ -222,8 +161,7 @@ namespace Drn
 			MeshesData.resize(size);
 			for (int i = 0; i < size; i++)
 			{
-				StaticMeshSlotData& Slot = MeshesData[i];
-				Slot.Serialize(Ar);
+				MeshesData[i].Serialize(Ar);
 			}
 
 			Ar >> size;
@@ -272,8 +210,37 @@ namespace Drn
 	}
 
 
+	void StaticMeshSlotData::ReleaseBuffers()
+	{
+		if (m_VertexBuffer) 
+		{
+			delete m_VertexBuffer;
+			m_VertexBuffer = nullptr;
+		}
+		if (m_IndexBuffer)
+		{
+			delete m_IndexBuffer;
+			m_IndexBuffer = nullptr;
+		}
+	}
+
+	void StaticMeshSlotData::BindAndDraw( ID3D12GraphicsCommandList2* CommandList ) const
+	{
+		m_VertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+	}
+
+	StaticMeshSlotData::StaticMeshSlotData()
+		: m_VertexBuffer(nullptr)
+		, m_IndexBuffer(nullptr)
+	{
+		
+	}
+
 	StaticMeshSlotData::~StaticMeshSlotData()
 	{
 		ReleaseBlobs();
+		ReleaseBuffers();
 	}
 }

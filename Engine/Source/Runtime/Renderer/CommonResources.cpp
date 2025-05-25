@@ -100,15 +100,8 @@ namespace Drn
 
 	ScreenTriangle::~ScreenTriangle()
 	{
-		if (m_VertexBuffer)
-		{
-			delete m_VertexBuffer;
-		}
-
-		if (m_IndexBuffer)
-		{
-			delete m_IndexBuffer;
-		}
+		if (m_VertexBuffer) { delete m_VertexBuffer; }
+		if (m_IndexBuffer) { delete m_IndexBuffer; }
 	}
 
 	void ScreenTriangle::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
@@ -132,80 +125,21 @@ namespace Drn
 
 	UniformQuad::UniformQuad( ID3D12GraphicsCommandList2* CommandList )
 	{
-		const uint32 VertexBufferSize = sizeof( UniformQuadVertexData );
-		const uint32 IndexBufferSize = sizeof( UniformQuadIndexData );
-
-		Resource* IntermediateVertexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
-
-		m_VertexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
-
-		Resource* IntermediateIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
-
-		m_IndexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
-
-#if D3D12_Debug_INFO
-		IntermediateVertexBuffer->SetName( "UniformQuad_IntermediateVertexBuffer" );
-		m_VertexBuffer->SetName( "UniformQuad_VertexBuffer" );
-		IntermediateIndexBuffer->SetName( "UniformQuad_IntermediateIndexBuffer" );
-		m_IndexBuffer->SetName( "UniformQuad_IndexBuffer"  );
-#endif
-
-		{
-			UINT8*        pVertexDataBegin;
-			CD3DX12_RANGE readRange( 0, 0 );
-			IntermediateVertexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
-			memcpy( pVertexDataBegin, &UniformQuadVertexData[0], VertexBufferSize );
-			IntermediateVertexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
-
-			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			CommandList->CopyResource(m_VertexBuffer->GetD3D12Resource(), IntermediateVertexBuffer->GetD3D12Resource());
-
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			m_VertexBufferView.BufferLocation = m_VertexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			m_VertexBufferView.StrideInBytes  = VertexBufferSize/4;
-			m_VertexBufferView.SizeInBytes    = VertexBufferSize;
-		}
-
-		{
-			UINT8*        pIndexDataBegin;
-			CD3DX12_RANGE readRange( 0, 0 );
-			IntermediateIndexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
-			memcpy( pIndexDataBegin, &UniformQuadIndexData[0], IndexBufferSize );
-			IntermediateIndexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
-
-			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			CommandList->CopyResource(m_IndexBuffer->GetD3D12Resource(), IntermediateIndexBuffer->GetD3D12Resource());
-
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			m_IndexBufferView.BufferLocation = m_IndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			m_IndexBufferView.Format         = DXGI_FORMAT_R32_UINT;
-			m_IndexBufferView.SizeInBytes    = IndexBufferSize;
-		}
-
-		IntermediateVertexBuffer->ReleaseBufferedResource();
-		IntermediateIndexBuffer->ReleaseBufferedResource();
+		m_VertexBuffer = VertexBuffer::Create(CommandList, UniformQuadVertexData, 4, sizeof(UniformQuadVertexData) / 4, "UniformQuad");
+		m_IndexBuffer = IndexBuffer::Create(CommandList, UniformQuadIndexData, 6, sizeof(UniformQuadIndexData), DXGI_FORMAT_R32_UINT, "UniformQuad");
 	}
 
 	UniformQuad::~UniformQuad()
 	{
-		if (m_VertexBuffer) { m_VertexBuffer->ReleaseBufferedResource(); }
-		if (m_IndexBuffer) { m_IndexBuffer->ReleaseBufferedResource(); }
+		if (m_VertexBuffer) { delete m_VertexBuffer; }
+		if (m_IndexBuffer) { delete m_IndexBuffer; }
+	}
+
+	void UniformQuad::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------
@@ -214,84 +148,28 @@ namespace Drn
 	{
 		par_shapes_mesh* SphereMesh = par_shapes_create_subdivided_sphere( 2 );
 
-		m_IndexCount = SphereMesh->ntriangles * 3;
+		const uint32 VertexCount = SphereMesh->npoints;
+		const uint32 IndexCount = SphereMesh->ntriangles * 3;
 
-		const uint32 VertexBufferSize = SphereMesh->npoints * 3 * sizeof( float );
-		const uint32 IndexBufferSize = m_IndexCount * sizeof(PAR_SHAPES_T);
+		const uint32 IndexBufferSize = IndexCount * sizeof(PAR_SHAPES_T);
 
-		Resource* IntermediateVertexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
-
-		m_VertexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
-
-		Resource* IntermediateIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
-
-		m_IndexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-			CD3DX12_RESOURCE_DESC::Buffer( IndexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
-
-#if D3D12_Debug_INFO
-		IntermediateVertexBuffer->SetName( "PointLightSphere_IntermediateVertexBuffer" );
-		m_VertexBuffer->SetName( "PointLightSphere_VertexBuffer" );
-		IntermediateIndexBuffer->SetName( "PointLightSphere_IntermediateIndexBuffer" );
-		m_IndexBuffer->SetName( "PointLightSphere_IndexBuffer"  );
-#endif
-
-		{
-			UINT8*        pVertexDataBegin;
-			CD3DX12_RANGE readRange( 0, 0 );
-			IntermediateVertexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
-			memcpy( pVertexDataBegin, SphereMesh->points, VertexBufferSize );
-			IntermediateVertexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
-
-			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			CommandList->CopyResource(m_VertexBuffer->GetD3D12Resource(), IntermediateVertexBuffer->GetD3D12Resource());
-
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_VertexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			m_VertexBufferView.BufferLocation = m_VertexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			m_VertexBufferView.StrideInBytes  = 12;
-			m_VertexBufferView.SizeInBytes    = VertexBufferSize;
-		}
-
-		{
-			UINT8*        pIndexDataBegin;
-			CD3DX12_RANGE readRange( 0, 0 );
-			IntermediateIndexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
-			memcpy( pIndexDataBegin, SphereMesh->triangles, IndexBufferSize );
-			IntermediateIndexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
-
-			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			CommandList->CopyResource(m_IndexBuffer->GetD3D12Resource(), IntermediateIndexBuffer->GetD3D12Resource());
-
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_IndexBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER );
-			CommandList->ResourceBarrier(1, &barrier);
-
-			m_IndexBufferView.BufferLocation = m_IndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			m_IndexBufferView.Format         = DXGI_FORMAT_R16_UINT;
-			m_IndexBufferView.SizeInBytes    = IndexBufferSize;
-		}
-
-		IntermediateVertexBuffer->ReleaseBufferedResource();
-		IntermediateIndexBuffer->ReleaseBufferedResource();
+		m_VertexBuffer = VertexBuffer::Create(CommandList, SphereMesh->points, VertexCount, sizeof(float) * 3, "PointLightSphere");
+		m_IndexBuffer = IndexBuffer::Create(CommandList, SphereMesh->triangles, IndexCount, IndexBufferSize, DXGI_FORMAT_R16_UINT, "PointLightSphere");
 
 		par_shapes_free_mesh(SphereMesh);
 	}
 
 	PointLightSphere::~PointLightSphere()
 	{
-		if (m_VertexBuffer) { m_VertexBuffer->ReleaseBufferedResource(); }
-		if (m_IndexBuffer) { m_IndexBuffer->ReleaseBufferedResource(); }
+		if (m_VertexBuffer) { delete m_VertexBuffer; }
+		if (m_IndexBuffer) { delete m_IndexBuffer; }
+	}
+
+	void PointLightSphere::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------
