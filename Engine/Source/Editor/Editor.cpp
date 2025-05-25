@@ -77,7 +77,7 @@ namespace Drn
 		SelectedAsset.Get()->OpenAssetPreview();
 	}
 
-	std::shared_ptr<Drn::FileImportMenu> Editor::OpenImportMenu(const std::string& InDisplayText, char* InFilters, std::function<void(std::string)> InOnSelectedFile)
+	std::shared_ptr<Drn::FileImportMenu> Editor::OpenImportMenu(const std::string& InDisplayText, const char* InFilters, std::function<void(std::string)> InOnSelectedFile)
 	{
 		CloseImportMenu();
 

@@ -296,7 +296,7 @@ add_library( Engine STATIC
 
 # Enable C++17 compiler features.
 target_compile_features( Engine 
-	PUBLIC cxx_std_17
+	PUBLIC cxx_std_23
 )
 
 target_compile_definitions( Engine

@@ -15,8 +15,10 @@ namespace Drn
 	Resource* Resource::Create( D3D12_HEAP_TYPE HeapType, const D3D12_RESOURCE_DESC& ResourceDescription,
 		D3D12_RESOURCE_STATES InitalState)
 	{
+		CD3DX12_HEAP_PROPERTIES HeapPropperty( HeapType );
+
 		Resource* Result = new Resource();
-		Renderer::Get()->GetD3D12Device()->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( HeapType ),
+		Renderer::Get()->GetD3D12Device()->CreateCommittedResource( &HeapPropperty,
 			D3D12_HEAP_FLAG_NONE, &ResourceDescription, InitalState, nullptr, IID_PPV_ARGS(Result->m_Resource.GetAddressOf()));
 
 		return Result;
@@ -26,7 +28,10 @@ namespace Drn
 		D3D12_RESOURCE_STATES InitalState, const D3D12_CLEAR_VALUE& ClearValue)
 	{
 		Resource* Result = new Resource();
-		Renderer::Get()->GetD3D12Device()->CreateCommittedResource( &CD3DX12_HEAP_PROPERTIES( HeapType ),
+
+		CD3DX12_HEAP_PROPERTIES HeapPropperty( HeapType );
+
+		Renderer::Get()->GetD3D12Device()->CreateCommittedResource( &HeapPropperty,
 			D3D12_HEAP_FLAG_NONE, &ResourceDescription, InitalState, &ClearValue, IID_PPV_ARGS(Result->m_Resource.GetAddressOf()));
 
 		return Result;

@@ -34,6 +34,8 @@ namespace Drn
 			TonemapHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 			TonemapHeapDesc.NumDescriptors = 1;
 			Device->CreateDescriptorHeap( &TonemapHeapDesc, IID_PPV_ARGS(m_TonemapRtvHeap.ReleaseAndGetAddressOf()) );
+
+			m_TonemapHandle = m_TonemapRtvHeap->GetCPUDescriptorHandleForHeapStart();
 		}
 	}
 
@@ -72,7 +74,7 @@ namespace Drn
 		CommandList->RSSetViewports(1, &m_Viewport);
 		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-		CommandList->OMSetRenderTargets( 1, &m_TonemapRtvHeap->GetCPUDescriptorHandleForHeapStart(), true, nullptr );
+		CommandList->OMSetRenderTargets( 1, &m_TonemapHandle, true, nullptr );
 	}
 
 }

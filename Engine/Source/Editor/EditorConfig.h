@@ -12,7 +12,7 @@ namespace Drn
 	public:
 		static ImVec4 AssetInputColor;
 
-		static char* Payload_AssetPath();
+		const static char* Payload_AssetPath();
 	};
 }
 

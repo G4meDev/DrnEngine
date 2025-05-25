@@ -29,7 +29,7 @@ namespace Drn
 		ShaderBlob EditorPrimitiveShaderBlob;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath,
-			char* InEntryPoint, char* InProfile, const D3D_SHADER_MACRO* Macros, ID3DBlob** InByteBlob) 
+			const char* InEntryPoint, const char* InProfile, const D3D_SHADER_MACRO* Macros, ID3DBlob** InByteBlob) 
 		{
 			if (Condition)
 			{
@@ -84,7 +84,7 @@ namespace Drn
 		}
 	}
 
-	bool AssetImporterMaterial::CompileShader( const std::wstring& ShaderPath, char* EntryPoint, char* Profile, const D3D_SHADER_MACRO* Macros, ID3DBlob** ByteBlob )
+	bool AssetImporterMaterial::CompileShader( const std::wstring& ShaderPath, const char* EntryPoint, const char* Profile, const D3D_SHADER_MACRO* Macros, ID3DBlob** ByteBlob )
 	{
 		*ByteBlob = nullptr;
 

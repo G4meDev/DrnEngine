@@ -26,6 +26,9 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_ColorRtvHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DepthSrvHeap;
 
+		D3D12_CPU_DESCRIPTOR_HANDLE m_ColorCpuHandle;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthCpuHandle;
+
 		D3D12_CPU_DESCRIPTOR_HANDLE m_ColorSrvCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE m_ColorSrvGpuHandle;
 

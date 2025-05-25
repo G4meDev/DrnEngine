@@ -4,6 +4,8 @@
 #include "Asset.h"
 
 #include "Runtime/Renderer/D3D12Utils.h"
+#include "Runtime/Misc/Path.h"
+#include "Runtime/Core/Archive.h"
 
 LOG_DECLARE_CATEGORY(LogAssetManager)
 

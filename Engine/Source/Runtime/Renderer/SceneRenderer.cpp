@@ -216,7 +216,7 @@ namespace Drn
 			EditorPrimitiveColor, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		CommandList->ResourceBarrier(1, &barrier);
 
-		CommandList->OMSetRenderTargets(1, &m_TonemapBuffer->m_TonemapRtvHeap->GetCPUDescriptorHandleForHeapStart(), true, NULL);
+		CommandList->OMSetRenderTargets(1, &m_TonemapBuffer->m_TonemapHandle, true, NULL);
 		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_RootSignature );
 		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
@@ -263,7 +263,7 @@ namespace Drn
 
 		ID3D12Resource* EditorSelectionDepth = m_EditorSelectionBuffer->m_DepthStencilTarget->GetD3D12Resource();
 
-		CommandList->OMSetRenderTargets( 1, &m_TonemapBuffer->m_TonemapRtvHeap->GetCPUDescriptorHandleForHeapStart(), true, NULL );
+		CommandList->OMSetRenderTargets( 1, &m_TonemapBuffer->m_TonemapHandle, true, NULL );
 
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorSelectionDepth, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );

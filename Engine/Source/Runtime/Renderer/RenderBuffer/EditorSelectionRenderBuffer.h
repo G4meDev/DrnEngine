@@ -21,6 +21,8 @@ namespace Drn
 		D3D12_CLEAR_VALUE m_DepthStencilClearValue;
 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthStencilCpuHandle;
+
 
 		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthStencilSrvCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE m_DepthStencilSrvGpuHandle;

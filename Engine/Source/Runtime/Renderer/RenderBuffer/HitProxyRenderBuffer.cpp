@@ -44,6 +44,7 @@ namespace Drn
 			GuidHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 			GuidHeapDesc.NumDescriptors = 1;
 			Device->CreateDescriptorHeap( &GuidHeapDesc, IID_PPV_ARGS(m_GuidDescriptorHeap.ReleaseAndGetAddressOf()) );
+			m_GuidCpuHandle = m_GuidDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 		}
 
 		{
@@ -51,6 +52,7 @@ namespace Drn
 			DepthHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 			DepthHeapDesc.NumDescriptors = 1;
 			Device->CreateDescriptorHeap( &DepthHeapDesc, IID_PPV_ARGS(m_DepthHeap.ReleaseAndGetAddressOf()) );
+			m_DepthCpuHandle = m_DepthHeap->GetCPUDescriptorHandleForHeapStart();
 		}
 	}
 
@@ -72,8 +74,7 @@ namespace Drn
 		RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		RenderTargetViewDesc.Texture2D.MipSlice = 0;
 
-		Device->CreateRenderTargetView( m_GuidTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_GuidDescriptorHeap->GetCPUDescriptorHandleForHeapStart() );
-		//Device->CreateRenderTargetView( m_GuidTarget.Get(), &rtv, CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RTVHeap->GetCPUDescriptorHandleForHeapStart(), 1, RTVDescriporSize) );
+		Device->CreateRenderTargetView( m_GuidTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_GuidCpuHandle );
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -89,7 +90,7 @@ namespace Drn
 		DepthViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 		DepthViewDesc.Texture2D.MipSlice = 0;
 		
-		Device->CreateDepthStencilView( m_DepthTarget->GetD3D12Resource(), &DepthViewDesc, m_DepthHeap->GetCPUDescriptorHandleForHeapStart() );
+		Device->CreateDepthStencilView( m_DepthTarget->GetD3D12Resource(), &DepthViewDesc, m_DepthCpuHandle );
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -103,8 +104,8 @@ namespace Drn
 
 	void HitProxyRenderBuffer::Clear( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->ClearRenderTargetView( m_GuidDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), m_GuidClearValue.Color, 0, nullptr );
-		CommandList->ClearDepthStencilView( m_DepthHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
+		CommandList->ClearRenderTargetView( m_GuidCpuHandle, m_GuidClearValue.Color, 0, nullptr );
+		CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
 	void HitProxyRenderBuffer::Bind( ID3D12GraphicsCommandList2* CommandList )
@@ -112,7 +113,7 @@ namespace Drn
 		CommandList->RSSetViewports(1, &m_Viewport);
 		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-		CommandList->OMSetRenderTargets( 1, &m_GuidDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), 1, &m_DepthHeap->GetCPUDescriptorHandleForHeapStart() );
+		CommandList->OMSetRenderTargets( 1, &m_GuidCpuHandle, 1, &m_DepthCpuHandle );
 	}
 
 }

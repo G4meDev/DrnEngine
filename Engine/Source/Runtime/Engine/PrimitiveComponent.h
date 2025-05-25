@@ -17,7 +17,7 @@ namespace Drn
 
 		virtual void Tick(float DeltaTime) override;
 
-		inline BodyInstance GetBodyInstance() { return m_BodyInstance; }
+		inline BodyInstance& GetBodyInstance() { return m_BodyInstance; }
 
 		void SendPhysicsTransform();
 

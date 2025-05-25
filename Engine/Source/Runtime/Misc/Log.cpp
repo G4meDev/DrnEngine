@@ -7,7 +7,7 @@
 
 Verbosity Log::VerboseLevel = Verbosity::Info;
 
-LogCategory::LogCategory(char* InName)
+LogCategory::LogCategory(const char* InName)
 {
 	Name = InName;
 

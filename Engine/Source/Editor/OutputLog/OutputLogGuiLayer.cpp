@@ -71,7 +71,7 @@ namespace Drn
 			{
 				for (LogCategory* Cat : OutputLog::Get()->LogCategories)
 				{
-					if (ImGui::MenuItem(Cat->Name, NULL, !Cat->Suppressed))
+					if (ImGui::MenuItem(Cat->Name.c_str(), NULL, !Cat->Suppressed))
 					{
 						Cat->Suppressed = !Cat->Suppressed;
 					}
@@ -146,7 +146,7 @@ namespace Drn
 					if (OutputLog::Get()->bShowCategory)
 					{
 						ImGui::TableSetColumnIndex(i++);
-						ImGui::Text(Logs[QualifiedLogs[row]].Category->Name);
+						ImGui::Text(Logs[QualifiedLogs[row]].Category->Name.c_str());
 					}
 
 					ImGui::TableSetColumnIndex(i++);

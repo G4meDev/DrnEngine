@@ -38,11 +38,13 @@ namespace Drn
 		ColorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		ColorHeapDesc.NumDescriptors = 1;
 		Device->CreateDescriptorHeap( &ColorHeapDesc, IID_PPV_ARGS(m_ColorRtvHeap.ReleaseAndGetAddressOf()) );
+		m_ColorCpuHandle = m_ColorRtvHeap->GetCPUDescriptorHandleForHeapStart();
 
 		D3D12_DESCRIPTOR_HEAP_DESC DepthHeapDesc = {};
 		DepthHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 		DepthHeapDesc.NumDescriptors = 1;
 		Device->CreateDescriptorHeap( &DepthHeapDesc, IID_PPV_ARGS(m_DepthSrvHeap.ReleaseAndGetAddressOf()) );
+		m_DepthCpuHandle = m_DepthSrvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 
 	void EditorPrimitiveRenderBuffer::Resize( const IntPoint& Size )
@@ -63,7 +65,7 @@ namespace Drn
 		RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		RenderTargetViewDesc.Texture2D.MipSlice = 0;
 
-		Device->CreateRenderTargetView( m_ColorTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_ColorRtvHeap->GetCPUDescriptorHandleForHeapStart() );
+		Device->CreateRenderTargetView( m_ColorTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_ColorCpuHandle );
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
 		SrvDesc.Format = DISPLAY_OUTPUT_FORMAT;
@@ -86,7 +88,7 @@ namespace Drn
 		DepthViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 		DepthViewDesc.Texture2D.MipSlice = 0;
 		
-		Device->CreateDepthStencilView( m_DepthTarget->GetD3D12Resource(), &DepthViewDesc, m_DepthSrvHeap->GetCPUDescriptorHandleForHeapStart() );
+		Device->CreateDepthStencilView( m_DepthTarget->GetD3D12Resource(), &DepthViewDesc, m_DepthCpuHandle );
 
 #if D3D12_Debug_INFO
 		m_ColorTarget->SetName( "EditorPrimitiveColor" );
@@ -96,8 +98,8 @@ namespace Drn
 
 	void EditorPrimitiveRenderBuffer::Clear( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->ClearRenderTargetView( m_ColorRtvHeap->GetCPUDescriptorHandleForHeapStart(), m_ColorClearValue.Color, 0, nullptr );
-		CommandList->ClearDepthStencilView( m_DepthSrvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
+		CommandList->ClearRenderTargetView( m_ColorCpuHandle, m_ColorClearValue.Color, 0, nullptr );
+		CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
 	void EditorPrimitiveRenderBuffer::Bind( ID3D12GraphicsCommandList2* CommandList )
@@ -105,7 +107,7 @@ namespace Drn
 		CommandList->RSSetViewports(1, &m_Viewport);
 		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-		CommandList->OMSetRenderTargets( 1, &m_ColorRtvHeap->GetCPUDescriptorHandleForHeapStart(), true, &m_DepthSrvHeap->GetCPUDescriptorHandleForHeapStart() );
+		CommandList->OMSetRenderTargets( 1, &m_ColorCpuHandle, true, &m_DepthCpuHandle );
 	}
 
 }

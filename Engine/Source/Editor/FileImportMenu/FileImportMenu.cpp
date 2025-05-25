@@ -7,7 +7,7 @@
 
 namespace Drn
 {
-	FileImportMenu::FileImportMenu(const std::string& InDisplayText, char* InFilters, std::function<void(std::string)> InOnSelectedFileDelegate)
+	FileImportMenu::FileImportMenu(const std::string& InDisplayText, const char* InFilters, std::function<void(std::string)> InOnSelectedFileDelegate)
 		: m_DisplayText(InDisplayText)
 		, m_Filters(InFilters)
 		, m_OnSelectedFileDelegate(InOnSelectedFileDelegate)
@@ -24,7 +24,7 @@ namespace Drn
 		//GuiLayer.reset();
 	}
 
-	char* FileImportMenu::FileFilter_Any()
+	const char* FileImportMenu::FileFilter_Any()
 	{
 		// TODO: better filter group
 		// check https://github.com/aiekick/ImGuiFileDialog/blob/master/Documentation.md#filter-collections-
@@ -32,12 +32,12 @@ namespace Drn
 		return ".*";
 	}
 
-	char* FileImportMenu::FileFilter_Model()
+	const char* FileImportMenu::FileFilter_Model()
 	{
 		return ".obj,.fbx";
 	}
 
-	char* FileImportMenu::FileFilter_Texture()
+	const char* FileImportMenu::FileFilter_Texture()
 	{
 		return ".png,.jpg,.tga";
 	}

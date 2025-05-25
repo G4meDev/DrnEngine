@@ -124,7 +124,8 @@ namespace Drn
 		if ( mesh->mMaterialIndex >= 0 )
 		{
 			aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-			MeshData.MaterialIndex = BuildingData.AddMaterial(std::string( material->GetName().C_Str()));
+			std::string MatName = material->GetName().C_Str();
+			MeshData.MaterialIndex = BuildingData.AddMaterial(MatName);
 		}
 
 		BuildingData.MeshesData.push_back(MeshData);

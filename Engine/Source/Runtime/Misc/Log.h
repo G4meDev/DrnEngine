@@ -60,9 +60,9 @@ public:
 
 struct LogCategory
 {
-	LogCategory(char* InName);
+	LogCategory(const char* InName);
 
-	char* Name;
+	std::string Name;
 	bool Suppressed = false;
 };
 

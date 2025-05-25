@@ -47,7 +47,7 @@ namespace Drn
 
 		void Unbind()
 		{
-			InvocationElement.Class = nullptr;
+			Element.Class = nullptr;
 		}
 
 		inline bool IsBound() const
@@ -60,7 +60,7 @@ namespace Drn
 		{
 			if (UClass && Element.Class == UClass)
 			{
-				return True;
+				return true;
 			}
 
 			return false;
@@ -114,7 +114,7 @@ namespace Drn
 
 		void Clear()
 		{
-			InvocationList.clear();
+			InvokationList.clear();
 		}
 
 		inline bool IsBound() const
