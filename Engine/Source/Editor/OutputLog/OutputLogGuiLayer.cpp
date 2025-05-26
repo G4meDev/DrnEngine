@@ -115,8 +115,6 @@ namespace Drn
 			ImGui::TableSetupColumn("Message", ImGuiTableColumnFlags_None);
 			ImGui::TableHeadersRow();
 
-
-
 			// make list for visible logs
 			ImGuiListClipper clipper;
 			clipper.Begin((int32)QualifiedLogs.size());
@@ -139,15 +137,21 @@ namespace Drn
 
 					if (OutputLog::Get()->bShowTime)
 					{
+						SCOPE_STAT(DrawTime);
+
 						ImGui::TableSetColumnIndex(i++);
 						ImGui::Text(Logs[QualifiedLogs[row]].Time.ToString().c_str());
 					}
 
 					if (OutputLog::Get()->bShowCategory)
 					{
+						SCOPE_STAT(DrawCategory);
+
 						ImGui::TableSetColumnIndex(i++);
 						ImGui::Text(Logs[QualifiedLogs[row]].Category->Name.c_str());
 					}
+
+					SCOPE_STAT(DrawMessage);
 
 					ImGui::TableSetColumnIndex(i++);
 					ImGui::Text(Logs[QualifiedLogs[row]].Message.c_str());

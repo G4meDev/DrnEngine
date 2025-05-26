@@ -58,6 +58,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		bool m_SelectedInEditor = false;
+		std::string ComponentLabel = "Component_00";
 #endif
 
 	private:
@@ -66,11 +67,6 @@ namespace Drn
 		Actor* Owner = nullptr;
 
 		bool bActive = true;
-
-
-#if WITH_EDITOR
-		std::string ComponentLabel = "Component_00";
-#endif
 
 		friend class Actor;
 	};

@@ -66,55 +66,64 @@ namespace Drn
 
 	void World::Tick( float DeltaTime )
 	{
-		for (auto it = m_Actors.begin(); it != m_Actors.end();)
+		SCOPE_STAT(WorldTick);
+
 		{
-			if (*it && (*it)->IsMarkedPendingKill())
+			SCOPE_STAT(PendingDestroyAddActors);
+
+			for (auto it = m_Actors.begin(); it != m_Actors.end();)
 			{
-				Actor* ToDelActor = *it;
+				if (*it && (*it)->IsMarkedPendingKill())
+				{
+					Actor* ToDelActor = *it;
 
-				std::vector<Actor*> RemovedActorList;
-				RemovedActorList.push_back(ToDelActor);
-				OnRemoveActors.Braodcast( RemovedActorList );
+					std::vector<Actor*> RemovedActorList;
+					RemovedActorList.push_back(ToDelActor);
+					OnRemoveActors.Braodcast( RemovedActorList );
 
-				ToDelActor->UnRegisterComponents();
+					ToDelActor->UnRegisterComponents();
 
-				it = m_Actors.erase(it);
-				delete ToDelActor;
+					it = m_Actors.erase(it);
+					delete ToDelActor;
+				}
+
+				else
+				{
+					it++;
+				}
 			}
-
-			else
-			{
-				it++;
-			}
-		}
 		
-		for (auto it = m_NewActors.begin(); it != m_NewActors.end();)
-		{
-			if (*it && (*it)->IsMarkedPendingKill())
+			for (auto it = m_NewActors.begin(); it != m_NewActors.end();)
 			{
-				Actor* ToDelActor = *it;
+				if (*it && (*it)->IsMarkedPendingKill())
+				{
+					Actor* ToDelActor = *it;
 
-				std::vector<Actor*> RemovedActorList;
-				RemovedActorList.push_back(ToDelActor);
-				OnRemoveActors.Braodcast( RemovedActorList );
+					std::vector<Actor*> RemovedActorList;
+					RemovedActorList.push_back(ToDelActor);
+					OnRemoveActors.Braodcast( RemovedActorList );
 
-				ToDelActor->UnRegisterComponents();
+					ToDelActor->UnRegisterComponents();
 
-				it = m_NewActors.erase(it);
-				delete ToDelActor;
+					it = m_NewActors.erase(it);
+					delete ToDelActor;
+				}
+				else
+				{
+					(*it)->RegisterComponents(this);
+
+					it++;
+				}
 			}
-			else
-			{
-				(*it)->RegisterComponents(this);
 
-				it++;
+			if (m_NewActors.size())
+			{
+				m_Actors.insert(m_NewActors.begin(), m_NewActors.end());
+
+				OnAddActors.Braodcast(m_NewActors);
+				m_NewActors.clear();
 			}
 		}
-
-		m_Actors.insert(m_NewActors.begin(), m_NewActors.end());
-
-		OnAddActors.Braodcast(m_NewActors);
-		m_NewActors.clear();
 
 		m_LineBatchCompponent->TickComponent(DeltaTime);
 		m_LineBatchThicknessCompponent->TickComponent(DeltaTime);
@@ -124,9 +133,13 @@ namespace Drn
 			return;
 		}
 
-		for (Actor* actor : m_Actors)
 		{
-			actor->Tick(DeltaTime);
+			SCOPE_STAT(BraodcastActorTicks);
+
+			for (Actor* actor : m_Actors)
+			{
+				actor->Tick(DeltaTime);
+			}
 		}
 	}
 

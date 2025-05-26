@@ -38,6 +38,7 @@ namespace Drn
 	{
 	public:
 		ScopeProfilerStat(const std::string& InName);
+		ScopeProfilerStat(const std::string& InName, const char* Postfix);
 		~ScopeProfilerStat();
 
 	protected:
@@ -50,12 +51,10 @@ namespace Drn
 #define PROFILER_ENABLED 1
 
 #if PROFILER_ENABLED
-
 	#define SCOPE_STAT( name ) ScopeProfilerStat Scope_Stat_##name (#name)
-
+	#define SCOPE_STAT_POSTFIX( name , postfix ) ScopeProfilerStat Scope_Stat_##name (#name , postfix)
 #else
-
 	#define SCOPE_STAT( name )
-
+	#define SCOPE_STAT_POSTFIX( name , postfix )
 #endif
 }

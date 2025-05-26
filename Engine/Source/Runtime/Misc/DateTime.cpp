@@ -22,11 +22,13 @@ namespace Drn
 
 	std::string DateTime::ToString() const
 	{
-		std::stringstream ss;
+		SCOPE_STAT( DateTimeToString );
 
-		// [%d/%m/%Y_%H:%M:%S]
-		ss << "[" << Day << "/" << Month << "/" << Year << "_" << Hour << ":" << Minute << ":" << Second << "]";
+		std::string Str(21, 0);
+		sprintf(Str.data(), "[%02d/%02d/%04d-%02d:%02d:%02d]", Day, Month, Year, Hour, Minute, Second);
+		
+		return Str;
 
-		return ss.str();
+		//return std::format("[{:02}/{:02}/{:04}-{:02}:{:02}:{:02}]", Day, Month, Year, Hour, Minute, Second);
 	}
 }

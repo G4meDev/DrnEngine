@@ -20,6 +20,12 @@ namespace Drn
 		m_StartTime = Time::GetSeconds();
 	}
 
+	ScopeProfilerStat::ScopeProfilerStat( const std::string& InName, const char* Postfix )
+	{
+		Name = InName + Postfix;
+		m_StartTime = Time::GetSeconds();
+	}
+
 	ScopeProfilerStat::~ScopeProfilerStat()
 	{
 		Profiler::Get()->WriteToken(ProfileToken(Name, m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0));

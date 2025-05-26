@@ -33,33 +33,42 @@ namespace Drn
 	{
 		SCOPE_STAT(WorldManagerTick);
 
-		if (m_PendingLevel)
 		{
-			OnCloseLevel.Braodcast( m_MainWorld );
+			SCOPE_STAT(PendingLevelCheck);
 
-			ReleaseWorld(m_MainWorld);
-			m_MainWorld = m_PendingLevel;
-			m_PendingLevel = nullptr;
-
-			OnOpenLevel.Braodcast( m_MainWorld );
-		}
-
-		for (auto it = m_AllocatedWorlds.begin(); it != m_AllocatedWorlds.end();)
-		{
-			World* W = *it;
-
-			if (W->IsPendingDestroy())
+			if (m_PendingLevel)
 			{
-				it = m_AllocatedWorlds.erase(it);
-				ReleaseWorld(W);
-			}
+				OnCloseLevel.Braodcast( m_MainWorld );
 
-			else
-			{
-				W->Tick(DeltaTime);
-				it++;
+				ReleaseWorld(m_MainWorld);
+				m_MainWorld = m_PendingLevel;
+				m_PendingLevel = nullptr;
+
+				OnOpenLevel.Braodcast( m_MainWorld );
 			}
 		}
+
+		{
+			SCOPE_STAT(DestroyAndTickBroadcast);
+
+			for (auto it = m_AllocatedWorlds.begin(); it != m_AllocatedWorlds.end();)
+			{
+				World* W = *it;
+
+				if (W->IsPendingDestroy())
+				{
+					it = m_AllocatedWorlds.erase(it);
+					ReleaseWorld(W);
+				}
+
+				else
+				{
+					W->Tick(DeltaTime);
+					it++;
+				}
+			}
+		}
+
 	}
 
 	void WorldManager::LoadInitalWorld()

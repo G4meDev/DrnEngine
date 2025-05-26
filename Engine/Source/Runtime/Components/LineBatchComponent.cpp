@@ -9,27 +9,17 @@ namespace Drn
 {
 	void LineBatchComponent::TickComponent( float DeltaTime )
 	{
-		bool Dirty = false;
+		SCOPE_STAT_POSTFIX( LineBatchComponentTick, ComponentLabel.c_str() );
 
-		for ( auto it = m_Lines.begin(); it != m_Lines.end(); )
-		{
-			BatchLine& Line = *it;
+		const size_t OldSize = m_Lines.size();
 
-			// at least draw for single frame
-			if ( Line.RemainingLifetime < 0 )
+		std::_Erase_remove_if( m_Lines, [&](BatchLine& Line)
 			{
-				it = m_Lines.erase(it);
-				Dirty = true;
-			}
-			
-			else
-			{
-				Line.RemainingLifetime -= DeltaTime;
-				it++;
-			}
-		}
+				if (Line.RemainingLifetime < 0) { return true; }
+				else { Line.RemainingLifetime -= DeltaTime; return false; }
+			});
 
-		if (Dirty)
+		if (m_Lines.size() != OldSize)
 		{
 			MarkRenderStateDirty();
 		}
