@@ -73,6 +73,7 @@ namespace Drn
 		
 	}
 
+#if WITH_EDITOR
 	void BillboardSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
 		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -99,6 +100,7 @@ namespace Drn
 
 		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
+#endif
 
 	void BillboardSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{

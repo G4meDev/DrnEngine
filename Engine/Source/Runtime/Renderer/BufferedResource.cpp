@@ -69,6 +69,8 @@ namespace Drn
 
 	void BufferedResourceManager::Tick( float DeltaTime )
 	{
+		SCOPE_STAT( BufferedResourceManagerTick );
+
 		for (auto it = m_PendingReleaseResources.begin(); it != m_PendingReleaseResources.end(); )
 		{
 			BufferedResource* Resource = *it;

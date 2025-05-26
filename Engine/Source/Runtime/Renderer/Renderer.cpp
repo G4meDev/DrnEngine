@@ -229,22 +229,33 @@ namespace Drn
 
 		BufferedResourceManager::Get()->Tick(DeltaTime);
 
-		// @TODO: move time to accessible location
-		TotalTime += DeltaTime;
-
-		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
-		m_CommandList->SetDescriptorHeaps(2, Descs);
-
-		FLOAT clearColor[] = { 0.4f, 0.6f, 0.9f, 1.0f };
-		auto backBuffer = m_SwapChain->GetBackBuffer();
-
-		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
-
-		m_CommandList->ResourceBarrier( 1, &barrier );
-
+		CD3DX12_RESOURCE_BARRIER barrier;
 		D3D12_CPU_DESCRIPTOR_HANDLE rtv = m_SwapChain->GetBackBufferHandle();
-		m_CommandList->ClearRenderTargetView( rtv, clearColor, 0, nullptr );
+		ID3D12Resource* backBuffer;
+
+		{
+			SCOPE_STAT(SomeThing);
+
+			// @TODO: move time to accessible location
+			TotalTime += DeltaTime;
+
+			{
+				SCOPE_STAT(SomeThing1);
+
+				ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
+				m_CommandList->SetDescriptorHeaps(2, Descs);
+				backBuffer = m_SwapChain->GetBackBuffer();
+			}
+
+			{
+				// TODO: remove in release
+				SCOPE_STAT(SomeThing2);
+
+				barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+					backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
+				m_CommandList->ResourceBarrier( 1, &barrier );
+			}
+		}
 
 		for (Scene* S : m_AllocatedScenes)
 		{

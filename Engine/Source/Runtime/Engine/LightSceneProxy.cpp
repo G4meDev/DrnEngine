@@ -9,8 +9,10 @@ namespace Drn
 		, m_WorldPosition( InComponent->GetWorldLocation() )
 		, m_LightColor( InComponent->GetScaledColor() )
 		, m_CastShadow( InComponent->IsCastingShadow() )
-		, m_SelectedInEditor( InComponent->IsSelectedInEditor() )
 	{
+#if WITH_EDITOR
+		m_SelectedInEditor = InComponent->IsSelectedInEditor();
+#endif
 	}
 
 	LightSceneProxy::~LightSceneProxy()

@@ -20,8 +20,8 @@ namespace Drn
 	struct ProfileToken
 	{
 	public:
-		ProfileToken(const std::string& InName, double InStartTime, double InDuration)
-			: Name(InName)
+		ProfileToken(std::string&& InName, double InStartTime, double InDuration)
+			: Name(std::move(InName))
 			, StartTime(InStartTime)
 			, Duration(InDuration)
 		{
@@ -30,6 +30,15 @@ namespace Drn
 		ProfileToken()
 			: ProfileToken("NameNull", 0, 0)
 		{
+		}
+
+		ProfileToken& operator=(ProfileToken&& Other) noexcept
+		{
+			Name = std::move(Other.Name);
+			StartTime = Other.StartTime;
+			Duration = Other.Duration;
+
+			return *this;
 		}
 
 		std::string Name;
@@ -63,7 +72,7 @@ namespace Drn
 		inline bool IsProfiling() { return m_ProfileMode != EProfileMode::Disabled; }
 
 		void Profile(EProfileMode Mode);
-		void WriteToken(const ProfileToken& Token);
+		void WriteToken(ProfileToken&& Token);
 
 	protected:
 

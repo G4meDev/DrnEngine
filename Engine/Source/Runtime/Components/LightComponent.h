@@ -28,12 +28,10 @@ namespace Drn
 
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
-		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
-
-
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
+		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
 #endif
 
 		Vector m_LightColor;

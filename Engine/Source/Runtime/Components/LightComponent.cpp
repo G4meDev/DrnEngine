@@ -53,16 +53,6 @@ namespace Drn
 		SceneComponent::OnUpdateTransform(SkipPhysic);
 	}
 
-	void LightComponent::SetSelectedInEditor( bool SelectedInEditor )
-	{
-		SceneComponent::SetSelectedInEditor(SelectedInEditor);
-
-		if (m_LightSceneProxy)
-		{
-			m_LightSceneProxy->SetSelectedInEditor(SelectedInEditor);
-		}
-	}
-
 	void LightComponent::SetColor( const Vector& Color )
 	{
 		m_LightColor = Color;
@@ -90,6 +80,7 @@ namespace Drn
 		}
 	}
 
+#if WITH_EDITOR
 	void LightComponent::DrawDetailPanel( float DeltaTime )
 	{
 		SceneComponent::DrawDetailPanel(DeltaTime);
@@ -100,4 +91,14 @@ namespace Drn
 		}
 	}
 
+	void LightComponent::SetSelectedInEditor( bool SelectedInEditor )
+	{
+		SceneComponent::SetSelectedInEditor(SelectedInEditor);
+
+		if (m_LightSceneProxy)
+		{
+			m_LightSceneProxy->SetSelectedInEditor(SelectedInEditor);
+		}
+	}
+#endif
 }

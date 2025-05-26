@@ -114,7 +114,7 @@ namespace Drn
 		m_TokenBufferCount = 0;
 	}
 
-	void Profiler::WriteToken( const ProfileToken& Token )
+	void Profiler::WriteToken( ProfileToken&& Token )
 	{
 		if (IsProfiling())
 		{
@@ -123,7 +123,7 @@ namespace Drn
 				FlushBuffer();
 			}
 
-			m_TokenBuffer[m_TokenBufferCount++] = Token;
+			m_TokenBuffer[m_TokenBufferCount++] = std::move(Token);
 		}
 	}
 

@@ -37,7 +37,7 @@ namespace Drn
 	class ScopeProfilerStat
 	{
 	public:
-		ScopeProfilerStat(const std::string& InName);
+		ScopeProfilerStat(std::string&& InName);
 		ScopeProfilerStat(const std::string& InName, const char* Postfix);
 		~ScopeProfilerStat();
 

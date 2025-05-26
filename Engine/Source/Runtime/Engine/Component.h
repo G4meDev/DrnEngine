@@ -34,9 +34,10 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar );
 
-#if WITH_EDITOR
 		std::string GetComponentLabel() const;
 		void SetComponentLabel(const std::string& InLabel);
+
+#if WITH_EDITOR
 
 		virtual void DrawDetailPanel(float DeltaTime) {};
 #endif

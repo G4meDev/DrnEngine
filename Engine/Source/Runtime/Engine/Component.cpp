@@ -67,7 +67,15 @@ namespace Drn
 	{
 		m_SelectedInEditor = SelectedInEditor;
 	}
+#else
+	std::string Component::GetComponentLabel() const
+	{
+		return "InvalidName";
+	}
 
+	void Component::SetComponentLabel( const std::string& InLabel )
+	{
+	}
 #endif
 
 	void Component::RegisterComponent( World* InOwningWorld )

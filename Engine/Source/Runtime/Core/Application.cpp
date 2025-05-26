@@ -159,30 +159,38 @@ namespace Drn
 	{
 		SCOPE_STAT(ApplicationTick);
 
-		MSG msg;
-		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			SCOPE_STAT(WindowEvents);
+
+			MSG msg;
+			while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
 		}
 
-		static uint64_t frameCount = 0;
-		static double   totalTime  = 0.0;
-
-		totalTime += DeltaTime;
-		frameCount++;
-
-		if ( totalTime > 1.0 )
 		{
-			auto fps   = frameCount / totalTime;
-			frameCount = 0;
-			totalTime -= 1.0;
+			SCOPE_STAT(UpdateTitle);
 
-			LOG( LogApplication, Info, "FPS: %i", (int)fps);
+			static uint64_t frameCount = 0;
+			static double   totalTime  = 0.0;
 
-			wchar_t buffer[256];
-			::swprintf_s( buffer, L"Cube [FPS: %f]", fps );
-			m_MainWindow->SetWindowTitle( buffer );
+			totalTime += DeltaTime;
+			frameCount++;
+
+			if ( totalTime > 1.0 )
+			{
+				auto fps   = frameCount / totalTime;
+				frameCount = 0;
+				totalTime -= 1.0;
+
+				LOG( LogApplication, Info, "FPS: %i", (int)fps);
+
+				wchar_t buffer[256];
+				::swprintf_s( buffer, L"[FPS: %f]", fps );
+				m_MainWindow->SetWindowTitle( buffer );
+			}
 		}
 
 		Profiler::Get()->Tick(DeltaTime);

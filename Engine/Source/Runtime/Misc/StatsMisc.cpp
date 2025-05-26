@@ -14,9 +14,9 @@ namespace Drn
 		Data.m_Duration = Time::GetSeconds() - Data.m_StartTime;
 	}
 
-	ScopeProfilerStat::ScopeProfilerStat( const std::string& InName ) 
+	ScopeProfilerStat::ScopeProfilerStat( std::string&& InName ) 
 	{
-		Name = InName;
+		Name = std::move(InName);
 		m_StartTime = Time::GetSeconds();
 	}
 
@@ -28,6 +28,6 @@ namespace Drn
 
 	ScopeProfilerStat::~ScopeProfilerStat()
 	{
-		Profiler::Get()->WriteToken(ProfileToken(Name, m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0));
+		Profiler::Get()->WriteToken(ProfileToken(std::move(Name), m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0));
 	}
 }

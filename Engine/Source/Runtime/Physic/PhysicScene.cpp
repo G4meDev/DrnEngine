@@ -213,7 +213,7 @@ namespace Drn
 				PxRigidActor* RigidActor = Actor->is<PxRigidActor>();
 				DrawDebugForRigidActor(RigidActor);
 
-				BodyInstance* Body = PhysicUserData::Get<BodyInstance>(RigidActor->userData);
+				//BodyInstance* Body = PhysicUserData::Get<BodyInstance>(RigidActor->userData);
 			}
 		}
 

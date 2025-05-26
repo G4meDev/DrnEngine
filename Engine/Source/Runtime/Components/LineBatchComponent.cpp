@@ -9,7 +9,7 @@ namespace Drn
 {
 	void LineBatchComponent::TickComponent( float DeltaTime )
 	{
-		SCOPE_STAT_POSTFIX( LineBatchComponentTick, ComponentLabel.c_str() );
+		SCOPE_STAT_POSTFIX( LineBatchComponentTick, GetComponentLabel().c_str() );
 
 		const size_t OldSize = m_Lines.size();
 
