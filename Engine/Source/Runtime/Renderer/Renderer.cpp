@@ -227,34 +227,16 @@ namespace Drn
 	{
 		SCOPE_STAT(RendererTick);
 
+		// @TODO: move time to accessible location
+		TotalTime += DeltaTime;
+
 		BufferedResourceManager::Get()->Tick(DeltaTime);
 
-		CD3DX12_RESOURCE_BARRIER barrier;
-		D3D12_CPU_DESCRIPTOR_HANDLE rtv = m_SwapChain->GetBackBufferHandle();
-		ID3D12Resource* backBuffer;
-
 		{
-			SCOPE_STAT(SomeThing);
-
-			// @TODO: move time to accessible location
-			TotalTime += DeltaTime;
-
-			{
-				SCOPE_STAT(SomeThing1);
-
-				ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
-				m_CommandList->SetDescriptorHeaps(2, Descs);
-				backBuffer = m_SwapChain->GetBackBuffer();
-			}
-
-			{
-				// TODO: remove in release
-				SCOPE_STAT(SomeThing2);
-
-				barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-					backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
-				m_CommandList->ResourceBarrier( 1, &barrier );
-			}
+			SCOPE_STAT(SetDescriptorHeaps);
+			
+			ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
+			m_CommandList->SetDescriptorHeaps(2, Descs);
 		}
 
 		for (Scene* S : m_AllocatedScenes)
@@ -262,28 +244,42 @@ namespace Drn
 			S->Render(m_CommandList.Get());
 		}
 
-#if WITH_EDITOR
-		m_CommandList->OMSetRenderTargets(1, &rtv, false, NULL);
-		ImGuiRenderer::Get()->Tick( 1, rtv, m_CommandList.Get() );
-#else
+		ID3D12Resource* backBuffer = m_SwapChain->GetBackBuffer();
 
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
+#if WITH_EDITOR
+		D3D12_CPU_DESCRIPTOR_HANDLE rtv = m_SwapChain->GetBackBufferHandle();
+		{
+			SCOPE_STAT(SetupImguiRenderer);
+
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
+			m_CommandList->ResourceBarrier( 1, &barrier );
+
+			m_CommandList->OMSetRenderTargets(1, &rtv, false, NULL);
+		}
+
+		ImGuiRenderer::Get()->Tick( 1, rtv, m_CommandList.Get() );
+
+		{
+			SCOPE_STAT(PostImguiRenderer);
+
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
+			m_CommandList->ResourceBarrier( 1, &barrier );
+		}
+#else
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
 		m_CommandList->ResourceBarrier( 1, &barrier );
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_DEST );
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST );
 		m_CommandList->ResourceBarrier( 1, &barrier );
 
 		m_CommandList->CopyResource(backBuffer, m_MainSceneRenderer->GetViewResource());
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		m_CommandList->ResourceBarrier( 1, &barrier );
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET );
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT );
 		m_CommandList->ResourceBarrier( 1, &barrier );
-
 #endif
-
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
-		m_CommandList->ResourceBarrier( 1, &barrier );
 
 		{
 			SCOPE_STAT( RendererExecuteCommandList );
