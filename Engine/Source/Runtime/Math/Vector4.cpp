@@ -16,15 +16,10 @@ namespace Drn
 
 	bool Vector4::Draw()
 	{
-		float Value[4];
-		Value[0] = GetX();
-		Value[1] = GetY();
-		Value[2] = GetZ();
-		Value[3] = GetW();
-
+		float Value[4] = { GetX(), GetY(), GetZ(), GetW() };
 		if (ImGui::DragFloat4("", Value, 0.3f, 0, 0, "%.3f"))
 		{
-			m_Vector = XMVectorSet( Value[0], Value[1], Value[2], Value[3] );
+			XMStoreFloat4(&m_Vector, XMVectorSet( Value[0], Value[1], Value[2], Value[3] ));
 			return true;
 		}
 

@@ -39,7 +39,7 @@ namespace Drn
 
 		inline Vector TransformPosition(const Vector& Pos) const
 		{
-			return XMVector3Transform(XMLoadFloat3(&Pos.m_Vector), Matrix(*this).m_Matrix);
+			return XMVector3Transform(XMLoadFloat3(&Pos.m_Vector), Matrix(*this).Get());
 		}
 
 		Vector GetSafeScaleReciprocal( const Vector& InScale ) const;

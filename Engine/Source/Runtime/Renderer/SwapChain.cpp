@@ -36,7 +36,7 @@ namespace Drn
 		swapChainDesc.BufferCount           = NUM_BACKBUFFERS;
 		swapChainDesc.Scaling               = DXGI_SCALING_STRETCH;
 		swapChainDesc.SwapEffect            = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapChainDesc.AlphaMode             = DXGI_ALPHA_MODE_UNSPECIFIED;
+		swapChainDesc.AlphaMode             = DXGI_ALPHA_MODE_IGNORE;
 
 		m_TearingSupported = CheckTearingSupport();
 		swapChainDesc.Flags = m_TearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
@@ -72,7 +72,7 @@ namespace Drn
 		
 		UINT syncInterval = m_Vsync ? 1 : 0;
 		UINT presentFlags = m_TearingSupported && !m_Vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
-		
+
 		SCOPE_STAT(D3D12SwapChainPresent);
 		m_SwapChain->Present( syncInterval, presentFlags);
 		m_CurrentBackbufferIndex = m_SwapChain->GetCurrentBackBufferIndex();

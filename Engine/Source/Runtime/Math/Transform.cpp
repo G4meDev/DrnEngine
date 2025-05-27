@@ -11,7 +11,7 @@ namespace Drn
 		XMVECTOR DecompRotation;
 		XMVECTOR DecompScale;
 
-		XMMatrixDecompose(&DecompScale, &DecompRotation, &DecompLocation, InMatrix.m_Matrix);
+		XMMatrixDecompose(&DecompScale, &DecompRotation, &DecompLocation, InMatrix.Get());
 
 		Location = Vector(DecompLocation);
 		Rotation = Quat(DecompRotation);

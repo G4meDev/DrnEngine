@@ -8,21 +8,21 @@ namespace Drn
 	Matrix::Matrix( const Transform& InTransform )
 	{
 		DirectX::XMMATRIX ScaleMat			= DirectX::XMMatrixScalingFromVector(DirectX::XMLoadFloat3(&InTransform.Scale.m_Vector));
-		DirectX::XMMATRIX RotationMat		= DirectX::XMMatrixRotationQuaternion(InTransform.Rotation.m_Vector);
+		DirectX::XMMATRIX RotationMat		= DirectX::XMMatrixRotationQuaternion(InTransform.Rotation.Get());
 		DirectX::XMMATRIX TranslationMat	= DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&InTransform.Location.m_Vector));
 
-		m_Matrix = ScaleMat * RotationMat * TranslationMat;
+		XMStoreFloat4x4(&m_Matrix, ScaleMat * RotationMat * TranslationMat);
 	}
 
 	Matrix::Matrix( const Vector& X, const Vector& Y, const Vector& Z, const Vector& W )
 	{
-		m_Matrix = XMMatrixSet
+		XMStoreFloat4x4(&m_Matrix, XMMatrixSet
 		(
 			X.GetX(), X.GetY(), X.GetZ(), 0,
 			Y.GetX(), Y.GetY(), Y.GetZ(), 0,
 			Z.GetX(), Z.GetY(), Z.GetZ(), 0,
 			W.GetX(), W.GetY(), W.GetZ(), 1
-		);
+		));
 	}
 
 	Matrix Matrix::MakeFromX( const Vector& XAxis )

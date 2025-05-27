@@ -42,4 +42,17 @@ namespace Drn
 		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMax, m_ClipMin);
 	}
 
+	void CameraComponent::CalculateMatrices( Matrix& InViewMatrix, Matrix& InProjectionMatrix, float AspectRatio )
+	{
+		XMVECTOR CameraPos = XMLoadFloat3( GetWorldLocation().Get() );
+		XMVECTOR CamearRot = GetWorldRotation().Get();
+
+		XMVECTOR FocusPointOffset = XMVectorSet( 0, 0, 10, 0 );
+		FocusPointOffset = XMVector3Rotate(FocusPointOffset, CamearRot);
+
+		m_FocusPoint = CameraPos + FocusPointOffset;
+
+		InViewMatrix = XMMatrixLookAtLH( CameraPos, m_FocusPoint, m_UpVector);
+		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMax, m_ClipMin);
+	}
 }

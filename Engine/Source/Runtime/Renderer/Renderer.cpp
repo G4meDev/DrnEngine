@@ -268,17 +268,22 @@ namespace Drn
 			m_CommandList->ResourceBarrier( 1, &barrier );
 		}
 #else
-		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
-		m_CommandList->ResourceBarrier( 1, &barrier );
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST );
-		m_CommandList->ResourceBarrier( 1, &barrier );
 
-		m_CommandList->CopyResource(backBuffer, m_MainSceneRenderer->GetViewResource());
+		{
+			SCOPE_STAT(CopyToSwapChainBuffer);
 
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
-		m_CommandList->ResourceBarrier( 1, &barrier );
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT );
-		m_CommandList->ResourceBarrier( 1, &barrier );
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
+			m_CommandList->ResourceBarrier( 1, &barrier );
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST );
+			m_CommandList->ResourceBarrier( 1, &barrier );
+
+			m_CommandList->CopyResource(backBuffer, m_MainSceneRenderer->GetViewResource());
+
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
+			m_CommandList->ResourceBarrier( 1, &barrier );
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT );
+			m_CommandList->ResourceBarrier( 1, &barrier );
+		}
 #endif
 
 		{
@@ -293,12 +298,16 @@ namespace Drn
 #endif
 
 		m_SwapChain->Present();
-
 		WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
 
-		auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];
-		commandAllocator->Reset();
-		m_CommandList->Reset(commandAllocator.Get(), nullptr);
+		{
+			SCOPE_STAT( CommandListReset );
+
+			auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];
+			commandAllocator->Reset();
+			m_CommandList->Reset(commandAllocator.Get(), nullptr);
+		}
+
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )

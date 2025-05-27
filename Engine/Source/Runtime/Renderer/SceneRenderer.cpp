@@ -64,6 +64,7 @@ namespace Drn
 	{
 		SCOPE_STAT( BeginRender );
 
+		RecalculateView();
 	}
 
 #if WITH_EDITOR
@@ -132,6 +133,8 @@ namespace Drn
 
 	void SceneRenderer::RenderPostProcess( ID3D12GraphicsCommandList2* CommandList )
 	{
+		SCOPE_STAT( RenderPostProcess );
+
 		PIXBeginEvent( CommandList, 1, "Post Process" );
 
 		PostProcess_Tonemapping(CommandList);
@@ -346,6 +349,16 @@ namespace Drn
 		m_RenderingEnabled = Enabled;
 	}
 
+	void SceneRenderer::RecalculateView()
+	{
+		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
+		m_CameraActor->GetCameraComponent()->CalculateMatrices(m_SceneView.WorldToView, m_SceneView.ViewToProjection, aspectRatio);
+		
+		m_SceneView.WorldToProjection = m_SceneView.WorldToView * m_SceneView.ViewToProjection;
+		m_SceneView.ProjectionToView = XMMatrixInverse( NULL, m_SceneView.ViewToProjection.Get() );
+		
+		m_SceneView.Size = m_RenderSize;
+	}
 
 #if WITH_EDITOR
 	// TODO: support box selection
@@ -353,6 +366,7 @@ namespace Drn
 	{
 		m_MousePickQueue.emplace_back( ScreenPosition );
 	}
+
 
 	void SceneRenderer::ProccessMousePickQueue( ID3D12GraphicsCommandList2* CommandList )
 	{

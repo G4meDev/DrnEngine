@@ -39,6 +39,23 @@ namespace Drn
 		uint64 FenceValue = 0;
 	};
 
+	struct SceneRendererView
+	{
+		SceneRendererView()
+		{
+		}
+		~SceneRendererView()
+		{
+		}
+
+		Matrix WorldToView;
+		Matrix ViewToProjection;
+		Matrix WorldToProjection;
+		Matrix ProjectionToView;
+
+		IntPoint Size;
+	};
+
 	class SceneRenderer
 	{
 	public:
@@ -74,7 +91,11 @@ namespace Drn
 
 		inline void Release() { delete this; }
 
+		void RecalculateView();
+
 		Scene* m_Scene;
+
+		SceneRendererView m_SceneView;
 
 		std::shared_ptr<class GBuffer> m_GBuffer;
 		std::shared_ptr<class TonemapRenderBuffer> m_TonemapBuffer;
