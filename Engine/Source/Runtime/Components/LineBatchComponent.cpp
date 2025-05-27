@@ -191,19 +191,7 @@ namespace Drn
 			CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLinePSO->m_RootSignature );
 		}
 
-		XMMATRIX modelMatrix = Matrix().Get();
-
-		float aspectRatio = (float)( Renderer->GetViewportSize().X ) / Renderer->GetViewportSize().Y;
-		
-		XMMATRIX viewMatrix;
-		XMMATRIX projectionMatrix;
-		
-		Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-		
-		XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
-		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
-
-		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0 );
+		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &Renderer->GetSceneView().WorldToProjection, 0 );
 
 		CommandList->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
 		CommandList->IASetIndexBuffer( &m_IndexBufferView );

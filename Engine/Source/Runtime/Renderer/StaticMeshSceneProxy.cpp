@@ -97,20 +97,11 @@ namespace Drn
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 				// TODO: remove dependency and only copy from parent side
-				XMMATRIX modelMatrix = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
 
-				float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
-		
-				XMMATRIX viewMatrix;
-				XMMATRIX projectionMatrix;
-		
-				Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-
-				XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
-				mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
-
-				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
 				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
 				RenderProxy.BindAndDraw(CommandList);
@@ -141,20 +132,11 @@ namespace Drn
 			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			// TODO: remove dependency and only copy from parent side
-			XMMATRIX modelMatrix = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+			XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+			XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
 
-			float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
-		
-			XMMATRIX viewMatrix;
-			XMMATRIX projectionMatrix;
-		
-			Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-
-			XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
-			mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
-
-			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
+			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
+			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
 			CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
 			RenderProxy.BindAndDraw( CommandList );
@@ -180,20 +162,11 @@ namespace Drn
 			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			// TODO: remove dependency and only copy from parent side
-			XMMATRIX modelMatrix = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+			XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+			XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
 
-			float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
-		
-			XMMATRIX viewMatrix;
-			XMMATRIX projectionMatrix;
-		
-			Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-
-			XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
-			mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
-
-			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
+			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
+			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
 			CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
 			RenderProxy.BindAndDraw(CommandList);
@@ -202,6 +175,11 @@ namespace Drn
 
 	void StaticMeshSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
+		if (!m_EditorPrimitive)
+		{
+			return;
+		}
+
 		if (m_Mesh.IsValid())
 		{
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
@@ -218,20 +196,11 @@ namespace Drn
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 				// TODO: remove dependency and only copy from parent side
-				XMMATRIX modelMatrix = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
 
-				float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
-		
-				XMMATRIX viewMatrix;
-				XMMATRIX projectionMatrix;
-		
-				Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-
-				XMMATRIX mvpMatrix = XMMatrixMultiply( modelMatrix, viewMatrix );
-				mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
-
-				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &modelMatrix, 16);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
 				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
 
 				RenderProxy.BindAndDraw( CommandList );

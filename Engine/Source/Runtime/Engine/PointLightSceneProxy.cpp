@@ -17,27 +17,16 @@ namespace Drn
 
 	void PointLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
-
-		XMMATRIX viewMatrix;
-		XMMATRIX projectionMatrix;
-		
 		Vector CameraPosition = Renderer->m_CameraActor->GetActorLocation();
-
-		Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
 		XMMATRIX LocalToWorld = XMMatrixTranslationFromVector( XMLoadFloat3( m_WorldPosition.Get() ) );
-
-		XMMATRIX mvpMatrix = XMMatrixMultiply( m_LocalToWorld, viewMatrix );
-		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
-
-		XMMATRIX ProjectionToView = XMMatrixInverse( NULL, XMMatrixMultiply( viewMatrix, projectionMatrix ) );
+		XMMATRIX LocalToProjection = XMMatrixMultiply( m_LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
 
 		Vector4 Term1(CameraPosition, 1);
 		Vector4 Term2(m_WorldPosition, m_Radius);
 		Vector4 Term3(m_LightColor, 1);
 
-		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &ProjectionToView, 16);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
+		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &Renderer->GetSceneView().ProjectionToWorld, 16);
 		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Term1, 32);
 		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Term2, 36);
 		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Term3, 40);

@@ -115,11 +115,6 @@ namespace Drn
 	void BillboardSceneProxy::SetConstantAndSrv( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
 		float aspectRatio = (float) (Renderer->GetViewportSize().X) / Renderer->GetViewportSize().Y;
-		
-		XMMATRIX viewMatrix;
-		XMMATRIX projectionMatrix;
-		
-		Renderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
 
 		XMVECTOR Translation;
 		XMVECTOR Scale;
@@ -132,8 +127,7 @@ namespace Drn
 		XMMATRIX LookAtCamera = Matrix::MakeFromZ( Vector(Direction) ).Get();
 		XMMATRIX CameraRotated = XMMatrixMultiply( LookAtCamera, m_LocalToWorld.Get() );
 
-		XMMATRIX mvpMatrix = XMMatrixMultiply( CameraRotated, viewMatrix );
-		mvpMatrix          = XMMatrixMultiply( mvpMatrix, projectionMatrix );
+		XMMATRIX mvpMatrix = XMMatrixMultiply( CameraRotated, Renderer->GetSceneView().WorldToProjection.Get() );
 
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
 		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 16);

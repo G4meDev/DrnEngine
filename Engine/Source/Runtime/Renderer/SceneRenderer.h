@@ -52,6 +52,8 @@ namespace Drn
 		Matrix ViewToProjection;
 		Matrix WorldToProjection;
 		Matrix ProjectionToView;
+		Matrix ProjectionToWorld;
+		Matrix LocalToCameraView;
 
 		IntPoint Size;
 	};
@@ -76,6 +78,8 @@ namespace Drn
 		const IntPoint& GetViewportSize() const { return m_RenderSize; }
 
 		inline void SetName( const std::string& Name ) { m_Name = Name; }
+
+		inline const SceneRendererView& GetSceneView() { return m_SceneView; }
 
 #if WITH_EDITOR
 		OnPickedComponentDelegate OnPickedComponent;

@@ -80,11 +80,6 @@ namespace Drn
 			Proxy->RenderHitProxyPass(CommandList, this);
 		}
 
-		for (PrimitiveSceneProxy* Proxy : m_Scene->m_EditorPrimitiveProxies)
-		{
-			Proxy->RenderHitProxyPass(CommandList, this);
-		}
-
 		PIXEndEvent(CommandList);
 	}
 #endif
@@ -155,16 +150,8 @@ namespace Drn
 		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_TonemapPSO->m_RootSignature );
 		CommandList->SetPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 		
-		XMMATRIX modelMatrix = Matrix( m_CameraActor->GetActorTransform() ).Get();
-		XMMATRIX viewMatrix;
-		XMMATRIX projectionMatrix;
-		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
-		m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-		XMMATRIX LocalToView = XMMatrixMultiply( modelMatrix, viewMatrix );
-		
-		uint32 RenderSize[2] = { (uint32)m_RenderSize.X, (uint32)m_RenderSize.Y};
-		CommandList->SetGraphicsRoot32BitConstants(0, 16, &LocalToView, 0);
-		CommandList->SetGraphicsRoot32BitConstants(0, 8, &RenderSize[0], 16);
+		CommandList->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
+		CommandList->SetGraphicsRoot32BitConstants(0, 8, &m_SceneView.Size, 16);
 		CommandList->SetGraphicsRootDescriptorTable(1, m_GBuffer->m_ColorDeferredSrvGpuHandle);
 
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
@@ -208,7 +195,7 @@ namespace Drn
 		CommandList->ResourceBarrier(1, &barrier);
 
 
-		for (PrimitiveSceneProxy* Proxy : m_Scene->m_EditorPrimitiveProxies)
+		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
 			Proxy->RenderEditorPrimitivePass(CommandList, this);
 		}
@@ -225,14 +212,7 @@ namespace Drn
 		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_RootSignature );
 		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
-		XMMATRIX modelMatrix = Matrix( m_CameraActor->GetActorTransform() ).Get();
-		XMMATRIX viewMatrix;
-		XMMATRIX projectionMatrix;
-		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
-		m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-		XMMATRIX LocalToView = XMMatrixMultiply( modelMatrix, viewMatrix );
-
-		CommandList->SetGraphicsRoot32BitConstants(0, 16, &LocalToView, 0);
+		CommandList->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
 		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorPrimitiveBuffer->m_ColorSrvGpuHandle);
 
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
@@ -250,13 +230,6 @@ namespace Drn
 		SCOPE_STAT(RenderEditorSelection);
 		
 		PIXBeginEvent( CommandList, 1, "Editor Selection" );
-
-		XMMATRIX modelMatrix = Matrix( m_CameraActor->GetActorTransform() ).Get();
-		XMMATRIX viewMatrix;
-		XMMATRIX projectionMatrix;
-		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
-		m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
-		XMMATRIX LocalToView = XMMatrixMultiply( modelMatrix, viewMatrix );
 
 		m_EditorSelectionBuffer->Clear(CommandList);
 		m_EditorSelectionBuffer->Bind(CommandList);
@@ -277,9 +250,8 @@ namespace Drn
 		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_RootSignature );
 		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
 
-		uint32 RenderSize[2] = { (uint32)m_RenderSize.X, (uint32)m_RenderSize.Y};
-		CommandList->SetGraphicsRoot32BitConstants(0, 16, &LocalToView, 0);
-		CommandList->SetGraphicsRoot32BitConstants(0, 8, &RenderSize[0], 16);
+		CommandList->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
+		CommandList->SetGraphicsRoot32BitConstants(0, 8, &m_SceneView.Size, 16);
 		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorSelectionBuffer->m_DepthStencilSrvGpuHandle);
 
 		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
@@ -356,6 +328,9 @@ namespace Drn
 		
 		m_SceneView.WorldToProjection = m_SceneView.WorldToView * m_SceneView.ViewToProjection;
 		m_SceneView.ProjectionToView = XMMatrixInverse( NULL, m_SceneView.ViewToProjection.Get() );
+		m_SceneView.ProjectionToWorld = XMMatrixInverse( NULL, m_SceneView.WorldToProjection.Get() );
+
+		m_SceneView.LocalToCameraView = Matrix( m_CameraActor->GetActorTransform() ).Get() * m_SceneView.WorldToView.Get();
 		
 		m_SceneView.Size = m_RenderSize;
 	}
@@ -366,7 +341,6 @@ namespace Drn
 	{
 		m_MousePickQueue.emplace_back( ScreenPosition );
 	}
-
 
 	void SceneRenderer::ProccessMousePickQueue( ID3D12GraphicsCommandList2* CommandList )
 	{

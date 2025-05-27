@@ -38,7 +38,6 @@ namespace Drn
 		World* m_World;
 
 		std::set<PrimitiveSceneProxy*> m_PrimitiveProxies;
-		std::set<PrimitiveSceneProxy*> m_EditorPrimitiveProxies;
 		std::set<PrimitiveSceneProxy*> m_PendingProxies;
 
 		std::set<class LightSceneProxy*> m_LightProxies;
