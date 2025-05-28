@@ -19,7 +19,7 @@ struct VertexShaderOutput
 {
     float4 Color : COLOR;
     float3 Normal : NORMAL;
-    float3x3 TBN : NORMAL1;
+    float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
     float4 Position : SV_Position;
 };
@@ -28,19 +28,15 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 
-    float3x3 TBN = float3x3(IN.Tangent, IN.Bitangent, IN.Normal);
-
-    float3 VertexNormal = mul(View.LocalToWorld, float4(IN.Normal, 0.0f));
-    float3 VertexTangent = mul(View.LocalToWorld, float4(IN.Tangent, 0.0f));
-    //float3 VertexBiNormal = mul(View.LocalToWorld, float4(IN.Bitangent, 0.0f));
-    float3 VertexBiNormal = normalize(cross(VertexNormal, VertexTangent));
-
-    OUT.TBN = float3x3(VertexTangent, VertexBiNormal, VertexNormal);
-    //OUT.TBN = float3x3(VertexNormal, VertexBiNormal, VertexTangent);
+    float3 VertexNormal = normalize(mul((float3x3) View.LocalToWorld, IN.Normal));
+    float3 VertexTangent = normalize(mul((float3x3) View.LocalToWorld, IN.Tangent));
+    float3 VertexBiNormal = normalize(mul((float3x3) View.LocalToWorld, IN.Bitangent));
+    //OUT.TBN = float3x3(VertexTangent, VertexBiNormal, VertexNormal);
+    OUT.TBN = float3x3(VertexTangent, VertexNormal, VertexBiNormal);
     
     OUT.Position = mul(View.LocalToProjection, float4(IN.Position, 1.0f));
     OUT.Color = float4(IN.Color, 1.0f);
-    OUT.Normal = IN.Normal;
+    OUT.Normal = VertexNormal;
     OUT.UV = IN.UV1;
     
     return OUT;
@@ -52,7 +48,7 @@ struct PixelShaderInput
 {
     float4 Color : COLOR;
     float3 Normal : NORMAL;
-    float3x3 TBN : NORMAL1;
+    float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
 };
 
@@ -63,18 +59,16 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 #if MAIN_PASS
     float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV).xyz;
     float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV).xyz;
-    Masks.g = 1;
     
-    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV).xyz;
-    //Normal = Normal * 2 - 1;
-    //Normal = Normal.rbg;
-    Normal = float3(0, 1, 0);
-    Normal = normalize(mul(IN.TBN, Normal));
-    float3 WorldNormal = EncodeNormal(Normal);
+    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV).rbg;
+    Normal.z = 1 - Normal.z;
+    Normal = Normal * 2 - 1;
+    Normal = normalize(mul(Normal, IN.TBN));
+    Normal = EncodeNormal(Normal);
     
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColor, 1);
-    OUT.WorldNormal = float4( WorldNormal, 1);
+    OUT.WorldNormal = float4( Normal, 0);
     OUT.Masks = float4(Masks, 1);
 #elif HitProxyPass
     OUT.Guid = View.Guid;

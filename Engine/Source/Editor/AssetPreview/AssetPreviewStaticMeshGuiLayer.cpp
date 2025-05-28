@@ -233,6 +233,7 @@ namespace Drn
 				const Vector& Tangent = Data.Tangents[i];
 				const Vector& BitTangent = Data.BitTangents[i];
 
+				// TODO: add specific line batch component to draw this
 				if (m_DrawNormals) { PreviewWorld->DrawDebugLine( Pos, Pos + Normal * m_DebugLinesSize, Color::Green, 0, 0 ); }
 				if (m_DrawTangents) { PreviewWorld->DrawDebugLine( Pos, Pos + Tangent * m_DebugLinesSize, Color::Blue, 0, 0 ); }
 				if (m_DrawBitTangents) { PreviewWorld->DrawDebugLine( Pos, Pos + BitTangent * m_DebugLinesSize, Color::Red, 0, 0 ); }

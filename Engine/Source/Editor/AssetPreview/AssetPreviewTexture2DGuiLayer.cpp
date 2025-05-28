@@ -109,6 +109,13 @@ namespace Drn
 	void AssetPreviewTexture2DGuiLayer::DrawDetailsPanel()
 	{
 		ImGui::Text("Detail Panel");
+
+		if ( ImGui::Button( "Reimport" ) )
+		{
+			m_OwningAsset->Import();
+		}
+		 
+		ImGui::Checkbox( "sRGB", &m_OwningAsset->m_sRGB );
 	}
 
 }
