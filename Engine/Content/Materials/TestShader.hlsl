@@ -32,9 +32,11 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 
     float3 VertexNormal = mul(View.LocalToWorld, float4(IN.Normal, 0.0f));
     float3 VertexTangent = mul(View.LocalToWorld, float4(IN.Tangent, 0.0f));
-    float3 VertexBiNormal = mul(View.LocalToWorld, float4(IN.Bitangent, 0.0f));
+    //float3 VertexBiNormal = mul(View.LocalToWorld, float4(IN.Bitangent, 0.0f));
+    float3 VertexBiNormal = normalize(cross(VertexNormal, VertexTangent));
 
     OUT.TBN = float3x3(VertexTangent, VertexBiNormal, VertexNormal);
+    //OUT.TBN = float3x3(VertexNormal, VertexBiNormal, VertexTangent);
     
     OUT.Position = mul(View.LocalToProjection, float4(IN.Position, 1.0f));
     OUT.Color = float4(IN.Color, 1.0f);
@@ -57,17 +59,18 @@ struct PixelShaderInput
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
- 
 
 #if MAIN_PASS
     float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV).xyz;
     float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV).xyz;
+    Masks.g = 1;
     
     float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV).xyz;
-    Normal = Normal * 2 - 1;
-    Normal = Normal.rbg;
+    //Normal = Normal * 2 - 1;
+    //Normal = Normal.rbg;
+    Normal = float3(0, 1, 0);
     Normal = normalize(mul(IN.TBN, Normal));
-    float3 WorldNormal = EncodeNormal(IN.Normal);
+    float3 WorldNormal = EncodeNormal(Normal);
     
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColor, 1);

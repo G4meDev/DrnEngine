@@ -20,6 +20,10 @@ namespace Drn
 	AssetPreviewStaticMeshGuiLayer::AssetPreviewStaticMeshGuiLayer(StaticMesh* InOwningAsset)
 		: m_ShowSceneSetting(true)
 		, m_ShowDetail(true)
+		, m_DebugLinesSize(0.1f)
+		, m_DrawNormals(false)
+		, m_DrawTangents(false)
+		, m_DrawBitTangents(false)
 	{
 		LOG(LogStaticMeshPreview, Info, "opening %s", InOwningAsset->m_Path.c_str());
 
@@ -62,6 +66,8 @@ namespace Drn
 			ImGui::End();
 			return;
 		}
+
+		DrawDebugs();
 
 		DrawMenu();
 
@@ -192,6 +198,15 @@ namespace Drn
 		ImGui::Separator();
 
 		m_OwningAsset->m_BodySetup.DrawDetailPanel();
+
+// ------------------------------------------------------------------------------------------------------
+
+		ImGui::Separator();
+
+		ImGui::Checkbox( "Draw Normals", &m_DrawNormals);
+		ImGui::Checkbox( "Draw Tangent", &m_DrawTangents);
+		ImGui::Checkbox( "Draw BitTangents", &m_DrawBitTangents);
+		ImGui::DragFloat( "Line Size", &m_DebugLinesSize, 0.001, 10);
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::ShowSourceFileSelection()
@@ -205,6 +220,24 @@ namespace Drn
 	{
 		m_OwningAsset->m_SourcePath = FilePath;
 		m_OwningAsset->Import();
+	}
+
+	void AssetPreviewStaticMeshGuiLayer::DrawDebugs()
+	{
+		for ( StaticMeshSlotData& Data : m_OwningAsset->Data.MeshesData )
+		{
+			for (uint64 i = 0; i < Data.Positions.size(); i++)
+			{
+				const Vector& Pos = Data.Positions[i];
+				const Vector& Normal = Data.Normals[i];
+				const Vector& Tangent = Data.Tangents[i];
+				const Vector& BitTangent = Data.BitTangents[i];
+
+				if (m_DrawNormals) { PreviewWorld->DrawDebugLine( Pos, Pos + Normal * m_DebugLinesSize, Color::Green, 0, 0 ); }
+				if (m_DrawTangents) { PreviewWorld->DrawDebugLine( Pos, Pos + Tangent * m_DebugLinesSize, Color::Blue, 0, 0 ); }
+				if (m_DrawBitTangents) { PreviewWorld->DrawDebugLine( Pos, Pos + BitTangent * m_DebugLinesSize, Color::Red, 0, 0 ); }
+			}
+		}
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::SetCurrentFocus()

@@ -200,12 +200,33 @@ namespace Drn
 			Ar >> VertexBufferBlob;
 			Ar >> IndexBufferBlob;
 			Ar >> MaterialIndex;
+
+			uint64 VertexCount;
+			Ar >> VertexCount;
+
+			Positions.resize(VertexCount);
+			Normals.resize(VertexCount);
+			Tangents.resize(VertexCount);
+			BitTangents.resize(VertexCount);
+
+			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar >> Positions[i]; }
+			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar >> Normals[i]; }
+			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar >> Tangents[i]; }
+			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar >> BitTangents[i]; }
 		}
 		else
 		{
 			Ar << VertexBufferBlob;
 			Ar << IndexBufferBlob;
 			Ar << MaterialIndex;
+
+			const uint64 VertexCount = Positions.size();
+			Ar << VertexCount;
+
+			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar << Positions[i]; }
+			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar << Normals[i]; }
+			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar << Tangents[i]; }
+			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar << BitTangents[i]; }
 		}
 	}
 

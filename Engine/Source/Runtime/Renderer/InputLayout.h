@@ -118,6 +118,11 @@ namespace Drn
 
 		float U4;
 		float V4;
+
+		inline Vector GetPosition() { return Vector(X, Y, Z); }
+		inline Vector GetNormal() { return Vector(N_X, N_Y, N_Z); }
+		inline Vector GetTangent() { return Vector(T_X, T_Y, T_Z); }
+		inline Vector GetBitTangent() { return Vector(BT_X, BT_Y, BT_Z); }
 	};
 
 	class InputLayout

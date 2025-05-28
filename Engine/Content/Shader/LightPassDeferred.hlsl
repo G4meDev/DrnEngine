@@ -73,9 +73,24 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float3 H = normalize(normalize(V) + normalize(ToLight));
 
     float Distance = distance(WorldPos.xyz, CB.LightPosition);
-    float Attenuation = 1 - Distance / CB.Radius;
-    Attenuation = saturate(Attenuation);
 
+// -------------------------------------------------------------------------
+    float Distance2 = Distance * Distance;
+    float DistanceAttenuation = 1 / (Distance2 + 1);
+
+    float InvRadius = 1 / CB.Radius;
+
+    float LightRadiusMask = Distance2 * InvRadius * InvRadius;
+
+    LightRadiusMask *= LightRadiusMask;
+    LightRadiusMask = 1 - LightRadiusMask;
+    LightRadiusMask = clamp(LightRadiusMask, 0, 1);
+
+    LightRadiusMask *= LightRadiusMask;
+
+    float Attenuation = DistanceAttenuation * LightRadiusMask;
+// -------------------------------------------------------------------------
+    
     float3 F0 = float3(0.04, 0.04, 0.04);
     F0 = lerp(F0, BaseColor.rgb, Masks.r);
     

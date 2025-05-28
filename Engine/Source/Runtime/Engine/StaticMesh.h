@@ -27,6 +27,12 @@ namespace Drn
 		class VertexBuffer* m_VertexBuffer;
 		class IndexBuffer* m_IndexBuffer;
 
+		// TODO: rip from release build
+		std::vector<Vector> Positions;
+		std::vector<Vector> Normals;
+		std::vector<Vector> Tangents;
+		std::vector<Vector> BitTangents;
+
 		virtual void Serialize(Archive& Ar) override;
 		
 		inline void ReleaseBlobs()

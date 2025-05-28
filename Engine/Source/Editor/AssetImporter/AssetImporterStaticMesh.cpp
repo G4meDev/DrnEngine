@@ -199,6 +199,28 @@ namespace Drn
 			M.m_Material = AssetHandle<Material>(MaterialPath);
 			M.m_Material.Load();
 		}
+
+// -------------------------------------------------------------------------------------------------------
+
+		for (int i = 0; i < BuildingData.MeshesData.size(); i++)
+		{
+			ImportedStaticMeshSlotData& IMD = BuildingData.MeshesData[i];
+			StaticMeshSlotData& Data = MeshAsset->Data.MeshesData[i];
+
+			uint64 VertexCount = IMD.Vertices.size();
+			Data.Positions.resize(VertexCount);
+			Data.Normals.resize(VertexCount);
+			Data.Tangents.resize(VertexCount);
+			Data.BitTangents.resize(VertexCount);
+
+			for (uint64 i = 0; i < VertexCount; i++)
+			{
+				Data.Positions[i] = IMD.Vertices[i].GetPosition();
+				Data.Normals[i] = IMD.Vertices[i].GetNormal();
+				Data.Tangents[i] = IMD.Vertices[i].GetTangent();
+				Data.BitTangents[i] = IMD.Vertices[i].GetBitTangent();
+			}
+		}
 	}
 
 

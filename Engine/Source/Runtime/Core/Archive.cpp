@@ -3,7 +3,7 @@
 
 LOG_DEFINE_CATEGORY( LogArchive, "Archive" );
 
-#define ARCHIVE_VERSION ((uint8)1)
+#define ARCHIVE_VERSION ((uint8)2)
 
 namespace Drn
 {

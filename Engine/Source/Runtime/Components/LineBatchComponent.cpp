@@ -3,7 +3,7 @@
 
 using namespace Microsoft::WRL;
 
-#define NUM_MAX_LINES 10000
+#define NUM_MAX_LINES 100000
 
 namespace Drn
 {

@@ -22,7 +22,6 @@ namespace Drn
 
 		void SetCurrentFocus();
 
-
 	protected:
 
 		void DrawMenu();
@@ -30,6 +29,13 @@ namespace Drn
 		void ShowSourceFileSelection();
 		
 		void OnSelectedSourceFile( std::string FilePath );
+
+		void DrawDebugs();
+		float m_DebugLinesSize;
+
+		bool m_DrawNormals;
+		bool m_DrawTangents;
+		bool m_DrawBitTangents;
 
 		World* PreviewWorld;
 		StaticMeshActor* PreviewMesh;
