@@ -123,6 +123,8 @@ namespace Drn
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+			SamplerDesc.MaxAnisotropy = 16;
 			Device->CreateSampler(&SamplerDesc, SamplerCpuHandle);
 
 			ClearRenderStateDirty();
