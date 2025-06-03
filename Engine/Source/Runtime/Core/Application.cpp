@@ -9,6 +9,8 @@
 
 #include <shlwapi.h>
 
+#include <tbb/tbb.h>
+
 #include <corecrt_io.h>
 #include <fcntl.h>
 #define MAX_CONSOLE_LINES 500;
@@ -158,6 +160,11 @@ namespace Drn
 	void Application::Tick( float DeltaTime )
 	{
 		SCOPE_STAT(ApplicationTick);
+
+		tbb::parallel_invoke(
+			[](){ std::cout << "Hello" << "\n"; },
+			[](){ std::cout << "Tbb" << "\n"; }
+			);
 
 		{
 			SCOPE_STAT(WindowEvents);

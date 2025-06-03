@@ -313,12 +313,14 @@ target_include_directories( Engine
     PUBLIC inc ../ThirdParty/ImGuizmo/
     PUBLIC inc ../ThirdParty/Physx/include/
     PUBLIC inc ../ThirdParty/PixEvent/include/
+    PUBLIC inc ../ThirdParty/OneTBB/include/
 	#PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
 target_link_directories( Engine
 	PUBLIC ../ThirdParty/Physx/lib/
 	PUBLIC ../ThirdParty/PixEvent/bin/
+	PUBLIC ../ThirdParty/OneTBB/lib/
 )
 
 target_link_libraries( Engine 
@@ -344,6 +346,14 @@ target_link_libraries( Engine
     PUBLIC PhysXPvdSDK_static_64.lib
     PUBLIC PhysXVehicle_static_64.lib
     PUBLIC PhysXVehicle2_static_64.lib
+
+    PUBLIC "$<$<CONFIG:Debug>:tbb_debug.lib>"
+    PUBLIC "$<$<CONFIG:Debug>:tbb12_debug.lib>"
+    PUBLIC "$<$<CONFIG:Debug>:tbbbind_2_0_debug.lib>"
+    PUBLIC "$<$<CONFIG:Debug>:tbbbind_2_5_debug.lib>"
+    PUBLIC "$<$<CONFIG:Debug>:tbbbind_debug.lib>"
+    PUBLIC "$<$<CONFIG:Debug>:tbbmalloc_debug.lib>"
+    PUBLIC "$<$<CONFIG:Debug>:tbbmalloc_proxy_debug.lib>"
 )
 
 # Enable precompiled header files.
@@ -363,6 +373,11 @@ add_custom_command(TARGET Engine POST_BUILD
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 )
 
+add_custom_command(TARGET Engine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${PROJECT_SOURCE_DIR}/ThirdParty/OneTBB/redist/Debug/
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
+)
 
 #set_source_files_properties( ${SHADER_FILES_PS}
 #    PROPERTIES

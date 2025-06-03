@@ -401,3 +401,6 @@ build_*/
 
 # ignored by line 31
 !/ThirdParty/assimp/code/Obj/
+
+!/ThirdParty/OneTBB/lib/**
+!/ThirdParty/OneTBB/redist/**
