@@ -303,8 +303,10 @@ target_compile_definitions( Engine
     PUBLIC NOMINMAX
 )
 
-add_compile_definitions("$<$<CONFIG:Debug>:WITH_EDITOR>")
-add_compile_definitions("$<$<CONFIG:Debug>:WITH_PVD>")
+add_compile_definitions($<$<CONFIG:Debug>:WITH_EDITOR>)
+add_compile_definitions($<$<CONFIG:Debug>:WITH_PVD>)
+add_compile_definitions($<$<CONFIG:Debug>:WITH_DEBUG>)
+add_compile_definitions($<$<CONFIG:RelWithDebInfo>:WITH_DEBUG>)
 
 target_include_directories( Engine
     PUBLIC inc Source/
@@ -369,7 +371,8 @@ set_source_files_properties( Source/DrnPCH.cpp
 
 add_custom_command(TARGET Engine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
-        ${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/bin/WinPixEventRuntime.dll
+#        ${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/bin/WinPixEventRuntime.dll
+		$<$<NOT:$<CONFIG:Release>>:${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/bin/WinPixEventRuntime.dll> $<$<CONFIG:Release>:/>
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 )
 

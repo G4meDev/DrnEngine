@@ -1,7 +1,5 @@
 cmake_minimum_required( VERSION 3.16.1 )
 
-#option( DX12LIB_BUILD_SAMPLES "Build samples for DX12Lib" ON )
-
 # Use solution folders to organize projects
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
