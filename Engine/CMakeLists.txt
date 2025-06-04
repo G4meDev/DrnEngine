@@ -321,7 +321,7 @@ target_include_directories( Engine
 
 target_link_directories( Engine
 	PUBLIC ../ThirdParty/Physx/lib/
-	PUBLIC ../ThirdParty/PixEvent/bin/
+	PUBLIC ../ThirdParty/PixEvent/lib/
 	PUBLIC ../ThirdParty/OneTBB/lib/
 )
 
@@ -349,13 +349,13 @@ target_link_libraries( Engine
     PUBLIC PhysXVehicle_static_64.lib
     PUBLIC PhysXVehicle2_static_64.lib
 
-    PUBLIC "$<$<CONFIG:Debug>:tbb_debug.lib>"
-    PUBLIC "$<$<CONFIG:Debug>:tbb12_debug.lib>"
-    PUBLIC "$<$<CONFIG:Debug>:tbbbind_2_0_debug.lib>"
-    PUBLIC "$<$<CONFIG:Debug>:tbbbind_2_5_debug.lib>"
-    PUBLIC "$<$<CONFIG:Debug>:tbbbind_debug.lib>"
-    PUBLIC "$<$<CONFIG:Debug>:tbbmalloc_debug.lib>"
-    PUBLIC "$<$<CONFIG:Debug>:tbbmalloc_proxy_debug.lib>"
+    #PUBLIC tbb$<$<NOT:$<CONFIG:Release>>:_debug>.lib
+    #PUBLIC tbb12$<$<NOT:$<CONFIG:Release>>:_debug>.lib
+    #PUBLIC tbbbind_2_0$<$<NOT:$<CONFIG:Release>>:_debug>.lib
+    #PUBLIC tbbbind_2_5$<$<NOT:$<CONFIG:Release>>:_debug>.lib
+    #PUBLIC tbbbind$<$<NOT:$<CONFIG:Release>>:_debug>.lib
+    #PUBLIC tbbmalloc$<$<NOT:$<CONFIG:Release>>:_debug>.lib
+    #PUBLIC tbbmalloc_proxy$<$<NOT:$<CONFIG:Release>>:_debug>.lib
 )
 
 # Enable precompiled header files.
@@ -370,15 +370,14 @@ set_source_files_properties( Source/DrnPCH.cpp
 )
 
 add_custom_command(TARGET Engine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-#        ${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/bin/WinPixEventRuntime.dll
-		$<$<NOT:$<CONFIG:Release>>:${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/bin/WinPixEventRuntime.dll> $<$<CONFIG:Release>:/>
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/redist/$(Configuration)
+		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 )
 
 add_custom_command(TARGET Engine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${PROJECT_SOURCE_DIR}/ThirdParty/OneTBB/redist/Debug/
+        ${PROJECT_SOURCE_DIR}/ThirdParty/OneTBB/redist/$<CONFIG>
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 )
 
