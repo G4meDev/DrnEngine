@@ -20,15 +20,16 @@ namespace Drn
 	struct ProfileToken
 	{
 	public:
-		ProfileToken(std::string&& InName, double InStartTime, double InDuration)
+		ProfileToken(std::string&& InName, double InStartTime, double InDuration, int32 InThreadID)
 			: Name(std::move(InName))
 			, StartTime(InStartTime)
 			, Duration(InDuration)
+			, ThreadID(InThreadID)
 		{
 		}
 
 		ProfileToken()
-			: ProfileToken("NameNull", 0, 0)
+			: ProfileToken("NameNull", 0, 0, 0)
 		{
 		}
 
@@ -37,6 +38,7 @@ namespace Drn
 			Name = std::move(Other.Name);
 			StartTime = Other.StartTime;
 			Duration = Other.Duration;
+			ThreadID = Other.ThreadID;
 
 			return *this;
 		}
@@ -44,6 +46,7 @@ namespace Drn
 		std::string Name;
 		double StartTime;
 		double Duration;
+		int32 ThreadID;
 	};
 
 	class Profiler
@@ -94,5 +97,7 @@ namespace Drn
 
 		ProfileToken m_TokenBuffer[PROFILER_TOKEN_BUFFER_SIZE];
 		uint32 m_TokenBufferCount;
+
+		std::recursive_mutex m_Mutex;
 	};
 }

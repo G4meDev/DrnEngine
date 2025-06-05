@@ -28,6 +28,6 @@ namespace Drn
 
 	ScopeProfilerStat::~ScopeProfilerStat()
 	{
-		Profiler::Get()->WriteToken(ProfileToken(std::move(Name), m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0));
+		Profiler::Get()->WriteToken(ProfileToken(std::move(Name), m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0, tbb::this_task_arena::current_thread_index()));
 	}
 }

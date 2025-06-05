@@ -60,6 +60,8 @@ namespace Drn
 		LOG(LogProfiler, Warning, "profling started");
 		m_CaptureStartFrameIndex = m_FrameIndex;
 
+		FileSystem::CreateDirectoryIfDoesntExist(".\\Saved\\Profiler");
+
 		m_File = std::fstream( ".\\Saved\\Profiler\\profile.json", std::ios::out );
 		if (!m_File)
 		{
@@ -89,6 +91,7 @@ namespace Drn
 	void Profiler::FlushBuffer()
 	{
 		SCOPE_STAT(ProfilerFlushBuffer);
+		std::scoped_lock<std::recursive_mutex> Lock(m_Mutex);
 
 		std::stringstream json;
 		json << std::setprecision( 3 ) << std::fixed;
@@ -103,7 +106,7 @@ namespace Drn
 			json << "\"name\":\"" << Token.Name << "\",";
 			json << "\"ph\":\"X\",";
 			json << "\"pid\":0,";
-			json << "\"tid\":" << 0 << ",";
+			json << "\"tid\":" << Token.ThreadID << ",";
 			json << "\"ts\":" << Token.StartTime;
 			json << "}\n";
 		}
@@ -116,6 +119,8 @@ namespace Drn
 
 	void Profiler::WriteToken( ProfileToken&& Token )
 	{
+		std::scoped_lock<std::recursive_mutex> Lock(m_Mutex);
+
 		if (IsProfiling())
 		{
 			if (IsBufferFull())

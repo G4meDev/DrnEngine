@@ -36,6 +36,8 @@ namespace Drn
 	{
 	public:
 		static bool DirectoryExists(const std::string& Path);
+		static bool CreateDirectory(const std::string& Path);
+		static bool CreateDirectoryIfDoesntExist(const std::string& Path);
 		static bool FileExists(const std::string& Path);
 		static void GetFilesInDirectory(const std::string& Path, std::unique_ptr<SystemFileNode>& RootNode, const std::string& Filter = "*");
 

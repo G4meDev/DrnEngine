@@ -9,8 +9,6 @@
 
 #include <shlwapi.h>
 
-#include <tbb/tbb.h>
-
 #include <corecrt_io.h>
 #include <fcntl.h>
 #define MAX_CONSOLE_LINES 500;
@@ -161,10 +159,45 @@ namespace Drn
 	{
 		SCOPE_STAT(ApplicationTick);
 
-		tbb::parallel_invoke(
-			[](){ std::cout << "Hello" << "\n"; },
-			[](){ std::cout << "Tbb" << "\n"; }
-			);
+		tbb::flow::graph g;
+		
+		tbb::flow::function_node<int, std::string> First(g, tbb::flow::unlimited, 
+			[](const int& In) -> std::string {
+				SCOPE_STAT(First);
+				int a = tbb::this_task_arena::current_thread_index();
+				std::cout << "First: " << In;
+				return std::to_string(In);
+			} );
+		
+		tbb::flow::function_node<std::string> Second(g, tbb::flow::unlimited, 
+			[](const std::string& In) {
+				SCOPE_STAT(Second);
+				int a = tbb::this_task_arena::current_thread_index();
+				std::cout << " _ Second: " << In;
+			} );
+		
+		tbb::flow::function_node<std::string> Third(g, tbb::flow::unlimited, 
+			[](const std::string& In) {
+				SCOPE_STAT(Third);
+				std::cout << " _ Third: " << In;
+			} );
+		
+		tbb::flow::function_node<std::string> Forth(g, tbb::flow::unlimited, 
+			[](const std::string& In) {
+				SCOPE_STAT(Forth);
+				std::cout << " _ Forth: " << In << std::endl;
+			} );
+		
+		tbb::flow::make_edge(First, Second);
+		tbb::flow::make_edge(First, Third);
+		tbb::flow::make_edge(First, Forth);
+		First.try_put(10);
+		g.wait_for_all();
+
+		//tbb::parallel_invoke(
+		//	[](){ SCOPE_STAT(P1); std::cout << "Hello" << "\n"; },
+		//	[](){ SCOPE_STAT(P2); std::cout << "Tbb" << "\n"; }
+		//	);
 
 		{
 			SCOPE_STAT(WindowEvents);

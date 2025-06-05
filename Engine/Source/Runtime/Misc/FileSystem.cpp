@@ -85,6 +85,21 @@ namespace Drn
 		return false;
 	}
 
+	bool FileSystem::CreateDirectory( const std::string& Path )
+	{
+		return std::filesystem::create_directories(Path);
+	}
+
+	bool FileSystem::CreateDirectoryIfDoesntExist( const std::string& Path )
+	{
+		if (!DirectoryExists(Path))
+		{
+			return CreateDirectory(Path);
+		}
+
+		return false;
+	}
+
 	bool FileSystem::FileExists( const std::string& Path )
 	{
 		if (std::filesystem::exists(Path) && !std::filesystem::is_directory(Path))
