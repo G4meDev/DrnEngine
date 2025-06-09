@@ -4,6 +4,8 @@
 #include "Runtime/Engine/PrimitiveComponent.h"
 #include "Runtime/Engine/PrimitiveSceneProxy.h"
 
+constexpr uint32 MaxNumVertex = UINT16_MAX;
+
 namespace Drn
 {
 	class LineBatchSceneProxy;
@@ -95,11 +97,8 @@ namespace Drn
 		Resource* m_VertexBufferResource;
 		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
 
-		Resource* m_IndexBufferResource;
-		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
-
-		std::vector<InputLayout_LineColorThickness> m_VertexData;
-		std::vector<uint32> m_IndexData;
+		InputLayout_LineColorThickness m_VertexData[MaxNumVertex];
+		uint32 m_VertexCount;
 
 		bool m_HasValidData = false;
 	};

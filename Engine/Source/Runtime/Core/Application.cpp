@@ -20,7 +20,9 @@ LOG_DEFINE_CATEGORY( LogApplication, "Application" );
 
 namespace Drn
 {
-	int Application::Run(HINSTANCE inhInstance)
+	tbb::flow::graph Application::m_TaskGraph;
+
+	int Application::Run( HINSTANCE inhInstance )
 	{
 		m_hInstance = inhInstance;
 
@@ -159,91 +161,169 @@ namespace Drn
 	{
 		SCOPE_STAT(ApplicationTick);
 
-		tbb::flow::graph g;
-		
-		tbb::flow::function_node<int, std::string> First(g, tbb::flow::unlimited, 
-			[](const int& In) -> std::string {
-				SCOPE_STAT(First);
-				int a = tbb::this_task_arena::current_thread_index();
-				std::cout << "First: " << In;
-				return std::to_string(In);
-			} );
-		
-		tbb::flow::function_node<std::string> Second(g, tbb::flow::unlimited, 
-			[](const std::string& In) {
-				SCOPE_STAT(Second);
-				int a = tbb::this_task_arena::current_thread_index();
-				std::cout << " _ Second: " << In;
-			} );
-		
-		tbb::flow::function_node<std::string> Third(g, tbb::flow::unlimited, 
-			[](const std::string& In) {
-				SCOPE_STAT(Third);
-				std::cout << " _ Third: " << In;
-			} );
-		
-		tbb::flow::function_node<std::string> Forth(g, tbb::flow::unlimited, 
-			[](const std::string& In) {
-				SCOPE_STAT(Forth);
-				std::cout << " _ Forth: " << In << std::endl;
-			} );
-		
-		tbb::flow::make_edge(First, Second);
-		tbb::flow::make_edge(First, Third);
-		tbb::flow::make_edge(First, Forth);
-		First.try_put(10);
-		g.wait_for_all();
+		m_DeltaTime = DeltaTime;
+
+		//tbb::flow::graph g;
+		//
+		//tbb::flow::function_node<int, std::string> First(g, tbb::flow::unlimited, 
+		//	[](const int& In) -> std::string {
+		//		SCOPE_STAT(First);
+		//		int a = tbb::this_task_arena::current_thread_index();
+		//		std::cout << "First: " << In;
+		//		return std::to_string(In);
+		//	} );
+		//
+		//tbb::flow::function_node<std::string> Second(g, tbb::flow::unlimited, 
+		//	[](const std::string& In) {
+		//		SCOPE_STAT(Second);
+		//		int a = tbb::this_task_arena::current_thread_index();
+		//		std::cout << " _ Second: " << In;
+		//	} );
+		//
+		//tbb::flow::function_node<std::string> Third(g, tbb::flow::unlimited, 
+		//	[](const std::string& In) {
+		//		SCOPE_STAT(Third);
+		//		std::cout << " _ Third: " << In;
+		//	} );
+		//
+		//tbb::flow::function_node<std::string> Forth(g, tbb::flow::unlimited, 
+		//	[](const std::string& In) {
+		//		SCOPE_STAT(Forth);
+		//		std::cout << " _ Forth: " << In << std::endl;
+		//	} );
+		//
+		//tbb::flow::make_edge(First, Second);
+		//tbb::flow::make_edge(First, Third);
+		//tbb::flow::make_edge(First, Forth);
+		//First.try_put(10);
+		//g.wait_for_all();
 
 		//tbb::parallel_invoke(
 		//	[](){ SCOPE_STAT(P1); std::cout << "Hello" << "\n"; },
 		//	[](){ SCOPE_STAT(P2); std::cout << "Tbb" << "\n"; }
 		//	);
 
-		{
-			SCOPE_STAT(WindowEvents);
+		HandleWindowMessages();
+		UpdateWindowTitle(DeltaTime);
 
-			MSG msg;
-			while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-		}
 
-		{
-			SCOPE_STAT(UpdateTitle);
+#if 1
+		Profiler::Get()->Tick(m_DeltaTime);
 
-			static uint64_t frameCount = 0;
-			static double   totalTime  = 0.0;
+		oneapi::tbb::global_control control( tbb::global_control::max_allowed_parallelism, 2 );
 
-			totalTime += DeltaTime;
-			frameCount++;
+		tbb::flow::function_node<const Application*, const Application*> StartFrame( m_TaskGraph, tbb::flow::serial,
+			[](const Application* App) -> const Application* {
+				return App;
+			});
 
-			if ( totalTime > 1.0 )
-			{
-				auto fps   = frameCount / totalTime;
-				frameCount = 0;
-				totalTime -= 1.0;
+		tbb::flow::function_node<const Application*, const Application*> WorldTick( m_TaskGraph, tbb::flow::serial,
+			[](const Application* App) -> const Application* {
+				WorldManager::Get()->Tick(App->m_DeltaTime);
+				return App;
+			});
+		
+		tbb::flow::function_node<const Application*, const Application*> PhysicTick( m_TaskGraph, tbb::flow::serial,
+			[](const Application* App) -> const Application* {
+				PhysicManager::Get()->Tick(App->m_DeltaTime);
+				return App;
+			});
+		
+		tbb::flow::function_node<const Application*, const Application*> RendererTick( m_TaskGraph, tbb::flow::serial,
+			[](const Application* App) -> const Application* {
+				Renderer::Get()->Tick(App->m_DeltaTime);
+				return App;
+			});
+		
+#if WITH_EDITOR
+		tbb::flow::function_node<const Application*, const Application*> EditorTick( m_TaskGraph, tbb::flow::serial,
+			[](const Application* App) -> const Application* {
+				Editor::Get()->Tick(App->m_DeltaTime);
+				return App;
+			});
+		tbb::flow::make_edge(RendererTick, EditorTick);
+#endif
 
-				LOG( LogApplication, Info, "FPS: %i", (int)fps);
+		tbb::flow::make_edge(StartFrame, WorldTick);
+		tbb::flow::make_edge(WorldTick, PhysicTick);
+		tbb::flow::make_edge(WorldTick, RendererTick);
 
-				wchar_t buffer[256];
-				::swprintf_s( buffer, L"[FPS: %f]", fps );
-				m_MainWindow->SetWindowTitle( buffer );
-			}
-		}
+		StartFrame.try_put(this);
+		m_TaskGraph.wait_for_all();
+
+#elif 1
+
+		oneapi::tbb::global_control control( tbb::global_control::max_allowed_parallelism, 1 );
+
+		oneapi::tbb::flow::function_node<float> ProfilerTick( m_TaskGraph, tbb::flow::unlimited,
+			[](const float& DeltaTime) {
+				Profiler::Get()->Tick(DeltaTime);
+
+				WorldManager::Get()->Tick(DeltaTime);
+				PhysicManager::Get()->Tick(DeltaTime);
+
+				Renderer::Get()->Tick(DeltaTime);
+
+#if WITH_EDITOR
+				Editor::Get()->Tick(DeltaTime);
+#endif
+			});
+
+		ProfilerTick.try_put(m_DeltaTime);
+		m_TaskGraph.wait_for_all();
+
+#else
 
 		Profiler::Get()->Tick(DeltaTime);
 
-		PhysicManager::Get()->Tick(DeltaTime);
 		WorldManager::Get()->Tick(DeltaTime);
+		PhysicManager::Get()->Tick(DeltaTime);
 
 		Renderer::Get()->Tick(DeltaTime);
 
 #if WITH_EDITOR
 		Editor::Get()->Tick(DeltaTime);
 #endif
+
+#endif
 	}
+
+	void Application::HandleWindowMessages() const
+	{
+		SCOPE_STAT(WindowMessages);
+
+		MSG msg;
+		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+
+	void Application::UpdateWindowTitle( float DeltaTime ) const
+	{
+		SCOPE_STAT(UpdateTitle);
+
+		static uint64_t frameCount = 0;
+		static double   totalTime  = 0.0;
+		
+		totalTime += DeltaTime;
+		frameCount++;
+
+		if ( totalTime > 1.0 )
+		{
+			auto fps   = frameCount / totalTime;
+			frameCount = 0;
+			totalTime -= 1.0;
+		
+			LOG( LogApplication, Info, "FPS: %i", (int)fps);
+		
+			wchar_t buffer[256];
+			::swprintf_s( buffer, L"[FPS: %f]", fps );
+			m_MainWindow->SetWindowTitle( buffer );
+		}
+	}
+
 
 	void Application::AllocateCons()
 	{
@@ -282,5 +362,7 @@ namespace Drn
 			std::cin.clear();
 		}
 	}
+
+
 
 }

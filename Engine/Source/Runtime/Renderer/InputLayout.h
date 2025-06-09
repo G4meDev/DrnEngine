@@ -38,6 +38,20 @@ namespace Drn
 		{
 		}
 
+		void Set(const Vector& Pos, const Color& Color, float InThickness)
+		{
+			X = Pos.GetX();
+			Y = Pos.GetY();
+			Z = Pos.GetZ();
+
+			R = Color.R;
+			G = Color.G;
+			B = Color.B;
+			A = Color.A;
+
+			Thickness = InThickness;
+		}
+
 		float X;
 		float Y;
 		float Z;

@@ -3,8 +3,6 @@
 
 using namespace Microsoft::WRL;
 
-#define NUM_MAX_LINES 100000
-
 namespace Drn
 {
 	void LineBatchComponent::TickComponent( float DeltaTime )
@@ -135,8 +133,8 @@ namespace Drn
 		: PrimitiveSceneProxy(InLineBatchComponent)
 		, m_LineComponent(InLineBatchComponent)
 		, m_VertexBufferResource(nullptr)
-		, m_IndexBufferResource(nullptr)
 		, m_Thickness(InLineBatchComponent->m_Thickness)
+		, m_VertexCount(0)
 	{
 	}
 
@@ -145,11 +143,6 @@ namespace Drn
 		if (m_VertexBufferResource)
 		{
 			m_VertexBufferResource->ReleaseBufferedResource();
-		}
-
-		if (m_IndexBufferResource)
-		{
-			m_IndexBufferResource->ReleaseBufferedResource();
 		}
 	}
 
@@ -194,9 +187,7 @@ namespace Drn
 		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &Renderer->GetSceneView().WorldToProjection, 0 );
 
 		CommandList->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
-		CommandList->IASetIndexBuffer( &m_IndexBufferView );
-		uint32 VertexCount = m_IndexBufferView.SizeInBytes / sizeof(uint32);
-		CommandList->DrawIndexedInstanced( VertexCount, 1, 0, 0, 0);
+		CommandList->DrawInstanced( m_VertexCount, 1, 0, 0);
 	}
 
 #endif
@@ -206,19 +197,11 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		m_VertexBufferResource = Resource::Create( D3D12_HEAP_TYPE_UPLOAD,
-			CD3DX12_RESOURCE_DESC::Buffer( sizeof(InputLayout_LineColorThickness) * NUM_MAX_LINES * 2),
+			CD3DX12_RESOURCE_DESC::Buffer( sizeof(InputLayout_LineColorThickness) * MaxNumVertex),
 			D3D12_RESOURCE_STATE_GENERIC_READ );
 
 #if D3D12_Debug_INFO
 		m_VertexBufferResource->SetName("LineBatchVertexBuffer");
-#endif
-
-		m_IndexBufferResource = Resource::Create( D3D12_HEAP_TYPE_UPLOAD,
-			CD3DX12_RESOURCE_DESC::Buffer( sizeof( uint32 ) * NUM_MAX_LINES * 2 ),
-			D3D12_RESOURCE_STATE_GENERIC_READ );
-
-#if D3D12_Debug_INFO
-		m_IndexBufferResource->SetName("LineBatchIndexBuffer");
 #endif
 	}
 
@@ -239,27 +222,28 @@ namespace Drn
 	{
 		SCOPE_STAT( RecaulculateData );
 
-		m_VertexData.clear();
-		m_VertexData.reserve( m_LineComponent->m_Lines.size() * 2 );
+		const uint32 LineCount = m_LineComponent->m_Lines.size();
+		m_VertexCount = LineCount * 2;
 
-		m_IndexData.clear();
-		m_IndexData.reserve( m_LineComponent->m_Lines.size() * 2 );
-
-		for ( uint32 i = 0; i < m_LineComponent->m_Lines.size(); i++ )
+		tbb::parallel_for( tbb::blocked_range<uint32>(0, LineCount, 10000), [&]( tbb::blocked_range<uint32> j )
 		{
-			const BatchLine& Line = m_LineComponent->m_Lines[i];
+			SCOPE_STAT( RecaulculateDataGrain );
+			for (uint32 i = j.begin(); i != j.end(); i++)
+			{
+				const BatchLine& Line = m_LineComponent->m_Lines[i];
+		
+				const uint32 StartIndex = i * 2;
+				const uint32 EndIndex = i * 2 + 1;
 
-			m_VertexData.push_back( InputLayout_LineColorThickness( Line.Start, Line.Color, Line.Thickness) );
-			m_VertexData.push_back( InputLayout_LineColorThickness( Line.End, Line.Color, Line.Thickness) );
-
-			m_IndexData.push_back( i * 2 );
-			m_IndexData.push_back( i * 2 + 1 );
-		}
+				m_VertexData[StartIndex].Set( Line.Start, Line.Color, Line.Thickness);
+				m_VertexData[EndIndex].Set(Line.End, Line.Color, Line.Thickness);
+			}
+		}, tbb::auto_partitioner());
 	}
 
 	void LineBatchSceneProxy::UploadVertexBuffer()
 	{
-		if ( m_VertexData.size() > 0 && m_IndexData.size() > 0 )
+		if ( m_VertexCount > 0 )
 		{
 			SCOPE_STAT( CopyBuffer );
 
@@ -267,26 +251,13 @@ namespace Drn
 				UINT8*        pVertexDataBegin;
 				CD3DX12_RANGE readRange( 0, 0 );
 				m_VertexBufferResource->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
-				uint32 ByteSize = m_VertexData.size() * sizeof( InputLayout_LineColorThickness );
+				uint32 ByteSize = m_VertexCount * sizeof( InputLayout_LineColorThickness );
 				memcpy( pVertexDataBegin, &m_VertexData[0], ByteSize );
 				m_VertexBufferResource->GetD3D12Resource()->Unmap( 0, nullptr );
 
 				m_VertexBufferView.BufferLocation = m_VertexBufferResource->GetD3D12Resource()->GetGPUVirtualAddress();
 				m_VertexBufferView.StrideInBytes  = sizeof( InputLayout_LineColorThickness );
 				m_VertexBufferView.SizeInBytes    = ByteSize;
-			}
-
-			{
-				UINT8*        pIndexDataBegin;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_IndexBufferResource->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pIndexDataBegin ) );
-				uint32 ByteSize = m_IndexData.size() * sizeof( uint32 );
-				memcpy( pIndexDataBegin, &m_IndexData[0], ByteSize );
-				m_IndexBufferResource->GetD3D12Resource()->Unmap( 0, nullptr );
-
-				m_IndexBufferView.BufferLocation = m_IndexBufferResource->GetD3D12Resource()->GetGPUVirtualAddress();
-				m_IndexBufferView.Format         = DXGI_FORMAT_R32_UINT;
-				m_IndexBufferView.SizeInBytes    = ByteSize;
 			}
 
 			m_HasValidData = true;

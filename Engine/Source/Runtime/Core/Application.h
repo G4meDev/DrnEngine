@@ -2,11 +2,12 @@
 
 #include "ForwardTypes.h"
 
+#include "oneapi/tbb.h"
+
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 
 LOG_DECLARE_CATEGORY(LogApplication);
-
 
 namespace Drn
 {
@@ -26,6 +27,8 @@ namespace Drn
 		void OnWindowResized( const IntPoint& NewSize );
 		void OnKeyPressed( WPARAM Key );
 
+		inline static oneapi::tbb::flow::graph& GetTaskGraph() { return m_TaskGraph; }
+
 		Window* m_MainWindow;
 		HINSTANCE m_hInstance;
 
@@ -33,5 +36,12 @@ namespace Drn
 
 	private:
 		void AllocateCons();
+
+		void HandleWindowMessages() const;
+		void UpdateWindowTitle(float DeltaTime) const;
+
+		static tbb::flow::graph m_TaskGraph;
+
+		float m_DeltaTime;
 	};
 }
