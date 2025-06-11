@@ -43,6 +43,8 @@ namespace Drn
 
 		inline bool IsTicking() const { return m_ShouldTick; }
 
+		inline double GetTimeSeconds() const { return m_TimeSeconds; }
+
 		void DrawDebugLine(const Vector& Start, const Vector& End, const Color& Color, float Thickness, float Duration);
 		void DrawDebugCircle(const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
 		void DrawDebugSphere(const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
@@ -88,6 +90,8 @@ namespace Drn
 #endif
 
 		bool m_PendingDestory;
+
+		double m_TimeSeconds;
 
 		friend Scene;
 		friend class Level;

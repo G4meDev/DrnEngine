@@ -12,7 +12,6 @@ namespace Drn
 {
 	Window::Window( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize )
 		: m_Closing(false)
-		, OnSizeChangedDelegate(nullptr)
 	{
 		RECT WindowRect = { 0, 0, static_cast<LONG>( WindowSize.X ), static_cast<LONG>( WindowSize.Y) };
 		AdjustWindowRect( &WindowRect, WS_OVERLAPPEDWINDOW, FALSE );
@@ -104,48 +103,12 @@ namespace Drn
 	void Window::SizeChanged( const IntPoint& NewSize )
 	{
 		m_WindowSize = NewSize;
-		InvokeOnSizeChanged(NewSize);
+		OnWindowResize.Braodcast(NewSize);
 	}
 
 	void Window::KeyPress( WPARAM Key )
 	{
-		InvokeOnKeyPress(Key);
-	}
-
-	void Window::BindOnSizeChanged( OnSizeChanged Delegate )
-	{
-		OnSizeChangedDelegate = Delegate;
-	}
-
-	void Window::ClearOnSizeChanged()
-	{
-		OnSizeChangedDelegate = nullptr;
-	}
-
-	void Window::InvokeOnSizeChanged( const IntPoint& NewSize )
-	{
-		if (OnSizeChangedDelegate)
-		{
-			OnSizeChangedDelegate(NewSize);
-		}
-	}
-
-	void Window::BindOnKeyPress( OnKeyPress Delegate )
-	{
-		OnKeyPressDelegate = Delegate;
-	}
-
-	void Window::ClearOnKeyPress()
-	{
-		OnKeyPressDelegate = nullptr;
-	}
-
-	void Window::InvokeOnKeyPress( WPARAM Key )
-	{
-		if (OnKeyPressDelegate)
-		{
-			OnKeyPressDelegate(Key);
-		}
+		OnKeyPress.Braodcast(Key);
 	}
 
 	LRESULT CALLBACK Window::DefaultWndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam )
@@ -171,7 +134,7 @@ namespace Drn
 			case WM_SYSKEYDOWN:
 			case WM_KEYDOWN:
 				W = (Window*)GetWindowLongPtrA( hwnd, GWLP_USERDATA );
-				W->InvokeOnKeyPress(wParam);
+				W->KeyPress(wParam);
 				return true;
 
 			case WM_SIZE:

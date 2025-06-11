@@ -227,9 +227,6 @@ namespace Drn
 	{
 		SCOPE_STAT(RendererTick);
 
-		// @TODO: move time to accessible location
-		TotalTime += DeltaTime;
-
 		BufferedResourceManager::Get()->Tick(DeltaTime);
 
 		{

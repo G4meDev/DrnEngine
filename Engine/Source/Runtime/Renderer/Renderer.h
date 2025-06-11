@@ -95,8 +95,6 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12Fence>& GetFence() { return m_Fence; };
 		uint64& GetFenceValue() { return m_FenceValue; };
 
-		float TotalTime = 0;
-
 		uint64_t m_FenceValue = 0;
 		//uint64_t m_FrameFenceValues[NUM_BACKBUFFERS] = {};
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;

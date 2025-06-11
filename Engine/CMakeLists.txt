@@ -316,6 +316,7 @@ target_include_directories( Engine
     PUBLIC inc ../ThirdParty/Physx/include/
     PUBLIC inc ../ThirdParty/PixEvent/include/
     PUBLIC inc ../ThirdParty/OneTBB/include/
+    PUBLIC inc ../ThirdParty/Taskflow/
 	#PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
@@ -348,14 +349,6 @@ target_link_libraries( Engine
     PUBLIC PhysXPvdSDK_static_64.lib
     PUBLIC PhysXVehicle_static_64.lib
     PUBLIC PhysXVehicle2_static_64.lib
-
-    #PUBLIC tbb$<$<NOT:$<CONFIG:Release>>:_debug>.lib
-    #PUBLIC tbb12$<$<NOT:$<CONFIG:Release>>:_debug>.lib
-    #PUBLIC tbbbind_2_0$<$<NOT:$<CONFIG:Release>>:_debug>.lib
-    #PUBLIC tbbbind_2_5$<$<NOT:$<CONFIG:Release>>:_debug>.lib
-    #PUBLIC tbbbind$<$<NOT:$<CONFIG:Release>>:_debug>.lib
-    #PUBLIC tbbmalloc$<$<NOT:$<CONFIG:Release>>:_debug>.lib
-    #PUBLIC tbbmalloc_proxy$<$<NOT:$<CONFIG:Release>>:_debug>.lib
 )
 
 
@@ -374,12 +367,6 @@ add_custom_command(TARGET Engine POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/redist/$(Configuration)
 		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
-)
-
-add_custom_command(TARGET Engine POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${PROJECT_SOURCE_DIR}/ThirdParty/OneTBB/redist/$<CONFIG>
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 )
 
 #set_source_files_properties( ${SHADER_FILES_PS}

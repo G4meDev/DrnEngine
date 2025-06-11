@@ -1,6 +1,9 @@
 #include "DrnPCH.h"
 #include "LineBatchComponent.h"
 
+#include "Runtime/Core/Application.h"
+#include <algorithm/for_each.hpp>
+
 using namespace Microsoft::WRL;
 
 namespace Drn
@@ -222,23 +225,44 @@ namespace Drn
 	{
 		SCOPE_STAT( RecaulculateData );
 
+		//const uint32 LineCount = m_LineComponent->m_Lines.size();
+		//m_VertexCount = LineCount * 2;
+		//
+		//static tf::Taskflow w;
+		//w.clear();
+		//
+		//tf::IndexRange<uint32> R(0, LineCount, 10000);
+		//auto t = w.for_each_by_index(R, [&](tf::IndexRange<uint32> Subrange)
+		//{
+		//	SCOPE_STAT( RecaulculateDataGrain );
+		//	for (uint32 i = Subrange.begin(); i != std::min( LineCount, Subrange.end()); i++)
+		//	{
+		//		const BatchLine& Line = m_LineComponent->m_Lines[i];
+		//		
+		//		const uint32 StartIndex = i * 2;
+		//		const uint32 EndIndex = i * 2 + 1;
+		//		
+		//		m_VertexData[StartIndex].Set( Line.Start, Line.Color, Line.Thickness);
+		//		m_VertexData[EndIndex].Set(Line.End, Line.Color, Line.Thickness);
+		//	}
+		//});
+
+		//Application::executor.run(w).wait();
+		//Application::executor.corun(w);
+
 		const uint32 LineCount = m_LineComponent->m_Lines.size();
 		m_VertexCount = LineCount * 2;
 
-		tbb::parallel_for( tbb::blocked_range<uint32>(0, LineCount, 10000), [&]( tbb::blocked_range<uint32> j )
+		for (uint32 i = 0; i < LineCount; i++)
 		{
-			SCOPE_STAT( RecaulculateDataGrain );
-			for (uint32 i = j.begin(); i != j.end(); i++)
-			{
-				const BatchLine& Line = m_LineComponent->m_Lines[i];
+			const BatchLine& Line = m_LineComponent->m_Lines[i];
 		
-				const uint32 StartIndex = i * 2;
-				const uint32 EndIndex = i * 2 + 1;
-
-				m_VertexData[StartIndex].Set( Line.Start, Line.Color, Line.Thickness);
-				m_VertexData[EndIndex].Set(Line.End, Line.Color, Line.Thickness);
-			}
-		}, tbb::auto_partitioner());
+			const uint32 StartIndex = i * 2;
+			const uint32 EndIndex = i * 2 + 1;
+		
+			m_VertexData[StartIndex].Set( Line.Start, Line.Color, Line.Thickness);
+			m_VertexData[EndIndex].Set(Line.End, Line.Color, Line.Thickness);
+		};
 	}
 
 	void LineBatchSceneProxy::UploadVertexBuffer()

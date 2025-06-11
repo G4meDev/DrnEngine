@@ -2,10 +2,10 @@
 
 #include "ForwardTypes.h"
 
-#include "oneapi/tbb.h"
-
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
+
+#include <taskflow.hpp>
 
 LOG_DECLARE_CATEGORY(LogApplication);
 
@@ -18,6 +18,9 @@ namespace Drn
 	public:
 		virtual int Run(HINSTANCE inhInstance);
 
+		static tf::Executor executor;
+		static tf::Taskflow taskflow;
+
 	protected:
 		virtual void Startup();
 		virtual void Shutdown();
@@ -26,8 +29,6 @@ namespace Drn
 
 		void OnWindowResized( const IntPoint& NewSize );
 		void OnKeyPressed( WPARAM Key );
-
-		inline static oneapi::tbb::flow::graph& GetTaskGraph() { return m_TaskGraph; }
 
 		Window* m_MainWindow;
 		HINSTANCE m_hInstance;
@@ -39,8 +40,6 @@ namespace Drn
 
 		void HandleWindowMessages() const;
 		void UpdateWindowTitle(float DeltaTime) const;
-
-		static tbb::flow::graph m_TaskGraph;
 
 		float m_DeltaTime;
 	};

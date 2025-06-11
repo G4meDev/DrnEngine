@@ -9,6 +9,8 @@
 
 #include <shlwapi.h>
 
+#include <taskflow.hpp>
+
 #include <corecrt_io.h>
 #include <fcntl.h>
 #define MAX_CONSOLE_LINES 500;
@@ -20,7 +22,9 @@ LOG_DEFINE_CATEGORY( LogApplication, "Application" );
 
 namespace Drn
 {
-	tbb::flow::graph Application::m_TaskGraph;
+	//tf::Executor Application::executor;
+	tf::Executor Application::executor(1);
+	tf::Taskflow Application::taskflow;
 
 	int Application::Run( HINSTANCE inhInstance )
 	{
@@ -41,7 +45,7 @@ namespace Drn
 		return 0;
 	}
 
-	void Application::OnKeyPressed( WPARAM Key )
+void Application::OnKeyPressed( WPARAM Key )
 	{
 		switch ( Key )
 		{
@@ -130,8 +134,8 @@ namespace Drn
 		Editor::Get()->Init();
 #endif
 
-		m_MainWindow->BindOnSizeChanged( std::bind( &Application::OnWindowResized, this, std::placeholders::_1 ) );
-		m_MainWindow->BindOnKeyPress( std::bind( &Application::OnKeyPressed, this, std::placeholders::_1 ) );
+		m_MainWindow->OnWindowResize.Add(this, &Application::OnWindowResized);
+		m_MainWindow->OnKeyPress.Add(this, &Application::OnKeyPressed);
 		m_MainWindow->Show();
 	}
 
@@ -150,6 +154,9 @@ namespace Drn
 		AssetManager::Shutdown();
 
 		Profiler::Shutdown();
+
+		m_MainWindow->OnWindowResize.Remove(this);
+		m_MainWindow->OnKeyPress.Remove(this);
 
 		delete m_MainWindow;
 		m_MainWindow = nullptr;
@@ -210,46 +217,65 @@ namespace Drn
 #if 1
 		Profiler::Get()->Tick(m_DeltaTime);
 
-		oneapi::tbb::global_control control( tbb::global_control::max_allowed_parallelism, 2 );
+//		oneapi::tbb::global_control control( tbb::global_control::max_allowed_parallelism, 2 );
+//
+//		tbb::flow::function_node<const Application*, const Application*> StartFrame( m_TaskGraph, tbb::flow::serial,
+//			[](const Application* App) -> const Application* {
+//				return App;
+//			});
+//
+//		tbb::flow::function_node<const Application*, const Application*> WorldTick( m_TaskGraph, tbb::flow::serial,
+//			[](const Application* App) -> const Application* {
+//				WorldManager::Get()->Tick(App->m_DeltaTime);
+//				return App;
+//			});
+//		
+//		tbb::flow::function_node<const Application*, const Application*> PhysicTick( m_TaskGraph, tbb::flow::serial,
+//			[](const Application* App) -> const Application* {
+//				PhysicManager::Get()->Tick(App->m_DeltaTime);
+//				return App;
+//			});
+//		
+//		tbb::flow::function_node<const Application*, const Application*> RendererTick( m_TaskGraph, tbb::flow::serial,
+//			[](const Application* App) -> const Application* {
+//				Renderer::Get()->Tick(App->m_DeltaTime);
+//				return App;
+//			});
+//		
+//#if WITH_EDITOR
+//		tbb::flow::function_node<const Application*, const Application*> EditorTick( m_TaskGraph, tbb::flow::serial,
+//			[](const Application* App) -> const Application* {
+//				Editor::Get()->Tick(App->m_DeltaTime);
+//				return App;
+//			});
+//		tbb::flow::make_edge(RendererTick, EditorTick);
+//#endif
+//
+//		tbb::flow::make_edge(StartFrame, WorldTick);
+//		tbb::flow::make_edge(WorldTick, PhysicTick);
+//		tbb::flow::make_edge(WorldTick, RendererTick);
+//
+//		StartFrame.try_put(this);
+//		m_TaskGraph.wait_for_all();
 
-		tbb::flow::function_node<const Application*, const Application*> StartFrame( m_TaskGraph, tbb::flow::serial,
-			[](const Application* App) -> const Application* {
-				return App;
-			});
 
-		tbb::flow::function_node<const Application*, const Application*> WorldTick( m_TaskGraph, tbb::flow::serial,
-			[](const Application* App) -> const Application* {
-				WorldManager::Get()->Tick(App->m_DeltaTime);
-				return App;
-			});
-		
-		tbb::flow::function_node<const Application*, const Application*> PhysicTick( m_TaskGraph, tbb::flow::serial,
-			[](const Application* App) -> const Application* {
-				PhysicManager::Get()->Tick(App->m_DeltaTime);
-				return App;
-			});
-		
-		tbb::flow::function_node<const Application*, const Application*> RendererTick( m_TaskGraph, tbb::flow::serial,
-			[](const Application* App) -> const Application* {
-				Renderer::Get()->Tick(App->m_DeltaTime);
-				return App;
-			});
-		
+		auto [WorldTick, PhysicTick, RendererTick] = taskflow.emplace(
+			[&] () { WorldManager::Get()->Tick(m_DeltaTime); },
+			[&] () { PhysicManager::Get()->Tick(m_DeltaTime); },
+			[&] () { Renderer::Get()->Tick(m_DeltaTime); } 
+		);
+
+		WorldTick.precede(PhysicTick);
+		WorldTick.precede(RendererTick);
+
 #if WITH_EDITOR
-		tbb::flow::function_node<const Application*, const Application*> EditorTick( m_TaskGraph, tbb::flow::serial,
-			[](const Application* App) -> const Application* {
-				Editor::Get()->Tick(App->m_DeltaTime);
-				return App;
-			});
-		tbb::flow::make_edge(RendererTick, EditorTick);
+		auto EditorTick = taskflow.emplace(
+		[&]() { Editor::Get()->Tick(m_DeltaTime); }
+		);
+		RendererTick.precede(EditorTick);
 #endif
 
-		tbb::flow::make_edge(StartFrame, WorldTick);
-		tbb::flow::make_edge(WorldTick, PhysicTick);
-		tbb::flow::make_edge(WorldTick, RendererTick);
-
-		StartFrame.try_put(this);
-		m_TaskGraph.wait_for_all();
+		executor.run( std::move(taskflow) ).wait();
 
 #elif 1
 

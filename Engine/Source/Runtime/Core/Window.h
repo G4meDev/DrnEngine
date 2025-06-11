@@ -1,19 +1,19 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/Delegate.h"
 
 LOG_DECLARE_CATEGORY(LogWindow);
 #define DEFAULT_WINDOW_CLASS_NAME L"DefaultWindowClass"
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_OneParam(OnWindowResizeDelegate, const IntPoint&);
+	DECLARE_MULTICAST_DELEGATE_OneParam(OnKeyPressDelegate, WPARAM);
 
 	class Window
 	{
 	public:
-
-		using OnSizeChanged = std::function<void( const IntPoint& NewSize )>;
-		using OnKeyPress = std::function<void( WPARAM )>;
 
 		Window( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize );
 		~Window();
@@ -41,17 +41,8 @@ namespace Drn
 
 		static LRESULT CALLBACK DefaultWndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam );
 
-		void BindOnSizeChanged(OnSizeChanged Delegate);
-		void ClearOnSizeChanged();
-		void InvokeOnSizeChanged(const IntPoint& NewSize);
-
-		OnSizeChanged OnSizeChangedDelegate;
-
-		void BindOnKeyPress(OnKeyPress Delegate);
-		void ClearOnKeyPress();
-		void InvokeOnKeyPress(WPARAM Key);
-
-		OnKeyPress OnKeyPressDelegate;
+		OnWindowResizeDelegate OnWindowResize;
+		OnKeyPressDelegate OnKeyPress;
 
 	private:
 

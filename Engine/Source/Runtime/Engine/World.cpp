@@ -13,6 +13,7 @@ namespace Drn
 		, m_LevelPath("")
 		, m_Transient(false)
 		, m_PendingDestory(false)
+		, m_TimeSeconds(0)
 	{
 		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
 		m_Scene = Renderer::Get()->AllocateScene(this);
@@ -67,6 +68,8 @@ namespace Drn
 	void World::Tick( float DeltaTime )
 	{
 		SCOPE_STAT(WorldTick);
+
+		m_TimeSeconds += DeltaTime;
 
 		{
 			SCOPE_STAT(PendingDestroyAddActors);
