@@ -28,7 +28,8 @@ namespace Drn
 
 		m_SceneRenderer->m_CameraActor = m_ViewportCamera;
 
-		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Alloc( &ViewCpuHandle, &ViewGpuHandle );
+		//ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Alloc( &ViewCpuHandle, &ViewGpuHandle );
+		Renderer::Get()->TempSRVAllocator.Alloc( &ViewCpuHandle, &ViewGpuHandle );
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
 		
@@ -43,7 +44,8 @@ namespace Drn
 
 	ViewportPanel::~ViewportPanel()
 	{
-		ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
+		//ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
+		Renderer::Get()->TempSRVAllocator.Free(ViewCpuHandle, ViewGpuHandle);
 	}
 
 	void ViewportPanel::Draw( float DeltaTime )

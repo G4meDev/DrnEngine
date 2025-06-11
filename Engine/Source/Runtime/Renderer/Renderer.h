@@ -91,6 +91,8 @@ namespace Drn
 		Scene* AllocateScene(World* InWorld);
 		void ReleaseScene(Scene*& InScene);
 
+		void SetHeaps( ID3D12GraphicsCommandList* CommandList);
+
 		// TODO: delete
 		Microsoft::WRL::ComPtr<ID3D12Fence>& GetFence() { return m_Fence; };
 		uint64& GetFenceValue() { return m_FenceValue; };

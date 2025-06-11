@@ -170,46 +170,6 @@ void Application::OnKeyPressed( WPARAM Key )
 
 		m_DeltaTime = DeltaTime;
 
-		//tbb::flow::graph g;
-		//
-		//tbb::flow::function_node<int, std::string> First(g, tbb::flow::unlimited, 
-		//	[](const int& In) -> std::string {
-		//		SCOPE_STAT(First);
-		//		int a = tbb::this_task_arena::current_thread_index();
-		//		std::cout << "First: " << In;
-		//		return std::to_string(In);
-		//	} );
-		//
-		//tbb::flow::function_node<std::string> Second(g, tbb::flow::unlimited, 
-		//	[](const std::string& In) {
-		//		SCOPE_STAT(Second);
-		//		int a = tbb::this_task_arena::current_thread_index();
-		//		std::cout << " _ Second: " << In;
-		//	} );
-		//
-		//tbb::flow::function_node<std::string> Third(g, tbb::flow::unlimited, 
-		//	[](const std::string& In) {
-		//		SCOPE_STAT(Third);
-		//		std::cout << " _ Third: " << In;
-		//	} );
-		//
-		//tbb::flow::function_node<std::string> Forth(g, tbb::flow::unlimited, 
-		//	[](const std::string& In) {
-		//		SCOPE_STAT(Forth);
-		//		std::cout << " _ Forth: " << In << std::endl;
-		//	} );
-		//
-		//tbb::flow::make_edge(First, Second);
-		//tbb::flow::make_edge(First, Third);
-		//tbb::flow::make_edge(First, Forth);
-		//First.try_put(10);
-		//g.wait_for_all();
-
-		//tbb::parallel_invoke(
-		//	[](){ SCOPE_STAT(P1); std::cout << "Hello" << "\n"; },
-		//	[](){ SCOPE_STAT(P2); std::cout << "Tbb" << "\n"; }
-		//	);
-
 		HandleWindowMessages();
 		UpdateWindowTitle(DeltaTime);
 
@@ -217,52 +177,10 @@ void Application::OnKeyPressed( WPARAM Key )
 #if 1
 		Profiler::Get()->Tick(m_DeltaTime);
 
-//		oneapi::tbb::global_control control( tbb::global_control::max_allowed_parallelism, 2 );
-//
-//		tbb::flow::function_node<const Application*, const Application*> StartFrame( m_TaskGraph, tbb::flow::serial,
-//			[](const Application* App) -> const Application* {
-//				return App;
-//			});
-//
-//		tbb::flow::function_node<const Application*, const Application*> WorldTick( m_TaskGraph, tbb::flow::serial,
-//			[](const Application* App) -> const Application* {
-//				WorldManager::Get()->Tick(App->m_DeltaTime);
-//				return App;
-//			});
-//		
-//		tbb::flow::function_node<const Application*, const Application*> PhysicTick( m_TaskGraph, tbb::flow::serial,
-//			[](const Application* App) -> const Application* {
-//				PhysicManager::Get()->Tick(App->m_DeltaTime);
-//				return App;
-//			});
-//		
-//		tbb::flow::function_node<const Application*, const Application*> RendererTick( m_TaskGraph, tbb::flow::serial,
-//			[](const Application* App) -> const Application* {
-//				Renderer::Get()->Tick(App->m_DeltaTime);
-//				return App;
-//			});
-//		
-//#if WITH_EDITOR
-//		tbb::flow::function_node<const Application*, const Application*> EditorTick( m_TaskGraph, tbb::flow::serial,
-//			[](const Application* App) -> const Application* {
-//				Editor::Get()->Tick(App->m_DeltaTime);
-//				return App;
-//			});
-//		tbb::flow::make_edge(RendererTick, EditorTick);
-//#endif
-//
-//		tbb::flow::make_edge(StartFrame, WorldTick);
-//		tbb::flow::make_edge(WorldTick, PhysicTick);
-//		tbb::flow::make_edge(WorldTick, RendererTick);
-//
-//		StartFrame.try_put(this);
-//		m_TaskGraph.wait_for_all();
-
-
 		auto [WorldTick, PhysicTick, RendererTick] = taskflow.emplace(
-			[&] () { WorldManager::Get()->Tick(m_DeltaTime); },
-			[&] () { PhysicManager::Get()->Tick(m_DeltaTime); },
-			[&] () { Renderer::Get()->Tick(m_DeltaTime); } 
+			[DeltaTime] () { WorldManager::Get()->Tick(DeltaTime); },
+			[DeltaTime] () { PhysicManager::Get()->Tick(DeltaTime); },
+			[DeltaTime] () { Renderer::Get()->Tick(DeltaTime); } 
 		);
 
 		WorldTick.precede(PhysicTick);
@@ -276,27 +194,6 @@ void Application::OnKeyPressed( WPARAM Key )
 #endif
 
 		executor.run( std::move(taskflow) ).wait();
-
-#elif 1
-
-		oneapi::tbb::global_control control( tbb::global_control::max_allowed_parallelism, 1 );
-
-		oneapi::tbb::flow::function_node<float> ProfilerTick( m_TaskGraph, tbb::flow::unlimited,
-			[](const float& DeltaTime) {
-				Profiler::Get()->Tick(DeltaTime);
-
-				WorldManager::Get()->Tick(DeltaTime);
-				PhysicManager::Get()->Tick(DeltaTime);
-
-				Renderer::Get()->Tick(DeltaTime);
-
-#if WITH_EDITOR
-				Editor::Get()->Tick(DeltaTime);
-#endif
-			});
-
-		ProfilerTick.try_put(m_DeltaTime);
-		m_TaskGraph.wait_for_all();
 
 #else
 

@@ -14,7 +14,6 @@ LOG_DEFINE_CATEGORY( LogImguiRenderer, "ImguiRenderer" );
 namespace Drn
 {
 	std::unique_ptr<ImGuiRenderer> ImGuiRenderer::SingletonInstance = nullptr;
-	ExampleDescriptorHeapAllocator ImGuiRenderer::g_pd3dSrvDescHeapAlloc;
 
 	ImGuiRenderer::ImGuiRenderer()
 	{
@@ -28,17 +27,6 @@ namespace Drn
 
 	void ImGuiRenderer::Init( class Window* MainWindow )
 	{
-		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		desc.NumDescriptors             = 64;
-		desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( &g_pd3dSrvDescHeap ) ); 
-		g_pd3dSrvDescHeapAlloc.Create( Renderer::Get()->GetD3D12Device(), g_pd3dSrvDescHeap );
-
-#if D3D12_Debug_INFO
-		g_pd3dSrvDescHeap->SetName(L"ImguiSrvHeap");
-#endif
-
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -68,16 +56,13 @@ namespace Drn
 		init_info.NumFramesInFlight = NUM_BACKBUFFERS;
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
-		init_info.SrvDescriptorHeap    = g_pd3dSrvDescHeap;
-		init_info.SrvDescriptorAllocFn = []( ImGui_ImplDX12_InitInfo*,
-												D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle,
-												D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle ) {
-			return g_pd3dSrvDescHeapAlloc.Alloc( out_cpu_handle, out_gpu_handle );
-		};
-		init_info.SrvDescriptorFreeFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle,
-											D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle ) {
-			return g_pd3dSrvDescHeapAlloc.Free( cpu_handle, gpu_handle );
-		};
+
+		init_info.SrvDescriptorHeap    = Renderer::Get()->m_SrvHeap.Get();
+		init_info.SrvDescriptorAllocFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE*out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle )
+			{ return Renderer::Get()->TempSRVAllocator.Alloc(out_cpu_handle, out_gpu_handle ); };
+		 init_info.SrvDescriptorFreeFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle )
+		{ 	return Renderer::Get()->TempSRVAllocator.Free( cpu_handle, gpu_handle ); };
+
 		ImGui_ImplDX12_Init( &init_info );
 	}
 
@@ -99,11 +84,6 @@ namespace Drn
 		ImGui_ImplDX12_Shutdown();
 		ImGui_ImplWin32_Shutdown();
 		ImGui::DestroyContext();
-
-		g_pd3dSrvDescHeap->Release();
-		g_pd3dSrvDescHeap = nullptr;
-
-		g_pd3dSrvDescHeapAlloc.Destroy();
 
 		for (auto it = Layers.begin(); it != Layers.end(); )
 		{
@@ -173,10 +153,10 @@ namespace Drn
 		SCOPE_STAT(ImguiEndDraw);
 
 		ImGui::Render();
-		CL->SetDescriptorHeaps( 1, &g_pd3dSrvDescHeap );
+		Renderer::Get()->SetHeaps(CL);
 
 		ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), CL );
-}
+	}
 
 	void ImGuiRenderer::PostExecuteCommands()
 	{

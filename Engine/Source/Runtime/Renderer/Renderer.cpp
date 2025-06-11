@@ -78,23 +78,6 @@ namespace Drn
 		m_Fence->SetName(L"MainFence");
 #endif
 
-//#if WITH_EDITOR
-//		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
-//#else
-//		CameraActor* Cam = WorldManager::Get()->GetMainWorld()->SpawnActor<CameraActor>();
-//		Cam->SetActorLocation(XMVectorSet(0, 0, -10, 0));
-//
-//		m_MainScene = AllocateScene(WorldManager::Get()->GetMainWorld());
-//
-//		m_MainSceneRenderer = m_MainScene->AllocateSceneRenderer();
-//		m_MainSceneRenderer->m_CameraActor = Cam;
-//#endif
-
-
-#if WITH_EDITOR
-		ImGuiRenderer::Get()->Init(m_MainWindow);
-#endif
-
 		auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];
 		commandAllocator->Reset();
 		m_CommandList->Reset(commandAllocator.Get(), nullptr);
@@ -124,6 +107,9 @@ namespace Drn
 		m_SamplerHeap->SetName(L"GlobalSamplerHeap");
 #endif
 
+#if WITH_EDITOR
+		ImGuiRenderer::Get()->Init(m_MainWindow);
+#endif
 		//Flush();
 	}
 
@@ -227,14 +213,25 @@ namespace Drn
 	{
 		SCOPE_STAT(RendererTick);
 
-		BufferedResourceManager::Get()->Tick(DeltaTime);
+		//tf::Taskflow t;
+		//auto [BufferedResourceManagerTick, SetHeap, SceneTick] = t.emplace(
+		//	[DeltaTime] ()
+		//	{
+		//		BufferedResourceManager::Get()->Tick(DeltaTime);
+		//	},[&] ()
+		//	{
+		//		SCOPE_STAT(SetDescriptorHeaps);
+		//	
+		//		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
+		//		m_CommandList->SetDescriptorHeaps(2, Descs);
+		//	},[&] ()
+		//	{
+		//		Renderer::Get()->Tick(m_DeltaTime);
+		//	} 
+		//);
 
-		{
-			SCOPE_STAT(SetDescriptorHeaps);
-			
-			ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
-			m_CommandList->SetDescriptorHeaps(2, Descs);
-		}
+		BufferedResourceManager::Get()->Tick(DeltaTime);
+		SetHeaps(m_CommandList.Get());
 
 		for (Scene* S : m_AllocatedScenes)
 		{
@@ -324,4 +321,12 @@ namespace Drn
 		InScene = nullptr;
 	}
 
-}
+	void Renderer::SetHeaps( ID3D12GraphicsCommandList* CommandList )
+	{
+		SCOPE_STAT(SetDescriptorHeaps);
+			
+		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
+		m_CommandList->SetDescriptorHeaps(2, Descs);
+	}
+
+        }
