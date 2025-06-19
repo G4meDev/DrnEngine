@@ -159,6 +159,11 @@ namespace Drn
 					Profiler::Get()->Profile(EProfileMode::Capture_100);
 				}
 
+				if ( ImGui::MenuItem( "task graph visualizer" ) )
+				{
+					Editor::Get()->OpenTaskGraphVisualizer();
+				}
+
 				ImGui::EndMenu();
 			}
 

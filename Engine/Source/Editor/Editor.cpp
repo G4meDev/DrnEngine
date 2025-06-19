@@ -8,6 +8,7 @@
 #include "Editor/OutputLog/OutputLog.h"
 #include "Editor/ContentBrowser/ContentBrowser.h"
 #include "Editor/LevelViewport/LevelViewport.h"
+#include "Editor/Misc/TaskGraphVisualizer.h"
 
 #include "Editor/FileImportMenu/FileImportMenu.h"
 
@@ -18,6 +19,7 @@ namespace Drn
 	std::unique_ptr<Editor> Editor::SingletonInstance;
 
 	Editor::Editor()
+		: m_TaskGraphVisualizer(nullptr)
 	{
 		if (WorldManager::Get())
 		{
@@ -120,6 +122,16 @@ namespace Drn
 	void Editor::OnCloseLevel( World* ClosedWorld )
 	{
 		LevelViewport::Shutdown();
+	}
+
+	void Editor::OpenTaskGraphVisualizer()
+	{
+		if (!m_TaskGraphVisualizer)
+		{
+			m_TaskGraphVisualizer = new TaskGraphVisualizer();
+			m_TaskGraphVisualizer->OnLayerClose.BindLambda([](){ Editor::Get()->m_TaskGraphVisualizer = nullptr; });
+			m_TaskGraphVisualizer->Attach();
+		}
 	}
 }
 

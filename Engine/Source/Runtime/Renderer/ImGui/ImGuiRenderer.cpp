@@ -61,7 +61,7 @@ namespace Drn
 		init_info.SrvDescriptorAllocFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE*out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle )
 			{ return Renderer::Get()->TempSRVAllocator.Alloc(out_cpu_handle, out_gpu_handle ); };
 		 init_info.SrvDescriptorFreeFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle )
-		{ 	return Renderer::Get()->TempSRVAllocator.Free( cpu_handle, gpu_handle ); };
+			{ 	return Renderer::Get()->TempSRVAllocator.Free( cpu_handle, gpu_handle ); };
 
 		ImGui_ImplDX12_Init( &init_info );
 	}

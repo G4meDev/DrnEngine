@@ -120,6 +120,8 @@ set( HEADER_FILES
 	Source/Editor/OutputLog/OutputLog.h
 	Source/Editor/OutputLog/OutputLogGuiLayer.h
 
+	Source/Editor/Misc/TaskGraphVisualizer.h
+
 	Source/Editor/ContentBrowser/ContentBrowser.h
 	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.h
 
@@ -260,6 +262,8 @@ set( SOURCE_FILES
 
 	Source/Editor/ContentBrowser/ContentBrowser.cpp
 	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.cpp
+
+	Source/Editor/Misc/TaskGraphVisualizer.cpp
 
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.cpp

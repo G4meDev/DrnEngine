@@ -137,6 +137,28 @@ void Application::OnKeyPressed( WPARAM Key )
 		m_MainWindow->OnWindowResize.Add(this, &Application::OnWindowResized);
 		m_MainWindow->OnKeyPress.Add(this, &Application::OnKeyPressed);
 		m_MainWindow->Show();
+
+
+		auto [WorldTick, PhysicTick, RendererTick] = taskflow.emplace(
+			[&] () { WorldManager::Get()->Tick(m_DeltaTime); },
+			[&] () { PhysicManager::Get()->Tick(m_DeltaTime); },
+			[&] () { Renderer::Get()->Tick(m_DeltaTime); } 
+		);
+
+		WorldTick.precede(PhysicTick);
+		WorldTick.precede(RendererTick);
+
+#if WITH_EDITOR
+		auto EditorTick = taskflow.emplace(
+		[&]() { Editor::Get()->Tick(m_DeltaTime); }
+		);
+		RendererTick.precede(EditorTick);
+
+		WorldTick.name("WorldTick");
+		PhysicTick.name("PhysicTick");
+		RendererTick.name("RendererTick");
+		EditorTick.name("EditorTick");
+#endif
 	}
 
 	void Application::Shutdown()
@@ -173,42 +195,10 @@ void Application::OnKeyPressed( WPARAM Key )
 		HandleWindowMessages();
 		UpdateWindowTitle(DeltaTime);
 
-
-#if 1
-		Profiler::Get()->Tick(m_DeltaTime);
-
-		auto [WorldTick, PhysicTick, RendererTick] = taskflow.emplace(
-			[DeltaTime] () { WorldManager::Get()->Tick(DeltaTime); },
-			[DeltaTime] () { PhysicManager::Get()->Tick(DeltaTime); },
-			[DeltaTime] () { Renderer::Get()->Tick(DeltaTime); } 
-		);
-
-		WorldTick.precede(PhysicTick);
-		WorldTick.precede(RendererTick);
-
-#if WITH_EDITOR
-		auto EditorTick = taskflow.emplace(
-		[&]() { Editor::Get()->Tick(m_DeltaTime); }
-		);
-		RendererTick.precede(EditorTick);
-#endif
-
-		executor.run( std::move(taskflow) ).wait();
-
-#else
-
 		Profiler::Get()->Tick(DeltaTime);
 
-		WorldManager::Get()->Tick(DeltaTime);
-		PhysicManager::Get()->Tick(DeltaTime);
-
-		Renderer::Get()->Tick(DeltaTime);
-
-#if WITH_EDITOR
-		Editor::Get()->Tick(DeltaTime);
-#endif
-
-#endif
+		//executor.run( std::move(taskflow) ).wait();
+		executor.run(taskflow).wait();
 	}
 
 	void Application::HandleWindowMessages() const

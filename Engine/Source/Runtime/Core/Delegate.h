@@ -24,6 +24,9 @@
 
 namespace Drn
 {
+	class DummyLambda{};
+	constexpr static DummyLambda DummyLambdaObj;
+
 	template <typename ReturnType, typename ...DelegateSignature>
 	class Delegate
 	{
@@ -77,6 +80,21 @@ namespace Drn
 			if constexpr ( sizeof...( DelegateSignature ) == 1)
 			{
 				Element = InvocationElement( UClass, std::bind( F, UClass, std::placeholders::_1 ) );
+			}
+
+		}
+
+		template<class Func>
+		inline void BindLambda(Func&& F)
+		{
+			if constexpr ( sizeof...( DelegateSignature ) == 0)
+			{
+				Element = InvocationElement( (void*)&DummyLambdaObj, std::bind( F ) );
+			}
+			
+			if constexpr ( sizeof...( DelegateSignature ) == 1)
+			{
+				Element = InvocationElement( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1 ) );
 			}
 
 		}

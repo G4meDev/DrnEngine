@@ -2,8 +2,12 @@
 
 #if WITH_EDITOR
 
+#include "Runtime/Core/Delegate.h"
+
 namespace Drn
 {
+	DECLARE_DELEGATE(OnLayerCloseDelegate);
+
 	class ImGuiLayer
 	{
 	public:
@@ -16,6 +20,8 @@ namespace Drn
 		void DeAttach();
 
 		bool m_Open;
+
+		OnLayerCloseDelegate OnLayerClose;
 	};
 }
 

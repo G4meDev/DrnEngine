@@ -15,7 +15,10 @@ namespace Drn
 
 	ImGuiLayer::~ImGuiLayer()
 	{
-
+		if (OnLayerClose.IsBound())
+		{
+			OnLayerClose.Execute();
+		}
 	}
 
 	void ImGuiLayer::Draw( float DeltaTime )

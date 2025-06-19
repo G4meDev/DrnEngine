@@ -9,6 +9,7 @@ LOG_DECLARE_CATEGORY(LogEditor);
 namespace Drn
 {
 	class FileImportMenu;
+	class TaskGraphVisualizer;
 
 	class Editor
 	{
@@ -32,9 +33,13 @@ namespace Drn
 		void OnOpenLevel( World* OpenedWorld );
 		void OnCloseLevel( World* ClosedWorld );
 
+		void OpenTaskGraphVisualizer();
+
 	protected:
 
 		std::shared_ptr<FileImportMenu> m_FileImportMenu;
+
+		TaskGraphVisualizer* m_TaskGraphVisualizer;
 
 	private:
 
