@@ -19,5 +19,15 @@ namespace Drn
 
 			return Cycles.QuadPart / SecondsPerCycle;
 		}
+
+		static FORCEINLINE float GetApplicationDeltaTime() { return m_ApplicationDeltaTime; }
+
+	private:
+
+		static FORCEINLINE void SetApplicationDeltaTime( float DeltaTime ) { m_ApplicationDeltaTime = DeltaTime; }
+
+		static float m_ApplicationDeltaTime;
+
+		friend class Application;
 	};
 }

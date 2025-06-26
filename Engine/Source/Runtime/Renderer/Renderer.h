@@ -2,6 +2,8 @@
 
 #include "ForwardTypes.h"
 
+#include "taskflow.hpp"
+
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -142,6 +144,9 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE LinearSamplerGpuHandle;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SamplerCpuHandle;
+
+		tf::Taskflow m_RendererTickTask;
+		tf::Taskflow m_DummyTask;
 
 	protected:
 		static Renderer* SingletonInstance;

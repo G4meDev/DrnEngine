@@ -111,6 +111,17 @@ namespace Drn
 		ImGuiRenderer::Get()->Init(m_MainWindow);
 #endif
 		//Flush();
+
+		tf::Task A = m_RendererTickTask.emplace( []() { Renderer::Get()->Tick(Time::GetApplicationDeltaTime()); } );
+		tf::Task C = m_DummyTask.emplace( []() {  } );
+		tf::Task B = m_RendererTickTask.composed_of(m_DummyTask);
+
+#if WITH_EDITOR
+		A.name("RendererTickTask");
+		B.name("B");
+		C.name("C");
+#endif
+
 	}
 
 
@@ -288,7 +299,7 @@ namespace Drn
 		}
 
 #if WITH_EDITOR
-		ImGuiRenderer::Get()->PostExecuteCommands();
+		//ImGuiRenderer::Get()->PostExecuteCommands();
 #endif
 
 		m_SwapChain->Present();

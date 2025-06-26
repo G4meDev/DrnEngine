@@ -22,8 +22,8 @@ LOG_DEFINE_CATEGORY( LogApplication, "Application" );
 
 namespace Drn
 {
-	//tf::Executor Application::executor;
-	tf::Executor Application::executor(1);
+	tf::Executor Application::executor;
+	//tf::Executor Application::executor(1);
 	tf::Taskflow Application::taskflow;
 
 	int Application::Run( HINSTANCE inhInstance )
@@ -138,20 +138,22 @@ void Application::OnKeyPressed( WPARAM Key )
 		m_MainWindow->OnKeyPress.Add(this, &Application::OnKeyPressed);
 		m_MainWindow->Show();
 
-
-		auto [WorldTick, PhysicTick, RendererTick] = taskflow.emplace(
-			[&] () { WorldManager::Get()->Tick(m_DeltaTime); },
-			[&] () { PhysicManager::Get()->Tick(m_DeltaTime); },
-			[&] () { Renderer::Get()->Tick(m_DeltaTime); } 
-		);
+		//auto [WorldTick, PhysicTick, RendererTick] = taskflow.emplace(
+		//	[&] () { WorldManager::Get()->Tick(m_DeltaTime); },
+		//	[&] () { PhysicManager::Get()->Tick(m_DeltaTime); },
+		//	[&] () { Renderer::Get()->Tick(m_DeltaTime); } 
+		//);
+		auto WorldTick = taskflow.emplace( [&]() { WorldManager::Get()->Tick(m_DeltaTime); } );
+		auto PhysicTick = taskflow.emplace( [&]() { PhysicManager::Get()->Tick(m_DeltaTime); } );
+		//auto RendererTick = taskflow.emplace( [&]() { Renderer::Get()->Tick(m_DeltaTime); } );
+		
+		tf::Task RendererTick = taskflow.composed_of(Renderer::Get()->m_RendererTickTask);
 
 		WorldTick.precede(PhysicTick);
 		WorldTick.precede(RendererTick);
 
 #if WITH_EDITOR
-		auto EditorTick = taskflow.emplace(
-		[&]() { Editor::Get()->Tick(m_DeltaTime); }
-		);
+		auto EditorTick = taskflow.emplace( [&]() { Editor::Get()->Tick(m_DeltaTime); } );
 		RendererTick.precede(EditorTick);
 
 		WorldTick.name("WorldTick");
@@ -159,10 +161,30 @@ void Application::OnKeyPressed( WPARAM Key )
 		RendererTick.name("RendererTick");
 		EditorTick.name("EditorTick");
 #endif
+
+//		WorldTickTask = taskflow.emplace([&]() { WorldManager::Get()->Tick( m_DeltaTime );});
+//		PhysicTickTask = taskflow.emplace([&]() { PhysicManager::Get()->Tick( m_DeltaTime );});
+//		RendererTickTask = taskflow.emplace([&]() { Renderer::Get()->Tick( m_DeltaTime );});
+//
+//		WorldTickTask.precede(PhysicTickTask);
+//		WorldTickTask.precede(RendererTickTask);
+//
+//#if WITH_EDITOR
+//		EditorTickTask = taskflow.emplace([&]() { Editor::Get()->Tick( m_DeltaTime );});
+//		RendererTickTask.precede(EditorTickTask);
+//
+//		WorldTickTask.name("WorldTick");
+//		PhysicTickTask.name("PhysicTick");
+//		RendererTickTask.name("RendererTick");
+//		EditorTickTask.name("EditorTick");
+//#endif
 	}
 
 	void Application::Shutdown()
 	{
+		//taskflow.clear();
+		//EditorTickTask.reset();
+
 		Renderer::Get()->Flush();
 
 #if WITH_EDITOR
@@ -191,14 +213,46 @@ void Application::OnKeyPressed( WPARAM Key )
 		SCOPE_STAT(ApplicationTick);
 
 		m_DeltaTime = DeltaTime;
+		Time::SetApplicationDeltaTime(m_DeltaTime);
 
 		HandleWindowMessages();
 		UpdateWindowTitle(DeltaTime);
 
 		Profiler::Get()->Tick(DeltaTime);
 
+#if 0
+
+		std::thread TT([&]() {
+			WorldManager::Get()->Tick(m_DeltaTime);
+			PhysicManager::Get()->Tick(m_DeltaTime);
+			Renderer::Get()->Tick(m_DeltaTime);
+			Editor::Get()->Tick(m_DeltaTime);
+		} );
+		
+		TT.join();
+
+//#if WITH_EDITOR
+//        ImGuiRenderer::Get()->PostExecuteCommands();
+//#endif
+
+		//WorldManager::Get()->Tick(m_DeltaTime);
+		//PhysicManager::Get()->Tick(m_DeltaTime);
+		//Renderer::Get()->Tick(m_DeltaTime);
+		//Editor::Get()->Tick(m_DeltaTime);
+
+#else
+
+		
+
 		//executor.run( std::move(taskflow) ).wait();
 		executor.run(taskflow).wait();
+
+#if WITH_EDITOR
+		// this should run in main thread.
+		ImGuiRenderer::Get()->PostExecuteCommands();
+#endif
+
+#endif
 	}
 
 	void Application::HandleWindowMessages() const

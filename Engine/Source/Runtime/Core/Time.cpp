@@ -3,6 +3,7 @@
 
 namespace Drn
 {
+	float Time::m_ApplicationDeltaTime;
 	double Time::SecondsPerCycle = 0;
 
 	void Time::Init()
@@ -11,6 +12,7 @@ namespace Drn
 		QueryPerformanceFrequency( &fr );
 		Time::SecondsPerCycle = fr.QuadPart;
 	}
+
 
 
 }

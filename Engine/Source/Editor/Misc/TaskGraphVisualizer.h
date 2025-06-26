@@ -8,6 +8,47 @@
 
 LOG_DECLARE_CATEGORY(LogTaskGraphVisializer);
 
+struct GvLink
+{
+	std::string From;
+	std::string To;
+};
+
+enum GvType
+{
+	Node,
+	Graph
+};
+
+struct GvBase
+{
+	std::string ID;
+	std::string Label;
+
+	std::vector<std::string> Precede;
+	std::vector<std::string> Succeed;
+
+};
+
+struct GvNode : public GvBase
+{
+	GvNode() {}
+
+	GvType Type;
+};
+
+struct GvGraph : public GvBase
+{
+	std::map<std::string, GvNode> Nodes;
+	std::vector<std::string> Roots;
+	std::vector<std::string> Leafs;
+
+	void RecalculateRootAndLeaf();
+	std::string CheckContainsSubgraph();
+	void ExpandSubgraph( const std::string& ID );
+};
+
+
 template<typename T, std::size_t N>
 struct Array
 {

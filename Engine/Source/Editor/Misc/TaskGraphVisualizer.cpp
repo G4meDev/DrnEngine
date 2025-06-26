@@ -36,83 +36,184 @@ namespace Drn
 			const std::string TaskGraphDump = Application::taskflow.dump();
 			//Application::taskflow.dump(std::cout);
 
-			std::string NodeID;
-			std::string NodeName;
-
-			size_t LineStartPos = 0;
-			size_t LineEndPos = TaskGraphDump.find("\n");
-
-			while ( LineEndPos != std::string::npos)
+			std::vector<GvGraph> SubGraphs;
 			{
-				size_t LabelPos = TaskGraphDump.find(NodeLabelTag, LineStartPos);
-
-				if ( LabelPos != std::string::npos && LabelPos < LineEndPos)
+				size_t SubgraphPos = TaskGraphDump.find("subgraph");
+				while (SubgraphPos != std::string::npos)
 				{
-					NodeID = TaskGraphDump.substr(LineStartPos, LabelPos - LineStartPos);
-					NodeName = TaskGraphDump.substr(LabelPos + 8, LineEndPos - LabelPos - 12);
+					SubGraphs.push_back({});
+					GvGraph& Graph = SubGraphs[SubGraphs.size() - 1];
+					SubgraphPos += 10;
+					size_t IDEnd = TaskGraphDump.find(" ", SubgraphPos);
+					size_t IDLength = IDEnd - SubgraphPos;
+					Graph.ID = std::move(TaskGraphDump.substr(SubgraphPos, IDLength));
+					SubgraphPos += IDLength;
 
-					//std::cout << NodeName << " " << NodeID << '\n';
+					size_t SubGraphEnd = TaskGraphDump.find( "}", SubgraphPos );
 
-					m_GraphDelegate.AddNode(std::move(NodeName), std::move(NodeID));
+					SubgraphPos = std::min(TaskGraphDump.find( "\n", SubgraphPos ), SubGraphEnd);
+					while (SubgraphPos != SubGraphEnd)
+					{
+						SubgraphPos++;
+						size_t LineEnd = std::min(TaskGraphDump.find( "\n", SubgraphPos ), SubGraphEnd);
+
+						size_t LabelPos = std::min(TaskGraphDump.find( "label=", SubgraphPos ), LineEnd);
+						size_t ArrowPos = std::min( TaskGraphDump.find( "->", SubgraphPos ), LineEnd );
+
+						if (LabelPos != LineEnd && SubgraphPos == LabelPos)
+						{
+							Graph.Label = std::move(TaskGraphDump.substr(SubgraphPos + 7, LineEnd - SubgraphPos - 9));
+						}
+
+						else if (LabelPos != LineEnd)
+						{
+							size_t BracketPos = std::min(TaskGraphDump.find("[", SubgraphPos), LineEnd);
+							std::string ID = std::move(TaskGraphDump.substr(SubgraphPos, BracketPos - SubgraphPos));
+							SubgraphPos = BracketPos + 1;
+
+							LabelPos = TaskGraphDump.find( "label=", SubgraphPos );
+
+							// e.g. p000002175D253E50[label="WorldTick" ];
+							if (BracketPos != LineEnd && LabelPos == SubgraphPos)
+							{
+								if (!Graph.Nodes.contains(ID))
+									Graph.Nodes[ID] = GvNode();
+								GvNode& Node = Graph.Nodes[ID];
+								Node.Type = GvType::Node;
+								Node.ID = std::move(ID);
+								Node.Label = std::move(TaskGraphDump.substr(LabelPos + 7, LineEnd - LabelPos - 11 ));
+							}
+							// e.g. p000002175D252560[shape=box3d, color=blue, label="RendererTick [m1]"];
+							else if (BracketPos != LineEnd)
+							{
+								size_t LabelBracketStart = TaskGraphDump.find("[", SubgraphPos + 1);
+								size_t LabelBracketEnd = TaskGraphDump.find("]", SubgraphPos + 1);
+								std::string Label = std::move(TaskGraphDump.substr(LabelBracketStart + 1, LabelBracketEnd - LabelBracketStart - 1));
+
+								if (!Graph.Nodes.contains(ID))
+									Graph.Nodes[ID] = GvNode();
+								GvNode& Node = Graph.Nodes[ID];
+								Node.Type = GvType::Graph;
+								Node.ID = std::move(ID);
+								Node.Label = std::move(Label);
+							}
+						}
+
+						// e.g. p000002175D253E50 -> p000002175D252560;
+						else if (ArrowPos != LineEnd)
+						{
+							std::string FromID = std::move(TaskGraphDump.substr(SubgraphPos, ArrowPos - SubgraphPos));
+							std::string ToID = std::move(TaskGraphDump.substr(ArrowPos + 2, LineEnd - ArrowPos - 3));
+							
+							StringHelper::RemoveWhitespaces(FromID);
+							StringHelper::RemoveWhitespaces(ToID);
+							
+							if (!Graph.Nodes.contains(FromID))
+								Graph.Nodes[FromID] = GvNode();
+							GvNode& FromNode = Graph.Nodes[FromID];
+							FromNode.Succeed.push_back(ToID);
+							
+							if (!Graph.Nodes.contains(ToID))
+								Graph.Nodes[ToID] = GvNode();
+							GvNode& ToNode = Graph.Nodes[ToID];
+							ToNode.Precede.push_back(FromID);
+						}
+
+						SubgraphPos = LineEnd;
+					}
+
+					SubgraphPos = TaskGraphDump.find("subgraph", SubgraphPos);
 				}
 
-				LineStartPos = LineEndPos + 1;
-				LineEndPos = TaskGraphDump.find("\n", LineStartPos);
-			}
-
-			LineStartPos = 0;
-			LineEndPos = TaskGraphDump.find("\n");
-
-			std::string StartID;
-			std::string EndID;
-
-			while ( LineEndPos != std::string::npos)
-			{
-				size_t ArrowPos = TaskGraphDump.find(NodeArrowTag, LineStartPos);
-
-				if (ArrowPos != std::string::npos && ArrowPos < LineEndPos)
+				GvGraph& MainGraph = SubGraphs[0];
+				for (int i = 1; i < SubGraphs.size(); i++)
 				{
-					StartID = TaskGraphDump.substr(LineStartPos, ArrowPos - LineStartPos);
-					EndID = TaskGraphDump.substr(ArrowPos + 4, LineEndPos - ArrowPos - 5);
-
-					//std::cout << StartID << " " << EndID << '\n';
-
-					m_GraphDelegate.AddLink(StartID, EndID);
+					SubGraphs[i].RecalculateRootAndLeaf();
 				}
 
-				LineStartPos = LineEndPos + 1;
-				LineEndPos = TaskGraphDump.find("\n", LineStartPos);
-			}
+				std::string SubgraphID = MainGraph.CheckContainsSubgraph();
+				while (SubgraphID != "")
+				{
+					GvNode& SubgraphNode = MainGraph.Nodes[SubgraphID];
+					for (int i = 1; i < SubGraphs.size(); i++)
+					{
+						if (SubGraphs[i].Label == SubgraphNode.Label)
+						{
+							GvGraph& Subgraph = SubGraphs[i];
 
-			std::set<size_t> SeenTargetNodes;
-			for (auto& Node : m_GraphDelegate.mLinks)
-			{
-				SeenTargetNodes.insert(Node.mOutputNodeIndex);
-			}
+							for ( auto it = Subgraph.Nodes.begin(); it != Subgraph.Nodes.end(); it++ )
+							{
+								MainGraph.Nodes[it->first] = it->second;
+							}
 
-			std::set<size_t> RootNodes;
-			for (size_t i = 0; i < m_GraphDelegate.mNodes.size(); i++)
-			{
-				if (!SeenTargetNodes.contains(i))
-					RootNodes.insert(i);
-			}
+							for (const std::string& PreID : SubgraphNode.Precede)
+							{
+								GvNode& PreNode = MainGraph.Nodes[PreID];
+								PreNode.Succeed.erase(std::remove(PreNode.Succeed.begin(), PreNode.Succeed.end(), SubgraphID), PreNode.Succeed.end());
 
-			uint32 MaxDepth = 0;
-			for (auto it = RootNodes.begin(); it != RootNodes.end(); it++)
-			{
-				uint32 Depth = 0;
-				m_GraphDelegate.RecursiveDepth( *it, Depth, MaxDepth);
-			}
+								for ( const std::string& RootID : Subgraph.Roots )
+								{
+									MainGraph.Nodes[RootID].Precede.push_back(PreID);
+									PreNode.Succeed.push_back(RootID);
+								}
+							}
 
-			std::vector<uint32> DepthNodeCount;
-			DepthNodeCount.resize(MaxDepth + 1, 0);
+							for (const std::string& SucID : SubgraphNode.Succeed)
+							{
+								GvNode& SucNode = MainGraph.Nodes[SucID];
+								SucNode.Precede.erase(std::remove(SucNode.Precede.begin(), SucNode.Precede.end(), SubgraphID), SucNode.Precede.end());
 
-			for (auto it = m_GraphDelegate.mNodes.begin(); it != m_GraphDelegate.mNodes.end(); it++)
-			{
-				it->Branch = DepthNodeCount[it->Depth]++;
+								for ( const std::string& LeafID : Subgraph.Leafs )
+								{
+									MainGraph.Nodes[LeafID].Succeed.push_back(SucID);
+									SucNode.Precede.push_back(LeafID);
+								}
+							}
 
-				it->x = it->Depth * 400;
-				it->y = it->Branch * 400;
+							MainGraph.Nodes.erase(SubgraphID);
+						}
+					}
+
+					SubgraphID = MainGraph.CheckContainsSubgraph();
+				}
+
+				for (auto it = MainGraph.Nodes.begin(); it != MainGraph.Nodes.end(); it++)
+				{
+					m_GraphDelegate.AddNode(std::move(it->second.Label), std::move(it->second.ID));
+				}
+
+				for (auto it = MainGraph.Nodes.begin(); it != MainGraph.Nodes.end(); it++)
+				{
+					for (const std::string Suc : it->second.Succeed)
+					{
+						m_GraphDelegate.AddLink(it->first, Suc);
+					}
+				}
+
+				MainGraph.RecalculateRootAndLeaf();
+				std::set<size_t> RootNodes;
+				for (const std::string& Root : MainGraph.Roots)
+				{
+					RootNodes.insert( m_GraphDelegate.m_NodeMap[Root] );
+				}
+				
+				uint32 MaxDepth = 0;
+				for (auto it = RootNodes.begin(); it != RootNodes.end(); it++)
+				{
+					uint32 Depth = 0;
+					m_GraphDelegate.RecursiveDepth( *it, Depth, MaxDepth);
+				}
+				
+				std::vector<uint32> DepthNodeCount;
+				DepthNodeCount.resize(MaxDepth + 1, 0);
+				
+				for (auto it = m_GraphDelegate.mNodes.begin(); it != m_GraphDelegate.mNodes.end(); it++)
+				{
+					it->Branch = DepthNodeCount[it->Depth]++;
+				
+					it->x = it->Depth * 400;
+					it->y = it->Branch * 400;
+				}
 			}
 
 			GraphEditor::Show(m_GraphDelegate, m_GraphOptions, m_GraphViewState, true);
@@ -232,6 +333,37 @@ namespace Drn
 			}
 		}
 	}
+
 }
+
+void GvGraph::RecalculateRootAndLeaf()
+{
+	Roots.clear();
+	Leafs.clear();
+
+	for (auto it = Nodes.begin(); it != Nodes.end(); it++)
+	{
+		if (it->second.Precede.size() == 0)
+			Roots.push_back(it->first);
+
+		if (it->second.Succeed.size() == 0)
+			Leafs.push_back(it->first);
+	}
+}
+
+std::string GvGraph::CheckContainsSubgraph()
+{
+	for (auto it = Nodes.begin(); it != Nodes.end(); it++)
+	{
+		if (it->second.Type == GvType::Graph)
+		{
+			return it->first;
+		}
+	}
+
+	return "";
+}
+
+void GvGraph::ExpandSubgraph( const std::string& ID ) {}
 
 #endif

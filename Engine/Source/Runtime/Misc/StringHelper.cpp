@@ -20,6 +20,11 @@ namespace Drn
 	    return tokens;
 	}
 
+	void StringHelper::RemoveWhitespaces( std::string& Str )
+	{
+		Str.erase(std::remove(Str.begin(), Str.end(), ' '), Str.end());
+	}
+
 	std::wstring StringHelper::s2ws( const std::string& str )
 	{
 		using convert_typeX = std::codecvt_utf8<wchar_t>;
