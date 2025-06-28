@@ -137,6 +137,7 @@ set( HEADER_FILES
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.h
 	
 	Source/ThirdParty/par/par_shapes.h
+
 )
 
 set( SOURCE_FILES
@@ -277,6 +278,33 @@ set( SOURCE_FILES
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.cpp
 )
 
+set( OPTICK_HEADERS
+	Source/ThirdParty/Optick/optick.h
+	Source/ThirdParty/Optick/optick.config.h
+	Source/ThirdParty/Optick/optick_capi.h
+	Source/ThirdParty/Optick/optick_common.h
+	Source/ThirdParty/Optick/optick_core.h
+	Source/ThirdParty/Optick/optick_core.platform.h
+	Source/ThirdParty/Optick/optick_core.win.h
+	Source/ThirdParty/Optick/optick_gpu.h
+	Source/ThirdParty/Optick/optick_memory.h
+	Source/ThirdParty/Optick/optick_message.h
+	Source/ThirdParty/Optick/optick_miniz.h
+	Source/ThirdParty/Optick/optick_serialization.h
+	Source/ThirdParty/Optick/optick_server.h
+)
+
+set( OPTICK_SOURCES
+	Source/ThirdParty/Optick/optick_capi.cpp
+	Source/ThirdParty/Optick/optick_core.cpp
+	Source/ThirdParty/Optick/optick_gpu.cpp
+	Source/ThirdParty/Optick/optick_gpu.d3d12.cpp
+	Source/ThirdParty/Optick/optick_message.cpp
+	Source/ThirdParty/Optick/optick_miniz.cpp
+	Source/ThirdParty/Optick/optick_serialization.cpp
+	Source/ThirdParty/Optick/optick_server.cpp
+)
+
 #set( SHADER_FILES_VS
 #    Content/Shaders/TestShader_VS.hlsl
 #)
@@ -296,6 +324,8 @@ add_library( Engine STATIC
     ${HEADER_FILES}
     ${SOURCE_FILES}
     ${SHADER_FILES}
+    ${OPTICK_HEADERS}
+    ${OPTICK_SOURCES}
 )
 
 # Enable C++17 compiler features.
@@ -314,6 +344,7 @@ add_compile_definitions($<$<CONFIG:RelWithDebInfo>:WITH_DEBUG>)
 
 target_include_directories( Engine
     PUBLIC inc Source/
+	PUBLIC inc Source/ThirdParty/
     PUBLIC inc ../ThirdParty/ImGui/
     PUBLIC inc ../ThirdParty/ImGuiFileDialog/
     PUBLIC inc ../ThirdParty/ImGuizmo/
@@ -328,6 +359,7 @@ target_link_directories( Engine
 	PUBLIC ../ThirdParty/Physx/lib/
 	PUBLIC ../ThirdParty/PixEvent/lib/
 	PUBLIC ../ThirdParty/OneTBB/lib/
+	PUBLIC ../ThirdParty/Optick/lib/
 )
 
 target_link_libraries( Engine 

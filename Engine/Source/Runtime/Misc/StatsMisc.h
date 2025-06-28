@@ -51,8 +51,8 @@ namespace Drn
 #define PROFILER_ENABLED 1
 
 #if PROFILER_ENABLED
-	#define SCOPE_STAT( name ) ScopeProfilerStat Scope_Stat_##name (#name)
-	#define SCOPE_STAT_POSTFIX( name , postfix ) ScopeProfilerStat Scope_Stat_##name (#name , postfix)
+	#define SCOPE_STAT( name ) ScopeProfilerStat Scope_Stat_##name (#name); OPTICK_EVENT();
+	#define SCOPE_STAT_POSTFIX( name , postfix ) ScopeProfilerStat Scope_Stat_##name (#name , postfix); OPTICK_EVENT();
 #else
 	#define SCOPE_STAT( name )
 	#define SCOPE_STAT_POSTFIX( name , postfix )

@@ -143,8 +143,8 @@ void Application::OnKeyPressed( WPARAM Key )
 		//	[&] () { PhysicManager::Get()->Tick(m_DeltaTime); },
 		//	[&] () { Renderer::Get()->Tick(m_DeltaTime); } 
 		//);
-		auto WorldTick = taskflow.emplace( [&]() { WorldManager::Get()->Tick(m_DeltaTime); } );
-		auto PhysicTick = taskflow.emplace( [&]() { PhysicManager::Get()->Tick(m_DeltaTime); } );
+		auto WorldTick = taskflow.emplace( [&]() {OPTICK_THREAD(std::to_string(Application::executor.this_worker_id()).c_str()); WorldManager::Get()->Tick(m_DeltaTime); } );
+		auto PhysicTick = taskflow.emplace( [&]() {OPTICK_THREAD(std::to_string(Application::executor.this_worker_id()).c_str()); PhysicManager::Get()->Tick(m_DeltaTime); } );
 		//auto RendererTick = taskflow.emplace( [&]() { Renderer::Get()->Tick(m_DeltaTime); } );
 		
 		tf::Task RendererTick = taskflow.composed_of(Renderer::Get()->m_RendererTickTask);
@@ -153,7 +153,7 @@ void Application::OnKeyPressed( WPARAM Key )
 		WorldTick.precede(RendererTick);
 
 #if WITH_EDITOR
-		auto EditorTick = taskflow.emplace( [&]() { Editor::Get()->Tick(m_DeltaTime); } );
+		auto EditorTick = taskflow.emplace( [&]() {OPTICK_THREAD(std::to_string(Application::executor.this_worker_id()).c_str()); Editor::Get()->Tick(m_DeltaTime); } );
 		RendererTick.precede(EditorTick);
 
 		WorldTick.name("WorldTick");
@@ -210,6 +210,7 @@ void Application::OnKeyPressed( WPARAM Key )
 
 	void Application::Tick( float DeltaTime )
 	{
+		OPTICK_FRAME( "MainThread" );
 		SCOPE_STAT(ApplicationTick);
 
 		m_DeltaTime = DeltaTime;

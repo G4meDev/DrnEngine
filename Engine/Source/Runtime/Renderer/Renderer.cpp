@@ -5,6 +5,7 @@
 #include "Runtime/Core/Window.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
+#include "Runtime/Core/Application.h"
 #include <thread>
 
 LOG_DEFINE_CATEGORY( LogRenderer, "Renderer" );
@@ -112,7 +113,7 @@ namespace Drn
 #endif
 		//Flush();
 
-		tf::Task A = m_RendererTickTask.emplace( []() { Renderer::Get()->Tick(Time::GetApplicationDeltaTime()); } );
+		tf::Task A = m_RendererTickTask.emplace( []() { OPTICK_THREAD(std::to_string(Application::executor.this_worker_id()).c_str()); Renderer::Get()->Tick(Time::GetApplicationDeltaTime()); } );
 		tf::Task C = m_DummyTask.emplace( []() {  } );
 		tf::Task B = m_RendererTickTask.composed_of(m_DummyTask);
 
