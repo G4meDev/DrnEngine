@@ -51,6 +51,7 @@ namespace Drn
 #define PROFILER_ENABLED 1
 
 #if PROFILER_ENABLED
+	#define OPTICK_THREAD_TASK() OPTICK_THREAD(std::to_string(Taskflow::GetWorkerID()).c_str());
 	#define SCOPE_STAT( name ) ScopeProfilerStat Scope_Stat_##name (#name); OPTICK_EVENT();
 	#define SCOPE_STAT_POSTFIX( name , postfix ) ScopeProfilerStat Scope_Stat_##name (#name , postfix); OPTICK_EVENT();
 #else

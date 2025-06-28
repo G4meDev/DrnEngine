@@ -167,6 +167,16 @@ namespace Drn
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu( "Tools" ))
+			{
+				if (ImGui::MenuItem( "Optick"))
+				{
+					ShellExecute(NULL, "open", "..\\..\\..\\Tools\\Optick\\Optick.exe", NULL, NULL, SW_SHOWDEFAULT);
+				}
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMainMenuBar();
 		}
 	}

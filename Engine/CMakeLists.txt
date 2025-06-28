@@ -5,6 +5,7 @@ cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this fil
 set( HEADER_FILES
 	Source/Runtime/Core/Drn.h
 	Source/Runtime/Core/Application.h
+	Source/Runtime/Core/Taskflow.h
 	Source/Runtime/Core/Asset.h
 	Source/Runtime/Core/AssetManager.h
 	Source/Runtime/Core/Archive.h
@@ -145,6 +146,7 @@ set( SOURCE_FILES
 	Source/DrnPCH.cpp
 	Source/ForwardTypes.h
 	
+	Source/Runtime/Core/Taskflow.cpp
 	Source/Runtime/Core/Asset.cpp
 	Source/Runtime/Core/AssetManager.cpp
 	Source/Runtime/Core/Application.cpp

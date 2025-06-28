@@ -4,6 +4,7 @@
 #include "Runtime/Core/AssetManager.h"
 #include "Runtime/Core/Archive.h"
 #include "Runtime/Core/Time.h"
+#include "Runtime/Core/Taskflow.h"
 
 #include "Runtime/Engine/WorldManager.h"
 #include "Runtime/Engine/World.h"

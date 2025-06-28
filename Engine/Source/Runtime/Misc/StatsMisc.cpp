@@ -32,6 +32,6 @@ namespace Drn
 	{
 		//Profiler::Get()->WriteToken(ProfileToken(std::move(Name), m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0, tbb::this_task_arena::current_thread_index()));
 		//Profiler::Get()->WriteToken(ProfileToken(std::move(Name), m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0, std::hash<std::thread::id>{}(std::this_thread::get_id())));
-		Profiler::Get()->WriteToken(ProfileToken(std::move(Name), m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0, Application::executor.this_worker_id()));
+		Profiler::Get()->WriteToken(ProfileToken(std::move(Name), m_StartTime * 1000000.0, (Time::GetSeconds() - m_StartTime) * 1000000.0, Taskflow::GetWorkerID()));
 	}
 }

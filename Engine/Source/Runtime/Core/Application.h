@@ -26,7 +26,7 @@ namespace Drn
 //		tf::Task EditorTickTask;
 //#endif
 
-		static tf::Executor executor;
+		//static tf::Executor executor;
 		static tf::Taskflow taskflow;
 
 	protected:

@@ -22,8 +22,6 @@ LOG_DEFINE_CATEGORY( LogApplication, "Application" );
 
 namespace Drn
 {
-	tf::Executor Application::executor;
-	//tf::Executor Application::executor(1);
 	tf::Taskflow Application::taskflow;
 
 	int Application::Run( HINSTANCE inhInstance )
@@ -93,7 +91,6 @@ void Application::OnKeyPressed( WPARAM Key )
 		}
 	}
 
-
 	void Application::OnWindowResized( const IntPoint& NewSize )
 	{
 		if (Renderer::Get())
@@ -134,6 +131,9 @@ void Application::OnKeyPressed( WPARAM Key )
 		Editor::Get()->Init();
 #endif
 
+		ID3D12CommandQueue* C[] = { Renderer::Get()->m_CommandQueue.Get() };
+		//OPTICK_GPU_INIT_D3D12(Renderer::Get()->GetD3D12Device(), C, 1);
+
 		m_MainWindow->OnWindowResize.Add(this, &Application::OnWindowResized);
 		m_MainWindow->OnKeyPress.Add(this, &Application::OnKeyPressed);
 		m_MainWindow->Show();
@@ -143,8 +143,8 @@ void Application::OnKeyPressed( WPARAM Key )
 		//	[&] () { PhysicManager::Get()->Tick(m_DeltaTime); },
 		//	[&] () { Renderer::Get()->Tick(m_DeltaTime); } 
 		//);
-		auto WorldTick = taskflow.emplace( [&]() {OPTICK_THREAD(std::to_string(Application::executor.this_worker_id()).c_str()); WorldManager::Get()->Tick(m_DeltaTime); } );
-		auto PhysicTick = taskflow.emplace( [&]() {OPTICK_THREAD(std::to_string(Application::executor.this_worker_id()).c_str()); PhysicManager::Get()->Tick(m_DeltaTime); } );
+		auto WorldTick = taskflow.emplace( [&]() {OPTICK_THREAD_TASK(); WorldManager::Get()->Tick(m_DeltaTime); } );
+		auto PhysicTick = taskflow.emplace( [&]() {OPTICK_THREAD_TASK(); PhysicManager::Get()->Tick(m_DeltaTime); } );
 		//auto RendererTick = taskflow.emplace( [&]() { Renderer::Get()->Tick(m_DeltaTime); } );
 		
 		tf::Task RendererTick = taskflow.composed_of(Renderer::Get()->m_RendererTickTask);
@@ -153,7 +153,7 @@ void Application::OnKeyPressed( WPARAM Key )
 		WorldTick.precede(RendererTick);
 
 #if WITH_EDITOR
-		auto EditorTick = taskflow.emplace( [&]() {OPTICK_THREAD(std::to_string(Application::executor.this_worker_id()).c_str()); Editor::Get()->Tick(m_DeltaTime); } );
+		auto EditorTick = taskflow.emplace( [&]() {OPTICK_THREAD_TASK(); Editor::Get()->Tick(m_DeltaTime); } );
 		RendererTick.precede(EditorTick);
 
 		WorldTick.name("WorldTick");
@@ -182,9 +182,6 @@ void Application::OnKeyPressed( WPARAM Key )
 
 	void Application::Shutdown()
 	{
-		//taskflow.clear();
-		//EditorTickTask.reset();
-
 		Renderer::Get()->Flush();
 
 #if WITH_EDITOR
@@ -219,7 +216,7 @@ void Application::OnKeyPressed( WPARAM Key )
 		HandleWindowMessages();
 		UpdateWindowTitle(DeltaTime);
 
-		Profiler::Get()->Tick(DeltaTime);
+		//Profiler::Get()->Tick(DeltaTime);
 
 #if 0
 
@@ -243,10 +240,7 @@ void Application::OnKeyPressed( WPARAM Key )
 
 #else
 
-		
-
-		//executor.run( std::move(taskflow) ).wait();
-		executor.run(taskflow).wait();
+		Taskflow::GetExecuter().run(taskflow).wait();
 
 #if WITH_EDITOR
 		// this should run in main thread.
