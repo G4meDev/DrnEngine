@@ -131,7 +131,7 @@ void Application::OnKeyPressed( WPARAM Key )
 		Editor::Get()->Init();
 #endif
 
-		ID3D12CommandQueue* C[] = { Renderer::Get()->m_CommandQueue.Get() };
+		//ID3D12CommandQueue* C[] = { Renderer::Get()->m_CommandQueue.Get() };
 		//OPTICK_GPU_INIT_D3D12(Renderer::Get()->GetD3D12Device(), C, 1);
 
 		m_MainWindow->OnWindowResize.Add(this, &Application::OnWindowResized);

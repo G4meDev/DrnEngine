@@ -8,7 +8,8 @@ LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
 namespace Drn
 {
-	DECLARE_MULTICAST_DELEGATE_OneParam( OnPickedComponentDelegate, Component*);
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnPickedComponentDelegate, Component* );
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnSceneRendererResizedDelegate, const IntPoint& );
 
 	enum class EDebugViewFlags : uint32
 	{
@@ -72,10 +73,12 @@ namespace Drn
 		ID3D12Resource* GetViewResource();
 
 		void ResizeView( const IntPoint& InSize );
+		void ResizeViewDeferred( const IntPoint& InSize );
+		void ResizeViewConditional();
 
 		void SetRenderingEnabled(bool Enabled);
 
-		const IntPoint& GetViewportSize() const { return m_RenderSize; }
+		const IntPoint& GetViewportSize() const { return m_CachedRenderSize; }
 
 		inline void SetName( const std::string& Name ) { m_Name = Name; }
 
@@ -91,6 +94,8 @@ namespace Drn
 
 		CameraActor* m_CameraActor;
 
+		OnSceneRendererResizedDelegate OnSceneRendererResized;
+
 	protected:
 
 		inline void Release() { delete this; }
@@ -104,6 +109,7 @@ namespace Drn
 		std::shared_ptr<class GBuffer> m_GBuffer;
 		std::shared_ptr<class TonemapRenderBuffer> m_TonemapBuffer;
 
+		IntPoint m_CachedRenderSize;
 		IntPoint m_RenderSize;
 
 		bool m_RenderingEnabled;

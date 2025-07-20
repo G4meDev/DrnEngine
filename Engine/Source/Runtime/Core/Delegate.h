@@ -61,12 +61,7 @@ namespace Drn
 		template<class UserClass>
 		inline bool IsBoundToClass( UserClass* UClass ) const
 		{
-			if (UClass && Element.Class == UClass)
-			{
-				return true;
-			}
-
-			return false;
+			return UClass && Element.Class == UClass;
 		}
 
 		template<class UserClass, class Func>

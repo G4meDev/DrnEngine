@@ -74,6 +74,7 @@ namespace Drn
 		UINT presentFlags = m_TearingSupported && !m_Vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
 
 		SCOPE_STAT(D3D12SwapChainPresent);
+		//OPTICK_GPU_FLIP( m_SwapChain.Get() );
 		m_SwapChain->Present( syncInterval, presentFlags);
 		m_CurrentBackbufferIndex = m_SwapChain->GetCurrentBackBufferIndex();
 	}

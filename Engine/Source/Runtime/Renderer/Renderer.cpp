@@ -171,6 +171,23 @@ namespace Drn
 		BufferedResourceManager::Get()->Flush();
 	}
 
+	void Renderer::WaitForOnFlightCommands()
+	{
+		Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
+		GetD3D12Device()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(Fence.GetAddressOf()));
+		m_CommandQueue->Signal(Fence.Get(), 1);
+
+		HANDLE E = CreateEvent(NULL, false, false, NULL);
+
+		if (Fence->GetCompletedValue() < 1)
+		{
+			Fence->SetEventOnCompletion(1, E);
+			WaitForSingleObject(E, DWORD_MAX);
+		}
+
+		CloseHandle(E);
+	}
+
 	void Renderer::ReportLiveObjects()
 	{
 		IDXGIDebug1* dxgiDebug;
@@ -224,23 +241,6 @@ namespace Drn
 	void Renderer::Tick( float DeltaTime )
 	{
 		SCOPE_STAT(RendererTick);
-
-		//tf::Taskflow t;
-		//auto [BufferedResourceManagerTick, SetHeap, SceneTick] = t.emplace(
-		//	[DeltaTime] ()
-		//	{
-		//		BufferedResourceManager::Get()->Tick(DeltaTime);
-		//	},[&] ()
-		//	{
-		//		SCOPE_STAT(SetDescriptorHeaps);
-		//	
-		//		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
-		//		m_CommandList->SetDescriptorHeaps(2, Descs);
-		//	},[&] ()
-		//	{
-		//		Renderer::Get()->Tick(m_DeltaTime);
-		//	} 
-		//);
 
 		BufferedResourceManager::Get()->Tick(DeltaTime);
 		SetHeaps(m_CommandList.Get());
@@ -341,4 +341,4 @@ namespace Drn
 		m_CommandList->SetDescriptorHeaps(2, Descs);
 	}
 
-        }
+}

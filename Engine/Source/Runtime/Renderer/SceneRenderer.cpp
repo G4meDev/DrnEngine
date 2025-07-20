@@ -18,7 +18,7 @@ namespace Drn
 	SceneRenderer::SceneRenderer(Scene* InScene)
 		: m_Scene(InScene)
 		, m_RenderingEnabled(true)
-		, m_RenderSize(1920, 1080)
+		, m_CachedRenderSize(1920, 1080)
 	{
 		Init(Renderer::Get()->GetCommandList());
 	}
@@ -270,6 +270,8 @@ namespace Drn
 	{
 		SCOPE_STAT(SceneRendererRender);
 
+		ResizeViewConditional();
+
 #if WITH_EDITOR
 		ProccessMousePickQueue( CommandList );
 #endif
@@ -301,19 +303,35 @@ namespace Drn
 
 	void SceneRenderer::ResizeView( const IntPoint& InSize )
 	{
-		Renderer::Get()->Flush();
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+		//Renderer::Get()->Flush();
+		//Renderer::Get()->WaitForOnFlightCommands();
 
-		m_RenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
+		m_CachedRenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
+		m_RenderSize = m_CachedRenderSize;
 
-		m_GBuffer->Resize( m_RenderSize );
-		m_TonemapBuffer->Resize( m_RenderSize );
+		m_GBuffer->Resize( GetViewportSize() );
+		m_TonemapBuffer->Resize( GetViewportSize() );
 
 #if WITH_EDITOR
-		m_HitProxyRenderBuffer->Resize( m_RenderSize );
-		m_EditorPrimitiveBuffer->Resize( m_RenderSize );
-		m_EditorSelectionBuffer->Resize( m_RenderSize );
+		m_HitProxyRenderBuffer->Resize( GetViewportSize() );
+		m_EditorPrimitiveBuffer->Resize( GetViewportSize() );
+		m_EditorSelectionBuffer->Resize( GetViewportSize() );
 #endif
+
+		OnSceneRendererResized.Braodcast(m_CachedRenderSize);
+	}
+
+	void SceneRenderer::ResizeViewDeferred( const IntPoint& InSize )
+	{
+		m_RenderSize = InSize;
+	}
+
+	void SceneRenderer::ResizeViewConditional()
+	{
+		if (m_RenderSize != m_CachedRenderSize)
+		{
+			ResizeView(m_RenderSize);
+		}
 	}
 
 	void SceneRenderer::SetRenderingEnabled( bool Enabled )
@@ -323,7 +341,7 @@ namespace Drn
 
 	void SceneRenderer::RecalculateView()
 	{
-		float aspectRatio = (float) m_RenderSize.X / m_RenderSize.Y;
+		float aspectRatio = (float) GetViewportSize().X / GetViewportSize().Y;
 		m_CameraActor->GetCameraComponent()->CalculateMatrices(m_SceneView.WorldToView, m_SceneView.ViewToProjection, aspectRatio);
 		
 		m_SceneView.WorldToProjection = m_SceneView.WorldToView * m_SceneView.ViewToProjection;
@@ -332,7 +350,7 @@ namespace Drn
 
 		m_SceneView.LocalToCameraView = Matrix( m_CameraActor->GetActorTransform() ).Get() * m_SceneView.WorldToView.Get();
 		
-		m_SceneView.Size = m_RenderSize;
+		m_SceneView.Size = GetViewportSize();
 	}
 
 #if WITH_EDITOR
@@ -403,8 +421,8 @@ namespace Drn
 				D3D12_RESOURCE_STATE_COPY_SOURCE );
 			CommandList->ResourceBarrier( 1, &barrier );
 
-			const IntPoint ClampedPos = IntPoint( std::clamp<int32>( Event.ScreenPos.X, 0, m_RenderSize.X - 1 ),
-				std::clamp<int32>( Event.ScreenPos.Y, 0, m_RenderSize.Y - 1 ) );
+			const IntPoint ClampedPos = IntPoint( std::clamp<int32>( Event.ScreenPos.X, 0, GetViewportSize().X - 1 ),
+				std::clamp<int32>( Event.ScreenPos.Y, 0, GetViewportSize().Y - 1 ) );
 
 			CD3DX12_BOX CopyBox( ClampedPos.X, ClampedPos.Y, ClampedPos.X + 1, ClampedPos.Y + 1 );
 

@@ -125,6 +125,8 @@ namespace Drn
 
 		void Flush();
 
+		void WaitForOnFlightCommands();
+
 		static void ReportLiveObjects();
 
 		inline void ToggleVSync() const { if(m_SwapChain) m_SwapChain->ToggleVSync(); }

@@ -33,6 +33,7 @@ namespace Drn
 	protected:
 
 		void OnViewportSizeChanged( const IntPoint& NewSize );
+		void OnSceneRendererResized( const IntPoint& NewSize );
 		void DrawHeader();
 		void HandleInputs();
 

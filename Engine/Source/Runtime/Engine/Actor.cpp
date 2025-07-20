@@ -187,8 +187,8 @@ namespace Drn
 	{
 		for ( const RigidBodyContactInfo& ContactInfo : RigidCollisionData.ContactInfos )
 		{
-			Root->GetWorld()->DrawDebugSphere( ContactInfo.ContactPosition, Quat::Identity, Color::Blue, 0.2f, 8, 5, 0 );
-			Root->GetWorld()->DrawDebugLine( ContactInfo.ContactPosition, ContactInfo.ContactPosition + ContactInfo.ContactNormal * 0.5, Color::Blue, 5.0f, 0 );
+			Root->GetWorld()->DrawDebugSphere( ContactInfo.ContactPosition, Quat::Identity, Color::Blue, 0.2f, 8, 0.05, 0 );
+			Root->GetWorld()->DrawDebugLine( ContactInfo.ContactPosition, ContactInfo.ContactPosition + ContactInfo.ContactNormal * 0.5, Color::Blue, 0.05f, 0 );
 		}
 	}
 

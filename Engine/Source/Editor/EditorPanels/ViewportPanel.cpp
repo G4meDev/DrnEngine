@@ -16,6 +16,7 @@ namespace Drn
 		m_Scene = InScene;
 		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
 		m_SceneRenderer->OnPickedComponent.Add( this, &ViewportPanel::OnRendererPickedComponent );
+		m_SceneRenderer->OnSceneRendererResized.Add( this, &ViewportPanel::OnSceneRendererResized );
 
 		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
 		m_ViewportCamera->SetActorLocation(XMVectorSet(20, 28, 20, 0));
@@ -28,24 +29,16 @@ namespace Drn
 
 		m_SceneRenderer->m_CameraActor = m_ViewportCamera;
 
-		//ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Alloc( &ViewCpuHandle, &ViewGpuHandle );
 		Renderer::Get()->TempSRVAllocator.Alloc( &ViewCpuHandle, &ViewGpuHandle );
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-		
-		descSRV.Texture2D.MipLevels       = 1;
-		descSRV.Texture2D.MostDetailedMip = 0;
-		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		
-		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
 
 	ViewportPanel::~ViewportPanel()
 	{
-		//ImGuiRenderer::g_pd3dSrvDescHeapAlloc.Free(ViewCpuHandle, ViewGpuHandle);
 		Renderer::Get()->TempSRVAllocator.Free(ViewCpuHandle, ViewGpuHandle);
+
+		//m_SceneRenderer->OnPickedComponent.Remove(this);
+		//m_SceneRenderer->OnSceneRendererResized.Remove(this);
+		//m_Scene->ReleaseSceneRenderer(m_SceneRenderer);
 	}
 
 	void ViewportPanel::Draw( float DeltaTime )
@@ -187,20 +180,22 @@ namespace Drn
 
 	void ViewportPanel::OnViewportSizeChanged( const IntPoint& NewSize )
 	{
-		//Renderer::Get()->MainSceneRenderer->ResizeView( NewSize );
-		m_SceneRenderer->ResizeView( NewSize );
+		m_SceneRenderer->ResizeViewDeferred(NewSize);
+	}
 
+	void ViewportPanel::OnSceneRendererResized( const IntPoint& NewSize )
+	{
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-
+		
 		descSRV.Texture2D.MipLevels       = 1;
 		descSRV.Texture2D.MostDetailedMip = 0;
 		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-		//Renderer::Get()->GetDevice()->GetD3D12Device()->CreateShaderResourceView( Renderer::Get()->MainSceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
+		
 		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
 	}
+
 }
 
 #endif
