@@ -27,7 +27,7 @@ namespace Drn
 	
 	void TaskGraphVisualizer::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(TaskGraphVisualizerDraw);
+		SCOPE_STAT();
 
 		if ( ImGui::Begin( "TaskGraphVisualizer", &m_Open ) )
 		{

@@ -31,10 +31,10 @@ namespace Drn
 
 	void WorldManager::Tick( float DeltaTime )
 	{
-		SCOPE_STAT(WorldManagerTick);
+		SCOPE_STAT();
 
 		{
-			SCOPE_STAT(PendingLevelCheck);
+			SCOPE_STAT("PendingLevelCheck");
 
 			if (m_PendingLevel)
 			{
@@ -49,7 +49,7 @@ namespace Drn
 		}
 
 		{
-			SCOPE_STAT(DestroyAndTickBroadcast);
+			SCOPE_STAT("DestroyAndTickBroadcast");
 
 			for (auto it = m_AllocatedWorlds.begin(); it != m_AllocatedWorlds.end();)
 			{

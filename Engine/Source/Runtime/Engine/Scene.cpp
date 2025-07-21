@@ -38,7 +38,7 @@ namespace Drn
 
 	void Scene::Render( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT(SceneRender);
+		SCOPE_STAT();
 
 		InitSceneRender(CommandList);
 
@@ -68,7 +68,7 @@ namespace Drn
 
 	void Scene::InitSceneRender( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT(InitSceneRender);
+		SCOPE_STAT();
 
 		for (auto it = m_PendingProxies.begin(); it != m_PendingProxies.end(); it++)
 		{

@@ -133,7 +133,7 @@ namespace Drn
 	uint64_t Renderer::Signal( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
 			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue )
 	{
-		SCOPE_STAT(RendererSignal);
+		SCOPE_STAT();
 		commandQueue->Signal( fence.Get(), ++fenceValue);
 
 		return fenceValue;
@@ -141,7 +141,7 @@ namespace Drn
 
 	void Renderer::WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent )
 	{
-		SCOPE_STAT(RendererWait);
+		SCOPE_STAT();
 
 		if (fence->GetCompletedValue() < fenceValue)
 		{
@@ -208,12 +208,12 @@ namespace Drn
 
 	void Renderer::Tick( float DeltaTime )
 	{
-		SCOPE_STAT(RendererTick);
+		SCOPE_STAT();
 
 		WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
 
 		{
-			SCOPE_STAT( CommandListReset );
+			SCOPE_STAT( "CommandlistReset" );
 		
 			auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];
 			commandAllocator->Reset();
@@ -233,7 +233,7 @@ namespace Drn
 #if WITH_EDITOR
 		D3D12_CPU_DESCRIPTOR_HANDLE rtv = m_SwapChain->GetBackBufferHandle();
 		{
-			SCOPE_STAT(SetupImguiRenderer);
+			SCOPE_STAT("SetupImguiRenderer");
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 				backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
@@ -245,7 +245,7 @@ namespace Drn
 		ImGuiRenderer::Get()->Tick( 1, rtv, m_CommandList.Get() );
 
 		{
-			SCOPE_STAT(PostImguiRenderer);
+			SCOPE_STAT("PostImguiRenderer");
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 				backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
@@ -254,7 +254,7 @@ namespace Drn
 #else
 
 		{
-			SCOPE_STAT(CopyToSwapChainBuffer);
+			SCOPE_STAT("CopyToSwapChainBuffer");
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
 			m_CommandList->ResourceBarrier( 1, &barrier );
@@ -271,7 +271,7 @@ namespace Drn
 #endif
 
 		{
-			SCOPE_STAT( RendererExecuteCommandList );
+			SCOPE_STAT( "RendererExecuteCommandList" );
 			m_CommandList->Close();
 			ID3D12CommandList* const commandLists[] = { m_CommandList.Get() };
 			m_CommandQueue->ExecuteCommandLists( 1, commandLists );
@@ -303,7 +303,7 @@ namespace Drn
 
 	void Renderer::SetHeaps( ID3D12GraphicsCommandList* CommandList )
 	{
-		SCOPE_STAT(SetDescriptorHeaps);
+		SCOPE_STAT();
 			
 		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
 		m_CommandList->SetDescriptorHeaps(2, Descs);

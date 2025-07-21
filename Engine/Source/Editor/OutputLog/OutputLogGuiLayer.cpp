@@ -10,7 +10,7 @@ namespace Drn
 {
 	void OutputLogGuiLayer::Draw(float DeltaTime)
 	{
-		SCOPE_STAT(OutputLogGuiLayerDraw);
+		SCOPE_STAT();
 
 		//const std::vector<LogMessage>& Logs = OutputLog::Get()->GetLogMessages();
 
@@ -137,7 +137,7 @@ namespace Drn
 
 					if (OutputLog::Get()->bShowTime)
 					{
-						SCOPE_STAT(DrawTime);
+						SCOPE_STAT("DrawTime");
 
 						ImGui::TableSetColumnIndex(i++);
 						ImGui::Text(Logs[QualifiedLogs[row]].Time.ToString().c_str());
@@ -145,13 +145,13 @@ namespace Drn
 
 					if (OutputLog::Get()->bShowCategory)
 					{
-						SCOPE_STAT(DrawCategory);
+						SCOPE_STAT("DrawCategory");
 
 						ImGui::TableSetColumnIndex(i++);
 						ImGui::Text(Logs[QualifiedLogs[row]].Category->Name.c_str());
 					}
 
-					SCOPE_STAT(DrawMessage);
+					SCOPE_STAT("DrawMessage");
 
 					ImGui::TableSetColumnIndex(i++);
 					ImGui::Text(Logs[QualifiedLogs[row]].Message.c_str());

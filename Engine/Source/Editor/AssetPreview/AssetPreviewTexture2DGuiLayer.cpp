@@ -46,7 +46,7 @@ namespace Drn
 
 	void AssetPreviewTexture2DGuiLayer::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(Texture2DPreviewGuiLayerDraw);
+		SCOPE_STAT();
 
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);

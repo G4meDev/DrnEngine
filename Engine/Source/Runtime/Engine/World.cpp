@@ -67,12 +67,12 @@ namespace Drn
 
 	void World::Tick( float DeltaTime )
 	{
-		SCOPE_STAT(WorldTick);
+		SCOPE_STAT();
 
 		m_TimeSeconds += DeltaTime;
 
 		{
-			SCOPE_STAT(PendingDestroyAddActors);
+			SCOPE_STAT("PendingDestroyAddActors");
 
 			for (auto it = m_Actors.begin(); it != m_Actors.end();)
 			{
@@ -137,7 +137,7 @@ namespace Drn
 		}
 
 		{
-			SCOPE_STAT(BraodcastActorTicks);
+			SCOPE_STAT();
 
 			for (Actor* actor : m_Actors)
 			{

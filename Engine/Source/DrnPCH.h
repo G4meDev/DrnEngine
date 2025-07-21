@@ -60,7 +60,6 @@
 #include "Runtime/Misc/EnumClassFlags.h"
 #include "Runtime/Misc/Path.h"
 #include "Runtime/Misc/FileSystem.h"
-#include "Runtime/Misc/Profiler.h"
 
 //#define PAR_SHAPES_IMPLEMENTATION
 //#include "ThirdParty/par/par_shapes.h"

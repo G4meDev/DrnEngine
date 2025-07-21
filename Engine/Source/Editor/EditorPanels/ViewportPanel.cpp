@@ -49,7 +49,7 @@ namespace Drn
 
 	void ViewportPanel::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(ViewportPanelDraw);
+		SCOPE_STAT();
 
 		if (CameraInputHandler.Tick(DeltaTime))
 		{

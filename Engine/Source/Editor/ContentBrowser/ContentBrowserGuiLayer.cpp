@@ -35,7 +35,7 @@ namespace Drn
 
 	void ContentBrowserGuiLayer::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(ContentBrowserGuiLayerDraw);
+		SCOPE_STAT();
 
 		if (!ImGui::Begin("ContentBrowser"))
 		{

@@ -47,26 +47,6 @@ void Application::OnKeyPressed( WPARAM Key )
 	{
 		switch ( Key )
 		{
-		case VK_F1:
-			if (Profiler::Get())
-			{
-				Profiler::Get()->Profile(EProfileMode::Capture_1);
-			}
-			break;
-		
-		case VK_F2:
-			if (Profiler::Get())
-			{
-				Profiler::Get()->Profile(EProfileMode::Capture_10);
-			}
-			break;
-			
-		case VK_F3:
-			if (Profiler::Get())
-			{
-				Profiler::Get()->Profile(EProfileMode::Capture_100);
-			}
-			break;
 
 		case VK_F4:
 			if (WorldManager::Get())
@@ -118,8 +98,6 @@ void Application::OnKeyPressed( WPARAM Key )
 
 		Time::Init();
 		m_ApplicationTime = Time::GetSeconds();
-
-		Profiler::Init();
 
 		AssetManager::Get()->Init();
 		PhysicManager::Init();
@@ -194,8 +172,6 @@ void Application::OnKeyPressed( WPARAM Key )
 		PhysicManager::Shutdown();
 		AssetManager::Shutdown();
 
-		Profiler::Shutdown();
-
 		m_MainWindow->OnWindowResize.Remove(this);
 		m_MainWindow->OnKeyPress.Remove(this);
 
@@ -208,7 +184,7 @@ void Application::OnKeyPressed( WPARAM Key )
 	void Application::Tick( float DeltaTime )
 	{
 		OPTICK_FRAME( "MainThread" );
-		SCOPE_STAT(ApplicationTick);
+		SCOPE_STAT();
 
 		m_DeltaTime = DeltaTime;
 		Time::SetApplicationDeltaTime(m_DeltaTime);
@@ -252,7 +228,7 @@ void Application::OnKeyPressed( WPARAM Key )
 
 	void Application::HandleWindowMessages() const
 	{
-		SCOPE_STAT(WindowMessages);
+		SCOPE_STAT();
 
 		MSG msg;
 		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0)
@@ -264,7 +240,7 @@ void Application::OnKeyPressed( WPARAM Key )
 
 	void Application::UpdateWindowTitle( float DeltaTime ) const
 	{
-		SCOPE_STAT(UpdateTitle);
+		SCOPE_STAT();
 
 		static uint64_t frameCount = 0;
 		static double   totalTime  = 0.0;

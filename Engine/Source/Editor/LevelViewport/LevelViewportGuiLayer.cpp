@@ -42,7 +42,7 @@ namespace Drn
 
 	void LevelViewportGuiLayer::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(LevelViewportGuiLayerDraw);
+		SCOPE_STAT();
 
 		if (!ImGui::Begin(WorldManager::Get()->GetMainWorld()->m_WorldLabel.c_str()))
 		{
@@ -142,21 +142,6 @@ namespace Drn
 				if ( ImGui::MenuItem( "log live render objects" ) )
 				{
 					Renderer::Get()->ReportLiveObjects();
-				}
-
-				if ( ImGui::MenuItem( "profile 1 frame" ) )
-				{
-					Profiler::Get()->Profile(EProfileMode::Capture_1);
-				}
-
-				if ( ImGui::MenuItem( "profile 10 frame" ) )
-				{
-					Profiler::Get()->Profile(EProfileMode::Capture_10);
-				}
-
-				if ( ImGui::MenuItem( "profile 100 frame" ) )
-				{
-					Profiler::Get()->Profile(EProfileMode::Capture_100);
 				}
 
 				if ( ImGui::MenuItem( "task graph visualizer" ) )

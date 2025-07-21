@@ -24,7 +24,7 @@ namespace Drn
 
 	void WorldOutlinerPanel::Draw( float DeltaTime )
 	{
-		SCOPE_STAT( WorldOutlinerPanelDraw );
+		SCOPE_STAT();
 
 		DrawMenu(DeltaTime);
 

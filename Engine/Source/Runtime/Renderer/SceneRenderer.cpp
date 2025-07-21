@@ -64,7 +64,7 @@ namespace Drn
 
 	void SceneRenderer::BeginRender(ID3D12GraphicsCommandList2* CommandList)
 	{
-		SCOPE_STAT( BeginRender );
+		SCOPE_STAT();
 
 		RecalculateView();
 	}
@@ -88,7 +88,7 @@ namespace Drn
 
 	void SceneRenderer::RenderBasePass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT( RenderBasePass );
+		SCOPE_STAT();
 
 		PIXBeginEvent( CommandList, 1, "BasePass" );
 
@@ -105,7 +105,7 @@ namespace Drn
 
 	void SceneRenderer::RenderLights( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT( RenderLights );
+		SCOPE_STAT();
 
 		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		CommandList->SetPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
@@ -130,7 +130,7 @@ namespace Drn
 
 	void SceneRenderer::RenderPostProcess( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT( RenderPostProcess );
+		SCOPE_STAT();
 
 		PIXBeginEvent( CommandList, 1, "Post Process" );
 
@@ -169,7 +169,7 @@ namespace Drn
 #if WITH_EDITOR
 	void SceneRenderer::RenderEditorPrimitives( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT( RenderEditorPrimitives );
+		SCOPE_STAT();
 
 		PIXBeginEvent( CommandList, 1, "Editor Primitives" );
 		m_EditorPrimitiveBuffer->Clear(CommandList);
@@ -229,7 +229,7 @@ namespace Drn
 
 	void SceneRenderer::RenderEditorSelection( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT(RenderEditorSelection);
+		SCOPE_STAT();
 		
 		PIXBeginEvent( CommandList, 1, "Editor Selection" );
 
@@ -270,7 +270,7 @@ namespace Drn
 
 	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT(SceneRendererRender);
+		SCOPE_STAT();
 
 		ResizeViewConditional();
 

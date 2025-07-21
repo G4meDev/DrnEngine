@@ -259,7 +259,7 @@ namespace Drn
 	{
 		if (IsRenderStateDirty())
 		{
-			SCOPE_STAT(UploadResourceMaterial);
+			SCOPE_STAT();
 
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();

@@ -22,7 +22,7 @@ namespace Drn
 
 	std::string DateTime::ToString() const
 	{
-		SCOPE_STAT( DateTimeToString );
+		SCOPE_STAT();
 
 		std::string Str(21, 0);
 		sprintf(Str.data(), "[%02d/%02d/%04d-%02d:%02d:%02d]", Day, Month, Year, Hour, Minute, Second);

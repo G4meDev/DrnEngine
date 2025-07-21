@@ -53,7 +53,7 @@ namespace Drn
 
 	void AssetPreviewStaticMeshGuiLayer::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(StaticMeshPreviewGuiLayerDraw);
+		SCOPE_STAT();
 
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);

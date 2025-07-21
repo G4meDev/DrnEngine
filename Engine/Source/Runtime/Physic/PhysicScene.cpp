@@ -67,7 +67,7 @@ namespace Drn
 
 	void PhysicScene::Tick( float DeltaTime )
 	{
-		SCOPE_STAT(PhysicSceneTick);
+		SCOPE_STAT();
 
 		if (IsSimulating())
 		{
@@ -116,7 +116,7 @@ namespace Drn
 	void PhysicScene::StepSimulation( float DeltaTime )
 	{
 		m_PhysxScene->lockWrite();
-		SCOPE_STAT(StepSimulation);
+		SCOPE_STAT();
 
 		m_PhysxScene->simulate(DeltaTime);
 		m_PhysxScene->fetchResults(true);
@@ -126,7 +126,7 @@ namespace Drn
 
 	void PhysicScene::SyncActors()
 	{
-		SCOPE_STAT(SyncActors);
+		SCOPE_STAT();
 
 		physx::PxU32 ActorCount = 0;
 		physx::PxActor** ActiveActors = m_PhysxScene->getActiveActors(ActorCount);
@@ -147,7 +147,7 @@ namespace Drn
 
 	void PhysicScene::DispatchPhysicEvents()
 	{
-		SCOPE_STAT( DispatchPhysicEvents );
+		SCOPE_STAT();
 
 		for (int32 i = 0; i < m_PendingCollisionNotifies.size(); i++)
 		{
@@ -184,7 +184,7 @@ namespace Drn
 
 	void PhysicScene::DrawDebugCollisions()
 	{
-		SCOPE_STAT(DebugDraw);
+		SCOPE_STAT();
 
 		//const PxRenderBuffer& Rb = GetPhysxScene()->getRenderBuffer();
 		//uint32 NumLines = Rb.getNbLines();

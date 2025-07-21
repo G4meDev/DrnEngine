@@ -46,7 +46,7 @@ namespace Drn
 
 	void Editor::Tick(float DeltaTime)
 	{
-		SCOPE_STAT(EditorTick);
+		SCOPE_STAT();
 
 		OutputLog::Get()->Tick(DeltaTime);
 		ContentBrowser::Get()->Tick(DeltaTime);

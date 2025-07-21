@@ -103,7 +103,6 @@ set( HEADER_FILES
 	Source/Runtime/Misc/Log.h
 	Source/Runtime/Misc/Path.h
 	Source/Runtime/Misc/StatsMisc.h
-	Source/Runtime/Misc/Profiler.h
 	
 	Source/Editor/Misc/ViewportCameraInputHandler.h
 	Source/Editor/Misc/GizmoState.h
@@ -245,7 +244,6 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/Log.cpp
 	Source/Runtime/Misc/Path.cpp
 	Source/Runtime/Misc/StatsMisc.cpp
-	Source/Runtime/Misc/Profiler.cpp
 	
 	Source/Editor/Editor.cpp
 	Source/Editor/EditorConfig.cpp

@@ -10,7 +10,10 @@ namespace Drn
 {
 	void LineBatchComponent::TickComponent( float DeltaTime )
 	{
-		SCOPE_STAT_POSTFIX( LineBatchComponentTick, GetComponentLabel().c_str() );
+		SCOPE_STAT();
+
+		// @BUG: tags doesn't work in worker threads
+		OPTICK_TAG("Name", GetComponentLabel().c_str());
 
 		const size_t OldSize = m_Lines.size();
 
@@ -151,7 +154,7 @@ namespace Drn
 
 	void LineBatchSceneProxy::RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		SCOPE_STAT(LineBatchSceneProxyRenderMainPass);
+		SCOPE_STAT();
 
 	}
 
@@ -168,7 +171,7 @@ namespace Drn
 
 	void LineBatchSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		SCOPE_STAT(LineBatchSceneRenderEditorPrimitivePass);
+		SCOPE_STAT();
 
 		if (!m_HasValidData)
 		{
@@ -210,7 +213,7 @@ namespace Drn
 
 	void LineBatchSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		SCOPE_STAT(UpdateResourcesLineBatchComponent);
+		SCOPE_STAT();
 
 		if (GetPrimitive()->IsRenderStateDirty())
 		{
@@ -223,7 +226,7 @@ namespace Drn
 
 	void LineBatchSceneProxy::RecalculateVertexData()
 	{
-		SCOPE_STAT( RecaulculateData );
+		SCOPE_STAT();
 
 		//const uint32 LineCount = m_LineComponent->m_Lines.size();
 		//m_VertexCount = LineCount * 2;
@@ -269,7 +272,7 @@ namespace Drn
 	{
 		if ( m_VertexCount > 0 )
 		{
-			SCOPE_STAT( CopyBuffer );
+			SCOPE_STAT( "CopyBuffer" );
 
 			{
 				UINT8*        pVertexDataBegin;

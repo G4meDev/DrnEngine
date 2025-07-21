@@ -47,7 +47,7 @@ namespace Drn
 
 	void AssetPreviewMaterialGuiLayer::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(MaterialPreviewGuiLayerDraw);
+		SCOPE_STAT();
 
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);

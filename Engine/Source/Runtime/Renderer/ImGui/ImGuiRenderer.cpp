@@ -68,7 +68,7 @@ namespace Drn
 
 	void ImGuiRenderer::Tick( float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL)
 	{
-		SCOPE_STAT(ImGuiRendererTick);
+		SCOPE_STAT();
 
 		PIXBeginEvent( CL, 1, "Imgui" );
 
@@ -114,7 +114,7 @@ namespace Drn
 
 	void ImGuiRenderer::BeginDraw()
 	{
-		SCOPE_STAT(ImguiBeginDraw);
+		SCOPE_STAT();
 
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
@@ -124,7 +124,7 @@ namespace Drn
 
 	void ImGuiRenderer::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(ImguiDraw);
+		SCOPE_STAT();
 
 		for ( auto it = Layers.begin(); it != Layers.end(); )
 		{
@@ -150,7 +150,7 @@ namespace Drn
 
 	void ImGuiRenderer::EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL )
 	{
-		SCOPE_STAT(ImguiEndDraw);
+		SCOPE_STAT();
 
 		ImGui::Render();
 		Renderer::Get()->SetHeaps(CL);
@@ -160,7 +160,7 @@ namespace Drn
 
 	void ImGuiRenderer::PostExecuteCommands()
 	{
-		SCOPE_STAT(ImguiPostExecuteCommands);
+		SCOPE_STAT();
 
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

@@ -19,7 +19,7 @@ namespace Drn
 
 	void ActorDetailPanel::Draw( float DeltaTime )
 	{
-		SCOPE_STAT(ActorDetailPanelDraw);
+		SCOPE_STAT();
 
 		m_SelectedComponent = nullptr;
 		m_SelectedActor = nullptr;
