@@ -89,6 +89,12 @@ namespace Drn
 		inline Window* GetMainWindow() { return m_MainWindow; }
 
 		void Tick(float DeltaTime);
+		void InitRender(float DeltaTime);
+		void UpdateSceneProxyAndResources();
+		void RenderSceneRenderers();
+		void RenderImgui();
+		void ResolveDisplayBuffer();
+		void ExecuteCommands();
 
 		Scene* AllocateScene(World* InWorld);
 		void ReleaseScene(Scene*& InScene);

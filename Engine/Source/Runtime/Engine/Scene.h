@@ -20,12 +20,10 @@ namespace Drn
 
 		inline World* GetWorld() { return m_World; }
 
-		void Render(ID3D12GraphicsCommandList2* CommandList);
-
 		SceneRenderer* AllocateSceneRenderer();
 		void ReleaseSceneRenderer(SceneRenderer*& InSceneRenderer);
 
-		void InitSceneRender(ID3D12GraphicsCommandList2* CommandList);
+		void UpdatePendingProxyAndResources(ID3D12GraphicsCommandList2* CommandList);
 
 		void RegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 		void UnRegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
@@ -46,6 +44,7 @@ namespace Drn
 		std::set<SceneRenderer*> m_SceneRenderers;
 
 		friend class SceneRenderer;
+		friend class Renderer;
 
 	private:
 

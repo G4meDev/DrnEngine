@@ -36,18 +36,6 @@ namespace Drn
 		}
 	}
 
-	void Scene::Render( ID3D12GraphicsCommandList2* CommandList )
-	{
-		SCOPE_STAT();
-
-		InitSceneRender(CommandList);
-
-		for (SceneRenderer* SceneRen : m_SceneRenderers)
-		{
-			SceneRen->Render(CommandList);
-		}
-	}
-
 	SceneRenderer* Scene::AllocateSceneRenderer()
 	{
 		SceneRenderer* NewSceneRenderer = new SceneRenderer(this);
@@ -66,7 +54,7 @@ namespace Drn
 
 // ----------------------------------------------------------------------------
 
-	void Scene::InitSceneRender( ID3D12GraphicsCommandList2* CommandList )
+	void Scene::UpdatePendingProxyAndResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		SCOPE_STAT();
 

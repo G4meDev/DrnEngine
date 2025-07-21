@@ -192,8 +192,6 @@ void Application::OnKeyPressed( WPARAM Key )
 		HandleWindowMessages();
 		UpdateWindowTitle(DeltaTime);
 
-		//Profiler::Get()->Tick(DeltaTime);
-
 #if 0
 
 		std::thread TT([&]() {
