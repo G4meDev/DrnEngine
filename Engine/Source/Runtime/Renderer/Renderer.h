@@ -100,7 +100,6 @@ namespace Drn
 		uint64& GetFenceValue() { return m_FenceValue; };
 
 		uint64_t m_FenceValue = 0;
-		//uint64_t m_FrameFenceValues[NUM_BACKBUFFERS] = {};
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
 		HANDLE m_FenceEvent;
 
@@ -120,12 +119,7 @@ namespace Drn
 
 		inline ID3D12GraphicsCommandList2* GetCommandList() { return m_CommandList.Get(); };
 
-		void Flush( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
-			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue, HANDLE fenceEvent );
-
 		void Flush();
-
-		void WaitForOnFlightCommands();
 
 		static void ReportLiveObjects();
 

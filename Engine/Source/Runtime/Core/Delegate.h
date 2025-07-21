@@ -19,6 +19,9 @@
 #define FUNC_DECLARE_MULTICAST_DELEGATE( MulticastDelegateName, ReturnType, ... )		\
 	typedef MulticastDelegate<ReturnType, __VA_ARGS__> MulticastDelegateName;
 
+#define DECLARE_MULTICAST_DELEGATE( DelegateName )					\
+	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void )
+
 #define DECLARE_MULTICAST_DELEGATE_OneParam( DelegateName, Param1Type )					\
 	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type )
 
@@ -146,6 +149,21 @@ namespace Drn
 			if constexpr ( sizeof...( DelegateSignature ) == 1)
 			{
 				InvokationList.emplace_back( UClass, std::bind( F, UClass, std::placeholders::_1 ) );
+			}
+
+		}
+
+		template<class Func>
+		inline void AddLambda( Func&& F )
+		{
+			if constexpr ( sizeof...( DelegateSignature ) == 0)
+			{
+				InvokationList.emplace_back( (void*)&DummyLambdaObj, std::bind( F ) );
+			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 1)
+			{
+				InvokationList.emplace_back( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1 ) );
 			}
 
 		}

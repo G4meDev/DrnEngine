@@ -31,6 +31,8 @@ namespace Drn
 			LOG(LogSceneRenderer, Warning, "mouse pick event still has %i events", (int)m_MousePickQueue.size());
 			__debugbreak();
 		}
+
+		OnSceneRendererDestroy.Braodcast();
 #endif
 	}
 

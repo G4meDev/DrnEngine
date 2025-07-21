@@ -111,7 +111,11 @@ namespace Drn
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Init(m_MainWindow);
 #endif
-		//Flush();
+
+		m_CommandList->Close();
+		ID3D12CommandList* const commandLists[] = { m_CommandList.Get() };
+		m_CommandQueue->ExecuteCommandLists( 1, commandLists );
+		Flush();
 
 		tf::Task A = m_RendererTickTask.emplace( []() { OPTICK_THREAD_TASK(); Renderer::Get()->Tick(Time::GetApplicationDeltaTime()); } );
 		tf::Task C = m_DummyTask.emplace( []() {  } );
@@ -130,11 +134,9 @@ namespace Drn
 			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue )
 	{
 		SCOPE_STAT(RendererSignal);
+		commandQueue->Signal( fence.Get(), ++fenceValue);
 
-		uint64_t fenceValueForSignal = ++fenceValue;
-		commandQueue->Signal( fence.Get(), fenceValueForSignal );
-
-		return fenceValueForSignal;
+		return fenceValue;
 	}
 
 	void Renderer::WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent )
@@ -148,44 +150,10 @@ namespace Drn
 		}
 	}
 
-	void Renderer::Flush( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
-			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue, HANDLE fenceEvent )
-	{
-		SCOPE_STAT( RendererFlush );
-
-		//uint64_t fenceValueForSignal = Signal(commandQueue, fence, fenceValue);
-		//WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
-
-		Renderer::Get()->GetCommandList()->Close();
-		ID3D12CommandList* const CommandLists[1] = { m_CommandList.Get() };
-		m_CommandQueue->ExecuteCommandLists(1, CommandLists);
-		uint64_t fenceValueForSignal = Signal(commandQueue, fence, fenceValue);
-		WaitForFenceValue(fence, fenceValueForSignal, fenceEvent);
-
-		m_CommandList->Reset( m_CommandAllocator[m_SwapChain->GetBackBufferIndex()].Get(), NULL );
-	}
-
 	void Renderer::Flush()
 	{
-		Flush(m_CommandQueue, m_Fence, m_FenceValue, m_FenceEvent);
-		BufferedResourceManager::Get()->Flush();
-	}
-
-	void Renderer::WaitForOnFlightCommands()
-	{
-		Microsoft::WRL::ComPtr<ID3D12Fence> Fence;
-		GetD3D12Device()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(Fence.GetAddressOf()));
-		m_CommandQueue->Signal(Fence.Get(), 1);
-
-		HANDLE E = CreateEvent(NULL, false, false, NULL);
-
-		if (Fence->GetCompletedValue() < 1)
-		{
-			Fence->SetEventOnCompletion(1, E);
-			WaitForSingleObject(E, DWORD_MAX);
-		}
-
-		CloseHandle(E);
+		uint64_t fenceValueForSignal = Signal(m_CommandQueue, m_Fence, m_FenceValue);
+		WaitForFenceValue(m_Fence, fenceValueForSignal, m_FenceEvent);
 	}
 
 	void Renderer::ReportLiveObjects()
@@ -234,13 +202,23 @@ namespace Drn
 		m_SwapChain->Resize(NewSize);
 
 #ifndef WITH_EDITOR
-		m_MainSceneRenderer->ResizeView(NewSize);
+		//m_MainSceneRenderer->ResizeView(NewSize);
 #endif
 	}
 
 	void Renderer::Tick( float DeltaTime )
 	{
 		SCOPE_STAT(RendererTick);
+
+		WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
+
+		{
+			SCOPE_STAT( CommandListReset );
+		
+			auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];
+			commandAllocator->Reset();
+			m_CommandList->Reset(commandAllocator.Get(), nullptr);
+		}
 
 		BufferedResourceManager::Get()->Tick(DeltaTime);
 		SetHeaps(m_CommandList.Get());
@@ -304,16 +282,6 @@ namespace Drn
 #endif
 
 		m_SwapChain->Present();
-		WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
-
-		{
-			SCOPE_STAT( CommandListReset );
-
-			auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];
-			commandAllocator->Reset();
-			m_CommandList->Reset(commandAllocator.Get(), nullptr);
-		}
-
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )
@@ -326,7 +294,7 @@ namespace Drn
 
 	void Renderer::ReleaseScene( Scene*& InScene )
 	{
-		Flush();
+		//Flush();
 		m_AllocatedScenes.erase(InScene);
 
 		InScene->Release();

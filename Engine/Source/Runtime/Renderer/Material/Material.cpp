@@ -224,7 +224,7 @@ namespace Drn
 #if WITH_EDITOR
 	void Material::Import()
 	{
-		Renderer::Get()->Flush();
+		//Renderer::Get()->Flush();
 		AssetImporterMaterial::Import( this, m_SourcePath );
 		Save();
 		Load();

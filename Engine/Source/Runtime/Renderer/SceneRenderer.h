@@ -10,6 +10,7 @@ namespace Drn
 {
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnPickedComponentDelegate, Component* );
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnSceneRendererResizedDelegate, const IntPoint& );
+	DECLARE_MULTICAST_DELEGATE( OnSceneRendererDestroyDelegate );
 
 	enum class EDebugViewFlags : uint32
 	{
@@ -95,6 +96,7 @@ namespace Drn
 		CameraActor* m_CameraActor;
 
 		OnSceneRendererResizedDelegate OnSceneRendererResized;
+		OnSceneRendererDestroyDelegate OnSceneRendererDestroy;
 
 	protected:
 

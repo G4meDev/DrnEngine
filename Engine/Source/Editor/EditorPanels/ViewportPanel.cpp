@@ -17,6 +17,7 @@ namespace Drn
 		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
 		m_SceneRenderer->OnPickedComponent.Add( this, &ViewportPanel::OnRendererPickedComponent );
 		m_SceneRenderer->OnSceneRendererResized.Add( this, &ViewportPanel::OnSceneRendererResized );
+		m_SceneRenderer->OnSceneRendererDestroy.AddLambda( [&](){ m_SceneRenderer = nullptr; } );
 
 		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
 		m_ViewportCamera->SetActorLocation(XMVectorSet(20, 28, 20, 0));
@@ -36,9 +37,14 @@ namespace Drn
 	{
 		Renderer::Get()->TempSRVAllocator.Free(ViewCpuHandle, ViewGpuHandle);
 
-		//m_SceneRenderer->OnPickedComponent.Remove(this);
-		//m_SceneRenderer->OnSceneRendererResized.Remove(this);
-		//m_Scene->ReleaseSceneRenderer(m_SceneRenderer);
+		// @TODO: manage renderer allocation and deallocation in unified manner
+		// even though we allocate renderer with this class, some times worlds gets destroyed and deallocates renderer early. ideally this shouldn't happen
+		if (m_SceneRenderer)
+		{
+			m_SceneRenderer->OnPickedComponent.Remove(this);
+			m_SceneRenderer->OnSceneRendererResized.Remove(this);
+			m_Scene->ReleaseSceneRenderer(m_SceneRenderer);
+		}
 	}
 
 	void ViewportPanel::Draw( float DeltaTime )
