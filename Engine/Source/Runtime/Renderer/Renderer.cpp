@@ -18,11 +18,17 @@ namespace Drn
 	Renderer* Renderer::SingletonInstance = nullptr;
 
 	Renderer::Renderer()
+		: m_CommandList(nullptr)
 	{
 	}
 
 	Renderer::~Renderer()
 	{
+		if (m_CommandList)
+		{
+			m_CommandList->ReleaseBufferedResource();
+			m_CommandList = nullptr;
+		}
 	}
 
 	Renderer* Renderer::Get()
@@ -57,11 +63,7 @@ namespace Drn
 		
 		m_SwapChain = std::make_unique<SwapChain>(m_Device.get(), m_MainWindow->GetWindowHandle(), m_CommandQueue.Get(), m_MainWindow->GetWindowSize());
 
-		for (int i = 0; i < NUM_BACKBUFFERS; i++)
-		{
-			GetD3D12Device()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_CommandAllocator[i].GetAddressOf()));
-		}
-		GetD3D12Device()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_CommandAllocator[m_SwapChain->GetBackBufferIndex()].Get(), NULL, IID_PPV_ARGS(m_CommandList.GetAddressOf()));
+		m_CommandList = new D3D12CommandList(m_Device->GetD3D12Device(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "Renderer");
 		m_CommandList->Close();
 
 		GetD3D12Device()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
@@ -69,21 +71,11 @@ namespace Drn
 
 #if D3D12_Debug_INFO
 		m_CommandQueue->SetName(L"MainCommandQueue");
-		m_CommandList->SetName(L"MainCommandList");
-
-		for (int i = 0; i < NUM_BACKBUFFERS; i++)
-		{
-			m_CommandAllocator[i]->SetName( (L"CommandAllocator_" + std::to_wstring(i)).c_str() );
-		}
-
 		m_Fence->SetName(L"MainFence");
 #endif
 
-		auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];
-		commandAllocator->Reset();
-		m_CommandList->Reset(commandAllocator.Get(), nullptr);
-
-		CommonResources::Init(m_CommandList.Get());
+		m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
+		CommonResources::Init(m_CommandList->GetD3D12CommandList());
 
 		{
 			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
@@ -113,7 +105,7 @@ namespace Drn
 #endif
 
 		m_CommandList->Close();
-		ID3D12CommandList* const commandLists[] = { m_CommandList.Get() };
+		ID3D12CommandList* const commandLists[] = { m_CommandList->GetD3D12CommandList() };
 		m_CommandQueue->ExecuteCommandLists( 1, commandLists );
 		Flush();
 
@@ -148,6 +140,11 @@ namespace Drn
 			fence->SetEventOnCompletion(fenceValue, fenceEvent);
 			WaitForSingleObject(fenceEvent, DWORD_MAX);
 		}
+	}
+
+	ID3D12GraphicsCommandList2* Renderer::GetCommandList()
+	{
+		return m_CommandList->GetD3D12CommandList();
 	}
 
 	void Renderer::Flush()
@@ -225,21 +222,18 @@ namespace Drn
 
 		{
 			SCOPE_STAT( "CommandlistReset" );
-		
-			auto commandAllocator = m_CommandAllocator[m_SwapChain->GetBackBufferIndex()];
-			commandAllocator->Reset();
-			m_CommandList->Reset(commandAllocator.Get(), nullptr);
+			m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
 		}
 
 		BufferedResourceManager::Get()->Tick(DeltaTime);
-		SetHeaps(m_CommandList.Get());
+		SetHeaps(m_CommandList->GetD3D12CommandList());
 	}
 
 	void Renderer::UpdateSceneProxyAndResources()
 	{
 		for (Scene* S : m_AllocatedScenes)
 		{
-			S->UpdatePendingProxyAndResources(m_CommandList.Get());
+			S->UpdatePendingProxyAndResources(m_CommandList->GetD3D12CommandList());
 		}
 	}
 
@@ -249,7 +243,7 @@ namespace Drn
 		{
 			for (SceneRenderer* SceneRen : S->m_SceneRenderers)
 			{
-				SceneRen->Render(m_CommandList.Get());
+				SceneRen->Render(m_CommandList->GetD3D12CommandList());
 			}
 		}
 	}
@@ -263,15 +257,15 @@ namespace Drn
 
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
-		m_CommandList->ResourceBarrier( 1, &barrier );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 
-		m_CommandList->OMSetRenderTargets(1, &rtv, false, NULL);
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &rtv, false, NULL);
 
-		ImGuiRenderer::Get()->Tick( 1, rtv, m_CommandList.Get() );
+		ImGuiRenderer::Get()->Tick( 1, rtv, m_CommandList->GetD3D12CommandList() );
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
-		m_CommandList->ResourceBarrier( 1, &barrier );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 
 #endif
 	}
@@ -300,7 +294,7 @@ namespace Drn
 	void Renderer::ExecuteCommands()
 	{
 		m_CommandList->Close();
-		ID3D12CommandList* const commandLists[] = { m_CommandList.Get() };
+		ID3D12CommandList* const commandLists[] = { m_CommandList->GetD3D12CommandList() };
 		m_CommandQueue->ExecuteCommandLists( 1, commandLists );
 	}
 
@@ -325,7 +319,7 @@ namespace Drn
 		SCOPE_STAT();
 			
 		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
-		m_CommandList->SetDescriptorHeaps(2, Descs);
+		m_CommandList->GetD3D12CommandList()->SetDescriptorHeaps(2, Descs);
 	}
 
 }

@@ -29,6 +29,7 @@
 
 #include "Runtime/Renderer/Renderer.h"
 #include "Runtime/Renderer/CommonResources.h"
+#include "Runtime/Renderer/D3D12CommandList.h"
 #include "Runtime/Renderer/SceneRenderer.h"
 #include "Runtime/Renderer/PipelineStateObject.h"
 #include "Runtime/Renderer/Resource.h"

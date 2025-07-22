@@ -112,8 +112,11 @@ namespace Drn
 		std::unique_ptr<Device> m_Device;
 		std::unique_ptr<SwapChain> m_SwapChain;
 
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_CommandList;
-		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator[NUM_BACKBUFFERS];
+		//Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_CommandList;
+		//Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator[NUM_BACKBUFFERS];
+
+		D3D12CommandList* m_CommandList;
+
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
 
 		//uint32 m_CurrentBackbufferIndex;
@@ -123,7 +126,7 @@ namespace Drn
 
 		SceneRenderer* m_MainSceneRenderer;
 
-		inline ID3D12GraphicsCommandList2* GetCommandList() { return m_CommandList.Get(); };
+		ID3D12GraphicsCommandList2* GetCommandList();
 
 		void Flush();
 

@@ -51,6 +51,7 @@ namespace Drn
 	class Level;
 	class Scene;
 	class SceneRenderer;
+	class D3D12CommandList;
 	class PrimitiveComponent;
 	class PrimitiveSceneProxy;
 	class StaticMeshComponent;

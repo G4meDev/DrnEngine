@@ -39,6 +39,7 @@ set( HEADER_FILES
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/CommonResources.h
+	Source/Runtime/Renderer/D3D12CommandList.h
 	Source/Runtime/Renderer/ShaderBlob.h
 	Source/Runtime/Renderer/SceneRenderer.h
 	Source/Runtime/Renderer/RenderBuffer/RenderBuffer.h
@@ -180,6 +181,7 @@ set( SOURCE_FILES
 	
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/CommonResources.cpp
+	Source/Runtime/Renderer/D3D12CommandList.cpp
 	Source/Runtime/Renderer/ShaderBlob.cpp
 	Source/Runtime/Renderer/SceneRenderer.cpp
 	Source/Runtime/Renderer/RenderBuffer/RenderBuffer.cpp
