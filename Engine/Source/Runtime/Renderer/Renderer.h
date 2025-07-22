@@ -112,17 +112,10 @@ namespace Drn
 		std::unique_ptr<Device> m_Device;
 		std::unique_ptr<SwapChain> m_SwapChain;
 
-		//Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> m_CommandList;
-		//Microsoft::WRL::ComPtr<ID3D12CommandAllocator> m_CommandAllocator[NUM_BACKBUFFERS];
-
 		D3D12CommandList* m_CommandList;
+		D3D12CommandList* m_UploadCommandList;
 
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
-
-		//uint32 m_CurrentBackbufferIndex;
-		//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RTVDescriptorHeap;
-		//uint32 m_RTVDescriporSize;
-		//Microsoft::WRL::ComPtr<ID3D12Resource> m_BackBuffers[NUM_BACKBUFFERS];
 
 		SceneRenderer* m_MainSceneRenderer;
 
@@ -151,7 +144,7 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE SamplerCpuHandle;
 
 		tf::Taskflow m_RendererTickTask;
-		tf::Taskflow m_DummyTask;
+		//tf::Taskflow m_DummyTask;
 
 	protected:
 		static Renderer* SingletonInstance;

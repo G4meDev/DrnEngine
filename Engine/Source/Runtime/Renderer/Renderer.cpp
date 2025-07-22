@@ -19,6 +19,7 @@ namespace Drn
 
 	Renderer::Renderer()
 		: m_CommandList(nullptr)
+		, m_UploadCommandList(nullptr)
 	{
 	}
 
@@ -28,6 +29,12 @@ namespace Drn
 		{
 			m_CommandList->ReleaseBufferedResource();
 			m_CommandList = nullptr;
+		}
+
+		if (m_UploadCommandList)
+		{
+			m_UploadCommandList->ReleaseBufferedResource();
+			m_UploadCommandList = nullptr;
 		}
 	}
 
@@ -63,8 +70,11 @@ namespace Drn
 		
 		m_SwapChain = std::make_unique<SwapChain>(m_Device.get(), m_MainWindow->GetWindowHandle(), m_CommandQueue.Get(), m_MainWindow->GetWindowSize());
 
-		m_CommandList = new D3D12CommandList(m_Device->GetD3D12Device(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "Renderer");
+		m_CommandList = new D3D12CommandList(m_Device->GetD3D12Device(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererDirect");
 		m_CommandList->Close();
+
+		m_UploadCommandList = new D3D12CommandList(m_Device->GetD3D12Device(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererUpload");
+		m_UploadCommandList->Close();
 
 		GetD3D12Device()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
 		m_FenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -107,16 +117,50 @@ namespace Drn
 		m_CommandList->Close();
 		ID3D12CommandList* const commandLists[] = { m_CommandList->GetD3D12CommandList() };
 		m_CommandQueue->ExecuteCommandLists( 1, commandLists );
+
 		Flush();
 
-		tf::Task A = m_RendererTickTask.emplace( []() { OPTICK_THREAD_TASK(); Renderer::Get()->Tick(Time::GetApplicationDeltaTime()); } );
-		tf::Task C = m_DummyTask.emplace( []() {  } );
-		tf::Task B = m_RendererTickTask.composed_of(m_DummyTask);
+		tf::Task BeginRender = m_RendererTickTask.emplace( []()
+		{
+			OPTICK_THREAD_TASK();
+
+			Renderer::Get()->InitRender(Time::GetApplicationDeltaTime());
+			Renderer::Get()->UpdateSceneProxyAndResources();
+		});
+
+		tf::Task Render = m_RendererTickTask.emplace( [](tf::Subflow& subflow)
+		{
+			OPTICK_THREAD_TASK();
+
+			tf::Taskflow t;
+
+			for (Scene* S : Renderer::Get()->m_AllocatedScenes)
+			{
+				for (SceneRenderer* SceneRen : S->m_SceneRenderers)
+				{
+					//subflow.retain(true);
+					subflow.emplace([SceneRen](){ SceneRen->Render(); }).name( "213123");
+				}
+			}
+		});
+
+		tf::Task FinishRender = m_RendererTickTask.emplace( []()
+		{
+			OPTICK_THREAD_TASK();
+
+			Renderer::Get()->RenderImgui();
+			Renderer::Get()->ResolveDisplayBuffer();
+			Renderer::Get()->ExecuteCommands();
+			Renderer::Get()->m_SwapChain->Present();
+		});
+
+		BeginRender.precede(Render);
+		Render.precede(FinishRender);
 
 #if WITH_EDITOR
-		A.name("RendererTickTask");
-		B.name("B");
-		C.name("C");
+		BeginRender.name( "BeginRender" );
+		Render.name( "Render" );
+		FinishRender.name( "FinishRender" );
 #endif
 
 	}
@@ -223,6 +267,7 @@ namespace Drn
 		{
 			SCOPE_STAT( "CommandlistReset" );
 			m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
+			m_UploadCommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
 		}
 
 		BufferedResourceManager::Get()->Tick(DeltaTime);
@@ -233,7 +278,7 @@ namespace Drn
 	{
 		for (Scene* S : m_AllocatedScenes)
 		{
-			S->UpdatePendingProxyAndResources(m_CommandList->GetD3D12CommandList());
+			S->UpdatePendingProxyAndResources(m_UploadCommandList->GetD3D12CommandList());
 		}
 	}
 
@@ -243,7 +288,7 @@ namespace Drn
 		{
 			for (SceneRenderer* SceneRen : S->m_SceneRenderers)
 			{
-				SceneRen->Render(m_CommandList->GetD3D12CommandList());
+				SceneRen->Render();
 			}
 		}
 	}
@@ -293,9 +338,29 @@ namespace Drn
 
 	void Renderer::ExecuteCommands()
 	{
+		uint32 NumCommandLists = 2;
+		std::vector<ID3D12CommandList*> CommandLists;
+
 		m_CommandList->Close();
-		ID3D12CommandList* const commandLists[] = { m_CommandList->GetD3D12CommandList() };
-		m_CommandQueue->ExecuteCommandLists( 1, commandLists );
+		m_UploadCommandList->Close();
+
+		CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
+
+		for (Scene* S : m_AllocatedScenes)
+		{
+			for (SceneRenderer* SceneRen : S->m_SceneRenderers)
+			{
+				if (SceneRen->m_CommandList)
+				{
+					CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
+					NumCommandLists++;
+				}
+			}
+		}
+
+		CommandLists.push_back(m_CommandList->GetD3D12CommandList());
+
+		m_CommandQueue->ExecuteCommandLists(NumCommandLists, CommandLists.data());
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )
@@ -320,6 +385,8 @@ namespace Drn
 			
 		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
 		m_CommandList->GetD3D12CommandList()->SetDescriptorHeaps(2, Descs);
+
+		//m_UploadCommandList->GetD3D12CommandList()->SetDescriptorHeaps(2, Descs);
 	}
 
 }

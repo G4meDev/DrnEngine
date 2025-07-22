@@ -69,7 +69,7 @@ namespace Drn
 
 		inline Scene* GetScene() { return m_Scene; }
 
-		void Render( ID3D12GraphicsCommandList2* CommandList );
+		void Render();
 
 		ID3D12Resource* GetViewResource();
 
@@ -119,9 +119,9 @@ namespace Drn
 		std::string m_Name;
 
 #if WITH_EDITOR
-		void RenderHitProxyPass(ID3D12GraphicsCommandList2* CommandList);
+		void RenderHitProxyPass();
 
-		void ProccessMousePickQueue(ID3D12GraphicsCommandList2* CommandList);
+		void ProccessMousePickQueue();
 		void KickstartMousePickEvent( MousePickEvent& Event );
 		std::vector<MousePickEvent> m_MousePickQueue;
 
@@ -138,17 +138,19 @@ namespace Drn
 
 	private:
 
-		void Init(ID3D12GraphicsCommandList2* CommandList);
+		void Init();
 
-		void BeginRender(ID3D12GraphicsCommandList2* CommandList);
-		void RenderBasePass(ID3D12GraphicsCommandList2* CommandList);
-		void RenderLights(ID3D12GraphicsCommandList2* CommandList);
-		void RenderPostProcess(ID3D12GraphicsCommandList2* CommandList);
-		void PostProcess_Tonemapping(ID3D12GraphicsCommandList2* CommandList);
+		void BeginRender();
+		void RenderBasePass();
+		void RenderLights();
+		void RenderPostProcess();
+		void PostProcess_Tonemapping();
 
 #if WITH_EDITOR
-		void RenderEditorPrimitives(ID3D12GraphicsCommandList2* CommandList);
-		void RenderEditorSelection(ID3D12GraphicsCommandList2* CommandList);
+		void RenderEditorPrimitives();
+		void RenderEditorSelection();
 #endif
+
+		D3D12CommandList* m_CommandList;
 	};
 }

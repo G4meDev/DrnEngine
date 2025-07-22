@@ -19,12 +19,19 @@ namespace Drn
 		: m_Scene(InScene)
 		, m_RenderingEnabled(true)
 		, m_CachedRenderSize(1920, 1080)
+		, m_CommandList(nullptr)
 	{
-		Init(Renderer::Get()->GetCommandList());
+		Init();
 	}
 
 	SceneRenderer::~SceneRenderer()
 	{
+		if (m_CommandList)
+		{
+			m_CommandList->ReleaseBufferedResource();
+			m_CommandList = nullptr;
+		}
+
 #if WITH_EDITOR
 		if (m_MousePickQueue.size() > 0)
 		{
@@ -36,9 +43,12 @@ namespace Drn
 #endif
 	}
 
-	void SceneRenderer::Init( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::Init()
 	{
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		m_CommandList = new D3D12CommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, m_Name);
+		m_CommandList->Close();
 
 		m_GBuffer = std::make_shared<class GBuffer>();
 		m_GBuffer->Init();
@@ -62,7 +72,7 @@ namespace Drn
 		ResizeView(IntPoint(1920, 1080));
 	}
 
-	void SceneRenderer::BeginRender(ID3D12GraphicsCommandList2* CommandList)
+	void SceneRenderer::BeginRender()
 	{
 		SCOPE_STAT();
 
@@ -70,48 +80,48 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
-	void SceneRenderer::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::RenderHitProxyPass()
 	{
-		PIXBeginEvent(CommandList, 1, "HitProxy");
+		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "HitProxy");
 
-		m_HitProxyRenderBuffer->Clear(CommandList);
-		m_HitProxyRenderBuffer->Bind(CommandList);
+		m_HitProxyRenderBuffer->Clear( m_CommandList->GetD3D12CommandList() );
+		m_HitProxyRenderBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderHitProxyPass(CommandList, this);
+			Proxy->RenderHitProxyPass(m_CommandList->GetD3D12CommandList(), this);
 		}
 
-		PIXEndEvent(CommandList);
+		PIXEndEvent(m_CommandList->GetD3D12CommandList());
 	}
 #endif
 
-	void SceneRenderer::RenderBasePass( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::RenderBasePass()
 	{
 		SCOPE_STAT();
 
-		PIXBeginEvent( CommandList, 1, "BasePass" );
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "BasePass" );
 
-		m_GBuffer->Clear(CommandList);
-		m_GBuffer->Bind(CommandList);
+		m_GBuffer->Clear( m_CommandList->GetD3D12CommandList() );
+		m_GBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderMainPass(CommandList, this);
+			Proxy->RenderMainPass(m_CommandList->GetD3D12CommandList(), this);
 		}
 
-		PIXEndEvent( CommandList );
+		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}
 
-	void SceneRenderer::RenderLights( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::RenderLights()
 	{
 		SCOPE_STAT();
 
-		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		CommandList->SetPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
-		CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_LightPassPSO->m_RootSignature);
+		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(CommonResources::Get()->m_LightPassPSO->m_RootSignature);
 
-		m_GBuffer->BindLightPass(CommandList);
+		m_GBuffer->BindLightPass(m_CommandList->GetD3D12CommandList());
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{
@@ -122,84 +132,84 @@ namespace Drn
 			}
 #endif
 
-			Proxy->Render(CommandList, this);
+			Proxy->Render(m_CommandList->GetD3D12CommandList(), this);
 		}
 
-		m_GBuffer->UnBindLightPass(CommandList);
+		m_GBuffer->UnBindLightPass(m_CommandList->GetD3D12CommandList());
 	}
 
-	void SceneRenderer::RenderPostProcess( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::RenderPostProcess()
 	{
 		SCOPE_STAT();
 
-		PIXBeginEvent( CommandList, 1, "Post Process" );
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Post Process" );
 
-		PostProcess_Tonemapping(CommandList);
+		PostProcess_Tonemapping();
 
-		PIXEndEvent( CommandList );
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
-	void SceneRenderer::PostProcess_Tonemapping( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::PostProcess_Tonemapping()
 	{
-		PIXBeginEvent( CommandList, 1, "Tone mapping" );
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Tone mapping" );
 
-		m_TonemapBuffer->Bind(CommandList);
+		m_TonemapBuffer->Bind(m_CommandList->GetD3D12CommandList());
 		
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 		
-		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_TonemapPSO->m_RootSignature );
-		CommandList->SetPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( CommonResources::Get()->m_TonemapPSO->m_RootSignature );
+		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 		
-		CommandList->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
-		CommandList->SetGraphicsRoot32BitConstants(0, 8, &m_SceneView.Size, 16);
-		CommandList->SetGraphicsRootDescriptorTable(1, m_GBuffer->m_ColorDeferredSrvGpuHandle);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 8, &m_SceneView.Size, 16);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_GBuffer->m_ColorDeferredSrvGpuHandle);
 
-		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(CommandList);
+		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		PIXEndEvent( CommandList );
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
 #if WITH_EDITOR
-	void SceneRenderer::RenderEditorPrimitives( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::RenderEditorPrimitives()
 	{
 		SCOPE_STAT();
 
-		PIXBeginEvent( CommandList, 1, "Editor Primitives" );
-		m_EditorPrimitiveBuffer->Clear(CommandList);
-		m_EditorPrimitiveBuffer->Bind(CommandList);
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Editor Primitives" );
+		m_EditorPrimitiveBuffer->Clear(m_CommandList->GetD3D12CommandList());
+		m_EditorPrimitiveBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
 		ID3D12Resource* GBufferDepth = m_GBuffer->m_DepthTarget->GetD3D12Resource();
 		ID3D12Resource* EditorPrimitiveDepth = m_EditorPrimitiveBuffer->m_DepthTarget->GetD3D12Resource();
 
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			GBufferDepth, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COPY_SOURCE );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorPrimitiveDepth, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_COPY_DEST );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		CommandList->CopyResource(EditorPrimitiveDepth, GBufferDepth);
+		m_CommandList->GetD3D12CommandList()->CopyResource(EditorPrimitiveDepth, GBufferDepth);
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			GBufferDepth, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorPrimitiveDepth, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_DEPTH_WRITE );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderEditorPrimitivePass(CommandList, this);
+			Proxy->RenderEditorPrimitivePass(m_CommandList->GetD3D12CommandList(), this);
 		}
 
 // ------------------------------------------------------------------------------------------
@@ -208,94 +218,102 @@ namespace Drn
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorPrimitiveColor, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		CommandList->OMSetRenderTargets(1, &m_TonemapBuffer->m_TonemapHandle, true, NULL);
-		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_RootSignature );
-		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_TonemapBuffer->m_TonemapHandle, true, NULL);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_RootSignature );
+		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
-		CommandList->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
-		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorPrimitiveBuffer->m_ColorSrvGpuHandle);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_EditorPrimitiveBuffer->m_ColorSrvGpuHandle);
 
-		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(CommandList);
+		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorPrimitiveColor, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		PIXEndEvent( CommandList );
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
-	void SceneRenderer::RenderEditorSelection( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::RenderEditorSelection()
 	{
 		SCOPE_STAT();
 		
-		PIXBeginEvent( CommandList, 1, "Editor Selection" );
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Editor Selection" );
 
-		m_EditorSelectionBuffer->Clear(CommandList);
-		m_EditorSelectionBuffer->Bind(CommandList);
+		m_EditorSelectionBuffer->Clear(m_CommandList->GetD3D12CommandList());
+		m_EditorSelectionBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
 		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
 		{
-			Proxy->RenderSelectionPass( CommandList, this);
+			Proxy->RenderSelectionPass( m_CommandList->GetD3D12CommandList(), this);
 		}
 
 		ID3D12Resource* EditorSelectionDepth = m_EditorSelectionBuffer->m_DepthStencilTarget->GetD3D12Resource();
 
-		CommandList->OMSetRenderTargets( 1, &m_TonemapBuffer->m_TonemapHandle, true, NULL );
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &m_TonemapBuffer->m_TonemapHandle, true, NULL );
 
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorSelectionDepth, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_RootSignature );
-		CommandList->SetPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_RootSignature );
+		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
 
-		CommandList->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
-		CommandList->SetGraphicsRoot32BitConstants(0, 8, &m_SceneView.Size, 16);
-		CommandList->SetGraphicsRootDescriptorTable(1, m_EditorSelectionBuffer->m_DepthStencilSrvGpuHandle);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 8, &m_SceneView.Size, 16);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_EditorSelectionBuffer->m_DepthStencilSrvGpuHandle);
 
-		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(CommandList);
+		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			EditorSelectionDepth, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
-		CommandList->ResourceBarrier(1, &barrier);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		PIXEndEvent( CommandList );
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
 #endif
 
-	void SceneRenderer::Render( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::Render()
 	{
 		SCOPE_STAT();
+
+		m_CommandList->SetAllocatorAndReset(Renderer::Get()->m_SwapChain->GetBackBufferIndex());
+
+		ID3D12DescriptorHeap* const Descs[2] = { Renderer::Get()->m_SrvHeap.Get(), Renderer::Get()->m_SamplerHeap.Get() };
+		m_CommandList->GetD3D12CommandList()->SetDescriptorHeaps( 2, Descs );
 
 		ResizeViewConditional();
 
 #if WITH_EDITOR
-		ProccessMousePickQueue( CommandList );
+		ProccessMousePickQueue();
 #endif
 
 		if (!m_RenderingEnabled)
 		{
+			m_CommandList->Close();
 			return;
 		}
 
 #if WITH_EDITOR
-		RenderHitProxyPass(CommandList);
+		RenderHitProxyPass();
 #endif
 
-		BeginRender(CommandList);
-		RenderBasePass(CommandList);
-		RenderLights(CommandList);
-		RenderPostProcess(CommandList);
+		BeginRender();
+		RenderBasePass();
+		RenderLights();
+		RenderPostProcess();
 
 #if WITH_EDITOR
-		RenderEditorPrimitives(CommandList);
-		RenderEditorSelection(CommandList);
+		RenderEditorPrimitives();
+		RenderEditorSelection();
 #endif
+
+		m_CommandList->Close();
 	}
 
 	ID3D12Resource* SceneRenderer::GetViewResource()
@@ -305,9 +323,6 @@ namespace Drn
 
 	void SceneRenderer::ResizeView( const IntPoint& InSize )
 	{
-		//Renderer::Get()->Flush();
-		//Renderer::Get()->WaitForOnFlightCommands();
-
 		m_CachedRenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
 		m_RenderSize = m_CachedRenderSize;
 
@@ -362,7 +377,7 @@ namespace Drn
 		m_MousePickQueue.emplace_back( ScreenPosition );
 	}
 
-	void SceneRenderer::ProccessMousePickQueue( ID3D12GraphicsCommandList2* CommandList )
+	void SceneRenderer::ProccessMousePickQueue()
 	{
 		for ( auto it = m_MousePickQueue.begin(); it != m_MousePickQueue.end(); )
 		{
@@ -413,7 +428,6 @@ namespace Drn
 		if ( m_HitProxyRenderBuffer && m_HitProxyRenderBuffer->m_GuidTarget)
 		{
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-			ID3D12GraphicsCommandList2* CommandList = Renderer::Get()->GetCommandList();
 
 			Event.ReadbackBuffer = Resource::Create(D3D12_HEAP_TYPE_READBACK,
 				CD3DX12_RESOURCE_DESC::Buffer( 16 ), D3D12_RESOURCE_STATE_COPY_DEST);
@@ -421,7 +435,7 @@ namespace Drn
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 				m_HitProxyRenderBuffer->m_GuidTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET,
 				D3D12_RESOURCE_STATE_COPY_SOURCE );
-			CommandList->ResourceBarrier( 1, &barrier );
+			m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 
 			const IntPoint ClampedPos = IntPoint( std::clamp<int32>( Event.ScreenPos.X, 0, GetViewportSize().X - 1 ),
 				std::clamp<int32>( Event.ScreenPos.Y, 0, GetViewportSize().Y - 1 ) );
@@ -439,12 +453,12 @@ namespace Drn
 			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc( m_HitProxyRenderBuffer->m_GuidTarget->GetD3D12Resource(), 0 );
 			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( Event.ReadbackBuffer->GetD3D12Resource(), Footprint );
 
-			CommandList->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
+			m_CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
 
 			barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_HitProxyRenderBuffer->m_GuidTarget->GetD3D12Resource(),
 															D3D12_RESOURCE_STATE_COPY_SOURCE,
 															D3D12_RESOURCE_STATE_RENDER_TARGET );
-			CommandList->ResourceBarrier( 1, &barrier );
+			m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 			
 			// push a fence
 			Renderer::Get()->GetCommandQueue()->Signal( m_MousePickFence.Get(), ++m_FenceValue );
