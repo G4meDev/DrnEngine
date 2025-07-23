@@ -34,7 +34,7 @@ namespace Drn
 			m_GraphDelegate.Clear();
 
 			const std::string TaskGraphDump = Application::taskflow.dump();
-			//Application::taskflow.dump(std::cout);
+			Application::taskflow.dump(std::cout);
 
 			std::vector<GvGraph> SubGraphs;
 			{

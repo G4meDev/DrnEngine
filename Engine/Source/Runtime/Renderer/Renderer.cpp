@@ -138,7 +138,9 @@ namespace Drn
 			{
 				for (SceneRenderer* SceneRen : S->m_SceneRenderers)
 				{
-					//subflow.retain(true);
+#if WITH_EDITOR
+					subflow.retain(true);
+#endif
 					subflow.emplace([SceneRen](){ SceneRen->Render(); }).name( "213123");
 				}
 			}

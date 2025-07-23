@@ -12,6 +12,8 @@
 
 #include "Editor/FileImportMenu/FileImportMenu.h"
 
+#include "Runtime/Core/Application.h"
+
 LOG_DEFINE_CATEGORY(LogEditor, "Editor");
 
 namespace Drn
@@ -126,12 +128,24 @@ namespace Drn
 
 	void Editor::OpenTaskGraphVisualizer()
 	{
-		if (!m_TaskGraphVisualizer)
-		{
-			m_TaskGraphVisualizer = new TaskGraphVisualizer();
-			m_TaskGraphVisualizer->OnLayerClose.BindLambda([](){ Editor::Get()->m_TaskGraphVisualizer = nullptr; });
-			m_TaskGraphVisualizer->Attach();
-		}
+		const std::string TaskGraphDump = Application::taskflow.dump();
+
+		DateTime TimeStamp = DateTime::Now();
+		std::string FilePath = ".\\Saved\\TaskflowVisualizer\\Tf-" + TimeStamp.ToStringFileStamp();
+		std::string FilePathDot = FilePath + ".dot";
+		std::string FilePathPng = FilePath + ".png";
+		FileSystem::WriteStringToFile( FilePathDot, TaskGraphDump );
+
+		std::string cmd = "..\\..\\..\\Tools\\Graphvis\\dot -Tpng " + FilePathDot + " -o" + FilePathPng;
+		system(cmd.c_str());
+		ShellExecute(NULL, "open", FilePathPng.c_str(), NULL, NULL, NULL);
+
+		//if (!m_TaskGraphVisualizer)
+		//{
+		//	m_TaskGraphVisualizer = new TaskGraphVisualizer();
+		//	m_TaskGraphVisualizer->OnLayerClose.BindLambda([](){ Editor::Get()->m_TaskGraphVisualizer = nullptr; });
+		//	m_TaskGraphVisualizer->Attach();
+		//}
 	}
 }
 

@@ -43,6 +43,7 @@ namespace Drn
 		static DateTime Now();
 
 		std::string ToString() const;
+		std::string ToStringFileStamp() const;
 
 		int32 Year;
 		int32 Month;

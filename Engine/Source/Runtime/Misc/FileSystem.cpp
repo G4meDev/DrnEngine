@@ -85,6 +85,12 @@ namespace Drn
 		return false;
 	}
 
+	std::string FileSystem::DirectoryFromFilePath( const std::string& Path )
+	{
+		std::filesystem::path path(Path);
+		return path.parent_path().string();
+	}
+
 	bool FileSystem::CreateDirectory( const std::string& Path )
 	{
 		return std::filesystem::create_directories(Path);
@@ -122,6 +128,26 @@ namespace Drn
 		std::stringstream buffer;
 		buffer << File.rdbuf();
 		return buffer.str();
+	}
+
+	void FileSystem::WriteStringToFile( const std::string& Path, const std::string& Str, bool ForceDirectory)
+	{
+		if (ForceDirectory)
+		{
+			CreateDirectoryIfDoesntExist(DirectoryFromFilePath(Path));
+		}
+
+		std::ofstream File(Path);
+		if (File.is_open())
+		{
+			File << Str;
+			File.close();
+		}
+
+		else
+		{
+			LOG(LogFileSystem, Error, "failed to open file \"%s\" for writing.", Path.c_str());
+		}
 	}
 
 	SystemFileNode* FileSystem::GetFilesInDirectory_Intern( const std::string& Path, const std::string& Filter )

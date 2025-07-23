@@ -31,4 +31,15 @@ namespace Drn
 
 		//return std::format("[{:02}/{:02}/{:04}-{:02}:{:02}:{:02}]", Day, Month, Year, Hour, Minute, Second);
 	}
+
+	std::string DateTime::ToStringFileStamp() const
+	{
+		SCOPE_STAT();
+
+		std::string Str(19, 0);
+		sprintf(Str.data(), "%04d.%02d.%02d-%02d.%02d.%02d", Year, Month, Day, Hour, Minute, Second);
+		
+		return Str;
+	}
+
 }
