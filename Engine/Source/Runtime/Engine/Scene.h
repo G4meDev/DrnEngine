@@ -31,6 +31,8 @@ namespace Drn
 		void RegisterLightProxy( class LightSceneProxy* InLightProxy );
 		void UnRegisterLightProxy( class LightSceneProxy* InLightProxy );
 
+		inline const std::set<PrimitiveSceneProxy*>& GetPrimitiveProxies() const { return m_PrimitiveProxies; };
+
 	protected:
 
 		World* m_World;

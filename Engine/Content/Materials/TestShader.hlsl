@@ -3,6 +3,7 @@
 // SUPPORT_MAIN_PASS
 // SUPPORT_HIT_PROXY_PASS
 // SUPPORT_EDITOR_SELECTION_PASS
+// SUPPORT_SHADOW_PASS
 
 ConstantBuffer<ViewBuffer> View : register(b0);
 
@@ -26,6 +27,11 @@ struct VertexShaderOutput
 
 VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
+#if SHADOW_PASS
+    
+    // TODO: simplify by macro for point light
+    
+#endif
     VertexShaderOutput OUT;
 
     float3 VertexNormal = normalize(mul((float3x3) View.LocalToWorld, IN.Normal));
@@ -75,4 +81,35 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 #endif
     
     return OUT;
+}
+
+// -------------------------------------------------------------------------------------
+
+struct GeometeryShaderOutput
+{
+    float4 Position : SV_Position;
+    uint TargetIndex : SV_RenderTargetArrayIndex;
+};
+
+[maxvertexcount(18)]
+void PointLightShadow_GS(triangle VertexShaderOutput input[3], inout TriangleStream<GeometeryShaderOutput> OutputStream)
+{
+    GeometeryShaderOutput OUT;
+    
+    for (int i = 0; i < 6; i++)
+    {
+        OUT.TargetIndex = i;
+        OUT.Position = input[0].Position;
+        OutputStream.Append(OUT);
+        
+        OUT.Position = input[1].Position;
+        OutputStream.Append(OUT);
+
+        OUT.Position = input[2].Position;
+        OutputStream.Append(OUT);
+        
+        OutputStream.RestartStrip();
+    }
+
+    
 }

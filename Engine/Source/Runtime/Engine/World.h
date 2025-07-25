@@ -59,12 +59,14 @@ namespace Drn
 		class LineBatchComponent* m_LineBatchThicknessCompponent;
 
 #if WITH_EDITOR
-
 		void Save();
 
 		uint32 GetNonTransientActorCount();
 
 		std::string m_WorldLabel = "UntitledMap";
+
+		void SetLabel( const std::string& Label ) { m_WorldLabel = Label; }
+		const std::string& GetLabel() const { return m_WorldLabel; }
 #endif
 
 	protected:

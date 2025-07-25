@@ -88,7 +88,7 @@ namespace Drn
 		InWorld->m_LevelPath = m_Path;
 		
 #if WITH_EDITOR
-		InWorld->m_WorldLabel = LevelLabel;
+		InWorld->SetLabel(LevelLabel);
 #endif
 
 		Archive Ar(Path::ConvertProjectPath(m_Path));

@@ -28,6 +28,7 @@ namespace Drn
 	protected:
 
 		virtual void RenderMainPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderShadowPass(ID3D12GraphicsCommandList2* CommandList, LightSceneProxy* LightProxy) = 0;
 
 		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) = 0;
 		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) = 0;
@@ -49,5 +50,6 @@ namespace Drn
 		friend class Scene;
 		friend class Renderer;
 		friend class SceneRenderer;
+		friend class PointLightSceneProxy;
 	};
 }

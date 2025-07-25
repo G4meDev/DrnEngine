@@ -82,6 +82,7 @@ namespace Drn
 		const IntPoint& GetViewportSize() const { return m_CachedRenderSize; }
 
 		inline void SetName( const std::string& Name ) { m_Name = Name; }
+		inline const std::string& GetName() const { return m_Name; }
 
 		inline const SceneRendererView& GetSceneView() { return m_SceneView; }
 
@@ -97,6 +98,8 @@ namespace Drn
 
 		OnSceneRendererResizedDelegate OnSceneRendererResized;
 		OnSceneRendererDestroyDelegate OnSceneRendererDestroy;
+
+		tf::Taskflow m_RenderTask;
 
 	protected:
 
@@ -123,6 +126,7 @@ namespace Drn
 
 		void ProccessMousePickQueue();
 		void KickstartMousePickEvent( MousePickEvent& Event );
+		// event get queued from viewport/imgui renderer. right now imgui renderer is not paralleled, if remember to lock
 		std::vector<MousePickEvent> m_MousePickQueue;
 
 		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
@@ -140,7 +144,7 @@ namespace Drn
 
 		void Init();
 
-		void BeginRender();
+		void RenderShadowDepths();
 		void RenderBasePass();
 		void RenderLights();
 		void RenderPostProcess();

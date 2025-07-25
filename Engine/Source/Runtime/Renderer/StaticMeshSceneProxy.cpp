@@ -109,6 +109,37 @@ namespace Drn
 		}
 	}
 
+	void StaticMeshSceneProxy::RenderShadowPass( ID3D12GraphicsCommandList2* CommandList, LightSceneProxy* LightProxy )
+	{
+		if (m_Mesh.IsValid())
+		{
+			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
+			{
+				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
+				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+
+				if (!Mat->IsSupportingShadowPass())
+				{
+					continue;
+				}
+
+				// TODO: make dependent on light type
+				Mat->BindPointLightShadowDepthPass(CommandList);
+				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		
+				// TODO: remove dependency and only copy from parent side
+				XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				//XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
+		
+				//CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
+				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
+		
+				RenderProxy.BindAndDraw(CommandList);
+			}
+		}
+	}
+
 #if WITH_EDITOR
 
 	void StaticMeshSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )

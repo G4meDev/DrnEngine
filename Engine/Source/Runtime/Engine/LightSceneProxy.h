@@ -14,6 +14,7 @@ namespace Drn
 		inline void SetCastShadow( bool CastShadow ) { m_CastShadow = CastShadow; }
 
 		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) = 0;
+		virtual void RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) = 0;
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) = 0;

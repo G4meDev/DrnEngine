@@ -70,13 +70,20 @@ namespace Drn
 #endif
 
 		ResizeView(IntPoint(1920, 1080));
+
+		m_RenderTask.emplace( [&]() { Render(); } );
 	}
 
-	void SceneRenderer::BeginRender()
+	void SceneRenderer::RenderShadowDepths()
 	{
-		SCOPE_STAT();
+		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "ShadowDepths");
 
-		RecalculateView();
+		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
+		{
+			Proxy->RenderShadowDepth(m_CommandList->GetD3D12CommandList(), this);
+		}
+
+		PIXEndEvent(m_CommandList->GetD3D12CommandList());
 	}
 
 #if WITH_EDITOR
@@ -299,11 +306,13 @@ namespace Drn
 			return;
 		}
 
+		RecalculateView();
+
 #if WITH_EDITOR
 		RenderHitProxyPass();
 #endif
 
-		BeginRender();
+		RenderShadowDepths();
 		RenderBasePass();
 		RenderLights();
 		RenderPostProcess();

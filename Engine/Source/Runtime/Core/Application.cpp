@@ -47,6 +47,12 @@ void Application::OnKeyPressed( WPARAM Key )
 	{
 		switch ( Key )
 		{
+		case VK_F3:
+			if (Editor::Get())
+			{
+				Editor::Get()->OpenTaskGraphVisualizer();
+			}
+			break;
 
 		case VK_F4:
 			if (WorldManager::Get())
@@ -116,14 +122,8 @@ void Application::OnKeyPressed( WPARAM Key )
 		m_MainWindow->OnKeyPress.Add(this, &Application::OnKeyPressed);
 		m_MainWindow->Show();
 
-		//auto [WorldTick, PhysicTick, RendererTick] = taskflow.emplace(
-		//	[&] () { WorldManager::Get()->Tick(m_DeltaTime); },
-		//	[&] () { PhysicManager::Get()->Tick(m_DeltaTime); },
-		//	[&] () { Renderer::Get()->Tick(m_DeltaTime); } 
-		//);
 		auto WorldTick = taskflow.emplace( [&]() {OPTICK_THREAD_TASK(); WorldManager::Get()->Tick(m_DeltaTime); } );
 		auto PhysicTick = taskflow.emplace( [&]() {OPTICK_THREAD_TASK(); PhysicManager::Get()->Tick(m_DeltaTime); } );
-		//auto RendererTick = taskflow.emplace( [&]() { Renderer::Get()->Tick(m_DeltaTime); } );
 		
 		tf::Task RendererTick = taskflow.composed_of(Renderer::Get()->m_RendererTickTask);
 
@@ -139,23 +139,6 @@ void Application::OnKeyPressed( WPARAM Key )
 		RendererTick.name("RendererTick");
 		EditorTick.name("EditorTick");
 #endif
-
-//		WorldTickTask = taskflow.emplace([&]() { WorldManager::Get()->Tick( m_DeltaTime );});
-//		PhysicTickTask = taskflow.emplace([&]() { PhysicManager::Get()->Tick( m_DeltaTime );});
-//		RendererTickTask = taskflow.emplace([&]() { Renderer::Get()->Tick( m_DeltaTime );});
-//
-//		WorldTickTask.precede(PhysicTickTask);
-//		WorldTickTask.precede(RendererTickTask);
-//
-//#if WITH_EDITOR
-//		EditorTickTask = taskflow.emplace([&]() { Editor::Get()->Tick( m_DeltaTime );});
-//		RendererTickTask.precede(EditorTickTask);
-//
-//		WorldTickTask.name("WorldTick");
-//		PhysicTickTask.name("PhysicTick");
-//		RendererTickTask.name("RendererTick");
-//		EditorTickTask.name("EditorTick");
-//#endif
 	}
 
 	void Application::Shutdown()

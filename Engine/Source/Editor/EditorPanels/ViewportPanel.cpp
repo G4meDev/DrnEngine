@@ -19,6 +19,10 @@ namespace Drn
 		m_SceneRenderer->OnSceneRendererResized.Add( this, &ViewportPanel::OnSceneRendererResized );
 		m_SceneRenderer->OnSceneRendererDestroy.AddLambda( [&](){ m_SceneRenderer = nullptr; } );
 
+#if WITH_EDITOR
+		m_SceneRenderer->SetName(InScene->GetWorld()->GetLabel());
+#endif
+
 		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
 		m_ViewportCamera->SetActorLocation(XMVectorSet(20, 28, 20, 0));
 

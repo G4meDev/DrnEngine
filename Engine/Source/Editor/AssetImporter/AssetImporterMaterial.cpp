@@ -22,11 +22,13 @@ namespace Drn
 		bool SupportHitProxyPass = ShaderString.find( "SUPPORT_HIT_PROXY_PASS" ) != std::string::npos;
 		bool SupportEditorPrimitivePass = ShaderString.find( "SUPPORT_EDITOR_PRIMITIVE_PASS" ) != std::string::npos;
 		bool SupportEditorSelectionPass = ShaderString.find( "SUPPORT_EDITOR_SELECTION_PASS" ) != std::string::npos;
+		bool SupportShadowPass = ShaderString.find( "SUPPORT_SHADOW_PASS" ) != std::string::npos;
 
 		bool Successed = true;
 		ShaderBlob MainShaderBlob;
 		ShaderBlob HitProxyShaderBlob;
 		ShaderBlob EditorPrimitiveShaderBlob;
+		ShaderBlob PointLightShadowDepthShaderBlob;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath,
 			const char* InEntryPoint, const char* InProfile, const D3D_SHADER_MACRO* Macros, ID3DBlob** InByteBlob) 
@@ -68,17 +70,28 @@ namespace Drn
 			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_DS);
 		}
 
+		if (SupportShadowPass)
+		{
+			D3D_SHADER_MACRO ShadowMacros[] = { "SHADOW_PASS", "1", NULL, NULL };
+			CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", ShadowMacros, &PointLightShadowDepthShaderBlob.m_VS);
+			CompileShaderBlobConditional(true, Path, "PointLightShadow_GS", "gs_5_1", ShadowMacros, &PointLightShadowDepthShaderBlob.m_GS);
+			CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", ShadowMacros, &PointLightShadowDepthShaderBlob.m_HS);
+			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", ShadowMacros, &PointLightShadowDepthShaderBlob.m_DS);
+		}
+
 		if (Successed)
 		{
 			MaterialAsset->ReleaseShaderBlobs();
 			MaterialAsset->m_MainShaderBlob = MainShaderBlob;
 			MaterialAsset->m_HitProxyShaderBlob = HitProxyShaderBlob;
 			MaterialAsset->m_EditorPrimitiveShaderBlob = EditorPrimitiveShaderBlob;
+			MaterialAsset->m_PointlightShadowDepthShaderBlob = PointLightShadowDepthShaderBlob;
 
 			MaterialAsset->m_SupportMainPass = SupportMainPass;
 			MaterialAsset->m_SupportHitProxyPass = SupportHitProxyPass;
 			MaterialAsset->m_SupportEditorPrimitivePass = SupportEditorPrimitivePass;
 			MaterialAsset->m_SupportEditorSelectionPass = SupportEditorSelectionPass;
+			MaterialAsset->m_SupportShadowPass = SupportShadowPass;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

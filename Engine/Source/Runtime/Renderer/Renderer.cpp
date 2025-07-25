@@ -132,16 +132,16 @@ namespace Drn
 		{
 			OPTICK_THREAD_TASK();
 
-			tf::Taskflow t;
-
 			for (Scene* S : Renderer::Get()->m_AllocatedScenes)
 			{
 				for (SceneRenderer* SceneRen : S->m_SceneRenderers)
 				{
+					tf::Task SceneRenderTask = subflow.composed_of(SceneRen->m_RenderTask);
+
 #if WITH_EDITOR
 					subflow.retain(true);
+					SceneRenderTask.name("RenderSceneRenderer_" + SceneRen->GetName());
 #endif
-					subflow.emplace([SceneRen](){ SceneRen->Render(); }).name( "213123");
 				}
 			}
 		});

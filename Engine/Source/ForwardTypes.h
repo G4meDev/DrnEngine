@@ -54,6 +54,7 @@ namespace Drn
 	class D3D12CommandList;
 	class PrimitiveComponent;
 	class PrimitiveSceneProxy;
+	class LightSceneProxy;
 	class StaticMeshComponent;
 	class StaticMesh;
 	class Material;

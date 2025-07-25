@@ -52,7 +52,41 @@ namespace Drn
 		return Result;
 	}
 
-	PipelineStateObject* PipelineStateObject::CreateSelectionPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+	PipelineStateObject* PipelineStateObject::CreatePointLightShadowDepthPassPSO(
+		ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders )
+	{
+		PipelineStateObject* Result = new PipelineStateObject();
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		D3D12_RASTERIZER_DESC RasterizerDesc = CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		RasterizerDesc.CullMode = CullMode;
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= RootSignature;
+		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(InputLayoutType);
+		PipelineDesc.PrimitiveTopologyType				= PrimitiveType;
+		PipelineDesc.RasterizerState					= RasterizerDesc;
+		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
+		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
+		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
+		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		if (Shaders.m_VS) PipelineDesc.VS				= CD3DX12_SHADER_BYTECODE(Shaders.m_VS);
+		if (Shaders.m_GS) PipelineDesc.GS				= CD3DX12_SHADER_BYTECODE(Shaders.m_GS);
+		if (Shaders.m_HS) PipelineDesc.HS				= CD3DX12_SHADER_BYTECODE(Shaders.m_HS);
+		if (Shaders.m_DS) PipelineDesc.DS				= CD3DX12_SHADER_BYTECODE(Shaders.m_DS);
+		PipelineDesc.DSVFormat							= DXGI_FORMAT_D16_UNORM;
+		PipelineDesc.NumRenderTargets					= 0;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( Result->m_PipelineState.GetAddressOf() ) );
+		return Result;
+	}
+
+	PipelineStateObject* PipelineStateObject::CreateSelectionPassPSO( ID3D12RootSignature*RootSignature,
+		D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders)
 	{
 		PipelineStateObject* Result = new PipelineStateObject();

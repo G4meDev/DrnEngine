@@ -12,6 +12,7 @@ namespace Drn
 		, m_ScalarCBV(nullptr)
 		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
+		, m_PointLightShadowDepthPassPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_SupportMainPass(true)
 		, m_SupportHitProxyPass(false)
@@ -30,6 +31,7 @@ namespace Drn
 		, m_ScalarCBV(nullptr)
 		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
+		, m_PointLightShadowDepthPassPSO(nullptr)
 		, m_SelectionPassPSO(nullptr)
 		, m_HitProxyPassPSO(nullptr)
 		, m_EditorProxyPSO(nullptr)
@@ -126,6 +128,9 @@ namespace Drn
 
 			Ar >> m_SupportEditorSelectionPass;
 
+			Ar >> m_SupportShadowPass;
+			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
+
 			InitalizeParameterMap();
 		}
 
@@ -166,6 +171,9 @@ namespace Drn
 			Ar << m_SupportEditorPrimitivePass;
 			m_EditorPrimitiveShaderBlob.Serialize(Ar);
 			Ar << m_SupportEditorSelectionPass;
+
+			Ar << m_SupportShadowPass;
+			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
 		}
 	}
 
@@ -182,6 +190,12 @@ namespace Drn
 		{
 			m_MainPassPSO->ReleaseBufferedResource();
 			m_MainPassPSO = nullptr;
+		}
+
+		if ( m_PointLightShadowDepthPassPSO )
+		{
+			m_PointLightShadowDepthPassPSO->ReleaseBufferedResource();
+			m_PointLightShadowDepthPassPSO = nullptr;
 		}
 
 #if WITH_EDITOR
@@ -441,6 +455,16 @@ namespace Drn
 #endif
 			}
 
+			if (m_SupportShadowPass)
+			{
+				m_PointLightShadowDepthPassPSO = PipelineStateObject::CreatePointLightShadowDepthPassPSO(m_RootSignature,
+					m_CullMode, m_InputLayoutType, m_PrimitiveType, m_PointlightShadowDepthShaderBlob);
+
+#if D3D12_Debug_INFO
+				m_PointLightShadowDepthPassPSO->SetName( "PointLightShadowDepthPassPSO_" + name );
+#endif
+			}
+
 
 #if WITH_EDITOR
 
@@ -488,6 +512,14 @@ namespace Drn
 		CommandList->SetGraphicsRootSignature(m_RootSignature);
 		CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
 
+		BindResources(CommandList);
+	}
+
+	void Material::BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList )
+	{
+		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetPipelineState(m_PointLightShadowDepthPassPSO->GetD3D12PSO());
+		
 		BindResources(CommandList);
 	}
 

@@ -26,6 +26,7 @@ namespace Drn
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList );
 		void BindSelectionPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList );
@@ -43,6 +44,7 @@ namespace Drn
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
 		inline bool IsSupportingMainPass() const { return m_SupportMainPass; }
+		inline bool IsSupportingShadowPass() const { return m_SupportShadowPass; }
 		inline bool IsSupportingHitProxyPass() const { return m_SupportHitProxyPass; }
 		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
 		inline bool IsSupportingEditorSelectionPass() const { return m_SupportEditorSelectionPass; }
@@ -67,6 +69,7 @@ namespace Drn
 		ShaderBlob m_MainShaderBlob;
 		ShaderBlob m_HitProxyShaderBlob;
 		ShaderBlob m_EditorPrimitiveShaderBlob;
+		ShaderBlob m_PointlightShadowDepthShaderBlob;
 
 		ID3D12RootSignature* m_RootSignature;
 
@@ -84,6 +87,7 @@ namespace Drn
 		D3D12_GPU_DESCRIPTOR_HANDLE m_ScalarGpuHandle;
 
 		PipelineStateObject* m_MainPassPSO;
+		PipelineStateObject* m_PointLightShadowDepthPassPSO;
 
 #if WITH_EDITOR
 		PipelineStateObject* m_SelectionPassPSO = nullptr;
@@ -97,6 +101,7 @@ namespace Drn
 		bool m_RenderStateDirty;
 
 		bool m_SupportMainPass;
+		bool m_SupportShadowPass;
 		bool m_SupportHitProxyPass;
 		bool m_SupportEditorPrimitivePass;
 		bool m_SupportEditorSelectionPass;

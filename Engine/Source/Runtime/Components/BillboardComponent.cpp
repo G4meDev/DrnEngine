@@ -73,6 +73,11 @@ namespace Drn
 		
 	}
 
+	void BillboardSceneProxy::RenderShadowPass( ID3D12GraphicsCommandList2* CommandList, LightSceneProxy* LightProxy )
+	{
+		
+	}
+
 #if WITH_EDITOR
 	void BillboardSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
