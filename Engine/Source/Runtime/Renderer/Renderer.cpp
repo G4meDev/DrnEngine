@@ -324,16 +324,16 @@ namespace Drn
 		ID3D12Resource* backBuffer = m_SwapChain->GetBackBuffer();
 
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
-		m_CommandList->ResourceBarrier( 1, &barrier );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST );
-		m_CommandList->ResourceBarrier( 1, &barrier );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 
-		m_CommandList->CopyResource(backBuffer, m_MainSceneRenderer->GetViewResource());
+		m_CommandList->GetD3D12CommandList()->CopyResource(backBuffer, m_MainSceneRenderer->GetViewResource());
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
-		m_CommandList->ResourceBarrier( 1, &barrier );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT );
-		m_CommandList->ResourceBarrier( 1, &barrier );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 
 #endif
 	}

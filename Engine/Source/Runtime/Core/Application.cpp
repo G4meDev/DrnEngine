@@ -48,11 +48,13 @@ void Application::OnKeyPressed( WPARAM Key )
 		switch ( Key )
 		{
 		case VK_F3:
+#if WITH_EDITOR
 			if (Editor::Get())
 			{
 				Editor::Get()->OpenTaskGraphVisualizer();
 			}
 			break;
+#endif
 
 		case VK_F4:
 			if (WorldManager::Get())

@@ -354,6 +354,7 @@ target_include_directories( Engine
     PUBLIC inc ../ThirdParty/PixEvent/include/
     PUBLIC inc ../ThirdParty/OneTBB/include/
     PUBLIC inc ../ThirdParty/Taskflow/
+    PUBLIC inc ../ThirdParty/DXC/inc
 	#PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
@@ -362,6 +363,7 @@ target_link_directories( Engine
 	PUBLIC ../ThirdParty/PixEvent/lib/
 	PUBLIC ../ThirdParty/OneTBB/lib/
 	PUBLIC ../ThirdParty/Optick/lib/
+	PUBLIC ../ThirdParty/DXC/lib/
 )
 
 target_link_libraries( Engine 
@@ -387,6 +389,8 @@ target_link_libraries( Engine
     PUBLIC PhysXPvdSDK_static_64.lib
     PUBLIC PhysXVehicle_static_64.lib
     PUBLIC PhysXVehicle2_static_64.lib
+    
+	PUBLIC dxcompiler.lib
 )
 
 
@@ -404,6 +408,12 @@ set_source_files_properties( Source/DrnPCH.cpp
 add_custom_command(TARGET Engine POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/redist/$(Configuration)
+		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
+)
+
+add_custom_command(TARGET Engine POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${PROJECT_SOURCE_DIR}/ThirdParty/DXC/bin/
 		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 )
 

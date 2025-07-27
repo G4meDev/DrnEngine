@@ -1,4 +1,4 @@
-#include "Common.hlsl"
+#include "../../../Engine/Content/Materials/Common.hlsl"
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_HIT_PROXY_PASS

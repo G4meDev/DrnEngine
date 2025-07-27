@@ -3,6 +3,8 @@
 
 #if WITH_EDITOR
 
+#include <dxcapi.h>
+
 LOG_DEFINE_CATEGORY( LogAssetImporterMaterial, "AssetImporterMaterial" );
 
 namespace Drn
@@ -31,7 +33,7 @@ namespace Drn
 		ShaderBlob PointLightShadowDepthShaderBlob;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath,
-			const char* InEntryPoint, const char* InProfile, const D3D_SHADER_MACRO* Macros, ID3DBlob** InByteBlob) 
+			const wchar_t* InEntryPoint, const wchar_t* InProfile, const std::vector<const wchar_t*>& Macros, ID3DBlob** InByteBlob) 
 		{
 			if (Condition)
 			{
@@ -39,44 +41,47 @@ namespace Drn
 			}
 		};
 
-		D3D_SHADER_MACRO MainMacros[] = { "MAIN_PASS", "1", NULL, NULL };
+		const std::vector<const wchar_t*> MainMacros = { L"MAIN_PASS=1" };
 
 		if (SupportMainPass)
 		{
-			CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", MainMacros, &MainShaderBlob.m_VS);
-			CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", MainMacros, &MainShaderBlob.m_PS);
-			CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", MainMacros, &MainShaderBlob.m_GS);
-			CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", MainMacros, &MainShaderBlob.m_HS);
-			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", MainMacros, &MainShaderBlob.m_DS);
+			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", MainMacros, &MainShaderBlob.m_VS);
+			CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", MainMacros, &MainShaderBlob.m_PS);
+			CompileShaderBlobConditional(HasGS, Path, L"Main_GS", L"gs_6_6", MainMacros, &MainShaderBlob.m_GS);
+			CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", MainMacros, &MainShaderBlob.m_HS);
+			CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", MainMacros, &MainShaderBlob.m_DS);
 		}
 
 		if (SupportHitProxyPass)
 		{
-			D3D_SHADER_MACRO HitProxyMacros[] = { "HitProxyPass", "1", NULL, NULL };
-			CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_VS);
-			CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", HitProxyMacros, &HitProxyShaderBlob.m_PS);
-			CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_GS);
-			CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", HitProxyMacros, &HitProxyShaderBlob.m_HS);
-			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", HitProxyMacros, &HitProxyShaderBlob.m_DS);
+			const std::vector<const wchar_t*> HitProxyMacros = { L"HitProxyPass=1" };
+
+			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", HitProxyMacros, &HitProxyShaderBlob.m_VS);
+			CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", HitProxyMacros, &HitProxyShaderBlob.m_PS);
+			CompileShaderBlobConditional(HasGS, Path, L"Main_GS", L"gs_6_6", HitProxyMacros, &HitProxyShaderBlob.m_GS);
+			CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", HitProxyMacros, &HitProxyShaderBlob.m_HS);
+			CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", HitProxyMacros, &HitProxyShaderBlob.m_DS);
 		}
 
 		if (SupportEditorPrimitivePass)
 		{
-			D3D_SHADER_MACRO HitProxyMacros[] = { "EDITOR_PRIMITIVE_PASS", "1", NULL, NULL };
-			CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_VS);
-			CompileShaderBlobConditional(HasPS, Path, "Main_PS", "ps_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_PS);
-			CompileShaderBlobConditional(HasGS, Path, "Main_GS", "gs_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_GS);
-			CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_HS);
-			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", HitProxyMacros, &EditorPrimitiveShaderBlob.m_DS);
+			const std::vector<const wchar_t*> EditorPrimitiveMacros = { L"EDITOR_PRIMITIVE_PASS=1" };
+
+			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", EditorPrimitiveMacros, &EditorPrimitiveShaderBlob.m_VS);
+			CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", EditorPrimitiveMacros, &EditorPrimitiveShaderBlob.m_PS);
+			CompileShaderBlobConditional(HasGS, Path, L"Main_GS", L"gs_6_6", EditorPrimitiveMacros, &EditorPrimitiveShaderBlob.m_GS);
+			CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", EditorPrimitiveMacros, &EditorPrimitiveShaderBlob.m_HS);
+			CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", EditorPrimitiveMacros, &EditorPrimitiveShaderBlob.m_DS);
 		}
 
 		if (SupportShadowPass)
 		{
-			D3D_SHADER_MACRO ShadowMacros[] = { "SHADOW_PASS", "1", NULL, NULL };
-			CompileShaderBlobConditional(HasVS, Path, "Main_VS", "vs_5_1", ShadowMacros, &PointLightShadowDepthShaderBlob.m_VS);
-			CompileShaderBlobConditional(true, Path, "PointLightShadow_GS", "gs_5_1", ShadowMacros, &PointLightShadowDepthShaderBlob.m_GS);
-			CompileShaderBlobConditional(HasHS, Path, "Main_HS", "hs_5_1", ShadowMacros, &PointLightShadowDepthShaderBlob.m_HS);
-			CompileShaderBlobConditional(HasDS, Path, "Main_DS", "ds_5_1", ShadowMacros, &PointLightShadowDepthShaderBlob.m_DS);
+			const std::vector<const wchar_t*> ShadowMacros = { L"ShadowMacros=1" };
+
+			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_VS);
+			CompileShaderBlobConditional(true, Path, L"PointLightShadow_GS", L"gs_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_GS);
+			CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_HS);
+			CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_DS);
 		}
 
 		if (Successed)
@@ -97,35 +102,77 @@ namespace Drn
 		}
 	}
 
-	bool AssetImporterMaterial::CompileShader( const std::wstring& ShaderPath, const char* EntryPoint, const char* Profile, const D3D_SHADER_MACRO* Macros, ID3DBlob** ByteBlob )
+	bool AssetImporterMaterial::CompileShader( const std::wstring& ShaderPath, const wchar_t* EntryPoint, const wchar_t* Profile, const std::vector<const wchar_t*>& Macros, ID3DBlob** ByteBlob )
 	{
-		*ByteBlob = nullptr;
+		Microsoft::WRL::ComPtr<IDxcUtils> pUtils;
+		Microsoft::WRL::ComPtr<IDxcCompiler3> pCompiler;
 
-		UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
-#if defined( DEBUG ) || defined( _DEBUG )
-		flags |= D3DCOMPILE_DEBUG;
-#endif
+		DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(pUtils.GetAddressOf()));
+		DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(pCompiler.GetAddressOf()));
 
-		ID3DBlob* shaderBlob = nullptr;
-		ID3DBlob* errorBlob = nullptr;
-		HRESULT hr = D3DCompileFromFile( ShaderPath.c_str(), Macros, D3D_COMPILE_STANDARD_FILE_INCLUDE, 
-			EntryPoint, Profile, flags, 0, &shaderBlob, &errorBlob );
+		Microsoft::WRL::ComPtr<IDxcIncludeHandler> pIncludeHandler;
+		pUtils->CreateDefaultIncludeHandler(pIncludeHandler.GetAddressOf());
 
-		if ( FAILED(hr) )
+		std::vector<LPCWSTR> Args;
+		Args.push_back(L"Name");
+
+		Args.push_back(L"-E");
+		Args.push_back(EntryPoint);
+
+		Args.push_back(L"-T");
+		Args.push_back(Profile);
+
+		for (auto& Mac : Macros)
 		{
-			if ( errorBlob )
-			{
-				LOG(LogAssetImporterMaterial, Error, "Shader compile failed. %s", (char*)errorBlob->GetBufferPointer());
-				errorBlob->Release();
-			}
+			Args.push_back(L"-D");
+			Args.push_back(Mac);
+		}
 
-			if ( shaderBlob )
-				shaderBlob->Release();
+		//Args.push_back(L"-Fo");
+		//Args.push_back( L"myshader.bin");
+		//
+		//Args.push_back(L"-Fd");
+		//Args.push_back(L"myshader.pdb");
 
+		Args.push_back(L"-Qstrip_reflect");
+
+		Microsoft::WRL::ComPtr<IDxcBlobEncoding> pSource = nullptr;
+		pUtils->LoadFile(ShaderPath.c_str(), nullptr, &pSource);
+		DxcBuffer Source;
+		Source.Ptr = pSource->GetBufferPointer();
+		Source.Size = pSource->GetBufferSize();
+		Source.Encoding = DXC_CP_ACP;
+
+		Microsoft::WRL::ComPtr<IDxcResult> pResults;
+		pCompiler->Compile(
+			&Source,
+			Args.data(),
+			Args.size(),
+			pIncludeHandler.Get(),
+			IID_PPV_ARGS(pResults.GetAddressOf())
+		);
+
+		Microsoft::WRL::ComPtr<IDxcBlobUtf8> pErrors = nullptr;
+		pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
+		if (pErrors != nullptr && pErrors->GetStringLength() != 0)
+		{
+			LOG(LogAssetImporterMaterial, Warning, "\"%ws\" complation log:\n%s", ShaderPath.c_str(), pErrors->GetStringPointer());
+		}
+
+		HRESULT hrStatus;
+		pResults->GetStatus(&hrStatus);
+		if (FAILED(hrStatus))
+		{
+			LOG(LogAssetImporterMaterial, Error, "shader complation Failed.");
 			return false;
 		}
 
-		*ByteBlob = shaderBlob;
+		Microsoft::WRL::ComPtr<IDxcBlob> pShader = nullptr;
+		Microsoft::WRL::ComPtr<IDxcBlobUtf16> pShaderName = nullptr;
+		pResults->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), &pShaderName);
+
+		D3DCreateBlob(pShader->GetBufferSize(), ByteBlob);
+		memcpy((*ByteBlob)->GetBufferPointer(), pShader->GetBufferPointer(), pShader->GetBufferSize());
 
 		return true;
 	}

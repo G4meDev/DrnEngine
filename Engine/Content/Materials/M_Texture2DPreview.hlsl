@@ -1,4 +1,4 @@
-#include "Common.hlsl"
+#include "../../../Engine/Content/Materials/Common.hlsl"
 
 // SUPPORT_EDITOR_PRIMITIVE_PASS
 
