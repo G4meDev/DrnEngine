@@ -32,6 +32,14 @@ namespace Drn
 			m_CommandList = nullptr;
 		}
 
+		if (m_BindlessViewBuffer)
+		{
+			m_BindlessViewBuffer->ReleaseBufferedResource();
+			m_BindlessViewBuffer = nullptr;
+		}
+
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_BindlessViewCpuHandle, m_BindlessViewGpuHandle);
+
 #if WITH_EDITOR
 		if (m_MousePickQueue.size() > 0)
 		{
@@ -72,6 +80,26 @@ namespace Drn
 		ResizeView(IntPoint(1920, 1080));
 
 		m_RenderTask.emplace( [&]() { Render(); } );
+
+		{
+			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_BindlessViewCpuHandle, &m_BindlessViewGpuHandle);
+			m_BindlessViewBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+			ResourceViewDesc.BufferLocation = m_BindlessViewBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+			ResourceViewDesc.SizeInBytes = 512;
+			Device->CreateConstantBufferView( &ResourceViewDesc, m_BindlessViewCpuHandle);
+		}
+
+	}
+
+	void SceneRenderer::UpdateViewBuffer()
+	{
+		UINT8* ConstantBufferStart;
+		CD3DX12_RANGE readRange( 0, 0 );
+		m_BindlessViewBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		memcpy( ConstantBufferStart, &m_SceneView, sizeof(SceneRendererView));
+		m_BindlessViewBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 	}
 
 	void SceneRenderer::RenderShadowDepths()
@@ -309,17 +337,17 @@ namespace Drn
 		RecalculateView();
 
 #if WITH_EDITOR
-		RenderHitProxyPass();
+		//RenderHitProxyPass();
 #endif
 
-		RenderShadowDepths();
+		//RenderShadowDepths();
 		RenderBasePass();
-		RenderLights();
-		RenderPostProcess();
+		//RenderLights();
+		//RenderPostProcess();
 
 #if WITH_EDITOR
-		RenderEditorPrimitives();
-		RenderEditorSelection();
+		//RenderEditorPrimitives();
+		//RenderEditorSelection();
 #endif
 
 		m_CommandList->Close();
@@ -377,6 +405,8 @@ namespace Drn
 		m_SceneView.LocalToCameraView = Matrix( m_CameraActor->GetActorTransform() ).Get() * m_SceneView.WorldToView.Get();
 		
 		m_SceneView.Size = GetViewportSize();
+
+		UpdateViewBuffer();
 	}
 
 #if WITH_EDITOR

@@ -100,6 +100,7 @@ namespace Drn
 		void ReleaseScene(Scene*& InScene);
 
 		void SetHeaps( ID3D12GraphicsCommandList* CommandList);
+		void SetBindlessHeaps( ID3D12GraphicsCommandList* CommandList);
 
 		// TODO: delete
 		Microsoft::WRL::ComPtr<ID3D12Fence>& GetFence() { return m_Fence; };
@@ -143,8 +144,19 @@ namespace Drn
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SamplerCpuHandle;
 
+		// TODO: remove
+		TempDescriptorHeapAllocator m_BindlessSrvHeapAllocator;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessSrvHeap;
+
+		TempDescriptorHeapAllocator m_BindlessSamplerHeapAllocator;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessSamplerHeap;
+
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_BindlessRootSinature;
+
+		uint32 GetBindlessSrvIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
+		uint32 GetBindlessSampplerIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
+
 		tf::Taskflow m_RendererTickTask;
-		//tf::Taskflow m_DummyTask;
 
 	protected:
 		static Renderer* SingletonInstance;
@@ -155,6 +167,8 @@ namespace Drn
 		void WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent );
 
 		uint32 m_RtvIncrementSize;
+		uint32 m_SrvIncrementSize;
+		uint32 m_SamplerIncrementSize;
 
 		friend class ViewportGuiLayer;
 		friend class World;

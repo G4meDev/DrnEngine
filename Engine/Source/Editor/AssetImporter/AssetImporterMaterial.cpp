@@ -122,6 +122,8 @@ namespace Drn
 		Args.push_back(L"-T");
 		Args.push_back(Profile);
 
+		Args.push_back(L"-Zs");
+
 		for (auto& Mac : Macros)
 		{
 			Args.push_back(L"-D");

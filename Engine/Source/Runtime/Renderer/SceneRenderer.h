@@ -121,6 +121,12 @@ namespace Drn
 
 		std::string m_Name;
 
+		Resource* m_BindlessViewBuffer = nullptr;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessViewCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessViewGpuHandle;
+
+		void UpdateViewBuffer();
+
 #if WITH_EDITOR
 		void RenderHitProxyPass();
 

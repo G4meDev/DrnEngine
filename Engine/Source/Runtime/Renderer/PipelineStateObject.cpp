@@ -25,7 +25,8 @@ namespace Drn
 		RasterizerDesc.CullMode = CullMode;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= RootSignature;
+		//PipelineDesc.pRootSignature						= RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(InputLayoutType);
 		PipelineDesc.PrimitiveTopologyType				= PrimitiveType;
 		PipelineDesc.RasterizerState					= RasterizerDesc;

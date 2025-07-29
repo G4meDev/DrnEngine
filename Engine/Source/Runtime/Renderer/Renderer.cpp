@@ -67,6 +67,8 @@ namespace Drn
 		m_Device->GetD3D12Device()->CreateCommandQueue(&CommandQueueDesc, IID_PPV_ARGS(m_CommandQueue.GetAddressOf()));
 
 		m_RtvIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_RTV );
+		m_SrvIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
+		m_SamplerIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER );
 		
 		m_SwapChain = std::make_unique<SwapChain>(m_Device.get(), m_MainWindow->GetWindowHandle(), m_CommandQueue.Get(), m_MainWindow->GetWindowSize());
 
@@ -108,6 +110,100 @@ namespace Drn
 #if D3D12_Debug_INFO
 		m_SrvHeap->SetName(L"GlobalSrvHeap");
 		m_SamplerHeap->SetName(L"GlobalSamplerHeap");
+#endif
+
+		{
+			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+			desc.NumDescriptors             = 256;
+			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_BindlessSrvHeap.GetAddressOf() ) );
+			m_BindlessSrvHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessSrvHeap.Get() );
+		}
+
+		{
+			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+			desc.NumDescriptors             = 256;
+			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_BindlessSamplerHeap.GetAddressOf() ) );
+			m_BindlessSamplerHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessSamplerHeap.Get() );
+		}
+
+		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = 
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+			D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED |
+			D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED;
+
+		std::vector<D3D12_ROOT_PARAMETER> rootParameters;
+
+		D3D12_ROOT_PARAMETER ViewBufferParam = {};
+		ViewBufferParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+		ViewBufferParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		ViewBufferParam.Constants.Num32BitValues = 36;
+		ViewBufferParam.Constants.ShaderRegister = 0;
+		ViewBufferParam.Constants.RegisterSpace = 0;
+
+		rootParameters.push_back(ViewBufferParam);
+
+		//D3D12_ROOT_PARAMETER ViewBufferParam = {};
+		//ViewBufferParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+		//ViewBufferParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		//ViewBufferParam.Constants.Num32BitValues = 8;
+		//ViewBufferParam.Constants.ShaderRegister = 0;
+		//ViewBufferParam.Constants.RegisterSpace = 0;
+		//
+		//rootParameters.push_back(ViewBufferParam);
+		//
+		//D3D12_ROOT_PARAMETER TextureBufferParam = {};
+		//TextureBufferParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+		//TextureBufferParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		//TextureBufferParam.Constants.Num32BitValues = 16;
+		//TextureBufferParam.Constants.ShaderRegister = 1;
+		//TextureBufferParam.Constants.RegisterSpace = 0;
+		//
+		//rootParameters.push_back(TextureBufferParam);
+		//
+		//D3D12_ROOT_PARAMETER ParametersBufferParam = {};
+		//ParametersBufferParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+		//ParametersBufferParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+		//ParametersBufferParam.Constants.Num32BitValues = 2;
+		//ParametersBufferParam.Constants.ShaderRegister = 2;
+		//ParametersBufferParam.Constants.RegisterSpace = 0;
+		//
+		//rootParameters.push_back(ParametersBufferParam);
+
+		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(rootParameters.size(), rootParameters.data(), 0, nullptr, rootSignatureFlags );
+		
+		ID3DBlob* pSerializedRootSig;
+		ID3DBlob* pRootSigError;
+		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
+		if ( FAILED(Result) )
+		{
+			if ( pRootSigError )
+			{
+				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
+				pRootSigError->Release();
+			}
+		
+			if (pSerializedRootSig)
+			{
+				pSerializedRootSig->Release();
+				pSerializedRootSig = nullptr;
+			}
+		
+			return;
+		}
+		
+		
+		Renderer::Get()->GetD3D12Device()->CreateRootSignature(NULL, pSerializedRootSig->GetBufferPointer(),
+			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_BindlessRootSinature.GetAddressOf()));
+
+#if WITH_EDITOR
+		m_BindlessSrvHeap->SetName(L"BindlessSrvHeap");
+		m_BindlessSamplerHeap->SetName(L"BindlessSamplerHeap");
+
+		m_BindlessRootSinature->SetName(L"BindlessRootSignature");
 #endif
 
 #if WITH_EDITOR
@@ -175,6 +271,16 @@ namespace Drn
 		commandQueue->Signal( fence.Get(), ++fenceValue);
 
 		return fenceValue;
+	}
+
+	uint32 Renderer::GetBindlessSrvIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
+	{
+		return (Handle.ptr - m_BindlessSrvHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SrvIncrementSize;
+	}
+
+	uint32 Renderer::GetBindlessSampplerIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
+	{
+		return (Handle.ptr - m_BindlessSamplerHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SamplerIncrementSize;
 	}
 
 	void Renderer::WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent )
@@ -386,9 +492,15 @@ namespace Drn
 		SCOPE_STAT();
 			
 		ID3D12DescriptorHeap* const Descs[2] = { m_SrvHeap.Get(), m_SamplerHeap.Get() };
-		m_CommandList->GetD3D12CommandList()->SetDescriptorHeaps(2, Descs);
+		CommandList->SetDescriptorHeaps(2, Descs);
+	}
 
-		//m_UploadCommandList->GetD3D12CommandList()->SetDescriptorHeaps(2, Descs);
+	void Renderer::SetBindlessHeaps( ID3D12GraphicsCommandList* CommandList )
+	{
+		SCOPE_STAT();
+
+		ID3D12DescriptorHeap* const Descs[2] = { m_BindlessSrvHeap.Get(), m_BindlessSamplerHeap.Get() };
+		CommandList->SetDescriptorHeaps(2, Descs);
 	}
 
 }

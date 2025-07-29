@@ -7,6 +7,16 @@ LOG_DECLARE_CATEGORY(LogStaticMeshSceneProxy);
 
 namespace Drn
 {
+	struct PrimitiveBuffer
+	{
+	public:
+		PrimitiveBuffer(){};
+
+		Matrix m_LocalToWorld;
+		Matrix m_LocalToProjection;
+		Guid m_Guid;
+	};
+
 	class StaticMeshSceneProxy : public PrimitiveSceneProxy
 	{
 	public:
@@ -43,5 +53,11 @@ namespace Drn
 		AssetHandle<StaticMesh> m_Mesh;
 
 
+		PrimitiveBuffer m_PrimitiveBuffer;
+
+		Resource* m_PrimitiveSource = nullptr;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_BufferCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_BufferGpuHandle;
 	};
 }

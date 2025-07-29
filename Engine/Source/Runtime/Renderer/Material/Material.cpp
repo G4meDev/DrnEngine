@@ -60,6 +60,12 @@ namespace Drn
 			m_ScalarCBV = nullptr;
 		}
 
+		//if (m_BindlessViewBuffer)
+		//{
+		//	m_BindlessViewBuffer->ReleaseBufferedResource();
+		//	m_BindlessViewBuffer = nullptr;
+		//}
+
 		Renderer::Get()->TempSRVAllocator.Free(m_ScalarCpuHandle, m_ScalarGpuHandle);
 	}
 
@@ -131,6 +137,11 @@ namespace Drn
 			Ar >> m_SupportShadowPass;
 			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
 
+			if (Ar.GetVersion() == 2)
+			{
+				Ar >> m_BindlessTest;
+			}
+
 			InitalizeParameterMap();
 		}
 
@@ -174,6 +185,8 @@ namespace Drn
 
 			Ar << m_SupportShadowPass;
 			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
+
+			Ar << true;
 		}
 	}
 
@@ -294,6 +307,12 @@ namespace Drn
 				m_ScalarCBV->ReleaseBufferedResource();
 				m_ScalarCBV = nullptr;
 			}
+
+			//if (m_BindlessViewBuffer)
+			//{
+			//	m_BindlessViewBuffer->ReleaseBufferedResource();
+			//	m_BindlessViewBuffer = nullptr;
+			//}
 
 			Renderer::Get()->TempSRVAllocator.Free(m_ScalarCpuHandle, m_ScalarGpuHandle);
 
@@ -587,7 +606,6 @@ namespace Drn
 			m_Texture2DSlots[Index].m_Texture2D = TextureAsset;
 		}
 	}
-
 
 	void Material::SetNamedScalar( const std::string& Name, float Value )
 	{
