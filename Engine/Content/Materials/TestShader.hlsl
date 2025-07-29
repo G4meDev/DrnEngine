@@ -5,11 +5,17 @@
 // S111UPPORT_EDITOR_SELECTION_PASS
 // S111UPPORT_SHADOW_PASS
 
+float3 EncodeNormal(float3 Normal)
+{
+    return Normal * 0.5 + 0.5;
+}
 
 struct Resources
 {
     uint ViewIndex;
     uint PrimitiveIndex;
+    uint StaticSamplerBufferIndex;
+    uint TextureBufferIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -24,6 +30,18 @@ struct Primitive
     matrix LocalToWorld;
     matrix LocalToProjection;
     uint4 Guid;
+};
+
+struct StaticSamplers
+{
+    uint LinearSamplerIndex;
+};
+
+struct TextureBuffers
+{
+    uint BaseColorTexture; // TEX2D BaseColorTexture
+    uint NormalTexture; // TEX2D NormalTexture
+    uint MasksTexture; // TEX2D MasksTexture
 };
 
 struct VertexInputStaticMesh
@@ -54,10 +72,11 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
-    float3 VertexNormal = float3(1, 1, 1);
-    float3 VertexTangent = float3(1, 1, 1);
-    float3 VertexBiNormal = float3(1, 1, 1);
-    OUT.TBN = float3x3(VertexNormal, VertexTangent, VertexNormal);
+    float3 VertexNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
+    float3 VertexTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
+    float3 VertexBiNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Bitangent));
+    //OUT.TBN = float3x3(VertexTangent, VertexBiNormal, VertexNormal);
+    OUT.TBN = float3x3(VertexTangent, VertexNormal, VertexBiNormal);
     
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
     OUT.Color = float4(IN.Color, 1.0f);
@@ -89,10 +108,27 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
 
+    ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
+    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
+    
+    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
+    Texture2D BaseColorTexture = ResourceDescriptorHeap[Textures.BaseColorTexture];
+    Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
+    Texture2D MasksTexture = ResourceDescriptorHeap[Textures.MasksTexture];
+    
+    float3 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV).xyz;
+    float3 Masks = MasksTexture.Sample(LinearSampler, IN.UV).xyz;
+    
+    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rbg;
+    Normal.z = 1 - Normal.z;
+    Normal = Normal * 2 - 1;
+    Normal = normalize(mul(Normal, IN.TBN));
+    Normal = EncodeNormal(Normal);
+    
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
-    OUT.BaseColor = float4(1, 1, 1, 1);
-    OUT.WorldNormal = float4( 1, 1, 1, 0);
-    OUT.Masks = float4(1, 1, 1, 1);
+    OUT.BaseColor = float4(BaseColor, 1);
+    OUT.WorldNormal = float4( Normal, 0);
+    OUT.Masks = float4(Masks, 1);
     
     return OUT;
 }

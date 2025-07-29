@@ -152,6 +152,8 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "LightPass" );
+
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		m_CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
@@ -179,6 +181,8 @@ namespace Drn
 		}
 
 		m_GBuffer->UnBindLightPass(m_CommandList->GetD3D12CommandList());
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}
 
 	void SceneRenderer::RenderPostProcess()

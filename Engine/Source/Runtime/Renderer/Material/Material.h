@@ -109,6 +109,13 @@ namespace Drn
 		bool m_SupportEditorPrimitivePass;
 		bool m_SupportEditorSelectionPass;
 
+		Resource* m_TextureIndexBuffer;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_TextureIndexCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_TextureIndexGpuHandle;
+
+		void ReleaseBuffers();
+
 		void InitalizeParameterMap();
 
 #if WITH_EDITOR

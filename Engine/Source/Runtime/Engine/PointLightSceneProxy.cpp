@@ -34,6 +34,12 @@ namespace Drn
 	PointLightSceneProxy::~PointLightSceneProxy()
 	{
 		ReleaseShadowmap();
+
+		if (m_LightBuffer)
+		{
+			m_LightBuffer->ReleaseBufferedResource();
+			m_LightBuffer = nullptr;
+		}
 	}
 
 	void PointLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
@@ -46,7 +52,7 @@ namespace Drn
 		m_Buffer.CameraPosition = CameraPosition;
 		m_Buffer.WorldPosition = m_WorldPosition;
 		m_Buffer.Radius = m_Radius;
-		m_Buffer.LightColor = m_LightColor; 
+		m_Buffer.LightColor = m_LightColor;
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );

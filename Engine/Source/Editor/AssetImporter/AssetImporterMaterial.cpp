@@ -185,7 +185,7 @@ namespace Drn
 		MaterialAsset->m_Texture2DSlots.clear();
 
 		std::vector<std::string> NamedTokens;
-		FindNamedTokens(ShaderCode, "Texture2D", NamedTokens);
+		FindNamedTokens(ShaderCode, "TEX2D", NamedTokens);
 
 		for (const std::string& name : NamedTokens)
 		{

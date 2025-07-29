@@ -12,6 +12,7 @@ namespace Drn
 
 		Matrix LocalToProjection;
 		Vector CameraPosition;
+		float Pad_1;
 		Vector WorldPosition;
 		float Radius;
 		Vector LightColor;

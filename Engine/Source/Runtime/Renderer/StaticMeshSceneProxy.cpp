@@ -134,9 +134,7 @@ namespace Drn
 				else
 				{
 					Renderer::Get()->SetBindlessHeaps(CommandList);
-
-					CommandList->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-					CommandList->SetPipelineState( Mat->m_MainPassPSO->GetD3D12PSO() );
+					Mat->BindMainPass(CommandList);
 
 					CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -152,6 +150,7 @@ namespace Drn
 
 					CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewGpuHandle), 0);
 					CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BufferGpuHandle), 1);
+					CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_BindlessStaticSamplerGpuHandle), 2);
 
 					RenderProxy.BindAndDraw(CommandList);
 				}

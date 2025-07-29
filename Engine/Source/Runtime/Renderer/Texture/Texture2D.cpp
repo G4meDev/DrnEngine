@@ -32,8 +32,8 @@ namespace Drn
 	{
 		if (Renderer::Get())
 		{
-			Renderer::Get()->TempSRVAllocator.Free(TextureCpuHandle, TextureGpuHandle);
-			Renderer::Get()->TempSamplerAllocator.Free(SamplerCpuHandle, SamplerGpuHandle);
+			Renderer::Get()->m_BindlessSrvHeapAllocator.Free(TextureCpuHandle, TextureGpuHandle);
+			Renderer::Get()->m_BindlessSamplerHeapAllocator.Free(SamplerCpuHandle, SamplerGpuHandle);
 		}
 	}
 
@@ -112,7 +112,7 @@ namespace Drn
 			ResourceViewDesc.Texture2D.MipLevels = m_MipLevels;
 			ResourceViewDesc.Texture2D.MostDetailedMip = 0;
 
-			Renderer::Get()->TempSRVAllocator.Alloc(&TextureCpuHandle, &TextureGpuHandle);
+			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&TextureCpuHandle, &TextureGpuHandle);
 			Device->CreateShaderResourceView(m_Resource->GetD3D12Resource(), &ResourceViewDesc, TextureCpuHandle);
 
 // -----------------------------------------------------------------------------------------------------------------------------

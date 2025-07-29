@@ -21,6 +21,7 @@ namespace Drn
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
+		, m_TextureIndexBuffer(nullptr)
 	{
 		Load();
 	}
@@ -43,6 +44,7 @@ namespace Drn
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
+		, m_TextureIndexBuffer(nullptr)
 	{
 		m_SourcePath = InSourcePath;
 		Import();
@@ -54,19 +56,9 @@ namespace Drn
 		if (m_RootSignature) m_RootSignature->Release();
 		ReleasePSOs();
 
-		if (m_ScalarCBV)
-		{
-			m_ScalarCBV->ReleaseBufferedResource();
-			m_ScalarCBV = nullptr;
-		}
+		ReleaseBuffers();
 
-		//if (m_BindlessViewBuffer)
-		//{
-		//	m_BindlessViewBuffer->ReleaseBufferedResource();
-		//	m_BindlessViewBuffer = nullptr;
-		//}
-
-		Renderer::Get()->TempSRVAllocator.Free(m_ScalarCpuHandle, m_ScalarGpuHandle);
+		
 	}
 
 	EAssetType Material::GetAssetType() { return EAssetType::Material; }
@@ -232,6 +224,25 @@ namespace Drn
 #endif
 	}
 
+	void Material::ReleaseBuffers()
+	{
+		if (m_ScalarCBV)
+		{
+			m_ScalarCBV->ReleaseBufferedResource();
+			m_ScalarCBV = nullptr;
+		}
+
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_ScalarCpuHandle, m_ScalarGpuHandle );
+
+		if (m_TextureIndexBuffer)
+		{
+			m_TextureIndexBuffer->ReleaseBufferedResource();
+			m_TextureIndexBuffer = nullptr;
+		}
+
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_TextureIndexCpuHandle, m_TextureIndexGpuHandle);
+	}
+
 	void Material::InitalizeParameterMap()
 	{
 		m_ScalarMap.clear();
@@ -301,20 +312,15 @@ namespace Drn
 
 			if (m_RootSignature) m_RootSignature->Release();
 			ReleasePSOs();
-			
-			if (m_ScalarCBV)
-			{
-				m_ScalarCBV->ReleaseBufferedResource();
-				m_ScalarCBV = nullptr;
-			}
+			ReleaseBuffers();
 
-			//if (m_BindlessViewBuffer)
-			//{
-			//	m_BindlessViewBuffer->ReleaseBufferedResource();
-			//	m_BindlessViewBuffer = nullptr;
-			//}
+			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_TextureIndexCpuHandle, &m_TextureIndexGpuHandle);
+			m_TextureIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
-			Renderer::Get()->TempSRVAllocator.Free(m_ScalarCpuHandle, m_ScalarGpuHandle);
+			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+			ResourceViewDesc.BufferLocation = m_TextureIndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+			ResourceViewDesc.SizeInBytes = 256;
+			Device->CreateConstantBufferView( &ResourceViewDesc, m_TextureIndexCpuHandle);
 
 			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
@@ -398,7 +404,7 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------------------------
 
-				Renderer::Get()->TempSRVAllocator.Alloc(&m_ScalarCpuHandle, &m_ScalarGpuHandle);
+				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_ScalarCpuHandle, &m_ScalarGpuHandle);
 
 				// TODO: maybe serialize this to asset
 				std::vector<float> ConstantBuffer;
@@ -528,7 +534,7 @@ namespace Drn
 
 	void Material::BindMainPass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
 
 		BindResources(CommandList);
@@ -571,18 +577,32 @@ namespace Drn
 
 	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		const int NumTexture2Ds = m_Texture2DSlots.size();
+		std::vector<uint32> TextureIndices;
 		for (int i = 0; i < m_Texture2DSlots.size(); i++)
 		{
-			CommandList->SetGraphicsRootDescriptorTable( 1 + i * 2, m_Texture2DSlots[i].m_Texture2D->SamplerGpuHandle );
-			CommandList->SetGraphicsRootDescriptorTable( 2 + i * 2, m_Texture2DSlots[i].m_Texture2D->TextureGpuHandle );
+			TextureIndices.push_back(Renderer::Get()->GetBindlessSrvIndex( m_Texture2DSlots[i].m_Texture2D->TextureGpuHandle) );
 		}
 
-		const int NumScalars = m_FloatSlots.size();
-		if (NumScalars > 0)
-		{
-			CommandList->SetGraphicsRootDescriptorTable( 1 + NumTexture2Ds * 2, m_ScalarGpuHandle);
-		}
+		UINT8* ConstantBufferStart;
+		CD3DX12_RANGE readRange( 0, 0 );
+		m_TextureIndexBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		memcpy( ConstantBufferStart, TextureIndices.data(), TextureIndices.size() * sizeof(uint32));
+		m_TextureIndexBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TextureIndexGpuHandle), 3);
+
+		//const int NumTexture2Ds = m_Texture2DSlots.size();
+		//for (int i = 0; i < m_Texture2DSlots.size(); i++)
+		//{
+		//	CommandList->SetGraphicsRootDescriptorTable( 1 + i * 2, m_Texture2DSlots[i].m_Texture2D->SamplerGpuHandle );
+		//	CommandList->SetGraphicsRootDescriptorTable( 2 + i * 2, m_Texture2DSlots[i].m_Texture2D->TextureGpuHandle );
+		//}
+		//
+		//const int NumScalars = m_FloatSlots.size();
+		//if (NumScalars > 0)
+		//{
+		//	CommandList->SetGraphicsRootDescriptorTable( 1 + NumTexture2Ds * 2, m_ScalarGpuHandle);
+		//}
 	}
 
 	void Material::SetNamedTexture2D( const std::string& Name, AssetHandle<Texture2D> TextureAsset )
