@@ -185,7 +185,7 @@ namespace Drn
 		MaterialAsset->m_Texture2DSlots.clear();
 
 		std::vector<std::string> NamedTokens;
-		FindNamedTokens(ShaderCode, "TEX2D", NamedTokens);
+		FindNamedTokens(ShaderCode, "@TEX2D", NamedTokens);
 
 		for (const std::string& name : NamedTokens)
 		{
@@ -208,7 +208,7 @@ namespace Drn
 		MaterialAsset->m_FloatSlots.clear();
 
 		NamedTokens.clear();
-		FindNamedTokens(ShaderCode, "//Scalar", NamedTokens);
+		FindNamedTokens(ShaderCode, "@SCALAR", NamedTokens);
 
 		for (int i = 0; i < NamedTokens.size(); i++)
 		{
@@ -234,7 +234,7 @@ namespace Drn
 		MaterialAsset->m_Vector4Slots.clear();
 
 		NamedTokens.clear();
-		FindNamedTokens(ShaderCode, "//Vector4", NamedTokens);
+		FindNamedTokens(ShaderCode, "@VECTOR", NamedTokens);
 
 		for (int i = 0; i < NamedTokens.size(); i++)
 		{

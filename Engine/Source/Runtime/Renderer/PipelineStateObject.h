@@ -8,7 +8,7 @@ namespace Drn
 	class PipelineStateObject : public BufferedResource
 	{
 	public:
-		static PipelineStateObject* CreateMainPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+		static PipelineStateObject* CreateMainPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
 		static PipelineStateObject* CreatePointLightShadowDepthPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,

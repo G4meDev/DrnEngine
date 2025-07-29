@@ -9,8 +9,6 @@ namespace Drn
 {
 	Material::Material( const std::string& InPath )
 		: Asset(InPath)
-		, m_ScalarCBV(nullptr)
-		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
 		, m_PointLightShadowDepthPassPSO(nullptr)
 		, m_RenderStateDirty(true)
@@ -22,6 +20,8 @@ namespace Drn
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
 		, m_TextureIndexBuffer(nullptr)
+		, m_ScalarBuffer(nullptr)
+		, m_VectorBuffer(nullptr)
 	{
 		Load();
 	}
@@ -29,8 +29,6 @@ namespace Drn
 #if WITH_EDITOR
 	Material::Material( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath)
-		, m_ScalarCBV(nullptr)
-		, m_RootSignature(nullptr)
 		, m_MainPassPSO(nullptr)
 		, m_PointLightShadowDepthPassPSO(nullptr)
 		, m_SelectionPassPSO(nullptr)
@@ -45,6 +43,8 @@ namespace Drn
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_CullMode(D3D12_CULL_MODE_BACK)
 		, m_TextureIndexBuffer(nullptr)
+		, m_ScalarBuffer(nullptr)
+		, m_VectorBuffer(nullptr)
 	{
 		m_SourcePath = InSourcePath;
 		Import();
@@ -53,7 +53,6 @@ namespace Drn
 	
 	Material::~Material()
 	{
-		if (m_RootSignature) m_RootSignature->Release();
 		ReleasePSOs();
 
 		ReleaseBuffers();
@@ -226,21 +225,27 @@ namespace Drn
 
 	void Material::ReleaseBuffers()
 	{
-		if (m_ScalarCBV)
-		{
-			m_ScalarCBV->ReleaseBufferedResource();
-			m_ScalarCBV = nullptr;
-		}
-
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_ScalarCpuHandle, m_ScalarGpuHandle );
-
 		if (m_TextureIndexBuffer)
 		{
 			m_TextureIndexBuffer->ReleaseBufferedResource();
 			m_TextureIndexBuffer = nullptr;
 		}
-
 		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_TextureIndexCpuHandle, m_TextureIndexGpuHandle);
+
+		if (m_ScalarBuffer)
+		{
+			m_ScalarBuffer->ReleaseBufferedResource();
+			m_ScalarBuffer = nullptr;
+		}
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_ScalarCpuHandle, m_ScalarGpuHandle );
+
+		if (m_VectorBuffer)
+		{
+			m_VectorBuffer->ReleaseBufferedResource();
+			m_VectorBuffer = nullptr;
+		}
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_VectorCpuHandle, m_VectorGpuHandle );
+
 	}
 
 	void Material::InitalizeParameterMap()
@@ -310,169 +315,57 @@ namespace Drn
 				}
 			}
 
-			if (m_RootSignature) m_RootSignature->Release();
 			ReleasePSOs();
 			ReleaseBuffers();
 
-			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_TextureIndexCpuHandle, &m_TextureIndexGpuHandle);
-			m_TextureIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-			ResourceViewDesc.BufferLocation = m_TextureIndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			ResourceViewDesc.SizeInBytes = 256;
-			Device->CreateConstantBufferView( &ResourceViewDesc, m_TextureIndexCpuHandle);
-
-			D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-			std::vector<D3D12_ROOT_PARAMETER> rootParameters;
-			rootParameters.reserve(1 + 2 * m_Texture2DSlots.size());
+			// TODO: support no constant buffers
 
 			{
-				D3D12_ROOT_PARAMETER Param = {};
-				Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-				Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-				Param.Constants.Num32BitValues = (sizeof( XMMATRIX ) / 4) + (sizeof( XMMATRIX ) / 4) + (sizeof(Guid) / 4);
-				Param.Constants.ShaderRegister = 0;
-				Param.Constants.RegisterSpace = 0;
-				rootParameters.push_back(Param);
-			}
-
-			const int NumTexture2Ds = m_Texture2DSlots.size();
-			const int ScalarCount = m_FloatSlots.size();
-			const int Vector4Count = m_Vector4Slots.size();
-			const bool NeedsConstantBuffer = ScalarCount > 0 || Vector4Count > 0;
-
-			std::vector<D3D12_DESCRIPTOR_RANGE> Ranges;
-			Ranges.reserve(NumTexture2Ds * 2 + NeedsConstantBuffer );
-
-			for (int i = 0; i < NumTexture2Ds; i++)
-			{
-				{
-					D3D12_DESCRIPTOR_RANGE Range = {};
-					Range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-					Range.BaseShaderRegister = i;
-					Range.RegisterSpace = 0;
-					Range.NumDescriptors = 1;
-					Range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-					Ranges.push_back(Range);
-
-					D3D12_ROOT_PARAMETER Param = {};
-					Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-					Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-					Param.DescriptorTable.NumDescriptorRanges = 1;
-					Param.DescriptorTable.pDescriptorRanges = &Ranges[i * 2];
-
-					rootParameters.push_back(Param);
-				}
-
-				{
-					D3D12_DESCRIPTOR_RANGE Range = {};
-					Range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-					Range.BaseShaderRegister = i;
-					Range.RegisterSpace = 0;
-					Range.NumDescriptors = 1;
-					Range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-					Ranges.push_back(Range);
-
-					D3D12_ROOT_PARAMETER Param = {};
-					Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-					Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-					Param.DescriptorTable.NumDescriptorRanges = 1;
-					Param.DescriptorTable.pDescriptorRanges = &Ranges[i * 2 + 1];
-
-					rootParameters.push_back(Param);
-				}
-			}
-
-			if (NeedsConstantBuffer)
-			{
-				D3D12_DESCRIPTOR_RANGE Range = {};
-				Range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-				Range.BaseShaderRegister = 1;
-				Range.RegisterSpace = 0;
-				Range.NumDescriptors = 1;
-				Range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-				Ranges.push_back(Range);
-
-				D3D12_ROOT_PARAMETER Param = {};
-				Param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-				Param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-				Param.DescriptorTable.NumDescriptorRanges = 1;
-				Param.DescriptorTable.pDescriptorRanges = &Ranges[NumTexture2Ds * 2];
-
-				rootParameters.push_back(Param);
-
-// ---------------------------------------------------------------------------------------------------------
-
-				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_ScalarCpuHandle, &m_ScalarGpuHandle);
-
-				// TODO: maybe serialize this to asset
-				std::vector<float> ConstantBuffer;
-				ConstantBuffer.reserve(ScalarCount + Vector4Count * 4);
-				for (int i = 0; i < ScalarCount; i++)
-				{
-					ConstantBuffer.push_back(m_FloatSlots[i].m_Value);
-				}
-				for (int i = 0; i < Vector4Count; i++)
-				{
-					ConstantBuffer.push_back(m_Vector4Slots[i].m_Value.GetX());
-					ConstantBuffer.push_back(m_Vector4Slots[i].m_Value.GetY());
-					ConstantBuffer.push_back(m_Vector4Slots[i].m_Value.GetZ());
-					ConstantBuffer.push_back(m_Vector4Slots[i].m_Value.GetW());
-				}
-
-				const size_t ConstantBufferSize = ConstantBuffer.size() * sizeof( float );
-				// 256 padding 
-				const size_t ConstantBufferSizePadded = ( ConstantBufferSize + 255 ) & ~255;
-
-				m_ScalarCBV = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ConstantBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
-
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_ScalarCBV->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, ConstantBuffer.data(), ConstantBufferSizePadded );
-				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
+				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_TextureIndexCpuHandle, &m_TextureIndexGpuHandle);
+				m_TextureIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-				ResourceViewDesc.BufferLocation = m_ScalarCBV->GetD3D12Resource()->GetGPUVirtualAddress();
-				ResourceViewDesc.SizeInBytes = ConstantBufferSizePadded;
+				ResourceViewDesc.BufferLocation = m_TextureIndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+				ResourceViewDesc.SizeInBytes = 256;
+				Device->CreateConstantBufferView( &ResourceViewDesc, m_TextureIndexCpuHandle);
+			}
+
+			{
+				const size_t ScalarBufferSize = m_FloatSlots.size() * sizeof( float );
+				//const size_t ScalarBufferSizePadded = ( ScalarBufferSize + 255 ) & ~255 + 256;
+				// TODO: remove
+				const size_t ScalarBufferSizePadded = 256;
+
+				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_ScalarCpuHandle, &m_ScalarGpuHandle);
+				m_ScalarBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+				ResourceViewDesc.BufferLocation = m_ScalarBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+				ResourceViewDesc.SizeInBytes = ScalarBufferSizePadded;
 				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarCpuHandle);
 			}
 
-			CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(rootParameters.size(), rootParameters.data(), 0, nullptr, rootSignatureFlags );
-
-			ID3DBlob* pSerializedRootSig;
-			ID3DBlob* pRootSigError;
-			HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
-			if ( FAILED(Result) )
 			{
-				if ( pRootSigError )
-				{
-					LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
-					pRootSigError->Release();
-				}
+				const size_t VectorBufferSize = m_Vector4Slots.size() * sizeof( Vector4 );
+				//const size_t VectorBufferSizePadded = ( VectorBufferSize + 255 ) & ~255;
+				// TODO: remove
+				const size_t VectorBufferSizePadded = 256;
 
-				if (pSerializedRootSig)
-				{
-					pSerializedRootSig->Release();
-					pSerializedRootSig = nullptr;
-				}
+				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_VectorCpuHandle, &m_VectorGpuHandle);
+				m_VectorBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( VectorBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
-				return;
+				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+				ResourceViewDesc.BufferLocation = m_VectorBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+				ResourceViewDesc.SizeInBytes = VectorBufferSizePadded;
+				Device->CreateConstantBufferView( &ResourceViewDesc , m_VectorCpuHandle);
 			}
 
 			std::string name = Path::ConvertShortPath(m_Path);
 			name = Path::RemoveFileExtension(name);
 
-			Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-				pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
-#if D3D12_Debug_INFO
-			m_RootSignature->SetName(StringHelper::s2ws(" RootSignature_" + name ).c_str());
-#endif
-
 			if (m_SupportMainPass)
 			{
-				m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+				m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_MainShaderBlob);
 
 #if D3D12_Debug_INFO
@@ -482,7 +375,7 @@ namespace Drn
 
 			if (m_SupportShadowPass)
 			{
-				m_PointLightShadowDepthPassPSO = PipelineStateObject::CreatePointLightShadowDepthPassPSO(m_RootSignature,
+				m_PointLightShadowDepthPassPSO = PipelineStateObject::CreatePointLightShadowDepthPassPSO(NULL,
 					m_CullMode, m_InputLayoutType, m_PrimitiveType, m_PointlightShadowDepthShaderBlob);
 
 #if D3D12_Debug_INFO
@@ -495,7 +388,7 @@ namespace Drn
 
 			if (m_SupportEditorSelectionPass)
 			{
-				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(NULL, m_CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_MainShaderBlob);
 #if D3D12_Debug_INFO
 				m_SelectionPassPSO->SetName( "SelectionPassPSO_" + name );
@@ -504,7 +397,7 @@ namespace Drn
 
 			if (IsSupportingHitProxyPass())
 			{
-				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(NULL, m_CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_HitProxyShaderBlob);
 
 #if D3D12_Debug_INFO
@@ -514,7 +407,7 @@ namespace Drn
 
 			if (m_SupportEditorPrimitivePass)
 			{
-				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(m_RootSignature, m_CullMode, m_InputLayoutType,
+				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(NULL, m_CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
 #if D3D12_Debug_INFO
 				m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
@@ -542,7 +435,7 @@ namespace Drn
 
 	void Material::BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetGraphicsRootSignature(NULL);
 		CommandList->SetPipelineState(m_PointLightShadowDepthPassPSO->GetD3D12PSO());
 		
 		BindResources(CommandList);
@@ -551,7 +444,7 @@ namespace Drn
 #if WITH_EDITOR
 	void Material::BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetGraphicsRootSignature(NULL);
 		CommandList->SetPipelineState(m_EditorProxyPSO->GetD3D12PSO());
 
 		BindResources(CommandList);
@@ -559,7 +452,7 @@ namespace Drn
 
 	void Material::BindSelectionPass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetGraphicsRootSignature(NULL);
 		CommandList->SetPipelineState(m_SelectionPassPSO->GetD3D12PSO());
 		CommandList->OMSetStencilRef( 255 );
 
@@ -568,7 +461,7 @@ namespace Drn
 
 	void Material::BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(m_RootSignature);
+		CommandList->SetGraphicsRootSignature(NULL);
 		CommandList->SetPipelineState(m_HitProxyPassPSO->GetD3D12PSO());
 
 		BindResources(CommandList);
@@ -591,18 +484,38 @@ namespace Drn
 
 		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TextureIndexGpuHandle), 3);
 
-		//const int NumTexture2Ds = m_Texture2DSlots.size();
-		//for (int i = 0; i < m_Texture2DSlots.size(); i++)
-		//{
-		//	CommandList->SetGraphicsRootDescriptorTable( 1 + i * 2, m_Texture2DSlots[i].m_Texture2D->SamplerGpuHandle );
-		//	CommandList->SetGraphicsRootDescriptorTable( 2 + i * 2, m_Texture2DSlots[i].m_Texture2D->TextureGpuHandle );
-		//}
-		//
-		//const int NumScalars = m_FloatSlots.size();
-		//if (NumScalars > 0)
-		//{
-		//	CommandList->SetGraphicsRootDescriptorTable( 1 + NumTexture2Ds * 2, m_ScalarGpuHandle);
-		//}
+		{
+			std::vector<float> Values;
+			for (int i = 0; i < m_FloatSlots.size(); i++)
+			{
+				Values.push_back(m_FloatSlots[i].m_Value);
+			}
+
+			UINT8* ConstantBufferStart;
+			CD3DX12_RANGE readRange( 0, 0 );
+			m_ScalarBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+			memcpy( ConstantBufferStart, Values.data(), Values.size() * sizeof(float) );
+			m_ScalarBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ScalarGpuHandle), 4);
+		}
+
+		{
+			std::vector<Vector4> Values;
+			for (int i = 0; i < m_Vector4Slots.size(); i++)
+			{
+				Values.push_back(m_Vector4Slots[i].m_Value);
+			}
+
+			UINT8* ConstantBufferStart;
+			CD3DX12_RANGE readRange( 0, 0 );
+			m_VectorBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+			memcpy( ConstantBufferStart, Values.data(), Values.size() * sizeof(Vector4) );
+			m_VectorBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_VectorGpuHandle), 5);
+		}
+
 	}
 
 	void Material::SetNamedTexture2D( const std::string& Name, AssetHandle<Texture2D> TextureAsset )
@@ -627,22 +540,29 @@ namespace Drn
 		}
 	}
 
+	void Material::SetIndexedScalar( uint32 Index, float Value )
+	{
+		if (Index >= 0 && Index < m_FloatSlots.size())
+		{
+			m_FloatSlots[Index].m_Value = Value;
+		}
+	}
+
+	void Material::SetIndexedVector( uint32 Index, const Vector4& Value )
+	{
+		if (Index >= 0 && Index < m_Vector4Slots.size())
+		{
+			m_Vector4Slots[Index].m_Value = Value;
+		}
+	}
+
 	void Material::SetNamedScalar( const std::string& Name, float Value )
 	{
 		auto it = m_ScalarMap.find(Name);
 
 		if ( it != m_ScalarMap.end() )
 		{
-			it->second->m_Value = Value;
-
-			if (m_ScalarCBV && m_ScalarCBV->GetD3D12Resource())
-			{
-				UINT8* ScalarBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_ScalarCBV->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ScalarBufferStart ) );
-				memcpy( ScalarBufferStart + it->second->m_Index * sizeof(float), &Value, sizeof(float) );
-				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
-			}
+			SetIndexedScalar(it->second->m_Index, Value);
 		}
 	}
 
@@ -652,18 +572,7 @@ namespace Drn
 		
 		if ( it != m_Vector4Map.end() )
 		{
-			it->second->m_Value = Value;
-
-			if (m_ScalarCBV && m_ScalarCBV->GetD3D12Resource())
-			{
-				UINT8* ScalarBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_ScalarCBV->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ScalarBufferStart ) );
-
-				float Buffer[4] = { Value.GetX(), Value.GetY(), Value.GetZ(), Value.GetW() };
-				memcpy( ScalarBufferStart + it->second->m_Index * sizeof(float), &Buffer[0], sizeof(float) * 4 );
-				m_ScalarCBV->GetD3D12Resource()->Unmap(0, nullptr);
-			}
+			SetIndexedVector(it->second->m_Index, Value);
 		}
 	}
 

@@ -22,8 +22,6 @@ namespace Drn
 		Material(const std::string& InPath, const std::string& InSourcePath);
 #endif
 
-		inline ID3D12RootSignature* GetRootSignature() { return m_RootSignature; }
-
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
@@ -36,8 +34,12 @@ namespace Drn
 		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
 		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
 
+		void SetIndexedScalar(uint32 Index, float Value);
+		void SetIndexedVector(uint32 Index, const Vector4& Value);
+		
 		void SetNamedScalar(const std::string& Name, float Value);
 		void SetNamedVector4(const std::string& Name, const Vector4& Value);
+
 
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
@@ -74,8 +76,6 @@ namespace Drn
 		ShaderBlob m_EditorPrimitiveShaderBlob;
 		ShaderBlob m_PointlightShadowDepthShaderBlob;
 
-		ID3D12RootSignature* m_RootSignature;
-
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
 		D3D12_CULL_MODE m_CullMode;
@@ -84,10 +84,17 @@ namespace Drn
 		std::vector<MaterialIndexedFloatParameter> m_FloatSlots;
 		std::vector<MaterialIndexedVector4Parameter> m_Vector4Slots;
 
-		Resource* m_ScalarCBV;
+		Resource* m_ScalarBuffer;
+		Resource* m_VectorBuffer;
+
+		std::vector<float> m_ScalarValues;
+		std::vector<Vector4> m_VectorValues;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE m_ScalarCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE m_ScalarGpuHandle;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_VectorCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_VectorGpuHandle;
 
 		PipelineStateObject* m_MainPassPSO;
 		PipelineStateObject* m_PointLightShadowDepthPassPSO;

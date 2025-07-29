@@ -16,6 +16,8 @@ struct Resources
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
     uint TextureBufferIndex;
+    uint ScalarBufferIndex;
+    uint VectorBufferIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -39,9 +41,19 @@ struct StaticSamplers
 
 struct TextureBuffers
 {
-    uint BaseColorTexture; // TEX2D BaseColorTexture
-    uint NormalTexture; // TEX2D NormalTexture
-    uint MasksTexture; // TEX2D MasksTexture
+    uint BaseColorTexture; // @TEX2D BaseColorTexture
+    uint NormalTexture; // @TEX2D NormalTexture
+    uint MasksTexture; // @TEX2D MasksTexture
+};
+
+struct ScalarBuffer
+{
+    float TintIntensity; // @SCALAR ColorIntensity
+};
+
+struct VectorBuffer
+{
+    float4 TintColor; // @VECTOR TintColor
 };
 
 struct VertexInputStaticMesh
@@ -118,7 +130,10 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV).xyz;
     float3 Masks = MasksTexture.Sample(LinearSampler, IN.UV).xyz;
-    
+
+    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
+    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+
     float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rbg;
     Normal.z = 1 - Normal.z;
     Normal = Normal * 2 - 1;
@@ -127,6 +142,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColor, 1);
+    OUT.BaseColor = lerp(OUT.BaseColor, Vectors.TintColor, Scalars.TintIntensity);
     OUT.WorldNormal = float4( Normal, 0);
     OUT.Masks = float4(Masks, 1);
     
