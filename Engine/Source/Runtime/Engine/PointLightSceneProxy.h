@@ -5,6 +5,18 @@
 
 namespace Drn
 {
+	struct PointLightBuffer
+	{
+	public:
+		PointLightBuffer() = default;
+
+		Matrix LocalToProjection;
+		Vector CameraPosition;
+		Vector WorldPosition;
+		float Radius;
+		Vector LightColor;
+	};
+
 	class PointLightSceneProxy : public LightSceneProxy
 	{
 	public:
@@ -31,6 +43,14 @@ namespace Drn
 
 		Resource* m_ShadowCubemapResource;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_ShadowmapCpuHandle;
+
+
+		PointLightBuffer m_Buffer;
+		Resource* m_LightBuffer;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_LightBufferCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_LightBufferGpuHandle;
+
 
 	private:
 

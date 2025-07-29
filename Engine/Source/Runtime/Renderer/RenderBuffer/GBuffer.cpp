@@ -33,11 +33,11 @@ namespace Drn
 		m_DepthClearValue.Format = DEPTH_FORMAT;
 		m_DepthClearValue.DepthStencil = { 0, 0 };
 
-		Renderer::Get()->TempSRVAllocator.Alloc(&m_ColorDeferredSrvCpuHandle, &m_ColorDeferredSrvGpuHandle);
-		Renderer::Get()->TempSRVAllocator.Alloc(&m_BaseColorSrvCpuHandle, &m_BaseColorSrvGpuHandle);
-		Renderer::Get()->TempSRVAllocator.Alloc(&m_WorldNormalSrvCpuHandle, &m_WorldNormalSrvGpuHandle);
-		Renderer::Get()->TempSRVAllocator.Alloc(&m_MasksSrvCpuHandle, &m_MasksSrvGpuHandle);
-		Renderer::Get()->TempSRVAllocator.Alloc(&m_DepthSrvCpuHandle, &m_DepthSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_ColorDeferredSrvCpuHandle, &m_ColorDeferredSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_BaseColorSrvCpuHandle, &m_BaseColorSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_WorldNormalSrvCpuHandle, &m_WorldNormalSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_MasksSrvCpuHandle, &m_MasksSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_DepthSrvCpuHandle, &m_DepthSrvGpuHandle);
 	}
 
 	GBuffer::~GBuffer()
@@ -48,11 +48,11 @@ namespace Drn
 		if (m_MasksTarget) { m_MasksTarget->ReleaseBufferedResource(); }
 		if (m_DepthTarget) { m_DepthTarget->ReleaseBufferedResource(); }
 
-		Renderer::Get()->TempSRVAllocator.Free(m_ColorDeferredSrvCpuHandle, m_ColorDeferredSrvGpuHandle);
-		Renderer::Get()->TempSRVAllocator.Free(m_BaseColorSrvCpuHandle, m_BaseColorSrvGpuHandle);
-		Renderer::Get()->TempSRVAllocator.Free(m_WorldNormalSrvCpuHandle, m_WorldNormalSrvGpuHandle);
-		Renderer::Get()->TempSRVAllocator.Free(m_MasksSrvCpuHandle, m_MasksSrvGpuHandle);
-		Renderer::Get()->TempSRVAllocator.Free(m_DepthSrvCpuHandle, m_DepthSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_ColorDeferredSrvCpuHandle, m_ColorDeferredSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_BaseColorSrvCpuHandle, m_BaseColorSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_WorldNormalSrvCpuHandle, m_WorldNormalSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_MasksSrvCpuHandle, m_MasksSrvGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_DepthSrvCpuHandle, m_DepthSrvGpuHandle);
 	}
 
 	void GBuffer::Init()
@@ -262,10 +262,10 @@ namespace Drn
 
 		CommandList->OMSetRenderTargets( 1, &m_ColorDeferredCpuHandle, true, nullptr );
 
-		CommandList->SetGraphicsRootDescriptorTable(1, m_BaseColorSrvGpuHandle);
-		CommandList->SetGraphicsRootDescriptorTable(2, m_WorldNormalSrvGpuHandle);
-		CommandList->SetGraphicsRootDescriptorTable(3, m_MasksSrvGpuHandle);
-		CommandList->SetGraphicsRootDescriptorTable(4, m_DepthSrvGpuHandle);
+		//CommandList->SetGraphicsRootDescriptorTable(1, m_BaseColorSrvGpuHandle);
+		//CommandList->SetGraphicsRootDescriptorTable(2, m_WorldNormalSrvGpuHandle);
+		//CommandList->SetGraphicsRootDescriptorTable(3, m_MasksSrvGpuHandle);
+		//CommandList->SetGraphicsRootDescriptorTable(4, m_DepthSrvGpuHandle);
 	}
 
 	void GBuffer::UnBindLightPass( ID3D12GraphicsCommandList2* CommandList )

@@ -151,8 +151,7 @@ namespace Drn
 					m_PrimitiveSource->GetD3D12Resource()->Unmap(0, nullptr);
 
 					CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewGpuHandle), 0);
-					uint32 a = Renderer::Get()->GetBindlessSrvIndex(m_BufferGpuHandle);
-					CommandList->SetGraphicsRoot32BitConstant(0, a, 1);
+					CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BufferGpuHandle), 1);
 
 					RenderProxy.BindAndDraw(CommandList);
 				}

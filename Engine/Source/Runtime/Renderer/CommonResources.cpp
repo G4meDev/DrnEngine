@@ -4,6 +4,8 @@
 #define PAR_SHAPES_IMPLEMENTATION
 #include "ThirdParty/par/par_shapes.h"
 
+#include <dxcapi.h>
+
 LOG_DEFINE_CATEGORY( LogCommonResources, "CommonResources" );
 
 namespace Drn
@@ -362,63 +364,21 @@ namespace Drn
 
 	TonemapPSO::TonemapPSO( ID3D12GraphicsCommandList2* CommandList )
 	{
-		m_RootSignature = nullptr;
 		m_PSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		CD3DX12_ROOT_PARAMETER1 rootParameters[2] = {};
-		rootParameters[0].InitAsConstants(24, 0);
-		CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-		rootParameters[1].InitAsDescriptorTable(1, &Range);
-
-		CD3DX12_STATIC_SAMPLER_DESC SamplerDesc = {};
-		SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-		SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		SamplerDesc.ShaderRegister = 0;
-		SamplerDesc.RegisterSpace = 0;
-
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(2, rootParameters, 1, &SamplerDesc, rootSignatureFlags );
-
-		ID3DBlob* pSerializedRootSig;
-		ID3DBlob* pRootSigError;
-		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
-		if ( FAILED(Result) )
-		{
-			if ( pRootSigError )
-			{
-				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
-				pRootSigError->Release();
-			}
-
-			if (pSerializedRootSig)
-			{
-				pSerializedRootSig->Release();
-				pSerializedRootSig = nullptr;
-			}
-
-			return;
-		}
-
-		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
-
-		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Tonemap.hlsl" ) );
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Tonemap.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 
-		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
-		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+		const std::vector<const wchar_t*> Macros = {};
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= VertexLayout_PosUV;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
@@ -437,7 +397,6 @@ namespace Drn
 
 	TonemapPSO::~TonemapPSO()
 	{
-		m_RootSignature->Release();
 		m_PSO->Release();
 	}
 
@@ -640,71 +599,18 @@ namespace Drn
 
 	LightPassPSO::LightPassPSO( ID3D12GraphicsCommandList2* CommandList )
 	{
-		m_RootSignature = nullptr;
 		m_PSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		CD3DX12_ROOT_PARAMETER1 rootParameters[5] = {};
-		rootParameters[0].InitAsConstants(44, 0);
-		//CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-		//rootParameters[1].InitAsDescriptorTable(1, &Range);
-
-		CD3DX12_DESCRIPTOR_RANGE1 Range1(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-		CD3DX12_DESCRIPTOR_RANGE1 Range2(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
-		CD3DX12_DESCRIPTOR_RANGE1 Range3(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
-		CD3DX12_DESCRIPTOR_RANGE1 Range4(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 0);
-		rootParameters[1].InitAsDescriptorTable(1, &Range1);
-		rootParameters[2].InitAsDescriptorTable(1, &Range2);
-		rootParameters[3].InitAsDescriptorTable(1, &Range3);
-		rootParameters[4].InitAsDescriptorTable(1, &Range4);
-
-
-
-		CD3DX12_STATIC_SAMPLER_DESC SamplerDesc = {};
-		SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-		SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		SamplerDesc.ShaderRegister = 0;
-		SamplerDesc.RegisterSpace = 0;
-
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(5, rootParameters, 1, &SamplerDesc, rootSignatureFlags );
-
-		ID3DBlob* pSerializedRootSig;
-		ID3DBlob* pRootSigError;
-		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
-		if ( FAILED(Result) )
-		{
-			if ( pRootSigError )
-			{
-				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
-				pRootSigError->Release();
-			}
-
-			if (pSerializedRootSig)
-			{
-				pSerializedRootSig->Release();
-				pSerializedRootSig = nullptr;
-			}
-
-			return;
-		}
-
-		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
-
-		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightPassDeferred.hlsl" ) );
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightPassDeferred.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 
-		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
-		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+		const std::vector<const wchar_t*> Macros;
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
 		CD3DX12_BLEND_DESC BlendDesc = {};
 		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -720,7 +626,7 @@ namespace Drn
 		RasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= VertexLayout_Pos;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
@@ -739,7 +645,6 @@ namespace Drn
 
 	LightPassPSO::~LightPassPSO()
 	{
-		m_RootSignature->Release();
 		m_PSO->Release();
 	}
 
@@ -926,7 +831,82 @@ namespace Drn
 		}
 	}
 
+	bool CompileShader( const std::wstring& ShaderPath, const wchar_t* EntryPoint, const wchar_t* Profile, const std::vector<const wchar_t*>& Macros, ID3DBlob** ByteBlob )
+	{
+		Microsoft::WRL::ComPtr<IDxcUtils> pUtils;
+		Microsoft::WRL::ComPtr<IDxcCompiler3> pCompiler;
 
+		DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(pUtils.GetAddressOf()));
+		DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(pCompiler.GetAddressOf()));
+
+		Microsoft::WRL::ComPtr<IDxcIncludeHandler> pIncludeHandler;
+		pUtils->CreateDefaultIncludeHandler(pIncludeHandler.GetAddressOf());
+
+		std::vector<LPCWSTR> Args;
+		Args.push_back(L"Name");
+
+		Args.push_back(L"-E");
+		Args.push_back(EntryPoint);
+
+		Args.push_back(L"-T");
+		Args.push_back(Profile);
+
+		Args.push_back(L"-Zs");
+
+		for (auto& Mac : Macros)
+		{
+			Args.push_back(L"-D");
+			Args.push_back(Mac);
+		}
+
+		//Args.push_back(L"-Fo");
+		//Args.push_back( L"myshader.bin");
+		//
+		//Args.push_back(L"-Fd");
+		//Args.push_back(L"myshader.pdb");
+
+		Args.push_back(L"-Qstrip_reflect");
+
+		Microsoft::WRL::ComPtr<IDxcBlobEncoding> pSource = nullptr;
+		pUtils->LoadFile(ShaderPath.c_str(), nullptr, &pSource);
+		DxcBuffer Source;
+		Source.Ptr = pSource->GetBufferPointer();
+		Source.Size = pSource->GetBufferSize();
+		Source.Encoding = DXC_CP_ACP;
+
+		Microsoft::WRL::ComPtr<IDxcResult> pResults;
+		pCompiler->Compile(
+			&Source,
+			Args.data(),
+			Args.size(),
+			pIncludeHandler.Get(),
+			IID_PPV_ARGS(pResults.GetAddressOf())
+		);
+
+		Microsoft::WRL::ComPtr<IDxcBlobUtf8> pErrors = nullptr;
+		pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
+		if (pErrors != nullptr && pErrors->GetStringLength() != 0)
+		{
+			LOG(LogCommonResources, Warning, "\"%ws\" complation log:\n%s", ShaderPath.c_str(), pErrors->GetStringPointer());
+		}
+
+		HRESULT hrStatus;
+		pResults->GetStatus(&hrStatus);
+		if (FAILED(hrStatus))
+		{
+			LOG(LogCommonResources, Error, "shader complation Failed.");
+			return false;
+		}
+
+		Microsoft::WRL::ComPtr<IDxcBlob> pShader = nullptr;
+		Microsoft::WRL::ComPtr<IDxcBlobUtf16> pShaderName = nullptr;
+		pResults->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), &pShaderName);
+
+		D3DCreateBlob(pShader->GetBufferSize(), ByteBlob);
+		memcpy((*ByteBlob)->GetBufferPointer(), pShader->GetBufferPointer(), pShader->GetBufferSize());
+
+		return true;
+	}
 
 
  }  // namespace Drn

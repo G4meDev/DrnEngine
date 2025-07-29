@@ -20,6 +20,15 @@ namespace Drn
 		Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &DepthHeapDesc, IID_PPV_ARGS(m_DsvHeap.ReleaseAndGetAddressOf()) );
 
 		m_ShadowmapCpuHandle = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
+
+	
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_LightBufferCpuHandle, &m_LightBufferGpuHandle);
+		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+		ResourceViewDesc.BufferLocation = m_LightBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+		ResourceViewDesc.SizeInBytes = 256;
+		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBufferCpuHandle);
 	}
 
 	PointLightSceneProxy::~PointLightSceneProxy()
@@ -33,16 +42,19 @@ namespace Drn
 		XMMATRIX LocalToWorld = XMMatrixTranslationFromVector( XMLoadFloat3( m_WorldPosition.Get() ) );
 		XMMATRIX LocalToProjection = XMMatrixMultiply( m_LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
 
-		Vector4 Term1(CameraPosition, 1);
-		Vector4 Term2(m_WorldPosition, m_Radius);
-		Vector4 Term3(m_LightColor, 1);
+		m_Buffer.LocalToProjection = LocalToProjection;
+		m_Buffer.CameraPosition = CameraPosition;
+		m_Buffer.WorldPosition = m_WorldPosition;
+		m_Buffer.Radius = m_Radius;
+		m_Buffer.LightColor = m_LightColor; 
 
-		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &Renderer->GetSceneView().ProjectionToWorld, 16);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Term1, 32);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Term2, 36);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &Term3, 40);
+		UINT8* ConstantBufferStart;
+		CD3DX12_RANGE readRange( 0, 0 );
+		m_LightBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		memcpy( ConstantBufferStart, &m_Buffer, sizeof(PointLightBuffer));
+		m_LightBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBufferGpuHandle), 1);
 
 		//if (m_Sprite.IsValid())
 		//{

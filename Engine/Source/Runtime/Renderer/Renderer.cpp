@@ -36,6 +36,15 @@ namespace Drn
 			m_UploadCommandList->ReleaseBufferedResource();
 			m_UploadCommandList = nullptr;
 		}
+
+		if (m_StaticSamplersBuffer)
+		{
+			m_StaticSamplersBuffer->ReleaseBufferedResource();
+			m_StaticSamplersBuffer = nullptr;
+		}
+
+		m_BindlessSamplerHeapAllocator.Free(m_BindlessLinearSamplerCpuHandle, m_BindlessLinearSamplerGpuHandle);
+		m_BindlessSrvHeapAllocator.Free(m_BindlessStaticSamplerCpuHandle, m_BindlessStaticSamplerGpuHandle);
 	}
 
 	Renderer* Renderer::Get()
@@ -87,7 +96,6 @@ namespace Drn
 #endif
 
 		m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
-		CommonResources::Init(m_CommandList->GetD3D12CommandList());
 
 		{
 			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
@@ -206,6 +214,36 @@ namespace Drn
 		m_BindlessRootSinature->SetName(L"BindlessRootSignature");
 #endif
 
+		m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearSamplerCpuHandle, &m_BindlessLinearSamplerGpuHandle);
+		D3D12_SAMPLER_DESC SamplerDesc = {};
+		SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+		SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+
+		GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearSamplerCpuHandle);
+
+
+		m_StaticSamplers.LinearSampler = GetBindlessSamplerIndex(m_BindlessLinearSamplerGpuHandle);
+		m_BindlessSrvHeapAllocator.Alloc(&m_BindlessStaticSamplerCpuHandle, &m_BindlessStaticSamplerGpuHandle);
+
+		m_StaticSamplersBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+		ResourceViewDesc.BufferLocation = m_StaticSamplersBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+		ResourceViewDesc.SizeInBytes = 256;
+		GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_BindlessStaticSamplerCpuHandle);
+
+		UINT8* ConstantBufferStart;
+		CD3DX12_RANGE readRange( 0, 0 );
+		m_StaticSamplersBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		memcpy( ConstantBufferStart, &m_StaticSamplers, sizeof(StaticSamplers));
+		m_StaticSamplersBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+
+
+		CommonResources::Init(m_CommandList->GetD3D12CommandList());
+
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Init(m_MainWindow);
 #endif
@@ -278,7 +316,7 @@ namespace Drn
 		return (Handle.ptr - m_BindlessSrvHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SrvIncrementSize;
 	}
 
-	uint32 Renderer::GetBindlessSampplerIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
+	uint32 Renderer::GetBindlessSamplerIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
 	{
 		return (Handle.ptr - m_BindlessSamplerHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SamplerIncrementSize;
 	}

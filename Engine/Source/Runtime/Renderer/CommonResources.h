@@ -63,7 +63,6 @@ namespace Drn
 		TonemapPSO( ID3D12GraphicsCommandList2* CommandList );
 		~TonemapPSO();
 		
-		ID3D12RootSignature* m_RootSignature;
 		ID3D12PipelineState* m_PSO;
 	};
 
@@ -106,8 +105,7 @@ namespace Drn
 
 		LightPassPSO( ID3D12GraphicsCommandList2* CommandList );
 		~LightPassPSO();
-		
-		ID3D12RootSignature* m_RootSignature;
+
 		ID3D12PipelineState* m_PSO;
 	};
 
@@ -166,4 +164,5 @@ namespace Drn
 	};
 
 	void CompileShaderString(const std::wstring& ShaderPath, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob, const D3D_SHADER_MACRO* Macros = NULL);
+	bool CompileShader( const std::wstring& ShaderPath, const wchar_t* EntryPoint, const wchar_t* Profile, const std::vector<const wchar_t*>& Macros, ID3DBlob** ByteBlob );
 }

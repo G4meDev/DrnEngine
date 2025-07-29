@@ -21,6 +21,14 @@ namespace Drn
 	class D3D12Scene;
 	class Window;
 
+	struct StaticSamplers
+	{
+	public:
+		StaticSamplers() = default;
+
+		uint32 LinearSampler;
+	};
+
 	struct TempDescriptorHeapAllocator
 	{
 		ID3D12DescriptorHeap*       Heap     = nullptr;
@@ -153,8 +161,20 @@ namespace Drn
 
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_BindlessRootSinature;
 
+		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessLinearSamplerCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessLinearSamplerGpuHandle;
+
+		StaticSamplers m_StaticSamplers;
+
+		Resource* m_StaticSamplersBuffer;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessStaticSamplerCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessStaticSamplerGpuHandle;
+
+
+
+
 		uint32 GetBindlessSrvIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
-		uint32 GetBindlessSampplerIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
+		uint32 GetBindlessSamplerIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
 
 		tf::Taskflow m_RendererTickTask;
 
