@@ -85,7 +85,7 @@ namespace Drn
 		return Result;
 	}
 
-	PipelineStateObject* PipelineStateObject::CreateSelectionPassPSO( ID3D12RootSignature*RootSignature,
+	PipelineStateObject* PipelineStateObject::CreateSelectionPassPSO(
 		D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders)
 	{
@@ -103,7 +103,7 @@ namespace Drn
 		StencilDesc.StencilFunc = D3D12_COMPARISON_FUNC_ALWAYS;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(InputLayoutType);
 		PipelineDesc.PrimitiveTopologyType				= PrimitiveType;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
@@ -130,7 +130,7 @@ namespace Drn
 	}
 
 
-	PipelineStateObject* PipelineStateObject::CreateHitProxyPassPSO( ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode,
+	PipelineStateObject* PipelineStateObject::CreateHitProxyPassPSO(D3D12_CULL_MODE CullMode,
 		EInputLayoutType InputLayoutType, D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders )
 	{
 		PipelineStateObject* Result = new PipelineStateObject();
@@ -144,7 +144,7 @@ namespace Drn
 		RasterizerDesc.CullMode = CullMode;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(InputLayoutType);
 		PipelineDesc.PrimitiveTopologyType				= PrimitiveType;
 		PipelineDesc.RasterizerState					= RasterizerDesc;

@@ -10,15 +10,12 @@ namespace Drn
 	{
 		m_DepthStencilClearValue.Format   = DEPTH_STENCIL_FORMAT;
 		m_DepthStencilClearValue.DepthStencil = { 0, 0 };
-
-		Renderer::Get()->TempSRVAllocator.Alloc( &m_DepthStencilSrvCpuHandle, &m_DepthStencilSrvGpuHandle);
 	}
 
 	EditorSelectionRenderBuffer::~EditorSelectionRenderBuffer()
 	{
 		if (m_DepthStencilTarget) { m_DepthStencilTarget->ReleaseBufferedResource(); }
 
-		Renderer::Get()->TempSRVAllocator.Free(m_DepthStencilSrvCpuHandle, m_DepthStencilSrvGpuHandle);
 	}
 
 	void EditorSelectionRenderBuffer::Init()
@@ -66,7 +63,7 @@ namespace Drn
 		DsvSelectionDesc.Texture2D.MipLevels = 1;
 		DsvSelectionDesc.Texture2D.MostDetailedMip = 0;
 		
-		Device->CreateShaderResourceView( m_DepthStencilTarget->GetD3D12Resource(), &DsvSelectionDesc, m_DepthStencilSrvCpuHandle );
+		Device->CreateShaderResourceView( m_DepthStencilTarget->GetD3D12Resource(), &DsvSelectionDesc, m_DepthStencilTarget->GetCpuHandle() );
 
 		// use this as another srv if needed depth
 		//D3D12_SHADER_RESOURCE_VIEW_DESC DsvSelectionDesc = {};

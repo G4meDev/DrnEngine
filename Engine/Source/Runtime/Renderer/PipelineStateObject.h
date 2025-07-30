@@ -14,10 +14,10 @@ namespace Drn
 		static PipelineStateObject* CreatePointLightShadowDepthPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
-		static PipelineStateObject* CreateSelectionPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+		static PipelineStateObject* CreateSelectionPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
-		static PipelineStateObject* CreateHitProxyPassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+		static PipelineStateObject* CreateHitProxyPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
 		static PipelineStateObject* CreateEditorPrimitivePassPSO(ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,

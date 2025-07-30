@@ -176,29 +176,29 @@ namespace Drn
 
 	void LineBatchSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		SCOPE_STAT();
-
-		if (!m_HasValidData)
-		{
-			return;
-		}
-
-		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
-		if (m_Thickness)
-		{
-			CommandList->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
-			CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLineThicknessPSO->m_RootSignature );
-		}
-		else
-		{
-			CommandList->SetPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
-			CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLinePSO->m_RootSignature );
-		}
-
-		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &Renderer->GetSceneView().WorldToProjection, 0 );
-
-		CommandList->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
-		CommandList->DrawInstanced( m_VertexCount, 1, 0, 0);
+		//SCOPE_STAT();
+		//
+		//if (!m_HasValidData)
+		//{
+		//	return;
+		//}
+		//
+		//CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
+		//if (m_Thickness)
+		//{
+		//	CommandList->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
+		//	CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLineThicknessPSO->m_RootSignature );
+		//}
+		//else
+		//{
+		//	CommandList->SetPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
+		//	CommandList->SetGraphicsRootSignature( CommonResources::Get()->m_DebugLinePSO->m_RootSignature );
+		//}
+		//
+		//CommandList->SetGraphicsRoot32BitConstants( 0, 16, &Renderer->GetSceneView().WorldToProjection, 0 );
+		//
+		//CommandList->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
+		//CommandList->DrawInstanced( m_VertexCount, 1, 0, 0);
 	}
 
 #endif

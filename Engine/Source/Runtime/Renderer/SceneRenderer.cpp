@@ -116,6 +116,8 @@ namespace Drn
 	{
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "HitProxy");
 
+		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
+
 		m_HitProxyRenderBuffer->Clear( m_CommandList->GetD3D12CommandList() );
 		m_HitProxyRenderBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
@@ -287,6 +289,8 @@ namespace Drn
 		
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Editor Selection" );
 
+		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
+
 		m_EditorSelectionBuffer->Clear(m_CommandList->GetD3D12CommandList());
 		m_EditorSelectionBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
@@ -308,7 +312,7 @@ namespace Drn
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 8, &m_SceneView.Size, 16);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_EditorSelectionBuffer->m_DepthStencilSrvGpuHandle);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_EditorSelectionBuffer->m_DepthStencilTarget->GetGpuHandle());
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
@@ -346,7 +350,7 @@ namespace Drn
 		RecalculateView();
 
 #if WITH_EDITOR
-		//RenderHitProxyPass();
+		RenderHitProxyPass();
 #endif
 
 		//RenderShadowDepths();
@@ -356,7 +360,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		//RenderEditorPrimitives();
-		//RenderEditorSelection();
+		RenderEditorSelection();
 #endif
 
 		m_CommandList->Close();

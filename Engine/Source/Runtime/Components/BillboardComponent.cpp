@@ -81,13 +81,13 @@ namespace Drn
 #if WITH_EDITOR
 	void BillboardSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		CommandList->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
-		CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_SpriteHitProxyPSO->m_RootSignature);
-
-		SetConstantAndSrv(CommandList, Renderer);
-
-		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
+		//CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//CommandList->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
+		//CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_SpriteHitProxyPSO->m_RootSignature);
+		//
+		//SetConstantAndSrv(CommandList, Renderer);
+		//
+		//CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
 
 	void BillboardSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
@@ -97,13 +97,13 @@ namespace Drn
 
 	void BillboardSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		CommandList->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
-		CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_RootSignature);
-
-		SetConstantAndSrv(CommandList, Renderer);
-
-		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
+		//CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//CommandList->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
+		//CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_RootSignature);
+		//
+		//SetConstantAndSrv(CommandList, Renderer);
+		//
+		//CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
 #endif
 

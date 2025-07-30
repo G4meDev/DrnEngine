@@ -1,8 +1,8 @@
 //#include "../../../Engine/Content/Materials/Common.hlsl"
 
 // SUPPORT_MAIN_PASS
-// S111UPPORT_HIT_PROXY_PASS
-// S111UPPORT_EDITOR_SELECTION_PASS
+// SUPPORT_HIT_PROXY_PASS
+// SUPPORT_EDITOR_SELECTION_PASS
 // S111UPPORT_SHADOW_PASS
 
 float3 EncodeNormal(float3 Normal)
@@ -110,15 +110,23 @@ struct PixelShaderInput
 
 struct PixelShaderOutput
 {
+#if MAIN_PASS
     float4 ColorDeferred : SV_TARGET0;
     float4 BaseColor : SV_TARGET1;
     float4 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
+#elif HitProxyPass
+    uint4 Guid;
+#elif EDITOR_PRIMITIVE_PASS
+    float4 Color;
+#endif
 };
 
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
+ 
+#if MAIN_PASS
 
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
@@ -145,6 +153,11 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     OUT.BaseColor = lerp(OUT.BaseColor, Vectors.TintColor, Scalars.TintIntensity);
     OUT.WorldNormal = float4( Normal, 0);
     OUT.Masks = float4(Masks, 1);
+    
+#elif HitProxyPass
+    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    OUT.Guid = P.Guid;
+#endif
     
     return OUT;
 }

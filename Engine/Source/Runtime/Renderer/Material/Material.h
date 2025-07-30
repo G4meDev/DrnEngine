@@ -90,12 +90,6 @@ namespace Drn
 		std::vector<float> m_ScalarValues;
 		std::vector<Vector4> m_VectorValues;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE m_ScalarCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_ScalarGpuHandle;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE m_VectorCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_VectorGpuHandle;
-
 		PipelineStateObject* m_MainPassPSO;
 		PipelineStateObject* m_PointLightShadowDepthPassPSO;
 
@@ -117,9 +111,6 @@ namespace Drn
 		bool m_SupportEditorSelectionPass;
 
 		Resource* m_TextureIndexBuffer;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE m_TextureIndexCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_TextureIndexGpuHandle;
 
 		void ReleaseBuffers();
 

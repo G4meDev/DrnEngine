@@ -206,18 +206,29 @@ namespace Drn
 				continue;
 			}
 
+			if (!Mat->m_BindlessTest)
+			{
+				continue;
+			}
+
 			Mat->BindHitProxyPass(CommandList);
 			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			// TODO: remove dependency and only copy from parent side
-			XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-			XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
+			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+			m_PrimitiveBuffer.m_Guid = m_Guid;
 
-			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
-			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
-			CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
+			UINT8* ConstantBufferStart;
+			CD3DX12_RANGE readRange( 0, 0 );
+			m_PrimitiveSource->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+			memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
+			m_PrimitiveSource->GetD3D12Resource()->Unmap(0, nullptr);
 
-			RenderProxy.BindAndDraw( CommandList );
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer->GetGpuHandle()), 0);
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource->GetGpuHandle()), 1);
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+			RenderProxy.BindAndDraw(CommandList);
 		}
 	}
 
@@ -230,23 +241,29 @@ namespace Drn
 		{
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
-
+		
 			if (!Mat->IsSupportingEditorSelectionPass())
 			{
 				continue;
 			}
-
+		
 			Mat->BindSelectionPass(CommandList);
 			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		
+			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+			m_PrimitiveBuffer.m_Guid = m_Guid;
 
-			// TODO: remove dependency and only copy from parent side
-			XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-			XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
+			UINT8* ConstantBufferStart;
+			CD3DX12_RANGE readRange( 0, 0 );
+			m_PrimitiveSource->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+			memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
+			m_PrimitiveSource->GetD3D12Resource()->Unmap(0, nullptr);
 
-			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
-			CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
-			CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
-
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer->GetGpuHandle()), 0);
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource->GetGpuHandle()), 1);
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+		
 			RenderProxy.BindAndDraw(CommandList);
 		}
 	}
@@ -258,32 +275,32 @@ namespace Drn
 			return;
 		}
 
-		if (m_Mesh.IsValid())
-		{
-			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
-			{
-				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
-				
-				if (!Mat->IsSupportingEditorPrimitivePass())
-				{
-					continue;
-				}
-
-				Mat->BindEditorPrimitivePass(CommandList);
-				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-				// TODO: remove dependency and only copy from parent side
-				XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-				XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
-
-				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
-				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
-				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
-
-				RenderProxy.BindAndDraw( CommandList );
-			}
-		}
+		//if (m_Mesh.IsValid())
+		//{
+		//	for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
+		//	{
+		//		const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
+		//		AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+		//		
+		//		if (!Mat->IsSupportingEditorPrimitivePass())
+		//		{
+		//			continue;
+		//		}
+		//
+		//		Mat->BindEditorPrimitivePass(CommandList);
+		//		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//
+		//		// TODO: remove dependency and only copy from parent side
+		//		XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+		//		XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
+		//
+		//		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
+		//		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
+		//		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
+		//
+		//		RenderProxy.BindAndDraw( CommandList );
+		//	}
+		//}
 	}
 
 #endif

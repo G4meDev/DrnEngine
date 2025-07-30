@@ -230,21 +230,18 @@ namespace Drn
 			m_TextureIndexBuffer->ReleaseBufferedResource();
 			m_TextureIndexBuffer = nullptr;
 		}
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_TextureIndexCpuHandle, m_TextureIndexGpuHandle);
 
 		if (m_ScalarBuffer)
 		{
 			m_ScalarBuffer->ReleaseBufferedResource();
 			m_ScalarBuffer = nullptr;
 		}
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_ScalarCpuHandle, m_ScalarGpuHandle );
 
 		if (m_VectorBuffer)
 		{
 			m_VectorBuffer->ReleaseBufferedResource();
 			m_VectorBuffer = nullptr;
 		}
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free( m_VectorCpuHandle, m_VectorGpuHandle );
 
 	}
 
@@ -326,13 +323,12 @@ namespace Drn
 			// TODO: support no constant buffers
 
 			{
-				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_TextureIndexCpuHandle, &m_TextureIndexGpuHandle);
 				m_TextureIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 				ResourceViewDesc.BufferLocation = m_TextureIndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = 256;
-				Device->CreateConstantBufferView( &ResourceViewDesc, m_TextureIndexCpuHandle);
+				Device->CreateConstantBufferView( &ResourceViewDesc, m_TextureIndexBuffer->GetCpuHandle());
 
 #if D3D12_Debug_INFO
 				m_TextureIndexBuffer->SetName("TextureBuffer_" + name);
@@ -345,13 +341,12 @@ namespace Drn
 				// TODO: remove
 				const size_t ScalarBufferSizePadded = 256;
 
-				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_ScalarCpuHandle, &m_ScalarGpuHandle);
 				m_ScalarBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 				ResourceViewDesc.BufferLocation = m_ScalarBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = ScalarBufferSizePadded;
-				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarCpuHandle);
+				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarBuffer->GetCpuHandle());
 
 #if D3D12_Debug_INFO
 				m_ScalarBuffer->SetName("ScalarBuffer_" + name);
@@ -364,13 +359,12 @@ namespace Drn
 				// TODO: remove
 				const size_t VectorBufferSizePadded = 256;
 
-				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_VectorCpuHandle, &m_VectorGpuHandle);
 				m_VectorBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( VectorBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 				ResourceViewDesc.BufferLocation = m_VectorBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = VectorBufferSizePadded;
-				Device->CreateConstantBufferView( &ResourceViewDesc , m_VectorCpuHandle);
+				Device->CreateConstantBufferView( &ResourceViewDesc , m_VectorBuffer->GetCpuHandle());
 
 #if D3D12_Debug_INFO
 				m_VectorBuffer->SetName("VectorBuffer_" + name);
@@ -402,7 +396,7 @@ namespace Drn
 
 			if (m_SupportEditorSelectionPass)
 			{
-				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(NULL, m_CullMode, m_InputLayoutType,
+				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_MainShaderBlob);
 #if D3D12_Debug_INFO
 				m_SelectionPassPSO->SetName( "SelectionPassPSO_" + name );
@@ -411,7 +405,7 @@ namespace Drn
 
 			if (IsSupportingHitProxyPass())
 			{
-				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(NULL, m_CullMode, m_InputLayoutType,
+				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(m_CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_HitProxyShaderBlob);
 
 #if D3D12_Debug_INFO
@@ -466,7 +460,7 @@ namespace Drn
 
 	void Material::BindSelectionPass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(NULL);
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetPipelineState(m_SelectionPassPSO->GetD3D12PSO());
 		CommandList->OMSetStencilRef( 255 );
 
@@ -475,7 +469,7 @@ namespace Drn
 
 	void Material::BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(NULL);
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetPipelineState(m_HitProxyPassPSO->GetD3D12PSO());
 
 		BindResources(CommandList);
@@ -501,7 +495,7 @@ namespace Drn
 		memcpy( ConstantBufferStart, TextureIndices.data(), TextureIndices.size() * sizeof(uint32));
 		m_TextureIndexBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TextureIndexGpuHandle), 3);
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TextureIndexBuffer->GetGpuHandle()), 3);
 
 		{
 			std::vector<float> Values;
@@ -516,7 +510,7 @@ namespace Drn
 			memcpy( ConstantBufferStart, Values.data(), Values.size() * sizeof(float) );
 			m_ScalarBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ScalarGpuHandle), 4);
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ScalarBuffer->GetGpuHandle()), 4);
 		}
 
 		{
@@ -532,7 +526,7 @@ namespace Drn
 			memcpy( ConstantBufferStart, Values.data(), Values.size() * sizeof(Vector4) );
 			m_VectorBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_VectorGpuHandle), 5);
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_VectorBuffer->GetGpuHandle()), 5);
 		}
 
 	}

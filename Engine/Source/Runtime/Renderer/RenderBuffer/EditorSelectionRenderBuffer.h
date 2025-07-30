@@ -23,10 +23,6 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthStencilCpuHandle;
 
-
-		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthStencilSrvCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_DepthStencilSrvGpuHandle;
-
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_ScissorRect;
 
