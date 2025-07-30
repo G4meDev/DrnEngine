@@ -17,16 +17,12 @@ namespace Drn
 
 		m_DepthClearValue.Format   = DEPTH_FORMAT;
 		m_DepthClearValue.DepthStencil = { 0, 0 };
-
-		Renderer::Get()->TempSRVAllocator.Alloc(&m_ColorSrvCpuHandle, &m_ColorSrvGpuHandle);
 	}
 
 	EditorPrimitiveRenderBuffer::~EditorPrimitiveRenderBuffer()
 	{
 		if (m_ColorTarget) { m_ColorTarget->ReleaseBufferedResource(); }
 		if (m_DepthTarget) { m_DepthTarget->ReleaseBufferedResource(); }
-
-		Renderer::Get()->TempSRVAllocator.Free(m_ColorSrvCpuHandle, m_ColorSrvGpuHandle);
 	}
 
 	void EditorPrimitiveRenderBuffer::Init()
@@ -74,7 +70,7 @@ namespace Drn
 		SrvDesc.Texture2D.MipLevels = 1;
 		SrvDesc.Texture2D.MostDetailedMip = 0;
 
-		Device->CreateShaderResourceView( m_ColorTarget->GetD3D12Resource(), &SrvDesc, m_ColorSrvCpuHandle );
+		Device->CreateShaderResourceView( m_ColorTarget->GetD3D12Resource(), &SrvDesc, m_ColorTarget->GetCpuHandle() );
 
 		if (m_DepthTarget)
 			m_DepthTarget->ReleaseBufferedResource();

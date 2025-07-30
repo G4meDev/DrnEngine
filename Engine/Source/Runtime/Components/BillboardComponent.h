@@ -6,6 +6,16 @@
 
 namespace Drn
 {
+	struct BillboardData
+	{
+	public:
+		BillboardData() = default;
+
+		Matrix m_LocalToProjetcion;
+		Guid m_Guid;
+		uint32 m_TextureIndex;
+	};
+
 	class BillboardSceneProxy : public PrimitiveSceneProxy
 	{
 	public:
@@ -33,6 +43,9 @@ namespace Drn
 	protected:
 		AssetHandle<Texture2D> m_Sprite;
 		Guid m_Guid;
+
+		BillboardData m_BillboardData;
+		Resource* m_BillboardBuffer;
 
 		class BillboardComponent* m_BillboardComponent;
 	};

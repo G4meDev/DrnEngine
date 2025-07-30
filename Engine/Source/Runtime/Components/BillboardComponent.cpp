@@ -60,12 +60,17 @@ namespace Drn
 		: PrimitiveSceneProxy( InBillboardComponent )
 		, m_Sprite( InBillboardComponent->GetSprite() )
 		, m_Guid( InBillboardComponent->GetParent() ? InBillboardComponent->GetParent()->GetGuid() : InBillboardComponent->GetGuid() )
+		, m_BillboardBuffer(nullptr)
 	{
 	}
 
 	BillboardSceneProxy::~BillboardSceneProxy()
 	{
-		
+		if (m_BillboardBuffer)
+		{
+			m_BillboardBuffer->ReleaseBufferedResource();
+			m_BillboardBuffer = nullptr;
+		}
 	}
 
 	void BillboardSceneProxy::RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
@@ -81,13 +86,13 @@ namespace Drn
 #if WITH_EDITOR
 	void BillboardSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		//CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//CommandList->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
-		//CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_SpriteHitProxyPSO->m_RootSignature);
-		//
-		//SetConstantAndSrv(CommandList, Renderer);
-		//
-		//CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
+		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		CommandList->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
+		
+		SetConstantAndSrv(CommandList, Renderer);
+		
+		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
 
 	void BillboardSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
@@ -97,19 +102,24 @@ namespace Drn
 
 	void BillboardSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		//CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//CommandList->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
-		//CommandList->SetGraphicsRootSignature(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_RootSignature);
-		//
-		//SetConstantAndSrv(CommandList, Renderer);
-		//
-		//CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
+		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		CommandList->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
+		
+		SetConstantAndSrv(CommandList, Renderer);
+		
+		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
 #endif
 
 	void BillboardSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		
+		m_BillboardBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+		ResourceViewDesc.BufferLocation = m_BillboardBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+		ResourceViewDesc.SizeInBytes = 256;
+		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_BillboardBuffer->GetCpuHandle());
 	}
 
 	void BillboardSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
@@ -134,9 +144,6 @@ namespace Drn
 
 		XMMATRIX mvpMatrix = XMMatrixMultiply( CameraRotated, Renderer->GetSceneView().WorldToProjection.Get() );
 
-		CommandList->SetGraphicsRoot32BitConstants( 0, 16, &mvpMatrix, 0);
-		CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 16);
-
 		if (m_Sprite.IsValid())
 		{
 			if (m_Sprite->IsRenderStateDirty())
@@ -146,15 +153,23 @@ namespace Drn
 
 			if (m_Sprite->GetResource())
 			{
-				CommandList->SetGraphicsRootDescriptorTable( 1, m_Sprite->GetResource()->GetGpuHandle() );
+				// TODO: set default texture if null
+				m_BillboardData.m_TextureIndex = m_Sprite->GetResource() ? Renderer::Get()->GetBindlessSrvIndex(m_Sprite->GetResource()->GetGpuHandle()) : 0;
 			}
-
 		}
 
-		else
-		{
-			// TODO: set default texture if null
-		}
+		m_BillboardData.m_LocalToProjetcion = mvpMatrix;
+		m_BillboardData.m_Guid = m_Guid;
+
+		UINT8* ConstantBufferStart;
+		CD3DX12_RANGE readRange( 0, 0 );
+		m_BillboardBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		memcpy( ConstantBufferStart, &m_BillboardData, sizeof(BillboardData));
+		m_BillboardBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer->GetGpuHandle()), 0);
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BillboardBuffer->GetGpuHandle()), 1);
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 	}
 
 	PrimitiveComponent* BillboardSceneProxy::GetPrimitive()

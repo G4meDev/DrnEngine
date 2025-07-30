@@ -84,7 +84,6 @@ namespace Drn
 		SpriteEditorPrimitivePSO( ID3D12GraphicsCommandList2* CommandList );
 		~SpriteEditorPrimitivePSO();
 		
-		ID3D12RootSignature* m_RootSignature;
 		ID3D12PipelineState* m_PSO;
 	};
 
@@ -95,7 +94,6 @@ namespace Drn
 		SpriteHitProxyPSO( ID3D12GraphicsCommandList2* CommandList );
 		~SpriteHitProxyPSO();
 		
-		ID3D12RootSignature* m_RootSignature;
 		ID3D12PipelineState* m_PSO;
 	};
 

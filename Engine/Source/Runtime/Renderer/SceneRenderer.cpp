@@ -116,8 +116,6 @@ namespace Drn
 	{
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "HitProxy");
 
-		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
-
 		m_HitProxyRenderBuffer->Clear( m_CommandList->GetD3D12CommandList() );
 		m_HitProxyRenderBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
@@ -271,7 +269,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_EditorPrimitiveBuffer->m_ColorSrvGpuHandle);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_EditorPrimitiveBuffer->m_ColorTarget->GetGpuHandle());
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
@@ -288,8 +286,6 @@ namespace Drn
 		SCOPE_STAT();
 		
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Editor Selection" );
-
-		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 
 		m_EditorSelectionBuffer->Clear(m_CommandList->GetD3D12CommandList());
 		m_EditorSelectionBuffer->Bind(m_CommandList->GetD3D12CommandList());
@@ -349,6 +345,8 @@ namespace Drn
 
 		RecalculateView();
 
+		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
+
 #if WITH_EDITOR
 		RenderHitProxyPass();
 #endif
@@ -359,7 +357,7 @@ namespace Drn
 		RenderPostProcess();
 
 #if WITH_EDITOR
-		//RenderEditorPrimitives();
+		RenderEditorPrimitives();
 		RenderEditorSelection();
 #endif
 

@@ -420,7 +420,7 @@ namespace Drn
 		}
 
 		BufferedResourceManager::Get()->Tick(DeltaTime);
-		SetHeaps(m_CommandList->GetD3D12CommandList());
+		SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 	}
 
 	void Renderer::UpdateSceneProxyAndResources()
@@ -539,7 +539,7 @@ namespace Drn
 	void Renderer::SetBindlessHeaps( ID3D12GraphicsCommandList* CommandList )
 	{
 		SCOPE_STAT();
-
+	
 		ID3D12DescriptorHeap* const Descs[2] = { m_BindlessSrvHeap.Get(), m_BindlessSamplerHeap.Get() };
 		CommandList->SetDescriptorHeaps(2, Descs);
 	}

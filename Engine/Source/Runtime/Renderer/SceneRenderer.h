@@ -101,6 +101,8 @@ namespace Drn
 
 		tf::Taskflow m_RenderTask;
 
+		Resource* m_BindlessViewBuffer = nullptr;
+
 	protected:
 
 		inline void Release() { delete this; }
@@ -121,7 +123,6 @@ namespace Drn
 
 		std::string m_Name;
 
-		Resource* m_BindlessViewBuffer = nullptr;
 
 		void UpdateViewBuffer();
 

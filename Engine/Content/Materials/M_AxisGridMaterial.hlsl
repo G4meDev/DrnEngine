@@ -1,8 +1,65 @@
-#include "../../../Engine/Content/Materials/Common.hlsl"
+//#include "../../../Engine/Content/Materials/Common.hlsl"
 
 // SUPPORT_EDITOR_PRIMITIVE_PASS
 
-ConstantBuffer<ViewBuffer> View : register(b0);
+struct Resources
+{
+    uint ViewIndex;
+    uint PrimitiveIndex;
+    uint StaticSamplerBufferIndex;
+    uint TextureBufferIndex;
+    uint ScalarBufferIndex;
+    uint VectorBufferIndex;
+};
+
+ConstantBuffer<Resources> BindlessResources : register(b0);
+
+struct ViewBuffer
+{
+    matrix WorldToView;
+    matrix ViewToProjection;
+    matrix WorldToProjection;
+    matrix ProjectionToView;
+    matrix ProjectionToWorld;
+    matrix LocalToCameraView;
+
+    uint2 RenderSize;
+};
+
+struct Primitive
+{
+    matrix LocalToWorld;
+    matrix LocalToProjection;
+    uint4 Guid;
+};
+
+
+struct VertexInputStaticMesh
+{
+    float3 Position : POSITION;
+    float3 Color : COLOR;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
+    float3 Bitangent : BINORMAL;
+    float2 UV1 : TEXCOORD0;
+    float2 UV2 : TEXCOORD1;
+    float2 UV3 : TEXCOORD2;
+    float2 UV4 : TEXCOORD3;
+};
+
+struct PixelShaderOutput
+{
+#if MAIN_PASS
+    float4 ColorDeferred : SV_TARGET0;
+    float4 BaseColor : SV_TARGET1;
+    float4 WorldNormal : SV_TARGET2;
+    float4 Masks : SV_TARGET3;
+#elif HitProxyPass
+    uint4 Guid;
+#elif EDITOR_PRIMITIVE_PASS
+    float4 Color;
+#endif
+};
 
 struct VertexShaderOutput
 {
@@ -14,8 +71,10 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 
-    OUT.Position = mul(View.LocalToProjection, float4(IN.Position, 1.0f));
-    OUT.WorldPos = mul(View.LocalToWorld, float4(IN.Position, 1.0f));
+    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    
+    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.WorldPos = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
 
     return OUT;
 }

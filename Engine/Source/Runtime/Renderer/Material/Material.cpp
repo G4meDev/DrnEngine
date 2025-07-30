@@ -415,10 +415,10 @@ namespace Drn
 
 			if (m_SupportEditorPrimitivePass)
 			{
-//				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(NULL, m_CullMode, m_InputLayoutType,
-//					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
+				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(m_CullMode, m_InputLayoutType,
+					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
 #if D3D12_Debug_INFO
-//				m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
+				m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
 #endif
 			}
 
@@ -443,7 +443,7 @@ namespace Drn
 
 	void Material::BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(NULL);
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetPipelineState(m_PointLightShadowDepthPassPSO->GetD3D12PSO());
 		
 		BindResources(CommandList);
@@ -452,7 +452,7 @@ namespace Drn
 #if WITH_EDITOR
 	void Material::BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(NULL);
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetPipelineState(m_EditorProxyPSO->GetD3D12PSO());
 
 		BindResources(CommandList);

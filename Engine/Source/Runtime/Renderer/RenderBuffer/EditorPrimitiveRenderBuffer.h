@@ -29,9 +29,6 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE m_ColorCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthCpuHandle;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE m_ColorSrvCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_ColorSrvGpuHandle;
-
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_ScissorRect;
 

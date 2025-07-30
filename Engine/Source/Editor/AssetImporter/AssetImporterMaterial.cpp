@@ -54,7 +54,7 @@ namespace Drn
 
 		if (SupportHitProxyPass)
 		{
-			const std::vector<const wchar_t*> HitProxyMacros = { L"HitProxyPass=1" };
+			const std::vector<const wchar_t*> HitProxyMacros = { L"HITPROXY_PASS=1" };
 
 			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", HitProxyMacros, &HitProxyShaderBlob.m_VS);
 			CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", HitProxyMacros, &HitProxyShaderBlob.m_PS);
