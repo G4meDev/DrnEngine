@@ -33,8 +33,6 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
-		inline ID3D12Resource* GetResource() { return m_Resource ? m_Resource->GetD3D12Resource() : nullptr; }
-
 		inline bool IsSRGB() const				{ return m_sRGB; }
 		inline uint16 GetSizeX() const			{ return m_SizeX; }
 		inline uint16 GetSizeY() const			{ return m_SizeY; }
@@ -62,6 +60,8 @@ namespace Drn
 			}
 		}
 
+		inline Resource* GetResource() const { return m_Resource; }
+
 protected:
 		EAssetType GetAssetType() override = 0;
 
@@ -69,6 +69,7 @@ protected:
 		void OpenAssetPreview() override = 0;
 		void CloseAssetPreview() override = 0;
 #endif
+
 
 		Resource* m_Resource;
 

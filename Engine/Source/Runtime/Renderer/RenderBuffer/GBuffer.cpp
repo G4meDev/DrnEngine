@@ -32,12 +32,6 @@ namespace Drn
 		
 		m_DepthClearValue.Format = DEPTH_FORMAT;
 		m_DepthClearValue.DepthStencil = { 0, 0 };
-
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_ColorDeferredSrvCpuHandle, &m_ColorDeferredSrvGpuHandle);
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_BaseColorSrvCpuHandle, &m_BaseColorSrvGpuHandle);
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_WorldNormalSrvCpuHandle, &m_WorldNormalSrvGpuHandle);
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_MasksSrvCpuHandle, &m_MasksSrvGpuHandle);
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_DepthSrvCpuHandle, &m_DepthSrvGpuHandle);
 	}
 
 	GBuffer::~GBuffer()
@@ -47,12 +41,6 @@ namespace Drn
 		if (m_WorldNormalTarget) { m_WorldNormalTarget->ReleaseBufferedResource(); }
 		if (m_MasksTarget) { m_MasksTarget->ReleaseBufferedResource(); }
 		if (m_DepthTarget) { m_DepthTarget->ReleaseBufferedResource(); }
-
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_ColorDeferredSrvCpuHandle, m_ColorDeferredSrvGpuHandle);
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_BaseColorSrvCpuHandle, m_BaseColorSrvGpuHandle);
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_WorldNormalSrvCpuHandle, m_WorldNormalSrvGpuHandle);
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_MasksSrvCpuHandle, m_MasksSrvGpuHandle);
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_DepthSrvCpuHandle, m_DepthSrvGpuHandle);
 	}
 
 	void GBuffer::Init()
@@ -105,7 +93,7 @@ namespace Drn
 			SrvDesc.Texture2D.MipLevels = 1;
 			SrvDesc.Texture2D.MostDetailedMip = 0;
 
-			Device->CreateShaderResourceView( m_ColorDeferredTarget->GetD3D12Resource(), &SrvDesc, m_ColorDeferredSrvCpuHandle );
+			Device->CreateShaderResourceView( m_ColorDeferredTarget->GetD3D12Resource(), &SrvDesc, m_ColorDeferredTarget->GetCpuHandle() );
 		}
 
 		{
@@ -130,7 +118,7 @@ namespace Drn
 			SrvDesc.Texture2D.MipLevels = 1;
 			SrvDesc.Texture2D.MostDetailedMip = 0;
 
-			Device->CreateShaderResourceView( m_BaseColorTarget->GetD3D12Resource(), &SrvDesc, m_BaseColorSrvCpuHandle );
+			Device->CreateShaderResourceView( m_BaseColorTarget->GetD3D12Resource(), &SrvDesc, m_BaseColorTarget->GetCpuHandle() );
 		}
 
 		{
@@ -155,7 +143,7 @@ namespace Drn
 			SrvDesc.Texture2D.MipLevels = 1;
 			SrvDesc.Texture2D.MostDetailedMip = 0;
 
-			Device->CreateShaderResourceView( m_WorldNormalTarget->GetD3D12Resource(), &SrvDesc, m_WorldNormalSrvCpuHandle );
+			Device->CreateShaderResourceView( m_WorldNormalTarget->GetD3D12Resource(), &SrvDesc, m_WorldNormalTarget->GetCpuHandle() );
 		}
 
 		{
@@ -180,7 +168,7 @@ namespace Drn
 			SrvDesc.Texture2D.MipLevels = 1;
 			SrvDesc.Texture2D.MostDetailedMip = 0;
 
-			Device->CreateShaderResourceView( m_MasksTarget->GetD3D12Resource(), &SrvDesc, m_MasksSrvCpuHandle );
+			Device->CreateShaderResourceView( m_MasksTarget->GetD3D12Resource(), &SrvDesc, m_MasksTarget->GetCpuHandle() );
 		}
 
 		{
@@ -205,7 +193,7 @@ namespace Drn
 			SrvDesc.Texture2D.MipLevels = 1;
 			SrvDesc.Texture2D.MostDetailedMip = 0;
 
-			Device->CreateShaderResourceView( m_DepthTarget->GetD3D12Resource(), &SrvDesc, m_DepthSrvCpuHandle );
+			Device->CreateShaderResourceView( m_DepthTarget->GetD3D12Resource(), &SrvDesc, m_DepthTarget->GetCpuHandle() );
 		}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------

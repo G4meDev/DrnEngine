@@ -318,6 +318,11 @@ namespace Drn
 			ReleasePSOs();
 			ReleaseBuffers();
 
+#if D3D12_Debug_INFO
+			std::string name = Path::ConvertShortPath(m_Path);
+			name = Path::RemoveFileExtension(name);
+#endif
+
 			// TODO: support no constant buffers
 
 			{
@@ -328,6 +333,10 @@ namespace Drn
 				ResourceViewDesc.BufferLocation = m_TextureIndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = 256;
 				Device->CreateConstantBufferView( &ResourceViewDesc, m_TextureIndexCpuHandle);
+
+#if D3D12_Debug_INFO
+				m_TextureIndexBuffer->SetName("TextureBuffer_" + name);
+#endif
 			}
 
 			{
@@ -343,6 +352,10 @@ namespace Drn
 				ResourceViewDesc.BufferLocation = m_ScalarBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = ScalarBufferSizePadded;
 				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarCpuHandle);
+
+#if D3D12_Debug_INFO
+				m_ScalarBuffer->SetName("ScalarBuffer_" + name);
+#endif
 			}
 
 			{
@@ -358,10 +371,11 @@ namespace Drn
 				ResourceViewDesc.BufferLocation = m_VectorBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = VectorBufferSizePadded;
 				Device->CreateConstantBufferView( &ResourceViewDesc , m_VectorCpuHandle);
-			}
 
-			std::string name = Path::ConvertShortPath(m_Path);
-			name = Path::RemoveFileExtension(name);
+#if D3D12_Debug_INFO
+				m_VectorBuffer->SetName("VectorBuffer_" + name);
+#endif
+			}
 
 			if (m_SupportMainPass)
 			{
@@ -407,10 +421,10 @@ namespace Drn
 
 			if (m_SupportEditorPrimitivePass)
 			{
-				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(NULL, m_CullMode, m_InputLayoutType,
-					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
+//				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(NULL, m_CullMode, m_InputLayoutType,
+//					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
 #if D3D12_Debug_INFO
-				m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
+//				m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
 #endif
 			}
 
@@ -473,7 +487,12 @@ namespace Drn
 		std::vector<uint32> TextureIndices;
 		for (int i = 0; i < m_Texture2DSlots.size(); i++)
 		{
-			TextureIndices.push_back(Renderer::Get()->GetBindlessSrvIndex( m_Texture2DSlots[i].m_Texture2D->TextureGpuHandle) );
+			Resource* TextureResource = m_Texture2DSlots[i].m_Texture2D->GetResource();
+
+			if (TextureResource)
+			{
+				TextureIndices.push_back(Renderer::Get()->GetBindlessSrvIndex( m_Texture2DSlots[i].m_Texture2D->GetResource()->GetGpuHandle()) );
+			}
 		}
 
 		UINT8* ConstantBufferStart;

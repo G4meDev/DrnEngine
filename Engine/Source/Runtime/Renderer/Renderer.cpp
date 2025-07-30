@@ -25,6 +25,8 @@ namespace Drn
 
 	Renderer::~Renderer()
 	{
+		LOG(LogRenderer, Info, "Renderer shutdown.");
+
 		if (m_CommandList)
 		{
 			m_CommandList->ReleaseBufferedResource();
@@ -44,7 +46,28 @@ namespace Drn
 		}
 
 		m_BindlessSamplerHeapAllocator.Free(m_BindlessLinearSamplerCpuHandle, m_BindlessLinearSamplerGpuHandle);
-		m_BindlessSrvHeapAllocator.Free(m_BindlessStaticSamplerCpuHandle, m_BindlessStaticSamplerGpuHandle);
+
+		//SingletonInstance->Flush();
+
+#if WITH_EDITOR
+		ImGuiRenderer::Get()->Shutdown();
+#endif
+
+		for (Scene* S : SingletonInstance->m_AllocatedScenes)
+		{
+			S->Release();
+		}
+
+		CloseHandle(SingletonInstance->m_FenceEvent);
+		CommonResources::Shutdown();
+
+		SingletonInstance->m_SrvHeap.Reset();
+		SingletonInstance->m_SamplerHeap.Reset();
+
+		SingletonInstance->TempSamplerAllocator.Destroy();
+		SingletonInstance->TempSRVAllocator.Destroy();
+
+		BufferedResourceManager::Get()->Flush();
 	}
 
 	Renderer* Renderer::Get()
@@ -226,14 +249,13 @@ namespace Drn
 
 
 		m_StaticSamplers.LinearSampler = GetBindlessSamplerIndex(m_BindlessLinearSamplerGpuHandle);
-		m_BindlessSrvHeapAllocator.Alloc(&m_BindlessStaticSamplerCpuHandle, &m_BindlessStaticSamplerGpuHandle);
 
 		m_StaticSamplersBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 		ResourceViewDesc.BufferLocation = m_StaticSamplersBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 		ResourceViewDesc.SizeInBytes = 256;
-		GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_BindlessStaticSamplerCpuHandle);
+		GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_StaticSamplersBuffer->GetCpuHandle());
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
@@ -241,6 +263,9 @@ namespace Drn
 		memcpy( ConstantBufferStart, &m_StaticSamplers, sizeof(StaticSamplers));
 		m_StaticSamplersBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
+#if D3D12_Debug_INFO
+		m_StaticSamplersBuffer->SetName("StaticSamplerBuffer");
+#endif
 
 		CommonResources::Init(m_CommandList->GetD3D12CommandList());
 
@@ -354,33 +379,11 @@ namespace Drn
 
 	void Renderer::Shutdown()
 	{
-		LOG(LogRenderer, Info, "Renderer shutdown.");
-		//SingletonInstance->Flush();
-
-#if WITH_EDITOR
-		ImGuiRenderer::Get()->Shutdown();
-#endif
-
-		for (Scene* S : SingletonInstance->m_AllocatedScenes)
+		if(SingletonInstance)
 		{
-			S->Release();
+			delete SingletonInstance;
+			SingletonInstance = nullptr;
 		}
-
-		CloseHandle(SingletonInstance->m_FenceEvent);
-
-		SingletonInstance->m_SrvHeap.Reset();
-		SingletonInstance->m_SamplerHeap.Reset();
-
-		SingletonInstance->TempSamplerAllocator.Destroy();
-		SingletonInstance->TempSRVAllocator.Destroy();
-
-		CommonResources::Shutdown();
-
-		delete SingletonInstance;
-		SingletonInstance = nullptr;
-
-		BufferedResourceManager::Get()->Flush();
-		BufferedResourceManager::Shutdown();
 	}
 
 	void Renderer::MainWindowResized( const IntPoint& NewSize )

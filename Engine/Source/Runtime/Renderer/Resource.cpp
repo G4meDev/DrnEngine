@@ -6,10 +6,12 @@ namespace Drn
 	Resource::Resource()
 		: BufferedResource()
 	{
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
 	}
 
 	Resource::~Resource()
 	{
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
 	}
 
 	Resource* Resource::Create( D3D12_HEAP_TYPE HeapType, const D3D12_RESOURCE_DESC& ResourceDescription,

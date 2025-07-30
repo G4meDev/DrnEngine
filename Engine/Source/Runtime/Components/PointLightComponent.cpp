@@ -13,6 +13,7 @@ namespace Drn
 		, m_Radius(3.0f)
 		, m_PointLightSceneProxy(nullptr)
 	{
+		m_Intensity = 35;
 	}
 
 	PointLightComponent::~PointLightComponent()

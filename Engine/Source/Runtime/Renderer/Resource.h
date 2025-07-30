@@ -19,11 +19,17 @@ namespace Drn
 
 		inline ID3D12Resource* GetD3D12Resource() { return m_Resource.Get(); }
 
+		inline const D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle() const { return m_CpuHandle; }
+		inline const D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle() const { return m_GpuHandle; }
+
 #if D3D12_Debug_INFO
 		void SetName(const std::string& Name);
 #endif
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_Resource;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_CpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_GpuHandle;
 	};
 }

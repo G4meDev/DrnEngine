@@ -21,14 +21,12 @@ namespace Drn
 
 		m_ShadowmapCpuHandle = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 
-	
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_LightBufferCpuHandle, &m_LightBufferGpuHandle);
 		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 		ResourceViewDesc.BufferLocation = m_LightBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 		ResourceViewDesc.SizeInBytes = 256;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBufferCpuHandle);
+		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer->GetCpuHandle());
 	}
 
 	PointLightSceneProxy::~PointLightSceneProxy()
@@ -60,7 +58,7 @@ namespace Drn
 		memcpy( ConstantBufferStart, &m_Buffer, sizeof(PointLightBuffer));
 		m_LightBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBufferGpuHandle), 1);
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
 
 		//if (m_Sprite.IsValid())
 		//{

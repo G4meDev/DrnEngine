@@ -32,8 +32,6 @@ namespace Drn
 	{
 		if (Renderer::Get())
 		{
-			Renderer::Get()->m_BindlessSrvHeapAllocator.Free(TextureCpuHandle, TextureGpuHandle);
-			Renderer::Get()->m_BindlessSamplerHeapAllocator.Free(SamplerCpuHandle, SamplerGpuHandle);
 		}
 	}
 
@@ -54,8 +52,6 @@ namespace Drn
 
 	void Texture2D::UploadResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		// TODO: release intermediate resource
-
 		if (IsRenderStateDirty())
 		{
 			ReleaseResources();
@@ -112,20 +108,19 @@ namespace Drn
 			ResourceViewDesc.Texture2D.MipLevels = m_MipLevels;
 			ResourceViewDesc.Texture2D.MostDetailedMip = 0;
 
-			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&TextureCpuHandle, &TextureGpuHandle);
-			Device->CreateShaderResourceView(m_Resource->GetD3D12Resource(), &ResourceViewDesc, TextureCpuHandle);
+			Device->CreateShaderResourceView(m_Resource->GetD3D12Resource(), &ResourceViewDesc, m_Resource->GetCpuHandle());
 
 // -----------------------------------------------------------------------------------------------------------------------------
 
-			Renderer::Get()->TempSamplerAllocator.Alloc(&SamplerCpuHandle, &SamplerGpuHandle);
-
-			D3D12_SAMPLER_DESC SamplerDesc = {};
-			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
-			SamplerDesc.MaxAnisotropy = 16;
-			Device->CreateSampler(&SamplerDesc, SamplerCpuHandle);
+			//Renderer::Get()->TempSamplerAllocator.Alloc(&SamplerCpuHandle, &SamplerGpuHandle);
+			//
+			//D3D12_SAMPLER_DESC SamplerDesc = {};
+			//SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			//SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			//SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			//SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+			//SamplerDesc.MaxAnisotropy = 16;
+			//Device->CreateSampler(&SamplerDesc, SamplerCpuHandle);
 
 			ClearRenderStateDirty();
 		}

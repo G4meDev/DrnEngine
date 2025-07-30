@@ -165,13 +165,7 @@ namespace Drn
 		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessLinearSamplerGpuHandle;
 
 		StaticSamplers m_StaticSamplers;
-
 		Resource* m_StaticSamplersBuffer;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessStaticSamplerCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessStaticSamplerGpuHandle;
-
-
-
 
 		uint32 GetBindlessSrvIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
 		uint32 GetBindlessSamplerIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);

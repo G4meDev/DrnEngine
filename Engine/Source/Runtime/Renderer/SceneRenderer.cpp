@@ -38,8 +38,6 @@ namespace Drn
 			m_BindlessViewBuffer = nullptr;
 		}
 
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_BindlessViewCpuHandle, m_BindlessViewGpuHandle);
-
 #if WITH_EDITOR
 		if (m_MousePickQueue.size() > 0)
 		{
@@ -82,13 +80,12 @@ namespace Drn
 		m_RenderTask.emplace( [&]() { Render(); } );
 
 		{
-			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_BindlessViewCpuHandle, &m_BindlessViewGpuHandle);
 			m_BindlessViewBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 			ResourceViewDesc.BufferLocation = m_BindlessViewBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 			ResourceViewDesc.SizeInBytes = 512;
-			Device->CreateConstantBufferView( &ResourceViewDesc, m_BindlessViewCpuHandle);
+			Device->CreateConstantBufferView( &ResourceViewDesc, m_BindlessViewBuffer->GetCpuHandle());
 		}
 
 	}
@@ -160,13 +157,13 @@ namespace Drn
 
 		m_GBuffer->BindLightPass(m_CommandList->GetD3D12CommandList());
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewGpuHandle), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
 		// 1 is light buffer
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_BindlessStaticSamplerGpuHandle), 2);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_BaseColorSrvGpuHandle), 3);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalSrvGpuHandle), 4);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksSrvGpuHandle), 5);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthSrvGpuHandle), 6);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_BaseColorTarget->GetGpuHandle()), 3);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 4);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksTarget->GetGpuHandle()), 5);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 6);
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{
@@ -209,9 +206,9 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewGpuHandle), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_ColorDeferredSrvGpuHandle), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_BindlessStaticSamplerGpuHandle), 2);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_ColorDeferredTarget->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());

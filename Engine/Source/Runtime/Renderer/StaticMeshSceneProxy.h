@@ -56,8 +56,5 @@ namespace Drn
 		PrimitiveBuffer m_PrimitiveBuffer;
 
 		Resource* m_PrimitiveSource = nullptr;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE m_BufferCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_BufferGpuHandle;
 	};
 }

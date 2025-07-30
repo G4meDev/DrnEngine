@@ -144,7 +144,11 @@ namespace Drn
 				m_Sprite->UploadResources(CommandList);
 			}
 
-			CommandList->SetGraphicsRootDescriptorTable( 1, m_Sprite->TextureGpuHandle );
+			if (m_Sprite->GetResource())
+			{
+				CommandList->SetGraphicsRootDescriptorTable( 1, m_Sprite->GetResource()->GetGpuHandle() );
+			}
+
 		}
 
 		else

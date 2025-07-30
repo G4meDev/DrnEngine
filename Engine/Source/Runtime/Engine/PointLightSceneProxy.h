@@ -49,9 +49,6 @@ namespace Drn
 		PointLightBuffer m_Buffer;
 		Resource* m_LightBuffer;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE m_LightBufferCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_LightBufferGpuHandle;
-
 
 	private:
 
