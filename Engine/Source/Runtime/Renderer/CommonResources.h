@@ -114,7 +114,6 @@ namespace Drn
 		DebugLineThicknessPSO( ID3D12GraphicsCommandList2* CommandList );
 		~DebugLineThicknessPSO();
 		
-		ID3D12RootSignature* m_RootSignature;
 		ID3D12PipelineState* m_PSO;
 	};
 
@@ -125,7 +124,6 @@ namespace Drn
 		DebugLinePSO( ID3D12GraphicsCommandList2* CommandList );
 		~DebugLinePSO();
 		
-		ID3D12RootSignature* m_RootSignature;
 		ID3D12PipelineState* m_PSO;
 	};
 

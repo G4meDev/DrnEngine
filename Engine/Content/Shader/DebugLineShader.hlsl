@@ -1,6 +1,23 @@
-#include "../Materials/Common.hlsl"
+//#include "../Materials/Common.hlsl"
 
-ConstantBuffer<ViewBuffer> View : register(b0);
+struct Resources
+{
+    uint ViewBufferIndex;
+};
+
+ConstantBuffer<Resources> BindlessResources : register(b0);
+
+struct ViewBuffer
+{
+    matrix WorldToView;
+    matrix ViewToProjection;
+    matrix WorldToProjection;
+    matrix ProjectionToView;
+    matrix ProjectionToWorld;
+    matrix LocalToCameraView;
+
+    uint2 RenderSize;
+};
 
 struct VertexInput
 {
@@ -20,7 +37,9 @@ VertexShaderOutput Main_VS(VertexInput IN)
 {
 	VertexShaderOutput OUT;
 
-	OUT.Position = mul(View.LocalToProjection, float4(IN.Position, 1.0f));
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
+    
+	OUT.Position = mul(View.WorldToProjection, float4(IN.Position, 1.0f));
 	OUT.Color = float4(IN.Color.xyz, 1.0f);
 	OUT.Thickness = IN.Thickness;
 

@@ -1,6 +1,24 @@
-#include "../Materials/Common.hlsl"
+//#include "../Materials/Common.hlsl"
 
-ConstantBuffer<ViewBuffer> View : register(b0);
+struct Resources
+{
+    uint ViewBufferIndex;
+};
+
+ConstantBuffer<Resources> BindlessResources : register(b0);
+
+struct ViewBuffer
+{
+    matrix WorldToView;
+    matrix ViewToProjection;
+    matrix WorldToProjection;
+    matrix ProjectionToView;
+    matrix ProjectionToWorld;
+    matrix LocalToCameraView;
+
+    uint2 RenderSize;
+};
+
 
 struct VertexInput
 {
@@ -38,6 +56,8 @@ struct GeometeryShaderOutput
 [maxvertexcount(24)]
 void Main_GS(line VertexShaderOutput input[2], inout TriangleStream<GeometeryShaderOutput> OutputStream)
 {
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
+    
 	float Thickness = input[0].Thickness * 255;
 
 	GeometeryShaderOutput V1;
@@ -65,28 +85,28 @@ void Main_GS(line VertexShaderOutput input[2], inout TriangleStream<GeometerySha
     float3 Pos;
 	
     Pos = StartPos + Up * Thickness * 0.5f;
-	V1.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
+	V1.Position = mul(View.WorldToProjection, float4(Pos, 1.0f));
 	
     Pos = StartPos + Right * Thickness * 0.5f;
-    V2.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
+    V2.Position = mul(View.WorldToProjection, float4(Pos, 1.0f));
 
     Pos = StartPos - Up * Thickness * 0.5f;
-    V3.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
+    V3.Position = mul(View.WorldToProjection, float4(Pos, 1.0f));
 	
     Pos = StartPos - Right * Thickness * 0.5f;
-    V4.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
+    V4.Position = mul(View.WorldToProjection, float4(Pos, 1.0f));
 	
     Pos = EndPos + Up * Thickness * 0.5f;
-    V5.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
+    V5.Position = mul(View.WorldToProjection, float4(Pos, 1.0f));
 
     Pos = EndPos + Right * Thickness * 0.5f;
-    V6.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
+    V6.Position = mul(View.WorldToProjection, float4(Pos, 1.0f));
 	
     Pos = EndPos - Up * Thickness * 0.5f;
-    V7.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
+    V7.Position = mul(View.WorldToProjection, float4(Pos, 1.0f));
 	
     Pos = EndPos - Right * Thickness * 0.5f;
-    V8.Position = mul(View.LocalToProjection, float4(Pos, 1.0f));
+    V8.Position = mul(View.WorldToProjection, float4(Pos, 1.0f));
 
 	OutputStream.Append(V1);
 	OutputStream.Append(V2);

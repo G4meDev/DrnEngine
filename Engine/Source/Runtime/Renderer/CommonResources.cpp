@@ -565,56 +565,26 @@ namespace Drn
 
 	DebugLineThicknessPSO::DebugLineThicknessPSO( ID3D12GraphicsCommandList2* CommandList )
 	{
-		m_RootSignature = nullptr;
 		m_PSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		CD3DX12_ROOT_PARAMETER1 rootParameters[1] = {};
-		rootParameters[0].InitAsConstants(52, 0);
-
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(1, rootParameters, 0, NULL, rootSignatureFlags );
-
-		ID3DBlob* pSerializedRootSig;
-		ID3DBlob* pRootSigError;
-		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
-		if ( FAILED(Result) )
-		{
-			if ( pRootSigError )
-			{
-				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
-				pRootSigError->Release();
-			}
-
-			if (pSerializedRootSig)
-			{
-				pSerializedRootSig->Release();
-				pSerializedRootSig = nullptr;
-			}
-
-			return;
-		}
-
-		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
-
-		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\DebugLineThicknessShader.hlsl" ) );
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\DebugLineThicknessShader.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 		ID3DBlob* GeometeryShaderBlob;
 
-		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
-		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
-		CompileShaderString( ShaderCode, "Main_GS", "gs_5_1", GeometeryShaderBlob);
+		const std::vector<const wchar_t*> Macros;
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+		CompileShader( ShaderPath, L"Main_GS", L"gs_6_6", Macros, &GeometeryShaderBlob);
 
 		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
 		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= VertexLayout_LineColorThickness;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
@@ -637,7 +607,6 @@ namespace Drn
 
 	DebugLineThicknessPSO::~DebugLineThicknessPSO()
 	{
-		m_RootSignature->Release();
 		m_PSO->Release();
 	}
 
@@ -645,54 +614,24 @@ namespace Drn
 
 	DebugLinePSO::DebugLinePSO( ID3D12GraphicsCommandList2* CommandList )
 	{
-		m_RootSignature = nullptr;
 		m_PSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		CD3DX12_ROOT_PARAMETER1 rootParameters[1] = {};
-		rootParameters[0].InitAsConstants(52, 0);
-
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(1, rootParameters, 0, NULL, rootSignatureFlags );
-
-		ID3DBlob* pSerializedRootSig;
-		ID3DBlob* pRootSigError;
-		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
-		if ( FAILED(Result) )
-		{
-			if ( pRootSigError )
-			{
-				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
-				pRootSigError->Release();
-			}
-
-			if (pSerializedRootSig)
-			{
-				pSerializedRootSig->Release();
-				pSerializedRootSig = nullptr;
-			}
-
-			return;
-		}
-
-		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
-
-		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\DebugLineShader.hlsl" ) );
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\DebugLineShader.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 
-		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
-		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+		const std::vector<const wchar_t*> Macros;
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
 		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
 		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= VertexLayout_LineColorThickness;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
@@ -714,7 +653,6 @@ namespace Drn
 
 	DebugLinePSO::~DebugLinePSO()
 	{
-		m_RootSignature->Release();
 		m_PSO->Release();
 	}
 
