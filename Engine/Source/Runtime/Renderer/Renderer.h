@@ -107,7 +107,6 @@ namespace Drn
 		Scene* AllocateScene(World* InWorld);
 		void ReleaseScene(Scene*& InScene);
 
-		void SetHeaps( ID3D12GraphicsCommandList* CommandList);
 		void SetBindlessHeaps( ID3D12GraphicsCommandList* CommandList);
 
 		// TODO: delete
@@ -140,17 +139,6 @@ namespace Drn
 			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue );
 
 		inline uint32 GetRtvIncrementSize() const { return m_RtvIncrementSize; }
-
-		TempDescriptorHeapAllocator TempSRVAllocator;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_SrvHeap;
-
-		TempDescriptorHeapAllocator TempSamplerAllocator;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_SamplerHeap;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE LinearSamplerCpuHandle;
-		D3D12_CPU_DESCRIPTOR_HANDLE LinearSamplerGpuHandle;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE SamplerCpuHandle;
 
 		// TODO: remove
 		TempDescriptorHeapAllocator m_BindlessSrvHeapAllocator;

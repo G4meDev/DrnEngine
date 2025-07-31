@@ -332,9 +332,7 @@ namespace Drn
 		SCOPE_STAT();
 
 		m_CommandList->SetAllocatorAndReset(Renderer::Get()->m_SwapChain->GetBackBufferIndex());
-
-		ID3D12DescriptorHeap* const Descs[2] = { Renderer::Get()->m_SrvHeap.Get(), Renderer::Get()->m_SamplerHeap.Get() };
-		m_CommandList->GetD3D12CommandList()->SetDescriptorHeaps( 2, Descs );
+		Renderer::Get()->SetBindlessHeaps( m_CommandList->GetD3D12CommandList() );
 
 		ResizeViewConditional();
 

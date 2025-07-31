@@ -57,11 +57,11 @@ namespace Drn
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
 
-		init_info.SrvDescriptorHeap    = Renderer::Get()->m_SrvHeap.Get();
+		init_info.SrvDescriptorHeap    = Renderer::Get()->m_BindlessSrvHeap.Get();
 		init_info.SrvDescriptorAllocFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE*out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle )
-			{ return Renderer::Get()->TempSRVAllocator.Alloc(out_cpu_handle, out_gpu_handle ); };
+			{ return Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(out_cpu_handle, out_gpu_handle ); };
 		 init_info.SrvDescriptorFreeFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle )
-			{ 	return Renderer::Get()->TempSRVAllocator.Free( cpu_handle, gpu_handle ); };
+			{ 	return Renderer::Get()->m_BindlessSrvHeapAllocator.Free( cpu_handle, gpu_handle ); };
 
 		ImGui_ImplDX12_Init( &init_info );
 	}
@@ -153,7 +153,7 @@ namespace Drn
 		SCOPE_STAT();
 
 		ImGui::Render();
-		Renderer::Get()->SetHeaps(CL);
+		Renderer::Get()->SetBindlessHeaps(CL);
 
 		ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), CL );
 	}

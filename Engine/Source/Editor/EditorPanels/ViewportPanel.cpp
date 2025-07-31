@@ -34,12 +34,12 @@ namespace Drn
 
 		m_SceneRenderer->m_CameraActor = m_ViewportCamera;
 
-		Renderer::Get()->TempSRVAllocator.Alloc( &ViewCpuHandle, &ViewGpuHandle );
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc( &ViewCpuHandle, &ViewGpuHandle );
 	}
 
 	ViewportPanel::~ViewportPanel()
 	{
-		Renderer::Get()->TempSRVAllocator.Free(ViewCpuHandle, ViewGpuHandle);
+		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(ViewCpuHandle, ViewGpuHandle);
 
 		// @TODO: manage renderer allocation and deallocation in unified manner
 		// even though we allocate renderer with this class, some times worlds gets destroyed and deallocates renderer early. ideally this shouldn't happen
