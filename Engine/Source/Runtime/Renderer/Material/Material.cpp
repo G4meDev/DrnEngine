@@ -128,11 +128,6 @@ namespace Drn
 			Ar >> m_SupportShadowPass;
 			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
 
-			if (Ar.GetVersion() == 2)
-			{
-				Ar >> m_BindlessTest;
-			}
-
 			InitalizeParameterMap();
 		}
 

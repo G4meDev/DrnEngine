@@ -112,44 +112,25 @@ namespace Drn
 					continue;
 				}
 
-				if (!Mat->m_BindlessTest)
-				{
-					Mat->BindMainPass(CommandList);
-					CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				Mat->BindMainPass(CommandList);
 
-					// TODO: remove dependency and only copy from parent side
-					XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-					XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
+				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-					CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
-					CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
-					CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
+				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+				m_PrimitiveBuffer.m_Guid = m_Guid;
 
-					RenderProxy.BindAndDraw(CommandList);
-				}
+				UINT8* ConstantBufferStart;
+				CD3DX12_RANGE readRange( 0, 0 );
+				m_PrimitiveSource->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
+				m_PrimitiveSource->GetD3D12Resource()->Unmap(0, nullptr);
 
-				else
-				{
-					Mat->BindMainPass(CommandList);
+				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer->GetGpuHandle()), 0);
+				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource->GetGpuHandle()), 1);
+				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
-					CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-					m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-					m_PrimitiveBuffer.m_Guid = m_Guid;
-
-					UINT8* ConstantBufferStart;
-					CD3DX12_RANGE readRange( 0, 0 );
-					m_PrimitiveSource->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-					memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-					m_PrimitiveSource->GetD3D12Resource()->Unmap(0, nullptr);
-
-					CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer->GetGpuHandle()), 0);
-					CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource->GetGpuHandle()), 1);
-					CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
-
-					RenderProxy.BindAndDraw(CommandList);
-				}
+				RenderProxy.BindAndDraw(CommandList);
 
 			}
 		}
@@ -205,11 +186,6 @@ namespace Drn
 				continue;
 			}
 
-			if (!Mat->m_BindlessTest)
-			{
-				continue;
-			}
-
 			Mat->BindHitProxyPass(CommandList);
 			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -242,11 +218,6 @@ namespace Drn
 			AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
 		
 			if (!Mat->IsSupportingEditorSelectionPass())
-			{
-				continue;
-			}
-
-			if (!Mat->m_BindlessTest)
 			{
 				continue;
 			}
@@ -287,11 +258,6 @@ namespace Drn
 				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
 				if (!Mat->IsSupportingEditorPrimitivePass())
-				{
-					continue;
-				}
-
-				if (!Mat->m_BindlessTest)
 				{
 					continue;
 				}

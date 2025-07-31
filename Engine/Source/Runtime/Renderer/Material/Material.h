@@ -51,9 +51,6 @@ namespace Drn
 		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
 		inline bool IsSupportingEditorSelectionPass() const { return m_SupportEditorSelectionPass; }
 
-		// TODO: remove
-		bool m_BindlessTest = false;
-
 	protected:
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
