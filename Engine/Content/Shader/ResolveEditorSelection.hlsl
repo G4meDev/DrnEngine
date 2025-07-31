@@ -1,20 +1,39 @@
+
+struct Resources
+{
+    uint ViewBufferIndex;
+    uint TextureIndex;
+    uint StaticSamplerBufferIndex;
+};
+
+ConstantBuffer<Resources> BindlessResources : register(b0);
+
+struct ViewBuffer
+{
+    matrix WorldToView;
+    matrix ViewToProjection;
+    matrix WorldToProjection;
+    matrix ProjectionToView;
+    matrix ProjectionToWorld;
+    matrix LocalToCameraView;
+
+    uint2 RenderSize;
+};
+
+struct StaticSamplers
+{
+    uint LinearSamplerIndex;
+};
+
 struct VertexInputPosUV
 {
     float3 Position : POSITION;
     float2 UV : TEXCOORD;
 };
 
-struct ViewBuffer
-{
-    matrix LocalToView;
-    uint2 RenderTargetSize;
-};
-
-ConstantBuffer<ViewBuffer> View : register(b0);
-
 // if want to use depth should use another srv as float
-Texture2D<uint2> StencilTexture : register(t0);
-SamplerState TextureSampler : register(s0);
+//Texture2D<uint2> StencilTexture : register(t0);
+//SamplerState TextureSampler : register(s0);
 
 struct VertexShaderOutput
 {
@@ -26,7 +45,9 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN)
 {
     VertexShaderOutput OUT;
 
-    OUT.Position = mul(View.LocalToView, float4(IN.Position, 1.0f));
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
+    
+    OUT.Position = mul(View.LocalToCameraView, float4(IN.Position, 1.0f));
     OUT.Position.z = 0;
     OUT.UV = IN.UV;
 
@@ -40,32 +61,11 @@ struct PixelShaderInput
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
-    //float RawStencil = StencilTexture.Sample(TextureSampler, IN.UV).x;
-    //return float4( RawStencil.xxx * 100, 1.0f );
-
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
+    Texture2D<uint2> StencilTexture = ResourceDescriptorHeap[BindlessResources.TextureIndex];
+      
     float3 SelectedColor = float3(0.95f, 0.65, 0.3f);
-    //uint StepSize = 1;
-    //uint StepCount = 2;
-
-    uint2 ScreenPos = IN.UV * View.RenderTargetSize;
-    //float Coverage = 0;
-
-    //for (uint i = 1; i < StepCount + 1; i++)
-    //{
-    //    Coverage += StencilTexture.Load(float3(ScreenPos + uint2( 1, 0 ) * StepSize * i, 0)).y == 255;
-    //    Coverage += StencilTexture.Load(float3(ScreenPos + uint2( 1, 1 ) * StepSize * i, 0)).y == 255;
-    //    Coverage += StencilTexture.Load(float3(ScreenPos + uint2( 0, 1 ) * StepSize * i, 0)).y == 255;
-    //    Coverage += StencilTexture.Load(float3(ScreenPos + uint2( -1, 1 ) * StepSize * i, 0)).y == 255;
-    //    Coverage += StencilTexture.Load(float3(ScreenPos + uint2( -1, 0 ) * StepSize * i, 0)).y == 255;
-    //    Coverage += StencilTexture.Load(float3(ScreenPos + uint2( -1, -1 ) * StepSize * i, 0)).y == 255;
-    //    Coverage += StencilTexture.Load(float3(ScreenPos + uint2( 0, -1 ) * StepSize * i, 0)).y == 255;
-    //    Coverage += StencilTexture.Load(float3(ScreenPos + uint2( 1, -1 ) * StepSize * i, 0)).y == 255;
-    //}
-    //
-    //Coverage /= 8 * StepCount;
-    
-    //Coverage = (Coverage < 0.6f && Coverage > 0.01f) ? 1 : 0;
-    
+    uint2 ScreenPos = IN.UV * View.RenderSize;
     uint Coverage = 0;
    
     Coverage += StencilTexture.Load(float3(ScreenPos, 0)).y == 255;

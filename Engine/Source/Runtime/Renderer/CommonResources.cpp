@@ -178,60 +178,17 @@ namespace Drn
 
 	ResolveAlphaBlendedPSO::ResolveAlphaBlendedPSO( ID3D12GraphicsCommandList2* CommandList )
 	{
-		m_RootSignature = nullptr;
 		m_PSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		CD3DX12_ROOT_PARAMETER1 rootParameters[2] = {};
-		rootParameters[0].InitAsConstants(16, 0);
-		CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-		rootParameters[1].InitAsDescriptorTable(1, &Range);
-
-		CD3DX12_STATIC_SAMPLER_DESC SamplerDesc = {};
-		SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-		SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		SamplerDesc.ShaderRegister = 0;
-		SamplerDesc.RegisterSpace = 0;
-
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(2, rootParameters, 1, &SamplerDesc, rootSignatureFlags );
-
-		ID3DBlob* pSerializedRootSig;
-		ID3DBlob* pRootSigError;
-		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
-		if ( FAILED(Result) )
-		{
-			if ( pRootSigError )
-			{
-				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
-				pRootSigError->Release();
-			}
-
-			if (pSerializedRootSig)
-			{
-				pSerializedRootSig->Release();
-				pSerializedRootSig = nullptr;
-			}
-
-			return;
-		}
-
-		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
-
 		std::wstring ShaderPath = StringHelper::s2ws(Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveAlphaBlended.hlsl" ));
-
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 
-		CompileShaderString( ShaderPath, "Main_VS", "vs_5_1", VertexShaderBlob);
-		CompileShaderString( ShaderPath, "Main_PS", "ps_5_1", PixelShaderBlob);
+		std::vector<const wchar_t*> Macros = {};
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros , &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros , &PixelShaderBlob);
 
 		CD3DX12_BLEND_DESC BlendDesc = {};
 		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -244,7 +201,7 @@ namespace Drn
 		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= VertexLayout_PosUV;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
@@ -267,7 +224,6 @@ namespace Drn
 
 	ResolveAlphaBlendedPSO::~ResolveAlphaBlendedPSO()
 	{
-		m_RootSignature->Release();
 		m_PSO->Release();
 	}
 
@@ -275,60 +231,17 @@ namespace Drn
 
 	ResolveEditorSelectionPSO::ResolveEditorSelectionPSO( ID3D12GraphicsCommandList2* CommandList )
 	{
-		m_RootSignature = nullptr;
 		m_PSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		CD3DX12_ROOT_PARAMETER1 rootParameters[2] = {};
-		rootParameters[0].InitAsConstants(24, 0);
-		CD3DX12_DESCRIPTOR_RANGE1 Range(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-		rootParameters[1].InitAsDescriptorTable(1, &Range);
-
-		CD3DX12_STATIC_SAMPLER_DESC SamplerDesc = {};
-		SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-		SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		SamplerDesc.ShaderRegister = 0;
-		SamplerDesc.RegisterSpace = 0;
-
-		CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDescription(2, rootParameters, 1, &SamplerDesc, rootSignatureFlags );
-
-		ID3DBlob* pSerializedRootSig;
-		ID3DBlob* pRootSigError;
-		HRESULT Result = D3D12SerializeVersionedRootSignature(&rootSignatureDescription, &pSerializedRootSig, &pRootSigError);
-		if ( FAILED(Result) )
-		{
-			if ( pRootSigError )
-			{
-				LOG(LogMaterial, Error, "shader signature serialization failed. %s", (char*)pRootSigError->GetBufferPointer());
-				pRootSigError->Release();
-			}
-
-			if (pSerializedRootSig)
-			{
-				pSerializedRootSig->Release();
-				pSerializedRootSig = nullptr;
-			}
-
-			return;
-		}
-
-		Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
-			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&m_RootSignature));
-
-		std::wstring ShaderCode = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveEditorSelection.hlsl" ) );
-
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveEditorSelection.hlsl" ) );
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 
-		CompileShaderString( ShaderCode, "Main_VS", "vs_5_1", VertexShaderBlob);
-		CompileShaderString( ShaderCode, "Main_PS", "ps_5_1", PixelShaderBlob);
+		std::vector<const wchar_t*> Macros = {};
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
 		CD3DX12_BLEND_DESC BlendDesc = {};
 		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -341,7 +254,7 @@ namespace Drn
 		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= m_RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= VertexLayout_PosUV;
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
@@ -364,7 +277,6 @@ namespace Drn
 
 	ResolveEditorSelectionPSO::~ResolveEditorSelectionPSO()
 	{
-		m_RootSignature->Release();
 		m_PSO->Release();
 	}
 

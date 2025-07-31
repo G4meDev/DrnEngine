@@ -1,18 +1,35 @@
+
+struct Resources
+{
+    uint ViewBufferIndex;
+    uint TextureIndex;
+    uint StaticSamplerBufferIndex;
+};
+
+ConstantBuffer<Resources> BindlessResources : register(b0);
+
+struct ViewBuffer
+{
+    matrix WorldToView;
+    matrix ViewToProjection;
+    matrix WorldToProjection;
+    matrix ProjectionToView;
+    matrix ProjectionToWorld;
+    matrix LocalToCameraView;
+
+    uint2 RenderSize;
+};
+
+struct StaticSamplers
+{
+    uint LinearSamplerIndex;
+};
+
 struct VertexInputPosUV
 {
     float3 Position : POSITION;
     float2 UV : TEXCOORD;
 };
-
-struct ViewBuffer
-{
-    matrix LocalToView;
-};
-
-ConstantBuffer<ViewBuffer> View : register(b0);
-
-Texture2D ResolveTexture : register(t0);
-SamplerState ResolveSampler : register(s0);
 
 struct VertexShaderOutput
 {
@@ -24,7 +41,9 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN)
 {
     VertexShaderOutput OUT;
 
-    OUT.Position = mul(View.LocalToView, float4(IN.Position, 1.0f));
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
+    
+    OUT.Position = mul(View.LocalToCameraView, float4(IN.Position, 1.0f));
     OUT.Position.z = 0;
     OUT.UV = IN.UV;
 
@@ -38,6 +57,11 @@ struct PixelShaderInput
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
-    float4 Texture = ResolveTexture.Sample(ResolveSampler, IN.UV);
+    ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
+    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
+    
+    Texture2D ResolveTexture = ResourceDescriptorHeap[BindlessResources.TextureIndex];
+    
+    float4 Texture = ResolveTexture.Sample(LinearSampler, IN.UV);
     return Texture;
 }

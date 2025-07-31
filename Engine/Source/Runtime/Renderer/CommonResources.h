@@ -52,7 +52,6 @@ namespace Drn
 		ResolveAlphaBlendedPSO( ID3D12GraphicsCommandList2* CommandList );
 		~ResolveAlphaBlendedPSO();
 		
-		ID3D12RootSignature* m_RootSignature;
 		ID3D12PipelineState* m_PSO;
 	};
 
@@ -73,7 +72,6 @@ namespace Drn
 		ResolveEditorSelectionPSO( ID3D12GraphicsCommandList2* CommandList );
 		~ResolveEditorSelectionPSO();
 		
-		ID3D12RootSignature* m_RootSignature;
 		ID3D12PipelineState* m_PSO;
 	};
 

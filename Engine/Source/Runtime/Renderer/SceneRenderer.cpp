@@ -269,11 +269,12 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_TonemapBuffer->m_TonemapHandle, true, NULL);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_RootSignature );
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get());
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_EditorPrimitiveBuffer->m_ColorTarget->GetGpuHandle());
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_EditorPrimitiveBuffer->m_ColorTarget->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
@@ -307,12 +308,12 @@ namespace Drn
 			EditorSelectionDepth, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_RootSignature );
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 16, &m_SceneView.LocalToCameraView, 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 8, &m_SceneView.Size, 16);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootDescriptorTable(1, m_EditorSelectionBuffer->m_DepthStencilTarget->GetGpuHandle());
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_EditorSelectionBuffer->m_DepthStencilTarget->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
