@@ -86,6 +86,10 @@ namespace Drn
 			ResourceViewDesc.BufferLocation = m_BindlessViewBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 			ResourceViewDesc.SizeInBytes = 512;
 			Device->CreateConstantBufferView( &ResourceViewDesc, m_BindlessViewBuffer->GetCpuHandle());
+
+#if D3D12_Debug_INFO
+			m_BindlessViewBuffer->SetName("SceneViewBuffer_" + m_Name);
+#endif
 		}
 
 	}
@@ -481,6 +485,10 @@ namespace Drn
 
 			Event.ReadbackBuffer = Resource::Create(D3D12_HEAP_TYPE_READBACK,
 				CD3DX12_RESOURCE_DESC::Buffer( 16 ), D3D12_RESOURCE_STATE_COPY_DEST);
+
+#if D3D12_Debug_INFO
+			Event.ReadbackBuffer->SetName("ScreenPickReadbackBuffer");
+#endif
 
 			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 				m_HitProxyRenderBuffer->m_GuidTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET,

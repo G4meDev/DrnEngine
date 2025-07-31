@@ -259,6 +259,10 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_ResolveAlphaBlended");
+#endif
 	}
 
 	ResolveAlphaBlendedPSO::~ResolveAlphaBlendedPSO()
@@ -352,6 +356,10 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_ResolveEditorSelection");
+#endif
 	}
 
 	ResolveEditorSelectionPSO::~ResolveEditorSelectionPSO()
@@ -393,6 +401,10 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_Tonemap");
+#endif
 	}
 
 	TonemapPSO::~TonemapPSO()
@@ -446,6 +458,10 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_SpriteEditorPrimitive");
+#endif
 	}
 
 	SpriteEditorPrimitivePSO::~SpriteEditorPrimitivePSO()
@@ -501,6 +517,10 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_SpriteHitProxy");
+#endif
 	}
 
 	SpriteHitProxyPSO::~SpriteHitProxyPSO()
@@ -554,6 +574,10 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_LightpassDeferred");
+#endif
 	}
 
 	LightPassPSO::~LightPassPSO()
@@ -603,6 +627,10 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_DebugLineThickness");
+#endif
 	}
 
 	DebugLineThicknessPSO::~DebugLineThicknessPSO()
@@ -649,6 +677,10 @@ namespace Drn
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_DebugLine");
+#endif
 	}
 
 	DebugLinePSO::~DebugLinePSO()

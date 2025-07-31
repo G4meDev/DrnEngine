@@ -9,6 +9,9 @@ namespace Drn
 		, m_WorldPosition( InComponent->GetWorldLocation() )
 		, m_LightColor( InComponent->GetScaledColor() )
 		, m_CastShadow( InComponent->IsCastingShadow() )
+#if D3D12_Debug_INFO
+		, m_Name( InComponent ? InComponent->GetComponentLabel() : "InvalidLightComponent" )
+#endif
 	{
 #if WITH_EDITOR
 		m_SelectedInEditor = InComponent->IsSelectedInEditor();

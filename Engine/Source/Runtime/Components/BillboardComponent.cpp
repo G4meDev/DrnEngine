@@ -120,6 +120,10 @@ namespace Drn
 		ResourceViewDesc.BufferLocation = m_BillboardBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 		ResourceViewDesc.SizeInBytes = 256;
 		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_BillboardBuffer->GetCpuHandle());
+
+#if D3D12_Debug_INFO
+		m_BillboardBuffer->SetName("ConstantBufferBillboard_" + m_Name);
+#endif
 	}
 
 	void BillboardSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )

@@ -54,6 +54,11 @@ namespace Drn
 			Device->CreateDescriptorHeap( &DepthHeapDesc, IID_PPV_ARGS(m_DepthHeap.ReleaseAndGetAddressOf()) );
 			m_DepthCpuHandle = m_DepthHeap->GetCPUDescriptorHandleForHeapStart();
 		}
+
+#if D3D12_Debug_INFO
+		m_GuidDescriptorHeap->SetName(L"RtvHeap_Hitproxy");
+		m_DepthHeap->SetName(L"DsvHeap_HitProxy");
+#endif
 	}
 
 	void HitProxyRenderBuffer::Resize( const IntPoint& Size )

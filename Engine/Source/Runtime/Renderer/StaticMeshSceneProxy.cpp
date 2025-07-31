@@ -40,7 +40,7 @@ namespace Drn
 		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_PrimitiveSource->GetCpuHandle());
 
 #if WITH_EDITOR
-		m_PrimitiveSource->SetName("Primitive Buffer 123");
+		m_PrimitiveSource->SetName("ConstantBufferStaticMesh_" + m_Name);
 #endif
 	}
 

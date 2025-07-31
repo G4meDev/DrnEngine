@@ -34,6 +34,10 @@ namespace Drn
 		Vector m_LightColor;
 		bool m_CastShadow;
 
+#if D3D12_Debug_INFO
+		std::string m_Name;
+#endif
+
 	private:
 
 	};

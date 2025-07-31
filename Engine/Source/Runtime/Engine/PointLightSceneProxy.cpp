@@ -21,12 +21,20 @@ namespace Drn
 
 		m_ShadowmapCpuHandle = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 
+#if D3D12_Debug_INFO
+		m_DsvHeap->SetName(StringHelper::s2ws("DsvHeapPointLightShadowmap_" + m_Name).c_str());
+#endif
+
 		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 		ResourceViewDesc.BufferLocation = m_LightBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 		ResourceViewDesc.SizeInBytes = 256;
 		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer->GetCpuHandle());
+
+#if D3D12_Debug_INFO
+		m_LightBuffer->SetName("ConstantBufferLight_" + m_Name);
+#endif
 	}
 
 	PointLightSceneProxy::~PointLightSceneProxy()

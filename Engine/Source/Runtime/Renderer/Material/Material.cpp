@@ -377,7 +377,7 @@ namespace Drn
 					m_PrimitiveType, m_MainShaderBlob);
 
 #if D3D12_Debug_INFO
-				m_MainPassPSO->SetName( "MainPassPSO_" + name );
+				m_MainPassPSO->SetName( "PSO_MainPass_" + name );
 #endif
 			}
 
@@ -387,7 +387,7 @@ namespace Drn
 					m_CullMode, m_InputLayoutType, m_PrimitiveType, m_PointlightShadowDepthShaderBlob);
 
 #if D3D12_Debug_INFO
-				m_PointLightShadowDepthPassPSO->SetName( "PointLightShadowDepthPassPSO_" + name );
+				m_PointLightShadowDepthPassPSO->SetName( "PSO_PointLightShadowDepthPass_" + name );
 #endif
 			}
 
@@ -399,7 +399,7 @@ namespace Drn
 				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_MainShaderBlob);
 #if D3D12_Debug_INFO
-				m_SelectionPassPSO->SetName( "SelectionPassPSO_" + name );
+				m_SelectionPassPSO->SetName( "PSO_SelectionPass_" + name );
 #endif
 			}
 
@@ -409,7 +409,7 @@ namespace Drn
 					m_PrimitiveType, m_HitProxyShaderBlob);
 
 #if D3D12_Debug_INFO
-				m_HitProxyPassPSO->SetName( "HitProxyPassPSO_" + name );
+				m_HitProxyPassPSO->SetName( "PSO_HitProxyPass_" + name );
 #endif
 			}
 
@@ -418,7 +418,7 @@ namespace Drn
 				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(m_CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
 #if D3D12_Debug_INFO
-				m_EditorProxyPSO->SetName( "EditorPrimitivePSO_" + name );
+				m_EditorProxyPSO->SetName( "PSO_EditorPrimitive_" + name );
 #endif
 			}
 

@@ -41,6 +41,11 @@ namespace Drn
 		DepthHeapDesc.NumDescriptors = 1;
 		Device->CreateDescriptorHeap( &DepthHeapDesc, IID_PPV_ARGS(m_DepthSrvHeap.ReleaseAndGetAddressOf()) );
 		m_DepthCpuHandle = m_DepthSrvHeap->GetCPUDescriptorHandleForHeapStart();
+
+#if D3D12_Debug_INFO
+		m_ColorRtvHeap->SetName(L"RtvHeap_EditorPrimitive");
+		m_DepthSrvHeap->SetName(L"DsvHeap_EditorPrimitive");
+#endif
 	}
 
 	void EditorPrimitiveRenderBuffer::Resize( const IntPoint& Size )

@@ -23,6 +23,10 @@ namespace Drn
 		Renderer::Get()->GetD3D12Device()->CreateCommittedResource( &HeapPropperty,
 			D3D12_HEAP_FLAG_NONE, &ResourceDescription, InitalState, nullptr, IID_PPV_ARGS(Result->m_Resource.GetAddressOf()));
 
+#if D3D12_Debug_INFO
+		Result->SetName("UnnamedResource");
+#endif
+
 		return Result;
 	}
 
@@ -35,6 +39,10 @@ namespace Drn
 
 		Renderer::Get()->GetD3D12Device()->CreateCommittedResource( &HeapPropperty,
 			D3D12_HEAP_FLAG_NONE, &ResourceDescription, InitalState, &ClearValue, IID_PPV_ARGS(Result->m_Resource.GetAddressOf()));
+
+#if D3D12_Debug_INFO
+		Result->SetName("UnnamedResource");
+#endif
 
 		return Result;
 	}

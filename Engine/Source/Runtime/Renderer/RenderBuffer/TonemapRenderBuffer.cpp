@@ -36,6 +36,9 @@ namespace Drn
 			Device->CreateDescriptorHeap( &TonemapHeapDesc, IID_PPV_ARGS(m_TonemapRtvHeap.ReleaseAndGetAddressOf()) );
 
 			m_TonemapHandle = m_TonemapRtvHeap->GetCPUDescriptorHandleForHeapStart();
+#if D3D12_Debug_INFO
+			m_TonemapRtvHeap->SetName(L"RtvHeap_Tonemap");
+#endif
 		}
 	}
 

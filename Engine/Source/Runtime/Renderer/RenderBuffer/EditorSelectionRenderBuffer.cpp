@@ -28,6 +28,10 @@ namespace Drn
 		DsvHeapDesc.NumDescriptors = 1;
 		Device->CreateDescriptorHeap( &DsvHeapDesc, IID_PPV_ARGS(m_DsvHeap.ReleaseAndGetAddressOf()) );
 		m_DepthStencilCpuHandle = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
+
+#if D3D12_Debug_INFO
+		m_DsvHeap->SetName(L"DsvHeap‹EditorSelection");
+#endif
 	}
 
 	void EditorSelectionRenderBuffer::Resize( const IntPoint& Size )

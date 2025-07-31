@@ -63,6 +63,11 @@ namespace Drn
 		m_WorldNormalCpuHandle		= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 2, Renderer::Get()->GetRtvIncrementSize());
 		m_MasksCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 3, Renderer::Get()->GetRtvIncrementSize());
 		m_DepthCpuHandle			= m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
+
+#if D3D12_Debug_INFO
+		m_RtvHeap->SetName(L"RtvHeap_Gbuffer");
+		m_DsvHeap->SetName(L"DsvHeap_Gbuffer");
+#endif
 	}
 
 	void GBuffer::Resize( const IntPoint& Size )

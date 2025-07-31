@@ -45,6 +45,10 @@ namespace Drn
 		bool m_Selectable = false;
 #endif
 
+#if D3D12_Debug_INFO
+		std::string m_Name;
+#endif
+
 	private:
 
 		friend class Scene;
