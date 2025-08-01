@@ -21,7 +21,7 @@ namespace Drn
 		static Matrix MakeFromY( const Vector& YAxis);
 		static Matrix MakeFromZ( const Vector& ZAxis);
 
-		inline Matrix operator*( const Matrix& InMatrix )
+		inline Matrix operator*( const Matrix& InMatrix ) const
 		{
 			return XMMatrixMultiply(Get(), InMatrix.Get());
 		}

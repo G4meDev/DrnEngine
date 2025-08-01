@@ -3,6 +3,7 @@
 #include "Runtime/Components/PointLightComponent.h"
 
 #define POINTLIGHT_SHADOW_SIZE 512
+#define POINTLIGHT_NEAR_Z SMALL_NUMBER
 
 namespace Drn
 {
@@ -35,6 +36,19 @@ namespace Drn
 #if D3D12_Debug_INFO
 		m_LightBuffer->SetName("ConstantBufferLight_" + m_Name);
 #endif
+
+		m_ShadowDepthBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC ShadowResourceViewDesc = {};
+		ShadowResourceViewDesc.BufferLocation = m_ShadowDepthBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+		ShadowResourceViewDesc.SizeInBytes = 512;
+		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ShadowResourceViewDesc, m_ShadowDepthBuffer->GetCpuHandle());
+
+#if D3D12_Debug_INFO
+		m_ShadowDepthBuffer->SetName("ConstantBufferShadowDepth_" + m_Name);
+#endif
+
+		m_ShadowViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(POINTLIGHT_SHADOW_SIZE), static_cast<float>(POINTLIGHT_SHADOW_SIZE));
 	}
 
 	PointLightSceneProxy::~PointLightSceneProxy()
@@ -45,6 +59,12 @@ namespace Drn
 		{
 			m_LightBuffer->ReleaseBufferedResource();
 			m_LightBuffer = nullptr;
+		}
+
+		if (m_ShadowDepthBuffer)
+		{
+			m_ShadowDepthBuffer->ReleaseBufferedResource();
+			m_ShadowDepthBuffer = nullptr;
 		}
 	}
 
@@ -59,6 +79,7 @@ namespace Drn
 		m_Buffer.WorldPosition = m_WorldPosition;
 		m_Buffer.Radius = m_Radius;
 		m_Buffer.LightColor = m_LightColor;
+		m_Buffer.ShadowmapIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowCubemapResource->GetGpuHandle()) : 0;
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
@@ -95,12 +116,33 @@ namespace Drn
 
 		if (m_CastShadow)
 		{
+			CommandList->RSSetViewports(1, &m_ShadowViewport);
+
 			CommandList->ClearDepthStencilView(m_ShadowmapCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
 			CommandList->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandle);
 
+			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[0], Vector::RightVector, Vector::UpVector);
+			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[1], Vector::LeftVector, Vector::UpVector);
+			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[2], Vector::UpVector, Vector::BackwardVector);
+			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[3], Vector::DownVector, Vector::ForwardVector);
+			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[4], Vector::ForwardVector, Vector::UpVector);
+			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[5], Vector::BackwardVector, Vector::UpVector);
+
+			m_ShadowDepthData.LightPosition = m_WorldPosition;
+			m_ShadowDepthData.NearZ = POINTLIGHT_NEAR_Z;
+			m_ShadowDepthData.Radius = m_Radius;
+
+			UINT8* ConstantBufferStart;
+			CD3DX12_RANGE readRange( 0, 0 );
+			m_ShadowDepthBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+			memcpy( ConstantBufferStart, &m_ShadowDepthData, sizeof(ShadowDepthData));
+			m_ShadowDepthBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()), 6);
+
 			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 			{
-				Proxy->RenderShadowPass(CommandList, this);
+				Proxy->RenderShadowPass(CommandList, Renderer, this);
 			}
 
 		}
@@ -127,8 +169,19 @@ namespace Drn
 		DepthViewDesc.Texture2DArray.MipSlice = 0;
 		DepthViewDesc.Texture2DArray.ArraySize = 6;
 		DepthViewDesc.Texture2DArray.FirstArraySlice = 0;
-
 		Renderer::Get()->GetD3D12Device()->CreateDepthStencilView( m_ShadowCubemapResource->GetD3D12Resource(), &DepthViewDesc, m_ShadowmapCpuHandle );
+
+// -----------------------------------------------------------------------------------------------------------
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
+		ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+		ResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		ResourceViewDesc.Format = DXGI_FORMAT_R16_UNORM;
+		ResourceViewDesc.TextureCube.MipLevels = 1;
+		ResourceViewDesc.TextureCube.MostDetailedMip = 0;
+		ResourceViewDesc.TextureCube.ResourceMinLODClamp = 0;
+
+		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView(m_ShadowCubemapResource->GetD3D12Resource(), &ResourceViewDesc, m_ShadowCubemapResource->GetCpuHandle());
 
 		std::cout << "Allocated";
 	}
@@ -149,5 +202,19 @@ namespace Drn
 	{
 		InWorld->DrawDebugSphere( m_WorldPosition, Quat::Identity, Color::White, m_Radius, 36, 0.0, 0 );
 	}
+
+	void PointLightSceneProxy::CalculateLocalToProjectionForDirection( Matrix& Mat, const Vector& Direction, const Vector& UpVector)
+	{
+		XMVECTOR LightPosition = XMLoadFloat3(m_WorldPosition.Get());
+		XMVECTOR ViewDirection = XMLoadFloat3(Direction.Get());
+		XMVECTOR FocusPoint = LightPosition + ViewDirection;
+
+		Matrix ViewMatrix = XMMatrixLookAtLH( LightPosition, FocusPoint, XMLoadFloat3(UpVector.Get()));
+		Matrix ProjectionMatrix = XMMatrixPerspectiveFovLH( XM_PIDIV2 , 1.0f, POINTLIGHT_NEAR_Z, m_Radius);
+
+		Matrix ViewProjection = ViewMatrix * ProjectionMatrix;
+		Mat = ViewProjection;
+	}
+
 #endif
 }

@@ -354,7 +354,7 @@ namespace Drn
 		RenderHitProxyPass();
 #endif
 
-		//RenderShadowDepths();
+		RenderShadowDepths();
 		RenderBasePass();
 		RenderLights();
 		RenderPostProcess();

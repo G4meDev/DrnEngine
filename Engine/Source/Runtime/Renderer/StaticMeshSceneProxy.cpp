@@ -136,7 +136,7 @@ namespace Drn
 		}
 	}
 
-	void StaticMeshSceneProxy::RenderShadowPass( ID3D12GraphicsCommandList2* CommandList, LightSceneProxy* LightProxy )
+	void StaticMeshSceneProxy::RenderShadowPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
 	{
 		if (m_Mesh.IsValid())
 		{
@@ -153,14 +153,20 @@ namespace Drn
 				// TODO: make dependent on light type
 				Mat->BindPointLightShadowDepthPass(CommandList);
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		
-				// TODO: remove dependency and only copy from parent side
-				XMMATRIX LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-				//XMMATRIX LocalToProjection = XMMatrixMultiply( LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
-		
-				//CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToProjection, 0);
-				CommandList->SetGraphicsRoot32BitConstants( 0, 16, &LocalToWorld, 16);
-				CommandList->SetGraphicsRoot32BitConstants( 0, 4, &m_Guid, 32);
+	
+				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+				m_PrimitiveBuffer.m_Guid = m_Guid;
+
+				UINT8* ConstantBufferStart;
+				CD3DX12_RANGE readRange( 0, 0 );
+				m_PrimitiveSource->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
+				m_PrimitiveSource->GetD3D12Resource()->Unmap(0, nullptr);
+
+				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer->GetGpuHandle()), 0);
+				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource->GetGpuHandle()), 1);
+				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		
 				RenderProxy.BindAndDraw(CommandList);
 			}

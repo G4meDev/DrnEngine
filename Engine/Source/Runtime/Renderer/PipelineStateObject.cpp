@@ -53,7 +53,7 @@ namespace Drn
 	}
 
 	PipelineStateObject* PipelineStateObject::CreatePointLightShadowDepthPassPSO(
-		ID3D12RootSignature* RootSignature, D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+		D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders )
 	{
 		PipelineStateObject* Result = new PipelineStateObject();
@@ -64,14 +64,14 @@ namespace Drn
 		RasterizerDesc.CullMode = CullMode;
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= RootSignature;
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
 		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(InputLayoutType);
 		PipelineDesc.PrimitiveTopologyType				= PrimitiveType;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
 		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
 		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
 		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
+		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_LESS;
 		PipelineDesc.SampleMask							= UINT_MAX;
 		if (Shaders.m_VS) PipelineDesc.VS				= CD3DX12_SHADER_BYTECODE(Shaders.m_VS);
 		if (Shaders.m_GS) PipelineDesc.GS				= CD3DX12_SHADER_BYTECODE(Shaders.m_GS);

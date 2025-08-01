@@ -3,7 +3,7 @@
 // SUPPORT_MAIN_PASS
 // SUPPORT_HIT_PROXY_PASS
 // SUPPORT_EDITOR_SELECTION_PASS
-// S111UPPORT_SHADOW_PASS
+// SUPPORT_SHADOW_PASS
 
 float3 EncodeNormal(float3 Normal)
 {
@@ -18,6 +18,7 @@ struct Resources
     uint TextureBufferIndex;
     uint ScalarBufferIndex;
     uint VectorBufferIndex;
+    uint ShadowDepthBuffer;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -56,6 +57,14 @@ struct VectorBuffer
     float4 TintColor; // @VECTOR TintColor
 };
 
+struct ShadowDepth
+{
+    matrix WorldToProjectionMatrices[6];
+    float3 LightPos;
+    float NearZ;
+    float Radius;
+};
+
 struct VertexInputStaticMesh
 {
     float3 Position : POSITION;
@@ -82,6 +91,16 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 
+#if SHADOW_PASS
+    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    OUT.Position = mul(P.LocalToWorld, float4(IN.Position, 1.0f));
+    
+    OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
+    OUT.Color = float4(IN.Color, 1.0f);
+    OUT.Normal = IN.Position;
+    OUT.UV = IN.UV1;
+    
+#else
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
     float3 VertexNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
@@ -95,6 +114,8 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Normal = VertexNormal;
     OUT.UV = IN.UV1;
     
+#endif
+    
     return OUT;
 }
 
@@ -102,10 +123,14 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 
 struct PixelShaderInput
 {
+#if SHADOW_PASS
+    float4 Position : SV_Position;
+#else
     float4 Color : COLOR;
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
+#endif
 };
 
 struct PixelShaderOutput
@@ -119,6 +144,8 @@ struct PixelShaderOutput
     uint4 Guid;
 #elif EDITOR_PRIMITIVE_PASS
     float4 Color;
+#elif SHADOW_PASS
+    float Depth : SV_Depth;
 #endif
 };
 
@@ -160,6 +187,40 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 #endif
     
     return OUT;
+}
+
+// -------------------------------------------------------------------------------------
+
+struct GeometeryShaderOutput
+{
+    float4 Position : SV_Position;
+    uint TargetIndex : SV_RenderTargetArrayIndex;
+};
+
+[maxvertexcount(18)]
+void PointLightShadow_GS(triangle VertexShaderOutput input[3], inout TriangleStream<GeometeryShaderOutput> OutputStream)
+{
+    ConstantBuffer<ShadowDepth> ShadowDepthBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
+    
+    [unroll]
+    for (int CubeFaceIndex = 0; CubeFaceIndex < 6; CubeFaceIndex++)
+    {
+        [unroll]
+		for (int VertexIndex = 0; VertexIndex < 3; VertexIndex++)
+		{
+            GeometeryShaderOutput OUT;
+            OUT.TargetIndex = CubeFaceIndex;
+
+            float3 WorldPosition = input[VertexIndex].Position.xyz;
+            //OUT.Position = mul(ShadowDepthBuffer.WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPosition, 1.0f));
+            OUT.Position = mul(ShadowDepthBuffer.WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPosition, 1.0f));
+            OUT.Position.z /= OUT.Position.w;
+            //float d = distance(ShadowDepthBuffer.LightPos, WorldPosition);
+            //OUT.Position.z = d/ShadowDepthBuffer.Radius * OUT.Position.w;
+            OutputStream.Append(OUT);
+        }
+		OutputStream.RestartStrip();
+    }
 }
 
 //ConstantBuffer<ViewBuffer> View : register(b0);

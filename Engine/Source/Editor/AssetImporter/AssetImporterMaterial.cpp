@@ -76,7 +76,7 @@ namespace Drn
 
 		if (SupportShadowPass)
 		{
-			const std::vector<const wchar_t*> ShadowMacros = { L"ShadowMacros=1" };
+			const std::vector<const wchar_t*> ShadowMacros = { L"SHADOW_PASS=1" };
 
 			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_VS);
 			CompileShaderBlobConditional(true, Path, L"PointLightShadow_GS", L"gs_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_GS);

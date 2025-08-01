@@ -142,7 +142,7 @@ namespace Drn
 		D3D12_ROOT_PARAMETER ViewBufferParam = {};
 		ViewBufferParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 		ViewBufferParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		ViewBufferParam.Constants.Num32BitValues = 36;
+		ViewBufferParam.Constants.Num32BitValues = 10;
 		ViewBufferParam.Constants.ShaderRegister = 0;
 		ViewBufferParam.Constants.RegisterSpace = 0;
 
@@ -188,9 +188,7 @@ namespace Drn
 		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-
 		GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearSamplerCpuHandle);
-
 
 		m_StaticSamplers.LinearSampler = GetBindlessSamplerIndex(m_BindlessLinearSamplerGpuHandle);
 

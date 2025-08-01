@@ -92,7 +92,7 @@ struct LightBuffer
     float3 LightPosition;
     float Radius;
     float3 Color;
-    float InvRadius;
+    uint ShadowmapIndex;
 };
 
 struct StaticSamplers
@@ -199,5 +199,18 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 Result = (kD * BaseColor.xyz / PI + Specular) * NoL * Attenuation * Light.Color;
 
+    if(Light.ShadowmapIndex != 0)
+    {
+        TextureCube<float> Shadowmap = ResourceDescriptorHeap[Light.ShadowmapIndex];
+        float ShadowmapNormalizedDepth = Shadowmap.Sample(LinearSampler, -ToLight);
+        float ShadowmapDepth = ShadowmapNormalizedDepth * Light.Radius;
+        
+        return float4(ShadowmapNormalizedDepth.xxx, 1);
+        
+        if( Distance > ShadowmapDepth + 0.1)
+            return float4(0, 0, 0, 1);
+        
+    }
+    
     return float4(Result, 1);
 }

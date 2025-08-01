@@ -378,7 +378,7 @@ namespace Drn
 
 			if (m_SupportShadowPass)
 			{
-				m_PointLightShadowDepthPassPSO = PipelineStateObject::CreatePointLightShadowDepthPassPSO(NULL,
+				m_PointLightShadowDepthPassPSO = PipelineStateObject::CreatePointLightShadowDepthPassPSO(
 					m_CullMode, m_InputLayoutType, m_PrimitiveType, m_PointlightShadowDepthShaderBlob);
 
 #if D3D12_Debug_INFO
