@@ -138,6 +138,7 @@ namespace Drn
 			m_ShadowDepthData.NearZ = POINTLIGHT_NEAR_Z;
 			m_ShadowDepthData.Radius = m_Radius;
 			m_ShadowDepthData.DepthBias = m_DepthBias;
+			m_ShadowDepthData.InvShadowResolution = 1.0f / POINTLIGHT_SHADOW_SIZE;
 
 			UINT8* ConstantBufferStart;
 			CD3DX12_RANGE readRange( 0, 0 );

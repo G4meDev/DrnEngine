@@ -29,6 +29,7 @@ namespace Drn
 		float NearZ;
 		float Radius;
 		float DepthBias;
+		float InvShadowResolution;
 	};
 
 	class PointLightSceneProxy : public LightSceneProxy
