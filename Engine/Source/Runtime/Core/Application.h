@@ -18,15 +18,6 @@ namespace Drn
 	public:
 		virtual int Run(HINSTANCE inhInstance);
 
-//		tf::Task WorldTickTask;
-//		tf::Task RendererTickTask;
-//		tf::Task PhysicTickTask;
-//
-//#if WITH_EDITOR
-//		tf::Task EditorTickTask;
-//#endif
-
-		//static tf::Executor executor;
 		static tf::Taskflow taskflow;
 
 	protected:

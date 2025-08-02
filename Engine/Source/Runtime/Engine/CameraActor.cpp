@@ -23,6 +23,45 @@ namespace Drn
 	{
 		Actor::Tick(DeltaTime);
 
+#ifndef WITH_EDITOR
+
+		POINT A;
+		GetCursorPos(&A);
+		IntPoint R(A.x, A.y); 
+
+		IntPoint Delta = R - MousePos;
+		MousePos = R;
+
+		bool wDown = GetKeyState( 'W' ) & 0x8000;
+		bool aDown = GetKeyState( 'A' ) & 0x8000;
+		bool sDown = GetKeyState( 'S' ) & 0x8000;
+		bool dDown = GetKeyState( 'D' ) & 0x8000;
+		bool eDown = GetKeyState( 'E' ) & 0x8000;
+		bool qDown = GetKeyState( 'Q' ) & 0x8000;
+
+		float ForwardDis = wDown - sDown;
+		float RightDis   = dDown - aDown;
+		float UpDis      = eDown - qDown;
+
+		XMVECTOR D = XMVectorSet( RightDis * DeltaTime, UpDis * DeltaTime, ForwardDis * DeltaTime, 0 );
+
+		XMVECTOR CamPos = XMLoadFloat3( GetActorLocation().Get() );
+		XMVECTOR CamRot = GetActorRotation().Get();
+
+		XMVECTOR Displacement = XMVector3Rotate( D * 10.0f, CamRot );
+		SetActorLocation( CamPos + Displacement );
+
+		XMVECTOR Axis_Y = XMVectorSet( 0, 1, 0, 0 );
+		XMVECTOR Axis_X = XMVectorSet( 1, 0, 0, 0 );
+		Axis_X = XMVector3Rotate(Axis_X, CamRot);
+
+		XMVECTOR Rot_Offset_X = XMQuaternionRotationAxis( Axis_Y, Delta.X * 0.01f);
+		XMVECTOR Rot_Offset_Y = XMQuaternionRotationAxis( Axis_X, Delta.Y * 0.01f);
+
+		SetActorRotation( XMQuaternionMultiply( CamRot, Rot_Offset_Y ) );
+		SetActorRotation( XMQuaternionMultiply( GetActorRotation().Get(), Rot_Offset_X ) );
+#endif
+
 	}
 
 #if WITH_EDITOR

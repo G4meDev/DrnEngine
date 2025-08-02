@@ -22,7 +22,12 @@ namespace Drn
 #if WITH_EDITOR
 		void ApplyViewportInput( const ViewportCameraInputHandler& CameraInput, float CameraMovementSpeed,
 			float CameraRotationSpeed );
+
+#else
+		IntPoint MousePos;
 #endif
+
+
 
 	protected:
 
