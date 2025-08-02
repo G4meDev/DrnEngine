@@ -4,6 +4,7 @@
 #if WITH_EDITOR
 
 #include "Runtime/Engine/PointLightActor.h"
+#include "Runtime/Engine/SpotLightActor.h"
 
 #include "Editor/Editor.h"
 #include "Editor/EditorConfig.h"
@@ -261,6 +262,12 @@ namespace Drn
 					ImGui::CloseCurrentPopup();
 				}
 
+				if (ImGui::Button( "SpotLight" ))
+				{
+					AddSpotLight();
+					ImGui::CloseCurrentPopup();
+				}
+
 				ImGui::Button( "unused_1" );
 
 				ImGui::EndPopup();
@@ -333,6 +340,12 @@ namespace Drn
 		PointLightActor* LightActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<PointLightActor>();
 		LightActor->SetActorLabel( "PointLight_00" );
 
+	}
+
+	void LevelViewportGuiLayer::AddSpotLight()
+	{
+		SpotLightActor* LightActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<SpotLightActor>();
+		LightActor->SetActorLabel( "SpotLight_00" );
 	}
 
 }

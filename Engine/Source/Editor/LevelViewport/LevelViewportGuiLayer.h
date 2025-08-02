@@ -37,6 +37,7 @@ namespace Drn
 		void AlignSelectedComponentToSurfaceBelow();
 
 		void AddPointLight();
+		void AddSpotLight();
 
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;

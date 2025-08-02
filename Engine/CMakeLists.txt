@@ -33,9 +33,11 @@ set( HEADER_FILES
 	Source/Runtime/Engine/StaticMeshActor.h
 	Source/Runtime/Engine/CameraActor.h
 	Source/Runtime/Engine/PointLightActor.h
+	Source/Runtime/Engine/SpotLightActor.h
 	Source/Runtime/Engine/LightSceneProxy.h
 	Source/Runtime/Engine/LightActor.h
 	Source/Runtime/Engine/PointLightSceneProxy.h
+	Source/Runtime/Engine/SpotLightSceneProxy.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/CommonResources.h
@@ -69,6 +71,7 @@ set( HEADER_FILES
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
 	Source/Runtime/Components/PointLightComponent.h
+	Source/Runtime/Components/SpotLightComponent.h
 	Source/Runtime/Components/BillboardComponent.h
 
 	Source/Runtime/Physic/PhysicCore.h
@@ -176,8 +179,10 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/CameraActor.cpp
 	Source/Runtime/Engine/LightActor.cpp
 	Source/Runtime/Engine/PointLightActor.cpp
+	Source/Runtime/Engine/SpotLightActor.cpp
 	Source/Runtime/Engine/LightSceneProxy.cpp
 	Source/Runtime/Engine/PointLightSceneProxy.cpp
+	Source/Runtime/Engine/SpotLightSceneProxy.cpp
 	
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/CommonResources.cpp
@@ -211,6 +216,7 @@ set( SOURCE_FILES
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp
 	Source/Runtime/Components/PointLightComponent.cpp
+	Source/Runtime/Components/SpotLightComponent.cpp
 	Source/Runtime/Components/BillboardComponent.cpp
 
 	Source/Runtime/Physic/PhysicCore.cpp

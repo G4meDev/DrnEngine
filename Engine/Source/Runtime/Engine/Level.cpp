@@ -116,6 +116,12 @@ namespace Drn
 				PointLightActor* NewPointLightActor = InWorld->SpawnActor<PointLightActor>();
 				NewPointLightActor->Serialize(Ar);
 			}
+
+			else if ( ActorType == EActorType::SpotLight )
+			{
+				PointLightActor* NewPointLightActor = InWorld->SpawnActor<PointLightActor>();
+				NewPointLightActor->Serialize(Ar);
+			}
 		}
 	
 	}

@@ -24,6 +24,7 @@
 #include "Runtime/Engine/PointLightActor.h"
 
 #include "Runtime/Components/BillboardComponent.h"
+#include "Runtime/Components/SpotLightComponent.h"
 
 #include "Runtime/Renderer/Device.h"
 #include "Runtime/Renderer/SwapChain.h"

@@ -1,0 +1,22 @@
+#include "DrnPCH.h"
+#include "SpotLightActor.h"
+
+#include "Runtime/Components/SpotLightComponent.h"
+
+namespace Drn
+{
+	SpotLightActor::SpotLightActor()
+		: LightActor()
+	{
+		m_SpotLightComponent = std::make_unique<class SpotLightComponent>();
+		m_SpotLightComponent->SetComponentLabel( "LightComponent" );
+		SetRootComponent(m_SpotLightComponent.get());
+		SetLightComponent(m_SpotLightComponent.get());
+	}
+
+	SpotLightActor::~SpotLightActor()
+	{
+		
+	}
+
+}

@@ -13,6 +13,7 @@ namespace Drn
 		StaticMeshActor = 0,
 		CameraActor,
 		PointLight,
+		SpotLight,
 	};
 
 	class Actor : public Serializable
