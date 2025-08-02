@@ -221,6 +221,71 @@ namespace Drn
 		}
 	}
 
+	void World::DrawDebugCone( const Vector& InCenter, const Vector& Direction, float Length, float AngleWidth,
+		float AngleHeight, const Color& Color, int32 NumSides, float Thickness, float Lifetime )
+	{
+		NumSides = std::max<uint32>(NumSides, 4);
+
+		const float Angle1 = std::clamp<float>(AngleHeight, (float)KINDA_SMALL_NUMBER, (float)(Math::PI - KINDA_SMALL_NUMBER));
+		const float Angle2 = std::clamp<float>(AngleWidth, (float)KINDA_SMALL_NUMBER, (float)(Math::PI - KINDA_SMALL_NUMBER));
+
+		const float SinX_2 = std::sin(0.5f * Angle1);
+		const float SinY_2 = std::sin(0.5f * Angle2);
+
+		const float SinSqX_2 = SinX_2 * SinX_2;
+		const float SinSqY_2 = SinY_2 * SinY_2;
+
+		std::vector<Vector> ConeVerts;
+		ConeVerts.resize(NumSides);
+
+		for(int32 i = 0; i < NumSides; i++)
+		{
+			const float Fraction	= (float)i/(float)(NumSides);
+			const float Thi			= 2.f * Math::PI * Fraction;
+			const float Phi			= std::atan2(std::sin(Thi)*SinY_2, std::cos(Thi)*SinX_2);
+			const float SinPhi		= std::sin(Phi);
+			const float CosPhi		= std::cos(Phi);
+			const float SinSqPhi	= SinPhi*SinPhi;
+			const float CosSqPhi	= CosPhi*CosPhi;
+
+			const float RSq			= SinSqX_2*SinSqY_2 / (SinSqX_2*SinSqPhi + SinSqY_2*CosSqPhi);
+			const float R			= std::sqrt(RSq);
+			const float Sqr			= std::sqrt(1-RSq);
+			const float Alpha		= R*CosPhi;
+			const float Beta		= R*SinPhi;
+
+			ConeVerts[i] = Vector(1 - 2 * RSq, 2 * Sqr * Alpha, 2 * Sqr * Beta);
+		}
+
+		Vector YAxis, ZAxis;
+
+		Vector DirectionNorm = Direction.GetSafeNormal();
+		DirectionNorm.FindBestAxisVectors(YAxis, ZAxis);
+
+		const Matrix ConeToWorld = Matrix::ScaleMatrix(Vector(Length)) * Matrix(DirectionNorm, YAxis, ZAxis, InCenter);
+
+		Vector CurrentPoint, PrevPoint, FirstPoint;
+		for(int32 i = 0; i < NumSides; i++)
+		{
+			Transform ConeToWorldTransform = Transform(ConeToWorld);
+			CurrentPoint = ConeToWorldTransform.TransformPosition(ConeVerts[i]);
+			//CurrentPoint = ConeVerts[i];
+			DrawDebugLine(ConeToWorldTransform.GetLocation(), CurrentPoint, Color, Lifetime, Thickness);
+
+			if( i > 0 )
+			{
+				DrawDebugLine(PrevPoint, CurrentPoint, Color, Lifetime, Thickness);
+			}
+			else
+			{
+				FirstPoint = CurrentPoint;
+			}
+
+			PrevPoint = CurrentPoint;
+		}
+		DrawDebugLine(CurrentPoint, FirstPoint, Color, Lifetime, Thickness);
+	}
+
 	void World::DestroyInternal()
 	{
 		m_LineBatchCompponent->UnRegisterComponent();

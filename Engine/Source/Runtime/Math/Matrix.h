@@ -26,6 +26,11 @@ namespace Drn
 			return XMMatrixMultiply(Get(), InMatrix.Get());
 		}
 
+		static inline Matrix ScaleMatrix(const Vector& Scale)
+		{
+			return XMMatrixScalingFromVector(XMLoadFloat3(Scale.Get()));
+		}
+
 		static Matrix MatrixIdentity;
 
 	private:

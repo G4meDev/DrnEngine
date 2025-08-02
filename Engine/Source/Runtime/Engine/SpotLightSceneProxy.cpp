@@ -26,7 +26,8 @@ namespace Drn
 
 	void SpotLightSceneProxy::DrawAttenuation( World* InWorld )
 	{
-		
+
+		InWorld->DrawDebugCone(m_LightComponent->GetWorldLocation(), Vector::DownVector, 5, Math::DegreesToRadians(45.0f), Math::DegreesToRadians(45.0f), Color::White, 12, 0, 0);
 	}
 
 }

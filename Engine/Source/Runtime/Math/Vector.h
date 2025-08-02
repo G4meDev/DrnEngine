@@ -88,6 +88,30 @@ namespace Drn
 			return XMMin(XMMin(XMVectorGetX(Vec), XMVectorGetY(Vec)), XMVectorGetZ(Vec));
 		}
 
+		inline float operator|( const Vector& V ) const
+		{
+			XMVECTOR Result = XMVector3Dot(XMLoadFloat3(Get()), XMLoadFloat3(V.Get()));
+			return XMVectorGetX(Result);
+		}
+
+		static inline float DotProduct(const Vector& A, const Vector& B)
+		{
+			return A | B;
+		}
+
+
+		inline Vector operator^( const Vector& V ) const
+		{
+			XMVECTOR Result = XMVector3Cross(XMLoadFloat3(Get()), XMLoadFloat3(V.Get()));
+			return Result;
+		}
+
+		static inline Vector CrossProduct(const Vector& A, const Vector& B)
+		{
+			return A ^ B;
+		}
+
+
 		static Vector FromU32(uint32_t Value)
 		{
 			uint8_t X = 255;
@@ -106,6 +130,36 @@ namespace Drn
 			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
 
 			return XMVectorGetX(Vec) == 0.0f && XMVectorGetY(Vec) == 0.0f && XMVectorGetZ(Vec) == 0.0f;
+		}
+
+		inline Vector GetSafeNormal( float Tolerance = SMALL_NUMBER) const
+		{
+			const float SquareSum = m_Vector.x * m_Vector.x + m_Vector.y * m_Vector.y + m_Vector.z * m_Vector.z;
+
+			if (SquareSum == 1.0f)
+			{
+				return *this;
+			}
+			else if (SquareSum < Tolerance)
+			{
+				return Vector::ZeroVector;
+			}
+
+			const float Scale = 1.0f / std::sqrt(SquareSum);
+			return Vector(m_Vector.x * Scale, m_Vector.y * Scale, m_Vector.z * Scale);
+		}
+
+		inline void FindBestAxisVectors(Vector& Axis1, Vector& Axis2) const
+		{
+			const float NX = std::abs(m_Vector.x);
+			const float NY = std::abs(m_Vector.y);
+			const float NZ = std::abs(m_Vector.z);
+
+			if( NZ>NX && NZ>NY )	Axis1 = Vector(1,0,0);
+			else					Axis1 = Vector(0,0,1);
+
+			Axis1 = (Axis1 - *this * (Axis1 | *this)).GetSafeNormal();
+			Axis2 = Axis1 ^ *this;
 		}
 
 		inline std::string ToString()
