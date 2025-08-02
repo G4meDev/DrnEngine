@@ -28,6 +28,7 @@ namespace Drn
 		Vector LightPosition;
 		float NearZ;
 		float Radius;
+		float DepthBias;
 	};
 
 	class PointLightSceneProxy : public LightSceneProxy
@@ -43,10 +44,11 @@ namespace Drn
 		void ReleaseShadowmap();
 
 		inline void SetRadius( float Radius ) { m_Radius = Radius; }
+		inline void SetDepthBias( float Bias ) { m_DepthBias = Bias; }
 
 	protected:
 		float m_Radius;
-
+		float m_DepthBias;
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) override;

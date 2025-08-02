@@ -11,6 +11,7 @@ namespace Drn
 	PointLightComponent::PointLightComponent()
 		: LightComponent()
 		, m_Radius(3.0f)
+		, m_DepthBias(0.01f)
 		, m_PointLightSceneProxy(nullptr)
 	{
 		m_Intensity = 35;
@@ -100,6 +101,15 @@ namespace Drn
 		}
 	}
 
+	void PointLightComponent::SetDepthBias( float Bias )
+	{
+		m_DepthBias = Bias;
+		if (m_PointLightSceneProxy)
+		{
+			m_PointLightSceneProxy->SetDepthBias(Bias);
+		}
+	}
+
 #if WITH_EDITOR
 	void PointLightComponent::DrawDetailPanel( float DeltaTime )
 	{
@@ -126,6 +136,10 @@ namespace Drn
 			SetRadius(m_Radius);
 		}
 	
+		if ( ImGui::InputFloat( "DepthBias", &m_DepthBias, 0.001f, 1.0f ) )
+		{
+			SetDepthBias(m_DepthBias);
+		}
 	}
 #endif
 }

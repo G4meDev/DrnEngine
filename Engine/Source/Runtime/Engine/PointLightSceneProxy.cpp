@@ -10,6 +10,7 @@ namespace Drn
 	PointLightSceneProxy::PointLightSceneProxy( class PointLightComponent* InComponent )
 		: LightSceneProxy(InComponent)
 		, m_Radius(InComponent->GetRadius())
+		, m_DepthBias(InComponent->GetDepthBias())
 		, m_ShadowCubemapResource(nullptr)
 	{
 		SetLocalToWorld(InComponent->GetLocalToWorld());
@@ -136,6 +137,7 @@ namespace Drn
 			m_ShadowDepthData.LightPosition = m_WorldPosition;
 			m_ShadowDepthData.NearZ = POINTLIGHT_NEAR_Z;
 			m_ShadowDepthData.Radius = m_Radius;
+			m_ShadowDepthData.DepthBias = m_DepthBias;
 
 			UINT8* ConstantBufferStart;
 			CD3DX12_RANGE readRange( 0, 0 );

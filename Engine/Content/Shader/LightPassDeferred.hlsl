@@ -99,6 +99,8 @@ struct LightBuffer
 struct StaticSamplers
 {
     uint LinearSamplerIndex;
+    uint PointSamplerIndex;
+    uint LinearCompLessSamplerIndex;
 };
 
 struct ShadowDepth
@@ -107,6 +109,7 @@ struct ShadowDepth
     float3 LightPos;
     float NearZ;
     float Radius;
+    float DepthBias;
 };
 
 struct VertexInputPosUV
@@ -207,6 +210,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 Result = (kD * BaseColor.xyz / PI + Specular) * NoL * Attenuation * Light.Color;
 
+    float Shadow;
+    
     if(Light.ShadowmapIndex != 0)
     {
         TextureCube<float> Shadowmap = ResourceDescriptorHeap[Light.ShadowmapIndex];
@@ -232,12 +237,11 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
         float4 ShadowPos = mul(ShadowDepthBuffer.WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPos.xyz, 1));
         
         float ww = ShadowPos.z / ShadowPos.w;
-        float ShadowmapDepth = Shadowmap.Sample(LinearSampler, -ToLight);
+        float ShadowDepthBias = -ShadowDepthBuffer.DepthBias / ShadowPos.w;
         
-        if( ww > ShadowmapDepth + 0.001)
-            return float4(0, 0, 0, 1);
-        
+        SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
+        Shadow = Shadowmap.SampleCmp(CompState, -ToLight, ww + ShadowDepthBias);
     }
     
-    return float4(Result, 1);
+    return float4(Result * Shadow, 1);
 }

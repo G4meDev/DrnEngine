@@ -181,16 +181,42 @@ namespace Drn
 		m_BindlessRootSinature->SetName(L"BindlessRootSignature");
 #endif
 
-		m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearSamplerCpuHandle, &m_BindlessLinearSamplerGpuHandle);
-		D3D12_SAMPLER_DESC SamplerDesc = {};
-		SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-		SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-		SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-		GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearSamplerCpuHandle);
+		{
+			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearSamplerCpuHandle, &m_BindlessLinearSamplerGpuHandle);
+			D3D12_SAMPLER_DESC SamplerDesc = {};
+			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearSamplerCpuHandle);
 
-		m_StaticSamplers.LinearSampler = GetBindlessSamplerIndex(m_BindlessLinearSamplerGpuHandle);
+			m_StaticSamplers.LinearSampler = GetBindlessSamplerIndex(m_BindlessLinearSamplerGpuHandle);
+		}
+
+		{
+			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessPointSamplerCpuHandle, &m_BindlessPointSamplerGpuHandle);
+			D3D12_SAMPLER_DESC SamplerDesc = {};
+			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessPointSamplerCpuHandle);
+
+			m_StaticSamplers.PointSampler = GetBindlessSamplerIndex(m_BindlessPointSamplerGpuHandle);
+		}
+
+		{
+			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearCompLessSamplerCpuHandle, &m_BindlessLinearCompLessSamplerGpuHandle);
+			D3D12_SAMPLER_DESC SamplerDesc = {};
+			SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+			SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS;
+			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearCompLessSamplerCpuHandle);
+
+			m_StaticSamplers.LinearCompLessSampler = GetBindlessSamplerIndex(m_BindlessLinearCompLessSamplerGpuHandle);
+		}
 
 		m_StaticSamplersBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 
