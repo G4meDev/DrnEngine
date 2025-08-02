@@ -21,7 +21,7 @@ namespace Drn
 		// TODO: proper camera and scene render management
 #ifndef WITH_EDITOR
 		CameraActor* Cam = SpawnActor<CameraActor>();
-		Cam->SetActorLocation(XMVectorSet(0, 0, -10, 0));
+		Cam->SetActorLocation(XMVectorSet(0, 5, -10, 0));
 
 		Renderer::Get()->m_MainSceneRenderer = m_Scene->AllocateSceneRenderer();
 		Renderer::Get()->m_MainSceneRenderer->m_CameraActor = Cam;

@@ -122,7 +122,10 @@ namespace Drn
 
 		if (m_CastShadow)
 		{
+			D3D12_RECT R = CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX );
+
 			CommandList->RSSetViewports(1, &m_ShadowViewport);
+			CommandList->RSSetScissorRects(1, &R);
 
 			CommandList->ClearDepthStencilView(m_ShadowmapCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
 			CommandList->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandle);
@@ -146,6 +149,7 @@ namespace Drn
 			memcpy( ConstantBufferStart, &m_ShadowDepthData, sizeof(ShadowDepthData));
 			m_ShadowDepthBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
+			CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()), 6);
 
 			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
@@ -210,6 +214,7 @@ namespace Drn
 	{
 		InWorld->DrawDebugSphere( m_WorldPosition, Quat::Identity, Color::White, m_Radius, 36, 0.0, 0 );
 	}
+#endif
 
 	void PointLightSceneProxy::CalculateLocalToProjectionForDirection( Matrix& Mat, const Vector& Direction, const Vector& UpVector)
 	{
@@ -225,5 +230,4 @@ namespace Drn
 		Mat = ViewProjection;
 	}
 
-#endif
 }

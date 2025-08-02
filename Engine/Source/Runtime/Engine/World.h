@@ -92,7 +92,6 @@ namespace Drn
 #endif
 
 		bool m_PendingDestory;
-
 		double m_TimeSeconds;
 
 		friend Scene;
