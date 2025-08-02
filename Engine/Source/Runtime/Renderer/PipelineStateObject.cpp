@@ -71,7 +71,7 @@ namespace Drn
 		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
 		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
 		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_LESS;
+		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_LESS_EQUAL;
 		PipelineDesc.SampleMask							= UINT_MAX;
 		if (Shaders.m_VS) PipelineDesc.VS				= CD3DX12_SHADER_BYTECODE(Shaders.m_VS);
 		if (Shaders.m_GS) PipelineDesc.GS				= CD3DX12_SHADER_BYTECODE(Shaders.m_GS);

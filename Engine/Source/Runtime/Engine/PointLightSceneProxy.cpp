@@ -3,7 +3,7 @@
 #include "Runtime/Components/PointLightComponent.h"
 
 #define POINTLIGHT_SHADOW_SIZE 512
-#define POINTLIGHT_NEAR_Z SMALL_NUMBER
+#define POINTLIGHT_NEAR_Z 0.1f
 
 namespace Drn
 {
@@ -88,6 +88,11 @@ namespace Drn
 		m_LightBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
 		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
+
+		if (m_CastShadow)
+		{
+			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()), 7);
+		}
 
 		//if (m_Sprite.IsValid())
 		//{
@@ -210,9 +215,10 @@ namespace Drn
 		XMVECTOR FocusPoint = LightPosition + ViewDirection;
 
 		Matrix ViewMatrix = XMMatrixLookAtLH( LightPosition, FocusPoint, XMLoadFloat3(UpVector.Get()));
-		Matrix ProjectionMatrix = XMMatrixPerspectiveFovLH( XM_PIDIV2 , 1.0f, POINTLIGHT_NEAR_Z, m_Radius);
+		Matrix ProjectionMatrix = XMMatrixPerspectiveFovLH( XM_PIDIV2, 1.0f, POINTLIGHT_NEAR_Z, m_Radius);
 
 		Matrix ViewProjection = ViewMatrix * ProjectionMatrix;
+		
 		Mat = ViewProjection;
 	}
 

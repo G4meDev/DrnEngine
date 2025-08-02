@@ -68,6 +68,7 @@ struct Resources
     uint WorldNormalIndex;
     uint MasksIndex;
     uint DepthIndex;
+    uint ShadowDepthIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -100,6 +101,13 @@ struct StaticSamplers
     uint LinearSamplerIndex;
 };
 
+struct ShadowDepth
+{
+    matrix WorldToProjectionMatrices[6];
+    float3 LightPos;
+    float NearZ;
+    float Radius;
+};
 
 struct VertexInputPosUV
 {
@@ -202,12 +210,31 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     if(Light.ShadowmapIndex != 0)
     {
         TextureCube<float> Shadowmap = ResourceDescriptorHeap[Light.ShadowmapIndex];
-        float ShadowmapNormalizedDepth = Shadowmap.Sample(LinearSampler, -ToLight);
-        float ShadowmapDepth = ShadowmapNormalizedDepth * Light.Radius;
+
+        float3 AbsLightVector = abs(ToLight);
+        float MaxCoordinate = max(AbsLightVector.x, max(AbsLightVector.y, AbsLightVector.z));
+
+        int CubeFaceIndex = 0;
+        if (MaxCoordinate == AbsLightVector.x)
+        {
+            CubeFaceIndex = AbsLightVector.x == ToLight.x ? 1 : 0;
+        }
+        else if (MaxCoordinate == AbsLightVector.y)
+        {
+            CubeFaceIndex = AbsLightVector.y == ToLight.y ? 3 : 2;
+        }
+        else
+        {
+            CubeFaceIndex = AbsLightVector.z == ToLight.z ? 5 : 4;
+        }
         
-        return float4(ShadowmapNormalizedDepth.xxx, 1);
+        ConstantBuffer<ShadowDepth> ShadowDepthBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthIndex];
+        float4 ShadowPos = mul(ShadowDepthBuffer.WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPos.xyz, 1));
         
-        if( Distance > ShadowmapDepth + 0.1)
+        float ww = ShadowPos.z / ShadowPos.w;
+        float ShadowmapDepth = Shadowmap.Sample(LinearSampler, -ToLight);
+        
+        if( ww > ShadowmapDepth + 0.001)
             return float4(0, 0, 0, 1);
         
     }

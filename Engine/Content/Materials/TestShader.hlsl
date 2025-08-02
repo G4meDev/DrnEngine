@@ -145,7 +145,6 @@ struct PixelShaderOutput
 #elif EDITOR_PRIMITIVE_PASS
     float4 Color;
 #elif SHADOW_PASS
-    float Depth : SV_Depth;
 #endif
 };
 
@@ -212,11 +211,7 @@ void PointLightShadow_GS(triangle VertexShaderOutput input[3], inout TriangleStr
             OUT.TargetIndex = CubeFaceIndex;
 
             float3 WorldPosition = input[VertexIndex].Position.xyz;
-            //OUT.Position = mul(ShadowDepthBuffer.WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPosition, 1.0f));
             OUT.Position = mul(ShadowDepthBuffer.WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPosition, 1.0f));
-            OUT.Position.z /= OUT.Position.w;
-            //float d = distance(ShadowDepthBuffer.LightPos, WorldPosition);
-            //OUT.Position.z = d/ShadowDepthBuffer.Radius * OUT.Position.w;
             OutputStream.Append(OUT);
         }
 		OutputStream.RestartStrip();
