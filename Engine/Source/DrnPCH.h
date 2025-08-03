@@ -97,3 +97,5 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#define SPOTLIGHT_STENCIL_SIDES 33
+#define SPOTLIGHT_STENCIL_SLICES 12

@@ -19,7 +19,7 @@ namespace Drn
 
 	void SpotLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		
+		CommonResources::Get()->m_SpotLightCone->BindAndDraw(CommandList);
 	}
 
 	void SpotLightSceneProxy::RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )

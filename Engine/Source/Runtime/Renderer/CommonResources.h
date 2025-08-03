@@ -45,6 +45,19 @@ namespace Drn
 		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
 	};
 
+	class SpotLightCone
+	{
+	public:
+
+		SpotLightCone( ID3D12GraphicsCommandList2* CommandList );
+		~SpotLightCone();
+
+		class VertexBuffer* m_VertexBuffer;
+		class IndexBuffer* m_IndexBuffer;
+
+		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+	};
+
 	class ResolveAlphaBlendedPSO
 	{
 	public:
@@ -140,6 +153,7 @@ namespace Drn
 		ScreenTriangle* m_ScreenTriangle;
 		UniformQuad* m_UniformQuad;
 		PointLightSphere* m_PointLightSphere;
+		SpotLightCone* m_SpotLightCone;
 
 		ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
 		ResolveEditorSelectionPSO* m_ResolveEditorSelectionPSO;

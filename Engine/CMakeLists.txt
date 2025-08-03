@@ -67,6 +67,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Material/Material.h
 	Source/Runtime/Renderer/VertexBuffer.h
 	Source/Runtime/Renderer/IndexBuffer.h
+	Source/Runtime/Renderer/RenderGeometeryHelper.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -212,6 +213,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Material/Material.cpp
 	Source/Runtime/Renderer/VertexBuffer.cpp
 	Source/Runtime/Renderer/IndexBuffer.cpp
+	Source/Runtime/Renderer/RenderGeometeryHelper.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

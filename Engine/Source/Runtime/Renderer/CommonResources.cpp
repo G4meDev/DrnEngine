@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "CommonResources.h"
 
+#include "Runtime/Renderer/RenderGeometeryHelper.h"
+
 #define PAR_SHAPES_IMPLEMENTATION
 #include "ThirdParty/par/par_shapes.h"
 
@@ -43,6 +45,7 @@ namespace Drn
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
 		m_UniformQuad = new UniformQuad( CommandList );
 		m_PointLightSphere = new PointLightSphere( CommandList );
+		m_SpotLightCone = new SpotLightCone(CommandList);
 		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList);
 		m_ResolveEditorSelectionPSO = new ResolveEditorSelectionPSO(CommandList);
 		m_TonemapPSO = new TonemapPSO(CommandList);
@@ -58,6 +61,7 @@ namespace Drn
 		delete m_ScreenTriangle;
 		delete m_UniformQuad;
 		delete m_PointLightSphere;
+		delete m_SpotLightCone;
 		delete m_ResolveAlphaBlendedPSO;
 		delete m_ResolveEditorSelectionPSO;
 		delete m_TonemapPSO;
@@ -168,6 +172,26 @@ namespace Drn
 	}
 
 	void PointLightSphere::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+	}
+
+// --------------------------------------------------------------------------------------
+
+	SpotLightCone::SpotLightCone( ID3D12GraphicsCommandList2* CommandList )
+	{
+		RenderGeometeryHelper::CreateSpotlightStencilGeometery(CommandList, m_VertexBuffer, m_IndexBuffer);
+	}
+
+	SpotLightCone::~SpotLightCone()
+	{
+		if (m_VertexBuffer) { delete m_VertexBuffer; }
+		if (m_IndexBuffer) { delete m_IndexBuffer; }
+	}
+
+	void SpotLightCone::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
 	{
 		m_VertexBuffer->Bind(CommandList);
 		m_IndexBuffer->Bind(CommandList);
