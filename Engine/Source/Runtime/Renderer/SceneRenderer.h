@@ -58,6 +58,12 @@ namespace Drn
 		Matrix LocalToCameraView;
 
 		IntPoint Size;
+		uint32 Pad_1;
+		uint32 Pad_2;
+		
+		Vector CameraPos;
+		float Pad_3;
+		Vector CameraDir;
 	};
 
 	class SceneRenderer

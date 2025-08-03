@@ -420,6 +420,9 @@ namespace Drn
 		
 		m_SceneView.Size = GetViewportSize();
 
+		m_SceneView.CameraPos = m_CameraActor->GetActorLocation();
+		m_SceneView.CameraDir = m_CameraActor->GetActorRotation().GetVector();
+
 		UpdateViewBuffer();
 	}
 

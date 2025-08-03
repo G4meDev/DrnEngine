@@ -10,13 +10,13 @@ namespace Drn
 	public:
 		PointLightBuffer() = default;
 
-		Matrix LocalToProjection;
-		Vector CameraPosition;
-		float Pad_1;
 		Vector WorldPosition;
-		float Radius;
-		Vector LightColor;
-		uint32 ShadowmapIndex;
+		float Scale;
+
+		Vector Color;
+		float InvRadius;
+
+		uint32 ShadowBufferIndex;
 	};
 
 	struct ShadowDepthData
@@ -25,9 +25,7 @@ namespace Drn
 		ShadowDepthData() = default;
 
 		Matrix WorldToProjectionMatrices[6];
-		Vector LightPosition;
-		float NearZ;
-		float Radius;
+		uint32 ShadowmapTextureIndex;
 		float DepthBias;
 		float InvShadowResolution;
 	};

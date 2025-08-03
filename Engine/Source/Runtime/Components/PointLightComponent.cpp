@@ -11,7 +11,7 @@ namespace Drn
 	PointLightComponent::PointLightComponent()
 		: LightComponent()
 		, m_Radius(3.0f)
-		, m_DepthBias(0.01f)
+		, m_DepthBias(0.005f)
 		, m_PointLightSceneProxy(nullptr)
 	{
 		m_Intensity = 35;
@@ -81,13 +81,6 @@ namespace Drn
 		if ( m_PointLightSceneProxy )
 		{
 			m_PointLightSceneProxy->SetLocalToWorld(GetLocalToWorld());
-
-			//Vector Scale = GetWorldScale() - Vector(1);
-			//float Min = Scale.GetMinComponent();
-			//float Max = Scale.GetMaxComponent();
-			//float Addition = std::abs(Min) > Max ? Min : Max;
-			//
-			//SetRadius(m_Radius + Addition);
 		}
 	}
 

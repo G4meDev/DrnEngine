@@ -75,12 +75,11 @@ namespace Drn
 		XMMATRIX LocalToWorld = XMMatrixTranslationFromVector( XMLoadFloat3( m_WorldPosition.Get() ) );
 		XMMATRIX LocalToProjection = XMMatrixMultiply( m_LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
 
-		m_Buffer.LocalToProjection = LocalToProjection;
-		m_Buffer.CameraPosition = CameraPosition;
 		m_Buffer.WorldPosition = m_WorldPosition;
-		m_Buffer.Radius = m_Radius;
-		m_Buffer.LightColor = m_LightColor;
-		m_Buffer.ShadowmapIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowCubemapResource->GetGpuHandle()) : 0;
+		m_Buffer.Scale = m_Radius;
+		m_Buffer.Color = m_LightColor;
+		m_Buffer.InvRadius = 1 / m_Radius;
+		m_Buffer.ShadowBufferIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()) : 0;
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
@@ -90,10 +89,9 @@ namespace Drn
 
 		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
 
-		if (m_CastShadow)
-		{
-			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()), 7);
-		}
+		// TODO: make light flags enum. e. g. 1: Pointlight. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
+		uint32 LightFlags = 1;
+		CommandList->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
 
 		//if (m_Sprite.IsValid())
 		//{
@@ -137,11 +135,9 @@ namespace Drn
 			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[4], Vector::ForwardVector, Vector::UpVector);
 			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[5], Vector::BackwardVector, Vector::UpVector);
 
-			m_ShadowDepthData.LightPosition = m_WorldPosition;
-			m_ShadowDepthData.NearZ = POINTLIGHT_NEAR_Z;
-			m_ShadowDepthData.Radius = m_Radius;
 			m_ShadowDepthData.DepthBias = m_DepthBias;
 			m_ShadowDepthData.InvShadowResolution = 1.0f / POINTLIGHT_SHADOW_SIZE;
+			m_ShadowDepthData.ShadowmapTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_ShadowCubemapResource->GetGpuHandle());
 
 			UINT8* ConstantBufferStart;
 			CD3DX12_RANGE readRange( 0, 0 );
@@ -194,14 +190,10 @@ namespace Drn
 		ResourceViewDesc.TextureCube.ResourceMinLODClamp = 0;
 
 		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView(m_ShadowCubemapResource->GetD3D12Resource(), &ResourceViewDesc, m_ShadowCubemapResource->GetCpuHandle());
-
-		std::cout << "Allocated";
 	}
 
 	void PointLightSceneProxy::ReleaseShadowmap()
 	{
-		std::cout << "Released";
-
 		if (m_ShadowCubemapResource)
 		{
 			m_ShadowCubemapResource->ReleaseBufferedResource();

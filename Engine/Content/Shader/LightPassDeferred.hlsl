@@ -2,6 +2,9 @@
 
 // TODO: move to common.hlsl
 
+#define LIGHT_BITFLAG_POINTLIGHT 1
+#define LIGHT_BITFLAG_SPOTLIGHT 2
+
 static const float PI = 3.14159265359;
 
 float2 VSPosToScreenUV(float4 VSPos)
@@ -62,13 +65,13 @@ float3 fresnelSchlick(float cosTheta, float3 F0)
 struct Resources
 {
     uint ViewBufferIndex;
-    uint LightBufferIndex;
+    uint LightDataIndex;
     uint StaticSamplerBufferIndex;
     uint BaseColorIndex;
     uint WorldNormalIndex;
     uint MasksIndex;
     uint DepthIndex;
-    uint ShadowDepthIndex;
+    uint LightFlags;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -83,17 +86,40 @@ struct ViewBuffer
     matrix LocalToCameraView;
 
     uint2 RenderSize;
+    uint2 Pad_1;
+    float3 CameraPosition;
+    uint2 Pad_2;
+    float3 CameraDirection;
 };
 
-struct LightBuffer
+//struct LightBuffer
+//{
+//    matrix LocalToProjection;
+//    float3 LightPosition;
+//    float Radius;
+//    float3 Color;
+//    uint ShadowmapIndex;
+//};
+
+//struct LightData
+//{
+//    uint ShadowDepthIndex; // 0 if not casting shadow
+//};
+
+struct PointLightData
 {
-    matrix LocalToProjection;
-    float3 CameraPosition;
-    float Pad_1;
-    float3 LightPosition;
-    float Radius;
+    float4 WorldPosAndScale;
     float3 Color;
-    uint ShadowmapIndex;
+    float InvRadius;
+    uint ShadowDataIndex; // 0 if not casting shadow
+};
+
+struct PointLightShadowData
+{
+    matrix WorldToProjectionMatrices[6];
+    uint ShadowMapTextureIndex;
+    float DepthBias;
+    float InvShadowmapResolution;
 };
 
 struct StaticSamplers
@@ -128,13 +154,26 @@ struct VertexShaderOutput
 VertexShaderOutput Main_VS(VertexInputPosUV IN)
 {
     VertexShaderOutput OUT;
-
-    ConstantBuffer<LightBuffer> Light = ResourceDescriptorHeap[BindlessResources.LightBufferIndex];
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
+    float3 WorldPosition;
     
-    OUT.Position = mul(Light.LocalToProjection, float4(IN.Position, 1.0f));
+    bool IsPointLight = BindlessResources.LightFlags & LIGHT_BITFLAG_POINTLIGHT;
+
+    if(IsPointLight)
+    {
+        ConstantBuffer<PointLightData> LightBuffer = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
+        WorldPosition = IN.Position * LightBuffer.WorldPosAndScale.w + LightBuffer.WorldPosAndScale.xyz;
+    }
+
+    else
+    {
+        WorldPosition = float3(1, 1, 1);
+    }
+
+    OUT.Position = mul(View.WorldToProjection, float4(WorldPosition, 1.0f));
     OUT.UV = VSPosToScreenUV(OUT.Position);
     OUT.ScreenPos = OUT.Position.xy / OUT.Position.w;
-
+    
     return OUT;
 }
 
@@ -202,10 +241,140 @@ static const float2 DiscSamples29[]=
 	float2(-0.082476, 0.654088),
 };
 
+struct GBufferData
+{
+    float3 BaseColor;
+    float3 WorldNormal;
+    float Matallic;
+    float Roughness;
+    float AmbientOcclusion;
+};
+
+float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, float3 LightColor, float3 CameraVector, GBufferData Gbuffer)
+{
+    float3 ToLight = LightPosition - WorldPosition;
+    float DistanceSquare = dot(ToLight, ToLight);
+
+    float3 L = ToLight * rsqrt(DistanceSquare);
+    float NoL = saturate(dot(Gbuffer.WorldNormal, L));
+    float3 H = normalize(normalize(CameraVector) + normalize(ToLight));
+
+// -------------------------------------------------------------------------
+    
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, Gbuffer.BaseColor, Gbuffer.Matallic);
+    
+    float NDF = DistributionGGX(Gbuffer.WorldNormal, H, Gbuffer.Roughness);
+    float G = GeometrySmith(Gbuffer.WorldNormal, CameraVector, L, Gbuffer.Roughness);
+    float3 F = fresnelSchlick(max(dot(H, CameraVector), 0.0), F0);
+    
+    float3 kS = F;
+    float3 kD = float3(1, 1, 1) - kS;
+    kD *= 1.0 - Gbuffer.Roughness;
+    
+    float3 Specular = NDF * G * F / (max(dot(Gbuffer.WorldNormal, CameraVector), 0) * max(dot(Gbuffer.WorldNormal, L), 0) + 0.0001);
+    
+    return (kD * Gbuffer.BaseColor / PI + Specular) * NoL * LightColor;
+}
+
+float CalculatePointLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius)
+{
+    float Distance = distance(WorldPosition, LightPosition);
+    float Distance2 = Distance * Distance;
+    float DistanceAttenuation = 1 / (Distance2 + 1);
+
+    float LightRadiusMask = Distance2 * InvRadius * InvRadius;
+
+    LightRadiusMask *= LightRadiusMask;
+    LightRadiusMask = 1 - LightRadiusMask;
+    LightRadiusMask = clamp(LightRadiusMask, 0, 1);
+
+    LightRadiusMask *= LightRadiusMask;
+
+    return DistanceAttenuation * LightRadiusMask;
+}
+
+float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matrix WorldToProjectionMatrices[6],
+    float DepthBias, float InvShadowmapResolution, TextureCube ShadowmapTexture, SamplerComparisonState Sampler)
+{
+    float3 ToLight = LightPosition - WorldPosition;
+    float3 AbsLightVector = abs(ToLight);
+    float MaxCoordinate = max(AbsLightVector.x, max(AbsLightVector.y, AbsLightVector.z));
+
+    float3 NormalizedToLight = ToLight / length(ToLight);
+    float3 SideVector = normalize(cross(NormalizedToLight, float3(0, 0, 1)));
+    float3 UpVector = normalize(cross(SideVector, NormalizedToLight));
+        
+    SideVector *= InvShadowmapResolution;
+    UpVector *= InvShadowmapResolution;
+        
+    int CubeFaceIndex = 0;
+    if (MaxCoordinate == AbsLightVector.x)
+    {
+        CubeFaceIndex = AbsLightVector.x == ToLight.x ? 1 : 0;
+    }
+    else if (MaxCoordinate == AbsLightVector.y)
+    {
+        CubeFaceIndex = AbsLightVector.y == ToLight.y ? 3 : 2;
+    }
+    else
+    {
+        CubeFaceIndex = AbsLightVector.z == ToLight.z ? 5 : 4;
+    }
+        
+    float4 ShadowPos = mul(WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPosition, 1));
+
+    float CompareDistance = ShadowPos.z / ShadowPos.w;
+    float ShadowDepthBias = -DepthBias / ShadowPos.w;
+
+    float Shadow = 1;
+
+#define SHADOW_QUALITY 3
+        
+#if SHADOW_QUALITY == 0
+        Shadow = 1;
+
+#elif SHADOW_QUALITY == 1
+        Shadow = ShadowmapTexture.SampleCmp(Sampler, -ToLight, CompareDistance + ShadowDepthBias);
+
+#elif SHADOW_QUALITY == 2
+        
+        [unroll]
+        for (int i = 0; i < 5; ++i)
+        {
+            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples5[i].x * 1 + UpVector * DiscSamples5[i].y * 1;
+            Shadow += ShadowmapTexture.SampleCmp(Sampler, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples5[i]));
+        }
+        Shadow /= 5;
+        
+#elif SHADOW_QUALITY == 3
+        
+        [unroll]
+    for (int i = 0; i < 12; ++i)
+    {
+        float3 SamplePos = NormalizedToLight + SideVector * DiscSamples12[i].x * 1 + UpVector * DiscSamples12[i].y * 1;
+        Shadow += ShadowmapTexture.SampleCmp(Sampler, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples12[i]));
+    }
+    Shadow /= 12;
+
+#elif SHADOW_QUALITY == 4
+        [unroll]
+        for (int i = 0; i < 29; ++i)
+        {
+            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples29[i].x * 1 + UpVector * DiscSamples29[i].y * 1;
+            Shadow += ShadowmapTexture.SampleCmp(Sampler, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples29[i]));
+        }
+        Shadow /= 29;
+
+#endif
+    
+    return Shadow;
+}
+
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
-    ConstantBuffer<LightBuffer> Light = ResourceDescriptorHeap[BindlessResources.LightBufferIndex];
+    //ConstantBuffer<LightBuffer> Light = ResourceDescriptorHeap[BindlessResources.LightBufferIndex];
     
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
@@ -226,128 +395,34 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 N = DecodeNormal(WorldNormal);
     
-    float3 ToLight = Light.LightPosition - WorldPos.xyz;
-    float DistanceSquare = dot(ToLight, ToLight);
+    GBufferData Gbuffer;
+    Gbuffer.BaseColor = BaseColor.xyz;
+    Gbuffer.WorldNormal = N;
+    Gbuffer.Matallic = Masks.r;
+    Gbuffer.Roughness = Masks.g;
+    Gbuffer.AmbientOcclusion = Masks.b;
     
-    float3 L = ToLight * rsqrt(DistanceSquare);
-    float NoL = saturate(dot( N, L ));
+    float3 CameraVector = View.CameraPosition - WorldPos.xyz;
+    float3 Radiance = float3(1, 1, 1);
+    float Attenuation = 1;
+    float Shadow = 1;
     
-    float3 V = Light.CameraPosition - WorldPos.xyz;
-    float3 H = normalize(normalize(V) + normalize(ToLight));
-
-    float Distance = distance(WorldPos.xyz, Light.LightPosition);
-
-// -------------------------------------------------------------------------
-    float Distance2 = Distance * Distance;
-    float DistanceAttenuation = 1 / (Distance2 + 1);
-
-    float InvRadius = 1 / Light.Radius;
-
-    float LightRadiusMask = Distance2 * InvRadius * InvRadius;
-
-    LightRadiusMask *= LightRadiusMask;
-    LightRadiusMask = 1 - LightRadiusMask;
-    LightRadiusMask = clamp(LightRadiusMask, 0, 1);
-
-    LightRadiusMask *= LightRadiusMask;
-
-    float Attenuation = DistanceAttenuation * LightRadiusMask;
-// -------------------------------------------------------------------------
-    
-    float3 F0 = float3(0.04, 0.04, 0.04);
-    F0 = lerp(F0, BaseColor.rgb, Masks.r);
-    
-    float NDF = DistributionGGX(N, H, Masks.g);
-    float G = GeometrySmith(N, V, L, Masks.g);
-    float3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
-    
-    float3 kS = F;
-    float3 kD = float3(1, 1, 1) - kS;
-    kD *= 1.0 - Masks.r;
-    
-    float3 Specular = NDF * G * F / (max(dot(N, V), 0) * max(dot(N, L), 0) + 0.0001);
-    
-    float3 Result = (kD * BaseColor.xyz / PI + Specular) * NoL * Attenuation * Light.Color;
-
-    float Shadow = 0;
-    
-    if(Light.ShadowmapIndex != 0)
+    bool IsPointLight = BindlessResources.LightFlags & LIGHT_BITFLAG_POINTLIGHT;
+    if(IsPointLight)
     {
-        TextureCube<float> Shadowmap = ResourceDescriptorHeap[Light.ShadowmapIndex];
-        ConstantBuffer<ShadowDepth> ShadowDepthBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthIndex];
-
-        float3 AbsLightVector = abs(ToLight);
-        float MaxCoordinate = max(AbsLightVector.x, max(AbsLightVector.y, AbsLightVector.z));
-
-        float3 NormalizedToLight = ToLight / length(ToLight);
-        float3 SideVector = normalize(cross(NormalizedToLight, float3(0, 0, 1)));
-        float3 UpVector = normalize(cross(SideVector, NormalizedToLight));
+        ConstantBuffer<PointLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
+        Radiance = CalculatePointLightRadiance(WorldPos.xyz, Light.WorldPosAndScale.xyz, Light.Color, CameraVector, Gbuffer);
+        Attenuation = CalculatePointLightAttenuation(WorldPos.xyz, Light.WorldPosAndScale.xyz, Light.InvRadius);
         
-        SideVector *= ShadowDepthBuffer.InvShadowmapResolution;
-        UpVector *= ShadowDepthBuffer.InvShadowmapResolution;
-        
-        int CubeFaceIndex = 0;
-        if (MaxCoordinate == AbsLightVector.x)
+        if(Light.ShadowDataIndex != 0)
         {
-            CubeFaceIndex = AbsLightVector.x == ToLight.x ? 1 : 0;
+            ConstantBuffer<PointLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
+            TextureCube ShadowmapTexture = ResourceDescriptorHeap[ShadowBuffer.ShadowMapTextureIndex];
+            SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
+            Shadow = CalculatePointLightShadow(WorldPos.xyz, Light.WorldPosAndScale.xyz, ShadowBuffer.WorldToProjectionMatrices,
+                ShadowBuffer.DepthBias, ShadowBuffer.InvShadowmapResolution, ShadowmapTexture, CompState);
         }
-        else if (MaxCoordinate == AbsLightVector.y)
-        {
-            CubeFaceIndex = AbsLightVector.y == ToLight.y ? 3 : 2;
-        }
-        else
-        {
-            CubeFaceIndex = AbsLightVector.z == ToLight.z ? 5 : 4;
-        }
-        
-        float4 ShadowPos = mul(ShadowDepthBuffer.WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPos.xyz, 1));
-        
-        float CompareDistance = ShadowPos.z / ShadowPos.w;
-        float ShadowDepthBias = -ShadowDepthBuffer.DepthBias / ShadowPos.w;
-        
-        SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
-        
-#define SHADOW_QUALITY 3
-        
-#if SHADOW_QUALITY == 0
-        Shadow = 1;
-
-#elif SHADOW_QUALITY == 1
-        Shadow = Shadowmap.SampleCmp(CompState, -ToLight, CompareDistance + ShadowDepthBias);
-
-#elif SHADOW_QUALITY == 2
-        
-        [unroll]
-        for (int i = 0; i < 5; ++i)
-        {
-            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples5[i].x * 1 + UpVector * DiscSamples5[i].y * 1;
-            Shadow += Shadowmap.SampleCmp(CompState, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples5[i]));
-        }
-        Shadow /= 5;
-        
-#elif SHADOW_QUALITY == 3
-        
-        [unroll]
-        for (int i = 0; i < 12; ++i)
-        {
-            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples12[i].x * 1 + UpVector * DiscSamples12[i].y * 1;
-            Shadow += Shadowmap.SampleCmp(CompState, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples12[i]));
-        }
-        Shadow /= 12;
-
-#elif SHADOW_QUALITY == 4
-        [unroll]
-        for (int i = 0; i < 29; ++i)
-        {
-            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples29[i].x * 1 + UpVector * DiscSamples29[i].y * 1;
-            Shadow += Shadowmap.SampleCmp(CompState, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples29[i]));
-        }
-        Shadow /= 29;
-
-#endif
-        
-        
     }
     
-    return float4(Result * Shadow, 1);
+    return float4(Radiance * Attenuation * Shadow, 1);
 }

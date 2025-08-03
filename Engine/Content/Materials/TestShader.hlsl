@@ -60,9 +60,6 @@ struct VectorBuffer
 struct ShadowDepth
 {
     matrix WorldToProjectionMatrices[6];
-    float3 LightPos;
-    float NearZ;
-    float Radius;
 };
 
 struct VertexInputStaticMesh
