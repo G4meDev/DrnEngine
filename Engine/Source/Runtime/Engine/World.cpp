@@ -263,13 +263,12 @@ namespace Drn
 		DirectionNorm.FindBestAxisVectors(YAxis, ZAxis);
 
 		const Matrix ConeToWorld = Matrix::ScaleMatrix(Vector(Length)) * Matrix(DirectionNorm, YAxis, ZAxis, InCenter);
+		Transform ConeToWorldTransform = Transform(ConeToWorld);
 
 		Vector CurrentPoint, PrevPoint, FirstPoint;
 		for(int32 i = 0; i < NumSides; i++)
 		{
-			Transform ConeToWorldTransform = Transform(ConeToWorld);
 			CurrentPoint = ConeToWorldTransform.TransformPosition(ConeVerts[i]);
-			//CurrentPoint = ConeVerts[i];
 			DrawDebugLine(ConeToWorldTransform.GetLocation(), CurrentPoint, Color, Lifetime, Thickness);
 
 			if( i > 0 )
@@ -284,6 +283,36 @@ namespace Drn
 			PrevPoint = CurrentPoint;
 		}
 		DrawDebugLine(CurrentPoint, FirstPoint, Color, Lifetime, Thickness);
+	}
+
+	void World::DrawDebugConeCap( const Vector& InCenter, const Vector& Direction, float Length, float Angle,
+		const Color& Color, int32 NumSides, float Thickness, float Lifetime )
+	{
+		Vector YAxis, XAxis;
+
+		Vector DirectionNorm = Direction.GetSafeNormal();
+		DirectionNorm.FindBestAxisVectors(YAxis, XAxis);
+
+		const Matrix ConeToWorld = Matrix::ScaleMatrix(Vector(Length)) * Matrix(XAxis, YAxis, DirectionNorm, InCenter);
+		Transform ConeToWorldTransform = Transform(ConeToWorld);
+
+		const float StepSize = Angle * 2 / NumSides;
+		Vector PrevPosition_1 = Vector( std::sin(-Angle), 0, std::cos( -Angle ));
+		Vector PrevPosition_2 = ConeToWorldTransform.TransformPosition(Quat(XM_PIDIV2, 0, 0).RotateVector(PrevPosition_1));
+		PrevPosition_1 = ConeToWorldTransform.TransformPosition(PrevPosition_1);
+
+		for (int i = 1; i <= NumSides; i++)
+		{
+			const float A = -Angle + StepSize * i;
+			Vector Position_1 = Vector( std::sin(A), 0, std::cos( A ));
+			Vector Position_2 = ConeToWorldTransform.TransformPosition(Quat(XM_PIDIV2, 0, 0).RotateVector(Position_1));
+			Position_1 = ConeToWorldTransform.TransformPosition(Position_1);
+
+			DrawDebugLine(PrevPosition_1, Position_1, Color::White, 0, 0);
+			DrawDebugLine(PrevPosition_2, Position_2, Color::White, 0, 0);
+			PrevPosition_1 = Position_1;
+			PrevPosition_2 = Position_2;
+		}
 	}
 
 	void World::DestroyInternal()

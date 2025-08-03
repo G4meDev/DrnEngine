@@ -159,6 +159,7 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN)
     
     bool IsPointLight = BindlessResources.LightFlags & LIGHT_BITFLAG_POINTLIGHT;
 
+    [branch]
     if(IsPointLight)
     {
         ConstantBuffer<PointLightData> LightBuffer = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
@@ -327,7 +328,7 @@ float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matr
     float CompareDistance = ShadowPos.z / ShadowPos.w;
     float ShadowDepthBias = -DepthBias / ShadowPos.w;
 
-    float Shadow = 1;
+    float Shadow = 0;
 
 #define SHADOW_QUALITY 3
         
@@ -342,17 +343,17 @@ float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matr
         [unroll]
         for (int i = 0; i < 5; ++i)
         {
-            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples5[i].x * 1 + UpVector * DiscSamples5[i].y * 1;
+            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples5[i].x + UpVector * DiscSamples5[i].y;
             Shadow += ShadowmapTexture.SampleCmp(Sampler, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples5[i]));
         }
         Shadow /= 5;
         
 #elif SHADOW_QUALITY == 3
         
-        [unroll]
+    [unroll]
     for (int i = 0; i < 12; ++i)
     {
-        float3 SamplePos = NormalizedToLight + SideVector * DiscSamples12[i].x * 1 + UpVector * DiscSamples12[i].y * 1;
+        float3 SamplePos = NormalizedToLight + SideVector * DiscSamples12[i].x + UpVector * DiscSamples12[i].y;
         Shadow += ShadowmapTexture.SampleCmp(Sampler, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples12[i]));
     }
     Shadow /= 12;
@@ -361,7 +362,7 @@ float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matr
         [unroll]
         for (int i = 0; i < 29; ++i)
         {
-            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples29[i].x * 1 + UpVector * DiscSamples29[i].y * 1;
+            float3 SamplePos = NormalizedToLight + SideVector * DiscSamples29[i].x + UpVector * DiscSamples29[i].y;
             Shadow += ShadowmapTexture.SampleCmp(Sampler, -SamplePos, CompareDistance + ShadowDepthBias * length(DiscSamples29[i]));
         }
         Shadow /= 29;
@@ -374,7 +375,6 @@ float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matr
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
-    //ConstantBuffer<LightBuffer> Light = ResourceDescriptorHeap[BindlessResources.LightBufferIndex];
     
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
@@ -408,12 +408,14 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float Shadow = 1;
     
     bool IsPointLight = BindlessResources.LightFlags & LIGHT_BITFLAG_POINTLIGHT;
+    [branch]
     if(IsPointLight)
     {
         ConstantBuffer<PointLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
         Radiance = CalculatePointLightRadiance(WorldPos.xyz, Light.WorldPosAndScale.xyz, Light.Color, CameraVector, Gbuffer);
         Attenuation = CalculatePointLightAttenuation(WorldPos.xyz, Light.WorldPosAndScale.xyz, Light.InvRadius);
         
+        [branch]
         if(Light.ShadowDataIndex != 0)
         {
             ConstantBuffer<PointLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];

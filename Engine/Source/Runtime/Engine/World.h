@@ -50,6 +50,7 @@ namespace Drn
 		void DrawDebugSphere(const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
 		void DrawDebugBox(const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime);
 		void DrawDebugCone(const Vector& InCenter, const Vector& Direction, float Length, float AngleWidth, float AngleHeight, const Color& Color, int32 NumSides, float Thickness, float Lifetime);
+		void DrawDebugConeCap(const Vector& InCenter, const Vector& Direction, float Length, float Angle, const Color& Color, int32 NumSides, float Thickness, float Lifetime);
 
 		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }

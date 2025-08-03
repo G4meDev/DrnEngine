@@ -32,6 +32,9 @@ namespace Drn
 		InWorld->DrawDebugCone(m_LightComponent->GetWorldLocation(), m_SpotLightData.Direction, m_SpotLightData.Attenuation,
 			Math::DegreesToRadians(m_SpotLightData.OutterRadius), Math::DegreesToRadians(m_SpotLightData.OutterRadius), Color::White, 32, 0, 0);
 
+		InWorld->DrawDebugConeCap(m_LightComponent->GetWorldLocation(), m_SpotLightData.Direction, m_SpotLightData.Attenuation,
+			Math::DegreesToRadians(m_SpotLightData.OutterRadius), Color::White, 16, 0, 0);
+
 		if (m_SpotLightData.InnerRadius > 0)
 		{
 			InWorld->DrawDebugCone(m_LightComponent->GetWorldLocation(), m_SpotLightData.Direction, m_SpotLightData.Attenuation,
