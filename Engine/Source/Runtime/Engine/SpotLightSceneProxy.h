@@ -5,6 +5,17 @@
 
 namespace Drn
 {
+	struct SpotLightData
+	{
+	public:
+		SpotLightData() = default;
+
+		Vector Direction;
+		float Attenuation;
+		float OutterRadius;
+		float InnerRadius;
+	};
+
 	//struct PointLightBuffer
 	//{
 	//public:
@@ -47,9 +58,16 @@ namespace Drn
 		//inline void SetRadius( float Radius ) { m_Radius = Radius; }
 		//inline void SetDepthBias( float Bias ) { m_DepthBias = Bias; }
 
+		inline void SetDirection( const Vector& Direction ) { m_SpotLightData.Direction = Direction; }
+		inline void SetAttenuation( float Attenuation ) { m_SpotLightData.Attenuation = Attenuation; }
+		inline void SetOutterRadius( float OutterRadius ) { m_SpotLightData.OutterRadius = OutterRadius; }
+		inline void SetInnerRadius( float InnerRadius ) { m_SpotLightData.InnerRadius = InnerRadius; }
+
 	protected:
 		//float m_Radius;
 		//float m_DepthBias;
+
+		SpotLightData m_SpotLightData;
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) override;

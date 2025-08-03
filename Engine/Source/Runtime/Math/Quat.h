@@ -61,6 +61,15 @@ namespace Drn
 			return !A || !B;
 		}
 
+		inline Vector GetAxisX() const { return RotateVector(Vector(1, 0, 0)); }
+		inline Vector GetAxisY() const { return RotateVector(Vector(0, 1, 0)); }
+		inline Vector GetAxisZ() const { return RotateVector(Vector(0, 0, 1)); }
+
+		inline Vector GetForwardAxis() const { return GetAxisZ(); }
+		inline Vector GetRightAxis() const { return GetAxisX(); }
+		inline Vector GetUpAxis() const { return GetAxisY(); }
+		inline Vector GetVector() const { return GetAxisZ(); }
+
 		inline std::string ToString()
 		{
 			std::stringstream ss;
