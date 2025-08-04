@@ -7,6 +7,7 @@ namespace Drn
 {
 	SpotLightComponent::SpotLightComponent()
 		: LightComponent()
+		, m_SpotLightSceneProxy(nullptr)
 		, m_Attenuation(10)
 		, m_OuterRadius(45)
 		, m_InnerRadius(0)
@@ -19,7 +20,25 @@ namespace Drn
 	
 	}
 
- void SpotLightComponent::RegisterComponent( World* InOwningWorld )
+	void SpotLightComponent::Serialize( Archive& Ar )
+	{
+		LightComponent::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> m_Attenuation;
+			Ar >> m_OuterRadius;
+			Ar >> m_InnerRadius;
+		}
+		else
+		{
+			Ar << m_Attenuation;
+			Ar << m_OuterRadius;
+			Ar << m_InnerRadius;
+		}
+	}
+
+	void SpotLightComponent::RegisterComponent( World* InOwningWorld )
 	{
 		LightComponent::RegisterComponent(InOwningWorld);
 
@@ -54,7 +73,7 @@ namespace Drn
 
 		if ( m_SpotLightSceneProxy )
 		{
-			m_SpotLightSceneProxy->SetDirection(GetWorldRotation().GetVector());
+			//m_SpotLightSceneProxy->SetDirection(GetWorldRotation().GetVector());
 		}
 	}
 
@@ -69,7 +88,7 @@ namespace Drn
 			SetColor( Vector(Color[0], Color[1], Color[2]) );
 		}
 
-		if ( ImGui::SliderFloat( "Intensity", &m_Intensity, 0, 100 ) )
+		if ( ImGui::SliderFloat( "Intensity", &m_Intensity, 0, 500 ) )
 		{
 			SetIntensity(m_Intensity);
 		}
@@ -85,14 +104,14 @@ namespace Drn
 			SetAttenuation(m_Attenuation);
 		}
 
-		if ( ImGui::SliderFloat( "OutterRadius", &m_OuterRadius, 0.05, 100 ) )
+		if ( ImGui::SliderFloat( "OutterRadius", &m_OuterRadius, 0.05, 90 ) )
 		{
 			m_OuterRadius = std::max(m_OuterRadius, 0.0f);
 			m_InnerRadius = std::clamp(m_InnerRadius, 0.0f, m_OuterRadius);
 			SetOutterRadius(m_OuterRadius);
 		}
 
-		if ( ImGui::SliderFloat( "InnerRadius", &m_InnerRadius, 0.05, 100 ) )
+		if ( ImGui::SliderFloat( "InnerRadius", &m_InnerRadius, 0, 90 ) )
 		{
 			m_InnerRadius = std::max(m_InnerRadius, 0.0f);
 			m_OuterRadius = std::max(m_OuterRadius, m_InnerRadius);

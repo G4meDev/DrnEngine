@@ -126,6 +126,9 @@ struct SpotLightData
     float3 Color;
     float OuterRadius;
     float InnerRadius;
+    float CosOuterCone;
+    float InvCosConeDifference;
+    
     uint ShadowDataIndex; // 0 if not casting shadow
 };
 
@@ -330,6 +333,7 @@ float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, f
     return (kD * Gbuffer.BaseColor / PI + Specular) * NoL * LightColor;
 }
 
+
 float CalculatePointLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius)
 {
     float Distance = distance(WorldPosition, LightPosition);
@@ -345,6 +349,17 @@ float CalculatePointLightAttenuation(float3 WorldPosition, float3 LightPosition,
     LightRadiusMask *= LightRadiusMask;
 
     return DistanceAttenuation * LightRadiusMask;
+}
+
+float CalculateSpotLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius, float3 Direction, float CosOuterCone, float InvCosConeDifference)
+{
+    float RadialAttenuation = CalculatePointLightAttenuation(WorldPosition, LightPosition, InvRadius);
+    
+    float3 L = normalize(LightPosition - WorldPosition);
+    float SpotAttenuationMask = saturate((dot(L, -Direction) - CosOuterCone) * InvCosConeDifference);
+    float ConeAngleFalloff = SpotAttenuationMask * SpotAttenuationMask;
+    
+    return RadialAttenuation * ConeAngleFalloff;
 }
 
 float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matrix WorldToProjectionMatrices[6],
@@ -459,9 +474,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float Attenuation = 1;
     float Shadow = 1;
     
-    bool IsPointLight = BindlessResources.LightFlags & LIGHT_BITFLAG_POINTLIGHT;
     [branch]
-    if(IsPointLight)
+    if (BindlessResources.LightFlags & LIGHT_BITFLAG_POINTLIGHT)
     {
         ConstantBuffer<PointLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
         Radiance = CalculatePointLightRadiance(WorldPos.xyz, Light.WorldPosAndScale.xyz, Light.Color, CameraVector, Gbuffer);
@@ -476,6 +490,13 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
             Shadow = CalculatePointLightShadow(WorldPos.xyz, Light.WorldPosAndScale.xyz, ShadowBuffer.WorldToProjectionMatrices,
                 ShadowBuffer.DepthBias, ShadowBuffer.InvShadowmapResolution, ShadowmapTexture, CompState);
         }
+    }
+    
+    else if(BindlessResources.LightFlags & LIGHT_BITFLAG_SPOTLIGHT)
+    {
+        ConstantBuffer<SpotLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
+        Attenuation = CalculateSpotLightAttenuation(WorldPos.xyz, Light.WorldPosition, Light.InvRadius, Light.Direction, Light.CosOuterCone, Light.InvCosConeDifference);
+        Radiance = CalculatePointLightRadiance(WorldPos.xyz, Light.WorldPosition, Light.Color, CameraVector, Gbuffer);
     }
     
     return float4(Radiance * Attenuation * Shadow, 1);

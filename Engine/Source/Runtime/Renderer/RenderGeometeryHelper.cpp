@@ -59,14 +59,14 @@ namespace Drn
 				int32 Point_4 = Point_3 + 1;
 
 				Indices.push_back(Point_1);
-				Indices.push_back(Point_2);
 				Indices.push_back(Point_4);
+				Indices.push_back(Point_2);
 
 				if (SliceIndex != 0)
 				{
 					Indices.push_back(Point_1);
-					Indices.push_back(Point_4);
 					Indices.push_back(Point_3);
+					Indices.push_back(Point_4);
 				}
 			}
 		}
@@ -85,14 +85,14 @@ namespace Drn
 				int32 Point_4 = Point_3 + 1;
 
 				Indices.push_back(Point_1);
-				Indices.push_back(Point_4);
 				Indices.push_back(Point_2);
+				Indices.push_back(Point_4);
 
 				if (SliceIndex != 0)
 				{
 					Indices.push_back(Point_1);
-					Indices.push_back(Point_3);
 					Indices.push_back(Point_4);
+					Indices.push_back(Point_3);
 				}
 			}
 		}

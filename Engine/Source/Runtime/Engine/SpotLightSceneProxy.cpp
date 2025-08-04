@@ -45,6 +45,9 @@ namespace Drn
 		m_SpotLightData.Color = m_SpotLightComponent->GetScaledColor();
 		m_SpotLightData.OutterRadius = Math::DegreesToRadians(m_SpotLightComponent->GetOutterRadius());
 		m_SpotLightData.InnerRadius = Math::DegreesToRadians(m_SpotLightComponent->GetInnerRadius());
+		m_SpotLightData.CosOuterCone = std::cos(m_SpotLightData.OutterRadius);
+		//m_SpotLightData.InvCosConeDifference = 1.0f /std::cos(m_SpotLightData.OutterRadius - m_SpotLightData.InnerRadius);
+		m_SpotLightData.InvCosConeDifference = 1.0f /std::cos(m_SpotLightData.InnerRadius / m_SpotLightData.OutterRadius );
 		
 		//m_SpotLightData.ShadowBufferIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()) : 0;
 		m_SpotLightData.ShadowBufferIndex = 0;
@@ -71,15 +74,15 @@ namespace Drn
 
 	void SpotLightSceneProxy::DrawAttenuation( World* InWorld )
 	{
-		InWorld->DrawDebugCone(m_LightComponent->GetWorldLocation(), m_SpotLightData.Direction, m_SpotLightData.Attenuation,
+		InWorld->DrawDebugCone(m_SpotLightData.WorldPosition, m_SpotLightData.Direction, m_SpotLightData.Attenuation,
 			m_SpotLightData.OutterRadius, m_SpotLightData.OutterRadius, Color::White, 32, 0, 0);
 
-		InWorld->DrawDebugConeCap(m_LightComponent->GetWorldLocation(), m_SpotLightData.Direction, m_SpotLightData.Attenuation,
+		InWorld->DrawDebugConeCap(m_SpotLightData.WorldPosition, m_SpotLightData.Direction, m_SpotLightData.Attenuation,
 			m_SpotLightData.OutterRadius, Color::White, 16, 0, 0);
 
 		if (m_SpotLightData.InnerRadius > 0)
 		{
-			InWorld->DrawDebugCone(m_LightComponent->GetWorldLocation(), m_SpotLightData.Direction, m_SpotLightData.Attenuation,
+			InWorld->DrawDebugCone(m_SpotLightData.WorldPosition, m_SpotLightData.Direction, m_SpotLightData.Attenuation,
 				m_SpotLightData.InnerRadius, m_SpotLightData.InnerRadius, Color::Blue, 32, 0, 0);
 		}
 	}

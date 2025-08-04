@@ -22,6 +22,7 @@
 #include "Runtime/Engine/StaticMeshActor.h"
 #include "Runtime/Engine/CameraActor.h"
 #include "Runtime/Engine/PointLightActor.h"
+#include "Runtime/Engine/SpotLightActor.h"
 
 #include "Runtime/Components/BillboardComponent.h"
 #include "Runtime/Components/SpotLightComponent.h"

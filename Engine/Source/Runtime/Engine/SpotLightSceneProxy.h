@@ -22,6 +22,8 @@ namespace Drn
 		float OutterRadius;
 		
 		float InnerRadius;
+		float CosOuterCone;
+		float InvCosConeDifference;
 		uint32 ShadowBufferIndex;
 	};
 
