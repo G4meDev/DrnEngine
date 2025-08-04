@@ -351,7 +351,7 @@ float CalculatePointLightAttenuation(float3 WorldPosition, float3 LightPosition,
     return DistanceAttenuation * LightRadiusMask;
 }
 
-float CalculateSpotLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius, float3 Direction, float CosOuterCone, float InvCosConeDifference)
+float CalculateSpotLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius, float3 Direction, float CosOuterCone, float CosInnerCone, float InvCosConeDifference)
 {
     float RadialAttenuation = CalculatePointLightAttenuation(WorldPosition, LightPosition, InvRadius);
     
@@ -495,7 +495,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     else if(BindlessResources.LightFlags & LIGHT_BITFLAG_SPOTLIGHT)
     {
         ConstantBuffer<SpotLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
-        Attenuation = CalculateSpotLightAttenuation(WorldPos.xyz, Light.WorldPosition, Light.InvRadius, Light.Direction, Light.CosOuterCone, Light.InvCosConeDifference);
+        Attenuation = CalculateSpotLightAttenuation(WorldPos.xyz, Light.WorldPosition, Light.InvRadius, Light.Direction, Light.CosOuterCone, Light.InnerRadius, Light.InvCosConeDifference);
         Radiance = CalculatePointLightRadiance(WorldPos.xyz, Light.WorldPosition, Light.Color, CameraVector, Gbuffer);
     }
     

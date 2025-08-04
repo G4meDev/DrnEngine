@@ -46,8 +46,7 @@ namespace Drn
 		m_SpotLightData.OutterRadius = Math::DegreesToRadians(m_SpotLightComponent->GetOutterRadius());
 		m_SpotLightData.InnerRadius = Math::DegreesToRadians(m_SpotLightComponent->GetInnerRadius());
 		m_SpotLightData.CosOuterCone = std::cos(m_SpotLightData.OutterRadius);
-		//m_SpotLightData.InvCosConeDifference = 1.0f /std::cos(m_SpotLightData.OutterRadius - m_SpotLightData.InnerRadius);
-		m_SpotLightData.InvCosConeDifference = 1.0f /std::cos(m_SpotLightData.InnerRadius / m_SpotLightData.OutterRadius );
+		m_SpotLightData.InvCosConeDifference = 1.0f / (1 - (std::cos(m_SpotLightData.OutterRadius - m_SpotLightData.InnerRadius)));
 		
 		//m_SpotLightData.ShadowBufferIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()) : 0;
 		m_SpotLightData.ShadowBufferIndex = 0;
