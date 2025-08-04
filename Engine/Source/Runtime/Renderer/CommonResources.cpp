@@ -477,7 +477,10 @@ namespace Drn
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 
-		const std::vector<const wchar_t*> Macros;
+		std::wstring SideMacro = StringHelper::s2ws("SPOTLIGHT_STENCIL_SIDES=" + std::to_string(SPOTLIGHT_STENCIL_SIDES));
+		std::wstring SliceMacro = StringHelper::s2ws("SPOTLIGHT_STENCIL_SLICES=" + std::to_string(SPOTLIGHT_STENCIL_SLICES));
+
+		const std::vector<const wchar_t*> Macros = { SideMacro.c_str(), SliceMacro.c_str() };
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 

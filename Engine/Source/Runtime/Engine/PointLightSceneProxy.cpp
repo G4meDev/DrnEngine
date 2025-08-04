@@ -71,10 +71,6 @@ namespace Drn
 
 	void PointLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		Vector CameraPosition = Renderer->m_CameraActor->GetActorLocation();
-		XMMATRIX LocalToWorld = XMMatrixTranslationFromVector( XMLoadFloat3( m_WorldPosition.Get() ) );
-		XMMATRIX LocalToProjection = XMMatrixMultiply( m_LocalToWorld, Renderer->GetSceneView().WorldToProjection.Get() );
-
 		m_Buffer.WorldPosition = m_WorldPosition;
 		m_Buffer.Scale = m_Radius;
 		m_Buffer.Color = m_LightColor;

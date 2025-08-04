@@ -10,25 +10,28 @@ namespace Drn
 	public:
 		SpotLightData() = default;
 
-		Vector Direction;
+		Matrix LocalToWorld;
+		
+		Vector WorldPosition;
 		float Attenuation;
+
+		Vector Direction;
+		float InvRadius;
+		
+		Vector Color;
 		float OutterRadius;
+		
 		float InnerRadius;
+		uint32 ShadowBufferIndex;
 	};
 
-	//struct PointLightBuffer
-	//{
-	//public:
-	//	PointLightBuffer() = default;
-	//
-	//	Matrix LocalToProjection;
-	//	Vector CameraPosition;
-	//	float Pad_1;
-	//	Vector WorldPosition;
-	//	float Radius;
-	//	Vector LightColor;
-	//	uint32 ShadowmapIndex;
-	//};
+	struct SpotLightShadowData
+	{
+	public:
+		SpotLightShadowData() = default;
+
+
+	};
 
 	//struct ShadowDepthData
 	//{
@@ -67,7 +70,9 @@ namespace Drn
 		//float m_Radius;
 		//float m_DepthBias;
 
-		SpotLightData m_SpotLightData;
+
+		// TODO: remove
+		SpotLightComponent* m_SpotLightComponent = nullptr;
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) override;
@@ -79,10 +84,10 @@ namespace Drn
 		//
 		//Resource* m_ShadowCubemapResource;
 		//D3D12_CPU_DESCRIPTOR_HANDLE m_ShadowmapCpuHandle;
-		//
-		//PointLightBuffer m_Buffer;
-		//Resource* m_LightBuffer;
-		//
+
+		SpotLightData m_SpotLightData;
+		Resource* m_LightBuffer;
+
 		//ShadowDepthData m_ShadowDepthData;
 		//Resource* m_ShadowDepthBuffer;
 		//
