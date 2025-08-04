@@ -25,6 +25,7 @@ namespace Drn
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindSpotLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList );
 		void BindSelectionPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList );
@@ -72,6 +73,7 @@ namespace Drn
 		ShaderBlob m_HitProxyShaderBlob;
 		ShaderBlob m_EditorPrimitiveShaderBlob;
 		ShaderBlob m_PointlightShadowDepthShaderBlob;
+		ShaderBlob m_SpotlightShadowDepthShaderBlob;
 
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
@@ -89,6 +91,7 @@ namespace Drn
 
 		PipelineStateObject* m_MainPassPSO;
 		PipelineStateObject* m_PointLightShadowDepthPassPSO;
+		PipelineStateObject* m_SpotLightShadowDepthPassPSO;
 
 #if WITH_EDITOR
 		PipelineStateObject* m_SelectionPassPSO = nullptr;

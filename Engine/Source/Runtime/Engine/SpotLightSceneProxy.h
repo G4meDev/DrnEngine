@@ -31,22 +31,12 @@ namespace Drn
 	{
 	public:
 		SpotLightShadowData() = default;
-
-
+	
+		Matrix WorldToProjectionMatrices;
+		uint32 ShadowmapTextureIndex;
+		float DepthBias;
+		float InvShadowResolution;
 	};
-
-	//struct ShadowDepthData
-	//{
-	//public:
-	//	ShadowDepthData() = default;
-	//
-	//	Matrix WorldToProjectionMatrices[6];
-	//	Vector LightPosition;
-	//	float NearZ;
-	//	float Radius;
-	//	float DepthBias;
-	//	float InvShadowResolution;
-	//};
 
 	class SpotLightSceneProxy : public LightSceneProxy
 	{
@@ -54,13 +44,14 @@ namespace Drn
 		SpotLightSceneProxy( class SpotLightComponent* InComponent );
 		virtual ~SpotLightSceneProxy();
 
+		inline virtual ELightType GetLightType() const { return ELightType::SpotLight; };
+
 		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 
-		//void AllocateShadowmap(ID3D12GraphicsCommandList2* CommandList);
-		//void ReleaseShadowmap();
-		//
-		//inline void SetRadius( float Radius ) { m_Radius = Radius; }
+		void AllocateShadowmap(ID3D12GraphicsCommandList2* CommandList);
+		void ReleaseShadowmap();
+		
 		//inline void SetDepthBias( float Bias ) { m_DepthBias = Bias; }
 
 		inline void SetDirection( const Vector& Direction ) { m_SpotLightData.Direction = Direction; }
@@ -69,7 +60,6 @@ namespace Drn
 		inline void SetInnerRadius( float InnerRadius ) { m_SpotLightData.InnerRadius = InnerRadius; }
 
 	protected:
-		//float m_Radius;
 		//float m_DepthBias;
 
 
@@ -80,20 +70,16 @@ namespace Drn
 		virtual void DrawAttenuation(World* InWorld) override;
 #endif
 
-		//void CalculateLocalToProjectionForDirection(Matrix& Mat, const Vector& Direction, const Vector& UpVector);
-		//
-		//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
-		//
-		//Resource* m_ShadowCubemapResource;
-		//D3D12_CPU_DESCRIPTOR_HANDLE m_ShadowmapCpuHandle;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
+		
+		Resource* m_ShadowmapResource;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_ShadowmapCpuHandle;
 
 		SpotLightData m_SpotLightData;
 		Resource* m_LightBuffer;
 
-		//ShadowDepthData m_ShadowDepthData;
-		//Resource* m_ShadowDepthBuffer;
-		//
-		//D3D12_VIEWPORT m_ShadowViewport;
+		SpotLightShadowData m_ShadowDepthData;
+		Resource* m_ShadowDepthBuffer;
 
 	private:
 

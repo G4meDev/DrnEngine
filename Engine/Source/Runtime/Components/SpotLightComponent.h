@@ -15,12 +15,10 @@ namespace Drn
 	
 		virtual void Serialize( Archive& Ar ) override;
 	
-		//inline float GetRadius() const { return m_Radius; }
-		//inline float GetDepthBias() const { return m_DepthBias; }
 		//Matrix GetLocalToWorld() const;
-		//
-		//void SetRadius( float Radius );
-		//void SetDepthBias( float Bias );
+
+		void SetDepthBias( float Bias );
+		inline float GetDepthBias() const { return m_DepthBias; };
 	
 		inline float GetAttenuation() const { return m_Attenuation; }
 		inline float GetOutterRadius() const { return m_OuterRadius; }
@@ -59,8 +57,7 @@ namespace Drn
 	
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 		
-		//float m_Radius;
-		//float m_DepthBias;
+		float m_DepthBias;
 
 		float m_Attenuation;
 		float m_OuterRadius;

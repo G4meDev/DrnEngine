@@ -14,6 +14,9 @@ namespace Drn
 		static PipelineStateObject* CreatePointLightShadowDepthPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
+		static PipelineStateObject* CreateSpotLightShadowDepthPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
+			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
+
 		static PipelineStateObject* CreateSelectionPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 

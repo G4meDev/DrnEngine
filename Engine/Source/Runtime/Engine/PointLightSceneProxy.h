@@ -36,6 +36,8 @@ namespace Drn
 		PointLightSceneProxy( class PointLightComponent* InComponent );
 		virtual ~PointLightSceneProxy();
 
+		inline virtual ELightType GetLightType() const { return ELightType::PointLight; };
+
 		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 

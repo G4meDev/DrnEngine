@@ -31,6 +31,7 @@ namespace Drn
 		ShaderBlob HitProxyShaderBlob;
 		ShaderBlob EditorPrimitiveShaderBlob;
 		ShaderBlob PointLightShadowDepthShaderBlob;
+		ShaderBlob SpotLightShadowDepthShaderBlob;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath,
 			const wchar_t* InEntryPoint, const wchar_t* InProfile, const std::vector<const wchar_t*>& Macros, ID3DBlob** InByteBlob) 
@@ -76,12 +77,21 @@ namespace Drn
 
 		if (SupportShadowPass)
 		{
-			const std::vector<const wchar_t*> ShadowMacros = { L"SHADOW_PASS=1" };
+			{
+				const std::vector<const wchar_t*> PointLightShadowMacros = { L"SHADOW_PASS=1", L"SHADOW_PASS_POINTLIGHT=1" };
+				CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_VS);
+				CompileShaderBlobConditional(true, Path, L"PointLightShadow_GS", L"gs_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_GS);
+				CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_HS);
+				CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_DS);
+			}
 
-			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_VS);
-			CompileShaderBlobConditional(true, Path, L"PointLightShadow_GS", L"gs_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_GS);
-			CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_HS);
-			CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", ShadowMacros, &PointLightShadowDepthShaderBlob.m_DS);
+			{
+				const std::vector<const wchar_t*> SpotlLightShadowMacros = { L"SHADOW_PASS=1", L"SHADOW_PASS_SPOTLIGHT=1" };
+				CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_VS);
+				//CompileShaderBlobConditional(true, Path, L"PointLightShadow_GS", L"gs_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_GS);
+				CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_HS);
+				CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_DS);
+			}
 		}
 
 		if (Successed)
@@ -91,6 +101,7 @@ namespace Drn
 			MaterialAsset->m_HitProxyShaderBlob = HitProxyShaderBlob;
 			MaterialAsset->m_EditorPrimitiveShaderBlob = EditorPrimitiveShaderBlob;
 			MaterialAsset->m_PointlightShadowDepthShaderBlob = PointLightShadowDepthShaderBlob;
+			MaterialAsset->m_SpotlightShadowDepthShaderBlob = SpotLightShadowDepthShaderBlob;
 
 			MaterialAsset->m_SupportMainPass = SupportMainPass;
 			MaterialAsset->m_SupportHitProxyPass = SupportHitProxyPass;

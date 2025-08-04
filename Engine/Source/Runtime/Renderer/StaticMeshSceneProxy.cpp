@@ -150,8 +150,15 @@ namespace Drn
 					continue;
 				}
 
-				// TODO: make dependent on light type
-				Mat->BindPointLightShadowDepthPass(CommandList);
+				if ( LightProxy->GetLightType() == ELightType::PointLight )
+				{
+					Mat->BindPointLightShadowDepthPass(CommandList);
+				}
+				else if ( LightProxy->GetLightType() == ELightType::SpotLight)
+				{
+					Mat->BindSpotLightShadowDepthPass(CommandList);
+				}
+
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();

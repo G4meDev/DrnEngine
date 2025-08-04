@@ -4,6 +4,12 @@
 
 namespace Drn
 {
+	enum class ELightType : uint8
+	{
+		PointLight,
+		SpotLight,
+	};
+
 	struct HitResult
 	{
 		HitResult(const Vector& InTraceStart, const Vector& InTraceEnd, const Vector& InLocation,

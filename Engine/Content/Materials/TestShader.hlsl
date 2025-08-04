@@ -57,10 +57,17 @@ struct VectorBuffer
     float4 TintColor; // @VECTOR TintColor
 };
 
+#if SHADOW_PASS_POINTLIGHT
 struct ShadowDepth
 {
     matrix WorldToProjectionMatrices[6];
 };
+#elif SHADOW_PASS_SPOTLIGHT
+struct ShadowDepth
+{
+    matrix WorldToProjectionMatrix;
+};
+#endif
 
 struct VertexInputStaticMesh
 {
@@ -88,7 +95,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 
-#if SHADOW_PASS
+#if SHADOW_PASS_POINTLIGHT
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Position = mul(P.LocalToWorld, float4(IN.Position, 1.0f));
     
@@ -96,8 +103,18 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.Normal = IN.Position;
     OUT.UV = IN.UV1;
-    
+#elif SHADOW_PASS_SPOTLIGHT
+    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
+    float3 WorldPosition = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
+    OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, float4(WorldPosition, 1));
+
+    OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
+    OUT.Color = float4(IN.Color, 1.0f);
+    OUT.Normal = IN.Position;
+    OUT.UV = IN.UV1;
 #else
+    
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
     float3 VertexNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
@@ -193,6 +210,8 @@ struct GeometeryShaderOutput
     uint TargetIndex : SV_RenderTargetArrayIndex;
 };
 
+#if SHADOW_PASS_POINTLIGHT
+
 [maxvertexcount(18)]
 void PointLightShadow_GS(triangle VertexShaderOutput input[3], inout TriangleStream<GeometeryShaderOutput> OutputStream)
 {
@@ -214,6 +233,8 @@ void PointLightShadow_GS(triangle VertexShaderOutput input[3], inout TriangleStr
 		OutputStream.RestartStrip();
     }
 }
+
+#endif
 
 //ConstantBuffer<ViewBuffer> View : register(b0);
 //

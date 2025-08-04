@@ -134,7 +134,7 @@ struct SpotLightData
 
 struct SpotLightShadowData
 {
-    matrix WorldToProjectionMatrices[6];
+    matrix WorldToProjectionMatrix;
     uint ShadowMapTextureIndex;
     float DepthBias;
     float InvShadowmapResolution;
@@ -370,7 +370,7 @@ float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matr
     float MaxCoordinate = max(AbsLightVector.x, max(AbsLightVector.y, AbsLightVector.z));
 
     float3 NormalizedToLight = ToLight / length(ToLight);
-    float3 SideVector = normalize(cross(NormalizedToLight, float3(0, 0, 1)));
+    float3 SideVector = normalize(cross(NormalizedToLight, float3(0, 1, 0)));
     float3 UpVector = normalize(cross(SideVector, NormalizedToLight));
         
     SideVector *= InvShadowmapResolution;
@@ -436,6 +436,77 @@ float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matr
 
 #endif
     
+#undef SHADOW_QUALITY
+    
+    return Shadow;
+}
+
+float CalculateSpotLightShadow(float3 WorldPosition, float3 LightPosition, matrix WorldToProjectionMatrix,
+    float DepthBias, float InvShadowmapResolution, Texture2D ShadowmapTexture, SamplerComparisonState Sampler)
+{
+    float4 ShadowPos = mul(WorldToProjectionMatrix, float4(WorldPosition, 1));
+
+    float CompareDistance = ShadowPos.z / ShadowPos.w;
+    float ShadowDepthBias = -DepthBias / ShadowPos.w;
+    float2 ShadowmapUV = ShadowPos.xy / ShadowPos.w;
+    ShadowmapUV = ShadowmapUV * 0.5f + 0.5f;
+    ShadowmapUV.y = 1 - ShadowmapUV.y;
+    
+    float3 ToLight = LightPosition - WorldPosition;
+    
+    float2 SideVector = mul(WorldToProjectionMatrix, float4(ToLight, 0)).xy;
+    SideVector = normalize(SideVector);
+    float2 UpVector = normalize(float2(SideVector.y, -SideVector.x));
+    
+    //float2 SideVector = float2(1, 0);
+    //float2 UpVector = float2(0, 1);
+    
+    SideVector *= InvShadowmapResolution;
+    UpVector *= InvShadowmapResolution;
+    
+    float Shadow = 0;
+    
+#define SHADOW_QUALITY 3
+        
+#if SHADOW_QUALITY == 0
+        Shadow = 1;
+
+#elif SHADOW_QUALITY == 1
+    Shadow = ShadowmapTexture.SampleCmp(Sampler, ShadowmapUV, CompareDistance + ShadowDepthBias);
+
+#elif SHADOW_QUALITY == 2
+        
+        [unroll]
+        for (int i = 0; i < 5; ++i)
+        {
+            float2 SampleUV = ShadowmapUV + SideVector * DiscSamples5[i].x + UpVector * DiscSamples5[i].y;
+            Shadow += ShadowmapTexture.SampleCmp(Sampler, SampleUV, CompareDistance + ShadowDepthBias * length(DiscSamples5[i]));
+        }
+        Shadow /= 5;
+        
+#elif SHADOW_QUALITY == 3
+        
+    [unroll]
+    for (int i = 0; i < 12; ++i)
+    {
+        float2 SampleUV = ShadowmapUV + SideVector * DiscSamples12[i].x + UpVector * DiscSamples12[i].y;
+        Shadow += ShadowmapTexture.SampleCmp(Sampler, SampleUV, CompareDistance + ShadowDepthBias * length(DiscSamples12[i]));
+    }
+    Shadow /= 12;
+
+#elif SHADOW_QUALITY == 4
+        [unroll]
+        for (int i = 0; i < 29; ++i)
+        {
+            float2 SampleUV = ShadowmapUV + SideVector * DiscSamples29[i].x + UpVector * DiscSamples29[i].y;
+            Shadow += ShadowmapTexture.SampleCmp(Sampler, SampleUV, CompareDistance + ShadowDepthBias * length(DiscSamples29[i]));
+        }
+        Shadow /= 29;
+
+#endif
+    
+#undef SHADOW_QUALITY
+    
     return Shadow;
 }
 
@@ -497,6 +568,16 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
         ConstantBuffer<SpotLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
         Attenuation = CalculateSpotLightAttenuation(WorldPos.xyz, Light.WorldPosition, Light.InvRadius, Light.Direction, Light.CosOuterCone, Light.InnerRadius, Light.InvCosConeDifference);
         Radiance = CalculatePointLightRadiance(WorldPos.xyz, Light.WorldPosition, Light.Color, CameraVector, Gbuffer);
+        
+        [branch]
+        if(Light.ShadowDataIndex != 0)
+        {
+            ConstantBuffer<SpotLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
+            Texture2D ShadowmapTexture = ResourceDescriptorHeap[ShadowBuffer.ShadowMapTextureIndex];
+            SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
+            Shadow = CalculateSpotLightShadow(WorldPos.xyz, Light.WorldPosition, ShadowBuffer.WorldToProjectionMatrix,
+                ShadowBuffer.DepthBias, ShadowBuffer.InvShadowmapResolution, ShadowmapTexture, CompState);
+        }
     }
     
     return float4(Radiance * Attenuation * Shadow, 1);
