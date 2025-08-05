@@ -633,29 +633,79 @@ namespace Drn
 
 	HZBPSO::HZBPSO( ID3D12GraphicsCommandList2* CommandList )
 	{
-		m_PSO = nullptr;
+		m_1Mip_PSO = nullptr;
+		m_2Mip_PSO = nullptr;
+		m_3Mip_PSO = nullptr;
+		m_4Mip_PSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\HZB.hlsl" ) );
-		ID3DBlob* ComputeShaderBlob;
-		const std::vector<const wchar_t*> Macros;
-		CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\HZB.hlsl" ) );
+			ID3DBlob* ComputeShaderBlob;
+			const std::vector<const wchar_t*> Macros = {L"MIP_LEVEL_COUNT=1"};
+			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
 
-		D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+			D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+			PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
 
-		Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+			Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_1Mip_PSO ) );
+		}
+
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\HZB.hlsl" ) );
+			ID3DBlob* ComputeShaderBlob;
+			const std::vector<const wchar_t*> Macros = {L"MIP_LEVEL_COUNT=2"};
+			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+
+			D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+			PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+
+			Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_2Mip_PSO ) );
+		}
+
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\HZB.hlsl" ) );
+			ID3DBlob* ComputeShaderBlob;
+			const std::vector<const wchar_t*> Macros = {L"MIP_LEVEL_COUNT=3"};
+			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+
+			D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+			PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+
+			Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_3Mip_PSO ) );
+		}
+
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\HZB.hlsl" ) );
+			ID3DBlob* ComputeShaderBlob;
+			const std::vector<const wchar_t*> Macros = {L"MIP_LEVEL_COUNT=4"};
+			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+
+			D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+			PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+
+			Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_4Mip_PSO ) );
+		}
 
 #if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_DebugLine");
+		m_1Mip_PSO->SetName(L"PSO_HZB_1Mip");
+		m_2Mip_PSO->SetName(L"PSO_HZB_2Mip");
+		m_3Mip_PSO->SetName(L"PSO_HZB_3Mip");
+		m_4Mip_PSO->SetName(L"PSO_HZB_4Mip");
 #endif
 	}
 
 	HZBPSO::~HZBPSO()
 	{
-		m_PSO->Release();
+		m_1Mip_PSO->Release();
+		m_2Mip_PSO->Release();
+		m_3Mip_PSO->Release();
+		m_4Mip_PSO->Release();
 	}
 
 // --------------------------------------------------------------------------------------

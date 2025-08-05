@@ -145,7 +145,10 @@ namespace Drn
 		HZBPSO( ID3D12GraphicsCommandList2* CommandList );
 		~HZBPSO();
 		
-		ID3D12PipelineState* m_PSO;
+		ID3D12PipelineState* m_1Mip_PSO;
+		ID3D12PipelineState* m_2Mip_PSO;
+		ID3D12PipelineState* m_3Mip_PSO;
+		ID3D12PipelineState* m_4Mip_PSO;
 	};
 
 	class CommonResources

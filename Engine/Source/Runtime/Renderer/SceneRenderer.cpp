@@ -164,9 +164,6 @@ namespace Drn
 			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		m_CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_HZBPSO->m_PSO);
-
 		int32 RemainingMips = m_HZBBuffer->m_MipCount;
 
 		const int32 OutputIndexStart = 3;
@@ -183,6 +180,16 @@ namespace Drn
 			D3D12_GPU_DESCRIPTOR_HANDLE ParentViewHandle = DispatchStartMipIndex == 0 ?
 				m_GBuffer->m_DepthTarget->GetGpuHandle() :
 				m_HZBBuffer->m_SrvHandles[DispatchStartMipIndex / 4 - 1].GpuHandle;
+
+			ID3D12PipelineState* DispatchPSO = nullptr;
+
+			if		( DispatchMipCount == 4)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_4Mip_PSO; }
+			else if ( DispatchMipCount == 3)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_3Mip_PSO; }
+			else if ( DispatchMipCount == 2)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_2Mip_PSO; }
+			else if ( DispatchMipCount == 1)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_1Mip_PSO; }
+
+			m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+			m_CommandList->GetD3D12CommandList()->SetPipelineState(DispatchPSO);
 
 			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(ParentViewHandle), 1);
 
