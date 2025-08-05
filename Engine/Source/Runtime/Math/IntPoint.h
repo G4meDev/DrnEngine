@@ -18,7 +18,7 @@ namespace Drn
 		IntPoint operator*(const IntPoint& R);
 		IntPoint operator*(float R);
 
-		IntPoint operator/(float R);
+		IntPoint operator/(float R) const;
 		
 		void operator=(const IntPoint& R);
 		const bool operator!=(const IntPoint& R) const;

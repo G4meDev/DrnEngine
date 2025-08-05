@@ -44,7 +44,7 @@ namespace Drn
 		return IntPoint(X * R, Y * R);
 	}
 
-	IntPoint IntPoint::operator/( float R )
+	IntPoint IntPoint::operator/( float R ) const
 	{
 		return IntPoint(X / R, Y / R);
 	}

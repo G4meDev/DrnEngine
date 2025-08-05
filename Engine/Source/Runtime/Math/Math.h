@@ -87,5 +87,17 @@ namespace Drn
 		{
 			return T::ComponentWiseMax(A, B);
 		}
+
+		static int32 RoundUpToPowerOfTwo(int32 Value)
+		{
+			int32 Exp = std::floor(std::log2(Value)) + 1;
+			return std::pow(2, Exp);
+		}
+
+		static int32 RoundDownToPowerOfTwo(int32 Value)
+		{
+			int32 Exp = std::floor(std::log2(Value));
+			return std::pow(2, Exp);
+		}
 	};
 }

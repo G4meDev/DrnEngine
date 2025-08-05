@@ -120,6 +120,7 @@ namespace Drn
 		SceneRendererView m_SceneView;
 
 		std::shared_ptr<class GBuffer> m_GBuffer;
+		std::shared_ptr<class HZBBuffer> m_HZBBuffer;
 		std::shared_ptr<class TonemapRenderBuffer> m_TonemapBuffer;
 
 		IntPoint m_CachedRenderSize;
@@ -157,6 +158,7 @@ namespace Drn
 
 		void RenderShadowDepths();
 		void RenderBasePass();
+		void RenderHZB();
 		void RenderLights();
 		void RenderPostProcess();
 		void PostProcess_Tonemapping();

@@ -138,6 +138,16 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class HZBPSO
+	{
+	public:
+
+		HZBPSO( ID3D12GraphicsCommandList2* CommandList );
+		~HZBPSO();
+		
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class CommonResources
 	{
 	public:
@@ -165,6 +175,8 @@ namespace Drn
 
 		DebugLineThicknessPSO* m_DebugLineThicknessPSO;
 		DebugLinePSO* m_DebugLinePSO;
+
+		HZBPSO* m_HZBPSO;
 
 	private:
 

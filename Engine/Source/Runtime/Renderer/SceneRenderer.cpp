@@ -4,6 +4,7 @@
 #include "Runtime/Engine/LightSceneProxy.h"
 #include "Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/GBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/HZBBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/TonemapRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/EditorPrimitiveRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.h"
@@ -58,6 +59,9 @@ namespace Drn
 
 		m_GBuffer = std::make_shared<class GBuffer>();
 		m_GBuffer->Init();
+
+		m_HZBBuffer = std::make_shared<class HZBBuffer>();
+		m_HZBBuffer->Init();
 
 		m_TonemapBuffer = std::make_shared<class TonemapRenderBuffer>();
 		m_TonemapBuffer->Init();
@@ -145,6 +149,21 @@ namespace Drn
 		{
 			Proxy->RenderMainPass(m_CommandList->GetD3D12CommandList(), this);
 		}
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList());
+	}
+
+	void SceneRenderer::RenderHZB()
+	{
+		SCOPE_STAT();
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "HZB" );
+
+		m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		m_CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_HZBPSO->m_PSO);
+
+		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 1);
+
+		m_CommandList->GetD3D12CommandList()->Dispatch(m_HZBBuffer->m_FirstMipSize.X/8, m_HZBBuffer->m_FirstMipSize.Y/8, 1);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}
@@ -356,6 +375,8 @@ namespace Drn
 
 		RenderShadowDepths();
 		RenderBasePass();
+		RenderHZB();
+
 		RenderLights();
 		RenderPostProcess();
 
@@ -378,6 +399,7 @@ namespace Drn
 		m_RenderSize = m_CachedRenderSize;
 
 		m_GBuffer->Resize( GetViewportSize() );
+		m_HZBBuffer->Resize( GetViewportSize() );
 		m_TonemapBuffer->Resize( GetViewportSize() );
 
 #if WITH_EDITOR

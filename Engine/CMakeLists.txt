@@ -50,6 +50,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderBuffer/TonemapRenderBuffer.h
 	Source/Runtime/Renderer/RenderBuffer/EditorPrimitiveRenderBuffer.h
 	Source/Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.h
+	Source/Runtime/Renderer/RenderBuffer/HZBBuffer.h
 	Source/Runtime/Renderer/Device.h
 	Source/Runtime/Renderer/SwapChain.h
 	Source/Runtime/Renderer/BufferedResource.h
@@ -196,6 +197,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderBuffer/TonemapRenderBuffer.cpp
 	Source/Runtime/Renderer/RenderBuffer/EditorPrimitiveRenderBuffer.cpp
 	Source/Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.cpp
+	Source/Runtime/Renderer/RenderBuffer/HZBBuffer.cpp
 	Source/Runtime/Renderer/Device.cpp
 	Source/Runtime/Renderer/SwapChain.cpp
 	Source/Runtime/Renderer/BufferedResource.cpp

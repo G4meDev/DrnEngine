@@ -54,6 +54,7 @@ namespace Drn
 		m_LightPassPSO = new LightPassPSO(CommandList);
 		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList);
 		m_DebugLinePSO = new DebugLinePSO(CommandList);
+		m_HZBPSO = new HZBPSO(CommandList);
 	}
 
 	CommonResources::~CommonResources()
@@ -70,6 +71,7 @@ namespace Drn
 		delete m_LightPassPSO;
 		delete m_DebugLineThicknessPSO;
 		delete m_DebugLinePSO;
+		delete m_HZBPSO;
 	}
 
 	void CommonResources::Init( ID3D12GraphicsCommandList2* CommandList )
@@ -623,6 +625,35 @@ namespace Drn
 	}
 
 	DebugLinePSO::~DebugLinePSO()
+	{
+		m_PSO->Release();
+	}
+
+// --------------------------------------------------------------------------------------
+
+	HZBPSO::HZBPSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_PSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\HZB.hlsl" ) );
+		ID3DBlob* ComputeShaderBlob;
+		const std::vector<const wchar_t*> Macros;
+		CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+
+		D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+		PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+
+		Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_DebugLine");
+#endif
+	}
+
+	HZBPSO::~HZBPSO()
 	{
 		m_PSO->Release();
 	}

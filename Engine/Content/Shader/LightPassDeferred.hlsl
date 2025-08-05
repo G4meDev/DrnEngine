@@ -472,7 +472,7 @@ float CalculateSpotLightShadow(float3 WorldPosition, float3 LightPosition, matri
         Shadow = 1;
 
 #elif SHADOW_QUALITY == 1
-    Shadow = ShadowmapTexture.SampleCmp(Sampler, ShadowmapUV, CompareDistance + ShadowDepthBias);
+    Shadow = ShadowmapTexture.SampleCmpLevelZero(Sampler, ShadowmapUV, CompareDistance + ShadowDepthBias);
 
 #elif SHADOW_QUALITY == 2
         
