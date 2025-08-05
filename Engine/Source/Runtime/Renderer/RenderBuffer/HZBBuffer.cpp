@@ -42,17 +42,23 @@ namespace Drn
 		int32 MinAxis = std::min(m_FirstMipSize.X, m_FirstMipSize.Y);
 		m_MipCount = 1 + std::log2(MinAxis);
 
+		ReallocateUAVHandles();
+
 		M_HZBTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
 			CD3DX12_RESOURCE_DESC::Tex2D(HZB_FORMAT, m_FirstMipSize.X, m_FirstMipSize.Y, 1, m_MipCount, 1, 0,
 			D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-		D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
-		Desc.Format = HZB_FORMAT;
-		Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-		Desc.Texture2D.MipSlice = 0;
-		Desc.Texture2D.PlaneSlice = 0;
+		for (int32 i = 0; i < m_MipCount; i++)
+		{
+			D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
+			Desc.Format = HZB_FORMAT;
+			Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+			Desc.Texture2D.MipSlice = i;
+			Desc.Texture2D.PlaneSlice = 0;
+			
+			Device->CreateUnorderedAccessView(M_HZBTarget->GetD3D12Resource(), nullptr, &Desc, m_UAVHandles[i].CpuHandle);
+		}
 
-		Device->CreateUnorderedAccessView(M_HZBTarget->GetD3D12Resource(), nullptr, &Desc, M_HZBTarget->GetCpuHandle());
 	}
 
 	void HZBBuffer::Clear( ID3D12GraphicsCommandList2* CommandList )
@@ -74,4 +80,29 @@ namespace Drn
 		}
 	}
 
+	void HZBBuffer::ReallocateUAVHandles()
+	{
+		int32 Diff = m_MipCount - m_UAVHandles.size();
+
+		if (Diff > 0)
+		{
+			m_UAVHandles.resize(m_MipCount);
+
+			for (int32 i = m_MipCount - Diff; i < m_MipCount; i++)
+			{
+				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_UAVHandles[i].CpuHandle, &m_UAVHandles[i].GpuHandle);
+			}
+		}
+
+		else if (Diff < 0)
+		{
+			for (int32 i = m_MipCount + Diff; i < m_MipCount; i++)
+			{
+				Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_UAVHandles[i].CpuHandle, m_UAVHandles[i].GpuHandle);
+			}
+
+			m_UAVHandles.resize(m_MipCount);
+		}
+	}
+	
 }

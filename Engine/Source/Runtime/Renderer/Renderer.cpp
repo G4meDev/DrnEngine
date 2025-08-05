@@ -142,7 +142,7 @@ namespace Drn
 		D3D12_ROOT_PARAMETER ViewBufferParam = {};
 		ViewBufferParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
 		ViewBufferParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-		ViewBufferParam.Constants.Num32BitValues = 10;
+		ViewBufferParam.Constants.Num32BitValues = 32;
 		ViewBufferParam.Constants.ShaderRegister = 0;
 		ViewBufferParam.Constants.RegisterSpace = 0;
 

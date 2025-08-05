@@ -11,6 +11,8 @@
 
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
+#define HZB_GROUP_TILE_SIZE 8
+
 using namespace DirectX;
 using namespace Microsoft::WRL;
 
@@ -158,12 +160,50 @@ namespace Drn
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "HZB" );
 
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
+
 		m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		m_CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_HZBPSO->m_PSO);
 
-		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 1);
+		int32 RemainingMips = m_HZBBuffer->m_MipCount;
 
-		m_CommandList->GetD3D12CommandList()->Dispatch(m_HZBBuffer->m_FirstMipSize.X/8, m_HZBBuffer->m_FirstMipSize.Y/8, 1);
+		const int32 OutputIndexStart = 3;
+		while (RemainingMips > 0)
+		{
+			int32 DispatchStartMipIndex = m_HZBBuffer->m_MipCount - RemainingMips;
+			int32 DispatchMipCount = RemainingMips > 4 ? 4 : RemainingMips;
+			RemainingMips -= DispatchMipCount;
+
+			const IntPoint MipSize = m_HZBBuffer->m_FirstMipSize / std::pow<int32>(2, DispatchStartMipIndex);
+			IntPoint DispatchSize = MipSize / HZB_GROUP_TILE_SIZE;
+			DispatchSize = IntPoint::ComponentWiseMax(DispatchSize, IntPoint(1));
+
+			D3D12_GPU_DESCRIPTOR_HANDLE ParentViewHandle = DispatchStartMipIndex == 0 ?
+				m_GBuffer->m_DepthTarget->GetGpuHandle() :
+				m_GBuffer->m_DepthTarget->GetGpuHandle();
+
+			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(ParentViewHandle), 1);
+
+			Vector4 DispatchIDToUV;
+			Vector InvSize = Vector(1.0f / MipSize.X, 1.0f / MipSize.Y, 0);
+
+			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstants(0, 4, &DispatchIDToUV, 8);
+			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstants(0, 3, &InvSize, 12);
+
+			for (int32 i = 0; i < DispatchMipCount; i++)
+			{
+				const int32 MipIndex = DispatchStartMipIndex + i;
+				m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->m_UAVHandles[MipIndex].GpuHandle), OutputIndexStart + i);
+			}
+
+			m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSize.X, DispatchSize.Y, 1);
+ 		}
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}

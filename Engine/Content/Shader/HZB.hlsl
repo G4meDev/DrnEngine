@@ -3,18 +3,20 @@
 struct Resources
 {
     uint ViewBufferIndex;
-    //uint DispatchDataIndex;
-    uint WriteTextureIndex;
+    uint ParentTextureIndex;
     uint StaticSamplerBufferIndex;
+    uint WriteTextureIndex_1;
+    
+    uint WriteTextureIndex_2;
+    uint WriteTextureIndex_3;
+    uint WriteTextureIndex_4;
+    uint Pad_1;
+    
+    float4 DispatchIdToUV;
+    float2 InvSize;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
-
-struct DispatchData
-{
-    float2 DispatchIdToUV;
-    float2 InvSize;
-};
 
 struct StaticSamplers
 {
@@ -25,31 +27,20 @@ struct StaticSamplers
 [numthreads(GROUP_TILE_SIZE, GROUP_TILE_SIZE, 1)]
 void Main_CS(uint2 GroupId : SV_GroupID, uint GroupThreadIndex : SV_GroupIndex)
 {
-    RWTexture2D<float> Output_0 = ResourceDescriptorHeap[BindlessResources.WriteTextureIndex];
+    ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
+    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
+    
+    Texture2D<float> ParentTexture = ResourceDescriptorHeap[BindlessResources.ParentTextureIndex];
+    RWTexture2D<float> Output_0 = ResourceDescriptorHeap[BindlessResources.WriteTextureIndex_1];
     
     uint2 GroupThreadId = uint2(GroupThreadIndex % GROUP_TILE_SIZE, GroupThreadIndex / GROUP_TILE_SIZE);
     uint2 DispatchThreadId = GROUP_TILE_SIZE * GroupId + GroupThreadId;
     
     uint2 OutputPixelPos = DispatchThreadId;
     
-    Output_0[OutputPixelPos] = 0.23f;
+    float2 UV = (float2)OutputPixelPos * BindlessResources.InvSize;
+    float ParentSample = ParentTexture.Sample(PointSampler, UV);
+    
+    Output_0[OutputPixelPos] = ParentSample;
+    //Output_0[OutputPixelPos] = UV.x;
 }
-
-//float4 Main_PS(PixelShaderInput IN) : SV_Target
-//{
-//    ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
-//    
-//    Texture2D HdrImage = ResourceDescriptorHeap[BindlessResources.DeferredColorIndex];
-//    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
-//    
-//    float Exposure = 0.2f;
-//    float Gamma = 2.2f;
-//    
-//    float3 HdrColor = HdrImage.Sample(LinearSampler, IN.UV).xyz;
-//    float3 Mapped = float3(1.0f, 1.0f, 1.0f) - exp(-HdrColor * Exposure.xxx);
-//    
-//    float a = 1.0f / Gamma;
-//    Mapped = pow(Mapped, float3(a.xxx));
-//    
-//    return float4(Mapped, 1);
-//}
