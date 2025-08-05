@@ -42,13 +42,13 @@ namespace Drn
 		int32 MinAxis = std::min(m_FirstMipSize.X, m_FirstMipSize.Y);
 		m_MipCount = 1 + std::log2(MinAxis);
 
-		ReallocateUAVHandles();
+		ReallocateViewHandles();
 
 		M_HZBTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
 			CD3DX12_RESOURCE_DESC::Tex2D(HZB_FORMAT, m_FirstMipSize.X, m_FirstMipSize.Y, 1, m_MipCount, 1, 0,
 			D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
-		for (int32 i = 0; i < m_MipCount; i++)
+		for (int32 i = 0; i < m_UAVHandles.size(); i++)
 		{
 			D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
 			Desc.Format = HZB_FORMAT;
@@ -57,6 +57,18 @@ namespace Drn
 			Desc.Texture2D.PlaneSlice = 0;
 			
 			Device->CreateUnorderedAccessView(M_HZBTarget->GetD3D12Resource(), nullptr, &Desc, m_UAVHandles[i].CpuHandle);
+		}
+
+		for (int32 i = 0; i < m_SrvHandles.size(); i++)
+		{
+			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
+			Desc.Format = HZB_FORMAT;
+			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			Desc.Texture2D.MipLevels = 1;
+			Desc.Texture2D.MostDetailedMip = i * 4 + 3;
+
+			Device->CreateShaderResourceView(M_HZBTarget->GetD3D12Resource(), &Desc, m_SrvHandles[i].CpuHandle);
 		}
 
 	}
@@ -80,29 +92,41 @@ namespace Drn
 		}
 	}
 
-	void HZBBuffer::ReallocateUAVHandles()
+	void HZBBuffer::ReallocateViewHandles()
 	{
-		int32 Diff = m_MipCount - m_UAVHandles.size();
-
-		if (Diff > 0)
+		auto ReallocateHandles = [&](std::vector<HZBViewHandle>& Views, int32 NewSize)
 		{
-			m_UAVHandles.resize(m_MipCount);
+			int32 Diff = NewSize - Views.size();
 
-			for (int32 i = m_MipCount - Diff; i < m_MipCount; i++)
+			if ( Diff > 0 )
 			{
-				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_UAVHandles[i].CpuHandle, &m_UAVHandles[i].GpuHandle);
-			}
-		}
+				Views.resize(NewSize);
 
-		else if (Diff < 0)
-		{
-			for (int32 i = m_MipCount + Diff; i < m_MipCount; i++)
-			{
-				Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_UAVHandles[i].CpuHandle, m_UAVHandles[i].GpuHandle);
+				for ( int32 i = NewSize - Diff; i < NewSize; i++ )
+				{
+					Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&Views[i].CpuHandle, &Views[i].GpuHandle);
+				}
 			}
 
-			m_UAVHandles.resize(m_MipCount);
-		}
+			else if ( Diff < 0 )
+			{
+				for (int32 i = Views.size() + Diff; i < Views.size(); i++)
+				{
+					Renderer::Get()->m_BindlessSrvHeapAllocator.Free(Views[i].CpuHandle, Views[i].GpuHandle);
+				}
+
+				Views.resize(NewSize);
+			}
+		};
+
+		const int32 UAVSize = m_MipCount;
+		const int32 SrvSize = m_MipCount / 4; //there is only need for one view for each 4 mip.
+
+		ReallocateHandles(m_UAVHandles, UAVSize);
+		ReallocateHandles(m_SrvHandles, SrvSize);
+
+		
+
 	}
 	
 }

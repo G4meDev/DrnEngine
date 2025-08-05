@@ -67,9 +67,8 @@ namespace Drn
 		if ( m_ShowOutliner && ImGui::BeginChild( "World Outliner", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 		{
 			m_WorldOutlinerPanel->Draw(DeltaTime);
-
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
 
 		ImGui::SameLine();
 		if ( ImGui::BeginChild( "Viewport", ViewportSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened ) )
@@ -97,9 +96,9 @@ namespace Drn
 		if (m_ShowDetail && ImGui::BeginChild( "Detail", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened) )
 		{
 			m_ActorDetailPanel->Draw(DeltaTime);
-
-			ImGui::EndChild();
+		
 		}
+		ImGui::EndChild();
 
 		ImGui::End();
 	}

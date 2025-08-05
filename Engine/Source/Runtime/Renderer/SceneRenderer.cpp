@@ -182,7 +182,7 @@ namespace Drn
 
 			D3D12_GPU_DESCRIPTOR_HANDLE ParentViewHandle = DispatchStartMipIndex == 0 ?
 				m_GBuffer->m_DepthTarget->GetGpuHandle() :
-				m_GBuffer->m_DepthTarget->GetGpuHandle();
+				m_HZBBuffer->m_SrvHandles[DispatchStartMipIndex / 4 - 1].GpuHandle;
 
 			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(ParentViewHandle), 1);
 

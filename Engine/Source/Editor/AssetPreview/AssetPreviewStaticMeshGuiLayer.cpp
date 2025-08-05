@@ -83,8 +83,8 @@ namespace Drn
 		if ( m_ShowSceneSetting && ImGui::BeginChild( "Scene Setting", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 		{
 
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
 
 		ImGui::SameLine();
 		if ( ImGui::BeginChild( "Viewport", ViewportSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened ) )
@@ -99,8 +99,8 @@ namespace Drn
 		{
 			DrawDetailPanel();
 
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
 
 
 		ImGui::End();

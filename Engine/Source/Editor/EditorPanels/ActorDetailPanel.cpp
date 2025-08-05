@@ -122,8 +122,8 @@ namespace Drn
 				m_SelectedComponent->DrawDetailPanel(DeltaTime);
 			}
 
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
 	}
 
 }

@@ -5,7 +5,7 @@
 
 namespace Drn
 {
-	struct HZBMipUAVHandle
+	struct HZBViewHandle
 	{
 		D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle;
@@ -25,12 +25,13 @@ namespace Drn
 
 		void ReleaseResources();
 
-		void ReallocateUAVHandles();
+		void ReallocateViewHandles();
 
 		D3D12_CLEAR_VALUE m_ClearValue;
 
 		Resource* M_HZBTarget;
-		std::vector<HZBMipUAVHandle> m_UAVHandles;
+		std::vector<HZBViewHandle> m_UAVHandles;
+		std::vector<HZBViewHandle> m_SrvHandles;
 
 		IntPoint m_FirstMipSize;
 		int32 m_MipCount;
