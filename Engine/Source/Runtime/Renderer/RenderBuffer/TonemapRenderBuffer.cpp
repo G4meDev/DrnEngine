@@ -53,7 +53,14 @@ namespace Drn
 
 		m_TonemapTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
 			CD3DX12_RESOURCE_DESC::Tex2D(DISPLAY_OUTPUT_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+			// viewport panel expects shader resource state
+			// see scene renderer
+#if WITH_EDITOR
+			D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, m_TonemapClearValue);
+#else
 			D3D12_RESOURCE_STATE_RENDER_TARGET, m_TonemapClearValue);
+#endif
+
 
 		D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
 		RenderTargetViewDesc.Format = DISPLAY_OUTPUT_FORMAT;

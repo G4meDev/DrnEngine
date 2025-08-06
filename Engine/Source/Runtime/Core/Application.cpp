@@ -179,33 +179,18 @@ void Application::OnKeyPressed( WPARAM Key )
 
 #if 0
 
-		std::thread TT([&]() {
-			WorldManager::Get()->Tick(m_DeltaTime);
-			PhysicManager::Get()->Tick(m_DeltaTime);
-			Renderer::Get()->Tick(m_DeltaTime);
-			Editor::Get()->Tick(m_DeltaTime);
-		} );
-		
-		TT.join();
-
-//#if WITH_EDITOR
-//        ImGuiRenderer::Get()->PostExecuteCommands();
-//#endif
-
-		//WorldManager::Get()->Tick(m_DeltaTime);
-		//PhysicManager::Get()->Tick(m_DeltaTime);
-		//Renderer::Get()->Tick(m_DeltaTime);
-		//Editor::Get()->Tick(m_DeltaTime);
+		WorldManager::Get()->Tick(m_DeltaTime);
+		PhysicManager::Get()->Tick(m_DeltaTime);
+		Renderer::Get()->Tick(m_DeltaTime);
+		Editor::Get()->Tick(m_DeltaTime);
 
 #else
-
 		Taskflow::GetExecuter().run(taskflow).wait();
+#endif
 
 #if WITH_EDITOR
 		// this should run in main thread.
 		ImGuiRenderer::Get()->PostExecuteCommands();
-#endif
-
 #endif
 	}
 

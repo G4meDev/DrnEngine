@@ -81,6 +81,7 @@ class LogCategory;
 	extern LogCategory Category;						\
 
 #define D3D12_DEBUG_LAYER 1
+#define D3D12_GPU_VALIDATION 1
 #define D3D12_Debug_INFO  1
 
 #define NAME_NULL ""

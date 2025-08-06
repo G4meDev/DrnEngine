@@ -31,6 +31,8 @@ namespace Drn
 		static ImGuiRenderer* Get();
 		virtual void PostExecuteCommands();
 
+		inline ID3D12GraphicsCommandList* GetCommandList() const { return m_CommandList; }
+
 	protected:
 		virtual void BeginDraw();
 		virtual void Draw(float DeltaTime);
@@ -40,6 +42,9 @@ namespace Drn
 
 	private:
 		static std::unique_ptr<ImGuiRenderer> SingletonInstance;
+
+		ID3D12GraphicsCommandList* m_CommandList;
+
 		std::set<ImGuiLayer*> Layers;
 		//LinkedList<ImGuiLayer> Layers;
 		std::vector<ImGuiLayer*> m_CurrentTickLayers;

@@ -151,6 +151,7 @@ namespace Drn
 		friend class DebugViewPhysics;
 		friend class LineBatchSceneProxy;
 		friend class StaticMeshSceneProxy;
+		friend class ViewportPanel;
 
 	private:
 

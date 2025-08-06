@@ -86,6 +86,14 @@ namespace Drn
 		debugInterface->EnableDebugLayer();
 #endif
 
+#if D3D12_GPU_VALIDATION
+		Microsoft::WRL::ComPtr<ID3D12Debug> spDebugController0;
+		Microsoft::WRL::ComPtr<ID3D12Debug1> spDebugController1;
+		D3D12GetDebugInterface(IID_PPV_ARGS(&spDebugController0));
+		spDebugController0->QueryInterface(IID_PPV_ARGS(&spDebugController1));
+		spDebugController1->SetEnableGPUBasedValidation(true);
+#endif
+
 		m_Device = std::make_unique<Device>();
 
 		D3D12_COMMAND_QUEUE_DESC CommandQueueDesc = { };

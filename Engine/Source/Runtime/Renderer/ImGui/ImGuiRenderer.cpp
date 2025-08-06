@@ -72,6 +72,8 @@ namespace Drn
 
 		PIXBeginEvent( CL, 1, "Imgui" );
 
+		m_CommandList = CL;
+
 		BeginDraw();
 		Draw(DeltaTime);
 		EndDraw( SwapChainCpuhandle, CL);

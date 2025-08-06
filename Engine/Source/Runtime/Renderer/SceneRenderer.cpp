@@ -268,7 +268,7 @@ namespace Drn
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Tone mapping" );
 
 		m_TonemapBuffer->Bind(m_CommandList->GetD3D12CommandList());
-		
+
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
@@ -417,6 +417,13 @@ namespace Drn
 		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 
 #if WITH_EDITOR
+		{
+			// viewport panel expects texture to be in shader resource state
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				m_TonemapBuffer->m_TonemapTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
+			m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
+		}
+
 		RenderHitProxyPass();
 #endif
 
@@ -430,6 +437,12 @@ namespace Drn
 #if WITH_EDITOR
 		RenderEditorPrimitives();
 		RenderEditorSelection();
+
+		{
+			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+				m_TonemapBuffer->m_TonemapTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+			m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
+		}
 #endif
 
 		m_CommandList->Close();
