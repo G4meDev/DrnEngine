@@ -27,8 +27,6 @@ namespace Drn
 
 		void ReallocateViewHandles();
 
-		D3D12_CLEAR_VALUE m_ClearValue;
-
 		Resource* M_HZBTarget;
 		std::vector<HZBViewHandle> m_UAVHandles;
 		std::vector<HZBViewHandle> m_SrvHandles;

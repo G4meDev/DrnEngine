@@ -168,6 +168,8 @@ namespace Drn
 			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
+		CD3DX12_RESOURCE_BARRIER UAV_Barrier = CD3DX12_RESOURCE_BARRIER::UAV(m_HZBBuffer->M_HZBTarget->GetD3D12Resource());
+
 		int32 RemainingMips = m_HZBBuffer->m_MipCount;
 
 		const int32 OutputIndexStart = 3;
@@ -209,6 +211,7 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->m_UAVHandles[MipIndex].GpuHandle), OutputIndexStart + i);
 			}
 
+			m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &UAV_Barrier);
 			m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSize.X, DispatchSize.Y, 1);
  		}
 

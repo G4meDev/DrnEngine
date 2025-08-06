@@ -11,11 +11,6 @@ namespace Drn
 		, m_FirstMipSize(1)
 		, m_MipCount(1)
 	{
-		m_ClearValue.Format   = HZB_FORMAT;
-		m_ClearValue.Color[0] = 0;
-		m_ClearValue.Color[1] = 0;
-		m_ClearValue.Color[2] = 0;
-		m_ClearValue.Color[3] = 0;
 	}
 
 	HZBBuffer::~HZBBuffer()
