@@ -74,7 +74,9 @@ namespace Drn
 			OnViewportSizeChanged(CachedSize);
 		}
 
-		ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
+		if (ValidViewportSource)
+			ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
+
 
 		HandleInputs();
 
@@ -195,6 +197,8 @@ namespace Drn
 
 	void ViewportPanel::OnSceneRendererResized( const IntPoint& NewSize )
 	{
+		ValidViewportSource = true;
+
 		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
 		
 		descSRV.Texture2D.MipLevels       = 1;

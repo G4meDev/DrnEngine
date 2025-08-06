@@ -57,6 +57,8 @@ namespace Drn
 		Scene* m_Scene;
 		SceneRenderer* m_SceneRenderer;
 
+		bool ValidViewportSource = false;
+
 	private:
 	};
 }
