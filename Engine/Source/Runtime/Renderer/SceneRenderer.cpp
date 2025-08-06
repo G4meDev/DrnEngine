@@ -87,15 +87,15 @@ namespace Drn
 
 		{
 			m_BindlessViewBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+#if D3D12_Debug_INFO
+			m_BindlessViewBuffer->SetName("SceneViewBuffer_" + m_Name);
+#endif
 
 			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 			ResourceViewDesc.BufferLocation = m_BindlessViewBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 			ResourceViewDesc.SizeInBytes = 512;
 			Device->CreateConstantBufferView( &ResourceViewDesc, m_BindlessViewBuffer->GetCpuHandle());
 
-#if D3D12_Debug_INFO
-			m_BindlessViewBuffer->SetName("SceneViewBuffer_" + m_Name);
-#endif
 		}
 
 	}
@@ -186,7 +186,7 @@ namespace Drn
 			if		( DispatchMipCount == 4)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_4Mip_PSO; }
 			else if ( DispatchMipCount == 3)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_3Mip_PSO; }
 			else if ( DispatchMipCount == 2)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_2Mip_PSO; }
-			else if ( DispatchMipCount == 1)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_1Mip_PSO; }
+			else 								{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_1Mip_PSO; }
 
 			m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 			m_CommandList->GetD3D12CommandList()->SetPipelineState(DispatchPSO);

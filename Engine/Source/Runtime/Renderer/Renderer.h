@@ -38,7 +38,7 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE HeapStartCpu;
 		D3D12_GPU_DESCRIPTOR_HANDLE HeapStartGpu;
 		UINT                        HeapHandleIncrement;
-		ImVector<int>               FreeIndices;
+		std::vector<uint32> FreeIndices;
 
 		void Create( ID3D12Device* device, ID3D12DescriptorHeap* heap )
 		{
@@ -49,10 +49,10 @@ namespace Drn
 			HeapStartGpu                    = Heap->GetGPUDescriptorHandleForHeapStart();
 			HeapHandleIncrement             = device->GetDescriptorHandleIncrementSize( HeapType );
 			FreeIndices.reserve( (int)desc.NumDescriptors );
-			for ( int n = desc.NumDescriptors; n > 0; n-- )
-				//FreeIndices.push_back( n - 1 );
-				FreeIndices.push_front( n - 1 );
+			for ( int n = 0; n < desc.NumDescriptors; n++ )
+				FreeIndices.push_back(n);
 		}
+
 		void Destroy()
 		{
 			Heap = nullptr;
@@ -72,8 +72,7 @@ namespace Drn
 			int cpu_idx = (int)( ( out_cpu_desc_handle.ptr - HeapStartCpu.ptr ) / HeapHandleIncrement );
 			int gpu_idx = (int)( ( out_gpu_desc_handle.ptr - HeapStartGpu.ptr ) / HeapHandleIncrement );
 			if (cpu_idx == gpu_idx)
-				//FreeIndices.push_back( cpu_idx );
-				FreeIndices.push_front( cpu_idx );
+				FreeIndices.push_back( cpu_idx );
 		}
 	};
 

@@ -21,6 +21,12 @@ namespace Drn
 	HZBBuffer::~HZBBuffer()
 	{
 		ReleaseResources();
+
+		for (int32 i = 0; i < m_UAVHandles.size(); i++)
+			Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_UAVHandles[i].CpuHandle, m_UAVHandles[i].GpuHandle);
+
+		for (int32 i = 0; i < m_SrvHandles.size(); i++)
+			Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_SrvHandles[i].CpuHandle, m_SrvHandles[i].GpuHandle);
 	}
 
 	void HZBBuffer::Init()

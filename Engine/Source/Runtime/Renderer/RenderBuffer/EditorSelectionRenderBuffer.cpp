@@ -55,7 +55,7 @@ namespace Drn
 		Device->CreateDepthStencilView( m_DepthStencilTarget->GetD3D12Resource(), &DepthViewDesc, m_DepthStencilCpuHandle );
 
 #if D3D12_Debug_INFO
-		m_DepthStencilTarget->SetName( "EditorPrimitiveColor" );
+		m_DepthStencilTarget->SetName( "DepthStencilTarget" );
 #endif
 
 		D3D12_SHADER_RESOURCE_VIEW_DESC DsvSelectionDesc = {};

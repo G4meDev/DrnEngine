@@ -219,6 +219,9 @@ namespace Drn
 		}
 
 		m_StaticSamplersBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+#if D3D12_Debug_INFO
+		m_StaticSamplersBuffer->SetName("StaticSamplerBuffer");
+#endif
 
 		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 		ResourceViewDesc.BufferLocation = m_StaticSamplersBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
@@ -231,9 +234,6 @@ namespace Drn
 		memcpy( ConstantBufferStart, &m_StaticSamplers, sizeof(StaticSamplers));
 		m_StaticSamplersBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-#if D3D12_Debug_INFO
-		m_StaticSamplersBuffer->SetName("StaticSamplerBuffer");
-#endif
 
 		CommonResources::Init(m_CommandList->GetD3D12CommandList());
 

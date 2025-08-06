@@ -28,6 +28,11 @@ namespace Drn
 			Proxy->Release();
 		}
 
+		for (LightSceneProxy* Proxy : m_LightProxies)
+		{
+			Proxy->Release();
+		}
+
 		for (auto it = m_SceneRenderers.begin(); it != m_SceneRenderers.end();)
 		{
 			SceneRenderer* SceneRen = *it;

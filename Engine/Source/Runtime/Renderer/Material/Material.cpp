@@ -327,15 +327,15 @@ namespace Drn
 
 			{
 				m_TextureIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+#if D3D12_Debug_INFO
+				m_TextureIndexBuffer->SetName("TextureBuffer_" + name);
+#endif
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 				ResourceViewDesc.BufferLocation = m_TextureIndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = 256;
 				Device->CreateConstantBufferView( &ResourceViewDesc, m_TextureIndexBuffer->GetCpuHandle());
 
-#if D3D12_Debug_INFO
-				m_TextureIndexBuffer->SetName("TextureBuffer_" + name);
-#endif
 			}
 
 			{
@@ -345,15 +345,15 @@ namespace Drn
 				const size_t ScalarBufferSizePadded = 256;
 
 				m_ScalarBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
+#if D3D12_Debug_INFO
+				m_ScalarBuffer->SetName("ScalarBuffer_" + name);
+#endif
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 				ResourceViewDesc.BufferLocation = m_ScalarBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = ScalarBufferSizePadded;
 				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarBuffer->GetCpuHandle());
 
-#if D3D12_Debug_INFO
-				m_ScalarBuffer->SetName("ScalarBuffer_" + name);
-#endif
 			}
 
 			{
@@ -363,15 +363,15 @@ namespace Drn
 				const size_t VectorBufferSizePadded = 256;
 
 				m_VectorBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( VectorBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
+#if D3D12_Debug_INFO
+				m_VectorBuffer->SetName("VectorBuffer_" + name);
+#endif
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 				ResourceViewDesc.BufferLocation = m_VectorBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 				ResourceViewDesc.SizeInBytes = VectorBufferSizePadded;
 				Device->CreateConstantBufferView( &ResourceViewDesc , m_VectorBuffer->GetCpuHandle());
 
-#if D3D12_Debug_INFO
-				m_VectorBuffer->SetName("VectorBuffer_" + name);
-#endif
 			}
 
 			if (m_SupportMainPass)

@@ -80,7 +80,7 @@ namespace Drn
 #if D3D12_Debug_INFO
 			MeshName = m_Path;
 			MeshName = Path::ConvertShortPath(MeshName);
-			MeshName = Path::RemoveFileExtension(MeshName);
+			MeshName = Path::RemoveFileExtension(MeshName) + "_" + std::to_string(i);
 #endif
 
 			Proxy.ReleaseBuffers();
