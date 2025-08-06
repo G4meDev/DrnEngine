@@ -29,6 +29,8 @@ namespace Drn
 		uint32 LinearSampler;
 		uint32 PointSampler;
 		uint32 LinearCompLessSampler;
+		uint32 LinearClampSampler;
+		uint32 PointClampSampler;
 	};
 
 	struct TempDescriptorHeapAllocator
@@ -158,6 +160,12 @@ namespace Drn
 
 		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessLinearCompLessSamplerCpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessLinearCompLessSamplerGpuHandle;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessLinearClampSamplerCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessLinearClampSamplerGpuHandle;
+
+		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessPointClampSamplerCpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessPointClampSamplerGpuHandle;
 
 		StaticSamplers m_StaticSamplers;
 		Resource* m_StaticSamplersBuffer;

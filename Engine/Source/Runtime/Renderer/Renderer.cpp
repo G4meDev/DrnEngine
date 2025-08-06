@@ -226,6 +226,30 @@ namespace Drn
 			m_StaticSamplers.LinearCompLessSampler = GetBindlessSamplerIndex(m_BindlessLinearCompLessSamplerGpuHandle);
 		}
 
+		{
+			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearClampSamplerCpuHandle, &m_BindlessLinearClampSamplerGpuHandle);
+			D3D12_SAMPLER_DESC SamplerDesc = {};
+			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearClampSamplerCpuHandle);
+
+			m_StaticSamplers.LinearClampSampler = GetBindlessSamplerIndex(m_BindlessLinearClampSamplerGpuHandle);
+		}
+
+		{
+			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessPointClampSamplerCpuHandle, &m_BindlessPointClampSamplerGpuHandle);
+			D3D12_SAMPLER_DESC SamplerDesc = {};
+			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessPointClampSamplerCpuHandle);
+
+			m_StaticSamplers.PointClampSampler = GetBindlessSamplerIndex(m_BindlessPointClampSamplerGpuHandle);
+		}
+
 		m_StaticSamplersBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
 #if D3D12_Debug_INFO
 		m_StaticSamplersBuffer->SetName("StaticSamplerBuffer");

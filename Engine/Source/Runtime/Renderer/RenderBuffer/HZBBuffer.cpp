@@ -54,6 +54,17 @@ namespace Drn
 			CD3DX12_RESOURCE_DESC::Tex2D(HZB_FORMAT, m_FirstMipSize.X, m_FirstMipSize.Y, 1, m_MipCount, 1, 0,
 			D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
+		{
+			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
+			Desc.Format = HZB_FORMAT;
+			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			Desc.Texture2D.MipLevels = m_MipCount;
+			Desc.Texture2D.MostDetailedMip = 0;
+
+			Device->CreateShaderResourceView(M_HZBTarget->GetD3D12Resource(), &Desc, M_HZBTarget->GetCpuHandle());
+		}
+
 		for (int32 i = 0; i < m_UAVHandles.size(); i++)
 		{
 			D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};

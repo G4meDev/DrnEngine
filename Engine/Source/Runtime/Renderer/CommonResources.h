@@ -78,6 +78,16 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class AmbientOcclusionPSO
+	{
+	public:
+
+		AmbientOcclusionPSO( ID3D12GraphicsCommandList2* CommandList );
+		~AmbientOcclusionPSO();
+		
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class ResolveEditorSelectionPSO
 	{
 	public:
@@ -171,6 +181,7 @@ namespace Drn
 		ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
 		ResolveEditorSelectionPSO* m_ResolveEditorSelectionPSO;
 		TonemapPSO* m_TonemapPSO;
+		AmbientOcclusionPSO* m_AmbientOcclusionPSO;
 		LightPassPSO* m_LightPassPSO;
 
 		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;

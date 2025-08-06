@@ -8,6 +8,7 @@
 #include "Runtime/Renderer/RenderBuffer/TonemapRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/EditorPrimitiveRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/RenderBufferAO.h"
 
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
@@ -67,6 +68,9 @@ namespace Drn
 
 		m_TonemapBuffer = std::make_shared<class TonemapRenderBuffer>();
 		m_TonemapBuffer->Init();
+
+		m_AOBuffer = std::make_shared<class RenderBufferAO>();
+		m_AOBuffer->Init();
 
 #if WITH_EDITOR
 		// mouse picking components
@@ -210,6 +214,34 @@ namespace Drn
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList());
+	}
+
+	void SceneRenderer::RenderAO()
+	{
+		SCOPE_STAT();
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "AO" );
+
+		m_AOBuffer->Bind(m_CommandList->GetD3D12CommandList());
+
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
+		
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_PSO );
+
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+
+		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
@@ -430,7 +462,7 @@ namespace Drn
 		RenderShadowDepths();
 		RenderBasePass();
 		RenderHZB();
-
+		RenderAO();
 		RenderLights();
 		RenderPostProcess();
 
@@ -461,6 +493,7 @@ namespace Drn
 		m_GBuffer->Resize( GetViewportSize() );
 		m_HZBBuffer->Resize( GetViewportSize() );
 		m_TonemapBuffer->Resize( GetViewportSize() );
+		m_AOBuffer->Resize( GetViewportSize() );
 
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( GetViewportSize() );

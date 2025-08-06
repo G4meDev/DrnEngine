@@ -24,6 +24,9 @@ struct StaticSamplers
 {
     uint LinearSamplerIndex;
     uint PointSamplerIndex;
+    uint LinearCmpSamplerIndex;
+    uint LinearClampIndex;
+    uint PointClampIndex;
 };
 
 float4 Gather4(Texture2D Texture, SamplerState TextureSampler, float2 BufferUV, float2 InvSize)
@@ -91,7 +94,7 @@ groupshared float SharedFurthestDeviceZ[GROUP_TILE_SIZE * GROUP_TILE_SIZE];
 void Main_CS(uint2 GroupId : SV_GroupID, uint GroupThreadIndex : SV_GroupIndex)
 {
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
-    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
+    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointClampIndex];
     
     Texture2D ParentTexture = ResourceDescriptorHeap[BindlessResources.ParentTextureIndex];
     RWTexture2D<float> Output_1 = ResourceDescriptorHeap[BindlessResources.WriteTextureIndex_1];
