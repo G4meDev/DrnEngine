@@ -56,6 +56,10 @@ namespace Drn
 		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList);
 		m_DebugLinePSO = new DebugLinePSO(CommandList);
 		m_HZBPSO = new HZBPSO(CommandList);
+
+		m_SSAO_Random = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\SSAO_Jitter.drn" );
+		m_SSAO_Random.Load();
+		m_SSAO_Random->UploadResources(CommandList);
 	}
 
 	CommonResources::~CommonResources()

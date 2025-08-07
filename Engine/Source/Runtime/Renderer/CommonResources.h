@@ -193,6 +193,8 @@ namespace Drn
 
 		HZBPSO* m_HZBPSO;
 
+		AssetHandle<Texture2D> m_SSAO_Random;
+
 	private:
 
 		static CommonResources* m_SingletonInstance;

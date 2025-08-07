@@ -120,5 +120,6 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     }
     AvgColor.rgb /= AvgColor.w;
     
-    return float4(AvgColor.xyz, LinearDepth / Constant_Float16F_Scale);
+    //return float4(AvgColor.xyz, LinearDepth / Constant_Float16F_Scale);
+    return float4(AvgColor.xyz, MaxDepth);
 }

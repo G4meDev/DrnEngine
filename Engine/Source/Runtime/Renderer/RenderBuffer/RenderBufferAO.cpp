@@ -65,7 +65,7 @@ namespace Drn
 
 		{
 			m_AOTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(AO_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+				CD3DX12_RESOURCE_DESC::Tex2D(AO_FORMAT, HalfSize.X, HalfSize.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
 				D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
@@ -93,8 +93,17 @@ namespace Drn
 			Device->CreateRenderTargetView( m_AOSetupTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_AOSetupHandle );
 
 #if D3D12_Debug_INFO
-			m_AOTarget->SetName( "AOSetupTarget" );
+			m_AOSetupTarget->SetName( "AOSetupTarget" );
 #endif
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
+			Desc.Format = AO_SETUP_FORMAT;
+			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			Desc.Texture2D.MipLevels = 1;
+			Desc.Texture2D.MostDetailedMip = 0;
+
+			Device->CreateShaderResourceView(m_AOSetupTarget->GetD3D12Resource(), &Desc, m_AOSetupTarget->GetCpuHandle());
 		}
 	}
 
@@ -120,7 +129,7 @@ namespace Drn
 
 	void RenderBufferAO::BindMain( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->RSSetViewports(1, &m_Viewport);
+		CommandList->RSSetViewports(1, &m_SetupViewport);
 		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 		
 		CommandList->OMSetRenderTargets( 1, &m_AOHandle, true, nullptr );

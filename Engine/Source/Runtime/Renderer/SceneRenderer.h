@@ -62,7 +62,7 @@ namespace Drn
 		float InvSizeY;
 
 		Vector CameraPos;
-		float Pad_3;
+		float InvTanHalfFov;
 		
 		Vector CameraDir;
 		float Pad_4;

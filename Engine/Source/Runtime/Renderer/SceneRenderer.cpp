@@ -259,10 +259,20 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_MainPSO );
 
+			float RandomScaleX = m_AOBuffer->m_SetupViewport.Width / CommonResources::Get()->m_SSAO_Random->GetSizeX();
+			float RandomScaleY = m_AOBuffer->m_SetupViewport.Height / CommonResources::Get()->m_SSAO_Random->GetSizeY();
+
+			Vector A = Vector(RandomScaleX, RandomScaleY, 0);
+
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOSetupTarget->GetGpuHandle()), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 3);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(CommonResources::Get()->m_SSAO_Random->GetResource()->GetGpuHandle()), 4);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 3, &A, 5);
+			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, (uint32)RandomScaleX, 5);
+			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, RandomScaleX, 8);
+			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, RandomScaleY, 9);
 
 			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
@@ -573,6 +583,8 @@ namespace Drn
 
 		m_SceneView.CameraPos = m_CameraActor->GetActorLocation();
 		m_SceneView.CameraDir = m_CameraActor->GetActorRotation().GetVector();
+
+		m_SceneView.InvTanHalfFov = m_SceneView.ViewToProjection.m_Matrix.m[0][0];
 
 		{
 			float DepthMul = m_SceneView.ViewToProjection.m_Matrix.m[2][2];
