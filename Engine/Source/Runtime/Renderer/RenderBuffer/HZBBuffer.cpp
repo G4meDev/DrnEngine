@@ -49,6 +49,10 @@ namespace Drn
 			CD3DX12_RESOURCE_DESC::Tex2D(HZB_FORMAT, m_FirstMipSize.X, m_FirstMipSize.Y, 1, m_MipCount, 1, 0,
 			D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
+#if D3D12_Debug_INFO
+		M_HZBTarget->SetName("Hzb_Target");
+#endif
+
 		{
 			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
 			Desc.Format = HZB_FORMAT;

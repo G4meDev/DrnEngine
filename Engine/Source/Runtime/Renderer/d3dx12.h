@@ -634,7 +634,7 @@ struct CD3DX12_SHADER_BYTECODE : public D3D12_SHADER_BYTECODE
         D3D12_SHADER_BYTECODE(o)
     {}
     CD3DX12_SHADER_BYTECODE(
-        _In_ ID3DBlob* pShaderBlob) noexcept
+        _In_ ID3DBlob* pShaderBlob)
     {
         pShaderBytecode = pShaderBlob->GetBufferPointer();
         BytecodeLength = pShaderBlob->GetBufferSize();

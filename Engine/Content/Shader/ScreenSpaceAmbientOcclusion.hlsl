@@ -2,8 +2,9 @@
 struct Resources
 {
     uint ViewBufferIndex;
-    uint HzbIndex;
+    uint AoSetupIndex;
     uint StaticSamplerBufferIndex;
+    uint HzbIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);

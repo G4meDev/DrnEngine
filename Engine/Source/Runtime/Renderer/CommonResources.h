@@ -85,7 +85,8 @@ namespace Drn
 		AmbientOcclusionPSO( ID3D12GraphicsCommandList2* CommandList );
 		~AmbientOcclusionPSO();
 		
-		ID3D12PipelineState* m_PSO;
+		ID3D12PipelineState* m_SetupPSO;
+		ID3D12PipelineState* m_MainPSO;
 	};
 
 	class ResolveEditorSelectionPSO

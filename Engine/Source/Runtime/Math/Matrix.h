@@ -33,9 +33,10 @@ namespace Drn
 
 		static Matrix MatrixIdentity;
 
+		XMFLOAT4X4 m_Matrix;
+
 	private:
 
-		XMFLOAT4X4 m_Matrix;
 
 		friend class Transform;
 		friend class Vector;

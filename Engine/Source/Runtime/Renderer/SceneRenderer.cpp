@@ -227,25 +227,56 @@ namespace Drn
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "AO" );
 
-		m_AOBuffer->Bind(m_CommandList->GetD3D12CommandList());
+		D3D12_RESOURCE_BARRIER Barriers[3] = 
+		{
+			CD3DX12_RESOURCE_BARRIER::Transition(m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
+			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
+			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE )
+		};
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(3, Barriers);
 
-		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
-		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
-		
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_PSO );
+		{
+			m_AOBuffer->BindSetup(m_CommandList->GetD3D12CommandList());
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_SetupPSO );
 
-		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 1);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 3);
 
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS );
-		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
+			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		}
+
+		{
+			D3D12_RESOURCE_BARRIER Bar = CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOSetupTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &Bar);
+
+			m_AOBuffer->BindMain(m_CommandList->GetD3D12CommandList());
+
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_MainPSO );
+
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOSetupTarget->GetGpuHandle()), 1);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 3);
+
+			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		}
+
+		D3D12_RESOURCE_BARRIER Barriers_2[4] = 
+		{
+			CD3DX12_RESOURCE_BARRIER::Transition(m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS ),
+			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE ),
+			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET ),
+			CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOSetupTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET )
+		};
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(4, Barriers_2);
+
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}
@@ -537,9 +568,36 @@ namespace Drn
 		m_SceneView.LocalToCameraView = Matrix( m_CameraActor->GetActorTransform() ).Get() * m_SceneView.WorldToView.Get();
 		
 		m_SceneView.Size = GetViewportSize();
+		m_SceneView.InvSizeX = 1.0f / m_SceneView.Size.X;
+		m_SceneView.InvSizeY = 1.0f / m_SceneView.Size.Y;
 
 		m_SceneView.CameraPos = m_CameraActor->GetActorLocation();
 		m_SceneView.CameraDir = m_CameraActor->GetActorRotation().GetVector();
+
+		{
+			float DepthMul = m_SceneView.ViewToProjection.m_Matrix.m[2][2];
+			float DepthAdd = m_SceneView.ViewToProjection.m_Matrix.m[3][2];
+
+			if (DepthAdd == 0.f)
+			{
+				DepthAdd = 0.00000001f;
+			}
+
+			bool bIsPerspectiveProjection = m_SceneView.ViewToProjection.m_Matrix.m[3][3] < 1.0f;
+
+			if (bIsPerspectiveProjection)
+			{
+				float SubtractValue = DepthMul / DepthAdd;
+				SubtractValue -= 0.00000001f;
+
+				m_SceneView.InvDeviceZToWorldZTransform = Vector4(0.0f, 0.0f, 1.0f / DepthAdd, SubtractValue);
+			}
+			else
+			{
+				m_SceneView.InvDeviceZToWorldZTransform = Vector4(1.0f / m_SceneView.ViewToProjection.m_Matrix.m[2][2],
+					-m_SceneView.ViewToProjection.m_Matrix.m[3][2] / m_SceneView.ViewToProjection.m_Matrix.m[2][2] + 1.0f, 0.0f, 1.0f);
+			}
+		}
 
 		UpdateViewBuffer();
 	}
