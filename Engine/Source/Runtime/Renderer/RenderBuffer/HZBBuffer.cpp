@@ -47,7 +47,7 @@ namespace Drn
 
 		M_HZBTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
 			CD3DX12_RESOURCE_DESC::Tex2D(HZB_FORMAT, m_FirstMipSize.X, m_FirstMipSize.Y, 1, m_MipCount, 1, 0,
-			D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS), D3D12_RESOURCE_STATE_COMMON);
 
 #if D3D12_Debug_INFO
 		M_HZBTarget->SetName("Hzb_Target");
@@ -60,7 +60,7 @@ namespace Drn
 			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			Desc.Texture2D.MipLevels = m_MipCount;
 			Desc.Texture2D.MostDetailedMip = 0;
-
+			
 			Device->CreateShaderResourceView(M_HZBTarget->GetD3D12Resource(), &Desc, M_HZBTarget->GetCpuHandle());
 		}
 
@@ -141,8 +141,26 @@ namespace Drn
 		ReallocateHandles(m_UAVHandles, UAVSize);
 		ReallocateHandles(m_SrvHandles, SrvSize);
 
-		
-
+		m_SubresourcesState.clear();
+		m_SubresourcesState.resize(m_MipCount, D3D12_RESOURCE_STATE_COMMON);
 	}
 	
+	void HZBBuffer::TransitionSubresource(ID3D12GraphicsCommandList2* CommandList, int32 SubresourceIndex, D3D12_RESOURCE_STATES State )
+	{
+		if (SubresourceIndex >= 0 && SubresourceIndex < m_SubresourcesState.size() && m_SubresourcesState[SubresourceIndex] != State)
+		{
+			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(M_HZBTarget->GetD3D12Resource(), m_SubresourcesState[SubresourceIndex], State, SubresourceIndex);
+			CommandList->ResourceBarrier(1, &Barrier);
+			m_SubresourcesState[SubresourceIndex] = State;
+		}
+	}
+
+	void HZBBuffer::TransitionAllSubresources(ID3D12GraphicsCommandList2* CommandList, D3D12_RESOURCE_STATES State )
+	{
+		for (int i = 0; i < m_SubresourcesState.size(); i++)
+		{
+			TransitionSubresource(CommandList, i, State);
+		}
+	}
+
 }

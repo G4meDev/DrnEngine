@@ -62,7 +62,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D HdrImage = ResourceDescriptorHeap[BindlessResources.DeferredColorIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    float Exposure = 0.2f;
+    float Exposure = 8.0f;
     float Gamma = 2.2f;
     
     float3 HdrColor = HdrImage.Sample(LinearSampler, IN.UV).xyz;

@@ -80,6 +80,7 @@ struct Resources
     uint MasksIndex;
     uint DepthIndex;
     uint LightFlags;
+    uint SSAOIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -521,6 +522,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D WorldNormalTexture = ResourceDescriptorHeap[BindlessResources.WorldNormalIndex];
     Texture2D MasksTexture = ResourceDescriptorHeap[BindlessResources.MasksIndex];
     Texture2D DepthTexture = ResourceDescriptorHeap[BindlessResources.DepthIndex];
+    Texture2D SSAOTexture = ResourceDescriptorHeap[BindlessResources.SSAOIndex];
     
     float4 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV);
     float3 WorldNormal = WorldNormalTexture.Sample(LinearSampler, IN.UV).xyz;
@@ -544,6 +546,9 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float3 Radiance = float3(1, 1, 1);
     float Attenuation = 1;
     float Shadow = 1;
+    
+    float SSAO = SSAOTexture.Sample(LinearSampler, IN.UV).x;
+    SSAO = pow(SSAO, 4);
     
     [branch]
     if (BindlessResources.LightFlags & LIGHT_BITFLAG_POINTLIGHT)
@@ -580,5 +585,5 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
         }
     }
     
-    return float4(Radiance * Attenuation * Shadow, 1);
+    return float4(Radiance * Attenuation * Shadow * SSAO, 1);
 }

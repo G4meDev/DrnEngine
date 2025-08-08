@@ -165,10 +165,10 @@ namespace Drn
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "HZB" );
 
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
 
-		CD3DX12_RESOURCE_BARRIER UAV_Barrier = CD3DX12_RESOURCE_BARRIER::UAV(m_HZBBuffer->M_HZBTarget->GetD3D12Resource());
+		m_HZBBuffer->TransitionAllSubresources(m_CommandList->GetD3D12CommandList(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 		int32 RemainingMips = m_HZBBuffer->m_MipCount;
 
@@ -187,6 +187,11 @@ namespace Drn
 				m_GBuffer->m_DepthTarget->GetGpuHandle() :
 				m_HZBBuffer->m_SrvHandles[DispatchStartMipIndex / 4 - 1].GpuHandle;
 
+			if ( DispatchStartMipIndex != 0)
+			{
+				m_HZBBuffer->TransitionSubresource(m_CommandList->GetD3D12CommandList(), DispatchStartMipIndex - 1, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			}
+
 			ID3D12PipelineState* DispatchPSO = nullptr;
 
 			if		( DispatchMipCount == 4)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_4Mip_PSO; }
@@ -198,6 +203,7 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetPipelineState(DispatchPSO);
 
 			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(ParentViewHandle), 1);
+			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 			Vector4 DispatchIDToUV;
 			Vector InvSize = Vector(1.0f / MipSize.X, 1.0f / MipSize.Y, 0);
@@ -211,13 +217,14 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->m_UAVHandles[MipIndex].GpuHandle), OutputIndexStart + i);
 			}
 
-			m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &UAV_Barrier);
 			m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSize.X, DispatchSize.Y, 1);
  		}
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
+			m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_READ| D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &barrier);
+
+		m_HZBBuffer->TransitionAllSubresources(m_CommandList->GetD3D12CommandList(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}
@@ -227,13 +234,12 @@ namespace Drn
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "AO" );
 
-		D3D12_RESOURCE_BARRIER Barriers[3] = 
+		D3D12_RESOURCE_BARRIER Barriers[2] = 
 		{
-			CD3DX12_RESOURCE_BARRIER::Transition(m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
 			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
 			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE )
 		};
-		m_CommandList->GetD3D12CommandList()->ResourceBarrier(3, Barriers);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(2, Barriers);
 
 		{
 			m_AOBuffer->BindSetup(m_CommandList->GetD3D12CommandList());
@@ -303,15 +309,14 @@ namespace Drn
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
 		}
 
-		D3D12_RESOURCE_BARRIER Barriers_2[5] = 
+		D3D12_RESOURCE_BARRIER Barriers_2[4] = 
 		{
-			CD3DX12_RESOURCE_BARRIER::Transition(m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS ),
 			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE ),
 			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET ),
 			CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOSetupTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET ),
 			CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOHalfTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET )
 		};
-		m_CommandList->GetD3D12CommandList()->ResourceBarrier(5, Barriers_2);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(4, Barriers_2);
 
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
@@ -322,6 +327,9 @@ namespace Drn
 		SCOPE_STAT();
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "LightPass" );
+
+		D3D12_RESOURCE_BARRIER Bar = CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &Bar);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
@@ -336,6 +344,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 4);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksTarget->GetGpuHandle()), 5);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 6);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOTarget->GetGpuHandle()), 8);
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{
@@ -350,6 +359,9 @@ namespace Drn
 		}
 
 		m_GBuffer->UnBindLightPass(m_CommandList->GetD3D12CommandList());
+
+		Bar = CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &Bar);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}
