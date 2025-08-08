@@ -23,8 +23,10 @@ struct Resources
     
     uint RandomTextureIndex;
     float2 ViewportUVToRandomUV;
-    float Pad;
-
+    float ScaleFactor;
+    uint DepthIndex;
+    uint NormalIndex;
+    uint DownSampleIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -158,6 +160,64 @@ float3 WedgeWithNormal(float2 ScreenSpacePosCenter, float2 InLocalRandom, float3
     
 }
 
+float ComputeDepthSimilarity(float DepthA, float DepthB, float TweakScale)
+{
+    return saturate(1 - abs(DepthA - DepthB) * TweakScale);
+}
+
+float ComputeUpsampleContribution(float SceneDepth, float2 InUV, float3 CenterWorldNormal, Texture2D SSAO_DownsampledAO, Texture2D SSAO_NormalsTexture, SamplerState State, float2 InvDownSampleSize, float4 InvDeviceZToWorldZTransform)
+{
+    const int SampleCount = 9;
+    float2 UV[SampleCount];
+
+    UV[0] = InUV + float2(-1, -1) * InvDownSampleSize;
+    UV[1] = InUV + float2(0, -1) * InvDownSampleSize;
+    UV[2] = InUV + float2(1, -1) * InvDownSampleSize;
+    UV[3] = InUV + float2(-1, 0) * InvDownSampleSize;
+    UV[4] = InUV + float2(0, 0) * InvDownSampleSize;
+    UV[5] = InUV + float2(1, 0) * InvDownSampleSize;
+    UV[6] = InUV + float2(-1, 1) * InvDownSampleSize;
+    UV[7] = InUV + float2(0, 1) * InvDownSampleSize;
+    UV[8] = InUV + float2(1, 1) * InvDownSampleSize;
+
+    float SmallValue = 0.0001f;
+
+    float WeightSum = SmallValue;
+    float Ret = SmallValue;
+
+    //float InvThreshold = ScreenSpaceAOParams[2].y;
+    float InvThreshold = 0.5f;
+    float MinIteration = 1.0f;
+
+    [unroll]
+    for (int i = 0; i < SampleCount; ++i)
+    {
+        float SampleValue = SSAO_DownsampledAO.Sample(State, UV[i]).x;
+
+        MinIteration = min(MinIteration, SampleValue.x);
+
+        float4 NormalAndSampleDepth = SSAO_NormalsTexture.Sample(State, UV[i]);
+        float SampleDepth = ConvertFromDeviceZ(NormalAndSampleDepth.a, InvDeviceZToWorldZTransform);
+
+        float Weight = ComputeDepthSimilarity(SampleDepth, SceneDepth, 0.003f);
+
+        float3 LocalWorldNormal = NormalAndSampleDepth.xyz * 2 - 1;
+        Weight *= saturate(dot(LocalWorldNormal, CenterWorldNormal));
+
+        Ret += SampleValue * Weight;
+        WeightSum += Weight;
+    }
+
+    Ret /= WeightSum;
+
+    return Ret;
+}
+
+float ComputeLerpFactor()
+{
+    return 0.6f;
+}
+
 float Square(float x) { return x * x; }
 
 float Main_PS(PixelShaderInput IN) : SV_Target
@@ -167,6 +227,9 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D SetupImage = ResourceDescriptorHeap[BindlessResources.AoSetupIndex];
     Texture2D HzbImage = ResourceDescriptorHeap[BindlessResources.HzbIndex];
     Texture2D RandomImage = ResourceDescriptorHeap[BindlessResources.RandomTextureIndex];
+    Texture2D DepthImage = ResourceDescriptorHeap[BindlessResources.DepthIndex];
+    Texture2D NormalImage = ResourceDescriptorHeap[BindlessResources.NormalIndex];
+    Texture2D DownSampleImage = ResourceDescriptorHeap[BindlessResources.DownSampleIndex];
     ConstantBuffer<StaticSamplers> StaticSamplersBuffer = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     
     SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplersBuffer.PointSamplerIndex];
@@ -182,29 +245,35 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     
     float AORadiusInShader = 0.1;
     float AmbientOcclusionBias = 0.0003;
-    float ScaleFactor = 4;
      
+#if USE_AO_SETUP_AS_INPUT
     float4 SetupSample = SetupImage.Sample(PointClampSampler, UV);
     
     //float SceneDepth = SetupSample.a * Constant_Float16F_Scale;
     float SceneDepth = ConvertFromDeviceZ(SetupSample.a, View.InvDeviceZToWorldZTransform);
-    float3 ViewSpacePosition = ReconstructCSPos(SceneDepth, ScreenPos);
-
+    
     float3 WorldNormal = SetupSample.xyz * 2 - 1;
+#else
+    float Depth = DepthImage.Sample(PointClampSampler, UV).x;
+    float SceneDepth = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
+    
+    float3 WorldNormal = NormalImage.Sample(PointClampSampler, UV).xyz * 2 - 1;
+#endif
+
+    float3 ViewSpacePosition = ReconstructCSPos(SceneDepth, ScreenPos);
     float3 ViewSpaceNormal = normalize(mul((float3x3) View.WorldToView, WorldNormal));
     
     float ActualAORadius = AORadiusInShader * SceneDepth;
     
     float2 RandomVec = (RandomImage.Sample(PointSampler, UV * BindlessResources.ViewportUVToRandomUV).rg * 2 - 1) * ActualAORadius;
     
-    ViewSpacePosition += AmbientOcclusionBias * SceneDepth * ScaleFactor * (ViewSpaceNormal * FovFix);
+    ViewSpacePosition += AmbientOcclusionBias * SceneDepth * BindlessResources.ScaleFactor * (ViewSpaceNormal * FovFix);
     
     float2 FovFixXY = FovFix.xy * (1.0f / ViewSpacePosition.z);
     float4 RandomBase = float4(RandomVec, -RandomVec.y, RandomVec.x) * float4(FovFixXY, FovFixXY);
     float2 ScreenSpacePos = ViewSpacePosition.xy / ViewSpacePosition.z;
     
     float InvHaloSize = 1.0f / (ActualAORadius * FovFixXY.x * 2);
-    
     
     float3 ScaledViewSpaceNormal = ViewSpaceNormal;
 #if OPTIMIZATION_O1
@@ -237,6 +306,13 @@ float Main_PS(PixelShaderInput IN) : SV_Target
         WeightAccumulator += float2(Square(1 - LocalAccumulator.y) * LocalAccumulator.z, LocalAccumulator.z);
     }
     
-    return WeightAccumulator.x / WeightAccumulator.y;
+    float Result = WeightAccumulator.x / WeightAccumulator.y;
+    
+#if !USE_AO_SETUP_AS_INPUT
+    float2 InvDownSampleSize = View.InvSize * 2;
+    float Filtered = ComputeUpsampleContribution(SceneDepth, UV, WorldNormal, DownSampleImage, SetupImage, PointClampSampler, InvDownSampleSize, View.InvDeviceZToWorldZTransform);
+    Result = lerp(Result, Filtered, ComputeLerpFactor());
+#endif
 
+    return Result;
 }

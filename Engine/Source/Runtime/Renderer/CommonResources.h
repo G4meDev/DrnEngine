@@ -86,6 +86,7 @@ namespace Drn
 		~AmbientOcclusionPSO();
 		
 		ID3D12PipelineState* m_SetupPSO;
+		ID3D12PipelineState* m_HalfPSO;
 		ID3D12PipelineState* m_MainPSO;
 	};
 

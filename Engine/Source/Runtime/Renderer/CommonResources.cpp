@@ -363,6 +363,7 @@ namespace Drn
 	AmbientOcclusionPSO::AmbientOcclusionPSO( ID3D12GraphicsCommandList2* CommandList )
 	{
 		m_SetupPSO = nullptr;
+		m_HalfPSO = nullptr;
 		m_MainPSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
@@ -401,6 +402,34 @@ namespace Drn
 			ID3DBlob* VertexShaderBlob;
 			ID3DBlob* PixelShaderBlob;
 
+			const std::vector<const wchar_t*> Macros = { L"USE_AO_SETUP_AS_INPUT=1" };
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+			PipelineDesc.InputLayout						= VertexLayout_PosUV;
+			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
+			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+			PipelineDesc.SampleMask							= UINT_MAX;
+			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+			PipelineDesc.DSVFormat							= DXGI_FORMAT_R32_FLOAT;
+			PipelineDesc.NumRenderTargets					= 1;
+			PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R8_UNORM;
+			PipelineDesc.SampleDesc.Count					= 1;
+
+			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_HalfPSO ) );
+		}
+
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ScreenSpaceAmbientOcclusion.hlsl" ) );
+
+			ID3DBlob* VertexShaderBlob;
+			ID3DBlob* PixelShaderBlob;
+
 			const std::vector<const wchar_t*> Macros = {};
 			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
@@ -425,6 +454,7 @@ namespace Drn
 
 #if D3D12_Debug_INFO
 		m_SetupPSO->SetName(L"PSO_SetupAO");
+		m_HalfPSO->SetName(L"HalfPSO_AO");
 		m_MainPSO->SetName(L"PSO_AO");
 #endif
 	}
@@ -432,6 +462,7 @@ namespace Drn
 	AmbientOcclusionPSO::~AmbientOcclusionPSO()
 	{
 		m_SetupPSO->Release();
+		m_HalfPSO->Release();
 		m_MainPSO->Release();
 	}
 
