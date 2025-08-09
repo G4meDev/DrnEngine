@@ -5,6 +5,8 @@
 
 #include <imgui.h>
 
+#define CAMERA_MOVE_SPEED_SCALAR 1400.0f;
+
 namespace Drn
 {
 	ViewportCameraInputHandler::ViewportCameraInputHandler()
@@ -28,7 +30,8 @@ namespace Drn
 			if (m_CapturingMouse)
 			{
 				m_MouseDelta = CurerentMousePos - m_LastMousePos;
-				m_MouseDelta = m_MouseDelta * DeltaTime;
+				m_MouseDelta.X = m_MouseDelta.X;
+				m_MouseDelta.Y = m_MouseDelta.Y;
 			}
 
 			else
@@ -49,7 +52,8 @@ namespace Drn
 			float RightDis   = dDown - aDown;
 			float UpDis      = eDown - qDown;
 
-			m_Displacement = XMVectorSet( RightDis * DeltaTime, UpDis * DeltaTime, ForwardDis * DeltaTime, 0 );
+			const float CameraMoveScalar = DeltaTime * CAMERA_MOVE_SPEED_SCALAR;
+			m_Displacement = XMVectorSet( RightDis * CameraMoveScalar, UpDis * CameraMoveScalar, ForwardDis * CameraMoveScalar, 0 );
 
 			return true;
 		}

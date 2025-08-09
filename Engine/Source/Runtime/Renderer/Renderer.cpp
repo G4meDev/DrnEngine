@@ -455,7 +455,7 @@ namespace Drn
 
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &rtv, false, NULL);
 
-		ImGuiRenderer::Get()->Tick( 1, rtv, m_CommandList->GetD3D12CommandList() );
+		ImGuiRenderer::Get()->Tick( Time::GetApplicationDeltaTime(), rtv, m_CommandList->GetD3D12CommandList() );
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );

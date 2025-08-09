@@ -129,7 +129,6 @@ float ComputeMipLevel(int sampleid, int step)
     float HzbStepMipLevelFactorValue = 1;
     float Scale = (step + 1) / (float) SAMPLE_STEPS;
 
-    //return 0;
     return log2(HzbStepMipLevelFactorValue * Scale * SamplePos);
 }
 
@@ -145,7 +144,6 @@ float3 WedgeWithNormal(float2 ScreenSpacePosCenter, float2 InLocalRandom, float3
     float2 ScreenSpacePosL = ScreenSpacePosCenter + InLocalRandom;
     float2 ScreenSpacePosR = ScreenSpacePosCenter - InLocalRandom;
 
-    //float AbsL = GetHZBDepth(ScreenSpacePosCenter, MipLevel, HzbTexture, State, InvDeviceZToWorldZTransform);
     float AbsL = GetHZBDepth(ScreenSpacePosL, MipLevel, HzbTexture, State, InvDeviceZToWorldZTransform);
     float AbsR = GetHZBDepth(ScreenSpacePosR, MipLevel, HzbTexture, State, InvDeviceZToWorldZTransform);
     
