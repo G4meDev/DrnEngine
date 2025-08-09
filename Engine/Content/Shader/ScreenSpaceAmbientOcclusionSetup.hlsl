@@ -5,9 +5,8 @@ const static float Constant_Float16F_Scale = 4096.0f;
 struct Resources
 {
     uint ViewBufferIndex;
-    uint DepthIndex;
+    uint AoBufferIndex;
     uint StaticSamplerBufferIndex;
-    uint NormalIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -32,6 +31,20 @@ struct ViewBuffer
 
     float4 InvDeviceZToWorldZTransform;
 
+};
+
+struct AoData
+{
+    uint DepthTexture;
+    uint WorldNormalTexture;
+    uint HzbTexture;
+    uint SetupTexture;
+
+    uint DownSampleTexture;
+    uint RandomTexture;
+    float2 ToRandomUV;
+
+    float Intensity;
 };
 
 struct StaticSamplers
@@ -86,12 +99,13 @@ float ComputeDepthSimilarity(float DepthA, float DepthB, float TweakScale)
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
-    ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
+    ConstantBuffer<AoData> AoBuffer = ResourceDescriptorHeap[BindlessResources.AoBufferIndex];
+    ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     
     SamplerState LinearClampSampler = ResourceDescriptorHeap[StaticSamplers.LinearClampIndex];
-    Texture2D DepthImage = ResourceDescriptorHeap[BindlessResources.DepthIndex];
-    Texture2D NormalImage = ResourceDescriptorHeap[BindlessResources.NormalIndex];
+    Texture2D DepthImage = ResourceDescriptorHeap[AoBuffer.DepthTexture];
+    Texture2D NormalImage = ResourceDescriptorHeap[AoBuffer.WorldNormalTexture];
     
     float2 UV[4];
     UV[0] = IN.UV + float2(-0.5f, -0.5f) * View.InvSize;

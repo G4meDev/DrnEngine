@@ -15,10 +15,22 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			Ar >> m_Intensity;
+			Ar >> m_Power;
+			Ar >> m_Bias;
+			Ar >> m_Radius;
+			Ar >> m_MipBlend;
+			Ar >> m_FadeDistance;
+			Ar >> m_FadeRadius;
 		}
 		else
 		{
 			Ar << m_Intensity;
+			Ar << m_Power;
+			Ar << m_Bias;
+			Ar << m_Radius;
+			Ar << m_MipBlend;
+			Ar << m_FadeDistance;
+			Ar << m_FadeRadius;
 		}
 	}
 
@@ -41,6 +53,12 @@ namespace Drn
 		if (ImGui::CollapsingHeader("AmbientOcclusion", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			Dirty |= ImGui::DragFloat("Intensity", &m_Intensity, 0.1f, 0, 5, "%.1f");
+			Dirty |= ImGui::DragFloat("Power", &m_Power, 0.1f, 0, 8, "%.1f");
+			Dirty |= ImGui::DragFloat("Bias", &m_Bias, 0.00003f, 0, 0.1f, "%.5f");
+			Dirty |= ImGui::DragFloat("Radius", &m_Radius, 0.01f, 0, 5, "%.2f");
+			Dirty |= ImGui::DragFloat("MipBlend", &m_MipBlend, 0.05f, 0, 1, "%.2f");
+			Dirty |= ImGui::DragFloat("FadeDistance", &m_FadeDistance, 0.1f, 0, 50, "%.1f");
+			Dirty |= ImGui::DragFloat("FadeRadius", &m_FadeRadius, 0.1f, 0, 50, "%.1f");
 		}
 
 		return Dirty;

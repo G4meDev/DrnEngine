@@ -1,5 +1,8 @@
 #include "DrnPCH.h"
 #include "RenderBufferAO.h"
+#include "Runtime/Renderer/SceneRenderer.h"
+#include "Runtime/Renderer/RenderBuffer/GBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/HZBBuffer.h"
 
 #define AO_FORMAT DXGI_FORMAT_R8_UNORM
 #define AO_SETUP_FORMAT DXGI_FORMAT_R16G16B16A16_FLOAT
@@ -11,6 +14,7 @@ namespace Drn
 		, m_AOTarget(nullptr)
 		, m_AOHalfTarget(nullptr)
 		, m_AOSetupTarget(nullptr)
+		, m_AoBuffer(nullptr)
 		, m_ScissorRect(CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ))
 	{
 		
@@ -18,20 +22,7 @@ namespace Drn
 
 	RenderBufferAO::~RenderBufferAO()
 	{
-		if (m_AOTarget)
-		{
-			m_AOTarget->ReleaseBufferedResource();
-		}
-
-		if (m_AOHalfTarget)
-		{
-			m_AOHalfTarget->ReleaseBufferedResource();
-		}
-		
-		if (m_AOSetupTarget)
-		{
-			m_AOSetupTarget->ReleaseBufferedResource();
-		}
+		ReleaseBuffers();
 	}
 
 	void RenderBufferAO::Init()
@@ -63,14 +54,7 @@ namespace Drn
 		IntPoint HalfSize = IntPoint::ComponentWiseMax(Size / 2, IntPoint(1));
 		m_SetupViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(HalfSize.X), static_cast<float>(HalfSize.Y));
 
-		if (m_AOTarget)
-			m_AOTarget->ReleaseBufferedResource();
-
-		if (m_AOHalfTarget)
-			m_AOHalfTarget->ReleaseBufferedResource();
-
-		if (m_AOSetupTarget)
-			m_AOSetupTarget->ReleaseBufferedResource();
+		ReleaseBuffers();
 
 		{
 			m_AOTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
@@ -149,18 +133,27 @@ namespace Drn
 
 			Device->CreateShaderResourceView(m_AOSetupTarget->GetD3D12Resource(), &Desc, m_AOSetupTarget->GetCpuHandle());
 		}
+
+		{
+			m_AoBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+#if D3D12_Debug_INFO
+			m_AoBuffer->SetName("CB_AoBuffer_");
+#endif
+
+			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+			ResourceViewDesc.BufferLocation = m_AoBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+			ResourceViewDesc.SizeInBytes = 256;
+			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_AoBuffer->GetCpuHandle());
+		}
 	}
 
 	void RenderBufferAO::Clear( ID3D12GraphicsCommandList2* CommandList )
 	{
+		
 	}
 
 	void RenderBufferAO::Bind( ID3D12GraphicsCommandList2* CommandList )
 	{
-		//CommandList->RSSetViewports(1, &m_Viewport);
-		//CommandList->RSSetScissorRects(1, &m_ScissorRect);
-		//
-		//CommandList->OMSetRenderTargets( 1, &m_AOHandle, true, nullptr );
 	}
 
 	void RenderBufferAO::BindSetup( ID3D12GraphicsCommandList2* CommandList )
@@ -186,6 +179,56 @@ namespace Drn
 		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 		
 		CommandList->OMSetRenderTargets( 1, &m_AOHandle, true, nullptr );
+	}
+
+	void RenderBufferAO::MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, const SSAOSettings& Settings )
+	{
+		m_AoData.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
+		m_AoData.WorldNormalTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_WorldNormalTarget->GetGpuHandle());
+		m_AoData.HzbTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_HZBBuffer->M_HZBTarget->GetGpuHandle());
+		m_AoData.SetupTexture = Renderer::Get()->GetBindlessSrvIndex(m_AOSetupTarget->GetGpuHandle());
+		m_AoData.DownSampleTexture = Renderer::Get()->GetBindlessSrvIndex(m_AOHalfTarget->GetGpuHandle());
+
+		Texture2D* SSAO_RandomTexture = CommonResources::Get()->m_SSAO_Random.Get();
+		m_AoData.RandomTexture = Renderer::Get()->GetBindlessSrvIndex(SSAO_RandomTexture->GetResource()->GetGpuHandle());
+
+		m_AoData.ToRandomU = (float) m_Size.X / SSAO_RandomTexture->GetSizeX();
+		m_AoData.ToRandomV = (float) m_Size.Y / SSAO_RandomTexture->GetSizeY();
+
+		m_AoData.Intensity = Settings.m_Intensity;
+		m_AoData.Power = Settings.m_Power;
+		m_AoData.Bias = Settings.m_Bias;
+		m_AoData.Radius = Settings.m_Radius;
+		m_AoData.MipBlend = Settings.m_MipBlend;
+
+		float FadeRadius = std::max( 1.0f, Settings.m_FadeRadius );
+		float InvFadeRadius = 1.0f / FadeRadius;
+		float FadeOffset = -(Settings.m_FadeDistance - FadeRadius) * InvFadeRadius;
+
+		m_AoData.InvFadeRadius = InvFadeRadius;
+		m_AoData.FadeOffset = FadeOffset;
+
+
+		UINT8* ConstantBufferStart;
+		CD3DX12_RANGE readRange( 0, 0 );
+		m_AoBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		memcpy( ConstantBufferStart, &m_AoData, sizeof(AoData));
+		m_AoBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+	}
+
+	void RenderBufferAO::ReleaseBuffers()
+	{
+		if (m_AOTarget)
+			m_AOTarget->ReleaseBufferedResource();
+
+		if (m_AOHalfTarget)
+			m_AOHalfTarget->ReleaseBufferedResource();
+
+		if (m_AOSetupTarget)
+			m_AOSetupTarget->ReleaseBufferedResource();
+
+		if (m_AoBuffer)
+			m_AoBuffer->ReleaseBufferedResource();
 	}
 
 }

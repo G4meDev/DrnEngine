@@ -254,6 +254,94 @@ namespace Drn
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "AO" );
 
+//		D3D12_RESOURCE_BARRIER Barriers[2] = 
+//		{
+//			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
+//			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE )
+//		};
+//		m_CommandList->GetD3D12CommandList()->ResourceBarrier(2, Barriers);
+//
+//		{
+//			m_AOBuffer->BindSetup(m_CommandList->GetD3D12CommandList());
+//
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+//			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_SetupPSO );
+//
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 1);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 3);
+//
+//			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+//			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+//		}
+//
+//		{
+//			D3D12_RESOURCE_BARRIER Bar = CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOSetupTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+//			m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &Bar);
+//
+//			m_AOBuffer->BindHalf(m_CommandList->GetD3D12CommandList());
+//
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+//			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_HalfPSO );
+//
+//			float RandomScaleX = m_AOBuffer->m_SetupViewport.Width / CommonResources::Get()->m_SSAO_Random->GetSizeX();
+//			float RandomScaleY = m_AOBuffer->m_SetupViewport.Height / CommonResources::Get()->m_SSAO_Random->GetSizeY();
+//
+//			Vector A = Vector(RandomScaleX, RandomScaleY, 4);
+//
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOSetupTarget->GetGpuHandle()), 1);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 3);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(CommonResources::Get()->m_SSAO_Random->GetResource()->GetGpuHandle()), 4);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 3, &A, 5);
+//
+//			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+//			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+//		}
+//
+//		{
+//			D3D12_RESOURCE_BARRIER Bar = CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOHalfTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+//			m_CommandList->GetD3D12CommandList()->ResourceBarrier(1, &Bar);
+//
+//			m_AOBuffer->BindMain(m_CommandList->GetD3D12CommandList());
+//
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+//			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_MainPSO );
+//
+//			float RandomScaleX = m_AOBuffer->m_Viewport.Width / CommonResources::Get()->m_SSAO_Random->GetSizeX();
+//			float RandomScaleY = m_AOBuffer->m_Viewport.Height / CommonResources::Get()->m_SSAO_Random->GetSizeY();
+//
+//			Vector A = Vector(RandomScaleX, RandomScaleY, 1);
+//
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOSetupTarget->GetGpuHandle()), 1);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 3);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(CommonResources::Get()->m_SSAO_Random->GetResource()->GetGpuHandle()), 4);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 3, &A, 5);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 8);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 9);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOHalfTarget->GetGpuHandle()), 10);
+//			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, *(uint32*)(&m_PostProcessSettings->m_SSAOSettings.m_Intensity), 11);
+//
+//			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+//			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+//		}
+//
+//		D3D12_RESOURCE_BARRIER Barriers_2[4] = 
+//		{
+//			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE ),
+//			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET ),
+//			CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOSetupTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET ),
+//			CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOHalfTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET )
+//		};
+//		m_CommandList->GetD3D12CommandList()->ResourceBarrier(4, Barriers_2);
+
+
+		m_AOBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this, m_PostProcessSettings->m_SSAOSettings);
+
 		D3D12_RESOURCE_BARRIER Barriers[2] = 
 		{
 			CD3DX12_RESOURCE_BARRIER::Transition(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
@@ -268,9 +356,8 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_SetupPSO );
 
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 1);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AoBuffer->GetGpuHandle()), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 3);
 
 			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
@@ -285,17 +372,10 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_HalfPSO );
 
-			float RandomScaleX = m_AOBuffer->m_SetupViewport.Width / CommonResources::Get()->m_SSAO_Random->GetSizeX();
-			float RandomScaleY = m_AOBuffer->m_SetupViewport.Height / CommonResources::Get()->m_SSAO_Random->GetSizeY();
-
-			Vector A = Vector(RandomScaleX, RandomScaleY, 4);
 
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOSetupTarget->GetGpuHandle()), 1);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AoBuffer->GetGpuHandle()), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 3);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(CommonResources::Get()->m_SSAO_Random->GetResource()->GetGpuHandle()), 4);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 3, &A, 5);
 
 			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
@@ -310,21 +390,9 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 			m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_MainPSO );
 
-			float RandomScaleX = m_AOBuffer->m_Viewport.Width / CommonResources::Get()->m_SSAO_Random->GetSizeX();
-			float RandomScaleY = m_AOBuffer->m_Viewport.Height / CommonResources::Get()->m_SSAO_Random->GetSizeY();
-
-			Vector A = Vector(RandomScaleX, RandomScaleY, 1);
-
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOSetupTarget->GetGpuHandle()), 1);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AoBuffer->GetGpuHandle()), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->M_HZBTarget->GetGpuHandle()), 3);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(CommonResources::Get()->m_SSAO_Random->GetResource()->GetGpuHandle()), 4);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstants(0, 3, &A, 5);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 8);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 9);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOHalfTarget->GetGpuHandle()), 10);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, *(uint32*)(&m_PostProcessSettings->m_SSAOSettings.m_Intensity), 11);
 
 			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
@@ -338,7 +406,6 @@ namespace Drn
 			CD3DX12_RESOURCE_BARRIER::Transition(m_AOBuffer->m_AOHalfTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET )
 		};
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier(4, Barriers_2);
-
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}

@@ -17,17 +17,8 @@ static const float2 OcclusionSamplesOffsets[SAMPLESET_ARRAY_SIZE] =
 struct Resources
 {
     uint ViewBufferIndex;
-    uint AoSetupIndex;
+    uint AoBufferIndex;
     uint StaticSamplerBufferIndex;
-    uint HzbIndex;
-    
-    uint RandomTextureIndex;
-    float2 ViewportUVToRandomUV;
-    float ScaleFactor;
-    uint DepthIndex;
-    uint NormalIndex;
-    uint DownSampleIndex;
-    uint AmbientOcclusionIntensity;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -52,6 +43,27 @@ struct ViewBuffer
 
     float4 InvDeviceZToWorldZTransform;
 
+};
+
+struct AoData
+{
+    uint DepthTexture;
+    uint WorldNormalTexture;
+    uint HzbTexture;
+    uint SetupTexture;
+
+    uint DownSampleTexture;
+    uint RandomTexture;
+    float2 ToRandomUV;
+
+    float Intensity;
+    float Power;
+    float Bias;
+    float Radius;
+    
+    float MipBlend;
+    float InvFadeRadius;
+    float FadeOffset;
 };
 
 struct StaticSamplers
@@ -214,24 +226,20 @@ float ComputeUpsampleContribution(float SceneDepth, float2 InUV, float3 CenterWo
     return Ret;
 }
 
-float ComputeLerpFactor()
-{
-    return 0.6f;
-}
-
 float Square(float x) { return x * x; }
 
 float Main_PS(PixelShaderInput IN) : SV_Target
 {
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
-    
-    Texture2D SetupImage = ResourceDescriptorHeap[BindlessResources.AoSetupIndex];
-    Texture2D HzbImage = ResourceDescriptorHeap[BindlessResources.HzbIndex];
-    Texture2D RandomImage = ResourceDescriptorHeap[BindlessResources.RandomTextureIndex];
-    Texture2D DepthImage = ResourceDescriptorHeap[BindlessResources.DepthIndex];
-    Texture2D NormalImage = ResourceDescriptorHeap[BindlessResources.NormalIndex];
-    Texture2D DownSampleImage = ResourceDescriptorHeap[BindlessResources.DownSampleIndex];
+    ConstantBuffer<AoData> AoBuffer = ResourceDescriptorHeap[BindlessResources.AoBufferIndex];
     ConstantBuffer<StaticSamplers> StaticSamplersBuffer = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
+    
+    Texture2D SetupImage = ResourceDescriptorHeap[AoBuffer.SetupTexture];
+    Texture2D HzbImage = ResourceDescriptorHeap[AoBuffer.HzbTexture];
+    Texture2D RandomImage = ResourceDescriptorHeap[AoBuffer.RandomTexture];
+    Texture2D DepthImage = ResourceDescriptorHeap[AoBuffer.DepthTexture];
+    Texture2D NormalImage = ResourceDescriptorHeap[AoBuffer.WorldNormalTexture];
+    Texture2D DownSampleImage = ResourceDescriptorHeap[AoBuffer.DownSampleTexture];
     
     SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplersBuffer.PointSamplerIndex];
     SamplerState PointClampSampler = ResourceDescriptorHeap[StaticSamplersBuffer.PointClampIndex];
@@ -243,15 +251,6 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     float InvTanHalfFov = View.InvTanHalfFov;
     float3 FovFix = float3(InvTanHalfFov, Ratio * InvTanHalfFov, 1);
     float3 InvFovFix = 1.0f / FovFix;
-    
-    float AORadiusInShader = 0.1;
-    float AmbientOcclusionBias = 0.0003;
-     
-    //float AmbientOcclusionIntensity = 1.0f;
-    float AmbientOcclusionPower = 4.0f;
-    
-    float InvFadeRadius;
-    float FadeRadiusOffset;
     
 #if USE_AO_SETUP_AS_INPUT
     float4 SetupSample = SetupImage.Sample(PointClampSampler, UV);
@@ -270,11 +269,20 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     float3 ViewSpacePosition = ReconstructCSPos(SceneDepth, ScreenPos);
     float3 ViewSpaceNormal = normalize(mul((float3x3) View.WorldToView, WorldNormal));
     
-    float ActualAORadius = AORadiusInShader * SceneDepth;
+    float ActualAORadius = AoBuffer.Radius * SceneDepth;
     
-    float2 RandomVec = (RandomImage.Sample(PointSampler, UV * BindlessResources.ViewportUVToRandomUV).rg * 2 - 1) * ActualAORadius;
+    float2 ToRandomUV = AoBuffer.ToRandomUV;
+    float ScaleFactor = 1;
     
-    ViewSpacePosition += AmbientOcclusionBias * SceneDepth * BindlessResources.ScaleFactor * (ViewSpaceNormal * FovFix);
+#if USE_AO_SETUP_AS_INPUT
+    ActualAORadius *= 2;
+    ToRandomUV /= 2;
+    ScaleFactor = 4;
+#endif
+    
+    float2 RandomVec = (RandomImage.Sample(PointSampler, UV * ToRandomUV).rg * 2 - 1) * ActualAORadius;
+    
+    ViewSpacePosition += AoBuffer.Bias * SceneDepth * ScaleFactor * (ViewSpaceNormal * FovFix);
     
     float2 FovFixXY = FovFix.xy * (1.0f / ViewSpacePosition.z);
     float4 RandomBase = float4(RandomVec, -RandomVec.y, RandomVec.x) * float4(FovFixXY, FovFixXY);
@@ -318,10 +326,10 @@ float Main_PS(PixelShaderInput IN) : SV_Target
 #if !USE_AO_SETUP_AS_INPUT
     float2 InvDownSampleSize = View.InvSize * 2;
     float Filtered = ComputeUpsampleContribution(SceneDepth, UV, WorldNormal, DownSampleImage, SetupImage, PointClampSampler, InvDownSampleSize, View.InvDeviceZToWorldZTransform);
-    Result = lerp(Result, Filtered, ComputeLerpFactor());
+    Result = lerp(Result, Filtered, AoBuffer.MipBlend);
     
-    //Result = lerp(Result, 1, saturate(SceneDepth * InvFadeRadius + FadeRadiusOffset));
-    Result = 1 - (1 - pow(abs(Result), AmbientOcclusionPower)) * asfloat(BindlessResources.AmbientOcclusionIntensity);
+    //Result = lerp(Result, 1, saturate(SceneDepth * AoBuffer.InvFadeRadius + AoBuffer.FadeOffset));
+    Result = 1 - (1 - pow(abs(Result), AoBuffer.Power)) * AoBuffer.Intensity;
 #endif
 
     return Result;

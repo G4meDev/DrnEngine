@@ -161,6 +161,7 @@ namespace Drn
 		friend class LineBatchSceneProxy;
 		friend class StaticMeshSceneProxy;
 		friend class ViewportPanel;
+		friend class RenderBufferAO;
 
 	private:
 
