@@ -10,6 +10,8 @@
 #include "Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/RenderBufferAO.h"
 
+#include "Runtime/Engine/PostProcessVolume.h"
+
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
 #define HZB_GROUP_TILE_SIZE 8
@@ -102,6 +104,24 @@ namespace Drn
 
 		}
 
+	}
+
+	void SceneRenderer::ResolvePostProcessSettings()
+	{
+		m_PostProcessSettings = &PostProcessSettings::DefaultSettings;
+
+		float MinDistance = FLT_MAX;
+		for (auto it = m_Scene->m_PostProcessProxies.begin(); it != m_Scene->m_PostProcessProxies.end(); it++)
+		{
+			PostProcessSceneProxy* Proxy = *it;
+			float Dist  = Vector::Distance(Proxy->m_WorldTransform.GetLocation(), m_SceneView.CameraPos);
+
+			if (Dist < MinDistance)
+			{
+				m_PostProcessSettings = &Proxy->m_Settings;
+				MinDistance = Dist;
+			}
+		}
 	}
 
 	void SceneRenderer::UpdateViewBuffer()
@@ -304,6 +324,7 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 8);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 9);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOHalfTarget->GetGpuHandle()), 10);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, *(uint32*)(&m_PostProcessSettings->m_SSAOSettings.m_Intensity), 11);
 
 			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
@@ -527,6 +548,7 @@ namespace Drn
 		}
 
 		RecalculateView();
+		ResolvePostProcessSettings();
 
 		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 

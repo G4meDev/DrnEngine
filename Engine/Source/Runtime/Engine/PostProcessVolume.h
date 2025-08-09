@@ -7,6 +7,24 @@
 
 namespace Drn
 {
+	// copy that lives on gpu
+	class PostProcessSceneProxy
+	{
+	public:
+		PostProcessSceneProxy( class PostProcessVolumeComponent* InComponent )
+			: m_PostProcessComponent(InComponent)
+		{};
+		virtual ~PostProcessSceneProxy() {};
+
+		void UpdateResources();
+
+		// scaled world transform
+		Transform m_WorldTransform;
+		PostProcessSettings m_Settings;
+
+		class PostProcessVolumeComponent* m_PostProcessComponent;
+	};
+
 	class PostProcessVolumeComponent : public SceneComponent
 	{
 	public:
@@ -22,8 +40,33 @@ namespace Drn
 
 		PostProcessSettings m_PostProcessSettings;
 
+		bool m_RenderTransformDirty;
+		bool m_RenderSettingsDirty;
+
+		PostProcessSceneProxy* m_SceneProxy;
+
+		inline void UpdateRenderStateConditional()
+		{
+			if (m_SceneProxy)
+			{
+				if (m_RenderTransformDirty)
+				{
+					m_SceneProxy->m_WorldTransform = GetWorldTransform();
+				}
+
+				if (m_RenderSettingsDirty)
+				{
+					m_SceneProxy->m_Settings = m_PostProcessSettings;
+				}
+
+				m_RenderTransformDirty = false;
+				m_RenderSettingsDirty = false;
+			}
+		}
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
+		inline virtual bool HasSprite() const override { return true; }
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
 #endif
 	};

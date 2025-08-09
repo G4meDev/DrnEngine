@@ -22,28 +22,28 @@ namespace Drn
 		}
 	}
 
-
 	void PostProcessSettings::Serialize( Archive& Ar )
 	{
-		//if (Ar.IsLoading())
-		//{
-		//}
-		//else
-		//{
-		//}
-
 		m_SSAOSettings.Serialize(Ar);
 	}
 
 #if WITH_EDITOR
-	void PostProcessSettings::Draw()
+	bool PostProcessSettings::Draw()
 	{
-		m_SSAOSettings.Draw();
+		bool Dirty = false;
+		Dirty |= m_SSAOSettings.Draw();
+		return Dirty;
 	}
-	void SSAOSettings::Draw()
+	bool SSAOSettings::Draw()
 	{
-		ImGui::CollapsingHeader("AmbientOcclusion");
-		ImGui::InputFloat("Intensity", &m_Intensity);
+		bool Dirty = false;
+
+		if (ImGui::CollapsingHeader("AmbientOcclusion", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			Dirty |= ImGui::DragFloat("Intensity", &m_Intensity, 0.1f, 0, 5, "%.1f");
+		}
+
+		return Dirty;
 	}
 #endif
 

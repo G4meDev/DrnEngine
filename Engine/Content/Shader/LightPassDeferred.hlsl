@@ -548,7 +548,6 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float Shadow = 1;
     
     float SSAO = SSAOTexture.Sample(LinearSampler, IN.UV).x;
-    SSAO = pow(SSAO, 4);
     
     [branch]
     if (BindlessResources.LightFlags & LIGHT_BITFLAG_POINTLIGHT)

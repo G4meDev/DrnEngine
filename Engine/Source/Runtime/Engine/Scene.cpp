@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "Runtime/Engine/LightSceneProxy.h"
+#include "Runtime/Engine/PostProcessVolume.h"
 
 LOG_DEFINE_CATEGORY( LogScene, "Scene" );
 
@@ -84,6 +85,21 @@ namespace Drn
 			m_LightProxies.insert(*it);
 		}
 		m_PendingLightProxies.clear();
+
+// ----------------------------------------------------------------------------------
+
+		for (auto it = m_PendingPostProcessProxies.begin(); it != m_PendingPostProcessProxies.end(); it++)
+		{
+			m_PostProcessProxies.insert(*it);
+		}
+		m_PendingPostProcessProxies.clear();
+
+		for (auto it = m_PostProcessProxies.begin(); it != m_PostProcessProxies.end(); it++)
+		{
+			PostProcessSceneProxy* Proxy = *it;
+			Proxy->UpdateResources();
+		}
+
 	}
 
 	void Scene::RegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
@@ -117,6 +133,17 @@ namespace Drn
 
 			InLightProxy->Release();
 		}
+	}
+
+	void Scene::RegisterPostProcessProxy( class PostProcessSceneProxy* InProxy )
+	{
+		m_PendingPostProcessProxies.insert(InProxy);
+	}
+
+	void Scene::UnRegisterPostProcessProxy( class PostProcessSceneProxy* InProxy )
+	{
+		m_PendingPostProcessProxies.erase(InProxy);
+		m_PostProcessProxies.erase(InProxy);
 	}
 
 }

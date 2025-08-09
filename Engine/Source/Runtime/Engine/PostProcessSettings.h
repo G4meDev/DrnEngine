@@ -18,7 +18,7 @@ namespace Drn
 		float m_Intensity;
 
 #if WITH_EDITOR
-		void Draw();
+		bool Draw();
 #endif
 	};
 
@@ -34,7 +34,7 @@ namespace Drn
 		SSAOSettings m_SSAOSettings;
 
 #if WITH_EDITOR
-		void Draw();
+		bool Draw();
 #endif
 	};
 }

@@ -27,6 +27,7 @@ struct Resources
     uint DepthIndex;
     uint NormalIndex;
     uint DownSampleIndex;
+    uint AmbientOcclusionIntensity;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -246,6 +247,12 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     float AORadiusInShader = 0.1;
     float AmbientOcclusionBias = 0.0003;
      
+    //float AmbientOcclusionIntensity = 1.0f;
+    float AmbientOcclusionPower = 4.0f;
+    
+    float InvFadeRadius;
+    float FadeRadiusOffset;
+    
 #if USE_AO_SETUP_AS_INPUT
     float4 SetupSample = SetupImage.Sample(PointClampSampler, UV);
     
@@ -312,6 +319,9 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     float2 InvDownSampleSize = View.InvSize * 2;
     float Filtered = ComputeUpsampleContribution(SceneDepth, UV, WorldNormal, DownSampleImage, SetupImage, PointClampSampler, InvDownSampleSize, View.InvDeviceZToWorldZTransform);
     Result = lerp(Result, Filtered, ComputeLerpFactor());
+    
+    //Result = lerp(Result, 1, saturate(SceneDepth * InvFadeRadius + FadeRadiusOffset));
+    Result = 1 - (1 - pow(abs(Result), AmbientOcclusionPower)) * asfloat(BindlessResources.AmbientOcclusionIntensity);
 #endif
 
     return Result;

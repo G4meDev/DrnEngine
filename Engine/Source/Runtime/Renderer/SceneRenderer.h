@@ -4,6 +4,8 @@
 #include "Runtime/Renderer/Resource.h"
 #include "Runtime/Core/Delegate.h"
 
+#include "Runtime/Engine/PostProcessSettings.h"
+
 LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
 namespace Drn
@@ -135,6 +137,8 @@ namespace Drn
 
 		std::string m_Name;
 
+		void ResolvePostProcessSettings();
+		class PostProcessSettings* m_PostProcessSettings;
 
 		void UpdateViewBuffer();
 

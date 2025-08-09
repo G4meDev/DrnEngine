@@ -31,6 +31,9 @@ namespace Drn
 		void RegisterLightProxy( class LightSceneProxy* InLightProxy );
 		void UnRegisterLightProxy( class LightSceneProxy* InLightProxy );
 
+		void RegisterPostProcessProxy( class PostProcessSceneProxy* InProxy );
+		void UnRegisterPostProcessProxy( class PostProcessSceneProxy* InProxy );
+
 		inline const std::set<PrimitiveSceneProxy*>& GetPrimitiveProxies() const { return m_PrimitiveProxies; };
 
 	protected:
@@ -42,6 +45,9 @@ namespace Drn
 
 		std::set<class LightSceneProxy*> m_LightProxies;
 		std::set<class LightSceneProxy*> m_PendingLightProxies;
+
+		std::set<class PostProcessSceneProxy*> m_PostProcessProxies;
+		std::set<class PostProcessSceneProxy*> m_PendingPostProcessProxies;
 
 		std::set<SceneRenderer*> m_SceneRenderers;
 
