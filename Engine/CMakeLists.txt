@@ -38,6 +38,8 @@ set( HEADER_FILES
 	Source/Runtime/Engine/LightActor.h
 	Source/Runtime/Engine/PointLightSceneProxy.h
 	Source/Runtime/Engine/SpotLightSceneProxy.h
+	Source/Runtime/Engine/PostProcessSettings.h
+	Source/Runtime/Engine/PostProcessVolume.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/CommonResources.h
@@ -186,6 +188,8 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/LightSceneProxy.cpp
 	Source/Runtime/Engine/PointLightSceneProxy.cpp
 	Source/Runtime/Engine/SpotLightSceneProxy.cpp
+	Source/Runtime/Engine/PostProcessSettings.cpp
+	Source/Runtime/Engine/PostProcessVolume.cpp
 	
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/CommonResources.cpp

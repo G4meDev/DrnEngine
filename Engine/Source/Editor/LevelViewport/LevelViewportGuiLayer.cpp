@@ -5,6 +5,7 @@
 
 #include "Runtime/Engine/PointLightActor.h"
 #include "Runtime/Engine/SpotLightActor.h"
+#include "Runtime/Engine/PostProcessVolume.h"
 
 #include "Editor/Editor.h"
 #include "Editor/EditorConfig.h"
@@ -267,7 +268,11 @@ namespace Drn
 					ImGui::CloseCurrentPopup();
 				}
 
-				ImGui::Button( "unused_1" );
+				if (ImGui::Button( "PostProcessVolume" ))
+				{
+					AddPostProcessVolume();
+					ImGui::CloseCurrentPopup();
+				}
 
 				ImGui::EndPopup();
 			}
@@ -345,6 +350,12 @@ namespace Drn
 	{
 		SpotLightActor* LightActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<SpotLightActor>();
 		LightActor->SetActorLabel( "SpotLight_00" );
+	}
+
+	void LevelViewportGuiLayer::AddPostProcessVolume()
+	{
+		PostProcessVolume* PostProcessActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<PostProcessVolume>();
+		PostProcessActor->SetActorLabel( "PostProcessVolume" );
 	}
 
 }

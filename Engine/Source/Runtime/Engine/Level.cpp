@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "Level.h"
+#include "Runtime/Engine/PostProcessVolume.h"
 
 namespace Drn
 {
@@ -121,6 +122,12 @@ namespace Drn
 			{
 				SpotLightActor* NewSpotLightActor = InWorld->SpawnActor<SpotLightActor>();
 				NewSpotLightActor->Serialize(Ar);
+			}
+
+			else if ( ActorType == EActorType::PostProcessVolume )
+			{
+				PostProcessVolume* NewPostProcessVolume = InWorld->SpawnActor<PostProcessVolume>();
+				NewPostProcessVolume->Serialize(Ar);
 			}
 		}
 	
