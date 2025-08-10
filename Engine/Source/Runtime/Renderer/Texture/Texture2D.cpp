@@ -81,7 +81,7 @@ namespace Drn
 			uint64 UploadBufferSize = GetRequiredIntermediateSize(m_Resource->GetD3D12Resource(), 0, 1);
 
 			Resource* IntermediateResource = Resource::Create(D3D12_HEAP_TYPE_UPLOAD,
-				CD3DX12_RESOURCE_DESC::Buffer( UploadBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
+				CD3DX12_RESOURCE_DESC::Buffer( UploadBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 
 			// TODO: maybe 1 frame lifetime is enough instead of NUM_BACKBUFFER
 			IntermediateResource->ReleaseBufferedResource();
@@ -96,10 +96,8 @@ namespace Drn
 			UpdateSubresources(CommandList, m_Resource->GetD3D12Resource(),
 				IntermediateResource->GetD3D12Resource(), 0, 0, 1, &TextureResource);
 
-			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
-				m_Resource->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
-			CommandList->ResourceBarrier(1, &barrier);
-
+			ResourceStateTracker::Get()->TransiationResource(m_Resource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
 			ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;

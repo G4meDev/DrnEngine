@@ -240,38 +240,17 @@ namespace Drn
 
 	void GBuffer::BindLightPass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CD3DX12_RESOURCE_BARRIER const Barriers[4] = 
-		{
-			CD3DX12_RESOURCE_BARRIER::Transition( m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
-			CD3DX12_RESOURCE_BARRIER::Transition( m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
-			CD3DX12_RESOURCE_BARRIER::Transition( m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE ),
-			CD3DX12_RESOURCE_BARRIER::Transition( m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE )
-		};
+		ResourceStateTracker::Get()->TransiationResource(m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource(m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource(m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource(m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
-		CommandList->ResourceBarrier(4, Barriers);
+		ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
 
 		CommandList->RSSetViewports(1, &m_Viewport);
 		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
 		CommandList->OMSetRenderTargets( 1, &m_ColorDeferredCpuHandle, true, nullptr );
-
-		//CommandList->SetGraphicsRootDescriptorTable(1, m_BaseColorSrvGpuHandle);
-		//CommandList->SetGraphicsRootDescriptorTable(2, m_WorldNormalSrvGpuHandle);
-		//CommandList->SetGraphicsRootDescriptorTable(3, m_MasksSrvGpuHandle);
-		//CommandList->SetGraphicsRootDescriptorTable(4, m_DepthSrvGpuHandle);
-	}
-
-	void GBuffer::UnBindLightPass( ID3D12GraphicsCommandList2* CommandList )
-	{
-		CD3DX12_RESOURCE_BARRIER const Barriers[4] = 
-		{
-			CD3DX12_RESOURCE_BARRIER::Transition( m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET ),
-			CD3DX12_RESOURCE_BARRIER::Transition( m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET ),
-			CD3DX12_RESOURCE_BARRIER::Transition( m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET ),
-			CD3DX12_RESOURCE_BARRIER::Transition( m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE )
-		};
-
-		CommandList->ResourceBarrier(4, Barriers);
 	}
 
 }

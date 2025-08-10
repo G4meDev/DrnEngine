@@ -25,8 +25,8 @@ namespace Drn
 
 		if (CreateOnDefaultHeap)
 		{
-			Resource* IntermediateIndexBuffer = Resource::Create( D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( BufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ );
-			Result->m_IndexBuffer = Resource::Create( D3D12_HEAP_TYPE_DEFAULT, CD3DX12_RESOURCE_DESC::Buffer( BufferSize ), D3D12_RESOURCE_STATE_COMMON );
+			Resource* IntermediateIndexBuffer = Resource::Create( D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( BufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+			Result->m_IndexBuffer = Resource::Create( D3D12_HEAP_TYPE_DEFAULT, CD3DX12_RESOURCE_DESC::Buffer( BufferSize ), D3D12_RESOURCE_STATE_COMMON, false);
 
 #if D3D12_Debug_INFO
 			IntermediateIndexBuffer->SetName( Name + "_IntermediateIndexBuffer" );

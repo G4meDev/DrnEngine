@@ -23,10 +23,10 @@ namespace Drn
 			const uint32 VertexBufferSize = VertexCount * Stride;
 
 			Result->m_VertexBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
-				CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_COMMON);
+				CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_COMMON, false);
 
 			Resource* IntermediateVertexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
-				CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ);
+				CD3DX12_RESOURCE_DESC::Buffer( VertexBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 
 			UINT8* pVertexDataBegin;
 			CD3DX12_RANGE readRange( 0, 0 );

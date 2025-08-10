@@ -12,10 +12,10 @@ namespace Drn
 		virtual ~Resource();
 
 		static Resource* Create(D3D12_HEAP_TYPE HeapType, const D3D12_RESOURCE_DESC& ResourceDescription,
-			D3D12_RESOURCE_STATES InitalState );
+			D3D12_RESOURCE_STATES InitalState, bool NeedsStateTracking = true);
 
 		static Resource* Create(D3D12_HEAP_TYPE HeapType, const D3D12_RESOURCE_DESC& ResourceDescription,
-			D3D12_RESOURCE_STATES InitalState, const D3D12_CLEAR_VALUE& ClearValue );
+			D3D12_RESOURCE_STATES InitalState, const D3D12_CLEAR_VALUE& ClearValue, bool NeedsStateTracking = true);
 
 		inline ID3D12Resource* GetD3D12Resource() { return m_Resource.Get(); }
 
@@ -31,5 +31,7 @@ namespace Drn
 
 		D3D12_CPU_DESCRIPTOR_HANDLE m_CpuHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE m_GpuHandle;
+
+		bool m_StateTracking;
 	};
 }

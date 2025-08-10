@@ -27,7 +27,7 @@ namespace Drn
 		m_ShadowmapCpuHandle = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 
 
-		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 		m_LightBuffer->SetName("CB_PointLight_" + m_Name);
 #endif
@@ -38,7 +38,7 @@ namespace Drn
 		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer->GetCpuHandle());
 
 
-		m_ShadowDepthBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+		m_ShadowDepthBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 		m_ShadowDepthBuffer->SetName("CB_PointLightShadow_" + m_Name);
 #endif
@@ -89,15 +89,8 @@ namespace Drn
 		uint32 LightFlags = 1;
 		CommandList->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
 
-		//if (m_Sprite.IsValid())
-		//{
-		//	if (m_Sprite->IsRenderStateDirty())
-		//	{
-		//		m_Sprite->UploadResources(CommandList);
-		//	}
-		//
-		//	CommandList->SetGraphicsRootDescriptorTable( 1, m_Sprite->TextureGpuHandle );
-		//}
+		ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_DEPTH_READ);
+		ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
 
 		CommonResources::Get()->m_PointLightSphere->BindAndDraw(CommandList);
 	}
@@ -120,6 +113,9 @@ namespace Drn
 
 			CommandList->RSSetViewports(1, &m_ShadowViewport);
 			CommandList->RSSetScissorRects(1, &R);
+
+			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
 
 			CommandList->ClearDepthStencilView(m_ShadowmapCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
 			CommandList->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandle);

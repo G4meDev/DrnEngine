@@ -208,7 +208,7 @@ namespace Drn
 
 		m_VertexBufferResource = Resource::Create( D3D12_HEAP_TYPE_UPLOAD,
 			CD3DX12_RESOURCE_DESC::Buffer( sizeof(InputLayout_LineColorThickness) * MaxNumVertex),
-			D3D12_RESOURCE_STATE_GENERIC_READ );
+			D3D12_RESOURCE_STATE_GENERIC_READ, false );
 
 #if D3D12_Debug_INFO
 		m_VertexBufferResource->SetName("LineBatchVertexBuffer");

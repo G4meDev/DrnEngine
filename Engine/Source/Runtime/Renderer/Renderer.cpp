@@ -250,7 +250,7 @@ namespace Drn
 			m_StaticSamplers.PointClampSampler = GetBindlessSamplerIndex(m_BindlessPointClampSamplerGpuHandle);
 		}
 
-		m_StaticSamplersBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+		m_StaticSamplersBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 		m_StaticSamplersBuffer->SetName("StaticSamplerBuffer");
 #endif
@@ -449,12 +449,13 @@ namespace Drn
 		ID3D12Resource* backBuffer = m_SwapChain->GetBackBuffer();
 		D3D12_CPU_DESCRIPTOR_HANDLE rtv = m_SwapChain->GetBackBufferHandle();
 
+		//ResourceStateTracker::Get()->TransiationResource( backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
-
+		//ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+		
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &rtv, false, NULL);
-
 		ImGuiRenderer::Get()->Tick( Time::GetApplicationDeltaTime(), rtv, m_CommandList->GetD3D12CommandList() );
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(

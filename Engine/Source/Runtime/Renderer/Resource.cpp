@@ -5,6 +5,7 @@ namespace Drn
 {
 	Resource::Resource()
 		: BufferedResource()
+		, m_StateTracking(false)
 	{
 		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
 	}
@@ -12,10 +13,13 @@ namespace Drn
 	Resource::~Resource()
 	{
 		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+
+		if (m_StateTracking)
+			ResourceStateTracker::Get()->UnRegisterResource(GetD3D12Resource());
 	}
 
 	Resource* Resource::Create( D3D12_HEAP_TYPE HeapType, const D3D12_RESOURCE_DESC& ResourceDescription,
-		D3D12_RESOURCE_STATES InitalState)
+		D3D12_RESOURCE_STATES InitalState, bool NeedsStateTracking)
 	{
 		CD3DX12_HEAP_PROPERTIES HeapPropperty( HeapType );
 
@@ -27,11 +31,17 @@ namespace Drn
 		Result->SetName("UnnamedResource");
 #endif
 
+		if (NeedsStateTracking)
+		{
+			Result->m_StateTracking = true;
+			ResourceStateTracker::Get()->RegisterResource(Result->GetD3D12Resource(), InitalState);
+		}
+
 		return Result;
 	}
 
 	Resource* Resource::Create( D3D12_HEAP_TYPE HeapType, const D3D12_RESOURCE_DESC& ResourceDescription,
-		D3D12_RESOURCE_STATES InitalState, const D3D12_CLEAR_VALUE& ClearValue)
+		D3D12_RESOURCE_STATES InitalState, const D3D12_CLEAR_VALUE& ClearValue, bool NeedsStateTracking)
 	{
 		Resource* Result = new Resource();
 
@@ -43,6 +53,12 @@ namespace Drn
 #if D3D12_Debug_INFO
 		Result->SetName("UnnamedResource");
 #endif
+
+		if (NeedsStateTracking)
+		{
+			Result->m_StateTracking = true;
+			ResourceStateTracker::Get()->RegisterResource(Result->GetD3D12Resource(), InitalState);
+		}
 
 		return Result;
 	}

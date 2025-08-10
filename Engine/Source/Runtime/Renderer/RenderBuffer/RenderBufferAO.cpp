@@ -135,7 +135,7 @@ namespace Drn
 		}
 
 		{
-			m_AoBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+			m_AoBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 			m_AoBuffer->SetName("CB_AoBuffer_");
 #endif

@@ -114,7 +114,7 @@ namespace Drn
 
 	void BillboardSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		m_BillboardBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+		m_BillboardBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 
 		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 		ResourceViewDesc.BufferLocation = m_BillboardBuffer->GetD3D12Resource()->GetGPUVirtualAddress();

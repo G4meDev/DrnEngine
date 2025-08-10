@@ -44,6 +44,7 @@
 #include "Runtime/Renderer/Texture/Texture2D.h"
 #include "Runtime/Renderer/Texture/TextureVolume.h"
 #include "Runtime/Renderer/Texture/TextureCube.h"
+#include "Runtime/Renderer/ResourceStateTracker.h"
 
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/Box.h"

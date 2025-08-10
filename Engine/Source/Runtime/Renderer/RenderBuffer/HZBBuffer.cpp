@@ -140,27 +140,5 @@ namespace Drn
 
 		ReallocateHandles(m_UAVHandles, UAVSize);
 		ReallocateHandles(m_SrvHandles, SrvSize);
-
-		m_SubresourcesState.clear();
-		m_SubresourcesState.resize(m_MipCount, D3D12_RESOURCE_STATE_COMMON);
 	}
-	
-	void HZBBuffer::TransitionSubresource(ID3D12GraphicsCommandList2* CommandList, int32 SubresourceIndex, D3D12_RESOURCE_STATES State )
-	{
-		if (SubresourceIndex >= 0 && SubresourceIndex < m_SubresourcesState.size() && m_SubresourcesState[SubresourceIndex] != State)
-		{
-			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(M_HZBTarget->GetD3D12Resource(), m_SubresourcesState[SubresourceIndex], State, SubresourceIndex);
-			CommandList->ResourceBarrier(1, &Barrier);
-			m_SubresourcesState[SubresourceIndex] = State;
-		}
-	}
-
-	void HZBBuffer::TransitionAllSubresources(ID3D12GraphicsCommandList2* CommandList, D3D12_RESOURCE_STATES State )
-	{
-		for (int i = 0; i < m_SubresourcesState.size(); i++)
-		{
-			TransitionSubresource(CommandList, i, State);
-		}
-	}
-
 }

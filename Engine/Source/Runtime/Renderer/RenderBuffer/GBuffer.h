@@ -19,7 +19,6 @@ namespace Drn
 		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
 
 		virtual void BindLightPass( ID3D12GraphicsCommandList2* CommandList );
-		virtual void UnBindLightPass( ID3D12GraphicsCommandList2* CommandList );
 
 		Resource* m_ColorDeferredTarget;
 		Resource* m_BaseColorTarget;

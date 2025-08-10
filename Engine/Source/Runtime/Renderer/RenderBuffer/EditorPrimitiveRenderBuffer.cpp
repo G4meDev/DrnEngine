@@ -100,7 +100,7 @@ namespace Drn
 	void EditorPrimitiveRenderBuffer::Clear( ID3D12GraphicsCommandList2* CommandList )
 	{
 		CommandList->ClearRenderTargetView( m_ColorCpuHandle, m_ColorClearValue.Color, 0, nullptr );
-		CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
+		//CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
 	void EditorPrimitiveRenderBuffer::Bind( ID3D12GraphicsCommandList2* CommandList )

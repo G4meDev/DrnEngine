@@ -326,7 +326,7 @@ namespace Drn
 			// TODO: support no constant buffers
 
 			{
-				m_TextureIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ);
+				m_TextureIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 				m_TextureIndexBuffer->SetName("TextureBuffer_" + name);
 #endif
@@ -344,7 +344,7 @@ namespace Drn
 				// TODO: remove
 				const size_t ScalarBufferSizePadded = 256;
 
-				m_ScalarBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
+				m_ScalarBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 				m_ScalarBuffer->SetName("ScalarBuffer_" + name);
 #endif
@@ -362,7 +362,7 @@ namespace Drn
 				// TODO: remove
 				const size_t VectorBufferSizePadded = 256;
 
-				m_VectorBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( VectorBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ);
+				m_VectorBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( VectorBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 				m_VectorBuffer->SetName("VectorBuffer_" + name);
 #endif
