@@ -5,7 +5,9 @@
 #define DIRECTIONAL_SHADOW_SIZE 2048
 #define DIRECTIONAL_SHADOW_WIDTH 128.0f
 #define DIRECTIONAL_SHADOW_NEARZ 0.1f
-#define DIRECTIONAL_SHADOW_FARZ 100.0f
+#define DIRECTIONAL_SHADOW_FARZ 600.0f
+
+#define DIRECTIONAL_SHADOW_CASCADE_NUM 3
 
 namespace Drn
 {
@@ -30,7 +32,6 @@ namespace Drn
 #endif
 
 		m_ShadowmapCpuHandle = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
-
 
 // --------------------------------------------------------------------------------------------------
 
@@ -104,8 +105,50 @@ namespace Drn
 			ReleaseShadowmap();
 		}
 
+		static int Counter = 0;
+
 		if (m_CastShadow)
 		{
+			CalculateSplitDistance();
+			m_CSWorldToProjetcionMatrices.clear();
+
+			for (int32 i = 0; i < DIRECTIONAL_SHADOW_CASCADE_NUM; i++)
+			{
+				Sphere RawBounds = GetShadowSplitBounds(Renderer->GetSceneView(), i);
+
+				float EffectiveScale = RawBounds.Radius * m_CsZScale;
+				Vector Center = RawBounds.Center + m_LightData.Direction * EffectiveScale * -1.0f;
+
+				XMMATRIX ViewMatrix = XMMatrixLookAtLH( XMLoadFloat3(Center.Get()), XMLoadFloat3((Center + m_LightData.Direction).Get()), XMLoadFloat3(Vector::UpVector.Get()));
+				XMMATRIX ProjectionMatrix = XMMatrixOrthographicLH(RawBounds.Radius * 2, RawBounds.Radius * 2, 0.01f, EffectiveScale * 2);
+
+				m_CSWorldToProjetcionMatrices.push_back(ViewMatrix * ProjectionMatrix);
+
+				//if (Counter == 20 && i == 2)
+				if (Counter == 20)
+				{
+					XMVECTOR Rot;
+					XMVECTOR Loc;
+					XMVECTOR Sca;
+					XMMATRIX M = XMMatrixLookAtLH(XMVectorZero(), XMLoadFloat3(m_LightData.Direction.Get()), XMLoadFloat3(Vector::UpVector.Get()));
+					XMMatrixDecompose(&Sca, &Rot, &Loc, M);
+
+					m_DirectionalLightComponent->GetWorld()->DrawDebugSphere(RawBounds.Center, Quat(Rot), Color::Blue, RawBounds.Radius, 32, 0, 50);
+					//m_DirectionalLightComponent->GetWorld()->DrawDebugFrustum( Renderer->GetSceneView().ProjectionToWorld, Color::Red, 0, 50);
+
+					XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1980.0f / 1080.0f, m_SplitDistances[i], m_SplitDistances[i + 1]);
+					XMMATRIX W = Renderer->GetSceneView().WorldToView.Get() * P;
+					W = XMMatrixInverse(NULL, W);
+
+					m_DirectionalLightComponent->GetWorld()->DrawDebugFrustum( W, Color::Red, 0, 50);
+
+					Vector a = Renderer->GetSceneView().CameraDir * DIRECTIONAL_SHADOW_FARZ;
+					m_DirectionalLightComponent->GetWorld()->DrawDebugLine( Renderer->GetSceneView().CameraPos, Renderer->GetSceneView().CameraPos + a, Color::Red, 0, 50);
+				}
+			}
+
+			Counter++;
+
 			D3D12_RECT R = CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX );
 			CD3DX12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)DIRECTIONAL_SHADOW_SIZE, (float)DIRECTIONAL_SHADOW_SIZE);
 
@@ -120,17 +163,19 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------------
 
-			Vector LightPosition = Renderer->GetSceneView().CameraPos;
-			Vector ViewDirection = m_LightData.Direction;
-			LightPosition = LightPosition + ViewDirection * DIRECTIONAL_SHADOW_FARZ * -0.5f;
-			Vector FocusPoint = LightPosition + ViewDirection;
+			//Vector LightPosition = Renderer->GetSceneView().CameraPos;
+			//Vector ViewDirection = m_LightData.Direction;
+			//LightPosition = LightPosition + ViewDirection * DIRECTIONAL_SHADOW_FARZ * -0.5f;
+			//Vector FocusPoint = LightPosition + ViewDirection;
+			//
+			//Matrix ViewMatrix = XMMatrixLookAtLH( XMLoadFloat3(LightPosition.Get()), XMLoadFloat3(FocusPoint.Get()), XMLoadFloat3(Vector::UpVector.Get()));
+			//// TODO: make zfar param
+			//Matrix ProjectionMatrix = XMMatrixOrthographicLH(DIRECTIONAL_SHADOW_WIDTH, DIRECTIONAL_SHADOW_WIDTH, DIRECTIONAL_SHADOW_NEARZ, DIRECTIONAL_SHADOW_FARZ);
+			//
+			//Matrix ViewProjection = ViewMatrix * ProjectionMatrix;
+			//m_ShadowData.WorldToProjectionMatrices = ViewProjection;
 
-			Matrix ViewMatrix = XMMatrixLookAtLH( XMLoadFloat3(LightPosition.Get()), XMLoadFloat3(FocusPoint.Get()), XMLoadFloat3(Vector::UpVector.Get()));
-			// TODO: make zfar param
-			Matrix ProjectionMatrix = XMMatrixOrthographicLH(DIRECTIONAL_SHADOW_WIDTH, DIRECTIONAL_SHADOW_WIDTH, DIRECTIONAL_SHADOW_NEARZ, DIRECTIONAL_SHADOW_FARZ);
-
-			Matrix ViewProjection = ViewMatrix * ProjectionMatrix;
-			m_ShadowData.WorldToProjectionMatrices = ViewProjection;
+			m_ShadowData.WorldToProjectionMatrices = m_CSWorldToProjetcionMatrices[0];
 
 // ----------------------------------------------------------------------------------------
 
@@ -211,6 +256,97 @@ namespace Drn
 			m_ShadowBuffer->ReleaseBufferedResource();
 			m_ShadowBuffer = nullptr;
 		}
+	}
+
+	Sphere DirectionalLightSceneProxy::GetShadowSplitBounds( const SceneRendererView& View, int32 CascadeIndex )
+	{
+		return GetShadowSplitBoundsDepthRange(View, View.CameraPos, m_SplitDistances[CascadeIndex], m_SplitDistances[CascadeIndex + 1]);
+	}
+
+	void DirectionalLightSceneProxy::CalculateSplitDistance()
+	{
+		m_SplitDistances.clear();
+
+		for (int32 i = 0; i < DIRECTIONAL_SHADOW_CASCADE_NUM + 1; i++)
+		{
+			// see https://computergraphics.stackexchange.com/questions/13026/cascaded-shadow-mapping-csm-partitioning-the-frustum-to-a-nearly-1-by-1-mappi
+
+			float LogDistance = DIRECTIONAL_SHADOW_NEARZ * pow((DIRECTIONAL_SHADOW_FARZ / DIRECTIONAL_SHADOW_NEARZ), (float)i / DIRECTIONAL_SHADOW_CASCADE_NUM);
+			float UniformDistance = DIRECTIONAL_SHADOW_NEARZ + (DIRECTIONAL_SHADOW_FARZ - DIRECTIONAL_SHADOW_NEARZ) * ( (float)i / DIRECTIONAL_SHADOW_CASCADE_NUM);
+
+			float DistanceFactor = std::lerp( UniformDistance, LogDistance, m_CSLogDistribution);
+			m_SplitDistances.push_back(DistanceFactor);
+		}
+	}
+
+	Sphere DirectionalLightSceneProxy::GetShadowSplitBoundsDepthRange( const SceneRendererView& View,
+		const Vector& ViewOrigin, float SplitNear, float SplitFar )
+	{
+		const Matrix& ViewMatrix = View.WorldToView;
+		const Matrix& ProjectionMatrix = View.ViewToProjection;
+
+		const Vector& CameraDirection = View.CameraDir;
+		const Vector& LightDirection = m_LightData.Direction * -1;
+
+		float AspectRatio = ProjectionMatrix.m_Matrix.m[1][1] / ProjectionMatrix.m_Matrix.m[0][0];
+		bool IsPerspective = true;
+
+		float HalfHorizontalFOV = IsPerspective ? std::atan(1.0f / ProjectionMatrix.m_Matrix.m[0][0]) : XM_PIDIV4;
+		float HalfVerticalFOV = IsPerspective ? std::atan(1.0f / ProjectionMatrix.m_Matrix.m[1][1]) : std::atan((std::tan(XM_PIDIV4) / AspectRatio));
+		float AsymmetricFOVScaleX = ProjectionMatrix.m_Matrix.m[2][0];
+		float AsymmetricFOVScaleY = ProjectionMatrix.m_Matrix.m[2][1];
+		
+		const float StartHorizontalTotalLength = SplitNear * std::tan(HalfHorizontalFOV);
+		const float StartVerticalTotalLength = SplitNear * std::tan(HalfVerticalFOV);
+		const Vector StartCameraLeftOffset = ViewMatrix.GetColumn(0) * -StartHorizontalTotalLength * (1 + AsymmetricFOVScaleX);
+		const Vector StartCameraRightOffset = ViewMatrix.GetColumn(0) *  StartHorizontalTotalLength * (1 - AsymmetricFOVScaleX);
+		const Vector StartCameraBottomOffset = ViewMatrix.GetColumn(1) * -StartVerticalTotalLength * (1 + AsymmetricFOVScaleY);
+		const Vector StartCameraTopOffset = ViewMatrix.GetColumn(1) *  StartVerticalTotalLength * (1 - AsymmetricFOVScaleY);
+		
+		const float EndHorizontalTotalLength = SplitFar * std::tan(HalfHorizontalFOV);
+		const float EndVerticalTotalLength = SplitFar * std::tan(HalfVerticalFOV);
+		const Vector EndCameraLeftOffset = ViewMatrix.GetColumn(0) * -EndHorizontalTotalLength * (1 + AsymmetricFOVScaleX);
+		const Vector EndCameraRightOffset = ViewMatrix.GetColumn(0) *  EndHorizontalTotalLength * (1 - AsymmetricFOVScaleX);
+		const Vector EndCameraBottomOffset = ViewMatrix.GetColumn(1) * -EndVerticalTotalLength * (1 + AsymmetricFOVScaleY);
+		const Vector EndCameraTopOffset = ViewMatrix.GetColumn(1) *  EndVerticalTotalLength * (1 - AsymmetricFOVScaleY);
+
+		Vector CascadeFrustumVerts[8];
+		CascadeFrustumVerts[0] = ViewOrigin + CameraDirection * SplitNear + StartCameraRightOffset + StartCameraTopOffset;    // 0 Near Top    Right
+		CascadeFrustumVerts[1] = ViewOrigin + CameraDirection * SplitNear + StartCameraRightOffset + StartCameraBottomOffset; // 1 Near Bottom Right
+		CascadeFrustumVerts[2] = ViewOrigin + CameraDirection * SplitNear + StartCameraLeftOffset + StartCameraTopOffset;     // 2 Near Top    Left
+		CascadeFrustumVerts[3] = ViewOrigin + CameraDirection * SplitNear + StartCameraLeftOffset + StartCameraBottomOffset;  // 3 Near Bottom Left
+		CascadeFrustumVerts[4] = ViewOrigin + CameraDirection * SplitFar + EndCameraRightOffset + EndCameraTopOffset;       // 4 Far  Top    Right
+		CascadeFrustumVerts[5] = ViewOrigin + CameraDirection * SplitFar + EndCameraRightOffset + EndCameraBottomOffset;    // 5 Far  Bottom Right
+		CascadeFrustumVerts[6] = ViewOrigin + CameraDirection * SplitFar + EndCameraLeftOffset + EndCameraTopOffset;       // 6 Far  Top    Left
+		CascadeFrustumVerts[7] = ViewOrigin + CameraDirection * SplitFar + EndCameraLeftOffset + EndCameraBottomOffset;    // 7 Far  Bottom Left
+
+		float TanHalfFOVx = std::tan(HalfHorizontalFOV);
+		float TanHalfFOVy = std::tan(HalfVerticalFOV);
+		float FrustumLength = SplitFar - SplitNear;
+
+		float FarX = TanHalfFOVx * SplitFar;
+		float FarY = TanHalfFOVy * SplitFar;
+		float DiagonalASq = FarX * FarX + FarY * FarY;
+
+		float NearX = TanHalfFOVx * SplitNear;
+		float NearY = TanHalfFOVy * SplitNear;
+		float DiagonalBSq = NearX * NearX + NearY * NearY;
+
+		float OptimalOffset = (DiagonalBSq - DiagonalASq) / (2.0f * FrustumLength) + FrustumLength * 0.5f;
+		float CentreZ = SplitFar - OptimalOffset;
+		CentreZ = std::clamp( CentreZ, SplitNear, SplitFar );
+		Sphere CascadeSphere(ViewOrigin + CameraDirection * CentreZ, 0);
+		for (int32 Index = 0; Index < 8; Index++)
+		{
+			CascadeSphere.Radius = std::max(CascadeSphere.Radius, Vector::DistSquared(CascadeFrustumVerts[Index], CascadeSphere.Center));
+		}
+
+		CascadeSphere.Radius = std::max(std::sqrt(CascadeSphere.Radius), 1.0f);
+
+		//CascadeSphere.Radius -= SplitNear * 0.5f;
+		//CascadeSphere.Center = CascadeSphere.Center + m_LightData.Direction * SplitNear;
+
+		return CascadeSphere;
 	}
 
 #if WITH_EDITOR

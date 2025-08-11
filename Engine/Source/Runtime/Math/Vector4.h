@@ -11,7 +11,7 @@ namespace Drn
 		inline Vector4() : Vector4(0) {}
 
 		inline Vector4( const Vector4& InVector ) { XMStoreFloat4(&m_Vector, InVector.Get()); }
-		inline Vector4( const Vector& InVector ) { XMStoreFloat4(&m_Vector, XMLoadFloat3(&InVector.m_Vector)); }
+		//inline Vector4( const Vector& InVector ) { XMStoreFloat4(&m_Vector, XMLoadFloat3(&InVector.m_Vector)); }
 		inline Vector4( const XMVECTOR& InVector ) { XMStoreFloat4(&m_Vector, InVector); }
 
 		inline XMVECTOR Get() const { return XMLoadFloat4( &m_Vector ); }
@@ -30,6 +30,7 @@ namespace Drn
 	private:
 		XMFLOAT4 m_Vector;
 
+		friend class Vector;
 		friend class Quat;
 		friend class Transform;
 		friend class Matrix;

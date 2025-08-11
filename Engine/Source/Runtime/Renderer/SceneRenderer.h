@@ -67,7 +67,7 @@ namespace Drn
 		float InvTanHalfFov;
 		
 		Vector CameraDir;
-		float Pad_4;
+		float AspectRatio;
 
 		Vector4 InvDeviceZToWorldZTransform;
 	};

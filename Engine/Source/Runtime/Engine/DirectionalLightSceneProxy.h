@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Engine/LightSceneProxy.h"
+#include "Runtime/Renderer/SceneRenderer.h"
 
 namespace Drn
 {
@@ -20,6 +21,7 @@ namespace Drn
 		DirectionalLightShadowData() = default;
 
 		Matrix WorldToProjectionMatrices;
+
 		uint32 ShadowmapTextureIndex;
 		float DepthBias;
 		float InvShadowResolution;
@@ -45,6 +47,15 @@ namespace Drn
 
 		// TODO: remove
 		DirectionalLightComponent* m_DirectionalLightComponent = nullptr;
+
+		float m_CSLogDistribution = 0.8f;
+		float m_CsZScale = 1.0f;
+		std::vector<float> m_SplitDistances;
+		std::vector<Matrix> m_CSWorldToProjetcionMatrices;
+
+		Sphere GetShadowSplitBounds( const SceneRendererView& View, int32 CascadeIndex );
+		void CalculateSplitDistance();
+		Sphere GetShadowSplitBoundsDepthRange( const SceneRendererView& View, const Vector& ViewOrigin, float SplitNear, float SplitFar );
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) override;

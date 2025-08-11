@@ -337,6 +337,38 @@ namespace Drn
 		DrawDebugLine(LineEnd, LineEnd + T.TransformPosition(Vector(-SizeSqrt, 0, -SizeSqrt)), Color, Thickness, Lifetime);
 	}
 
+	void World::DrawDebugFrustum( const Matrix& Frustum, const Color& Color, float Thickness, float Lifetime ) 
+	{
+		Vector Vertices[2][2][2];
+
+		for (uint32 Z = 0; Z < 2; Z++)
+		{
+			for (uint32 Y = 0; Y < 2; Y++)
+			{
+				for (uint32 X = 0; X < 2; X++)
+				{
+					Vector4 UnprojetcedVertex = Frustum.TransformVector4(Vector4(X ? -1 : 1, Y ? -1 : 1, Z ? 0 : 1, 1));
+					Vertices[X][Y][Z] = Vector(UnprojetcedVertex.GetX(), UnprojetcedVertex.GetY(), UnprojetcedVertex.GetZ()) / UnprojetcedVertex.GetW();
+				}
+			}
+		}
+
+		DrawDebugLine(Vertices[0][0][0], Vertices[0][0][1], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[1][0][0], Vertices[1][0][1], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[0][1][0], Vertices[0][1][1], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[1][1][0], Vertices[1][1][1], Color, Thickness, Lifetime);
+
+		DrawDebugLine(Vertices[0][0][0], Vertices[0][1][0], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[1][0][0], Vertices[1][1][0], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[0][0][1], Vertices[0][1][1], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[1][0][1], Vertices[1][1][1], Color, Thickness, Lifetime);
+
+		DrawDebugLine(Vertices[0][0][0], Vertices[1][0][0], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[0][1][0], Vertices[1][1][0], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[0][0][1], Vertices[1][0][1], Color, Thickness, Lifetime);
+		DrawDebugLine(Vertices[0][1][1], Vertices[1][1][1], Color, Thickness, Lifetime);
+	}
+
 	void World::DestroyInternal()
 	{
 		m_LineBatchCompponent->UnRegisterComponent();

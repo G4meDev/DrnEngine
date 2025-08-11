@@ -101,6 +101,7 @@ set( HEADER_FILES
 	Source/Runtime/Math/MathHelper.h
 	Source/Runtime/Math/IntPoint.h
 	Source/Runtime/Math/Box.h
+	Source/Runtime/Math/Sphere.h
 	Source/Runtime/Math/Vector.h
 	Source/Runtime/Math/Vector4.h
 	Source/Runtime/Math/Quat.h
@@ -255,6 +256,7 @@ set( SOURCE_FILES
 	Source/Runtime/Math/MathHelper.cpp
 	Source/Runtime/Math/IntPoint.cpp
 	Source/Runtime/Math/Box.cpp
+	Source/Runtime/Math/Sphere.cpp
 	Source/Runtime/Math/Vector.cpp
 	Source/Runtime/Math/Vector4.cpp
 	Source/Runtime/Math/Quat.cpp

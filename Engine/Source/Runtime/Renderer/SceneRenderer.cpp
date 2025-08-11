@@ -570,8 +570,8 @@ namespace Drn
 
 	void SceneRenderer::RecalculateView()
 	{
-		float aspectRatio = (float) GetViewportSize().X / GetViewportSize().Y;
-		m_CameraActor->GetCameraComponent()->CalculateMatrices(m_SceneView.WorldToView, m_SceneView.ViewToProjection, aspectRatio);
+		m_SceneView.AspectRatio = (float) GetViewportSize().X / GetViewportSize().Y;
+		m_CameraActor->GetCameraComponent()->CalculateMatrices(m_SceneView.WorldToView, m_SceneView.ViewToProjection, m_SceneView.AspectRatio);
 		
 		m_SceneView.WorldToProjection = m_SceneView.WorldToView * m_SceneView.ViewToProjection;
 		m_SceneView.ProjectionToView = XMMatrixInverse( NULL, m_SceneView.ViewToProjection.Get() );

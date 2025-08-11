@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 
+#include "Vector4.h"
 #include "Vector.h"
 #include "Quat.h"
 #include "Matrix.h"

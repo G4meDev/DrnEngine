@@ -48,6 +48,7 @@
 
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/Box.h"
+#include "Runtime/Math/Sphere.h"
 #include "Runtime/Math/IntPoint.h"
 
 #include "Runtime/Physic/PhysicCore.h"

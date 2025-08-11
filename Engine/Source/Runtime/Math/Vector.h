@@ -17,6 +17,7 @@ namespace Drn
 		inline Vector() : Vector(0) {}
 
 		inline Vector( const XMVECTOR& InVector ) { XMStoreFloat3(&m_Vector, InVector); }
+		//inline Vector( const Vector4& InVector ) : Vector(InVector.GetX(), InVector.GetY(), InVector.GetZ()) {}
 
 		inline const XMFLOAT3* Get() { return &m_Vector; }
 		inline const XMFLOAT3* Get() const { return &m_Vector; }
@@ -170,6 +171,15 @@ namespace Drn
 
 			Axis1 = (Axis1 - *this * (Axis1 | *this)).GetSafeNormal();
 			Axis2 = Axis1 ^ *this;
+		}
+
+		inline static float DistSquared( const Vector V1, const Vector V2 )
+		{
+			float X = V2.GetX() - V1.GetX();
+			float Y = V2.GetY() - V1.GetY();
+			float Z = V2.GetZ() - V1.GetZ();
+
+			return X * X +	Y * Y + Z * Z;
 		}
 
 		inline std::string ToString()
