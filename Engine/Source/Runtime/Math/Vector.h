@@ -149,6 +149,16 @@ namespace Drn
 			return Vector(m_Vector.x * Scale, m_Vector.y * Scale, m_Vector.z * Scale);
 		}
 
+		inline float SizeSquared() const
+		{
+			return m_Vector.x * m_Vector.x + m_Vector.y * m_Vector.y + m_Vector.z * m_Vector.z;
+		}
+
+		inline bool IsNormalized() const 
+		{
+			return std::abs(1.0f - SizeSquared()) < 0.01f;
+		}
+
 		inline void FindBestAxisVectors(Vector& Axis1, Vector& Axis2) const
 		{
 			const float NX = std::abs(m_Vector.x);

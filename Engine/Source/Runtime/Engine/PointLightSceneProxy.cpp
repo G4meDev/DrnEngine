@@ -89,8 +89,11 @@ namespace Drn
 		uint32 LightFlags = 1;
 		CommandList->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
 
-		ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_DEPTH_READ);
-		ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+		if (m_CastShadow)
+		{
+			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_DEPTH_READ);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+		}
 
 		CommonResources::Get()->m_PointLightSphere->BindAndDraw(CommandList);
 	}

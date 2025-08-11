@@ -5,6 +5,7 @@
 
 #include "Runtime/Engine/PointLightActor.h"
 #include "Runtime/Engine/SpotLightActor.h"
+#include "Runtime/Engine/DirectionalLightActor.h"
 #include "Runtime/Engine/PostProcessVolume.h"
 
 #include "Editor/Editor.h"
@@ -268,6 +269,12 @@ namespace Drn
 					ImGui::CloseCurrentPopup();
 				}
 
+				if (ImGui::Button( "DirectionalLight" ))
+				{
+					AddDirectionalLight();
+					ImGui::CloseCurrentPopup();
+				}
+
 				if (ImGui::Button( "PostProcessVolume" ))
 				{
 					AddPostProcessVolume();
@@ -350,6 +357,12 @@ namespace Drn
 	{
 		SpotLightActor* LightActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<SpotLightActor>();
 		LightActor->SetActorLabel( "SpotLight_00" );
+	}
+
+	void LevelViewportGuiLayer::AddDirectionalLight()
+	{
+		DirectionalLightActor* LightActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<DirectionalLightActor>();
+		LightActor->SetActorLabel( "DirectionalLight_00" );
 	}
 
 	void LevelViewportGuiLayer::AddPostProcessVolume()

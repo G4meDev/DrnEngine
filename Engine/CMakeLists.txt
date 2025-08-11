@@ -38,6 +38,8 @@ set( HEADER_FILES
 	Source/Runtime/Engine/LightActor.h
 	Source/Runtime/Engine/PointLightSceneProxy.h
 	Source/Runtime/Engine/SpotLightSceneProxy.h
+	Source/Runtime/Engine/DirectionalLightSceneProxy.h
+	Source/Runtime/Engine/DirectionalLightActor.h
 	Source/Runtime/Engine/PostProcessSettings.h
 	Source/Runtime/Engine/PostProcessVolume.h
 	
@@ -78,6 +80,7 @@ set( HEADER_FILES
 	Source/Runtime/Components/LightComponent.h
 	Source/Runtime/Components/PointLightComponent.h
 	Source/Runtime/Components/SpotLightComponent.h
+	Source/Runtime/Components/DirectionalLightComponent.h
 	Source/Runtime/Components/BillboardComponent.h
 
 	Source/Runtime/Physic/PhysicCore.h
@@ -189,6 +192,8 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/LightSceneProxy.cpp
 	Source/Runtime/Engine/PointLightSceneProxy.cpp
 	Source/Runtime/Engine/SpotLightSceneProxy.cpp
+	Source/Runtime/Engine/DirectionalLightActor.cpp
+	Source/Runtime/Engine/DirectionalLightSceneProxy.cpp
 	Source/Runtime/Engine/PostProcessSettings.cpp
 	Source/Runtime/Engine/PostProcessVolume.cpp
 	
@@ -229,6 +234,7 @@ set( SOURCE_FILES
 	Source/Runtime/Components/LightComponent.cpp
 	Source/Runtime/Components/PointLightComponent.cpp
 	Source/Runtime/Components/SpotLightComponent.cpp
+	Source/Runtime/Components/DirectionalLightComponent.cpp
 	Source/Runtime/Components/BillboardComponent.cpp
 
 	Source/Runtime/Physic/PhysicCore.cpp

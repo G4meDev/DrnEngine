@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "Level.h"
+#include "Runtime/Engine/DirectionalLightActor.h"
 #include "Runtime/Engine/PostProcessVolume.h"
 
 namespace Drn
@@ -122,6 +123,12 @@ namespace Drn
 			{
 				SpotLightActor* NewSpotLightActor = InWorld->SpawnActor<SpotLightActor>();
 				NewSpotLightActor->Serialize(Ar);
+			}
+
+			else if ( ActorType == EActorType::DirectionalLight )
+			{
+				DirectionalLightActor* NewDirectionalLightActor = InWorld->SpawnActor<DirectionalLightActor>();
+				NewDirectionalLightActor->Serialize(Ar);
 			}
 
 			else if ( ActorType == EActorType::PostProcessVolume )

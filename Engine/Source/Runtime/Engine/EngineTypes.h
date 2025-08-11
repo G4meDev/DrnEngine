@@ -8,6 +8,7 @@ namespace Drn
 	{
 		PointLight,
 		SpotLight,
+		DirectionalLight,
 	};
 
 	struct HitResult

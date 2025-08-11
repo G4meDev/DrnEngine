@@ -19,6 +19,19 @@ namespace Drn
 		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
 	};
 
+	class BackfaceScreenTriangle
+	{
+	public:
+
+		BackfaceScreenTriangle( ID3D12GraphicsCommandList2* CommandList );
+		~BackfaceScreenTriangle();
+
+		class VertexBuffer* m_VertexBuffer;
+		class IndexBuffer* m_IndexBuffer;
+
+		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+	};
+
 	class UniformQuad
 	{
 	public:
@@ -176,6 +189,7 @@ namespace Drn
 		inline static CommonResources* Get() { return m_SingletonInstance; }
 
 		ScreenTriangle* m_ScreenTriangle;
+		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
 		UniformQuad* m_UniformQuad;
 		PointLightSphere* m_PointLightSphere;
 		SpotLightCone* m_SpotLightCone;

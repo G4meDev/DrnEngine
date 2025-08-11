@@ -315,6 +315,28 @@ namespace Drn
 		}
 	}
 
+	void World::DrawDebugArrow( const Vector& LineStart, const Vector& LineEnd, float ArrowSize, const Color& Color, float Thickness, float Lifetime )
+	{
+		DrawDebugLine(LineStart, LineEnd, Color, Thickness, Lifetime);
+
+		Vector Direction = LineEnd - LineStart;
+		Direction = Direction.GetSafeNormal();
+		Vector Up = Vector::UpVector;
+		Vector Right = Direction ^ Up;
+
+		if (!Right.IsNormalized())
+		{
+			Direction.FindBestAxisVectors(Up, Right);
+		}
+
+		Matrix TM(Direction, Right, Up, Vector::ZeroVector);
+		Transform T(TM);
+
+		float SizeSqrt = std::sqrt(ArrowSize);
+		DrawDebugLine(LineEnd, LineEnd + T.TransformPosition(Vector(-SizeSqrt, 0, SizeSqrt)), Color, Thickness, Lifetime);
+		DrawDebugLine(LineEnd, LineEnd + T.TransformPosition(Vector(-SizeSqrt, 0, -SizeSqrt)), Color, Thickness, Lifetime);
+	}
+
 	void World::DestroyInternal()
 	{
 		m_LineBatchCompponent->UnRegisterComponent();

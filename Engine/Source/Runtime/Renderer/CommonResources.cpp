@@ -43,6 +43,7 @@ namespace Drn
 	CommonResources::CommonResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
+		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList );
 		m_UniformQuad = new UniformQuad( CommandList );
 		m_PointLightSphere = new PointLightSphere( CommandList );
 		m_SpotLightCone = new SpotLightCone(CommandList);
@@ -65,6 +66,7 @@ namespace Drn
 	CommonResources::~CommonResources()
 	{
 		delete m_ScreenTriangle;
+		delete m_BackfaceScreenTriangle;
 		delete m_UniformQuad;
 		delete m_PointLightSphere;
 		delete m_SpotLightCone;
@@ -119,6 +121,36 @@ namespace Drn
 	}
 
 	void ScreenTriangle::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+	}
+
+// --------------------------------------------------------------------------------------
+
+	float TrianglePosVertexData[] = 
+	{
+		1, -1, 0,
+		-3, -1, 0,
+		1, 3, 0
+	};
+
+	uint32 TrianglePosIndexData[] = { 2, 1, 0 };
+
+	BackfaceScreenTriangle::BackfaceScreenTriangle( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer = VertexBuffer::Create(CommandList, TrianglePosVertexData, 3, sizeof(TrianglePosVertexData) / 3, "ScreenTriangleNoUV");
+		m_IndexBuffer = IndexBuffer::Create(CommandList, TrianglePosIndexData, 3, sizeof(TrianglePosIndexData), DXGI_FORMAT_R32_UINT, "ScreenTriangleNoUV");
+	}
+
+	BackfaceScreenTriangle::~BackfaceScreenTriangle()
+	{
+		if (m_VertexBuffer) { delete m_VertexBuffer; }
+		if (m_IndexBuffer) { delete m_IndexBuffer; }
+	}
+
+	void BackfaceScreenTriangle::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
 	{
 		m_VertexBuffer->Bind(CommandList);
 		m_IndexBuffer->Bind(CommandList);

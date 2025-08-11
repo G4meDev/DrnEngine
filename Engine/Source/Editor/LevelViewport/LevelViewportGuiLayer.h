@@ -38,6 +38,7 @@ namespace Drn
 
 		void AddPointLight();
 		void AddSpotLight();
+		void AddDirectionalLight();
 		void AddPostProcessVolume();
 
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;

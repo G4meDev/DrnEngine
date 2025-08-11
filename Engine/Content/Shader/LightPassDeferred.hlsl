@@ -4,6 +4,7 @@
 
 #define LIGHT_BITFLAG_POINTLIGHT 1
 #define LIGHT_BITFLAG_SPOTLIGHT 2
+#define LIGHT_BITFLAG_DIRECTIONAL 4
 
 #ifndef SPOTLIGHT_STENCIL_SIDES
 #define SPOTLIGHT_STENCIL_SIDES 18
@@ -141,6 +142,13 @@ struct SpotLightShadowData
     float InvShadowmapResolution;
 };
 
+struct DirectionalLightData
+{
+    float3 Direction;
+    uint ShadowDataIndex; // 0 if not casting shadow
+    float3 Color;
+};
+
 struct StaticSamplers
 {
     uint LinearSamplerIndex;
@@ -171,6 +179,7 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN, uint InVertexId : SV_VertexID)
     {
         ConstantBuffer<PointLightData> LightBuffer = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
         WorldPosition = IN.Position * LightBuffer.WorldPosAndScale.w + LightBuffer.WorldPosAndScale.xyz;
+        OUT.Position = mul(View.WorldToProjection, float4(WorldPosition, 1.0f));
     }
 
     else if(BindlessResources.LightFlags & LIGHT_BITFLAG_SPOTLIGHT)
@@ -220,6 +229,13 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN, uint InVertexId : SV_VertexID)
         }
         
         WorldPosition = mul(LightBuffer.LocalToWorld, float4(LocalPosition, 1)).xyz;
+        OUT.Position = mul(View.WorldToProjection, float4(WorldPosition, 1.0f));
+    }
+
+    else if (BindlessResources.LightFlags & LIGHT_BITFLAG_DIRECTIONAL)
+    {
+        OUT.Position = mul(View.LocalToCameraView, float4(IN.Position, 1.0f));
+        OUT.Position.z = 0;
     }
     
     else
@@ -227,7 +243,6 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN, uint InVertexId : SV_VertexID)
         WorldPosition = float3(1, 1, 1);
     }
 
-    OUT.Position = mul(View.WorldToProjection, float4(WorldPosition, 1.0f));
     OUT.UV = VSPosToScreenUV(OUT.Position);
     OUT.ScreenPos = OUT.Position.xy / OUT.Position.w;
     
@@ -334,6 +349,29 @@ float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, f
     return (kD * Gbuffer.BaseColor / PI + Specular) * NoL * LightColor;
 }
 
+float3 CalculateDirectionalLightRadiance(float3 WorldPosition, float3 LightDirection, float3 LightColor, float3 CameraVector, GBufferData Gbuffer)
+{
+    float3 L = -LightDirection;
+    float NoL = saturate(dot(Gbuffer.WorldNormal, L));
+    float3 H = normalize(normalize(CameraVector) + normalize(LightDirection));
+
+// -------------------------------------------------------------------------
+    
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, Gbuffer.BaseColor, Gbuffer.Matallic);
+    
+    float NDF = DistributionGGX(Gbuffer.WorldNormal, H, Gbuffer.Roughness);
+    float G = GeometrySmith(Gbuffer.WorldNormal, CameraVector, L, Gbuffer.Roughness);
+    float3 F = fresnelSchlick(max(dot(H, CameraVector), 0.0), F0);
+    
+    float3 kS = F;
+    float3 kD = float3(1, 1, 1) - kS;
+    kD *= 1.0 - Gbuffer.Roughness;
+    
+    float3 Specular = NDF * G * F / (max(dot(Gbuffer.WorldNormal, CameraVector), 0) * max(dot(Gbuffer.WorldNormal, L), 0) + 0.0001);
+    
+    return (kD * Gbuffer.BaseColor / PI + Specular) * NoL * LightColor;
+}
 
 float CalculatePointLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius)
 {
@@ -442,7 +480,7 @@ float CalculatePointLightShadow(float3 WorldPosition, float3 LightPosition, matr
     return Shadow;
 }
 
-float CalculateSpotLightShadow(float3 WorldPosition, float3 LightPosition, matrix WorldToProjectionMatrix,
+float CalculateSpotLightShadow(float3 WorldPosition, float3 ToLight, matrix WorldToProjectionMatrix,
     float DepthBias, float InvShadowmapResolution, Texture2D ShadowmapTexture, SamplerComparisonState Sampler)
 {
     float4 ShadowPos = mul(WorldToProjectionMatrix, float4(WorldPosition, 1));
@@ -452,9 +490,7 @@ float CalculateSpotLightShadow(float3 WorldPosition, float3 LightPosition, matri
     float2 ShadowmapUV = ShadowPos.xy / ShadowPos.w;
     ShadowmapUV = ShadowmapUV * 0.5f + 0.5f;
     ShadowmapUV.y = 1 - ShadowmapUV.y;
-    
-    float3 ToLight = LightPosition - WorldPosition;
-    
+        
     float2 SideVector = mul(WorldToProjectionMatrix, float4(ToLight, 0)).xy;
     SideVector = normalize(SideVector);
     float2 UpVector = normalize(float2(SideVector.y, -SideVector.x));
@@ -543,7 +579,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Gbuffer.AmbientOcclusion = Masks.b;
     
     float3 CameraVector = View.CameraPosition - WorldPos.xyz;
-    float3 Radiance = float3(1, 1, 1);
+    float3 Radiance = 0;
     float Attenuation = 1;
     float Shadow = 1;
     
@@ -579,9 +615,31 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
             ConstantBuffer<SpotLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
             Texture2D ShadowmapTexture = ResourceDescriptorHeap[ShadowBuffer.ShadowMapTextureIndex];
             SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
-            Shadow = CalculateSpotLightShadow(WorldPos.xyz, Light.WorldPosition, ShadowBuffer.WorldToProjectionMatrix,
+            float3 ToLight = Light.WorldPosition - WorldPos.xyz;
+            Shadow = CalculateSpotLightShadow(WorldPos.xyz, ToLight, ShadowBuffer.WorldToProjectionMatrix,
                 ShadowBuffer.DepthBias, ShadowBuffer.InvShadowmapResolution, ShadowmapTexture, CompState);
         }
+    }
+    
+    else if (BindlessResources.LightFlags & LIGHT_BITFLAG_DIRECTIONAL)
+    {
+        [branch]
+        if(Depth > 0.0001)
+        {
+            ConstantBuffer<DirectionalLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
+            Radiance = CalculateDirectionalLightRadiance(WorldPos.xyz, Light.Direction, Light.Color, CameraVector, Gbuffer);
+            
+            [branch]
+            if (Light.ShadowDataIndex != 0)
+            {
+                ConstantBuffer<SpotLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
+                Texture2D ShadowmapTexture = ResourceDescriptorHeap[ShadowBuffer.ShadowMapTextureIndex];
+                SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
+                Shadow = CalculateSpotLightShadow(WorldPos.xyz, -Light.Direction, ShadowBuffer.WorldToProjectionMatrix,
+                ShadowBuffer.DepthBias, ShadowBuffer.InvShadowmapResolution, ShadowmapTexture, CompState);
+            }
+        }
+        
     }
     
     return float4(Radiance * Attenuation * Shadow * SSAO, 1);

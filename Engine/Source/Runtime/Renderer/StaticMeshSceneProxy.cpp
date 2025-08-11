@@ -158,6 +158,10 @@ namespace Drn
 				{
 					Mat->BindSpotLightShadowDepthPass(CommandList);
 				}
+				else if ( LightProxy->GetLightType() == ELightType::DirectionalLight)
+				{
+					Mat->BindSpotLightShadowDepthPass(CommandList);
+				}
 
 				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	

@@ -491,7 +491,7 @@ namespace Drn
 		ProccessMousePickQueue();
 #endif
 
-		if (!m_RenderingEnabled)
+		if (!m_RenderingEnabled )
 		{
 			m_CommandList->Close();
 			return;

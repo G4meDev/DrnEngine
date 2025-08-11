@@ -56,5 +56,6 @@ namespace Drn
 		friend class SceneRenderer;
 		friend class PointLightSceneProxy;
 		friend class SpotLightSceneProxy;
+		friend class DirectionalLightSceneProxy;
 	};
 }

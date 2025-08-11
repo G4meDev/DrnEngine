@@ -217,10 +217,9 @@ namespace Drn
 			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearCompLessSamplerCpuHandle, &m_BindlessLinearCompLessSamplerGpuHandle);
 			D3D12_SAMPLER_DESC SamplerDesc = {};
 			SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-			SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS;
-			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+			SamplerDesc.AddressU = SamplerDesc.AddressV = SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+			SamplerDesc.BorderColor[0] = SamplerDesc.BorderColor[1] = SamplerDesc.BorderColor[2] = SamplerDesc.BorderColor[3] = 1.0f;
 			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearCompLessSamplerCpuHandle);
 
 			m_StaticSamplers.LinearCompLessSampler = GetBindlessSamplerIndex(m_BindlessLinearCompLessSamplerGpuHandle);
@@ -295,12 +294,14 @@ namespace Drn
 			{
 				for (SceneRenderer* SceneRen : S->m_SceneRenderers)
 				{
-					tf::Task SceneRenderTask = subflow.composed_of(SceneRen->m_RenderTask);
+					SceneRen->Render();
 
-#if WITH_EDITOR
-					subflow.retain(true);
-					SceneRenderTask.name("RenderSceneRenderer_" + SceneRen->GetName());
-#endif
+//					tf::Task SceneRenderTask = subflow.composed_of(SceneRen->m_RenderTask);
+//
+//#if WITH_EDITOR
+//					subflow.retain(true);
+//					SceneRenderTask.name("RenderSceneRenderer_" + SceneRen->GetName());
+//#endif
 				}
 			}
 		});
@@ -470,16 +471,13 @@ namespace Drn
 #ifndef WITH_EDITOR
 
 		ID3D12Resource* backBuffer = m_SwapChain->GetBackBuffer();
-
-		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE );
-		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST );
+		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 
+		ResourceStateTracker::Get()->TransiationResource(m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 		m_CommandList->GetD3D12CommandList()->CopyResource(backBuffer, m_MainSceneRenderer->GetViewResource());
 
-		barrier = CD3DX12_RESOURCE_BARRIER::Transition( m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET );
-		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 

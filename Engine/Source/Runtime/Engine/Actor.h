@@ -15,6 +15,7 @@ namespace Drn
 		PointLight,
 		SpotLight,
 		PostProcessVolume,
+		DirectionalLight,
 	};
 
 	class Actor : public Serializable

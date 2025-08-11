@@ -64,7 +64,7 @@ namespace Drn
 		float m_InnerRadius;
 
 		class SpotLightSceneProxy* m_SpotLightSceneProxy;
-	
+
 #if WITH_EDITOR
 		inline virtual bool HasSprite() const override
 		{
