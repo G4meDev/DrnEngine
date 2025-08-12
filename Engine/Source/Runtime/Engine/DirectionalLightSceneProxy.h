@@ -20,11 +20,13 @@ namespace Drn
 	{
 		DirectionalLightShadowData() = default;
 
-		Matrix WorldToProjectionMatrices;
-
-		uint32 ShadowmapTextureIndex;
 		float DepthBias;
 		float InvShadowResolution;
+		uint32 CacadeCount;
+		uint32 ShadowmapTextureIndex;
+
+		Matrix CsWorldToProjectionMatrices[8];
+		float SplitDistances[8];
 	};
 
 	class DirectionalLightSceneProxy : public LightSceneProxy
@@ -48,14 +50,13 @@ namespace Drn
 		// TODO: remove
 		DirectionalLightComponent* m_DirectionalLightComponent = nullptr;
 
-		float m_CSLogDistribution = 0.8f;
-		float m_CsZScale = 1.0f;
+		float m_CSLogDistribution = 0.65f;
+		float m_CsZScale = 2.0f;
 		std::vector<float> m_SplitDistances;
 		std::vector<Matrix> m_CSWorldToProjetcionMatrices;
 
-		Sphere GetShadowSplitBounds( const SceneRendererView& View, int32 CascadeIndex );
 		void CalculateSplitDistance();
-		Sphere GetShadowSplitBoundsDepthRange( const SceneRendererView& View, const Vector& ViewOrigin, float SplitNear, float SplitFar );
+		Matrix GetShadowSplitBoundsMatrix( const SceneRendererView& View, const Vector& ViewOrigin, float SplitNear, float SplitFar );
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) override;
@@ -64,7 +65,7 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
 		
 		Resource* m_ShadowmapResource;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_ShadowmapCpuHandle;
+		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_ShadowmapCpuHandles;
 
 		DirectionalLightData m_LightData;
 		Resource* m_LightBuffer;
@@ -72,5 +73,6 @@ namespace Drn
 		DirectionalLightShadowData m_ShadowData;
 		Resource* m_ShadowBuffer;
 
+		std::vector<Resource*> m_CsWorldToProjectionMatricesBuffer;
 	};
 }

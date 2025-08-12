@@ -39,7 +39,7 @@ namespace Drn
 			return XMVector4Transform(V.Get(), XMLoadFloat4x4(&m_Matrix));
 		}
 
-		inline Vector4 TransformVector(const Vector& V) const
+		inline Vector TransformVector(const Vector& V) const
 		{
 			return XMVector3Transform(XMLoadFloat3(V.Get()), XMLoadFloat4x4(&m_Matrix));
 		}

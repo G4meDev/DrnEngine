@@ -96,10 +96,16 @@ struct ViewBuffer
     matrix LocalToCameraView;
 
     uint2 RenderSize;
-    uint2 Pad_1;
-    float3 CameraPosition;
-    uint2 Pad_2;
-    float3 CameraDirection;
+    float2 InvSize;
+
+    float3 CameraPos;
+    float InvTanHalfFov;
+		
+    float3 CameraDir;
+    float Pad_4;
+
+    float4 InvDeviceZToWorldZTransform;
+
 };
 
 struct PointLightData
@@ -147,6 +153,17 @@ struct DirectionalLightData
     float3 Direction;
     uint ShadowDataIndex; // 0 if not casting shadow
     float3 Color;
+};
+
+struct DirectionalLightShadowData
+{
+    float DepthBias;
+    float InvShadowmapResolution;
+    uint CascadeCount;
+    uint ShadowMapTextureIndex;
+    
+    matrix CsWorldToProjectionMatrices[8];
+    float4 CsSplitDistances[2];
 };
 
 struct StaticSamplers
@@ -321,6 +338,11 @@ struct GBufferData
     float Roughness;
     float AmbientOcclusion;
 };
+
+float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
+{
+    return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
+}
 
 float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, float3 LightColor, float3 CameraVector, GBufferData Gbuffer)
 {
@@ -547,6 +569,91 @@ float CalculateSpotLightShadow(float3 WorldPosition, float3 ToLight, matrix Worl
     return Shadow;
 }
 
+float CalculateDirectionalLightShadow(float3 WorldPosition, float Depth, DirectionalLightData LightData, DirectionalLightShadowData ShadowData, SamplerComparisonState Sampler)
+{
+    Texture2DArray ShadowmapTexture = ResourceDescriptorHeap[ShadowData.ShadowMapTextureIndex];
+    
+    // TODO: seam blending
+    float Alpha = 0;
+    int index = 0;
+    for (uint i = 0; i < ShadowData.CascadeCount; i++)
+    {
+        if (Depth < ShadowData.CsSplitDistances[i/4][i%4])
+        {
+            index = i;
+            break;
+        }
+    }
+    
+    float4 ShadowPos = mul(ShadowData.CsWorldToProjectionMatrices[index], float4(WorldPosition, 1));
+
+    float CompareDistance = ShadowPos.z / ShadowPos.w;
+    float ShadowDepthBias = -ShadowData.DepthBias / ShadowPos.w;
+    float2 ShadowmapUV = ShadowPos.xy / ShadowPos.w;
+    ShadowmapUV = ShadowmapUV * 0.5f + 0.5f;
+    ShadowmapUV.y = 1 - ShadowmapUV.y;
+
+    float2 SideVector = mul(ShadowData.CsWorldToProjectionMatrices[index], float4(LightData.Direction, 0)).xy;
+    SideVector = normalize(SideVector);
+    float2 UpVector = normalize(float2(SideVector.y, -SideVector.x));
+    
+    //float2 SideVector = float2(1, 0);
+    //float2 UpVector = float2(0, 1);
+    
+    SideVector *= ShadowData.InvShadowmapResolution;
+    UpVector *= ShadowData.InvShadowmapResolution;
+    
+    SideVector /= asuint(1) << index;
+    UpVector /= asuint(1) << index;
+    
+    float Shadow = 0;
+    
+    Shadow = ShadowmapTexture.SampleCmpLevelZero(Sampler, float3(ShadowmapUV, index), CompareDistance + ShadowDepthBias);
+    
+    #define SHADOW_QUALITY 3
+        
+#if SHADOW_QUALITY == 0
+        Shadow = 1;
+
+#elif SHADOW_QUALITY == 1
+    Shadow = ShadowmapTexture.SampleCmpLevelZero(Sampler, float3(ShadowmapUV, index), CompareDistance + ShadowDepthBias);
+
+#elif SHADOW_QUALITY == 2
+        
+        [unroll]
+        for (int i = 0; i < 5; ++i)
+        {
+            float2 SampleUV = ShadowmapUV + SideVector * DiscSamples5[i].x + UpVector * DiscSamples5[i].y;
+            Shadow += ShadowmapTexture.SampleCmpLevelZero(Sampler, float3(SampleUV, index), CompareDistance + ShadowDepthBias * length(DiscSamples5[i]));
+        }
+        Shadow /= 5;
+        
+#elif SHADOW_QUALITY == 3
+        
+    [unroll]
+    for (int i = 0; i < 12; ++i)
+    {
+        float2 SampleUV = ShadowmapUV + SideVector * DiscSamples12[i].x + UpVector * DiscSamples12[i].y;
+        Shadow += ShadowmapTexture.SampleCmpLevelZero(Sampler, float3(SampleUV, index), CompareDistance + ShadowDepthBias * length(DiscSamples12[i]));
+    }
+    Shadow /= 12;
+
+#elif SHADOW_QUALITY == 4
+        [unroll]
+        for (int i = 0; i < 29; ++i)
+        {
+            float2 SampleUV = ShadowmapUV + SideVector * DiscSamples29[i].x + UpVector * DiscSamples29[i].y;
+            Shadow += ShadowmapTexture.SampleCmp(Sampler, float3(SampleUV, index), CompareDistance + ShadowDepthBias * length(DiscSamples29[i]));
+        }
+        Shadow /= 29;
+
+#endif
+    
+#undef SHADOW_QUALITY
+    
+    return Shadow;
+}
+
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
@@ -578,7 +685,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Gbuffer.Roughness = Masks.g;
     Gbuffer.AmbientOcclusion = Masks.b;
     
-    float3 CameraVector = View.CameraPosition - WorldPos.xyz;
+    float3 CameraVector = View.CameraPos - WorldPos.xyz;
     float3 Radiance = 0;
     float Attenuation = 1;
     float Shadow = 1;
@@ -632,11 +739,9 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
             [branch]
             if (Light.ShadowDataIndex != 0)
             {
-                ConstantBuffer<SpotLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
-                Texture2D ShadowmapTexture = ResourceDescriptorHeap[ShadowBuffer.ShadowMapTextureIndex];
+                ConstantBuffer<DirectionalLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
                 SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
-                Shadow = CalculateSpotLightShadow(WorldPos.xyz, -Light.Direction, ShadowBuffer.WorldToProjectionMatrix,
-                ShadowBuffer.DepthBias, ShadowBuffer.InvShadowmapResolution, ShadowmapTexture, CompState);
+                Shadow = CalculateDirectionalLightShadow(WorldPos.xyz, ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform), Light, ShadowBuffer, CompState);
             }
         }
         

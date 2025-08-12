@@ -142,6 +142,7 @@ namespace Drn
 			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue );
 
 		inline uint32 GetRtvIncrementSize() const { return m_RtvIncrementSize; }
+		inline uint32 GetDsvIncrementSize() const { return m_DsvIncrementSize; }
 
 		// TODO: remove
 		TempDescriptorHeapAllocator m_BindlessSrvHeapAllocator;
@@ -184,6 +185,7 @@ namespace Drn
 		void WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent );
 
 		uint32 m_RtvIncrementSize;
+		uint32 m_DsvIncrementSize;
 		uint32 m_SrvIncrementSize;
 		uint32 m_SamplerIncrementSize;
 
