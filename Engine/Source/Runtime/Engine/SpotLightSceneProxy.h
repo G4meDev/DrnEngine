@@ -59,6 +59,8 @@ namespace Drn
 		inline void SetOutterRadius( float OutterRadius ) { m_SpotLightData.OutterRadius = OutterRadius; }
 		inline void SetInnerRadius( float InnerRadius ) { m_SpotLightData.InnerRadius = InnerRadius; }
 
+		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
+
 	protected:
 		//float m_DepthBias;
 

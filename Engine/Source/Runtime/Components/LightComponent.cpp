@@ -9,6 +9,7 @@ namespace Drn
 		, m_LightColor(Vector::OneVector)
 		, m_Intensity(1.0f)
 		, m_CastShadow(false)
+		, m_RenderStateDirty(true)
 	{
 	}
 
@@ -56,28 +57,19 @@ namespace Drn
 	void LightComponent::SetColor( const Vector& Color )
 	{
 		m_LightColor = Color;
-		if (m_LightSceneProxy)
-		{
-			m_LightSceneProxy->SetColor(GetScaledColor());
-		}
+		MarkRenderStateDirty();
 	}
 
 	void LightComponent::SetIntensity( float Intensity )
 	{
 		m_Intensity = Intensity;
-		if (m_LightSceneProxy)
-		{
-			m_LightSceneProxy->SetColor(GetScaledColor());
-		}
+		MarkRenderStateDirty();
 	}
 
 	void LightComponent::SetCastShadow( bool CastShadow )
 	{
 		m_CastShadow = CastShadow;
-		if (m_LightSceneProxy)
-		{
-			m_LightSceneProxy->SetCastShadow( CastShadow );
-		}
+		MarkRenderStateDirty();
 	}
 
 #if WITH_EDITOR

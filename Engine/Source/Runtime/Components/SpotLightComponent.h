@@ -56,7 +56,7 @@ namespace Drn
 		virtual void UnRegisterComponent() override;
 	
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
-		
+
 		float m_DepthBias;
 
 		float m_Attenuation;

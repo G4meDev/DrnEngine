@@ -19,6 +19,8 @@ namespace Drn
 		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) = 0;
 		virtual void RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) = 0;
 
+		virtual void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) = 0;
+
 		inline virtual ELightType GetLightType() const = 0;
 
 #if WITH_EDITOR
@@ -42,6 +44,8 @@ namespace Drn
 #if D3D12_Debug_INFO
 		std::string m_Name;
 #endif
+
+		friend class LightComponent;
 
 	private:
 

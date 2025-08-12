@@ -45,15 +45,20 @@ namespace Drn
 
 		void ReleaseBuffers();
 
+		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
+
 	protected:
 
-		// TODO: remove
 		DirectionalLightComponent* m_DirectionalLightComponent = nullptr;
 
-		float m_CSLogDistribution = 0.65f;
-		float m_CsZScale = 2.0f;
 		std::vector<float> m_SplitDistances;
-		std::vector<Matrix> m_CSWorldToProjetcionMatrices;
+
+		Vector m_Direction;
+		float m_ShadowDistance;
+		int32 m_CascadeCount;
+		float m_CascadeLogDistribution;
+		float m_CascadeDepthScale;
+		float m_DepthBias;
 
 		void CalculateSplitDistance();
 		Matrix GetShadowSplitBoundsMatrix( const SceneRendererView& View, const Vector& ViewOrigin, float SplitNear, float SplitFar );
@@ -74,5 +79,10 @@ namespace Drn
 		Resource* m_ShadowBuffer;
 
 		std::vector<Resource*> m_CsWorldToProjectionMatricesBuffer;
+
+		friend class DirectionalLightComponent;
+
+	private:
+		
 	};
 }

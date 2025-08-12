@@ -86,6 +86,12 @@ namespace Drn
 		}
 		m_PendingLightProxies.clear();
 
+		for (auto it = m_LightProxies.begin(); it != m_LightProxies.end(); it++)
+		{
+			LightSceneProxy* Proxy = *it;
+			Proxy->UpdateResources(CommandList);
+		}
+
 // ----------------------------------------------------------------------------------
 
 		for (auto it = m_PendingPostProcessProxies.begin(); it != m_PendingPostProcessProxies.end(); it++)

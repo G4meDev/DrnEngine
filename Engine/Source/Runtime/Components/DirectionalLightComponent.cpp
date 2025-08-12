@@ -3,12 +3,18 @@
 
 #include "Runtime/Engine/DirectionalLightSceneProxy.h"
 
+#define DIRECTIONAL_SHADOW_CASCADE_MAX 8
+
 namespace Drn
 {
 	DirectionalLightComponent::DirectionalLightComponent()
 		: LightComponent()
 		, m_DirectionalLightSceneProxy(nullptr)
 		, m_DepthBias(0.005)
+		, m_ShadowDistance(500.0f)
+		, m_CascadeCount(4)
+		, m_CascadeLogDistribution(0.65f)
+		, m_CascadeDepthScale(1.5f)
 	{
 		
 	}
@@ -33,9 +39,34 @@ namespace Drn
 		}
 	}
 
+	void DirectionalLightComponent::SetCascadeCount( int32 CascadeCount )
+	{
+		m_CascadeCount = std::clamp(CascadeCount, 1, DIRECTIONAL_SHADOW_CASCADE_MAX);
+		MarkRenderStateDirty();
+	}
+
+	void DirectionalLightComponent::SetShadowDistance( float ShadowDistance )
+	{
+		m_ShadowDistance = std::max(10.0f, ShadowDistance);
+		MarkRenderStateDirty();
+	}
+
+	void DirectionalLightComponent::SetCascadeLogDistribution( float LogDistribution )
+	{
+		m_CascadeLogDistribution = std::clamp(LogDistribution, 0.0f, 1.0f);
+		MarkRenderStateDirty();
+	}
+
+	void DirectionalLightComponent::SetCascadeDepthScale( float DepthScale )
+	{
+		m_CascadeDepthScale = DepthScale;
+		MarkRenderStateDirty();
+	}
+
 	void DirectionalLightComponent::SetDepthBias( float Bias )
 	{
 		m_DepthBias = Bias;
+		MarkRenderStateDirty();
 	}
 
 	void DirectionalLightComponent::RegisterComponent( World* InOwningWorld )
@@ -70,7 +101,7 @@ namespace Drn
 	void DirectionalLightComponent::OnUpdateTransform( bool SkipPhysic )
 	{
 		LightComponent::OnUpdateTransform(SkipPhysic);
-
+		MarkRenderStateDirty();
 	}
 
 #if WITH_EDITOR
@@ -94,7 +125,27 @@ namespace Drn
 			SetCastShadow(m_CastShadow);
 		}
 
-		if ( ImGui::InputFloat( "DepthBias", &m_DepthBias, 0.001f, 1.0f ) )
+		if ( ImGui::DragFloat( "Shadow Distance", &m_ShadowDistance, 1.0f, 0.0f, 3000.0f, "%.0f" ) )
+		{
+			SetShadowDistance(m_ShadowDistance);
+		}
+
+		if ( ImGui::InputInt( "Cascade Count", &m_CascadeCount, 1, 1, m_CastShadow ? ImGuiInputTextFlags_::ImGuiInputTextFlags_None : ImGuiInputTextFlags_ReadOnly) )
+		{
+			SetCascadeCount(m_CascadeCount);
+		}
+
+		if ( ImGui::DragFloat( "Cascade Logarithmic Distribution", &m_CascadeLogDistribution, 0.05f, 0.0f, 1.0f, "%.2f" ) )
+		{
+			SetCascadeLogDistribution(m_CascadeLogDistribution);
+		}
+
+		if ( ImGui::DragFloat( "Cascade Depth Scale", &m_CascadeDepthScale, 0.1f, 1.0f, 10.0f, "%.1f" ) )
+		{
+			SetCascadeDepthScale(m_CascadeDepthScale);
+		}
+
+		if ( ImGui::InputFloat( "DepthBias", &m_DepthBias, 0.0001f, 1.0f, "%.4f" ) )
 		{
 			SetDepthBias(m_DepthBias);
 		}

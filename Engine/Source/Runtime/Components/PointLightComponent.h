@@ -27,7 +27,6 @@ namespace Drn
 
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
-
 		float m_Radius;
 		float m_DepthBias;
 		class PointLightSceneProxy* m_PointLightSceneProxy;

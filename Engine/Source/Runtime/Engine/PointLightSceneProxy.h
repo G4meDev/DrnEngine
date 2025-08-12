@@ -47,6 +47,8 @@ namespace Drn
 		inline void SetRadius( float Radius ) { m_Radius = Radius; }
 		inline void SetDepthBias( float Bias ) { m_DepthBias = Bias; }
 
+		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
+
 	protected:
 		float m_Radius;
 		float m_DepthBias;

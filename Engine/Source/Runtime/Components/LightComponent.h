@@ -17,6 +17,10 @@ namespace Drn
 		void SetIntensity( float Intensity );
 		void SetCastShadow( bool CastShadow );
 
+		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
+		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
+		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
+
 	protected:
 		LightComponent();
 		virtual ~LightComponent();
@@ -28,7 +32,6 @@ namespace Drn
 
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
-
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
@@ -37,6 +40,8 @@ namespace Drn
 		Vector m_LightColor;
 		float m_Intensity;
 		bool m_CastShadow;
+
+		bool m_RenderStateDirty;
 
 		class LightSceneProxy* m_LightSceneProxy;
 

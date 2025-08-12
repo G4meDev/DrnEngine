@@ -215,6 +215,11 @@ namespace Drn
 		}
 	}
 
+	void SpotLightSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		
+	}
+
 #if WITH_EDITOR
 	void SpotLightSceneProxy::DrawAttenuation( World* InWorld )
 	{

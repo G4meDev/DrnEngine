@@ -196,6 +196,11 @@ namespace Drn
 		}
 	}
 
+	void PointLightSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		
+	}
+
 #if WITH_EDITOR
 	void PointLightSceneProxy::DrawAttenuation(World* InWorld)
 	{
