@@ -44,11 +44,14 @@ namespace Drn
 	{
 		bool Dirty = false;
 		Dirty |= m_SSAOSettings.Draw();
+		Dirty |= m_SSRSettings.Draw();
 		return Dirty;
 	}
 	bool SSAOSettings::Draw()
 	{
 		bool Dirty = false;
+
+		ImGui::PushID( "SSAO" );
 
 		if (ImGui::CollapsingHeader("AmbientOcclusion", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -61,8 +64,42 @@ namespace Drn
 			Dirty |= ImGui::DragFloat("FadeRadius", &m_FadeRadius, 0.1f, 0, 50, "%.1f");
 		}
 
+		ImGui::PopID();
+
 		return Dirty;
 	}
+#endif
+
+	void SSRSettings::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			
+		}
+		else
+		{
+
+		}
+	}
+
+#if WITH_EDITOR
+	bool SSRSettings::Draw()
+	{
+		bool Dirty = false;
+
+		ImGui::PushID( "SSR" );
+
+		if (ImGui::CollapsingHeader("Screen Space Reflection", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			Dirty |= ImGui::DragFloat("Intensity", &m_Intensity, 0.05f, 0, 1, "%.2f");
+			Dirty |= ImGui::DragFloat("Roughness Fade", &m_RoughnessFade, 0.1f, 0, 8, "%.1f");
+		}
+
+		ImGui::PopID();
+
+		return Dirty;
+	}
+
 #endif
 
 }

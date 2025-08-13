@@ -56,6 +56,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.h
 	Source/Runtime/Renderer/RenderBuffer/HZBBuffer.h
 	Source/Runtime/Renderer/RenderBuffer/RenderBufferAO.h
+	Source/Runtime/Renderer/RenderBuffer/ScreenSpaceReflectionBuffer.h
 	Source/Runtime/Renderer/Device.h
 	Source/Runtime/Renderer/SwapChain.h
 	Source/Runtime/Renderer/BufferedResource.h
@@ -211,6 +212,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.cpp
 	Source/Runtime/Renderer/RenderBuffer/HZBBuffer.cpp
 	Source/Runtime/Renderer/RenderBuffer/RenderBufferAO.cpp
+	Source/Runtime/Renderer/RenderBuffer/ScreenSpaceReflectionBuffer.cpp
 	Source/Runtime/Renderer/Device.cpp
 	Source/Runtime/Renderer/SwapChain.cpp
 	Source/Runtime/Renderer/BufferedResource.cpp

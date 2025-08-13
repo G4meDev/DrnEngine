@@ -35,6 +35,25 @@ namespace Drn
 #endif
 	};
 
+	class SSRSettings : public Serializable
+	{
+	public:
+
+		SSRSettings()
+			: m_Intensity(1.0f)
+			, m_RoughnessFade(0.0f)
+		{};
+
+		virtual void Serialize(Archive& Ar) override;
+
+		float m_Intensity;
+		float m_RoughnessFade;
+
+#if WITH_EDITOR
+		bool Draw();
+#endif
+	};
+
 	class PostProcessSettings : public Serializable
 	{
 	public:
@@ -45,6 +64,7 @@ namespace Drn
 		static PostProcessSettings DefaultSettings;
 
 		SSAOSettings m_SSAOSettings;
+		SSRSettings m_SSRSettings;
 
 #if WITH_EDITOR
 		bool Draw();

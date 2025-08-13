@@ -129,6 +129,7 @@ namespace Drn
 		std::shared_ptr<class HZBBuffer> m_HZBBuffer;
 		std::shared_ptr<class TonemapRenderBuffer> m_TonemapBuffer;
 		std::shared_ptr<class RenderBufferAO> m_AOBuffer;
+		std::shared_ptr<class ScreenSpaceReflectionBuffer> m_ScreenSpaceReflectionBuffer;
 
 		IntPoint m_CachedRenderSize;
 		IntPoint m_RenderSize;
@@ -162,6 +163,7 @@ namespace Drn
 		friend class StaticMeshSceneProxy;
 		friend class ViewportPanel;
 		friend class RenderBufferAO;
+		friend class ScreenSpaceReflectionBuffer;
 
 	private:
 
@@ -172,6 +174,7 @@ namespace Drn
 		void RenderHZB();
 		void RenderAO();
 		void RenderLights();
+		void RenderSSR();
 		void RenderPostProcess();
 		void PostProcess_Tonemapping();
 
