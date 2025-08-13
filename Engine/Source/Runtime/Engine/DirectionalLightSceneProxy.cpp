@@ -11,6 +11,7 @@ namespace Drn
 {
 	DirectionalLightSceneProxy::DirectionalLightSceneProxy( class DirectionalLightComponent* InComponent )
 		: LightSceneProxy(InComponent)
+		, m_DirectionalLightComponent(InComponent)
 		, m_ShadowDistance(500.0f)
 		, m_CascadeCount(3)
 		, m_CascadeLogDistribution(0.65f)
@@ -19,11 +20,6 @@ namespace Drn
 		, m_ShadowBuffer(nullptr)
 		, m_ShadowmapResource(nullptr)
 	{
-		m_DirectionalLightComponent = InComponent;
-		m_LightData.Direction = InComponent->GetWorldRotation().GetVector();
-
-// --------------------------------------------------------------------------------------------------
-
 		D3D12_DESCRIPTOR_HEAP_DESC DepthHeapDesc = {};
 		DepthHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 		DepthHeapDesc.NumDescriptors = DIRECTIONAL_SHADOW_CASCADE_MAX;
@@ -290,21 +286,24 @@ namespace Drn
 			m_LightColor = m_DirectionalLightComponent->GetScaledColor();
 			m_CastShadow = m_DirectionalLightComponent->IsCastingShadow();
 
+			m_Direction = m_DirectionalLightComponent->GetWorldRotation().GetVector();
 			m_ShadowDistance = m_DirectionalLightComponent->GetShadowDistance();
 			m_CascadeCount = m_DirectionalLightComponent->GetCascadeCount();
 			m_CascadeLogDistribution = m_DirectionalLightComponent->GetCascadeLogDistribution();
 			m_CascadeDepthScale = m_DirectionalLightComponent->GetCascadeDepthScale();
 			m_DepthBias = m_DirectionalLightComponent->GetDepthBias();
 
-			bool NeedsShadowmapReallocation = !m_ShadowmapResource ||
-				m_ShadowmapResource->GetD3D12Resource()->GetDesc().DepthOrArraySize != m_CascadeCount;
-
 			CalculateSplitDistance();
 
-			if (NeedsShadowmapReallocation)
+			if (m_CastShadow && (!m_ShadowmapResource || m_ShadowmapResource->GetD3D12Resource()->GetDesc().DepthOrArraySize != m_CascadeCount))
 			{
 				ReleaseShadowmap();
 				AllocateShadowmap(CommandList);
+			}
+
+			else if (!m_CastShadow && m_ShadowmapResource)
+			{
+				ReleaseShadowmap();
 			}
 		}
 	}
@@ -332,7 +331,7 @@ namespace Drn
 		const Matrix& ProjectionMatrix = View.ViewToProjection;
 
 		const Vector& CameraDirection = View.CameraDir;
-		const Vector& LightDirection = m_LightData.Direction * -1;
+		const Vector& LightDirection = m_Direction * -1;
 
 		float AspectRatio = ProjectionMatrix.m_Matrix.m[1][1] / ProjectionMatrix.m_Matrix.m[0][0];
 		bool IsPerspective = true;
@@ -392,7 +391,7 @@ namespace Drn
 
 // ------------------------------------------------------------------------------------------------------------------
 
-		Matrix LightViewMatrix = XMMatrixLookAtLH(XMVectorZero(), XMLoadFloat3(m_LightData.Direction.Get()), XMLoadFloat3(Vector::UpVector.Get()));
+		Matrix LightViewMatrix = XMMatrixLookAtLH(XMVectorZero(), XMLoadFloat3(m_Direction.Get()), XMLoadFloat3(Vector::UpVector.Get()));
 
 		float MinX, MinY, MinZ = FLT_MAX;
 		float MaxX, MaxY, MaxZ = FLT_MIN;
@@ -427,7 +426,7 @@ namespace Drn
 		Matrix LightViewInverseMatrix = XMMatrixInverse(NULL, LightViewMatrix.Get());
 		Vector CameraPos = LightViewInverseMatrix.TransformVector(CameraPosCenter);
 
-		XMMATRIX V = XMMatrixLookAtLH(XMLoadFloat3(CameraPos.Get()), XMLoadFloat3( (CameraPos + m_LightData.Direction).Get() ), XMLoadFloat3(Vector::UpVector.Get()));
+		XMMATRIX V = XMMatrixLookAtLH(XMLoadFloat3(CameraPos.Get()), XMLoadFloat3( (CameraPos + m_Direction).Get() ), XMLoadFloat3(Vector::UpVector.Get()));
 		XMMATRIX P = XMMatrixOrthographicLH( Width, Height, 0, ScaledDepth);
 
 		Matrix Result = V * P;

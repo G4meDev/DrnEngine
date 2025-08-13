@@ -77,30 +77,20 @@ namespace Drn
 
 		SetRelativeRotation(Quat::Identity);
 		SetRelativeScale(Vector::OneVector);
-		
-		if ( m_PointLightSceneProxy )
-		{
-			m_PointLightSceneProxy->SetLocalToWorld(GetLocalToWorld());
-		}
+
+		MarkRenderStateDirty();
 	}
 
 	void PointLightComponent::SetRadius( float Radius )
 	{
 		m_Radius = Radius;
-		if (m_PointLightSceneProxy)
-		{
-			m_PointLightSceneProxy->SetRadius(Radius);
-			m_PointLightSceneProxy->SetLocalToWorld(GetLocalToWorld());
-		}
+		MarkRenderStateDirty();
 	}
 
 	void PointLightComponent::SetDepthBias( float Bias )
 	{
 		m_DepthBias = Bias;
-		if (m_PointLightSceneProxy)
-		{
-			m_PointLightSceneProxy->SetDepthBias(Bias);
-		}
+		MarkRenderStateDirty();
 	}
 
 #if WITH_EDITOR

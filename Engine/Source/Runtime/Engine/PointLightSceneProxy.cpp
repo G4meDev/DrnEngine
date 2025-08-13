@@ -9,12 +9,11 @@ namespace Drn
 {
 	PointLightSceneProxy::PointLightSceneProxy( class PointLightComponent* InComponent )
 		: LightSceneProxy(InComponent)
-		, m_Radius(InComponent->GetRadius())
-		, m_DepthBias(InComponent->GetDepthBias())
+		, m_PointLightComponent(InComponent)
+		, m_LightBuffer(nullptr)
+		, m_ShadowDepthBuffer(nullptr)
 		, m_ShadowCubemapResource(nullptr)
 	{
-		SetLocalToWorld(InComponent->GetLocalToWorld());
-
 		D3D12_DESCRIPTOR_HEAP_DESC DepthHeapDesc = {};
 		DepthHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 		DepthHeapDesc.NumDescriptors = 1;
@@ -36,37 +35,12 @@ namespace Drn
 		ResourceViewDesc.BufferLocation = m_LightBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
 		ResourceViewDesc.SizeInBytes = 256;
 		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer->GetCpuHandle());
-
-
-		m_ShadowDepthBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-		m_ShadowDepthBuffer->SetName("CB_PointLightShadow_" + m_Name);
-#endif
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ShadowResourceViewDesc = {};
-		ShadowResourceViewDesc.BufferLocation = m_ShadowDepthBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ShadowResourceViewDesc.SizeInBytes = 512;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ShadowResourceViewDesc, m_ShadowDepthBuffer->GetCpuHandle());
-
-
-		m_ShadowViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(POINTLIGHT_SHADOW_SIZE), static_cast<float>(POINTLIGHT_SHADOW_SIZE));
 	}
 
 	PointLightSceneProxy::~PointLightSceneProxy()
 	{
 		ReleaseShadowmap();
-
-		if (m_LightBuffer)
-		{
-			m_LightBuffer->ReleaseBufferedResource();
-			m_LightBuffer = nullptr;
-		}
-
-		if (m_ShadowDepthBuffer)
-		{
-			m_ShadowDepthBuffer->ReleaseBufferedResource();
-			m_ShadowDepthBuffer = nullptr;
-		}
+		ReleaseBuffer();
 	}
 
 	void PointLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
@@ -100,21 +74,12 @@ namespace Drn
 
 	void PointLightSceneProxy::RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		if (m_CastShadow && !m_ShadowCubemapResource)
-		{
-			AllocateShadowmap(CommandList);
-		}
-
-		else if (!m_CastShadow && m_ShadowCubemapResource)
-		{
-			ReleaseShadowmap();
-		}
-
 		if (m_CastShadow)
 		{
 			D3D12_RECT R = CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX );
 
-			CommandList->RSSetViewports(1, &m_ShadowViewport);
+			CD3DX12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(POINTLIGHT_SHADOW_SIZE), static_cast<float>(POINTLIGHT_SHADOW_SIZE));
+			CommandList->RSSetViewports(1, &Viewport);
 			CommandList->RSSetScissorRects(1, &R);
 
 			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
@@ -185,6 +150,18 @@ namespace Drn
 		ResourceViewDesc.TextureCube.ResourceMinLODClamp = 0;
 
 		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView(m_ShadowCubemapResource->GetD3D12Resource(), &ResourceViewDesc, m_ShadowCubemapResource->GetCpuHandle());
+
+// -----------------------------------------------------------------------------------------------------------
+
+		m_ShadowDepthBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+#if D3D12_Debug_INFO
+		m_ShadowDepthBuffer->SetName("CB_PointLightShadow_" + m_Name);
+#endif
+
+		D3D12_CONSTANT_BUFFER_VIEW_DESC ShadowResourceViewDesc = {};
+		ShadowResourceViewDesc.BufferLocation = m_ShadowDepthBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+		ShadowResourceViewDesc.SizeInBytes = 512;
+		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ShadowResourceViewDesc, m_ShadowDepthBuffer->GetCpuHandle());
 	}
 
 	void PointLightSceneProxy::ReleaseShadowmap()
@@ -194,11 +171,46 @@ namespace Drn
 			m_ShadowCubemapResource->ReleaseBufferedResource();
 			m_ShadowCubemapResource = nullptr;
 		}
+
+		if (m_ShadowDepthBuffer)
+		{
+			m_ShadowDepthBuffer->ReleaseBufferedResource();
+			m_ShadowDepthBuffer = nullptr;
+		}
 	}
 
 	void PointLightSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		
+		if (m_PointLightComponent && m_PointLightComponent->IsRenderStateDirty())
+		{
+			m_PointLightComponent->ClearRenderStateDirty();
+
+			m_CastShadow = m_PointLightComponent->IsCastingShadow();
+			m_WorldPosition = m_PointLightComponent->GetWorldLocation();
+			m_LightColor = m_PointLightComponent->GetScaledColor();
+
+			m_Radius = m_PointLightComponent->GetRadius();
+			m_DepthBias = m_PointLightComponent->GetDepthBias();
+		}
+
+		if (m_CastShadow && !m_ShadowCubemapResource)
+		{
+			AllocateShadowmap(CommandList);
+		}
+
+		else if (!m_CastShadow && m_ShadowCubemapResource)
+		{
+			ReleaseShadowmap();
+		}
+	}
+
+	void PointLightSceneProxy::ReleaseBuffer()
+	{
+		if (m_LightBuffer)
+		{
+			m_LightBuffer->ReleaseBufferedResource();
+			m_LightBuffer = nullptr;
+		}
 	}
 
 #if WITH_EDITOR

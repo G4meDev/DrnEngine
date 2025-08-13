@@ -14,8 +14,6 @@ namespace Drn
 		virtual ~SpotLightComponent();
 	
 		virtual void Serialize( Archive& Ar ) override;
-	
-		//Matrix GetLocalToWorld() const;
 
 		void SetDepthBias( float Bias );
 		inline float GetDepthBias() const { return m_DepthBias; };
@@ -27,28 +25,19 @@ namespace Drn
 		inline void SetAttenuation( float Attenuation )
 		{
 			m_Attenuation = Attenuation;
-			if (m_SpotLightSceneProxy)
-			{
-				//m_SpotLightSceneProxy->SetAttenuation(Attenuation);
-			}
+			MarkRenderStateDirty();
 		}
 
 		inline void SetOutterRadius( float OuterRadius )
 		{
 			m_OuterRadius = OuterRadius;
-			if (m_SpotLightSceneProxy)
-			{
-				//m_SpotLightSceneProxy->SetOutterRadius(OuterRadius);
-			}
+			MarkRenderStateDirty();
 		}
 
 		inline void SetInnerRadius( float InnerRadius )
 		{
 			m_InnerRadius = InnerRadius;
-			if (m_SpotLightSceneProxy)
-			{
-				//m_SpotLightSceneProxy->SetInnerRadius(InnerRadius);
-			}
+			MarkRenderStateDirty();
 		}
 
 	protected:

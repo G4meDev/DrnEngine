@@ -71,20 +71,13 @@ namespace Drn
 	void SpotLightComponent::OnUpdateTransform( bool SkipPhysic )
 	{
 		LightComponent::OnUpdateTransform(SkipPhysic);
-
-		if ( m_SpotLightSceneProxy )
-		{
-			//m_SpotLightSceneProxy->SetDirection(GetWorldRotation().GetVector());
-		}
+		MarkRenderStateDirty();
 	}
 
 	void SpotLightComponent::SetDepthBias( float Bias )
 	{
 		m_DepthBias = Bias;
-		if (m_SpotLightSceneProxy)
-		{
-			//m_PointLightSceneProxy->SetDepthBias(Bias);
-		}
+		MarkRenderStateDirty();
 	}
 
 #if WITH_EDITOR

@@ -6,15 +6,12 @@ namespace Drn
 {
 	LightSceneProxy::LightSceneProxy( class LightComponent* InComponent )
 		: m_LightComponent( InComponent )
-		, m_WorldPosition( InComponent->GetWorldLocation() )
-		, m_LightColor( InComponent->GetScaledColor() )
-		, m_CastShadow( InComponent->IsCastingShadow() )
 #if D3D12_Debug_INFO
 		, m_Name( InComponent ? InComponent->GetComponentLabel() : "InvalidLightComponent" )
 #endif
 	{
 #if WITH_EDITOR
-		m_SelectedInEditor = InComponent->IsSelectedInEditor();
+		m_SelectedInEditor = InComponent ? InComponent->IsSelectedInEditor() : false;
 #endif
 	}
 

@@ -77,10 +77,6 @@ namespace Drn
 	{
 		SceneComponent::DrawDetailPanel(DeltaTime);
 
-		if ( m_LightSceneProxy )
-		{
-			m_LightSceneProxy->SetWorldPosition( GetWorldLocation() );
-		}
 	}
 
 	void LightComponent::SetSelectedInEditor( bool SelectedInEditor )

@@ -48,10 +48,16 @@ namespace Drn
 		inline void SetDepthBias( float Bias ) { m_DepthBias = Bias; }
 
 		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
+		void ReleaseBuffer();
 
 	protected:
+
+		Vector m_WorldPosition;
+
 		float m_Radius;
 		float m_DepthBias;
+
+		class PointLightComponent* m_PointLightComponent;
 
 #if WITH_EDITOR
 		virtual void DrawAttenuation(World* InWorld) override;
@@ -69,8 +75,6 @@ namespace Drn
 
 		ShadowDepthData m_ShadowDepthData;
 		Resource* m_ShadowDepthBuffer;
-
-		D3D12_VIEWPORT m_ShadowViewport;
 
 	private:
 

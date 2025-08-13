@@ -51,8 +51,6 @@ namespace Drn
 
 		void AllocateShadowmap(ID3D12GraphicsCommandList2* CommandList);
 		void ReleaseShadowmap();
-		
-		//inline void SetDepthBias( float Bias ) { m_DepthBias = Bias; }
 
 		inline void SetDirection( const Vector& Direction ) { m_SpotLightData.Direction = Direction; }
 		inline void SetAttenuation( float Attenuation ) { m_SpotLightData.Attenuation = Attenuation; }
@@ -62,10 +60,16 @@ namespace Drn
 		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
 
 	protected:
-		//float m_DepthBias;
 
+		Matrix m_LocalToWorld;
+		Vector m_WorldPosition;
+		Vector m_Direction;
 
-		// TODO: remove
+		float m_Attenuation;
+		float m_InnerRadius;
+		float m_OuterRadius;
+		float m_DepthBias;
+
 		SpotLightComponent* m_SpotLightComponent = nullptr;
 
 #if WITH_EDITOR
