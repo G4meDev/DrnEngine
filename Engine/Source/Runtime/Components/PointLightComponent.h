@@ -14,11 +14,9 @@ namespace Drn
 		virtual void Serialize( Archive& Ar ) override;
 
 		inline float GetRadius() const { return m_Radius; }
-		inline float GetDepthBias() const { return m_DepthBias; }
 		Matrix GetLocalToWorld() const;
 
 		void SetRadius( float Radius );
-		void SetDepthBias( float Bias );
 
 	protected:
 
@@ -28,7 +26,6 @@ namespace Drn
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
 		float m_Radius;
-		float m_DepthBias;
 		class PointLightSceneProxy* m_PointLightSceneProxy;
 
 #if WITH_EDITOR

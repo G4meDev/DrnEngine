@@ -11,7 +11,6 @@ namespace Drn
 	PointLightComponent::PointLightComponent()
 		: LightComponent()
 		, m_Radius(3.0f)
-		, m_DepthBias(0.005f)
 		, m_PointLightSceneProxy(nullptr)
 	{
 		m_Intensity = 35;
@@ -84,12 +83,6 @@ namespace Drn
 	void PointLightComponent::SetRadius( float Radius )
 	{
 		m_Radius = Radius;
-		MarkRenderStateDirty();
-	}
-
-	void PointLightComponent::SetDepthBias( float Bias )
-	{
-		m_DepthBias = Bias;
 		MarkRenderStateDirty();
 	}
 

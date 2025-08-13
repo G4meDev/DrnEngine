@@ -72,6 +72,12 @@ namespace Drn
 		return *this;
 	}
 
+	Archive& Archive::operator<<( int32 Value )
+	{
+		File.write( (char*)( &Value ), 4);
+		return *this;
+	}
+
 	Archive& Archive::operator<<( float Value )
 	{
 		File.write( (char*)( &Value ), sizeof(float));
@@ -184,6 +190,12 @@ namespace Drn
 	Archive& Archive::operator>>( uint64& Value )
 	{
 		File.read( (char*)(&Value), 8 );
+		return *this;
+	}
+
+	Archive& Archive::operator>>( int32& Value )
+	{
+		File.read( (char*)(&Value), 4 );
 		return *this;
 	}
 

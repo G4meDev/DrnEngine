@@ -14,9 +14,6 @@ namespace Drn
 		virtual ~SpotLightComponent();
 	
 		virtual void Serialize( Archive& Ar ) override;
-
-		void SetDepthBias( float Bias );
-		inline float GetDepthBias() const { return m_DepthBias; };
 	
 		inline float GetAttenuation() const { return m_Attenuation; }
 		inline float GetOutterRadius() const { return m_OuterRadius; }
@@ -45,8 +42,6 @@ namespace Drn
 		virtual void UnRegisterComponent() override;
 	
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
-
-		float m_DepthBias;
 
 		float m_Attenuation;
 		float m_OuterRadius;

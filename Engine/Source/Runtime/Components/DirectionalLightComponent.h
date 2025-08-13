@@ -23,9 +23,6 @@ namespace Drn
 		inline float GetCascadeLogDistribution() const	{ return m_CascadeLogDistribution; }
 		inline float GetCascadeDepthScale() const		{ return m_CascadeDepthScale; }
 
-		void SetDepthBias( float Bias );
-		inline float GetDepthBias() const { return m_DepthBias; };
-
 	protected:
 
 		virtual void RegisterComponent(World* InOwningWorld) override;
@@ -37,7 +34,6 @@ namespace Drn
 		float m_ShadowDistance;
 		float m_CascadeLogDistribution;
 		float m_CascadeDepthScale;
-		float m_DepthBias;
 
 		class DirectionalLightSceneProxy* m_DirectionalLightSceneProxy;
 

@@ -32,6 +32,9 @@ namespace Drn
 		Archive& operator<<(uint16 Value);
 		Archive& operator<<(uint32 Value);
 		Archive& operator<<(uint64 Value);
+
+		Archive& operator<<( int32 Value );
+
 		Archive& operator<<(float Value);
 		Archive& operator<<(Guid Value);
 		Archive& operator<<(const Vector& Value);
@@ -48,6 +51,9 @@ namespace Drn
 		Archive& operator>>(uint16& Value);
 		Archive& operator>>(uint32& Value);
 		Archive& operator>>(uint64& Value);
+
+		Archive& operator>>( int32& Value );
+
 		Archive& operator>>(float& Value);
 		Archive& operator>>(Guid& Value);
 		Archive& operator>>(Vector& Value);

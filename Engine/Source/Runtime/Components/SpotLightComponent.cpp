@@ -11,7 +11,6 @@ namespace Drn
 		, m_Attenuation(10)
 		, m_OuterRadius(45)
 		, m_InnerRadius(0)
-		, m_DepthBias(0.005)
 	{
 
 	}
@@ -71,12 +70,6 @@ namespace Drn
 	void SpotLightComponent::OnUpdateTransform( bool SkipPhysic )
 	{
 		LightComponent::OnUpdateTransform(SkipPhysic);
-		MarkRenderStateDirty();
-	}
-
-	void SpotLightComponent::SetDepthBias( float Bias )
-	{
-		m_DepthBias = Bias;
 		MarkRenderStateDirty();
 	}
 

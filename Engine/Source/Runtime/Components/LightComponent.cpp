@@ -8,6 +8,7 @@ namespace Drn
 		: SceneComponent()
 		, m_LightColor(Vector::OneVector)
 		, m_Intensity(1.0f)
+		, m_DepthBias(0.005)
 		, m_CastShadow(false)
 		, m_RenderStateDirty(true)
 	{
@@ -26,6 +27,7 @@ namespace Drn
 			Ar >> m_LightColor;
 			Ar >> m_Intensity;
 			Ar >> m_CastShadow;
+			Ar >> m_DepthBias;
 		}
 
 		else
@@ -33,6 +35,7 @@ namespace Drn
 			Ar << m_LightColor;
 			Ar << m_Intensity;
 			Ar << m_CastShadow;
+			Ar << m_DepthBias;
 		}
 	}
 
@@ -69,6 +72,12 @@ namespace Drn
 	void LightComponent::SetCastShadow( bool CastShadow )
 	{
 		m_CastShadow = CastShadow;
+		MarkRenderStateDirty();
+	}
+
+	void LightComponent::SetDepthBias( float DepthBias )
+	{
+		m_DepthBias = DepthBias;
 		MarkRenderStateDirty();
 	}
 

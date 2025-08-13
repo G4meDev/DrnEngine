@@ -11,11 +11,13 @@ namespace Drn
 		inline const Vector& GetLightColor() const { return m_LightColor; }
 		inline float GetIntensity() const { return m_Intensity; }
 		inline bool IsCastingShadow() const { return m_CastShadow; }
+		inline float GetDepthBias() const { return m_DepthBias; }
 		Vector GetScaledColor() { return m_LightColor * m_Intensity; }
 
 		void SetColor( const Vector& Color );
 		void SetIntensity( float Intensity );
 		void SetCastShadow( bool CastShadow );
+		void SetDepthBias( float DepthBias );
 
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
@@ -40,6 +42,7 @@ namespace Drn
 		Vector m_LightColor;
 		float m_Intensity;
 		bool m_CastShadow;
+		float m_DepthBias;
 
 		bool m_RenderStateDirty;
 

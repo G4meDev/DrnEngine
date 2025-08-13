@@ -10,7 +10,6 @@ namespace Drn
 	DirectionalLightComponent::DirectionalLightComponent()
 		: LightComponent()
 		, m_DirectionalLightSceneProxy(nullptr)
-		, m_DepthBias(0.005)
 		, m_ShadowDistance(500.0f)
 		, m_CascadeCount(4)
 		, m_CascadeLogDistribution(0.65f)
@@ -30,12 +29,18 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			Ar >> m_DepthBias;
+			Ar >> m_CascadeCount;
+			Ar >> m_ShadowDistance;
+			Ar >> m_CascadeLogDistribution;
+			Ar >> m_CascadeDepthScale;
 		}
 
 		else
 		{
-			Ar << m_DepthBias;
+			Ar << m_CascadeCount;
+			Ar << m_ShadowDistance;
+			Ar << m_CascadeLogDistribution;
+			Ar << m_CascadeDepthScale;
 		}
 	}
 
@@ -60,12 +65,6 @@ namespace Drn
 	void DirectionalLightComponent::SetCascadeDepthScale( float DepthScale )
 	{
 		m_CascadeDepthScale = DepthScale;
-		MarkRenderStateDirty();
-	}
-
-	void DirectionalLightComponent::SetDepthBias( float Bias )
-	{
-		m_DepthBias = Bias;
 		MarkRenderStateDirty();
 	}
 
