@@ -14,6 +14,7 @@ namespace Drn
 		inline Matrix(const XMMATRIX& InMatrix) { XMStoreFloat4x4( &m_Matrix, InMatrix ); }
 		Matrix(const Transform& InTransform);
 		Matrix(const Vector& X, const Vector& Y, const Vector& Z, const Vector& W);
+		Matrix(const Vector4& X, const Vector4& Y, const Vector4& Z, const Vector4& W);
 
 		inline XMMATRIX Get() const { return XMLoadFloat4x4( &m_Matrix ); }
 

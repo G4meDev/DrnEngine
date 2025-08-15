@@ -41,7 +41,7 @@ namespace Drn
 
 		SSRSettings()
 			: m_Intensity(1.0f)
-			, m_RoughnessFade(0.0f)
+			, m_RoughnessFade(0.8f)
 		{};
 
 		virtual void Serialize(Archive& Ar) override;

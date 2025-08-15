@@ -50,6 +50,8 @@ struct TextureBuffers
 struct ScalarBuffer
 {
     float TintIntensity; // @SCALAR ColorIntensity
+    float RoughnessIntensity; // @SCALAR RoughnessIntensity
+    float NormalIntensity; // @SCALAR NormalIntensity
 };
 
 struct VectorBuffer
@@ -183,6 +185,9 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
 
     float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rbg;
+    Masks.g *= Scalars.RoughnessIntensity;
+    Normal = lerp( float3(0.5f, 1.0f, 0.5f), Normal, Scalars.NormalIntensity );
+
     Normal.z = 1 - Normal.z;
     Normal = Normal * 2 - 1;
     Normal = normalize(mul(Normal, IN.TBN));

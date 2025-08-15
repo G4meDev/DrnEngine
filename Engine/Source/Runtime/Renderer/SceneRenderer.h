@@ -70,6 +70,11 @@ namespace Drn
 		float AspectRatio;
 
 		Vector4 InvDeviceZToWorldZTransform;
+		Matrix ViewToWorld;
+		Matrix ScreenToTranslatedWorld;
+
+		uint32 FrameIndex;
+		uint32 FrameIndexMod8;
 	};
 
 	class SceneRenderer
@@ -106,6 +111,8 @@ namespace Drn
 		uint64 m_FenceValue = 0;
 #endif
 
+		uint32 m_FrameIndex;
+
 		CameraActor* m_CameraActor;
 
 		OnSceneRendererResizedDelegate OnSceneRendererResized;
@@ -130,6 +137,7 @@ namespace Drn
 		std::shared_ptr<class TonemapRenderBuffer> m_TonemapBuffer;
 		std::shared_ptr<class RenderBufferAO> m_AOBuffer;
 		std::shared_ptr<class ScreenSpaceReflectionBuffer> m_ScreenSpaceReflectionBuffer;
+		std::shared_ptr<class ReflectionEnvironmentBuffer> m_ReflectionEnvironmentBuffer;
 
 		IntPoint m_CachedRenderSize;
 		IntPoint m_RenderSize;
@@ -164,6 +172,7 @@ namespace Drn
 		friend class ViewportPanel;
 		friend class RenderBufferAO;
 		friend class ScreenSpaceReflectionBuffer;
+		friend class ReflectionEnvironmentBuffer;
 
 	private:
 
@@ -175,6 +184,7 @@ namespace Drn
 		void RenderAO();
 		void RenderLights();
 		void RenderSSR();
+		void RenderReflection();
 		void RenderPostProcess();
 		void PostProcess_Tonemapping();
 

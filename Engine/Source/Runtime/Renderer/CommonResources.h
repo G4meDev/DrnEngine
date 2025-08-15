@@ -113,6 +113,16 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class ReflectionEnvironemntPSO
+	{
+	public:
+
+		ReflectionEnvironemntPSO( ID3D12GraphicsCommandList2* CommandList );
+		~ReflectionEnvironemntPSO();
+		
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class ResolveEditorSelectionPSO
 	{
 	public:
@@ -210,6 +220,7 @@ namespace Drn
 		AmbientOcclusionPSO* m_AmbientOcclusionPSO;
 		LightPassPSO* m_LightPassPSO;
 		ScreenSpaceReflectionPSO* m_ScreenSpaceReflectionPSO;
+		ReflectionEnvironemntPSO* m_ReflectionEnvironmentPSO;
 
 		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
 		SpriteHitProxyPSO* m_SpriteHitProxyPSO;

@@ -52,6 +52,7 @@ namespace Drn
 		m_TonemapPSO = new TonemapPSO(CommandList);
 		m_AmbientOcclusionPSO = new AmbientOcclusionPSO(CommandList);
 		m_ScreenSpaceReflectionPSO = new ScreenSpaceReflectionPSO(CommandList);
+		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList);
 		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList);
 		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList);
 		m_LightPassPSO = new LightPassPSO(CommandList);
@@ -76,6 +77,7 @@ namespace Drn
 		delete m_TonemapPSO;
 		delete m_AmbientOcclusionPSO;
 		delete m_ScreenSpaceReflectionPSO;
+		delete m_ReflectionEnvironmentPSO;
 		delete m_SpriteEditorPrimitivePSO;
 		delete m_SpriteHitProxyPSO;
 		delete m_LightPassPSO;
@@ -537,6 +539,59 @@ namespace Drn
 	}
 
 	ScreenSpaceReflectionPSO::~ScreenSpaceReflectionPSO()
+	{
+		m_PSO->Release();
+	}
+
+// --------------------------------------------------------------------------------------
+
+	ReflectionEnvironemntPSO::ReflectionEnvironemntPSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_PSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ReflectionEnvironment.hlsl" ) );
+
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+
+		const std::vector<const wchar_t*> Macros = {};
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+		CD3DX12_BLEND_DESC BlendDesc = {};
+		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+		BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+		BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+		BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+		PipelineDesc.InputLayout						= VertexLayout_PosUV;
+		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		PipelineDesc.BlendState							= BlendDesc;
+		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R16G16B16A16_FLOAT;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_ReflectionEnvironemnt");
+#endif
+	}
+
+	ReflectionEnvironemntPSO::~ReflectionEnvironemntPSO()
 	{
 		m_PSO->Release();
 	}

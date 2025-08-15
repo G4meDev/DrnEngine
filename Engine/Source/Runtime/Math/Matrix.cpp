@@ -25,6 +25,17 @@ namespace Drn
 		));
 	}
 
+	Matrix::Matrix( const Vector4& X, const Vector4& Y, const Vector4& Z, const Vector4& W )
+	{
+		XMStoreFloat4x4(&m_Matrix, XMMatrixSet
+		(
+			X.GetX(), X.GetY(), X.GetZ(), X.GetW(),
+			Y.GetX(), Y.GetY(), Y.GetZ(), X.GetW(),
+			Z.GetX(), Z.GetY(), Z.GetZ(), Z.GetW(),
+			W.GetX(), W.GetY(), W.GetZ(), W.GetW()
+		));
+	}
+
 	Matrix Matrix::MakeFromX( const Vector& XAxis )
 	{
 		XMVECTOR NewX = XMLoadFloat3( XAxis.Get() );

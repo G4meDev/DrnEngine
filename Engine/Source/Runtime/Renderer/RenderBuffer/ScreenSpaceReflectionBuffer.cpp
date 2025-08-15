@@ -78,6 +78,17 @@ namespace Drn
 #if D3D12_Debug_INFO
 		m_Target->SetName( "SSRTarget" );
 #endif
+
+// --------------------------------------------------------------------------------------------------------------
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
+		Desc.Format = SSR_FORMAT;
+		Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		Desc.Texture2D.MipLevels = 1;
+		Desc.Texture2D.MostDetailedMip = 0;
+
+		Device->CreateShaderResourceView(m_Target->GetD3D12Resource(), &Desc, m_Target->GetCpuHandle());
 	}
 
 	void ScreenSpaceReflectionBuffer::Clear( ID3D12GraphicsCommandList2* CommandList )

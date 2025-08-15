@@ -10,6 +10,7 @@
 #include "Runtime/Renderer/RenderBuffer/EditorSelectionRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/RenderBufferAO.h"
 #include "Runtime/Renderer/RenderBuffer/ScreenSpaceReflectionBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/ReflectionEnvironmentBuffer.h"
 
 #include "Runtime/Engine/PostProcessVolume.h"
 
@@ -27,6 +28,7 @@ namespace Drn
 		, m_RenderingEnabled(true)
 		, m_CachedRenderSize(1920, 1080)
 		, m_CommandList(nullptr)
+		, m_FrameIndex(0)
 	{
 		Init();
 	}
@@ -78,6 +80,9 @@ namespace Drn
 		m_ScreenSpaceReflectionBuffer = std::make_shared<class ScreenSpaceReflectionBuffer>();
 		m_ScreenSpaceReflectionBuffer->Init();
 
+		m_ReflectionEnvironmentBuffer = std::make_shared<class ReflectionEnvironmentBuffer>();
+		m_ReflectionEnvironmentBuffer->Init();
+
 #if WITH_EDITOR
 		// mouse picking components
 		m_HitProxyRenderBuffer = std::make_shared<class HitProxyRenderBuffer>();
@@ -96,14 +101,14 @@ namespace Drn
 		m_RenderTask.emplace( [&]() { Render(); } );
 
 		{
-			m_BindlessViewBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+			m_BindlessViewBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 1024 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 			m_BindlessViewBuffer->SetName("SceneViewBuffer_" + m_Name);
 #endif
 
 			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 			ResourceViewDesc.BufferLocation = m_BindlessViewBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			ResourceViewDesc.SizeInBytes = 512;
+			ResourceViewDesc.SizeInBytes = 1024;
 			Device->CreateConstantBufferView( &ResourceViewDesc, m_BindlessViewBuffer->GetCpuHandle());
 
 		}
@@ -393,6 +398,36 @@ namespace Drn
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
+	void SceneRenderer::RenderReflection()
+	{
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Reflection Environment" );
+
+		m_ReflectionEnvironmentBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
+		
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		ResourceStateTracker::Get()->TransiationResource( m_ScreenSpaceReflectionBuffer->m_Target, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_GBuffer->m_ColorDeferredCpuHandle, true, NULL);
+
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ReflectionEnvironmentPSO->m_PSO );
+
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ReflectionEnvironmentBuffer->m_Buffer->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
+	}
+
 	void SceneRenderer::RenderPostProcess()
 	{
 		SCOPE_STAT();
@@ -547,6 +582,7 @@ namespace Drn
 		RenderAO();
 		RenderLights();
 		RenderSSR();
+		RenderReflection();
 		RenderPostProcess();
 
 #if WITH_EDITOR
@@ -577,6 +613,7 @@ namespace Drn
 		m_TonemapBuffer->Resize( GetViewportSize() );
 		m_AOBuffer->Resize( GetViewportSize() );
 		m_ScreenSpaceReflectionBuffer->Resize( GetViewportSize() );
+		m_ReflectionEnvironmentBuffer->Resize( GetViewportSize() );
 
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( GetViewportSize() );
@@ -607,12 +644,24 @@ namespace Drn
 
 	void SceneRenderer::RecalculateView()
 	{
+		m_SceneView.FrameIndex = ++m_FrameIndex;
+		m_SceneView.FrameIndexMod8 = m_FrameIndex % 8;
+
 		m_SceneView.AspectRatio = (float) GetViewportSize().X / GetViewportSize().Y;
 		m_CameraActor->GetCameraComponent()->CalculateMatrices(m_SceneView.WorldToView, m_SceneView.ViewToProjection, m_SceneView.AspectRatio);
 		
 		m_SceneView.WorldToProjection = m_SceneView.WorldToView * m_SceneView.ViewToProjection;
 		m_SceneView.ProjectionToView = XMMatrixInverse( NULL, m_SceneView.ViewToProjection.Get() );
-		m_SceneView.ProjectionToWorld = XMMatrixInverse( NULL, m_SceneView.WorldToProjection.Get() );
+		m_SceneView.ViewToWorld = XMMatrixInverse(NULL, m_SceneView.WorldToView.Get());
+		//m_SceneView.ProjectionToWorld = m_SceneView.ViewToWorld * m_SceneView.ProjectionToView;
+		m_SceneView.ProjectionToWorld = m_SceneView.ProjectionToView * m_SceneView.ViewToWorld;
+
+		Vector4 V1(1, 0, 0, 0);
+		Vector4 V2(0, 1, 0, 0);
+		Vector4 V3(0, 0, m_SceneView.ViewToProjection.m_Matrix.m[2][2], 1);
+		Vector4 V4(0, 0, m_SceneView.ViewToProjection.m_Matrix.m[3][2], 0);
+		Matrix M = Matrix(V1, V2, V3, V4);
+		m_SceneView.ScreenToTranslatedWorld = M * m_SceneView.ProjectionToWorld;
 
 		m_SceneView.LocalToCameraView = Matrix( m_CameraActor->GetActorTransform() ).Get() * m_SceneView.WorldToView.Get();
 		
