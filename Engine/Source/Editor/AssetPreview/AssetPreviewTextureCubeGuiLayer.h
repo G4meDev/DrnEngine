@@ -24,11 +24,18 @@ namespace Drn
 
 	private:
 
+		void UpdateMipLevel();
+
 		World* m_PreviewWorld;
 		StaticMeshActor* m_PreviewMeshPlane;
 
 		AssetHandle<TextureCube> m_OwningAsset;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
+
+		AssetHandle<Material> m_PreviewMaterial;
+		AssetHandle<Material> m_Preview3DMaterial;
+
+		float m_MipLevel = 0;
 	};
 }
 

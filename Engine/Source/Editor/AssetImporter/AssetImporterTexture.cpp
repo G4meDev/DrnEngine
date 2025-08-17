@@ -287,8 +287,14 @@ namespace Drn
 		uint64 TexelCount = BaseImage->width * BaseImage->height;
 		uint32 FaceSize = Math::RoundUpToPowerOfTwo( std::sqrt(TexelCount / 6.0f) );
 
+		uint32 MipCount = 1;
+		if (TextureAsset->m_GenerateMips)
+		{
+			MipCount = std::log2(FaceSize) + 1;
+		}
+
 		HeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-		D3D12_RESOURCE_DESC TargetDesc = CD3DX12_RESOURCE_DESC::Tex2D(MetaData.format, FaceSize, FaceSize, 6, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
+		D3D12_RESOURCE_DESC TargetDesc = CD3DX12_RESOURCE_DESC::Tex2D(MetaData.format, FaceSize, FaceSize, 6, MipCount, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
 		Microsoft::WRL::ComPtr<ID3D12Resource> TextureCubeTarget;
 		Device->CreateCommittedResource( &HeapProp, D3D12_HEAP_FLAG_NONE, &TargetDesc, D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(TextureCubeTarget.GetAddressOf()));
 
@@ -300,21 +306,27 @@ namespace Drn
 
 		D3D12_DESCRIPTOR_HEAP_DESC HeapDesc = {};
 		HeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		HeapDesc.NumDescriptors = 1;
+		HeapDesc.NumDescriptors = MipCount;
 		Device->CreateDescriptorHeap( &HeapDesc, IID_PPV_ARGS(RtvHeap.GetAddressOf()) );
 #if D3D12_Debug_INFO
 		RtvHeap->SetName(L"RtvHeapTexture2DToCubeMap");
 #endif
 
-		D3D12_CPU_DESCRIPTOR_HANDLE TargetHandle = RtvHeap->GetCPUDescriptorHandleForHeapStart();
+		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> TargetHandles;
+		TargetHandles.resize(MipCount);
 
-		D3D12_RENDER_TARGET_VIEW_DESC ViewDesc = {};
-		ViewDesc.Format = MetaData.format;
-		ViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
-		ViewDesc.Texture2DArray.MipSlice = 0;
-		ViewDesc.Texture2DArray.ArraySize = 6;
-		ViewDesc.Texture2DArray.FirstArraySlice = 0;
-		Device->CreateRenderTargetView( TextureCubeTarget.Get(), &ViewDesc, TargetHandle );
+		for (int32 i = 0; i < MipCount; i++)
+		{
+			TargetHandles[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE( RtvHeap->GetCPUDescriptorHandleForHeapStart(), i, Renderer::Get()->GetRtvIncrementSize() );
+
+			D3D12_RENDER_TARGET_VIEW_DESC ViewDesc = {};
+			ViewDesc.Format = MetaData.format;
+			ViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
+			ViewDesc.Texture2DArray.MipSlice = i;
+			ViewDesc.Texture2DArray.ArraySize = 6;
+			ViewDesc.Texture2DArray.FirstArraySlice = 0;
+			Device->CreateRenderTargetView( TextureCubeTarget.Get(), &ViewDesc, TargetHandles[i] );
+		}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -336,7 +348,6 @@ namespace Drn
 
 			Matrix ViewMatrix = XMMatrixLookAtLH( LightPosition, FocusPoint, XMLoadFloat3(UpVector.Get()));
 			Matrix ProjectionMatrix = XMMatrixPerspectiveFovLH( XM_PIDIV2, 1.0f, 0.001, 1);
-			//Matrix ProjectionMatrix = XMMatrixOrthographicLH( 2, 2, 0.001, 1);
 			Mat = ViewMatrix * ProjectionMatrix;
 		};
 
@@ -380,12 +391,14 @@ namespace Drn
 		UniformCube* RenderCube = new UniformCube(CommandList->GetD3D12CommandList());
 		Texture2DToTextureCubePSO* SlicePso = new Texture2DToTextureCubePSO(CommandList->GetD3D12CommandList(), IntermediateRootSinature.Get(), MetaData.format);
 
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
 		D3D12_RECT ScissorRect = CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX);
 		D3D12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(FaceSize), static_cast<float>(FaceSize));
 
 		CommandList->GetD3D12CommandList()->RSSetViewports(1, &Viewport);
 		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &ScissorRect);
-		CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandle, true, NULL);
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandles[0], true, NULL);
 
 		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommandList->GetD3D12CommandList()->SetPipelineState(SlicePso->m_PSO);
@@ -401,36 +414,30 @@ namespace Drn
 		HeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK);
 		Microsoft::WRL::ComPtr<ID3D12Resource> ReadbackBuffers;
 
+		const uint32 SubreourceCount = 6 * MipCount;
+
 		uint64 TextureMemorySize = 0;
-		D3D12_PLACED_SUBRESOURCE_FOOTPRINT Layouts[6];
+		std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> Layouts;
+		Layouts.resize(SubreourceCount);
 
-		uint32 NumRows[10000];
-		uint64 RowSizeInBytes[100000];
+		std::vector<uint32> NumRows;
+		Layouts.resize(SubreourceCount);
 
-		Device->GetCopyableFootprints(&TargetDesc, 0, 6, 0, Layouts, NumRows, RowSizeInBytes, &TextureMemorySize);
+		std::vector<uint64> RowSizeInBytes;
+		RowSizeInBytes.resize(SubreourceCount);
+
+		Device->GetCopyableFootprints(&TargetDesc, 0, SubreourceCount, 0, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), &TextureMemorySize);
 
 		D3D12_RESOURCE_DESC ReadbackDesc = CD3DX12_RESOURCE_DESC::Buffer(TextureMemorySize);
 		Device->CreateCommittedResource( &HeapProp, D3D12_HEAP_FLAG_NONE, &ReadbackDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(ReadbackBuffers.GetAddressOf()));
 #if D3D12_Debug_INFO
-			ReadbackBuffers->SetName(L"CB_Texture2DToTextureCubeReadback");
+		ReadbackBuffers->SetName(L"CB_Texture2DToTextureCubeReadback");
 #endif
 
-		for (int32 i = 0; i < 6; i++)
+		for (int32 i = 0; i < SubreourceCount; i++)
 		{
-			//CD3DX12_BOX CopyBox( 0, 0, FaceSize, FaceSize);
-		
-			//D3D12_PLACED_SUBRESOURCE_FOOTPRINT Footprint = {};
-			//Footprint.Footprint.Format                   = MetaData.format;
-			//Footprint.Footprint.Width                    = FaceSize;
-			//Footprint.Footprint.Height                   = FaceSize;
-			//Footprint.Footprint.Depth                    = 1;
-			//Footprint.Footprint.RowPitch                 = FaceSize;
-			//Footprint.Offset                             = 0;
-		
 			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc( TextureCubeTarget.Get(), i );
 			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( ReadbackBuffers.Get(), Layouts[i] );
-		
-			//CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
 			CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, nullptr );
 		}
 
@@ -466,7 +473,7 @@ namespace Drn
 		TextureAsset->m_SizeX = FaceSize;
 		TextureAsset->m_SizeY = FaceSize;
 		TextureAsset->m_Format = MetaData.format;
-		TextureAsset->m_MipLevels = 1;
+		TextureAsset->m_MipLevels = MipCount;
 		TextureAsset->MarkRenderStateDirty();
 
 // -----------------------------------------------------------------------------------------------------------------------------------------

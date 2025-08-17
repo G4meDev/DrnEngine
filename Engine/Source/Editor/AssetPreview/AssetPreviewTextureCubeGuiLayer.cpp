@@ -21,35 +21,38 @@ namespace Drn
 		AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
 		PlaneMesh.Load();
 		
-		AssetHandle<Material> TextureCubePreviewMaterial( "Engine\\Content\\Materials\\M_TextureCubePreview.drn" );
-		TextureCubePreviewMaterial.Load();
-		TextureCubePreviewMaterial->SetNamedTextureCube("Texture", m_OwningAsset);
+		m_PreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_TextureCubePreview.drn" );
+		m_PreviewMaterial.Load();
+		m_PreviewMaterial->SetNamedTextureCube("Texture", m_OwningAsset);
 
 		m_PreviewMeshPlane = m_PreviewWorld->SpawnActor<StaticMeshActor>();
 		m_PreviewMeshPlane->GetMeshComponent()->SetSelectable( false );
 		m_PreviewMeshPlane->GetMeshComponent()->SetEditorPrimitive( true);
 		m_PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
-		m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, TextureCubePreviewMaterial);
+		m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, m_PreviewMaterial);
+		m_PreviewMeshPlane->SetActorLocation(Vector(0, 2, 0));
+		m_PreviewMeshPlane->SetActorScale(Vector(2, 1, 1));
 
 // ------------------------------------------------------------------------------------------------------
 
 		AssetHandle<StaticMesh> SphereMesh( "Engine\\Content\\BasicShapes\\SM_Sphere.drn" );
 		SphereMesh.Load();
 		
-		AssetHandle<Material> TextureCubePreview3DMaterial( "Engine\\Content\\Materials\\M_TextureCube3DPreview.drn" );
-		TextureCubePreview3DMaterial.Load();
-		TextureCubePreview3DMaterial->SetNamedTextureCube("Texture", m_OwningAsset);
+		m_Preview3DMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_TextureCube3DPreview.drn" );
+		m_Preview3DMaterial.Load();
+		m_Preview3DMaterial->SetNamedTextureCube("Texture", m_OwningAsset);
 
 		StaticMeshActor* m_PreviewMeshSphere = m_PreviewWorld->SpawnActor<StaticMeshActor>();
 		m_PreviewMeshSphere->GetMeshComponent()->SetSelectable( false );
 		m_PreviewMeshSphere->GetMeshComponent()->SetEditorPrimitive( true);
 		m_PreviewMeshSphere->GetMeshComponent()->SetMesh( SphereMesh );
-		m_PreviewMeshSphere->GetMeshComponent()->SetMaterial(0, TextureCubePreview3DMaterial);
-		m_PreviewMeshSphere->SetActorLocation(Vector(0, 4, 0));
+		m_PreviewMeshSphere->GetMeshComponent()->SetMaterial(0, m_Preview3DMaterial);
+		m_PreviewMeshSphere->SetActorLocation(Vector(0, 6, 0));
 
 // ------------------------------------------------------------------------------------------------------
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>( m_PreviewWorld->GetScene() );
+		UpdateMipLevel();
 	}
 
 	AssetPreviewTextureCubeGuiLayer::~AssetPreviewTextureCubeGuiLayer()
@@ -133,13 +136,28 @@ namespace Drn
 		}
 		 
 		ImGui::Checkbox( "sRGB", &m_OwningAsset->m_sRGB );
+		ImGui::Checkbox( "Generate Mips", &m_OwningAsset->m_GenerateMips );
 
 		ImGui::Separator();
 
 		ImGui::Text( "%s", TextureHelper::GetDxgiFormatName(m_OwningAsset->GetFormat()).c_str() );
 		ImGui::Text( "%ux%ux6", m_OwningAsset->GetSizeX(), m_OwningAsset->GetSizeY() );
 		ImGui::Text( "%u mips", m_OwningAsset->GetMipLevels() );
+
+		ImGui::Separator();
+
+		if ( ImGui::DragFloat( "Mip Level", &m_MipLevel, 0.05f, 0, m_OwningAsset->m_MipLevels) )
+		{
+			UpdateMipLevel();
+		}
 	}
+
+	void AssetPreviewTextureCubeGuiLayer::UpdateMipLevel()
+	{
+		m_PreviewMaterial->SetNamedScalar("MipLevel", m_MipLevel);
+		m_Preview3DMaterial->SetNamedScalar("MipLevel", m_MipLevel);
+	}
+
 }
 
 #endif

@@ -197,6 +197,8 @@ namespace Drn
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.MinLOD = 0.0f;
+			SamplerDesc.MaxLOD = FLT_MAX;
 			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearSamplerCpuHandle);
 
 			m_StaticSamplers.LinearSampler = GetBindlessSamplerIndex(m_BindlessLinearSamplerGpuHandle);
@@ -209,6 +211,8 @@ namespace Drn
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			SamplerDesc.MinLOD = 0.0f;
+			SamplerDesc.MaxLOD = FLT_MAX;
 			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessPointSamplerCpuHandle);
 
 			m_StaticSamplers.PointSampler = GetBindlessSamplerIndex(m_BindlessPointSamplerGpuHandle);
@@ -221,6 +225,8 @@ namespace Drn
 			SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 			SamplerDesc.AddressU = SamplerDesc.AddressV = SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
 			SamplerDesc.BorderColor[0] = SamplerDesc.BorderColor[1] = SamplerDesc.BorderColor[2] = SamplerDesc.BorderColor[3] = 1.0f;
+			SamplerDesc.MinLOD = 0.0f;
+			SamplerDesc.MaxLOD = FLT_MAX;
 			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearCompLessSamplerCpuHandle);
 
 			m_StaticSamplers.LinearCompLessSampler = GetBindlessSamplerIndex(m_BindlessLinearCompLessSamplerGpuHandle);
@@ -233,6 +239,8 @@ namespace Drn
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			SamplerDesc.MinLOD = 0.0f;
+			SamplerDesc.MaxLOD = FLT_MAX;
 			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearClampSamplerCpuHandle);
 
 			m_StaticSamplers.LinearClampSampler = GetBindlessSamplerIndex(m_BindlessLinearClampSamplerGpuHandle);
@@ -245,6 +253,8 @@ namespace Drn
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			SamplerDesc.MinLOD = 0.0f;
+			SamplerDesc.MaxLOD = FLT_MAX;
 			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessPointClampSamplerCpuHandle);
 
 			m_StaticSamplers.PointClampSampler = GetBindlessSamplerIndex(m_BindlessPointClampSamplerGpuHandle);

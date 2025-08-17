@@ -82,7 +82,10 @@ protected:
 		uint32 m_RowPitch;
 		uint32 m_SlicePitch;
 
-		// TODO: make array to support mip levels
+#if WITH_EDITOR
+		bool m_GenerateMips = false;
+#endif
+
 		ID3DBlob* m_ImageBlob;
 
 		std::string m_SourcePath;

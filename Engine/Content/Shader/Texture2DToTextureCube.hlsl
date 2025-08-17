@@ -103,16 +103,19 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D Texture = ResourceDescriptorHeap[MainBuffer.TextureIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[MainBuffer.LinearSamplerIndex];
 
-    float3 Dir = IN.Direction;
+    float3 Dir = normalize(IN.Direction);
     
     //float Long = atan2(Dir.y, Dir.x);
     //float Lat = atan2(Dir.z, sqrt(Dir.x * Dir.x + Dir.y * Dir.y));
+    
     float Long = atan2(Dir.z, Dir.x);
     float Lat = atan2(Dir.y, sqrt(Dir.x * Dir.x + Dir.z * Dir.z));
     float2 UV = float2(Long / (2.0f * PI), Lat / PI + 0.5f);
     UV.y *= -1;
     
-    //float2 UV = float2((1 + atan2(IN.Direction.z, -IN.Direction.x) / 3.14159265) / 2, acos(IN.Direction.y) / 3.14159265);
+    //float2 UV = float2((1 + atan2(IN.Direction.z, -IN.Direction.x) / PI) / 2, acos(IN.Direction.y) / PI);
+    
+    
     
     float4 Sample = Texture.Sample(LinearSampler, UV);
     return Sample;

@@ -20,6 +20,10 @@ namespace Drn
 			Ar >> m_RowPitch;
 			Ar >> m_SlicePitch;
 			Ar >> m_ImageBlob;
+
+#if WITH_EDITOR
+			Ar >> m_GenerateMips;
+#endif
 		}
 
 		else
@@ -33,6 +37,10 @@ namespace Drn
 			Ar << m_RowPitch;
 			Ar << m_SlicePitch;
 			Ar << m_ImageBlob;
+
+#if WITH_EDITOR
+			Ar << m_GenerateMips;
+#endif
 		}
 	}
 
