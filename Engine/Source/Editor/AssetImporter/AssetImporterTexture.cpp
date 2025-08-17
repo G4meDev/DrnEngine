@@ -328,6 +328,20 @@ namespace Drn
 			Device->CreateRenderTargetView( TextureCubeTarget.Get(), &ViewDesc, TargetHandles[i] );
 		}
 
+		std::vector<uint32> TargetSrvs;
+		TargetSrvs.resize(MipCount);
+		for (int32 i = 0; i < MipCount; i++)
+		{
+			TargetSrvs[i] = AllocateSrv();
+			D3D12_SHADER_RESOURCE_VIEW_DESC ViewDesc = {};
+			ViewDesc.Format = MetaData.format;
+			ViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			ViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+			ViewDesc.TextureCube.MipLevels = 1;
+			ViewDesc.TextureCube.MostDetailedMip = i;
+			Device->CreateShaderResourceView(TextureCubeTarget.Get(), &ViewDesc, SrvCpuHandle(TargetSrvs[i]));
+		}
+
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 		struct SliceData
@@ -406,8 +420,72 @@ namespace Drn
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
+		std::vector<SliceData> MipBufferData;
+		MipBufferData.resize(MipCount - 1);
+
+		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> MipBuffers;
+		MipBuffers.resize(MipCount - 1);
+
+		for (int32 i = 1; i < MipCount; i++)
 		{
-			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(TextureCubeTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+			MipBufferData[i - 1] = BufferData;
+			MipBufferData[i - 1].TextureIndex = TargetSrvs[i - 1];
+
+			HeapProp = CD3DX12_HEAP_PROPERTIES( D3D12_HEAP_TYPE_UPLOAD );
+			D3D12_RESOURCE_DESC SliceBufferDesc = CD3DX12_RESOURCE_DESC::Buffer( 512 );
+			Device->CreateCommittedResource(&HeapProp, D3D12_HEAP_FLAG_NONE, &SliceBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(MipBuffers[i - 1].GetAddressOf()) );
+#if D3D12_Debug_INFO
+			MipBuffers[i - 1]->SetName(L"CB_Texture2DToCubeMapSlice");
+#endif
+			uint32 BufferIndex = AllocateSrv();
+
+			D3D12_CONSTANT_BUFFER_VIEW_DESC BufferDesc = {};
+			BufferDesc.BufferLocation = MipBuffers[i - 1]->GetGPUVirtualAddress();
+			BufferDesc.SizeInBytes = 512;
+			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView(&BufferDesc, SrvCpuHandle(BufferIndex));
+
+			{
+				UINT8* ConstantBufferStart;
+				CD3DX12_RANGE readRange( 0, 0 );
+				MipBuffers[i - 1]->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+				memcpy( ConstantBufferStart, &MipBufferData[i-1], sizeof(SliceData));
+				MipBuffers[i - 1]->Unmap(0, nullptr);
+			}
+
+			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, BufferIndex, 0);
+
+			for (int32 j = 0; j < 6; j++)
+			{
+				uint32 SubresourceIndex = D3D12CalcSubresource(i - 1, j, 0, MipCount, 6);
+				CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(TextureCubeTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
+				CommandList->GetD3D12CommandList()->ResourceBarrier(1, &Barrier);
+			}
+
+			uint32 MipFaceSize = FaceSize / std::pow(2, i);
+			D3D12_VIEWPORT MipViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(MipFaceSize), static_cast<float>(MipFaceSize));
+			CommandList->GetD3D12CommandList()->RSSetViewports(1, &MipViewport);
+			CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandles[i], true, NULL);
+
+			CommandList->GetD3D12CommandList()->SetPipelineState(SlicePso->m_MipPSO);
+			RenderCube->BindAndDraw(CommandList->GetD3D12CommandList());
+		}
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
+		for (int32 i = 0; i < MipCount-1; i++)
+		{
+			for (int32 j = 0; j < 6; j++)
+			{
+				uint32 SubresourceIndex = D3D12CalcSubresource(i, j, 0, MipCount, 6);
+				CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(TextureCubeTarget.Get(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE, SubresourceIndex);
+				CommandList->GetD3D12CommandList()->ResourceBarrier(1, &Barrier);
+			}
+		}
+
+		for (int32 j = 0; j < 6; j++)
+		{
+			uint32 SubresourceIndex = D3D12CalcSubresource(MipCount - 1, j, 0, MipCount, 6);
+			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(TextureCubeTarget.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE, SubresourceIndex);
 			CommandList->GetD3D12CommandList()->ResourceBarrier(1, &Barrier);
 		}
 

@@ -937,47 +937,91 @@ namespace Drn
 	Texture2DToTextureCubePSO::Texture2DToTextureCubePSO( ID3D12GraphicsCommandList2* CommandList, ID3D12RootSignature* RS, DXGI_FORMAT Format)
 	{
 		m_PSO = nullptr;
+		m_MipPSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Texture2DToTextureCube.hlsl" ) );
 
-		ID3DBlob* VertexShaderBlob;
-		ID3DBlob* PixelShaderBlob;
-		ID3DBlob* GeometeryShaderBlob;
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Texture2DToTextureCube.hlsl" ) );
 
-		const std::vector<const wchar_t*> Macros;
-		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
-		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
-		CompileShader( ShaderPath, L"Main_GS", L"gs_6_6", Macros, &GeometeryShaderBlob);
+			ID3DBlob* VertexShaderBlob;
+			ID3DBlob* PixelShaderBlob;
+			ID3DBlob* GeometeryShaderBlob;
 
-		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
-		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+			const std::vector<const wchar_t*> Macros;
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+			CompileShader( ShaderPath, L"Main_GS", L"gs_6_6", Macros, &GeometeryShaderBlob);
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= RS;
-		PipelineDesc.InputLayout						= VertexLayout_PosUV;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= RasterizerDesc;
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= Format;
-		PipelineDesc.SampleDesc.Count					= 1;
+			CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
+			RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= RS;
+			PipelineDesc.InputLayout						= VertexLayout_PosUV;
+			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			PipelineDesc.RasterizerState					= RasterizerDesc;
+			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+			PipelineDesc.SampleMask							= UINT_MAX;
+			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+			PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
+			PipelineDesc.NumRenderTargets					= 1;
+			PipelineDesc.RTVFormats[0]						= Format;
+			PipelineDesc.SampleDesc.Count					= 1;
+
+			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
 
 #if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_Texture2DToTextureCube");
+			m_PSO->SetName(L"PSO_Texture2DToTextureCube");
 #endif
+		}
+
+// -----------------------------------------------------------------------------------------------------------------------
+
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Texture2DToTextureCube.hlsl" ) );
+
+			ID3DBlob* VertexShaderBlob;
+			ID3DBlob* PixelShaderBlob;
+			ID3DBlob* GeometeryShaderBlob;
+
+			const std::vector<const wchar_t*> Macros;
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Mip_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+			CompileShader( ShaderPath, L"Main_GS", L"gs_6_6", Macros, &GeometeryShaderBlob);
+
+			CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
+			RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= RS;
+			PipelineDesc.InputLayout						= VertexLayout_PosUV;
+			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			PipelineDesc.RasterizerState					= RasterizerDesc;
+			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+			PipelineDesc.SampleMask							= UINT_MAX;
+			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+			PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
+			PipelineDesc.NumRenderTargets					= 1;
+			PipelineDesc.RTVFormats[0]						= Format;
+			PipelineDesc.SampleDesc.Count					= 1;
+
+			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_MipPSO ) );
+
+#if D3D12_Debug_INFO
+			m_MipPSO->SetName(L"PSO_Texture2DToTextureCubeMip");
+#endif
+		}
 	}
 
 	Texture2DToTextureCubePSO::~Texture2DToTextureCubePSO()
 	{
 		m_PSO->Release();
+		m_MipPSO->Release();
 	}
 #endif
 

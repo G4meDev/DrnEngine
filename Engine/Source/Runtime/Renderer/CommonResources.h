@@ -205,6 +205,7 @@ namespace Drn
 		~Texture2DToTextureCubePSO();
 		
 		ID3D12PipelineState* m_PSO;
+		ID3D12PipelineState* m_MipPSO;
 	};
 #endif
 

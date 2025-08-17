@@ -120,3 +120,14 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float4 Sample = Texture.Sample(LinearSampler, UV);
     return Sample;
 }
+
+float4 Mip_PS(PixelShaderInput IN) : SV_Target
+{
+    ConstantBuffer<MainData> MainBuffer = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
+    TextureCube Texture = ResourceDescriptorHeap[MainBuffer.TextureIndex];
+    SamplerState LinearSampler = ResourceDescriptorHeap[MainBuffer.LinearSamplerIndex];
+
+    float3 Dir = normalize(IN.Direction);
+    float4 Sample = Texture.Sample(LinearSampler, Dir);
+    return Sample;
+}
