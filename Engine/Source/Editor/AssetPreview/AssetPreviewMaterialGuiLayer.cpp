@@ -166,6 +166,19 @@ namespace Drn
 			}
 		}
 
+		if (ImGui::CollapsingHeader( "TextureCube", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
+		{
+			for (int i = 0; i < m_OwningAsset->m_TextureCubeSlots.size(); i++)
+			{
+				AssetHandle<TextureCube> DropedTexture = m_OwningAsset->m_TextureCubeSlots[i].Draw();
+
+				if (DropedTexture.IsValid())
+				{
+					m_OwningAsset->SetIndexedTextureCube(i, DropedTexture);
+				}
+			}
+		}
+
 		if (ImGui::CollapsingHeader( "Scalar", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
 		{
 			for (int i = 0; i < m_OwningAsset->m_FloatSlots.size(); i++)

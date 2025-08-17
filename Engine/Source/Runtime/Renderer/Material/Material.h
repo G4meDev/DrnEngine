@@ -35,6 +35,9 @@ namespace Drn
 		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
 		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
 
+		void SetNamedTextureCube(const std::string& Name, AssetHandle<TextureCube> TextureAsset);
+		void SetIndexedTextureCube(uint8 Index, AssetHandle<TextureCube> TextureAsset);
+
 		void SetIndexedScalar(uint32 Index, float Value);
 		void SetIndexedVector(uint32 Index, const Vector4& Value);
 		
@@ -79,7 +82,8 @@ namespace Drn
 		EInputLayoutType m_InputLayoutType;
 		D3D12_CULL_MODE m_CullMode;
 
-		std::vector<Texture2DProperty> m_Texture2DSlots;
+		std::vector<MaterialIndexedTexture2DParameter> m_Texture2DSlots;
+		std::vector<MaterialIndexedTextureCubeParameter> m_TextureCubeSlots;
 		std::vector<MaterialIndexedFloatParameter> m_FloatSlots;
 		std::vector<MaterialIndexedVector4Parameter> m_Vector4Slots;
 

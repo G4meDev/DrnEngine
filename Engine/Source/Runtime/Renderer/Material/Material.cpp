@@ -95,8 +95,18 @@ namespace Drn
 			m_Texture2DSlots.reserve(Texture2DCount);
 			for (int i = 0; i < Texture2DCount; i++)
 			{
-				m_Texture2DSlots.push_back(Texture2DProperty());
+				m_Texture2DSlots.push_back(MaterialIndexedTexture2DParameter());
 				m_Texture2DSlots[i].Serialize(Ar);
+			}
+
+			uint8 TextureCubeCount;
+			Ar >> TextureCubeCount;
+			m_TextureCubeSlots.clear();
+			m_TextureCubeSlots.reserve(TextureCubeCount);
+			for (int i = 0; i < TextureCubeCount; i++)
+			{
+				m_TextureCubeSlots.push_back(MaterialIndexedTextureCubeParameter());
+				m_TextureCubeSlots[i].Serialize(Ar);
 			}
 
 			uint8 ScalarCount;
@@ -150,6 +160,13 @@ namespace Drn
 			for (int i = 0; i < Texture2DCount; i++)
 			{
 				m_Texture2DSlots[i].Serialize(Ar);
+			}
+
+			uint8 TextureCubeCount = m_TextureCubeSlots.size();
+			Ar << TextureCubeCount;
+			for (int i = 0; i < TextureCubeCount; i++)
+			{
+				m_TextureCubeSlots[i].Serialize(Ar);
 			}
 
 			uint8 ScalarCount = m_FloatSlots.size();
@@ -311,7 +328,15 @@ namespace Drn
 			{
 				if (!Slot.m_Texture2D.IsValid())
 				{
-					Slot.m_Texture2D.Load();
+					Slot.m_Texture2D.LoadChecked();
+				}
+			}
+
+			for (TextureCubeProperty& Slot : m_TextureCubeSlots)
+			{
+				if (!Slot.m_TextureCube.IsValid())
+				{
+					Slot.m_TextureCube.LoadChecked();
 				}
 			}
 
@@ -437,6 +462,14 @@ namespace Drn
 		{
 			m_Texture2DSlots[i].m_Texture2D->UploadResources(CommandList);
 		}
+
+		for (uint8 i = 0; i < m_TextureCubeSlots.size(); i++)
+		{
+			if (m_TextureCubeSlots[i].m_TextureCube.IsValid())
+			{
+				m_TextureCubeSlots[i].m_TextureCube->UploadResources(CommandList);
+			}
+		}
 	}
 
 	void Material::BindMainPass( ID3D12GraphicsCommandList2* CommandList )
@@ -493,14 +526,20 @@ namespace Drn
 	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		std::vector<uint32> TextureIndices;
-		for (int i = 0; i < m_Texture2DSlots.size(); i++)
-		{
-			Resource* TextureResource = m_Texture2DSlots[i].m_Texture2D->GetResource();
+		TextureIndices.resize(m_Texture2DSlots.size() + m_TextureCubeSlots.size());
 
+		for (auto& TextureSlot : m_Texture2DSlots)
+		{
+			Resource* TextureResource = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetResource() : nullptr;
 			if (TextureResource)
-			{
-				TextureIndices.push_back(Renderer::Get()->GetBindlessSrvIndex( m_Texture2DSlots[i].m_Texture2D->GetResource()->GetGpuHandle()) );
-			}
+				TextureIndices[TextureSlot.m_Index] = (Renderer::Get()->GetBindlessSrvIndex(TextureResource->GetGpuHandle()));
+		}
+
+		for (auto& TextureSlot : m_TextureCubeSlots)
+		{
+			Resource* TextureResource = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetResource() : nullptr;
+			if (TextureResource)
+				TextureIndices[TextureSlot.m_Index] = (Renderer::Get()->GetBindlessSrvIndex(TextureResource->GetGpuHandle()));
 		}
 
 		UINT8* ConstantBufferStart;
@@ -564,6 +603,28 @@ namespace Drn
 		if (TextureAsset.IsValid() && Index >= 0 && Index < m_Texture2DSlots.size())
 		{
 			m_Texture2DSlots[Index].m_Texture2D = TextureAsset;
+		}
+	}
+
+	void Material::SetNamedTextureCube( const std::string& Name, AssetHandle<TextureCube> TextureAsset )
+	{
+		for (uint8 i = 0; i < m_TextureCubeSlots.size(); i++)
+		{
+			const TextureCubeProperty& TextureSlot = m_TextureCubeSlots[i];
+
+			if (TextureSlot.m_Name == Name)
+			{
+				SetIndexedTextureCube(i, TextureAsset);
+				return;
+			}
+		}
+	}
+
+	void Material::SetIndexedTextureCube( uint8 Index, AssetHandle<TextureCube> TextureAsset )
+	{
+		if (TextureAsset.IsValid() && Index >= 0 && Index < m_TextureCubeSlots.size())
+		{
+			m_TextureCubeSlots[Index].m_TextureCube = TextureAsset;
 		}
 	}
 

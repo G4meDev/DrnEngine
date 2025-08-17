@@ -143,6 +143,7 @@ namespace Drn
 
 		inline uint32 GetRtvIncrementSize() const { return m_RtvIncrementSize; }
 		inline uint32 GetDsvIncrementSize() const { return m_DsvIncrementSize; }
+		inline uint32 GetSrvIncrementSize() const { return m_SrvIncrementSize; }
 
 		// TODO: remove
 		TempDescriptorHeapAllocator m_BindlessSrvHeapAllocator;

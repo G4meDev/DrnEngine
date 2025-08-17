@@ -72,6 +72,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Texture/Texture2D.h
 	Source/Runtime/Renderer/Texture/TextureCube.h
 	Source/Runtime/Renderer/Texture/TextureVolume.h
+	Source/Runtime/Renderer/Texture/TextureHelper.h
 	Source/Runtime/Renderer/Material/Material.h
 	Source/Runtime/Renderer/VertexBuffer.h
 	Source/Runtime/Renderer/IndexBuffer.h
@@ -144,6 +145,7 @@ set( HEADER_FILES
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.h
+	Source/Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.h
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.h
 	Source/Editor/AssetImporter/AssetImporterMaterial.h
@@ -229,6 +231,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Texture/Texture2D.cpp
 	Source/Runtime/Renderer/Texture/TextureCube.cpp
 	Source/Runtime/Renderer/Texture/TextureVolume.cpp
+	Source/Runtime/Renderer/Texture/TextureHelper.cpp
 	Source/Runtime/Renderer/Material/Material.cpp
 	Source/Runtime/Renderer/VertexBuffer.cpp
 	Source/Runtime/Renderer/IndexBuffer.cpp
@@ -301,6 +304,7 @@ set( SOURCE_FILES
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.cpp
+	Source/Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.cpp
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.cpp
 	Source/Editor/AssetImporter/AssetImporterMaterial.cpp
@@ -385,6 +389,7 @@ target_include_directories( Engine
     PUBLIC inc ../ThirdParty/OneTBB/include/
     PUBLIC inc ../ThirdParty/Taskflow/
     PUBLIC inc ../ThirdParty/DXC/inc
+    PUBLIC inc ../ThirdParty/Renderdoc/inc
 	#PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
@@ -438,6 +443,12 @@ set_source_files_properties( Source/DrnPCH.cpp
 add_custom_command(TARGET Engine POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${PROJECT_SOURCE_DIR}/ThirdParty/PixEvent/redist/$(Configuration)
+		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
+)
+
+add_custom_command(TARGET Engine POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${PROJECT_SOURCE_DIR}/ThirdParty/Renderdoc/lib/
 		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 )
 

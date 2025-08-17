@@ -23,10 +23,10 @@ namespace Drn
 
 		void ReleaseDescriptors();
 
-	protected:
-
 		EAssetType GetAssetType() override { return EAssetType::Texture2D; };
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Texture2D; }
+
+	protected:
 
 #if WITH_EDITOR
 		void Import();

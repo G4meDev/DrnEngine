@@ -86,20 +86,26 @@ namespace Drn
 			CreatedAsset    = std::shared_ptr<Asset>(new Texture2D( AssetFilePath, SourceFile ) );
 		}
 
+		else if ( FileExtension == ".HDR" || FileExtension == ".hdr" )
+		{
+			FormatSupported = true;
+			CreatedAsset    = std::shared_ptr<Asset>(new TextureCube( AssetFilePath, SourceFile ) );
+		}
+
 		if ( !FormatSupported )
 		{
-				LOG( LogAssetManager, Error, "file format %s is not supported. ", FileExtension.c_str() );
-				return;
+			LOG( LogAssetManager, Error, "file format %s is not supported. ", FileExtension.c_str() );
+			return;
 		}
 
 		if ( CreatedAsset )
 		{
-				LOG( LogAssetManager, Info, "import succesful. " );
+			LOG( LogAssetManager, Info, "import succesful. " );
 		}
 
 		else
 		{
-				LOG( LogAssetManager, Error, "import failed. " );
+			LOG( LogAssetManager, Error, "import failed. " );
 		}
 	}
 #endif

@@ -45,6 +45,19 @@ namespace Drn
 		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
 	};
 
+	class UniformCube
+	{
+	public:
+
+		UniformCube( ID3D12GraphicsCommandList2* CommandList );
+		~UniformCube();
+
+		class VertexBuffer* m_VertexBuffer;
+		class IndexBuffer* m_IndexBuffer;
+
+		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+	};
+
 	class PointLightSphere
 	{
 	public:
@@ -177,11 +190,23 @@ namespace Drn
 	{
 	public:
 
-		DebugLinePSO( ID3D12GraphicsCommandList2* CommandList );
+		DebugLinePSO( ID3D12GraphicsCommandList2* CommandList);
 		~DebugLinePSO();
 		
 		ID3D12PipelineState* m_PSO;
 	};
+
+#if WITH_EDITOR
+	class Texture2DToTextureCubePSO
+	{
+	public:
+
+		Texture2DToTextureCubePSO( ID3D12GraphicsCommandList2* CommandList, ID3D12RootSignature* RS, DXGI_FORMAT Format);
+		~Texture2DToTextureCubePSO();
+		
+		ID3D12PipelineState* m_PSO;
+	};
+#endif
 
 	class HZBPSO
 	{
@@ -211,6 +236,7 @@ namespace Drn
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
 		UniformQuad* m_UniformQuad;
+		UniformCube* m_UniformCube;
 		PointLightSphere* m_PointLightSphere;
 		SpotLightCone* m_SpotLightCone;
 

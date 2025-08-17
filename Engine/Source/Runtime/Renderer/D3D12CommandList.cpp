@@ -39,7 +39,7 @@ namespace Drn
 
 	void D3D12CommandList::FlipAndReset()
 	{
-		m_CurrentAllocatorIndex = (m_CurrentAllocatorIndex + 1) / m_NumAllocators;
+		m_CurrentAllocatorIndex = (m_CurrentAllocatorIndex + 1) % m_NumAllocators;
 		auto commandAllocator = m_CommandAllocators[m_CurrentAllocatorIndex];
 		commandAllocator->Reset();
 		m_CommandList->Reset(commandAllocator.Get(), nullptr);

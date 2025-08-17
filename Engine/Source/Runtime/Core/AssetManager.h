@@ -131,10 +131,10 @@ namespace Drn
 			//	m_Asset = AssetManager::Get()->Load<Texture2D>(m_Path);
 			//}
 			//
-			//else if (Type == EAssetType::TextureCube)
-			//{
-			//	m_Asset = AssetManager::Get()->Load<TextureCube>(m_Path);
-			//}
+			else if (Type == EAssetType::TextureCube)
+			{
+				m_Asset = AssetManager::Get()->Load<TextureCube>(m_Path);
+			}
 
 			return Type;
 		}

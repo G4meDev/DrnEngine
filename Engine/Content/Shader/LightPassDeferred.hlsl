@@ -676,10 +676,10 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float4 Masks = MasksTexture.Sample(LinearSampler, IN.UV);
     float Depth = DepthTexture.Sample(LinearSampler, IN.UV).x;
 
-    float4 WorldPos = mul(View.ProjectionToWorld, float4(IN.ScreenPos, Depth, 1));
-    WorldPos.xyz /= WorldPos.w;
-    //float EE = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
-    //float4 WorldPos = mul(View.ScreenToTranslatedWorld, float4(IN.ScreenPos * EE, EE, 1));
+    //float4 WorldPos = mul(View.ProjectionToWorld, float4(IN.ScreenPos, Depth, 1));
+    //WorldPos.xyz /= WorldPos.w;
+    float EE = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
+    float4 WorldPos = mul(View.ScreenToTranslatedWorld, float4(IN.ScreenPos * EE, EE, 1));
     
     float3 N = DecodeNormal(WorldNormal);
     

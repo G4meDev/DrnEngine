@@ -45,6 +45,7 @@ namespace Drn
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
 		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList );
 		m_UniformQuad = new UniformQuad( CommandList );
+		m_UniformCube = new UniformCube( CommandList );
 		m_PointLightSphere = new PointLightSphere( CommandList );
 		m_SpotLightCone = new SpotLightCone(CommandList);
 		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList);
@@ -70,6 +71,7 @@ namespace Drn
 		delete m_ScreenTriangle;
 		delete m_BackfaceScreenTriangle;
 		delete m_UniformQuad;
+		delete m_UniformCube;
 		delete m_PointLightSphere;
 		delete m_SpotLightCone;
 		delete m_ResolveAlphaBlendedPSO;
@@ -186,6 +188,60 @@ namespace Drn
 	}
 
 	void UniformQuad::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+	}
+
+// --------------------------------------------------------------------------------------
+
+	float UniformCubeVertexData[] = 
+	{
+		-1, -1, 1,		1, 1,		// 0
+		1, -1, 1,		1, 1,		// 1
+		-1, 1, 1,		1, 1,		// 2
+		1, 1, 1,		1, 1,		// 3
+		-1, -1, -1,		1, 1,		// 4
+		1, -1, -1,		1, 1,		// 5
+		-1, 1, -1,		1, 1,		// 6
+		1, 1, -1,		1, 1		// 7
+	};
+
+	uint32 UniformCubeIndexData[] = {
+		// top
+		2, 6, 7,
+		2, 3, 7,
+		// bottom
+		0, 4, 5,
+		0, 1, 5,
+		// left
+		0, 2, 6,
+		0, 4, 6,
+		// right
+		1, 3, 7,
+		1, 5, 7,
+		// front
+		0, 2, 3,
+		0, 1, 3,
+		// back
+		4, 6, 7,
+		4, 5, 7
+	};
+
+	UniformCube::UniformCube( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer = VertexBuffer::Create(CommandList, UniformCubeVertexData, 8, sizeof(UniformCubeVertexData) / 8, "UniformCube");
+		m_IndexBuffer = IndexBuffer::Create(CommandList, UniformCubeIndexData, 36, sizeof(UniformCubeIndexData), DXGI_FORMAT_R32_UINT, "UniformCube");
+	}
+
+	UniformCube::~UniformCube()
+	{
+		if (m_VertexBuffer) { delete m_VertexBuffer; }
+		if (m_IndexBuffer) { delete m_IndexBuffer; }
+	}
+
+	void UniformCube::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
 	{
 		m_VertexBuffer->Bind(CommandList);
 		m_IndexBuffer->Bind(CommandList);
@@ -874,6 +930,56 @@ namespace Drn
 	{
 		m_PSO->Release();
 	}
+
+// --------------------------------------------------------------------------------------
+
+#if WITH_EDITOR
+	Texture2DToTextureCubePSO::Texture2DToTextureCubePSO( ID3D12GraphicsCommandList2* CommandList, ID3D12RootSignature* RS, DXGI_FORMAT Format)
+	{
+		m_PSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Texture2DToTextureCube.hlsl" ) );
+
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+		ID3DBlob* GeometeryShaderBlob;
+
+		const std::vector<const wchar_t*> Macros;
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+		CompileShader( ShaderPath, L"Main_GS", L"gs_6_6", Macros, &GeometeryShaderBlob);
+
+		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
+		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= RS;
+		PipelineDesc.InputLayout						= VertexLayout_PosUV;
+		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		PipelineDesc.RasterizerState					= RasterizerDesc;
+		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+		PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
+		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.RTVFormats[0]						= Format;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_Texture2DToTextureCube");
+#endif
+	}
+
+	Texture2DToTextureCubePSO::~Texture2DToTextureCubePSO()
+	{
+		m_PSO->Release();
+	}
+#endif
 
 // --------------------------------------------------------------------------------------
 

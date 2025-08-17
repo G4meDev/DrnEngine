@@ -14,11 +14,9 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 		std::string m_Name;
-
-//#if WITH_EDITOR
-//
-//#endif
 	};
+
+// -----------------------------------------------------------------------------------------------
 
 	class Texture2DProperty : public NamedProperty
 	{
@@ -42,6 +40,71 @@ namespace Drn
 		AssetHandle<Texture2D> Draw();
 #endif
 	};
+
+	class MaterialIndexedTexture2DParameter : public Texture2DProperty
+	{
+	public:
+		MaterialIndexedTexture2DParameter()
+			: Texture2DProperty("", DEFAULT_TEXTURE_PATH)
+			, m_Index(0)
+		{
+		};
+
+		MaterialIndexedTexture2DParameter(const std::string& Name, const std::string& TexturePath, uint16 Index)
+			: Texture2DProperty(Name, TexturePath)
+			, m_Index(Index)
+		{
+		}
+
+		virtual void Serialize( Archive& Ar ) override;
+		uint16 m_Index;
+	};
+
+// -----------------------------------------------------------------------------------------------
+
+	class TextureCubeProperty : public NamedProperty
+	{
+	public:
+		TextureCubeProperty()
+			: NamedProperty("")
+			, m_TextureCube( "" )
+		{
+		};
+
+		TextureCubeProperty( const std::string& Name, const std::string& TexturePath )
+			: NamedProperty(Name)
+			, m_TextureCube(TexturePath)
+		{
+		}
+
+		virtual void Serialize( Archive& Ar ) override;
+		AssetHandle<TextureCube> m_TextureCube;
+
+#if WITH_EDITOR
+		AssetHandle<TextureCube> Draw();
+#endif
+	};
+
+	class MaterialIndexedTextureCubeParameter : public TextureCubeProperty
+	{
+	public:
+		MaterialIndexedTextureCubeParameter()
+			: TextureCubeProperty("", "")
+			, m_Index(0)
+		{
+		};
+
+		MaterialIndexedTextureCubeParameter(const std::string& Name, const std::string& TexturePath, uint16 Index)
+			: TextureCubeProperty(Name, TexturePath)
+			, m_Index(Index)
+		{
+		}
+
+		virtual void Serialize( Archive& Ar ) override;
+		uint16 m_Index;
+	};
+
+// -----------------------------------------------------------------------------------------------
 
 	class FloatProperty : public NamedProperty
 	{

@@ -20,6 +20,8 @@ namespace Drn
 		}
 	}
 
+// ---------------------------------------------------------------------------------------------------------------------
+
 	void Texture2DProperty::Serialize( Archive& Ar )
 	{
 		NamedProperty::Serialize(Ar);
@@ -66,6 +68,85 @@ namespace Drn
 		return AssetHandle<Texture2D>();
 	}
 #endif
+
+	void MaterialIndexedTexture2DParameter::Serialize( Archive& Ar )
+	{
+		Texture2DProperty::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> m_Index;
+		}
+		else
+		{
+			Ar << m_Index;
+		}
+	}
+
+// ------------------------------------------------------------------------------------------------------------------------
+
+	void TextureCubeProperty::Serialize( Archive& Ar )
+	{
+		NamedProperty::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			std::string Path;
+			Ar >> Path;
+			m_TextureCube = AssetHandle<TextureCube>(Path);
+		}
+		else
+		{
+			Ar << m_TextureCube.GetPath();
+		}
+	}
+
+#if WITH_EDITOR
+	AssetHandle<TextureCube> TextureCubeProperty::Draw()
+	{
+		ImGui::Text(m_Name.c_str());
+		ImGui::SameLine();
+		ImGui::TextWrapped(m_TextureCube.GetPath().c_str());
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
+			{
+				auto AssetPath = static_cast<const char*>(payload->Data);
+
+				AssetHandle<Asset> CheckMaterial(AssetPath);
+				EAssetType Type = CheckMaterial.LoadGeneric();
+
+				if (CheckMaterial.IsValid() && Type == EAssetType::TextureCube)
+				{
+					AssetHandle<TextureCube> Result(AssetPath);
+					Result.Load();
+					return Result;
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		return AssetHandle<TextureCube>();
+	}
+#endif
+
+	void MaterialIndexedTextureCubeParameter::Serialize( Archive& Ar )
+	{
+		TextureCubeProperty::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> m_Index;
+		}
+		else
+		{
+			Ar << m_Index;
+		}
+	}
+
+// ------------------------------------------------------------------------------------------------------------------------
 
 	void FloatProperty::Serialize( Archive& Ar )
 	{

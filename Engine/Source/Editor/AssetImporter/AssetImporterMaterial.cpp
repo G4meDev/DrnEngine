@@ -192,17 +192,18 @@ namespace Drn
 
 	void AssetImporterMaterial::UpdateMaterialParameterSlots( Material* MaterialAsset, const std::string& ShaderCode )
 	{
-		std::vector<Texture2DProperty> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
+		std::vector<MaterialIndexedTexture2DParameter> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
 		MaterialAsset->m_Texture2DSlots.clear();
 
 		std::vector<std::string> NamedTokens;
 		FindNamedTokens(ShaderCode, "@TEX2D", NamedTokens);
 
-		for (const std::string& name : NamedTokens)
+		for (int i = 0; i < NamedTokens.size(); i++)
 		{
 			std::string Path = DEFAULT_TEXTURE_PATH;
+			std::string& name = NamedTokens[i];
 
-			for (const Texture2DProperty& OldTexture2D : OldTexture2Ds)
+			for (const MaterialIndexedTexture2DParameter& OldTexture2D : OldTexture2Ds)
 			{
 				if (OldTexture2D.m_Name == name)
 				{
@@ -210,7 +211,30 @@ namespace Drn
 				}
 			}
 
-			MaterialAsset->m_Texture2DSlots.push_back(Texture2DProperty(name, Path));
+			MaterialAsset->m_Texture2DSlots.push_back(MaterialIndexedTexture2DParameter(name, Path, i));
+		}
+
+// ----------------------------------------------------------------------------------------------------------------------------
+
+		std::vector<MaterialIndexedTextureCubeParameter> OldTextureCubes = MaterialAsset->m_TextureCubeSlots;
+		MaterialAsset->m_TextureCubeSlots.clear();
+
+		FindNamedTokens(ShaderCode, "@TEXCUBE", NamedTokens);
+
+		for (int i = 0; i < NamedTokens.size(); i++)
+		{
+			std::string Path = "";
+			std::string& name = NamedTokens[i];
+
+			for (const MaterialIndexedTextureCubeParameter& OldTextureCube : OldTextureCubes)
+			{
+				if (OldTextureCube.m_Name == name)
+				{
+					Path = OldTextureCube.m_TextureCube.GetPath();
+				}
+			}
+
+			MaterialAsset->m_TextureCubeSlots.push_back(MaterialIndexedTextureCubeParameter(name, Path, i + MaterialAsset->m_Texture2DSlots.size()));
 		}
 
 // ----------------------------------------------------------------------------------------------------------------------------
