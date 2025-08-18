@@ -146,6 +146,13 @@ namespace Drn
 
 		ImGui::Separator();
 
+		const char* LayoutTypes[] = { "NoCompression", "BC1", "BC4", "BC5", "BC6" };
+		int32 CurrrentComppression = static_cast<int32>(m_OwningAsset->m_Compression);
+		if ( ImGui::Combo( "Compression", &CurrrentComppression, LayoutTypes, IM_ARRAYSIZE( LayoutTypes )))
+		{
+			m_OwningAsset->m_Compression = static_cast<ETextureCompression>(CurrrentComppression);
+		}
+
 		if ( ImGui::DragFloat( "Mip Level", &m_MipLevel, 0.05f, 0, m_OwningAsset->m_MipLevels) )
 		{
 			UpdateMipLevel();

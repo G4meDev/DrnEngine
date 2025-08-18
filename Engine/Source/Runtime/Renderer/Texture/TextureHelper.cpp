@@ -42,15 +42,18 @@ namespace Drn
 			{
 				return DXGI_FORMAT_BC5_UNORM;
 			}
+		}
+
+		else if (InFormat == DXGI_FORMAT_R32G32B32A32_FLOAT)
+		{
+			if (Compression == ETextureCompression::BC1)
+			{
+				return DXGI_FORMAT_BC1_UNORM;
+			}
 
 			else if (Compression == ETextureCompression::BC6)
 			{
 				return DXGI_FORMAT_BC6H_UF16;
-			}
-
-			else
-			{
-				return DXGI_FORMAT_R8G8B8A8_UNORM;
 			}
 		}
 

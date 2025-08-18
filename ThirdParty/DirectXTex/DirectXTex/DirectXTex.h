@@ -36,6 +36,8 @@ struct IWICImagingFactory;
 struct IWICMetadataQueryReader;
 
 
+#include <d3d11.h>
+
 namespace DirectX
 {
 

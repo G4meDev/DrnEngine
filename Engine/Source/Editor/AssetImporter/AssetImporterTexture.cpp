@@ -7,6 +7,9 @@
 #include "Runtime/Renderer/Texture/TextureHelper.h"
 #include <renderdoc_app.h>
 
+#include <d3d11.h>
+//#include <dxgi1_2.h>
+
 LOG_DEFINE_CATEGORY( LogAssetImporterTexture2D, "AssetImporterTexture2D" );
 
 namespace Drn
@@ -145,11 +148,6 @@ namespace Drn
 		if(rdoc_api) rdoc_api->StartFrameCapture(NULL, NULL);
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
-
-		if (TextureAsset->IsSRGB())
-		{
-			MetaData.format = MakeSRGB(MetaData.format);
-		}
 
 		const DirectX::Image* BaseImage = Image.GetImage(0, 0, 0);
 		const uint32 ImageBufferSize = BaseImage->slicePitch;
@@ -551,7 +549,7 @@ namespace Drn
 		Layouts.resize(SubreourceCount);
 
 		std::vector<uint32> NumRows;
-		Layouts.resize(SubreourceCount);
+		NumRows.resize(SubreourceCount);
 
 		std::vector<uint64> RowSizeInBytes;
 		RowSizeInBytes.resize(SubreourceCount);
@@ -595,14 +593,127 @@ namespace Drn
 		ReadRange.End = TextureMemorySize;
 		ReadbackBuffers->Map(0, &ReadRange, reinterpret_cast<void**>(&MemoryStart));
 
-		TextureAsset->ReleaseImageBlobs();
-		D3DCreateBlob(TextureMemorySize, &TextureAsset->m_ImageBlob);
-		memcpy(TextureAsset->m_ImageBlob->GetBufferPointer(), MemoryStart, TextureMemorySize);
+		const bool HasCompression = TextureAsset->GetCompression() != ETextureCompression::NoCompression;
+		if (HasCompression)
+		{
+			ScratchImage RawImage;
+			RawImage.Initialize2D(MetaData.format, FaceSize, FaceSize, 6, MipCount);
+
+			MetaData.format = TextureHelper::ResolveTextureFormat(MetaData.format, TextureAsset->GetCompression());
+
+			for (int32 i = 0; i < SubreourceCount; i++)
+			{
+				uint32 MipLevel;
+				uint32 ArrayLevel;
+				uint32 PlaneLevel;
+				D3D12DecomposeSubresource(i, MipCount, 6, MipLevel, ArrayLevel, PlaneLevel);
+
+				const DirectX::Image* SubresourceImage = RawImage.GetImage(MipLevel, ArrayLevel, 0);
+
+				const uint64 RowSize = RowSizeInBytes[i];
+				for ( uint64 j = 0; j < NumRows[i]; j++ )
+				{
+					BYTE* CopyDest = (BYTE*)SubresourceImage->pixels + SubresourceImage->rowPitch * j;
+					BYTE* CopySource = MemoryStart + Layouts[i].Offset + Layouts[i].Footprint.RowPitch * j;
+					const uint64 CopySize = SubresourceImage->rowPitch;
+
+					memcpy( CopyDest, CopySource, CopySize );
+				}
+			}
+
+			ScratchImage CompressedImage;
+			CoInitializeEx( nullptr, COINITBASE_MULTITHREADED );
+
+			if (MetaData.format != DXGI_FORMAT_BC6H_UF16)
+			{
+				// TODO: log errors
+				HRESULT Res = Compress(RawImage.GetImages(), RawImage.GetImageCount(), RawImage.GetMetadata(),
+					MetaData.format, TEX_COMPRESS_DEFAULT, TEX_THRESHOLD_DEFAULT, CompressedImage);
+			}
+			else
+			{
+				Microsoft::WRL::ComPtr<ID3D11Device> D11Device;
+
+				Microsoft::WRL::ComPtr<IDXGIFactory2> pFactory;
+				HRESULT hr = CreateDXGIFactory1( IID_PPV_ARGS(pFactory.GetAddressOf()));
+
+				IDXGIAdapter* pAdapter = nullptr;
+				IDXGIAdapter* TargetAdapter = nullptr;
+				UINT adapterIndex = 0;
+				uint64 MaxMemory = 0;
+				while (pFactory->EnumAdapters(adapterIndex, &pAdapter) != DXGI_ERROR_NOT_FOUND)
+				{
+					adapterIndex++;
+					DXGI_ADAPTER_DESC DDD;
+					pAdapter->GetDesc(&DDD);
+					if (DDD.DedicatedVideoMemory > MaxMemory)
+					{
+						MaxMemory = DDD.DedicatedVideoMemory;
+						*TargetAdapter = *pAdapter;
+					}
+				}
+
+				Microsoft::WRL::ComPtr<ID3D11DeviceContext> pContext;
+				D3D_FEATURE_LEVEL featureLevel;
+				UINT createDeviceFlags = 0;
+#ifdef _DEBUG
+				createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+				HRESULT WW = D3D11CreateDevice(
+					TargetAdapter,
+					D3D_DRIVER_TYPE_HARDWARE,
+					nullptr,
+					createDeviceFlags,
+					nullptr,
+					0,
+					D3D11_SDK_VERSION,
+					D11Device.GetAddressOf(),
+					&featureLevel,
+					pContext.GetAddressOf()
+				);
+
+				HRESULT Res = Compress( D11Device.Get(), RawImage.GetImages(), RawImage.GetImageCount(), RawImage.GetMetadata(),
+					MetaData.format, TEX_COMPRESS_DEFAULT, TEX_THRESHOLD_DEFAULT, CompressedImage);
+			}
+
+			D3D12_RESOURCE_DESC Desc1 = CD3DX12_RESOURCE_DESC::Tex2D(MetaData.format, FaceSize, FaceSize, 6, MipCount);
+			Renderer::Get()->GetD3D12Device()->GetCopyableFootprints(&Desc1, 0, SubreourceCount, 0, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), &TextureMemorySize );
+
+			TextureAsset->ReleaseImageBlobs();
+			D3DCreateBlob(TextureMemorySize, &TextureAsset->m_ImageBlob);
+
+			for (int32 i = 0; i < SubreourceCount; i++)
+			{
+				uint32 MipLevel;
+				uint32 ArrayLevel;
+				uint32 PlaneLevel;
+				D3D12DecomposeSubresource(i, MipCount, 6, MipLevel, ArrayLevel, PlaneLevel);
+				const DirectX::Image* MipSource = CompressedImage.GetImage( MipLevel, ArrayLevel, 0 );
+
+				for ( uint64 j = 0; j < NumRows[i]; j++ )
+				{
+					BYTE* CopyDest = (BYTE*)TextureAsset->m_ImageBlob->GetBufferPointer() + Layouts[i].Offset + Layouts[i].Footprint.RowPitch * j;
+					BYTE* CopySource = (BYTE*)MipSource->pixels + MipSource->rowPitch * j;
+					const uint64 CopySize   = MipSource->rowPitch;
+
+					memcpy( CopyDest, CopySource, CopySize );
+				}
+			}
+		}
+
+		else
+		{
+			TextureAsset->ReleaseImageBlobs();
+			D3DCreateBlob(TextureMemorySize, &TextureAsset->m_ImageBlob);
+			memcpy(TextureAsset->m_ImageBlob->GetBufferPointer(), MemoryStart, TextureMemorySize);
+		}
 		ReadbackBuffers->Unmap(0, nullptr);
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
 
 		TextureAsset->m_SizeX = FaceSize;
 		TextureAsset->m_SizeY = FaceSize;
-		TextureAsset->m_Format = MetaData.format;
+		TextureAsset->m_Format = TextureAsset->IsSRGB() ? MakeSRGB(MetaData.format) : MetaData.format;
 		TextureAsset->m_MipLevels = MipCount;
 		TextureAsset->MarkRenderStateDirty();
 

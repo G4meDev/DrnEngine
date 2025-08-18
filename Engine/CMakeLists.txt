@@ -410,6 +410,7 @@ target_link_directories( Engine
 
 target_link_libraries( Engine 
     PUBLIC d3d12.lib
+    PUBLIC d3d11.lib
     PUBLIC dxgi.lib
     PUBLIC dxguid.lib
 	PUBLIC d3dcompiler.lib
