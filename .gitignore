@@ -404,3 +404,5 @@ build_*/
 
 !/ThirdParty/OneTBB/lib/**
 !/ThirdParty/OneTBB/redist/**
+
+!/Engine/Content/Textures/**
