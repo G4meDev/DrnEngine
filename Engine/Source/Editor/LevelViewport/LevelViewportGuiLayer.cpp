@@ -3,18 +3,9 @@
 
 #if WITH_EDITOR
 
-#include "Runtime/Engine/PointLightActor.h"
-#include "Runtime/Engine/SpotLightActor.h"
-#include "Runtime/Engine/DirectionalLightActor.h"
-#include "Runtime/Engine/PostProcessVolume.h"
-
 #include "Editor/Editor.h"
 #include "Editor/EditorConfig.h"
 
-#include "Editor/LevelViewport/LevelViewport.h"
-#include "Editor/EditorPanels/ViewportPanel.h"
-#include "Editor/EditorPanels/WorldOutlinerPanel.h"
-#include "Editor/EditorPanels/ActorDetailPanel.h"
 #include <imgui.h>
 
 namespace Drn
@@ -259,25 +250,31 @@ namespace Drn
 			{
 				if (ImGui::Button( "PointLight" ))
 				{
-					AddPointLight();
+					SpawnActorFromClassInLevel<PointLightActor>("PointLight_00");
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::Button( "SpotLight" ))
 				{
-					AddSpotLight();
+					SpawnActorFromClassInLevel<SpotLightActor>("SpotLight_00");
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::Button( "DirectionalLight" ))
 				{
-					AddDirectionalLight();
+					SpawnActorFromClassInLevel<DirectionalLightActor>("DirectionalLight_00");
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::Button( "SkyLight" ))
+				{
+					SpawnActorFromClassInLevel<SkyLightActor>("SkyLight_00");
 					ImGui::CloseCurrentPopup();
 				}
 
 				if (ImGui::Button( "PostProcessVolume" ))
 				{
-					AddPostProcessVolume();
+					SpawnActorFromClassInLevel<PostProcessVolume>("PostProcessVolume");
 					ImGui::CloseCurrentPopup();
 				}
 
@@ -344,31 +341,6 @@ namespace Drn
 				}
 			}
 		}
-	}
-
-	void LevelViewportGuiLayer::AddPointLight()
-	{
-		PointLightActor* LightActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<PointLightActor>();
-		LightActor->SetActorLabel( "PointLight_00" );
-
-	}
-
-	void LevelViewportGuiLayer::AddSpotLight()
-	{
-		SpotLightActor* LightActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<SpotLightActor>();
-		LightActor->SetActorLabel( "SpotLight_00" );
-	}
-
-	void LevelViewportGuiLayer::AddDirectionalLight()
-	{
-		DirectionalLightActor* LightActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<DirectionalLightActor>();
-		LightActor->SetActorLabel( "DirectionalLight_00" );
-	}
-
-	void LevelViewportGuiLayer::AddPostProcessVolume()
-	{
-		PostProcessVolume* PostProcessActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<PostProcessVolume>();
-		PostProcessActor->SetActorLabel( "PostProcessVolume" );
 	}
 
 }

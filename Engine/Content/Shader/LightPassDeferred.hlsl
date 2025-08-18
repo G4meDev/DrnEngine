@@ -5,6 +5,7 @@
 #define LIGHT_BITFLAG_POINTLIGHT 1
 #define LIGHT_BITFLAG_SPOTLIGHT 2
 #define LIGHT_BITFLAG_DIRECTIONAL 4
+#define LIGHT_BITFLAG_SKY 8
 
 #ifndef SPOTLIGHT_STENCIL_SIDES
 #define SPOTLIGHT_STENCIL_SIDES 18
@@ -170,6 +171,15 @@ struct DirectionalLightShadowData
     float4 CsSplitDistances[2];
 };
 
+struct SkyLightData
+{
+    float3 Color;
+    uint CubemapTexture;
+
+    float3 LowerHemesphereColor;
+    uint BlockLowerHemesphere;
+};
+
 struct StaticSamplers
 {
     uint LinearSamplerIndex;
@@ -253,7 +263,7 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN, uint InVertexId : SV_VertexID)
         OUT.Position = mul(View.WorldToProjection, float4(WorldPosition, 1.0f));
     }
 
-    else if (BindlessResources.LightFlags & LIGHT_BITFLAG_DIRECTIONAL)
+    else if (BindlessResources.LightFlags & (LIGHT_BITFLAG_DIRECTIONAL | LIGHT_BITFLAG_SKY))
     {
         OUT.Position = mul(View.LocalToCameraView, float4(IN.Position, 1.0f));
         OUT.Position.z = 0;
@@ -397,6 +407,49 @@ float3 CalculateDirectionalLightRadiance(float3 WorldPosition, float3 LightDirec
     float3 Specular = NDF * G * F / (max(dot(Gbuffer.WorldNormal, CameraVector), 0) * max(dot(Gbuffer.WorldNormal, L), 0) + 0.0001);
     
     return (kD * Gbuffer.BaseColor / PI + Specular) * NoL * LightColor;
+}
+
+float3 CalculateSkyLightRadiance(SkyLightData Light, GBufferData Gbuffer, SamplerState Sampler)
+{
+    float3 Result = Light.Color;
+    
+    [branch]
+    if(Light.CubemapTexture != 0)
+    {
+        TextureCube Cubemap = ResourceDescriptorHeap[Light.CubemapTexture];
+        float3 Sample = Cubemap.SampleLevel(Sampler, Gbuffer.WorldNormal, 6).xyz;
+        Result *= Sample;
+    }
+    
+    [branch]
+    if(Light.BlockLowerHemesphere)
+    {
+        if(Gbuffer.WorldNormal.y < 0)
+            Result = Light.LowerHemesphereColor;
+    }
+    
+    return Result;
+    
+//    float3 L = -LightDirection;
+//    float NoL = saturate(dot(Gbuffer.WorldNormal, L));
+//    float3 H = normalize(normalize(CameraVector) + normalize(LightDirection));
+//
+//// -------------------------------------------------------------------------
+//    
+//    float3 F0 = float3(0.04, 0.04, 0.04);
+//    F0 = lerp(F0, Gbuffer.BaseColor, Gbuffer.Matallic);
+//    
+//    float NDF = DistributionGGX(Gbuffer.WorldNormal, H, Gbuffer.Roughness);
+//    float G = GeometrySmith(Gbuffer.WorldNormal, CameraVector, L, Gbuffer.Roughness);
+//    float3 F = fresnelSchlick(max(dot(H, CameraVector), 0.0), F0);
+//    
+//    float3 kS = F;
+//    float3 kD = float3(1, 1, 1) - kS;
+//    kD *= 1.0 - Gbuffer.Roughness;
+//    
+//    float3 Specular = NDF * G * F / (max(dot(Gbuffer.WorldNormal, CameraVector), 0) * max(dot(Gbuffer.WorldNormal, L), 0) + 0.0001);
+//    
+//    return (kD * Gbuffer.BaseColor / PI + Specular) * NoL * LightColor;
 }
 
 float CalculatePointLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius)
@@ -676,6 +729,11 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float4 Masks = MasksTexture.Sample(LinearSampler, IN.UV);
     float Depth = DepthTexture.Sample(LinearSampler, IN.UV).x;
 
+    [branch]
+    //if ((uint) (Masks.a * 255) == 0)
+    if (Masks.a == 0)
+        return 0;
+    
     //float4 WorldPos = mul(View.ProjectionToWorld, float4(IN.ScreenPos, Depth, 1));
     //WorldPos.xyz /= WorldPos.w;
     float EE = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
@@ -736,7 +794,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     else if (BindlessResources.LightFlags & LIGHT_BITFLAG_DIRECTIONAL)
     {
         [branch]
-        if(Depth > 0.0001)
+        if (Depth > 0.0001)
         {
             ConstantBuffer<DirectionalLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
             Radiance = CalculateDirectionalLightRadiance(WorldPos.xyz, Light.Direction, Light.Color, CameraVector, Gbuffer);
@@ -749,7 +807,13 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
                 Shadow = CalculateDirectionalLightShadow(WorldPos.xyz, ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform), Light, ShadowBuffer, CompState);
             }
         }
-        
+    }
+    
+    else if (BindlessResources.LightFlags & LIGHT_BITFLAG_SKY)
+    {
+        SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
+        ConstantBuffer<SkyLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
+        Radiance = CalculateSkyLightRadiance(Light, Gbuffer, LinearSampler);
     }
     
     return float4(Radiance * Attenuation * Shadow * SSAO, 1);

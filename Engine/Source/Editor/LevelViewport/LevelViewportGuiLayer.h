@@ -5,6 +5,17 @@
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
 
+#include "Runtime/Engine/PointLightActor.h"
+#include "Runtime/Engine/SpotLightActor.h"
+#include "Runtime/Engine/DirectionalLightActor.h"
+#include "Runtime/Engine/SkyLightActor.h"
+#include "Runtime/Engine/PostProcessVolume.h"
+
+#include "Editor/LevelViewport/LevelViewport.h"
+#include "Editor/EditorPanels/ViewportPanel.h"
+#include "Editor/EditorPanels/WorldOutlinerPanel.h"
+#include "Editor/EditorPanels/ActorDetailPanel.h"
+
 struct ImGuiPayload;
 
 namespace Drn
@@ -36,10 +47,8 @@ namespace Drn
 		void DeleteSelectedActor();
 		void AlignSelectedComponentToSurfaceBelow();
 
-		void AddPointLight();
-		void AddSpotLight();
-		void AddDirectionalLight();
-		void AddPostProcessVolume();
+		template<typename T>
+		T* SpawnActorFromClassInLevel(const std::string SpawnName);
 
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;
@@ -54,6 +63,15 @@ namespace Drn
 
 	protected:
 	};
+
+	template<typename T>
+	T* LevelViewportGuiLayer::SpawnActorFromClassInLevel( const std::string SpawnName )
+	{
+		T* SpawnedActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<T>();
+		SpawnedActor->SetActorLabel(SpawnName);
+		return SpawnedActor;
+	}
+
 }
 
 #endif

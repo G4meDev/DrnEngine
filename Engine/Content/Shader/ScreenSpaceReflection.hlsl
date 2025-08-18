@@ -491,8 +491,13 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float3 PositionTranslatedWorld = mul(View.ScreenToTranslatedWorld, float4(ScreenPos * SceneDepth, SceneDepth, 1)).xyz;
     float3 V = normalize(View.CameraPos - PositionTranslatedWorld);
     
-    float Roughness = MaskImage.Sample(LinearSampler, UV).g;
+    float4 Masks = MaskImage.Sample(LinearSampler, UV);
+    float Roughness = Masks.g;
     float RoughnessFade = GetRoughnessFade(Roughness, SSRBuffer.RoughnessFade);
+    
+    [branch]
+    if ((uint) (Masks.a * 255) == 0)
+        return 0;
     
     float a = Roughness * Roughness;
     float a2 = a * a;

@@ -30,6 +30,7 @@ namespace Drn
 		D3D12_CLEAR_VALUE m_ColorDeferredClearValue;
 		D3D12_CLEAR_VALUE m_BaseColorClearValue;
 		D3D12_CLEAR_VALUE m_WorldNormalClearValue;
+		D3D12_CLEAR_VALUE m_MasksClearValue;
 		D3D12_CLEAR_VALUE m_DepthClearValue;
 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RtvHeap;

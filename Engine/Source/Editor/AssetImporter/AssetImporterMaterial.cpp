@@ -219,11 +219,12 @@ namespace Drn
 		std::vector<MaterialIndexedTextureCubeParameter> OldTextureCubes = MaterialAsset->m_TextureCubeSlots;
 		MaterialAsset->m_TextureCubeSlots.clear();
 
+		NamedTokens.clear();
 		FindNamedTokens(ShaderCode, "@TEXCUBE", NamedTokens);
 
 		for (int i = 0; i < NamedTokens.size(); i++)
 		{
-			std::string Path = "";
+			std::string Path = "NULL";
 			std::string& name = NamedTokens[i];
 
 			for (const MaterialIndexedTextureCubeParameter& OldTextureCube : OldTextureCubes)

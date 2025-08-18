@@ -9,6 +9,7 @@ namespace Drn
 		PointLight,
 		SpotLight,
 		DirectionalLight,
+		SkyLight,
 	};
 
 	struct HitResult

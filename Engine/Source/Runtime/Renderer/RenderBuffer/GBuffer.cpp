@@ -30,6 +30,12 @@ namespace Drn
 		m_WorldNormalClearValue.Color[2] = 0.0f;
 		m_WorldNormalClearValue.Color[3] = 1.0f;
 		
+		m_MasksClearValue.Format   = GBUFFER_MASKS_FORMAT;
+		m_MasksClearValue.Color[0] = 0.0f;
+		m_MasksClearValue.Color[1] = 0.0f;
+		m_MasksClearValue.Color[2] = 0.0f;
+		m_MasksClearValue.Color[3] = 0.0f;
+
 		m_DepthClearValue.Format = DEPTH_FORMAT;
 		m_DepthClearValue.DepthStencil = { 0, 0 };
 	}
@@ -157,7 +163,7 @@ namespace Drn
 
 			m_MasksTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
 				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_MASKS_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET, m_BaseColorClearValue);
+				D3D12_RESOURCE_STATE_RENDER_TARGET, m_MasksClearValue);
 
 			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
 			RenderTargetViewDesc.Format = GBUFFER_MASKS_FORMAT;
@@ -218,7 +224,7 @@ namespace Drn
 		CommandList->ClearRenderTargetView( m_ColorDeferredCpuHandle, m_ColorDeferredClearValue.Color, 0, nullptr );
 		CommandList->ClearRenderTargetView( m_BaseColorCpuHandle, m_BaseColorClearValue.Color, 0, nullptr );
 		CommandList->ClearRenderTargetView( m_WorldNormalCpuHandle, m_WorldNormalClearValue.Color, 0, nullptr );
-		CommandList->ClearRenderTargetView( m_MasksCpuHandle, m_BaseColorClearValue.Color, 0, nullptr );
+		CommandList->ClearRenderTargetView( m_MasksCpuHandle, m_MasksClearValue.Color, 0, nullptr );
 		CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
