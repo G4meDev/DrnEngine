@@ -21,7 +21,11 @@ namespace Drn
 
 #if WITH_EDITOR
 			Ar >> m_GenerateMips;
+			uint8 Comp;
+			Ar >> Comp;
+			m_Compression = static_cast<ETextureCompression>(Comp);
 #endif
+
 		}
 
 		else
@@ -36,6 +40,7 @@ namespace Drn
 
 #if WITH_EDITOR
 			Ar << m_GenerateMips;
+			Ar << static_cast<uint8>(m_Compression);
 #endif
 		}
 	}

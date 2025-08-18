@@ -164,6 +164,13 @@ struct PixelShaderOutput
 #endif
 };
 
+float3 ReconstructNormals(float2 xy)
+{
+    xy.y = 1 - xy.y;
+    float2 normalxy = xy * 2 - 1;
+    return float3(normalxy.x, 1 - dot(normalxy, normalxy), normalxy.y);
+}
+
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
@@ -184,12 +191,12 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
     ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
 
-    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rbg;
+    //float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rbg;
+    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rgb;
     Masks.g *= Scalars.RoughnessIntensity;
     Normal = lerp( float3(0.5f, 1.0f, 0.5f), Normal, Scalars.NormalIntensity );
 
-    Normal.z = 1 - Normal.z;
-    Normal = Normal * 2 - 1;
+    Normal = ReconstructNormals(Normal.xy);
     Normal = normalize(mul(Normal, IN.TBN));
     Normal = EncodeNormal(Normal);
     

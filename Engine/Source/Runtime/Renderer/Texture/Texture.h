@@ -6,6 +6,15 @@
 
 namespace Drn
 {
+	enum class ETextureCompression : uint8
+	{
+		NoCompression = 0,
+		BC1,
+		BC4,
+		BC5,
+		BC6
+	};
+
 	class Texture : public Asset
 	{
 	public:
@@ -17,10 +26,9 @@ namespace Drn
 			, m_SizeY(1)
 			, m_MipLevels(1)
 			, m_Format(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
-			, m_RowPitch(1)
-			, m_SlicePitch(1)
 			, m_ImageBlob(nullptr)
 			, m_Resource(nullptr)
+			, m_Compression(ETextureCompression::NoCompression)
 			, m_RenderStateDirty(true)
 		{
 		}
@@ -38,6 +46,7 @@ namespace Drn
 		inline uint16 GetSizeY() const			{ return m_SizeY; }
 		inline uint8 GetMipLevels() const		{ return m_MipLevels; }
 		inline DXGI_FORMAT GetFormat() const	{ return m_Format; }
+		inline ETextureCompression GetCompression() const	{ return m_Compression; }
 
 		inline bool IsRenderStateDirty() const	{ return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty()		{ m_RenderStateDirty = true; }
@@ -70,7 +79,6 @@ protected:
 		void CloseAssetPreview() override = 0;
 #endif
 
-
 		Resource* m_Resource;
 
 		bool m_sRGB;
@@ -79,11 +87,9 @@ protected:
 		uint8 m_MipLevels;
 		DXGI_FORMAT m_Format;
 
-		uint32 m_RowPitch;
-		uint32 m_SlicePitch;
-
 #if WITH_EDITOR
 		bool m_GenerateMips = false;
+		ETextureCompression m_Compression;
 #endif
 
 		ID3DBlob* m_ImageBlob;

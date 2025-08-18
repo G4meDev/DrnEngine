@@ -4,6 +4,7 @@
 #if WITH_EDITOR
 
 #include "Runtime/Renderer/CommonResources.h"
+#include "Runtime/Renderer/Texture/TextureHelper.h"
 #include <renderdoc_app.h>
 
 LOG_DEFINE_CATEGORY( LogAssetImporterTexture2D, "AssetImporterTexture2D" );
@@ -25,11 +26,6 @@ namespace Drn
 
 		if (Result == S_OK && metadata.dimension == TEX_DIMENSION_TEXTURE2D)
 		{
-			if (TextureAsset->IsSRGB())
-			{
-				metadata.format = MakeSRGB(metadata.format);
-			}
-
 			TextureAsset->m_SizeX = metadata.width;
 			TextureAsset->m_SizeY = metadata.height;
 			TextureAsset->m_Format = metadata.format;
@@ -48,6 +44,22 @@ namespace Drn
 				GenerateMipMaps( *BaseImage, TEX_FILTER_CUBIC, TextureAsset->m_MipLevels, MipImage);
 			}
 
+			TextureAsset->m_Format = TextureHelper::ResolveTextureFormat(metadata.format, TextureAsset->GetCompression());
+
+			const ScratchImage& RawImage = TextureAsset->m_GenerateMips ? MipImage : scratchImage;
+			ScratchImage CompressedImage;
+			const bool HasCompression = TextureAsset->GetCompression() != ETextureCompression::NoCompression;
+			if (HasCompression)
+			{
+				CoInitializeEx( nullptr, COINITBASE_MULTITHREADED );
+
+				// TODO: log errors
+				HRESULT Res = Compress(RawImage.GetImages(), RawImage.GetImageCount(), RawImage.GetMetadata(),
+					TextureAsset->GetFormat(), TEX_COMPRESS_DEFAULT, TEX_THRESHOLD_DEFAULT, CompressedImage);
+			}
+
+			const ScratchImage& TargetImage = HasCompression ? CompressedImage : (TextureAsset->m_GenerateMips ? MipImage : scratchImage);
+
 			uint32 SubresourceCount = TextureAsset->GetMipLevels();
 
 			uint64 TextureMemorySize = 0;
@@ -60,12 +72,16 @@ namespace Drn
 			std::vector<uint64> RowSizeInBytes;
 			RowSizeInBytes.resize(SubresourceCount);
 
-			D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Tex2D(metadata.format, metadata.width, metadata.height, 1, SubresourceCount);
+			D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Tex2D(TextureAsset->GetFormat(), metadata.width, metadata.height, 1, SubresourceCount);
 			Renderer::Get()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, SubresourceCount, 0, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), &TextureMemorySize );
-			const ScratchImage& TargetImage = TextureAsset->m_GenerateMips ? MipImage : scratchImage;
 
 			TextureAsset->ReleaseImageBlobs();
 			D3DCreateBlob(TextureMemorySize, &TextureAsset->m_ImageBlob);
+
+			if (TextureAsset->IsSRGB())
+			{
+				TextureAsset->m_Format = MakeSRGB(TextureAsset->GetFormat());
+			}
 
 			for (int32 i = 0; i < SubresourceCount; i++)
 			{
