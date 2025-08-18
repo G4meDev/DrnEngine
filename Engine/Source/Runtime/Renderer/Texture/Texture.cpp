@@ -17,8 +17,6 @@ namespace Drn
 			uint8 Format;
 			Ar >> Format;
 			m_Format = static_cast<DXGI_FORMAT>(Format);
-			Ar >> m_RowPitch;
-			Ar >> m_SlicePitch;
 			Ar >> m_ImageBlob;
 
 #if WITH_EDITOR
@@ -34,8 +32,6 @@ namespace Drn
 			Ar << m_SizeY;
 			Ar << m_MipLevels;
 			Ar << static_cast<uint8>(m_Format);
-			Ar << m_RowPitch;
-			Ar << m_SlicePitch;
 			Ar << m_ImageBlob;
 
 #if WITH_EDITOR

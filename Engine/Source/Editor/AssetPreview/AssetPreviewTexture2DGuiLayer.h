@@ -22,6 +22,8 @@ namespace Drn
 		void DrawMenu();
 		void DrawDetailsPanel();
 
+		void UpdateMipLevel();
+
 	private:
 
 		World* m_PreviewWorld;
@@ -29,6 +31,9 @@ namespace Drn
 
 		AssetHandle<Texture2D> m_OwningAsset;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
+
+		AssetHandle<Material> m_PreviewMaterial;
+		float m_MipLevel;
 	};
 }
 

@@ -37,6 +37,7 @@ namespace Drn
 	void PostProcessSettings::Serialize( Archive& Ar )
 	{
 		m_SSAOSettings.Serialize(Ar);
+		m_SSRSettings.Serialize(Ar);
 	}
 
 #if WITH_EDITOR
@@ -74,11 +75,13 @@ namespace Drn
 	{
 		if (Ar.IsLoading())
 		{
-			
+			Ar >> m_Intensity;
+			Ar >> m_RoughnessFade;
 		}
 		else
 		{
-
+			Ar << m_Intensity;
+			Ar << m_RoughnessFade;
 		}
 	}
 

@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "Level.h"
 #include "Runtime/Engine/DirectionalLightActor.h"
+#include "Runtime/Engine/SkyLightActor.h"
 #include "Runtime/Engine/PostProcessVolume.h"
 
 namespace Drn
@@ -131,11 +132,18 @@ namespace Drn
 				NewDirectionalLightActor->Serialize(Ar);
 			}
 
+			else if ( ActorType == EActorType::SkyLight )
+			{
+				SkyLightActor* NewSkyLightActor = InWorld->SpawnActor<SkyLightActor>();
+				NewSkyLightActor->Serialize(Ar);
+			}
+
 			else if ( ActorType == EActorType::PostProcessVolume )
 			{
 				PostProcessVolume* NewPostProcessVolume = InWorld->SpawnActor<PostProcessVolume>();
 				NewPostProcessVolume->Serialize(Ar);
 			}
+
 		}
 	
 	}

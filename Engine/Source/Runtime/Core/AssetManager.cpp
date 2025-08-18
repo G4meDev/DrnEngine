@@ -68,7 +68,7 @@ namespace Drn
 		std::shared_ptr<Asset> CreatedAsset;
 		bool                          FormatSupported = false;
 
-		if ( FileExtension == ".obj" || FileExtension == ".fbx" )
+		if ( FileExtension == ".obj" || FileExtension == ".fbx" || FileExtension == ".FBX" )
 		{
 			FormatSupported = true;
 			CreatedAsset    = std::shared_ptr<Asset>(new StaticMesh( AssetFilePath, SourceFile ) );

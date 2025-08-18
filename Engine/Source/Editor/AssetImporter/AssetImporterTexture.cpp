@@ -32,19 +32,55 @@ namespace Drn
 
 			TextureAsset->m_SizeX = metadata.width;
 			TextureAsset->m_SizeY = metadata.height;
-			TextureAsset->m_MipLevels = metadata.mipLevels;
 			TextureAsset->m_Format = metadata.format;
+			TextureAsset->m_MipLevels = 1;
 
-			// TODO: support mip importing later
 			const DirectX::Image* BaseImage = scratchImage.GetImage(0, 0, 0);
 
-			TextureAsset->ReleaseImageBlobs();
-			const uint32 ImageBufferSize = BaseImage->slicePitch;
-			D3DCreateBlob(ImageBufferSize, &TextureAsset->m_ImageBlob);
-			memcpy(TextureAsset->m_ImageBlob->GetBufferPointer(), BaseImage->pixels, ImageBufferSize);
+			ScratchImage MipImage;
+			if (TextureAsset->m_GenerateMips)
+			{
+				uint16 SizeMin = std::min(metadata.width, metadata.height);
+				uint16 LowerPow2 = Math::RoundDownToPowerOfTwo(SizeMin);
+				TextureAsset->m_MipLevels = std::log2(LowerPow2) + 1;
+			
+				CoInitializeEx( nullptr, COINITBASE_MULTITHREADED );
+				GenerateMipMaps( *BaseImage, TEX_FILTER_CUBIC, TextureAsset->m_MipLevels, MipImage);
+			}
 
-			TextureAsset->m_RowPitch = BaseImage->rowPitch;
-			TextureAsset->m_SlicePitch = BaseImage->slicePitch;
+			uint32 SubresourceCount = TextureAsset->GetMipLevels();
+
+			uint64 TextureMemorySize = 0;
+			std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> Layouts;
+			Layouts.resize(SubresourceCount);
+
+			std::vector<uint32> NumRows;
+			NumRows.resize(SubresourceCount);
+
+			std::vector<uint64> RowSizeInBytes;
+			RowSizeInBytes.resize(SubresourceCount);
+
+			D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Tex2D(metadata.format, metadata.width, metadata.height, 1, SubresourceCount);
+			Renderer::Get()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, SubresourceCount, 0, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), &TextureMemorySize );
+			const ScratchImage& TargetImage = TextureAsset->m_GenerateMips ? MipImage : scratchImage;
+
+			TextureAsset->ReleaseImageBlobs();
+			D3DCreateBlob(TextureMemorySize, &TextureAsset->m_ImageBlob);
+
+			for (int32 i = 0; i < SubresourceCount; i++)
+			{
+				const DirectX::Image* MipSource = TargetImage.GetImage( i, 0, 0 );
+
+				const uint64 RowSize = RowSizeInBytes[i];
+				for ( uint64 j = 0; j < NumRows[i]; j++ )
+				{
+					BYTE* CopyDest = (BYTE*)TextureAsset->m_ImageBlob->GetBufferPointer() + Layouts[i].Offset + Layouts[i].Footprint.RowPitch * j;
+					BYTE* CopySource = (BYTE*)MipSource->pixels + MipSource->rowPitch * j;
+					const uint64 CopySize   = MipSource->rowPitch;
+
+					memcpy( CopyDest, CopySource, CopySize );
+				}
+			}
 		}
 
 		else

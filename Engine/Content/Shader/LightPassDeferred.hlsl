@@ -416,8 +416,13 @@ float3 CalculateSkyLightRadiance(SkyLightData Light, GBufferData Gbuffer, Sample
     [branch]
     if(Light.CubemapTexture != 0)
     {
+        uint CubemapMipLevels = 12;
+        float MipLevel = Gbuffer.Roughness * (CubemapMipLevels - 1);
+        //float MipLevel = 0;
+        
         TextureCube Cubemap = ResourceDescriptorHeap[Light.CubemapTexture];
-        float3 Sample = Cubemap.SampleLevel(Sampler, Gbuffer.WorldNormal, 6).xyz;
+        float3 Sample = Cubemap.SampleLevel(Sampler, Gbuffer.WorldNormal, MipLevel).xyz;
+        //Sample = pow(Sample, 1.0f / 2.2f);
         Result *= Sample;
     }
     
@@ -428,7 +433,7 @@ float3 CalculateSkyLightRadiance(SkyLightData Light, GBufferData Gbuffer, Sample
             Result = Light.LowerHemesphereColor;
     }
     
-    return Result;
+    return Result * Gbuffer.BaseColor;
     
 //    float3 L = -LightDirection;
 //    float NoL = saturate(dot(Gbuffer.WorldNormal, L));

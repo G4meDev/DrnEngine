@@ -28,6 +28,8 @@ namespace Drn
 			m_Cubemap.Serialize(Ar);
 			Ar >> m_BlockLowerHemesphere;
 			Ar >> m_LowerHemesphereColor;
+
+			m_Cubemap.m_TextureCube.LoadChecked();
 		}
 		else
 		{

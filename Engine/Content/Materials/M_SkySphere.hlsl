@@ -157,6 +157,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     BaseColor = pow(BaseColor, Scalars.Exposure) * Scalars.Intensity;
     
     OUT.ColorDeferred = float4(BaseColor, 1);
+    //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);
     OUT.BaseColor = 0;
     OUT.WorldNormal = 0;
     OUT.Masks = 0;

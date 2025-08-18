@@ -8,9 +8,12 @@
 #include "Editor/EditorPanels/ViewportPanel.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 
+#include "Runtime/Renderer/Texture/TextureHelper.h"
+
 namespace Drn
 {
 	AssetPreviewTexture2DGuiLayer::AssetPreviewTexture2DGuiLayer( Texture2D* InOwningAsset )
+		: m_MipLevel(0)
 	{
 		m_OwningAsset = AssetHandle<Texture2D>( InOwningAsset->m_Path );
 		m_OwningAsset.Load();
@@ -20,17 +23,19 @@ namespace Drn
 		AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
 		PlaneMesh.Load();
 		
-		AssetHandle<Material> Texture2DPreviewMaterial( "Engine\\Content\\Materials\\M_Texture2DPreview.drn" );
-		Texture2DPreviewMaterial.Load();
-		Texture2DPreviewMaterial->SetNamedTexture2D("Texture", m_OwningAsset);
+		m_PreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_Texture2DPreview.drn" );
+		m_PreviewMaterial.Load();
+		m_PreviewMaterial->SetNamedTexture2D("Texture", m_OwningAsset);
 
 		m_PreviewMeshPlane = m_PreviewWorld->SpawnActor<StaticMeshActor>();
 		m_PreviewMeshPlane->GetMeshComponent()->SetSelectable( false );
 		m_PreviewMeshPlane->GetMeshComponent()->SetEditorPrimitive( true);
 		m_PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
-		m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, Texture2DPreviewMaterial);
+		m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, m_PreviewMaterial);
+		m_PreviewMeshPlane->SetActorLocation(Vector(0, 4, 0));
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>( m_PreviewWorld->GetScene() );
+		UpdateMipLevel();
 	}
 
 	AssetPreviewTexture2DGuiLayer::~AssetPreviewTexture2DGuiLayer()
@@ -116,6 +121,26 @@ namespace Drn
 		}
 		 
 		ImGui::Checkbox( "sRGB", &m_OwningAsset->m_sRGB );
+
+		ImGui::Checkbox( "Generate Mips", &m_OwningAsset->m_GenerateMips );
+
+		ImGui::Separator();
+
+		ImGui::Text( "%s", TextureHelper::GetDxgiFormatName(m_OwningAsset->GetFormat()).c_str() );
+		ImGui::Text( "%ux%u", m_OwningAsset->GetSizeX(), m_OwningAsset->GetSizeY() );
+		ImGui::Text( "%u mips", m_OwningAsset->GetMipLevels() );
+
+		ImGui::Separator();
+
+		if ( ImGui::DragFloat( "Mip Level", &m_MipLevel, 0.05f, 0, m_OwningAsset->m_MipLevels) )
+		{
+			UpdateMipLevel();
+		}
+	}
+
+	void AssetPreviewTexture2DGuiLayer::UpdateMipLevel()
+	{
+		m_PreviewMaterial->SetNamedScalar("MipLevel", m_MipLevel);
 	}
 
 }

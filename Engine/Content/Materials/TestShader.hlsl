@@ -195,7 +195,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColor, 1);
-    OUT.BaseColor = lerp(OUT.BaseColor, Vectors.TintColor, Scalars.TintIntensity);
+    //OUT.BaseColor = lerp(OUT.BaseColor, Vectors.TintColor, Scalars.TintIntensity);
     OUT.WorldNormal = float4( Normal, 0);
     OUT.Masks = float4(Masks, 1.0f/255);
     

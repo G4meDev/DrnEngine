@@ -59,29 +59,34 @@ namespace Drn
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-			D3D12_RESOURCE_DESC TextureDesc = {};
-			TextureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-			TextureDesc.Width = m_SizeX;
-			TextureDesc.Height = m_SizeY;
-			TextureDesc.DepthOrArraySize = 1;
-			TextureDesc.MipLevels = m_MipLevels;
-			TextureDesc.Format = m_Format;
-			TextureDesc.SampleDesc.Count = 1;
-			TextureDesc.SampleDesc.Quality = 0;
-			TextureDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-			TextureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+			const uint32 SubresourceCount = m_MipLevels;
 
+			CD3DX12_RESOURCE_DESC TextureDesc = CD3DX12_RESOURCE_DESC::Tex2D(m_Format, m_SizeX, m_SizeY, 1, m_MipLevels, 1, 0);
 			m_Resource = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, TextureDesc, D3D12_RESOURCE_STATE_COPY_DEST);
 
-			D3D12_SUBRESOURCE_DATA TextureResource;
-			TextureResource.pData = m_ImageBlob->GetBufferPointer();
-			TextureResource.RowPitch = m_RowPitch;
-			TextureResource.SlicePitch = m_SlicePitch;
+			uint64 TextureMemorySize = 0;
+			std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> Layouts;
+			Layouts.resize(SubresourceCount);
 
-			uint64 UploadBufferSize = GetRequiredIntermediateSize(m_Resource->GetD3D12Resource(), 0, 1);
+			std::vector<uint32> NumRows;
+			NumRows.resize(SubresourceCount);
+
+			std::vector<uint64> RowSizeInBytes;
+			RowSizeInBytes.resize(SubresourceCount);
+
+			Device->GetCopyableFootprints(&TextureDesc, 0, SubresourceCount, 0, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), &TextureMemorySize);
+
+			std::vector<D3D12_SUBRESOURCE_DATA> TextureResource;
+			TextureResource.resize(SubresourceCount);
+			for (int32 i = 0; i < SubresourceCount; i++)
+			{
+				TextureResource[i].pData = (BYTE*)m_ImageBlob->GetBufferPointer() + Layouts[i].Offset;
+				TextureResource[i].RowPitch = Layouts[i].Footprint.RowPitch;
+				TextureResource[i].SlicePitch = Layouts[i].Footprint.RowPitch * NumRows[i];
+			}
 
 			Resource* IntermediateResource = Resource::Create(D3D12_HEAP_TYPE_UPLOAD,
-				CD3DX12_RESOURCE_DESC::Buffer( UploadBufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+				CD3DX12_RESOURCE_DESC::Buffer( TextureMemorySize ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 
 			// TODO: maybe 1 frame lifetime is enough instead of NUM_BACKBUFFER
 			IntermediateResource->ReleaseBufferedResource();
@@ -94,7 +99,7 @@ namespace Drn
 #endif
 
 			UpdateSubresources(CommandList, m_Resource->GetD3D12Resource(),
-				IntermediateResource->GetD3D12Resource(), 0, 0, 1, &TextureResource);
+				IntermediateResource->GetD3D12Resource(), 0, SubresourceCount, TextureMemorySize, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), TextureResource.data());
 
 			ResourceStateTracker::Get()->TransiationResource(m_Resource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
