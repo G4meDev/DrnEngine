@@ -4,6 +4,7 @@
 #define SHADER_PATH std::wstring(L"../Engine/Source/Shaders/")
 
 #define PROJECT_PATH "..\\..\\.."
+#define INTEMEDIATE_PATH "..\\..\\..\\Intermediate\\"
 
 LOG_DEFINE_CATEGORY( LogPath, "LogPath" );
 
@@ -63,7 +64,12 @@ namespace Drn
 		return Path + ".drn";
 	}
 
-	bool Path::GetNameForNewAsset( const std::string& TargetDirectory, const std::string& NamePrefix, std::string& Result)
+	std::string Path::GetNewTempArchivePath()
+	{
+		return INTEMEDIATE_PATH + Guid::NewGuid().ToString();
+	}
+
+	bool Path::GetNameForNewAsset( const std::string& TargetDirectory, const std::string& NamePrefix, std::string& Result )
 	{
 		if ( !FileSystem::DirectoryExists( TargetDirectory ) )
 		{

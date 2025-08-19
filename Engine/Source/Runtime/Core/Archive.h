@@ -67,6 +67,8 @@ namespace Drn
 		inline bool IsValid() const { return m_ValidArchive; }
 		inline uint8 GetVersion() const { return m_ArchiveVersion; };
 
+		void ReadWholeBuffer(std::vector<uint8>& Data);
+
 	protected:
 
 		std::string m_FilePath;

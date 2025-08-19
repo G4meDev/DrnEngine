@@ -296,4 +296,14 @@ namespace Drn
 		return *this;
 	}
 
+	void Archive::ReadWholeBuffer( std::vector<uint8>& Data )
+	{
+		File.seekg(0, std::ios::end);
+		const uint64 Size = File.tellg();
+
+		File.seekg(0, std::ios::beg);
+		Data.resize(Size);
+		File.read(reinterpret_cast<char*>(Data.data()), Size);
+	}
+
 }

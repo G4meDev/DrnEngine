@@ -397,6 +397,7 @@ target_include_directories( Engine
     PUBLIC inc ../ThirdParty/Taskflow/
     PUBLIC inc ../ThirdParty/DXC/inc
     PUBLIC inc ../ThirdParty/Renderdoc/inc
+    PUBLIC inc ../ThirdParty/lz4/lib
 	#PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/$(Platform)/$(Configuration)/Shaders"
 )
 
@@ -416,6 +417,7 @@ target_link_libraries( Engine
 	PUBLIC d3dcompiler.lib
 	PUBLIC shlwapi.lib
     PUBLIC WinPixEventRuntime.lib
+	PUBLIC lz4_static
 	PUBLIC ImGui
     PUBLIC assimp
     PUBLIC DirectXTex

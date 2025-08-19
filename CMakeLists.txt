@@ -31,6 +31,7 @@ add_subdirectory( ThirdParty/DirectXTex )
 add_subdirectory( ThirdParty/gainput )
 add_subdirectory( ThirdParty/ImGuiFileDialog )
 add_subdirectory( ThirdParty/ImGuizmo )
+add_subdirectory( ThirdParty/lz4/build/cmake )
 add_subdirectory( Game )
 
 set_target_properties( assimp IrrXML uninstall UpdateAssimpLibsDebugSymbolsAndDLLs zlib zlibstatic 

@@ -34,6 +34,10 @@ struct StaticSamplers
 struct ScalarBuffer
 {
     float MipLevel; // @SCALAR MipLevel
+    bool ShowR;
+    bool ShowG;
+    bool ShowB;
+    bool ShowA;
 };
 
 struct TextureBuffers
@@ -106,5 +110,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     PixelShaderOutput OUT;
     OUT.Color = Texture.SampleLevel(LinearSampler, IN.UV, Scalars.MipLevel);
 
+    
+    
     return OUT;
 }

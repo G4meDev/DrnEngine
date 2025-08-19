@@ -20,6 +20,8 @@ namespace Drn
 		static std::string RemoveFileExtension(const std::string& Path);
 		static std::string AddAssetFileExtension(const std::string& Path);
 
+		static std::string GetNewTempArchivePath();
+
 		static bool GetNameForNewAsset( const std::string& TargetDirectory, const std::string& NamePrefix, std::string& Result);
 	};
 }
