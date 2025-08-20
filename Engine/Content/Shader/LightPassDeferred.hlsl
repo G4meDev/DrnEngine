@@ -70,6 +70,12 @@ float3 fresnelSchlick(float cosTheta, float3 F0)
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
+float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
+{
+    float a = 1.0 - roughness;
+    return F0 + (max(float3(a.xxx), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
 // --------------------------------------------------------------------------
 
 struct Resources
@@ -409,52 +415,46 @@ float3 CalculateDirectionalLightRadiance(float3 WorldPosition, float3 LightDirec
     return (kD * Gbuffer.BaseColor / PI + Specular) * NoL * LightColor;
 }
 
-float3 CalculateSkyLightRadiance(SkyLightData Light, GBufferData Gbuffer, SamplerState Sampler)
+float3 CalculateSkyLightRadiance(float3 CameraVector, SkyLightData Light, GBufferData Gbuffer, SamplerState Sampler)
 {
-    float3 Result = Light.Color;
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, Gbuffer.BaseColor, Gbuffer.Matallic);
+    
+    float3 F = fresnelSchlickRoughness(max(dot(Gbuffer.WorldNormal, CameraVector), 0.0), F0, Gbuffer.Roughness);
+
+    float3 kS = F;
+    float3 kD = 1 - kS;
+    kD *= 1.0 - Gbuffer.Roughness;
+    
+    float3 irradiance = Light.Color;
     
     [branch]
     if(Light.CubemapTexture != 0)
     {
-        uint CubemapMipLevels = 12;
-        float MipLevel = Gbuffer.Roughness * (CubemapMipLevels - 1);
-        //float MipLevel = 0;
-        
         TextureCube Cubemap = ResourceDescriptorHeap[Light.CubemapTexture];
-        float3 Sample = Cubemap.SampleLevel(Sampler, Gbuffer.WorldNormal, MipLevel).xyz;
-        //Sample = pow(Sample, 1.0f / 2.2f);
-        Result *= Sample;
+        float3 Sample = 0;
+        
+        uint CubemapMipLevels = 12;
+        //float MipLevel = Gbuffer.Roughness * (CubemapMipLevels - 1);
+        //float MipLevel = 10;
+        
+        //Sample += Cubemap.SampleLevel(Sampler, Gbuffer.WorldNormal, MipLevel).xyz;
+        
+        // TODO: this is hack just make another cubemap at runtime for diffuse lookup
+        Sample += Cubemap.SampleLevel(Sampler, Gbuffer.WorldNormal, CubemapMipLevels - 1).xyz;
+        Sample += Cubemap.SampleLevel(Sampler, Gbuffer.WorldNormal, CubemapMipLevels - 2).xyz * 0.7f;
+        Sample += Cubemap.SampleLevel(Sampler, Gbuffer.WorldNormal, CubemapMipLevels - 3).xyz * 0.5f;
+        irradiance *= Sample;
     }
     
     [branch]
     if(Light.BlockLowerHemesphere)
     {
         if(Gbuffer.WorldNormal.y < 0)
-            Result = Light.LowerHemesphereColor;
+            irradiance = Light.LowerHemesphereColor;
     }
     
-    return Result * Gbuffer.BaseColor;
-    
-//    float3 L = -LightDirection;
-//    float NoL = saturate(dot(Gbuffer.WorldNormal, L));
-//    float3 H = normalize(normalize(CameraVector) + normalize(LightDirection));
-//
-//// -------------------------------------------------------------------------
-//    
-//    float3 F0 = float3(0.04, 0.04, 0.04);
-//    F0 = lerp(F0, Gbuffer.BaseColor, Gbuffer.Matallic);
-//    
-//    float NDF = DistributionGGX(Gbuffer.WorldNormal, H, Gbuffer.Roughness);
-//    float G = GeometrySmith(Gbuffer.WorldNormal, CameraVector, L, Gbuffer.Roughness);
-//    float3 F = fresnelSchlick(max(dot(H, CameraVector), 0.0), F0);
-//    
-//    float3 kS = F;
-//    float3 kD = float3(1, 1, 1) - kS;
-//    kD *= 1.0 - Gbuffer.Roughness;
-//    
-//    float3 Specular = NDF * G * F / (max(dot(Gbuffer.WorldNormal, CameraVector), 0) * max(dot(Gbuffer.WorldNormal, L), 0) + 0.0001);
-//    
-//    return (kD * Gbuffer.BaseColor / PI + Specular) * NoL * LightColor;
+    return irradiance * Gbuffer.BaseColor;
 }
 
 float CalculatePointLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius)
@@ -818,7 +818,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     {
         SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
         ConstantBuffer<SkyLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
-        Radiance = CalculateSkyLightRadiance(Light, Gbuffer, LinearSampler);
+        Radiance = CalculateSkyLightRadiance(CameraVector, Light, Gbuffer, LinearSampler);
     }
     
     return float4(Radiance * Attenuation * Shadow * SSAO, 1);

@@ -28,7 +28,6 @@ namespace Drn
 			, m_Format(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
 			, m_ImageBlob(nullptr)
 			, m_Resource(nullptr)
-			, m_Compression(ETextureCompression::NoCompression)
 			, m_RenderStateDirty(true)
 		{
 		}
@@ -46,7 +45,10 @@ namespace Drn
 		inline uint16 GetSizeY() const			{ return m_SizeY; }
 		inline uint8 GetMipLevels() const		{ return m_MipLevels; }
 		inline DXGI_FORMAT GetFormat() const	{ return m_Format; }
+
+#if WITH_EDITOR
 		inline ETextureCompression GetCompression() const	{ return m_Compression; }
+#endif
 
 		inline bool IsRenderStateDirty() const	{ return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty()		{ m_RenderStateDirty = true; }
@@ -89,7 +91,7 @@ protected:
 
 #if WITH_EDITOR
 		bool m_GenerateMips = false;
-		ETextureCompression m_Compression;
+		ETextureCompression m_Compression = ETextureCompression::NoCompression;
 #endif
 
 		ID3DBlob* m_ImageBlob;

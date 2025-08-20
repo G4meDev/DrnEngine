@@ -258,6 +258,7 @@ namespace Drn
 		HZBPSO* m_HZBPSO;
 
 		AssetHandle<Texture2D> m_SSAO_Random;
+		AssetHandle<Texture2D> m_PreintegratedGF;
 
 	private:
 

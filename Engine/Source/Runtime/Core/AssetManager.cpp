@@ -80,7 +80,7 @@ namespace Drn
 			CreatedAsset    = std::shared_ptr<Asset>(new Material( AssetFilePath, SourceFile ) );
 		}
 
-		else if ( FileExtension == ".tga" )
+		else if ( FileExtension == ".tga" || FileExtension == ".dds" || FileExtension == ".DDS" )
 		{
 			FormatSupported = true;
 			CreatedAsset    = std::shared_ptr<Asset>(new Texture2D( AssetFilePath, SourceFile ) );

@@ -25,6 +25,8 @@ namespace Drn
 
 		inline virtual ELightType GetLightType() const { return ELightType::SkyLight; };
 
+		const AssetHandle<TextureCube>& GetCubemap() const { return m_Cubemap; }
+
 		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 

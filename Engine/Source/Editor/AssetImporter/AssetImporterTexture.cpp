@@ -18,10 +18,15 @@ namespace Drn
 	{
 		std::string Extension = Path::GetFileExtension(Path);
 
+		if ( Extension == ".dds" || Extension == ".DDS" )
+		{
+			ImportDDS(TextureAsset, Path);
+			return;
+		}
+
 		TexMetadata  metadata;
 		ScratchImage scratchImage;
 		HRESULT Result = E_FAIL;
-
 		if ( Extension == ".tga" )
 		{
 			Result = LoadFromTGAFile(StringHelper::s2ws(Path).c_str(), &metadata, scratchImage);
@@ -108,6 +113,60 @@ namespace Drn
 		}
 	}
 
+	void AssetImporterTexture::ImportDDS( Texture2D* TextureAsset, const std::string& Path )
+	{
+		TexMetadata  metadata;
+		ScratchImage scratchImage;
+		HRESULT Result = E_FAIL;
+		Result = LoadFromDDSFile(StringHelper::s2ws(Path).c_str(), DDS_FLAGS_NONE, &metadata, scratchImage);
+
+		if (Result == S_OK && metadata.dimension == TEX_DIMENSION_TEXTURE2D)
+		{
+			const uint32 MipCount = metadata.mipLevels;
+			const uint32 SubresourceCount = MipCount;
+
+			uint64 TextureMemorySize = 0;
+			std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> Layouts;
+			Layouts.resize(SubresourceCount);
+
+			std::vector<uint32> NumRows;
+			NumRows.resize(SubresourceCount);
+
+			std::vector<uint64> RowSizeInBytes;
+			RowSizeInBytes.resize(SubresourceCount);
+
+			D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Tex2D(TextureAsset->GetFormat(), metadata.width, metadata.height, 1, SubresourceCount);
+			Renderer::Get()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, SubresourceCount, 0, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), &TextureMemorySize );
+
+			ScratchImage& TargetImage = scratchImage;
+
+			TextureAsset->ReleaseImageBlobs();
+			D3DCreateBlob(TextureMemorySize, &TextureAsset->m_ImageBlob);
+
+			for (int32 i = 0; i < SubresourceCount; i++)
+			{
+				const DirectX::Image* MipSource = TargetImage.GetImage( i, 0, 0 );
+
+				const uint64 RowSize = RowSizeInBytes[i];
+				for ( uint64 j = 0; j < NumRows[i]; j++ )
+				{
+					BYTE* CopyDest = (BYTE*)TextureAsset->m_ImageBlob->GetBufferPointer() + Layouts[i].Offset + Layouts[i].Footprint.RowPitch * j;
+					BYTE* CopySource = (BYTE*)MipSource->pixels + MipSource->rowPitch * j;
+					const uint64 CopySize   = MipSource->rowPitch;
+
+					memcpy( CopyDest, CopySource, CopySize );
+				}
+			}
+
+			const DirectX::Image* BaseImage = scratchImage.GetImage(0, 0, 0);
+			TextureAsset->m_SizeX = metadata.width;
+			TextureAsset->m_SizeY = metadata.height;
+			TextureAsset->m_MipLevels = MipCount;
+			TextureAsset->m_Format = TextureAsset->IsSRGB() ? MakeSRGB(metadata.format) : metadata.format;
+		}
+
+	}
+
 	void AssetImporterTexture::Import( TextureCube* TextureAsset, const std::string& Path )
 	{
 		std::string Extension = Path::GetFileExtension(Path);
@@ -132,7 +191,7 @@ namespace Drn
 		}
 	}
 
-	void AssetImporterTexture::ImportTextureCubeFromTexture2D(TextureCube* TextureAsset, TexMetadata& MetaData, ScratchImage& Image)
+	void AssetImporterTexture::ImportTextureCubeFromTexture2D( TextureCube* TextureAsset, TexMetadata& MetaData, ScratchImage& Image )
 	{
 		//CaptureParams.GpuCaptureParameters.FileName = L"C:\\Users\\Abolfazl\\Desktop\\Texture2DToTextureCube.wpix";
 

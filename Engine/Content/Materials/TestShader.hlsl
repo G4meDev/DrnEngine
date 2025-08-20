@@ -194,9 +194,9 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     //float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rbg;
     float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rgb;
     Masks.g *= Scalars.RoughnessIntensity;
-    Normal = lerp( float3(0.5f, 1.0f, 0.5f), Normal, Scalars.NormalIntensity );
 
     Normal = ReconstructNormals(Normal.xy);
+    Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Scalars.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
     Normal = EncodeNormal(Normal);
     

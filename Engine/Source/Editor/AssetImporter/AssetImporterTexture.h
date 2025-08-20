@@ -13,6 +13,7 @@ namespace Drn
 	{
 	public:
 		static void Import(Texture2D* TextureAsset, const std::string& Path);
+		static void ImportDDS(Texture2D* TextureAsset, const std::string& Path);
 		static void Import(TextureCube* TextureAsset, const std::string& Path);
 
 	private:

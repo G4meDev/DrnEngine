@@ -3,6 +3,9 @@
 
 #include "Runtime/Renderer/RenderBuffer/GBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/ScreenSpaceReflectionBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/RenderBufferAO.h"
+
+#include "Runtime/Engine/SkyLightSceneProxy.h"
 
 namespace Drn
 {
@@ -56,6 +59,13 @@ namespace Drn
 		m_Data.MasksTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_MasksTarget->GetGpuHandle());
 		m_Data.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
 		m_Data.SSRTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_ScreenSpaceReflectionBuffer->m_Target->GetGpuHandle());
+		m_Data.PreintegratedGFTexture = Renderer::Get()->GetBindlessSrvIndex(CommonResources::Get()->m_PreintegratedGF->GetResource()->GetGpuHandle());
+		m_Data.AOTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_AOBuffer->m_AOTarget->GetGpuHandle());
+
+		SkyLightSceneProxy* SkyProxy = Renderer->GetScene()->m_SkyLightProxies.size() > 0 ? *Renderer->GetScene()->m_SkyLightProxies.begin() : nullptr;
+		AssetHandle<TextureCube> SkyCubemap = SkyProxy ? SkyProxy->GetCubemap() : AssetHandle<TextureCube>();
+		m_Data.SkyCubemapTexture = SkyCubemap.IsValid() ? Renderer::Get()->GetBindlessSrvIndex(SkyCubemap->GetResource()->GetGpuHandle()) : 0;
+		m_Data.SkyLightMipCount = SkyCubemap.IsValid() ? SkyCubemap->GetMipLevels() : 0;
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );

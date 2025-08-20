@@ -62,7 +62,7 @@ namespace Drn
 		LightComponent::RegisterComponent(InOwningWorld);
 
 		m_SkyLightSceneProxy = new SkyLightSceneProxy(this);
-		InOwningWorld->GetScene()->RegisterLightProxy(m_SkyLightSceneProxy);
+		InOwningWorld->GetScene()->RegisterSkyLightProxy(m_SkyLightSceneProxy);
 		m_LightSceneProxy = m_SkyLightSceneProxy;
 
 #if WITH_EDITOR
@@ -77,7 +77,7 @@ namespace Drn
 	{
 		if (GetWorld())
 		{
-			GetWorld()->GetScene()->UnRegisterLightProxy( m_SkyLightSceneProxy);
+			GetWorld()->GetScene()->UnRegisterSkyLightProxy( m_SkyLightSceneProxy);
 		}
 
 		m_SkyLightSceneProxy = nullptr;

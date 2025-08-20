@@ -43,6 +43,10 @@ struct SSRData
     uint MasksTexture;
     uint DepthTexture;
     uint SSRTexture;
+    uint AOTexture;
+    uint PreintegratedGF;
+    uint SkyCubemapTexture;
+    uint SkyLightMipCount;
 };
 
 struct StaticSamplers
@@ -93,6 +97,34 @@ float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 
 float Square(float x) { return x * x; }
 
+float3 ComputeF0(float3 BaseColor, float Metallic)
+{
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, BaseColor, Metallic);
+    return F0;
+}
+
+float3 GetOffSpecularPeakReflectionDir(float3 Normal, float3 ReflectionVector, float Roughness)
+{
+    float a = Square(Roughness);
+    return lerp(Normal, ReflectionVector, (1 - a) * (sqrt(1 - a) + a));
+}
+
+half GetSpecularOcclusion(float NoV, float RoughnessSq, float AO)
+{
+    return saturate(pow(NoV + AO, RoughnessSq) - 1 + AO);
+}
+
+half3 EnvBRDF(half3 SpecularColor, half Roughness, half NoV, Texture2D PreIntegratedGF, SamplerState State)
+{
+    return SpecularColor;
+    
+    float2 AB = PreIntegratedGF.SampleLevel( State, float2(NoV, Roughness), 0).rg;
+
+    float3 GF = SpecularColor * AB.x + saturate(50.0 * SpecularColor.g) * AB.y;
+    return GF;
+}
+
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
@@ -104,6 +136,9 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D MaskImage = ResourceDescriptorHeap[SSRBuffer.MasksTexture];
     Texture2D DepthImage = ResourceDescriptorHeap[SSRBuffer.DepthTexture];
     Texture2D SSRImage = ResourceDescriptorHeap[SSRBuffer.SSRTexture];
+    Texture2D AOImage = ResourceDescriptorHeap[SSRBuffer.AOTexture];
+    Texture2D PreintegeratedGFImage = ResourceDescriptorHeap[SSRBuffer.PreintegratedGF];
+    TextureCube SkyCubemapImage = ResourceDescriptorHeap[SSRBuffer.SkyCubemapTexture];
     
     SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplersBuffer.PointSamplerIndex];
     SamplerState PointClampSampler = ResourceDescriptorHeap[StaticSamplersBuffer.PointClampIndex];
@@ -113,13 +148,60 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float2 ScreenPos = IN.UVAndScreenPos.zw;
     uint2 PixelPos = (uint2) IN.Position.xy;
     
-    float4 SSRColor = SSRImage.Sample(LinearSampler, UV);
+    float3 BaseColor = ColorImage.Sample(LinearSampler, UV).xyz;
+    float4 Masks = MaskImage.Sample(LinearSampler, UV);
+    float Metallic = Masks.r;
+    float Roughness = Masks.g;
+    float AO = Masks.b;
+    
     float3 Normal = NormalImage.Sample(LinearSampler, UV).xyz;
     float3 WorldNormal = Normal * 2 - 1;
     float Depth = DepthImage.Sample(LinearSampler, UV).x;
     float SceneDepth = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
-    float3 PositionTranslatedWorld = mul(View.ScreenToTranslatedWorld, float4(ScreenPos * SceneDepth, SceneDepth, 1)).xyz;
-    float3 V = normalize(View.CameraPos - PositionTranslatedWorld);
     
-    return SSRColor;
+    float SSAO = AOImage.Sample(LinearSampler, UV).x;
+    float3 DiffueColor = BaseColor - BaseColor * Metallic;
+    float3 SpecularColor = ComputeF0(BaseColor, Metallic);
+    float3 BentNormal = WorldNormal;
+    
+
+    float4 Color = float4(0, 0, 0, 1);
+    float3 WorldPosition = mul(View.ScreenToTranslatedWorld, float4(ScreenPos * SceneDepth, SceneDepth, 1)).xyz;
+        
+    float3 CameraToPixel = normalize(WorldPosition - View.CameraPos);
+    float3 ReflectionVector = reflect(CameraToPixel, WorldNormal);
+        
+    float3 N = WorldNormal;
+    float3 V = -CameraToPixel;
+        
+    float3 R = 2 * dot(V, N) * N - V;
+    float NoV = saturate(dot(N, V));
+        
+    R = GetOffSpecularPeakReflectionDir(N, R, Roughness);
+        
+    float4 SSR = SSRImage.Sample(LinearSampler, UV);
+    Color.rgb = SSR.rgb;
+    
+    float CombinedAO = AO * SSAO;
+    float RoughnessSq = Square(Roughness);
+    float SpecularOcclusion = GetSpecularOcclusion(NoV, RoughnessSq, CombinedAO);
+        
+    float3 Iraddiance = 0;
+        
+    [branch]
+    if(SSRBuffer.SkyCubemapTexture != 0)
+    {
+        const float RoughestMip = 1;
+        const float MipScale = 1.2;
+        
+        half Level = RoughestMip - MipScale * log2(max(Roughness, 0.001));
+        half MipLevel = SSRBuffer.SkyLightMipCount - 1 - Level;
+        
+        Iraddiance = SkyCubemapImage.SampleLevel(LinearSampler, ReflectionVector, MipLevel).xyz * (1 - SSR.a) * SpecularOcclusion;
+    }
+
+    Color.rgb += Iraddiance;
+    Color.rgb *= EnvBRDF(SpecularColor, Roughness, NoV, PreintegeratedGFImage, LinearSampler);
+    
+    return Color;
 }

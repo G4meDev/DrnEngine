@@ -64,6 +64,10 @@ namespace Drn
 		m_SSAO_Random = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\SSAO_Jitter.drn" );
 		m_SSAO_Random.Load();
 		m_SSAO_Random->UploadResources(CommandList);
+
+		m_PreintegratedGF = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\T_IntegeratedGF.drn" );
+		m_PreintegratedGF.Load();
+		m_PreintegratedGF->UploadResources(CommandList);
 	}
 
 	CommonResources::~CommonResources()

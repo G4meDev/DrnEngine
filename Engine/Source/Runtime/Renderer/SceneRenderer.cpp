@@ -406,6 +406,7 @@ namespace Drn
 		
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource( m_ScreenSpaceReflectionBuffer->m_Target, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_AOBuffer->m_AOTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);

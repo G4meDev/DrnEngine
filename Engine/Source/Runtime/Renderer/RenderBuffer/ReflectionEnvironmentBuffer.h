@@ -13,6 +13,10 @@ namespace Drn
 		uint32 MasksTexture;
 		uint32 DepthTexture;
 		uint32 SSRTexture;
+		uint32 AOTexture;
+		uint32 PreintegratedGFTexture;
+		uint32 SkyCubemapTexture;
+		uint32 SkyLightMipCount;
 	};
 
 	class ReflectionEnvironmentBuffer : public RenderBuffer

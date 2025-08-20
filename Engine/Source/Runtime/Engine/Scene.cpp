@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "Runtime/Engine/LightSceneProxy.h"
+#include "Runtime/Engine/SkyLightSceneProxy.h"
 #include "Runtime/Engine/PostProcessVolume.h"
 
 LOG_DEFINE_CATEGORY( LogScene, "Scene" );
@@ -33,6 +34,20 @@ namespace Drn
 		{
 			Proxy->Release();
 		}
+
+// --------------------------------------------------------------------------------------
+
+		for (SkyLightSceneProxy* Proxy : m_PendingSkyLightProxies)
+		{
+			Proxy->Release();
+		}
+
+		for (SkyLightSceneProxy* Proxy : m_SkyLightProxies)
+		{
+			Proxy->Release();
+		}
+
+// --------------------------------------------------------------------------------------
 
 		for (auto it = m_SceneRenderers.begin(); it != m_SceneRenderers.end();)
 		{
@@ -94,6 +109,20 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------
 
+		for (auto it = m_PendingSkyLightProxies.begin(); it != m_PendingSkyLightProxies.end(); it++)
+		{
+			m_SkyLightProxies.insert(*it);
+		}
+		m_PendingSkyLightProxies.clear();
+
+		for (auto it = m_SkyLightProxies.begin(); it != m_SkyLightProxies.end(); it++)
+		{
+			SkyLightSceneProxy* Proxy = *it;
+			Proxy->UpdateResources(CommandList);
+		}
+
+// ----------------------------------------------------------------------------------
+
 		for (auto it = m_PendingPostProcessProxies.begin(); it != m_PendingPostProcessProxies.end(); it++)
 		{
 			m_PostProcessProxies.insert(*it);
@@ -136,6 +165,22 @@ namespace Drn
 		{
 			m_PendingLightProxies.erase(InLightProxy);
 			m_LightProxies.erase(InLightProxy);
+
+			InLightProxy->Release();
+		}
+	}
+
+	void Scene::RegisterSkyLightProxy( SkyLightSceneProxy* InLightProxy )
+	{
+		m_PendingSkyLightProxies.insert(InLightProxy);
+	}
+
+	void Scene::UnRegisterSkyLightProxy( SkyLightSceneProxy* InLightProxy )
+	{
+		if (InLightProxy)
+		{
+			m_PendingSkyLightProxies.erase(InLightProxy);
+			m_SkyLightProxies.erase(InLightProxy);
 
 			InLightProxy->Release();
 		}
