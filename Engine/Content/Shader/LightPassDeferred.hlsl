@@ -384,7 +384,7 @@ float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, f
     
     float3 kS = F;
     float3 kD = float3(1, 1, 1) - kS;
-    kD *= 1.0 - Gbuffer.Roughness;
+    kD *= 1.0 - Gbuffer.Matallic;
     
     float3 Specular = NDF * G * F / (max(dot(Gbuffer.WorldNormal, CameraVector), 0) * max(dot(Gbuffer.WorldNormal, L), 0) + 0.0001);
     
@@ -408,7 +408,7 @@ float3 CalculateDirectionalLightRadiance(float3 WorldPosition, float3 LightDirec
     
     float3 kS = F;
     float3 kD = float3(1, 1, 1) - kS;
-    kD *= 1.0 - Gbuffer.Roughness;
+    kD *= 1.0 - Gbuffer.Matallic;
     
     float3 Specular = NDF * G * F / (max(dot(Gbuffer.WorldNormal, CameraVector), 0) * max(dot(Gbuffer.WorldNormal, L), 0) + 0.0001);
     
@@ -424,7 +424,7 @@ float3 CalculateSkyLightRadiance(float3 CameraVector, SkyLightData Light, GBuffe
 
     float3 kS = F;
     float3 kD = 1 - kS;
-    kD *= 1.0 - Gbuffer.Roughness;
+    kD *= 1.0 - Gbuffer.Matallic;
     
     float3 irradiance = Light.Color;
     

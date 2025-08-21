@@ -193,6 +193,26 @@ namespace Drn
 		
 	}
 
+#if WITH_EDITOR
+	void StaticMeshSlotData::UnpackVerticesData()
+	{
+		m_VertexCount = VertexBufferBlob->GetBufferSize() / sizeof(InputLayout_StaticMesh);
+
+		Positions.resize(m_VertexCount);
+		Normals.resize(m_VertexCount);
+		Tangents.resize(m_VertexCount);
+		BitTangents.resize(m_VertexCount);
+
+		for (uint64 i = 0; i < m_VertexCount; i++)
+		{
+			memcpy( &Positions[i], (BYTE*)VertexBufferBlob->GetBufferPointer() + i * sizeof(InputLayout_StaticMesh) + 0 * sizeof(float), sizeof( Vector ) );
+			memcpy( &Normals[i], (BYTE*)VertexBufferBlob->GetBufferPointer() + i * sizeof(InputLayout_StaticMesh) + 6 * sizeof(float), sizeof( Vector ) );
+			memcpy( &Tangents[i], (BYTE*)VertexBufferBlob->GetBufferPointer() + i * sizeof(InputLayout_StaticMesh) + 9 * sizeof(float), sizeof( Vector ) );
+			memcpy( &BitTangents[i], (BYTE*)VertexBufferBlob->GetBufferPointer() + i * sizeof(InputLayout_StaticMesh) + 12 * sizeof(float), sizeof( Vector ) );
+		}
+	}
+#endif
+
 	void StaticMeshSlotData::Serialize( Archive& Ar )
 	{
 		if (Ar.IsLoading())
@@ -201,32 +221,15 @@ namespace Drn
 			Ar >> IndexBufferBlob;
 			Ar >> MaterialIndex;
 
-			uint64 VertexCount;
-			Ar >> VertexCount;
-
-			Positions.resize(VertexCount);
-			Normals.resize(VertexCount);
-			Tangents.resize(VertexCount);
-			BitTangents.resize(VertexCount);
-
-			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar >> Positions[i]; }
-			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar >> Normals[i]; }
-			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar >> Tangents[i]; }
-			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar >> BitTangents[i]; }
+#if WITH_EDITOR
+			UnpackVerticesData();
+#endif
 		}
 		else
 		{
 			Ar << VertexBufferBlob;
 			Ar << IndexBufferBlob;
 			Ar << MaterialIndex;
-
-			const uint64 VertexCount = Positions.size();
-			Ar << VertexCount;
-
-			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar << Positions[i]; }
-			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar << Normals[i]; }
-			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar << Tangents[i]; }
-			for ( uint64 i = 0; i < VertexCount; i++ ) { Ar << BitTangents[i]; }
 		}
 	}
 

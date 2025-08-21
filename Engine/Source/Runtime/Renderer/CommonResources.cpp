@@ -870,7 +870,7 @@ namespace Drn
 		PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
 		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
 		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= GBUFFER_BASE_COLOR_FORMAT;
+		PipelineDesc.RTVFormats[0]						= DISPLAY_OUTPUT_FORMAT;
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
@@ -920,7 +920,7 @@ namespace Drn
 		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
 		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
 		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= GBUFFER_BASE_COLOR_FORMAT;
+		PipelineDesc.RTVFormats[0]						= DISPLAY_OUTPUT_FORMAT;
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );

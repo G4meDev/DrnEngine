@@ -167,6 +167,18 @@ namespace Drn
 		}
 
 		ImGui::Separator();
+
+		uint64 VertexCount = 0;
+		for (auto& MeshSlot : m_OwningAsset->Data.MeshesData)
+		{
+			VertexCount += MeshSlot.m_VertexCount;
+		}
+
+		ImGui::Text( "%u vertecies", VertexCount);
+
+		ImGui::Separator();
+
+		ImGui::Separator();
 		ImGui::Text("Materials");
 		
 		for (MaterialData& Mat : m_OwningAsset->Data.Materials)

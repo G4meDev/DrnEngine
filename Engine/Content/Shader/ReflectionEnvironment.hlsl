@@ -101,7 +101,8 @@ float Square(float x) { return x * x; }
 
 float3 ComputeF0(float3 BaseColor, float Metallic)
 {
-    float3 F0 = float3(0.04, 0.04, 0.04);
+    //float3 F0 = float3(0.04, 0.04, 0.04);
+    float3 F0 = 0.04;
     F0 = lerp(F0, BaseColor, Metallic);
     return F0;
 }
@@ -140,6 +141,25 @@ half3 EnvBRDFApprox(half3 SpecularColor, half Roughness, half NoV)
     float F90 = saturate(50.0 * SpecularColor.g);
 
     return SpecularColor * AB.x + F90 * AB.y;
+}
+
+half EnvBRDFApproxNonmetal(half Roughness, half NoV)
+{
+    const half2 c0 = { -1, -0.0275 };
+    const half2 c1 = { 1, 0.0425 };
+    half2 r = Roughness * c0 + c1;
+    return min(r.x * r.x, exp2(-9.28 * NoV)) * r.x + r.y;
+}
+
+void EnvBRDFApproxFullyRough(inout half3 DiffuseColor, inout half3 SpecularColor)
+{
+    DiffuseColor += SpecularColor * 0.45;
+    SpecularColor = 0;
+}
+void EnvBRDFApproxFullyRough(inout half3 DiffuseColor, inout half SpecularColor)
+{
+    DiffuseColor += SpecularColor * 0.45;
+    SpecularColor = 0;
 }
 
 float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
@@ -188,7 +208,6 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float SSAO = AOImage.Sample(PointClampSampler, UV).x;
     float3 DiffueColor = BaseColor - BaseColor * Metallic;
     float3 SpecularColor = ComputeF0(BaseColor, Metallic);
-    float3 BentNormal = WorldNormal;
 
     float3 WorldPosition = mul(View.ScreenToTranslatedWorld, float4(ScreenPos * SceneDepth, SceneDepth, 1)).xyz;
         
@@ -208,7 +227,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float CombinedAO = AO * SSAO;
     float RoughnessSq = Square(Roughness);
     float SpecularOcclusion = GetSpecularOcclusion(NoV, RoughnessSq, CombinedAO);
-        
+
     float3 Iraddiance = 0;
     float3 DiffuseTerm = 0;
         
@@ -226,21 +245,25 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
         {
             float3 kS = F;
             float3 kD = 1 - kS;
+            kD *= 1.0f - Metallic;
         
             float3 Sample = 0;
             // TODO: this is hack just make another cubemap at runtime for diffuse lookup
             Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 1).xyz;
-            Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 2).xyz * 0.7f;
-            Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 3).xyz * 0.5f;
+            Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 2).xyz * 0.5f;
+            Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 3).xyz * 0.2f;
             DiffuseTerm = SSRBuffer.SkyLightColor * Sample * kD * DiffueColor;
         }
     }
-        float3 F = fresnelSchlickRoughness(max(dot(WorldNormal, -CameraToPixel), 0.0), SpecularColor, Roughness);
+    //float3 F = fresnelSchlickRoughness(max(dot(WorldNormal, -CameraToPixel), 0.0), SpecularColor, Roughness);
 
     SpecularTerm += Iraddiance;
     float3 BRDF = EnvBRDF(SpecularColor, Roughness, NoV, PreintegeratedGFImage, PointClampSampler);
     //float3 BRDF = EnvBRDFApprox(SpecularColor, Roughness, NoV);
+    //float3 BRDF = EnvBRDFApproxNonmetal(Roughness, NoV);
     
     SpecularTerm *= BRDF;
+    //return float4(SpecularTerm, 1);
     return float4(SpecularTerm + DiffuseTerm * CombinedAO, 1);
+    //return float4( DiffuseTerm * CombinedAO, 1);
 }
