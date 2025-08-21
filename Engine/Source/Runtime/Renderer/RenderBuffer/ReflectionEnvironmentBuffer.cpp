@@ -66,6 +66,7 @@ namespace Drn
 		AssetHandle<TextureCube> SkyCubemap = SkyProxy ? SkyProxy->GetCubemap() : AssetHandle<TextureCube>();
 		m_Data.SkyCubemapTexture = SkyCubemap.IsValid() ? Renderer::Get()->GetBindlessSrvIndex(SkyCubemap->GetResource()->GetGpuHandle()) : 0;
 		m_Data.SkyLightMipCount = SkyCubemap.IsValid() ? SkyCubemap->GetMipLevels() : 0;
+		m_Data.SkyLightColor = SkyProxy ? SkyProxy->GetColor() : Vector::OneVector;
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );

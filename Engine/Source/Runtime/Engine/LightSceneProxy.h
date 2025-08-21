@@ -19,6 +19,8 @@ namespace Drn
 
 		virtual void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) = 0;
 
+		inline const Vector& GetColor() const { return m_LightColor; }
+
 		inline virtual ELightType GetLightType() const = 0;
 
 #if WITH_EDITOR

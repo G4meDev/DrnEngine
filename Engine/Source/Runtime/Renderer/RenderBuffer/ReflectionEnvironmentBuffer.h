@@ -12,10 +12,13 @@ namespace Drn
 		uint32 WorldNormalTexture;
 		uint32 MasksTexture;
 		uint32 DepthTexture;
+
 		uint32 SSRTexture;
 		uint32 AOTexture;
 		uint32 PreintegratedGFTexture;
 		uint32 SkyCubemapTexture;
+
+		Vector SkyLightColor;
 		uint32 SkyLightMipCount;
 	};
 
