@@ -6,6 +6,7 @@
 #include "Runtime/Renderer/D3D12Utils.h"
 #include "Runtime/Misc/Path.h"
 #include "Runtime/Core/Archive.h"
+#include "Runtime/Core/FileArchive.h"
 
 LOG_DECLARE_CATEGORY(LogAssetManager)
 
@@ -94,7 +95,7 @@ namespace Drn
 		{
 			Release();
 
-			Archive Ar(Path::ConvertProjectPath(m_Path));
+			FileArchive Ar(Path::ConvertProjectPath(m_Path));
 			if (!Ar.IsValid())
 			{
 				return EAssetType::Undefined;
@@ -291,7 +292,7 @@ namespace Drn
 
 		else
 		{
-			Archive Ar(Path::ConvertProjectPath(Path));
+			FileArchive Ar(Path::ConvertProjectPath(Path));
 			
 			if (Ar.IsValid())
 			{

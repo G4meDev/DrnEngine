@@ -3,6 +3,8 @@
 #include "Runtime/Core/Drn.h"
 #include "Runtime/Core/AssetManager.h"
 #include "Runtime/Core/Archive.h"
+#include "Runtime/Core/FileArchive.h"
+#include "Runtime/Core/BufferArchive.h"
 #include "Runtime/Core/Time.h"
 #include "Runtime/Core/Taskflow.h"
 

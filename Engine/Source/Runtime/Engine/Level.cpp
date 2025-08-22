@@ -63,7 +63,7 @@ namespace Drn
 
 	void Level::SaveFromWorld( World* InWorld )
 	{
-		Archive Ar(Path::ConvertProjectPath(m_Path), false);
+		FileArchive Ar(Path::ConvertProjectPath(m_Path), false);
 		Asset::Serialize(Ar);
 
 		uint32 ActorCount = InWorld->GetNonTransientActorCount();
@@ -94,7 +94,7 @@ namespace Drn
 		InWorld->SetLabel(LevelLabel);
 #endif
 
-		Archive Ar(Path::ConvertProjectPath(m_Path));
+		FileArchive Ar(Path::ConvertProjectPath(m_Path));
 		Asset::Serialize( Ar );
 
 		uint32 ActorCount;

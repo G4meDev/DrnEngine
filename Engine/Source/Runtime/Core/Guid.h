@@ -77,5 +77,7 @@ namespace Drn
 		uint32 D;
 
 		friend class Archive;
+		friend class FileArchive;
+		friend class BufferArchive;
 	};
 }

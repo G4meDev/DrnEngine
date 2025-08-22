@@ -32,7 +32,7 @@ namespace Drn
 
 	void Asset::Load()
 	{
-		Archive Ar(Path::ConvertProjectPath(m_Path));
+		FileArchive Ar(Path::ConvertProjectPath(m_Path));
 		Serialize(Ar);
 	}
 
@@ -40,7 +40,7 @@ namespace Drn
 
 	void Asset::Save()
 	{
-		Archive Ar(Path::ConvertProjectPath(m_Path), false);
+		FileArchive Ar(Path::ConvertProjectPath(m_Path), false);
 		Serialize(Ar);
 	}
 

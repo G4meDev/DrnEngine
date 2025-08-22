@@ -60,5 +60,7 @@ namespace Drn
 
 		friend class Matrix;
 		friend class Archive;
+		friend class FileArchive;
+		friend class BufferArchive;
 	};
 }

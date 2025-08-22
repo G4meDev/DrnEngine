@@ -14,71 +14,61 @@
 #include <d3dcommon.h>
 
 LOG_DECLARE_CATEGORY( LogArchive );
+#define ARCHIVE_VERSION ( (uint8)1 )
 
 namespace Drn
 {
 	class Archive
 	{
 	public:
-
-		Archive(const std::string& InFilePath, bool InIsLoading = true);
-		~Archive();
+		Archive(bool InIsLoading = true);
+		virtual ~Archive();
 
 		inline bool IsLoading() { return m_IsLoading; };
-		inline std::string GetFilePath() { return m_FilePath; };
-
-		Archive& operator<<(bool Value);
-		Archive& operator<<(uint8 Value);
-		Archive& operator<<(uint16 Value);
-		Archive& operator<<(uint32 Value);
-		Archive& operator<<(uint64 Value);
-
-		Archive& operator<<( int32 Value );
-
-		Archive& operator<<(float Value);
-		Archive& operator<<(Guid Value);
-		Archive& operator<<(const Vector& Value);
-		Archive& operator<<(const Vector4& Value);
-		Archive& operator<<(const Quat& Value);
-		Archive& operator<<(const Transform& Value);
-		Archive& operator<<(const std::string& Value);
-		Archive& operator<<(const std::vector<char>& Value);
-		Archive& operator<<(ID3DBlob* Value);
-
-
-		Archive& operator>>(bool& Value);
-		Archive& operator>>(uint8& Value);
-		Archive& operator>>(uint16& Value);
-		Archive& operator>>(uint32& Value);
-		Archive& operator>>(uint64& Value);
-
-		Archive& operator>>( int32& Value );
-
-		Archive& operator>>(float& Value);
-		Archive& operator>>(Guid& Value);
-		Archive& operator>>(Vector& Value);
-		Archive& operator>>(Vector4& Value);
-		Archive& operator>>(Quat& Value);
-		Archive& operator>>(Transform& Value);
-		Archive& operator>>(std::string& Value);
-		Archive& operator>>(std::vector<char>& Value);
-		Archive& operator>>(ID3DBlob*& Value);
-
-		inline bool IsValid() const { return m_ValidArchive; }
 		inline uint8 GetVersion() const { return m_ArchiveVersion; };
+		inline bool IsValid() const { return m_ValidArchive; }
 
-		void ReadWholeBuffer(std::vector<uint8>& Data);
+		virtual Archive& operator<<(bool Value) = 0;
+		virtual Archive& operator<<(uint8 Value) = 0;
+		virtual Archive& operator<<(uint16 Value) = 0;
+		virtual Archive& operator<<(uint32 Value) = 0;
+		virtual Archive& operator<<(uint64 Value) = 0;
+
+		virtual Archive& operator<<( int32 Value ) = 0;
+
+		virtual Archive& operator<<(float Value) = 0;
+		virtual Archive& operator<<(Guid Value) = 0;
+		virtual Archive& operator<<(const Vector& Value) = 0;
+		virtual Archive& operator<<(const Vector4& Value) = 0;
+		virtual Archive& operator<<(const Quat& Value) = 0;
+		virtual Archive& operator<<(const Transform& Value) = 0;
+		virtual Archive& operator<<(const std::string& Value) = 0;
+		virtual Archive& operator<<(const std::vector<char>& Value) = 0;
+		virtual Archive& operator<<(ID3DBlob* Value) = 0;
+
+		virtual Archive& operator>>(bool& Value) = 0;
+		virtual Archive& operator>>(uint8& Value) = 0;
+		virtual Archive& operator>>(uint16& Value) = 0;
+		virtual Archive& operator>>(uint32& Value) = 0;
+		virtual Archive& operator>>(uint64& Value) = 0;
+
+		virtual Archive& operator>>( int32& Value ) = 0;
+
+		virtual Archive& operator>>(float& Value) = 0;
+		virtual Archive& operator>>(Guid& Value) = 0;
+		virtual Archive& operator>>(Vector& Value) = 0;
+		virtual Archive& operator>>(Vector4& Value) = 0;
+		virtual Archive& operator>>(Quat& Value) = 0;
+		virtual Archive& operator>>(Transform& Value) = 0;
+		virtual Archive& operator>>(std::string& Value) = 0;
+		virtual Archive& operator>>(std::vector<char>& Value) = 0;
+		virtual Archive& operator>>(ID3DBlob*& Value) = 0;
 
 	protected:
-
-		std::string m_FilePath;
 		bool m_IsLoading;
-
 		uint8 m_ArchiveVersion;
-
-		std::fstream File;
 		bool m_ValidArchive = false;
-
-	private:
 	};
+
+
 }

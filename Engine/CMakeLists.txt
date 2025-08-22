@@ -9,6 +9,8 @@ set( HEADER_FILES
 	Source/Runtime/Core/Asset.h
 	Source/Runtime/Core/AssetManager.h
 	Source/Runtime/Core/Archive.h
+	Source/Runtime/Core/FileArchive.h
+	Source/Runtime/Core/BufferArchive.h
 	Source/Runtime/Core/Serializable.h
 	Source/Runtime/Core/Delegate.h
 	Source/Runtime/Core/Guid.h
@@ -171,6 +173,8 @@ set( SOURCE_FILES
 	Source/Runtime/Core/AssetManager.cpp
 	Source/Runtime/Core/Application.cpp
 	Source/Runtime/Core/Archive.cpp
+	Source/Runtime/Core/FileArchive.cpp
+	Source/Runtime/Core/BufferArchive.cpp
 	Source/Runtime/Core/Serializable.cpp
 	Source/Runtime/Core/Delegate.cpp
 	Source/Runtime/Core/Guid.cpp
