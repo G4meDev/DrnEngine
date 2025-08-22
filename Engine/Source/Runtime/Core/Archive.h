@@ -45,6 +45,7 @@ namespace Drn
 		virtual Archive& operator<<(const std::string& Value) = 0;
 		virtual Archive& operator<<(const std::vector<char>& Value) = 0;
 		virtual Archive& operator<<(ID3DBlob* Value) = 0;
+		virtual Archive& operator<<(const BufferArchive& Value) = 0;
 
 		virtual Archive& operator>>(bool& Value) = 0;
 		virtual Archive& operator>>(uint8& Value) = 0;
@@ -63,6 +64,7 @@ namespace Drn
 		virtual Archive& operator>>(std::string& Value) = 0;
 		virtual Archive& operator>>(std::vector<char>& Value) = 0;
 		virtual Archive& operator>>(ID3DBlob*& Value) = 0;
+		virtual Archive& operator>>(BufferArchive& Value) = 0;
 
 	protected:
 		bool m_IsLoading;

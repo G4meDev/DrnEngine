@@ -43,7 +43,12 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			Ar >> m_SourcePath;
-			Data.Serialize( Ar );
+
+			BufferArchive BuffAr(0);
+			Ar >> BuffAr;
+			BuffAr.Decompress();
+			Data.Serialize(BuffAr);
+
 			Ar >> ImportScale;
 			
 			m_BodySetup.Serialize(Ar);
@@ -53,7 +58,12 @@ namespace Drn
 		else
 		{
 			Ar << m_SourcePath;
-			Data.Serialize( Ar );
+
+			BufferArchive BufArr(10, false);
+			Data.Serialize( BufArr );
+			BufArr.Compress();
+			Ar << BufArr;
+
 			Ar << ImportScale;
 
 			m_BodySetup.Serialize(Ar);

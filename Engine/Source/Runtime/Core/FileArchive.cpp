@@ -162,6 +162,14 @@ namespace Drn
 		return *this;
 	}
 
+	FileArchive& FileArchive::operator<<( const BufferArchive& Value )
+	{
+		uint64 Size = Value.GetPointerIndex();
+		*this << Size;
+		File.write( (char*)(Value.GetBufferPointer()), Size );
+		return *this;
+	}
+
 	FileArchive& FileArchive::operator>>( uint8& Value )
 	{
 		File.read( (char*)(&Value), 1 );
@@ -285,6 +293,19 @@ namespace Drn
 			D3DCreateBlob(Size, &Value);
 			File.read( (char*)(Value->GetBufferPointer()), Size );
 		}
+
+		return *this;
+	}
+
+	FileArchive& FileArchive::operator>>( BufferArchive& Value )
+	{
+		uint64 Size;
+		*this >> Size;
+
+		Value.CheckForAvaliableSpaceAndExpandConditional( Size );
+		File.read( (char*)(Value.GetBufferPointer()), Size );
+		Value.m_ArchiveVersion = GetVersion();
+		Value.m_ValidArchive = true;
 
 		return *this;
 	}

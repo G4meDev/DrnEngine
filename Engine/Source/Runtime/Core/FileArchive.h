@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Core/Archive.h"
+#include "Runtime/Core/BufferArchive.h"
 
 namespace Drn
 {
@@ -10,7 +11,7 @@ namespace Drn
 	public:
 
 		FileArchive( const std::string& InFilePath, bool InIsLoading = true );
-		~FileArchive();
+		virtual ~FileArchive();
 
 		inline std::string GetFilePath() { return m_FilePath; };
 
@@ -31,6 +32,7 @@ namespace Drn
 		virtual FileArchive& operator<<(const std::string& Value) override;
 		virtual FileArchive& operator<<(const std::vector<char>& Value) override;
 		virtual FileArchive& operator<<(ID3DBlob* Value) override;
+		virtual FileArchive& operator<<(const BufferArchive& Value) override;
 
 
 		virtual FileArchive& operator>>(bool& Value) override;
@@ -50,6 +52,7 @@ namespace Drn
 		virtual FileArchive& operator>>(std::string& Value) override;
 		virtual FileArchive& operator>>(std::vector<char>& Value) override;
 		virtual FileArchive& operator>>(ID3DBlob*& Value) override;
+		virtual FileArchive& operator>>(BufferArchive& Value) override;
 
 		void ReadWholeBuffer(std::vector<uint8>& Data);
 
@@ -57,6 +60,8 @@ namespace Drn
 
 		std::string m_FilePath;
 		std::fstream File;
+
+		friend class BufferArchive;
 
 	private:
 	};
