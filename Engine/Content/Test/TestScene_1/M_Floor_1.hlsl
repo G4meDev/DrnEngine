@@ -246,6 +246,11 @@ LayerData LayerHeightBlend(LayerData L1, float H1, float A1, LayerData L2, float
     return Result;
 }
 
+float ClampRange(float Input, float Minimum, float Maximum)
+{
+    return saturate((Input - Minimum) / (Maximum - Minimum));
+}
+
 //#define MAIN_PASS 1
 
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
@@ -301,6 +306,13 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float3 Masks = float3(0, BlendLayer.Roughness, BlendLayer.AO);
     float3 Normal = BlendLayer.Normal;
 
+    float WetnessMask = VertexColor.y;
+    float3 BaseColorSq = BaseColor * BaseColor;
+    BaseColor = lerp(BaseColor, BaseColorSq, ClampRange(WetnessMask, 0, 0.35));
+    Masks.g = lerp(Masks.g, 0.1, ClampRange(WetnessMask, 0.2, 1.0));
+    Masks.b = lerp(Masks.b, 1.0, ClampRange(WetnessMask, 0.45, 0.95));
+    //Normal = lerp(Normal, float3(0.5, 0.5, 1.0), ClampRange(WetnessMask, 0.45, 0.95));
+    
     //float3 Normal = float3(0.5, 0.5, 1);
     //float3 Normal = FloorNormalTexture.Sample(LinearSampler, IN.UV).rgb;
     Masks.g *= Scalars.RoughnessIntensity;
@@ -308,6 +320,8 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     Normal = ReconstructNormals(Normal.xy);
     Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Scalars.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
+    
+    Normal = lerp(Normal, float3(0, 1, 0), ClampRange(WetnessMask, 0.45, 0.95));
     Normal = EncodeNormal(Normal);
     
     //float DitherNoise = InterleavedGradientNoise(IN.Position.xy, View.FrameIndexMod8);
