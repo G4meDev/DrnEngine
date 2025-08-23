@@ -1,13 +1,13 @@
 //-------------------------------------------------------------------------------------
 // BCDirectCompute.cpp
-//  
+//
 // Direct3D 11 Compute Shader BC Compressor
 //
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 //-------------------------------------------------------------------------------------
 
-#include "DirectXTexp.h"
+#include "DirectXTexP.h"
 
 #include "BCDirectCompute.h"
 
@@ -20,13 +20,27 @@ using Microsoft::WRL::ComPtr;
 
 namespace
 {
-    #include "Shaders\Compiled\BC7Encode_EncodeBlockCS.inc"
-    #include "Shaders\Compiled\BC7Encode_TryMode02CS.inc"
-    #include "Shaders\Compiled\BC7Encode_TryMode137CS.inc"
-    #include "Shaders\Compiled\BC7Encode_TryMode456CS.inc"
-    #include "Shaders\Compiled\BC6HEncode_EncodeBlockCS.inc"
-    #include "Shaders\Compiled\BC6HEncode_TryModeG10CS.inc"
-    #include "Shaders\Compiled\BC6HEncode_TryModeLE10CS.inc"
+    namespace cs5
+    {
+    #include "BC7Encode_EncodeBlockCS.inc"
+    #include "BC7Encode_TryMode02CS.inc"
+    #include "BC7Encode_TryMode137CS.inc"
+    #include "BC7Encode_TryMode456CS.inc"
+    #include "BC6HEncode_EncodeBlockCS.inc"
+    #include "BC6HEncode_TryModeG10CS.inc"
+    #include "BC6HEncode_TryModeLE10CS.inc"
+    }
+
+    namespace cs4
+    {
+    #include "BC7Encode_EncodeBlockCS_cs40.inc"
+    #include "BC7Encode_TryMode02CS_cs40.inc"
+    #include "BC7Encode_TryMode137CS_cs40.inc"
+    #include "BC7Encode_TryMode456CS_cs40.inc"
+    #include "BC6HEncode_EncodeBlockCS_cs40.inc"
+    #include "BC6HEncode_TryModeG10CS_cs40.inc"
+    #include "BC6HEncode_TryModeLE10CS_cs40.inc"
+    }
 
     struct BufferBC6HBC7
     {
@@ -87,8 +101,7 @@ GPUCompressBC::GPUCompressBC() noexcept :
     m_bc7_mode137(false),
     m_width(0),
     m_height(0)
-{
-}
+{}
 
 
 //-------------------------------------------------------------------------------------
@@ -99,12 +112,12 @@ HRESULT GPUCompressBC::Initialize(ID3D11Device* pDevice)
         return E_INVALIDARG;
 
     // Check for DirectCompute support
-    D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
+    const D3D_FEATURE_LEVEL fl = pDevice->GetFeatureLevel();
 
     if (fl < D3D_FEATURE_LEVEL_10_0)
     {
         // DirectCompute not supported on Feature Level 9.x hardware
-        return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+        return HRESULT_E_NOT_SUPPORTED;
     }
 
     if (fl < D3D_FEATURE_LEVEL_11_0)
@@ -119,7 +132,7 @@ HRESULT GPUCompressBC::Initialize(ID3D11Device* pDevice)
 
         if (!hwopts.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x)
         {
-            return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+            return HRESULT_E_NOT_SUPPORTED;
         }
     }
 
@@ -132,39 +145,53 @@ HRESULT GPUCompressBC::Initialize(ID3D11Device* pDevice)
     //--- Create compute shader library: BC6H -----------------------------------------
 
     // Modes 11-14
-    HRESULT hr = pDevice->CreateComputeShader(BC6HEncode_TryModeG10CS, sizeof(BC6HEncode_TryModeG10CS), nullptr, m_BC6H_tryModeG10CS.ReleaseAndGetAddressOf());
+    auto blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC6HEncode_TryModeG10CS : cs4::BC6HEncode_TryModeG10CS;
+    auto blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC6HEncode_TryModeG10CS) : sizeof(cs4::BC6HEncode_TryModeG10CS);
+    HRESULT hr = pDevice->CreateComputeShader(blob, blobSize, nullptr, m_BC6H_tryModeG10CS.ReleaseAndGetAddressOf());
     if (FAILED(hr))
         return hr;
 
     // Modes 1-10
-    hr = pDevice->CreateComputeShader(BC6HEncode_TryModeLE10CS, sizeof(BC6HEncode_TryModeLE10CS), nullptr, m_BC6H_tryModeLE10CS.ReleaseAndGetAddressOf());
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC6HEncode_TryModeLE10CS : cs4::BC6HEncode_TryModeLE10CS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC6HEncode_TryModeLE10CS) : sizeof(cs4::BC6HEncode_TryModeLE10CS);
+    hr = pDevice->CreateComputeShader(blob, blobSize, nullptr, m_BC6H_tryModeLE10CS.ReleaseAndGetAddressOf());
     if (FAILED(hr))
         return hr;
 
     // Encode
-    hr = pDevice->CreateComputeShader(BC6HEncode_EncodeBlockCS, sizeof(BC6HEncode_EncodeBlockCS), nullptr, m_BC6H_encodeBlockCS.ReleaseAndGetAddressOf());
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC6HEncode_EncodeBlockCS : cs4::BC6HEncode_EncodeBlockCS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC6HEncode_EncodeBlockCS) : sizeof(cs4::BC6HEncode_EncodeBlockCS);
+    hr = pDevice->CreateComputeShader(blob, blobSize, nullptr, m_BC6H_encodeBlockCS.ReleaseAndGetAddressOf());
     if (FAILED(hr))
         return hr;
 
     //--- Create compute shader library: BC7 ------------------------------------------
 
     // Modes 4, 5, 6
-    hr = pDevice->CreateComputeShader(BC7Encode_TryMode456CS, sizeof(BC7Encode_TryMode456CS), nullptr, m_BC7_tryMode456CS.ReleaseAndGetAddressOf());
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC7Encode_TryMode456CS : cs4::BC7Encode_TryMode456CS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC7Encode_TryMode456CS) : sizeof(cs4::BC7Encode_TryMode456CS);
+    hr = pDevice->CreateComputeShader(blob, blobSize, nullptr, m_BC7_tryMode456CS.ReleaseAndGetAddressOf());
     if (FAILED(hr))
         return hr;
 
     // Modes 1, 3, 7
-    hr = pDevice->CreateComputeShader(BC7Encode_TryMode137CS, sizeof(BC7Encode_TryMode137CS), nullptr, m_BC7_tryMode137CS.ReleaseAndGetAddressOf());
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC7Encode_TryMode137CS : cs4::BC7Encode_TryMode137CS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC7Encode_TryMode137CS) : sizeof(cs4::BC7Encode_TryMode137CS);
+    hr = pDevice->CreateComputeShader(blob, blobSize, nullptr, m_BC7_tryMode137CS.ReleaseAndGetAddressOf());
     if (FAILED(hr))
         return hr;
 
     // Modes 0, 2
-    hr = pDevice->CreateComputeShader(BC7Encode_TryMode02CS, sizeof(BC7Encode_TryMode02CS), nullptr, m_BC7_tryMode02CS.ReleaseAndGetAddressOf());
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC7Encode_TryMode02CS : cs4::BC7Encode_TryMode02CS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC7Encode_TryMode02CS) : sizeof(cs4::BC7Encode_TryMode02CS);
+    hr = pDevice->CreateComputeShader(blob, blobSize, nullptr, m_BC7_tryMode02CS.ReleaseAndGetAddressOf());
     if (FAILED(hr))
         return hr;
 
     // Encode
-    hr = pDevice->CreateComputeShader(BC7Encode_EncodeBlockCS, sizeof(BC7Encode_EncodeBlockCS), nullptr, m_BC7_encodeBlockCS.ReleaseAndGetAddressOf());
+    blob = (fl >= D3D_FEATURE_LEVEL_11_0) ? cs5::BC7Encode_EncodeBlockCS : cs4::BC7Encode_EncodeBlockCS;
+    blobSize = (fl >= D3D_FEATURE_LEVEL_11_0) ? sizeof(cs5::BC7Encode_EncodeBlockCS) : sizeof(cs4::BC7Encode_EncodeBlockCS);
+    hr = pDevice->CreateComputeShader(blob, blobSize, nullptr, m_BC7_encodeBlockCS.ReleaseAndGetAddressOf());
     if (FAILED(hr))
         return hr;
 
@@ -173,7 +200,7 @@ HRESULT GPUCompressBC::Initialize(ID3D11Device* pDevice)
 
 
 //-------------------------------------------------------------------------------------
-HRESULT GPUCompressBC::Prepare(size_t width, size_t height, DWORD flags, DXGI_FORMAT format, float alphaWeight)
+HRESULT GPUCompressBC::Prepare(size_t width, size_t height, uint32_t flags, DXGI_FORMAT format, float alphaWeight)
 {
     if (!width || !height || alphaWeight < 0.f)
         return E_INVALIDARG;
@@ -197,9 +224,9 @@ HRESULT GPUCompressBC::Prepare(size_t width, size_t height, DWORD flags, DXGI_FO
         m_bc7_mode137 = true;
     }
 
-    size_t xblocks = std::max<size_t>(1, (width + 3) >> 2);
-    size_t yblocks = std::max<size_t>(1, (height + 3) >> 2);
-    size_t num_blocks = xblocks * yblocks;
+    const size_t xblocks = std::max<size_t>(1, (width + 3) >> 2);
+    const size_t yblocks = std::max<size_t>(1, (height + 3) >> 2);
+    const size_t num_blocks = xblocks * yblocks;
 
     switch (format)
     {
@@ -222,7 +249,7 @@ HRESULT GPUCompressBC::Prepare(size_t width, size_t height, DWORD flags, DXGI_FO
 
     default:
         m_bcformat = m_srcformat = DXGI_FORMAT_UNKNOWN;
-        return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+        return HRESULT_E_NOT_SUPPORTED;
     }
 
     m_bcformat = format;
@@ -232,11 +259,11 @@ HRESULT GPUCompressBC::Prepare(size_t width, size_t height, DWORD flags, DXGI_FO
         return E_POINTER;
 
     // Create structured buffers
-    uint64_t sizeInBytes = uint64_t(num_blocks) * sizeof(BufferBC6HBC7);
+    const uint64_t sizeInBytes = uint64_t(num_blocks) * sizeof(BufferBC6HBC7);
     if (sizeInBytes >= UINT32_MAX)
-        return HRESULT_FROM_WIN32(ERROR_ARITHMETIC_OVERFLOW);
+        return HRESULT_E_ARITHMETIC_OVERFLOW;
 
-    auto bufferSize = static_cast<size_t>(sizeInBytes);
+    const auto bufferSize = static_cast<size_t>(sizeInBytes);
 
     {
         D3D11_BUFFER_DESC desc = {};
@@ -352,7 +379,6 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
         || srcImage.height != destImage.height
         || srcImage.width != m_width
         || srcImage.height != m_height
-        || srcImage.format != m_srcformat
         || destImage.format != m_bcformat)
     {
         return E_UNEXPECTED;
@@ -364,7 +390,7 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
         return E_POINTER;
 
     // We need to avoid the hardware doing additional colorspace conversion
-    DXGI_FORMAT inputFormat = (m_srcformat == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB) ? DXGI_FORMAT_R8G8B8A8_UNORM : m_srcformat;
+    const DXGI_FORMAT inputFormat = (m_srcformat == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB) ? DXGI_FORMAT_R8G8B8A8_UNORM : m_srcformat;
 
     ComPtr<ID3D11Texture2D> sourceTex;
     {
@@ -423,22 +449,22 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
         return E_UNEXPECTED;
     }
 
-    const UINT MAX_BLOCK_BATCH = 64;
+    constexpr UINT MAX_BLOCK_BATCH = 64u;
 
     auto pContext = m_context.Get();
     if (!pContext)
         return E_UNEXPECTED;
 
-    size_t xblocks = std::max<size_t>(1, (m_width + 3) >> 2);
-    size_t yblocks = std::max<size_t>(1, (m_height + 3) >> 2);
+    const size_t xblocks = std::max<size_t>(1, (m_width + 3) >> 2);
+    const size_t yblocks = std::max<size_t>(1, (m_height + 3) >> 2);
 
-    auto num_total_blocks = static_cast<UINT>(xblocks * yblocks);
+    const auto num_total_blocks = static_cast<UINT>(xblocks * yblocks);
     UINT num_blocks = num_total_blocks;
-    int start_block_id = 0;
+    UINT start_block_id = 0;
     while (num_blocks > 0)
     {
-        UINT n = std::min<UINT>(num_blocks, MAX_BLOCK_BATCH);
-        UINT uThreadGroupCount = n;
+        const UINT n = std::min<UINT>(num_blocks, MAX_BLOCK_BATCH);
+        const UINT uThreadGroupCount = n;
 
         {
             D3D11_MAPPED_SUBRESOURCE mapped;
@@ -449,7 +475,7 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
             ConstantsBC6HBC7 param;
             param.tex_width = static_cast<UINT>(srcImage.width);
             param.num_block_x = static_cast<UINT>(xblocks);
-            param.format = m_bcformat;
+            param.format = static_cast<UINT>(m_bcformat);
             param.mode_id = 0;
             param.start_block_id = start_block_id;
             param.num_total_blocks = num_total_blocks;
@@ -487,7 +513,7 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
                         ConstantsBC6HBC7 param;
                         param.tex_width = static_cast<UINT>(srcImage.width);
                         param.num_block_x = static_cast<UINT>(xblocks);
-                        param.format = m_bcformat;
+                        param.format = static_cast<UINT>(m_bcformat);
                         param.mode_id = modes[i];
                         param.start_block_id = start_block_id;
                         param.num_total_blocks = num_total_blocks;
@@ -522,7 +548,7 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
                         ConstantsBC6HBC7 param;
                         param.tex_width = static_cast<UINT>(srcImage.width);
                         param.num_block_x = static_cast<UINT>(xblocks);
-                        param.format = m_bcformat;
+                        param.format = static_cast<UINT>(m_bcformat);
                         param.mode_id = modes[i];
                         param.start_block_id = start_block_id;
                         param.num_total_blocks = num_total_blocks;
@@ -562,7 +588,7 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
                     ConstantsBC6HBC7 param;
                     param.tex_width = static_cast<UINT>(srcImage.width);
                     param.num_block_x = static_cast<UINT>(xblocks);
-                    param.format = m_bcformat;
+                    param.format = static_cast<UINT>(m_bcformat);
                     param.mode_id = i;
                     param.start_block_id = start_block_id;
                     param.num_total_blocks = num_total_blocks;
@@ -597,9 +623,9 @@ HRESULT GPUCompressBC::Compress(const Image& srcImage, const Image& destImage)
         auto pSrc = static_cast<const uint8_t *>(mapped.pData);
         uint8_t *pDest = destImage.pixels;
 
-        size_t pitch = xblocks * sizeof(BufferBC6HBC7);
+        const size_t pitch = xblocks * sizeof(BufferBC6HBC7);
 
-        size_t rows = std::max<size_t>(1, (destImage.height + 3) >> 2);
+        const size_t rows = std::max<size_t>(1, (destImage.height + 3) >> 2);
 
         for (size_t h = 0; h < rows; ++h)
         {

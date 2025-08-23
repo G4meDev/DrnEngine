@@ -34,10 +34,11 @@ struct StaticSamplers
 struct ScalarBuffer
 {
     float MipLevel; // @SCALAR MipLevel
-    bool ShowR;
-    bool ShowG;
-    bool ShowB;
-    bool ShowA;
+};
+
+struct VectorBuffer
+{
+    float4 ShowColor; // @VECTOR ShowColor
 };
 
 struct TextureBuffers
@@ -106,11 +107,19 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D Texture = ResourceDescriptorHeap[Textures.BaseColorTexture];
     
     ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
+    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
     
     PixelShaderOutput OUT;
-    OUT.Color = Texture.SampleLevel(LinearSampler, IN.UV, Scalars.MipLevel);
-
+    float4 Sample = Texture.SampleLevel(LinearSampler, IN.UV, Scalars.MipLevel);
     
+    if(Vectors.ShowColor.a > 0)
+    {
+        OUT.Color = float4(Sample.aaa, 1);
+    }
+    else
+    {
+        OUT.Color = float4(Sample.rgb, 1);
+    }
     
     return OUT;
 }

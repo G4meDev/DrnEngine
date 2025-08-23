@@ -285,7 +285,7 @@ namespace Drn
 				}
 			}
 
-			MaterialAsset->m_Vector4Slots.push_back(MaterialIndexedVector4Parameter(name, Value, FloatSize + i * 4));
+			MaterialAsset->m_Vector4Slots.push_back(MaterialIndexedVector4Parameter(name, Value, i * 4));
 		}
 
 

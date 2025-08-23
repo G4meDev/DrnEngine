@@ -12,7 +12,8 @@ namespace Drn
 		BC1,
 		BC4,
 		BC5,
-		BC6
+		BC6,
+		BC2,
 	};
 
 	class Texture : public Asset

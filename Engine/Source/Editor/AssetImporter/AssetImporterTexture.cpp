@@ -49,7 +49,7 @@ namespace Drn
 				TextureAsset->m_MipLevels = std::log2(LowerPow2) + 1;
 			
 				CoInitializeEx( nullptr, COINITBASE_MULTITHREADED );
-				GenerateMipMaps( *BaseImage, TEX_FILTER_CUBIC, TextureAsset->m_MipLevels, MipImage);
+				GenerateMipMaps( *BaseImage, TEX_FILTER_CUBIC | TEX_FILTER_SEPARATE_ALPHA, TextureAsset->m_MipLevels, MipImage);
 			}
 
 			TextureAsset->m_Format = TextureHelper::ResolveTextureFormat(metadata.format, TextureAsset->GetCompression());

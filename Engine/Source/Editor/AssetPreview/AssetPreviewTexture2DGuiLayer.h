@@ -23,6 +23,7 @@ namespace Drn
 		void DrawDetailsPanel();
 
 		void UpdateMipLevel();
+		void UpdateShowColor();
 
 	private:
 
@@ -34,6 +35,11 @@ namespace Drn
 
 		AssetHandle<Material> m_PreviewMaterial;
 		float m_MipLevel;
+
+		bool m_ShowR = true;
+		bool m_ShowG = true;
+		bool m_ShowB = true;
+		bool m_ShowA = false;
 	};
 }
 

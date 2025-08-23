@@ -3,6 +3,7 @@
 #if WITH_EDITOR
 
 #include "ForwardTypes.h"
+#include <d3d11.h>
 #include <DirectXTex.h>
 
 LOG_DECLARE_CATEGORY(LogAssetImporterTexture2D);

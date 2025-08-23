@@ -84,7 +84,7 @@ namespace Drn
 			SetColor( Vector(Color[0], Color[1], Color[2]) );
 		}
 
-		if ( ImGui::SliderFloat( "Intensity", &m_Intensity, 0, 10000 ) )
+		if ( ImGui::DragFloat( "Intensity", &m_Intensity, 0.1f, 0, 100 ) )
 		{
 			SetIntensity(m_Intensity);
 		}

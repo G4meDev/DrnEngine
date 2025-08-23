@@ -130,7 +130,7 @@ namespace Drn
 		ImGui::Text( "%ux%u", m_OwningAsset->GetSizeX(), m_OwningAsset->GetSizeY() );
 		ImGui::Text( "%u mips", m_OwningAsset->GetMipLevels() );
 
-		const char* LayoutTypes[] = { "NoCompression", "BC1", "BC4", "BC5", "BC6" };
+		const char* LayoutTypes[] = { "NoCompression", "BC1", "BC4", "BC5", "BC6", "BC2" };
 		int32 CurrrentComppression = static_cast<int32>(m_OwningAsset->m_Compression);
 		if ( ImGui::Combo( "Compression", &CurrrentComppression, LayoutTypes, IM_ARRAYSIZE( LayoutTypes )))
 		{
@@ -143,11 +143,27 @@ namespace Drn
 		{
 			UpdateMipLevel();
 		}
+
+		bool ShowColorDirty = false;
+		ShowColorDirty |= ImGui::Checkbox("R", &m_ShowR);
+		ShowColorDirty |= ImGui::Checkbox("G", &m_ShowG);
+		ShowColorDirty |= ImGui::Checkbox("B", &m_ShowB);
+		ShowColorDirty |= ImGui::Checkbox("A", &m_ShowA);
+
+		if (ShowColorDirty)
+		{
+			UpdateShowColor();
+		}
 	}
 
 	void AssetPreviewTexture2DGuiLayer::UpdateMipLevel()
 	{
 		m_PreviewMaterial->SetNamedScalar("MipLevel", m_MipLevel);
+	}
+
+	void AssetPreviewTexture2DGuiLayer::UpdateShowColor()
+	{
+		m_PreviewMaterial->SetNamedVector4("ShowColor", Vector4(m_ShowR, m_ShowG, m_ShowB, m_ShowA));
 	}
 
 }
