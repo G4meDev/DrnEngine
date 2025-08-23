@@ -66,13 +66,20 @@ struct TextureBuffers
     uint FloorAlbedo; // @TEX2D FloorAlbedo
     uint FloorNormal; // @TEX2D FloorNormal
     uint FloorMasks; // @TEX2D FloorMasks
+    
+    uint GrassAlbedo; // @TEX2D GrassAlbedo
+    uint GrassNormal; // @TEX2D GrassNormal
+    uint GrassMasks; // @TEX2D GrassMasks
 };
 
 struct ScalarBuffer
 {
-    float TintIntensity; // @SCALAR ColorIntensity
     float RoughnessIntensity; // @SCALAR RoughnessIntensity
     float NormalIntensity; // @SCALAR NormalIntensity
+
+    float FloorAlpha; // @SCALAR FloorAlpha
+    float GrassAlpha; // @SCALAR GrassAlpha
+    float Depth; // @SCALAR Depth
 };
 
 struct VectorBuffer
@@ -201,6 +208,44 @@ float InterleavedGradientNoise(float2 uv, float FrameId)
     return frac(magic.z * frac(dot(uv, magic.xy)));
 }
 
+struct LayerData
+{
+    float3 Color;
+    float3 Normal;
+    float Roughness;
+    float AO;
+};
+
+LayerData LayerBlend(LayerData Layer1, LayerData Layer2, float a)
+{
+    LayerData Result;
+    Result.Color = lerp(Layer1.Color, Layer2.Color, a);
+    Result.Normal = lerp(Layer1.Normal, Layer2.Normal, a);
+    Result.Roughness = lerp(Layer1.Roughness, Layer2.Roughness, a);
+    Result.AO = lerp(Layer1.AO, Layer2.AO, a);
+    
+    return Result;
+}
+
+LayerData LayerHeightBlend(LayerData L1, float H1, float A1, LayerData L2, float H2, float A2, float Depth)
+{
+    LayerData Result;
+    
+    float ma = max(H1 + A1, H2 + A2) - Depth;
+    
+    float b1 = saturate(H1 + A1 - ma);
+    float b2 = saturate(H2 + A2 - ma);
+    
+    float s = b1 + b2;
+    
+    Result.Color = (L1.Color * b1 + L2.Color * b2) / s;
+    Result.Normal = (L1.Normal * b1 + L2.Normal * b2) / s;
+    Result.Roughness = (L1.Roughness * b1 + L2.Roughness * b2) / s;
+    Result.AO = (L1.AO * b1 + L2.AO * b2) / s;
+    
+    return Result;
+}
+
 //#define MAIN_PASS 1
 
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
@@ -208,6 +253,9 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     PixelShaderOutput OUT;
  
 #if MAIN_PASS
+
+    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
+    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
 
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
@@ -218,16 +266,43 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D FloorNormalTexture = ResourceDescriptorHeap[Textures.FloorNormal];
     Texture2D FloorMasksTexture = ResourceDescriptorHeap[Textures.FloorMasks];
     
+    Texture2D GrassAlbedoTexture = ResourceDescriptorHeap[Textures.GrassAlbedo];
+    Texture2D GrassNormalTexture = ResourceDescriptorHeap[Textures.GrassNormal];
+    Texture2D GrassMasksTexture = ResourceDescriptorHeap[Textures.GrassMasks];
+
     float4 VertexColor = IN.Color;
     
-    float3 BaseColor = FloorAlbedoTexture.Sample(LinearSampler, IN.UV).xyz;
-    float3 Masks = FloorMasksTexture.Sample(LinearSampler, IN.UV).xyz;
+    float3 FloorColor = FloorAlbedoTexture.Sample(LinearSampler, IN.UV).xyz;
+    float3 FloorNormal = FloorNormalTexture.Sample(LinearSampler, IN.UV).xyz;
+    float4 FloorMasks = FloorMasksTexture.Sample(LinearSampler, IN.UV);
+    
+    LayerData FloorLayer;
+    FloorLayer.Color = FloorColor;
+    FloorLayer.Normal = FloorNormal;
+    FloorLayer.Roughness = FloorMasks.g;
+    FloorLayer.AO = FloorMasks.b;
+    
+    float3 GrassColor = GrassAlbedoTexture.Sample(LinearSampler, IN.UV).xyz;
+    float3 GrassNormal = GrassNormalTexture.Sample(LinearSampler, IN.UV).xyz;
+    float4 GrassMasks = GrassMasksTexture.Sample(LinearSampler, IN.UV);
 
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    LayerData GrassLayer;
+    GrassLayer.Color = GrassColor;
+    GrassLayer.Normal = GrassNormal;
+    GrassLayer.Roughness = GrassMasks.g;
+    GrassLayer.AO = GrassMasks.b;
+    
+    LayerData BlendLayer;
+    //BlendLayer = LayerBlend(FloorLayer, GrassLayer, VertexColor.r);
+    //BlendLayer = LayerHeightBlend(FloorLayer, FloorMasks.r, Scalars.FloorAlpha , GrassLayer, GrassMasks.r, Scalars.GrassAlpha, Scalars.Depth);
+    BlendLayer = LayerHeightBlend(FloorLayer, FloorMasks.r, 1 - VertexColor.r , GrassLayer, GrassMasks.r, VertexColor.r, Scalars.Depth);
+    
+    float3 BaseColor = BlendLayer.Color;
+    float3 Masks = float3(0, BlendLayer.Roughness, BlendLayer.AO);
+    float3 Normal = BlendLayer.Normal;
 
     //float3 Normal = float3(0.5, 0.5, 1);
-    float3 Normal = FloorNormalTexture.Sample(LinearSampler, IN.UV).rgb;
+    //float3 Normal = FloorNormalTexture.Sample(LinearSampler, IN.UV).rgb;
     Masks.g *= Scalars.RoughnessIntensity;
 
     Normal = ReconstructNormals(Normal.xy);

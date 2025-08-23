@@ -228,35 +228,36 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float RoughnessSq = Square(Roughness);
     float SpecularOcclusion = GetSpecularOcclusion(NoV, RoughnessSq, CombinedAO);
 
-    float3 Iraddiance = 0;
-    float3 DiffuseTerm = 0;
+    float3 LightDiffuse = SSRBuffer.SkyLightColor;
+    float3 Iraddiance = SSRBuffer.SkyLightColor;
         
+    float3 F = fresnelSchlickRoughness(max(dot(WorldNormal, -CameraToPixel), 0.0), SpecularColor, Roughness);
+    float3 kS = F;
+    float3 kD = 1 - kS;
+    kD *= 1.0f - Metallic;
+    
     [branch]
     if(SSRBuffer.SkyCubemapTexture != 0)
     {
-        float3 F = fresnelSchlickRoughness(max(dot(WorldNormal, -CameraToPixel), 0.0), SpecularColor, Roughness);
         const float RoughestMip = 1;
         const float MipScale = 1.2;
         
         half Level = RoughestMip - MipScale * log2(max(Roughness, 0.001));
         half MipLevel = SSRBuffer.SkyLightMipCount - 1 - Level;
         
-        Iraddiance = SkyCubemapImage.SampleLevel(LinearSampler, ReflectionVector, MipLevel).xyz * SSRBuffer.SkyLightColor * (1 - SSR.a) * SpecularOcclusion;
+        Iraddiance *= SkyCubemapImage.SampleLevel(LinearSampler, ReflectionVector, MipLevel).xyz;
         {
-            float3 kS = F;
-            float3 kD = 1 - kS;
-            kD *= 1.0f - Metallic;
-        
             float3 Sample = 0;
             // TODO: this is hack just make another cubemap at runtime for diffuse lookup
             Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 1).xyz;
             Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 2).xyz * 0.5f;
             Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 3).xyz * 0.2f;
-            DiffuseTerm = SSRBuffer.SkyLightColor * Sample * kD * DiffueColor;
+            LightDiffuse *= Sample;
         }
     }
-    //float3 F = fresnelSchlickRoughness(max(dot(WorldNormal, -CameraToPixel), 0.0), SpecularColor, Roughness);
+    float3 DiffuseTerm = LightDiffuse * kD * DiffueColor;
 
+    Iraddiance *= (1 - SSR.a) * SpecularOcclusion;
     SpecularTerm += Iraddiance;
     float3 BRDF = EnvBRDF(SpecularColor, Roughness, NoV, PreintegeratedGFImage, PointClampSampler);
     //float3 BRDF = EnvBRDFApprox(SpecularColor, Roughness, NoV);

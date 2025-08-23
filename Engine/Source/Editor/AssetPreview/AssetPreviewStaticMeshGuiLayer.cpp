@@ -36,6 +36,13 @@ namespace Drn
 		PreviewMesh->GetMeshComponent()->SetSelectable(false);
 		PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
 
+		m_SkyLight = PreviewWorld->SpawnActor<SkyLightActor>();
+		m_SkyLight->SetIntensity(0.4f);
+
+		m_DirectionalLight = PreviewWorld->SpawnActor<DirectionalLightActor>();
+		m_DirectionalLight->SetIntensity(1);
+		m_DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
+
 		m_ViewportPanel = std::make_unique<ViewportPanel>(PreviewWorld->GetScene());
 	}
 

@@ -31,6 +31,9 @@ namespace Drn
 		World* PreviewWorld;
 		StaticMeshActor* PreviewMesh;
 
+		class SkyLightActor* m_SkyLight;
+		class DirectionalLightActor* m_DirectionalLight;
+
 		AssetHandle<Material> m_OwningAsset;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 
