@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "BodySetup.h"
 
+#include "Runtime/Physic/PhysicManager.h"
+
 #if WITH_EDITOR
 #include <imgui.h>
 #endif
@@ -12,10 +14,26 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			m_AggGeo.Serialize(Ar);
+
+			if (Ar.GetVersion() == 11)
+			{
+				m_TriMeshes.clear();
+				uint8 TriMeshesCount = 0;
+				Ar >> TriMeshesCount;
+				m_TriMeshes.resize(TriMeshesCount);
+				for (uint8 i = 0; i < TriMeshesCount; i++) { m_TriMeshes[i].Serialize(Ar);}
+
+				Ar >> m_UseTriMesh;
+			}
 		}
 		else
 		{
 			m_AggGeo.Serialize(Ar);
+
+			Ar << static_cast<uint8>(m_TriMeshes.size());
+			for (uint8 i = 0; i < m_TriMeshes.size(); i++) { m_TriMeshes[i].Serialize(Ar); }
+
+			Ar << m_UseTriMesh;
 		}
 	}
 
@@ -166,4 +184,18 @@ namespace Drn
 	}
 
 #endif
+
+	void TriMeshGeom::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			Ar >> CookData;
+			TriMesh = PhysicManager::Get()->GetPhysics()->createTriangleMesh(CookData);
+		}
+		else
+		{
+			Ar << CookData;
+		}
+	}
+
 }

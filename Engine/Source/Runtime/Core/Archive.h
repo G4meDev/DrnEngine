@@ -10,11 +10,13 @@
 #include "Runtime/Math/Transform.h"
 
 #include "Runtime/Core/Guid.h"
+#include "Runtime/Physic/BodySetup.h"
 
 #include <d3dcommon.h>
 
+
 LOG_DECLARE_CATEGORY( LogArchive );
-#define ARCHIVE_VERSION ( (uint8)1 )
+#define ARCHIVE_VERSION ( (uint8)11 )
 
 namespace Drn
 {
@@ -47,6 +49,8 @@ namespace Drn
 		virtual Archive& operator<<(ID3DBlob* Value) = 0;
 		virtual Archive& operator<<(const BufferArchive& Value) = 0;
 
+		virtual Archive& operator<<( const PxMemoryStream& Value ) = 0;
+
 		virtual Archive& operator>>(bool& Value) = 0;
 		virtual Archive& operator>>(uint8& Value) = 0;
 		virtual Archive& operator>>(uint16& Value) = 0;
@@ -65,6 +69,8 @@ namespace Drn
 		virtual Archive& operator>>(std::vector<char>& Value) = 0;
 		virtual Archive& operator>>(ID3DBlob*& Value) = 0;
 		virtual Archive& operator>>(BufferArchive& Value) = 0;
+
+		virtual Archive& operator>>( PxMemoryStream& Value ) = 0;
 
 	protected:
 		bool m_IsLoading;

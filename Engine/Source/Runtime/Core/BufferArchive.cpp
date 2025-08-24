@@ -231,6 +231,18 @@ namespace Drn
 		return *this;
 	}
 
+	BufferArchive& BufferArchive::operator<<( const PxMemoryStream& Value )
+	{
+		uint64 Size = Value.m_Buffer.size();
+		*this << Size;
+
+		CheckForAvaliableSpaceAndExpandConditional(Size);
+		memcpy(m_HeapPointer, Value.m_Buffer.data(), Size);
+		m_HeapPointer += Size;
+
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator>>( uint8& Value )
 	{
 		const uint32 Size = 1;
@@ -377,6 +389,16 @@ namespace Drn
 	{
 		
 
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator>>( PxMemoryStream& Value )
+	{
+		uint64 Size;
+		*this >> Size;
+
+		Value.read(m_HeapPointer, Size);
+		m_HeapPointer += Size;
 		return *this;
 	}
 

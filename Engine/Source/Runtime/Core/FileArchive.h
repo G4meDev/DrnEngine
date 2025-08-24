@@ -34,6 +34,7 @@ namespace Drn
 		virtual FileArchive& operator<<(ID3DBlob* Value) override;
 		virtual FileArchive& operator<<(const BufferArchive& Value) override;
 
+		virtual FileArchive& operator<<( const PxMemoryStream& Value ) override;
 
 		virtual FileArchive& operator>>(bool& Value) override;
 		virtual FileArchive& operator>>(uint8& Value) override;
@@ -53,6 +54,8 @@ namespace Drn
 		virtual FileArchive& operator>>(std::vector<char>& Value) override;
 		virtual FileArchive& operator>>(ID3DBlob*& Value) override;
 		virtual FileArchive& operator>>(BufferArchive& Value) override;
+
+		virtual FileArchive& operator>>( PxMemoryStream& Value ) override;
 
 		void ReadWholeBuffer(std::vector<uint8>& Data);
 

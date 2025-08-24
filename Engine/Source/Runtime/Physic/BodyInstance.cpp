@@ -64,29 +64,44 @@ namespace Drn
 			m_RigidActor = Physics->createRigidStatic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
 		}
 
-		for (int32 i = 0; i < Setup->m_AggGeo.GetElementCount(); i++)
+		if (Setup->m_UseTriMesh)
 		{
-			ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
-
-			//PxFilterData filterData;
-			//filterData.setToDefault();
-			//filterData.word0 = UINT32_MAX;
-			//filterData.word1 = UINT32_MAX;
-
-			physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(m_OwnerComponent->GetWorldScale()).get()), *m_Material );
-			//shape->setSimulationFilterData( filterData );
-
-			shape->userData = &Element->GetUserData();
-
-			if (Element->GetType() == EAggCollisionShape::Sphere)
+			for (int32 i = 0; i < Setup->m_TriMeshes.size(); i++)
 			{
-				SphereElem* SphereEl = Element->GetShape<SphereElem>();
-				shape->setLocalPose(Transform2P( Transform(SphereEl->Center, Quat(), Vector::OneVector ) ) );
-			}
+				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh), *m_Material);
 
-			m_RigidActor->attachShape( *shape );
-			shape->release();
+				m_RigidActor->attachShape( *shape );
+				PX_RELEASE(shape);
+			}
 		}
+
+		else
+		{
+			for (int32 i = 0; i < Setup->m_AggGeo.GetElementCount(); i++)
+			{
+				ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
+
+				//PxFilterData filterData;
+				//filterData.setToDefault();
+				//filterData.word0 = UINT32_MAX;
+				//filterData.word1 = UINT32_MAX;
+
+				physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(m_OwnerComponent->GetWorldScale()).get()), *m_Material );
+				//shape->setSimulationFilterData( filterData );
+
+				shape->userData = &Element->GetUserData();
+
+				if (Element->GetType() == EAggCollisionShape::Sphere)
+				{
+					SphereElem* SphereEl = Element->GetShape<SphereElem>();
+					shape->setLocalPose(Transform2P( Transform(SphereEl->Center, Quat(), Vector::OneVector ) ) );
+				}
+
+				m_RigidActor->attachShape( *shape );
+				shape->release();
+			}
+		}
+
 
 		//m_RigidActor->
 

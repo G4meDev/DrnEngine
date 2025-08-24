@@ -31,6 +31,7 @@ namespace Drn
 		}
 
 		MeshAsset->m_BodySetup.m_AggGeo.EmptyElements();
+		MeshAsset->m_BodySetup.m_TriMeshes.clear();
 
 		for (int i = 0; i < scene->mNumMeshes; i++)
 		{
@@ -129,8 +130,32 @@ namespace Drn
 		}
 
 		BuildingData.MeshesData.push_back(MeshData);
-	}
 
+		// --------------------------------------------------------------------------------------------
+
+		BodySetup& MeshBodySetup = MeshAsset->m_BodySetup;
+		MeshBodySetup.m_TriMeshes.push_back({});
+
+		PxTriangleMeshDesc meshDesc;
+		meshDesc.setToDefault();
+		meshDesc.points.count = MeshData.Vertices.size();
+		meshDesc.points.stride = sizeof(PxVec3);
+		meshDesc.points.data = MeshData.Vertices.data();
+
+		meshDesc.triangles.count = MeshData.Indices.size() / 3;
+		meshDesc.triangles.stride = 3 * sizeof(uint32);
+		meshDesc.triangles.data = MeshData.Indices.data();
+
+		PxTriangleMeshCookingResult::Enum result;
+
+		physx::PxCookingParams CookParam = physx::PxCookingParams( physx::PxTolerancesScale() );
+		bool Success = PxCookTriangleMesh(CookParam, meshDesc, MeshBodySetup.m_TriMeshes.back().CookData, &result);
+
+		bool val = PxValidateTriangleMesh(CookParam, meshDesc);
+		PxTriangleMesh* TriMesh1 = PxCreateTriangleMesh(CookParam, meshDesc);
+
+		PxTriangleMesh* TriMesh = PhysicManager::Get()->GetPhysics()->createTriangleMesh( MeshBodySetup.m_TriMeshes.back().CookData );
+	}
 
 	uint8 ImportedStaticMeshData::AddMaterial( std::string& InMaterial )
 	{

@@ -38,6 +38,8 @@ namespace Drn
 		virtual BufferArchive& operator<<(ID3DBlob* Value) override;
 		virtual BufferArchive& operator<<(const BufferArchive& Value) override;
 
+		virtual BufferArchive& operator<<( const PxMemoryStream& Value ) override;
+
 
 		virtual BufferArchive& operator>>(bool& Value) override;
 		virtual BufferArchive& operator>>(uint8& Value) override;
@@ -57,6 +59,8 @@ namespace Drn
 		virtual BufferArchive& operator>>(std::vector<char>& Value) override;
 		virtual BufferArchive& operator>>(ID3DBlob*& Value) override;
 		virtual BufferArchive& operator>>(BufferArchive& Value) override;
+
+		virtual BufferArchive& operator>>( PxMemoryStream& Value ) override;
 
 		void CheckForAvaliableSpaceAndExpandConditional(uint64 Size);
 
