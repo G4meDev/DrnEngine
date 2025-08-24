@@ -5,7 +5,6 @@
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/InputLayout.h"
 
-#include <PxConfig.h>
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 

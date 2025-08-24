@@ -15,16 +15,13 @@ namespace Drn
 		{
 			m_AggGeo.Serialize(Ar);
 
-			if (Ar.GetVersion() == 11)
-			{
-				m_TriMeshes.clear();
-				uint8 TriMeshesCount = 0;
-				Ar >> TriMeshesCount;
-				m_TriMeshes.resize(TriMeshesCount);
-				for (uint8 i = 0; i < TriMeshesCount; i++) { m_TriMeshes[i].Serialize(Ar);}
+			m_TriMeshes.clear();
+			uint8 TriMeshesCount = 0;
+			Ar >> TriMeshesCount;
+			m_TriMeshes.resize(TriMeshesCount);
+			for (uint8 i = 0; i < TriMeshesCount; i++) { m_TriMeshes[i].Serialize(Ar);}
 
-				Ar >> m_UseTriMesh;
-			}
+			Ar >> m_UseTriMesh;
 		}
 		else
 		{
@@ -190,7 +187,8 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			Ar >> CookData;
-			TriMesh = PhysicManager::Get()->GetPhysics()->createTriangleMesh(CookData);
+			PxDefaultMemoryInputData ReadStream(CookData.data(), CookData.size());
+			TriMesh = PhysicManager::Get()->GetPhysics()->createTriangleMesh(ReadStream);
 		}
 		else
 		{

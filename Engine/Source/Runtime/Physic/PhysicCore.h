@@ -2,7 +2,6 @@
 
 #include "ForwardTypes.h"
 
-#include <PxConfig.h>
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 

@@ -136,25 +136,30 @@ namespace Drn
 		BodySetup& MeshBodySetup = MeshAsset->m_BodySetup;
 		MeshBodySetup.m_TriMeshes.push_back({});
 
-		PxTriangleMeshDesc meshDesc;
-		meshDesc.setToDefault();
-		meshDesc.points.count = MeshData.Vertices.size();
-		meshDesc.points.stride = sizeof(PxVec3);
-		meshDesc.points.data = MeshData.Vertices.data();
+		const uint32 VertexCount = MeshData.Vertices.size();
+		std::vector<PxVec3> Positions;
+		Positions.resize(VertexCount);
+		for (uint32 i = 0; i < VertexCount; i++) { Positions[i] = Vector2P(MeshData.Vertices[i].GetPosition()); }
 
-		meshDesc.triangles.count = MeshData.Indices.size() / 3;
+		PxTriangleMeshDesc meshDesc;
+		meshDesc.points.count = VertexCount;
+		meshDesc.points.stride = sizeof(PxVec3);
+		meshDesc.points.data = Positions.data();
+
+		const uint32 IndexCount = MeshData.Indices.size();
+
+		meshDesc.triangles.count = IndexCount / 3;
 		meshDesc.triangles.stride = 3 * sizeof(uint32);
 		meshDesc.triangles.data = MeshData.Indices.data();
 
+		PxDefaultMemoryOutputStream WriteStream;
 		PxTriangleMeshCookingResult::Enum result;
+		physx::PxCookingParams CookParam = physx::PxCookingParams( physx::PxTolerancesScale());
+		bool Success = PxCookTriangleMesh(CookParam, meshDesc, WriteStream, &result);
 
-		physx::PxCookingParams CookParam = physx::PxCookingParams( physx::PxTolerancesScale() );
-		bool Success = PxCookTriangleMesh(CookParam, meshDesc, MeshBodySetup.m_TriMeshes.back().CookData, &result);
-
-		bool val = PxValidateTriangleMesh(CookParam, meshDesc);
-		PxTriangleMesh* TriMesh1 = PxCreateTriangleMesh(CookParam, meshDesc);
-
-		PxTriangleMesh* TriMesh = PhysicManager::Get()->GetPhysics()->createTriangleMesh( MeshBodySetup.m_TriMeshes.back().CookData );
+		std::vector<uint8>& CookData = MeshBodySetup.m_TriMeshes.back().CookData;
+		CookData.resize(WriteStream.getSize());
+		memcpy(CookData.data(), WriteStream.getData(), WriteStream.getSize());
 	}
 
 	uint8 ImportedStaticMeshData::AddMaterial( std::string& InMaterial )

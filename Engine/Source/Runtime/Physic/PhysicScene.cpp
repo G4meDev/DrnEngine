@@ -251,9 +251,48 @@ namespace Drn
 					Box box = Box::BuildAABB(Vector::ZeroVector, P2Vector(BoxGeo->halfExtents) + Vector(0.02));
 					m_OwningWorld->DrawDebugBox(box, WorldTransform, DebugDrawColor, 0.0f, 0);
 				}
+
+				else if (Shape->getGeometry().getType() == PxGeometryType::eTRIANGLEMESH)
+				{
+					const PxTriangleMeshGeometry* TriGeo = static_cast<const PxTriangleMeshGeometry*>(&(Shape->getGeometry()));
+					
+					const bool e16Bit = TriGeo->triangleMesh->getTriangleMeshFlags() | PxTriangleMeshFlag::e16_BIT_INDICES;
+					const BYTE* Triangles = (BYTE*)TriGeo->triangleMesh->getTriangles();
+					const PxVec3* Vertecies = TriGeo->triangleMesh->getVertices();
+
+					PxMeshScale Scale = TriGeo->scale;
+
+					for (uint32 i = 0; i < TriGeo->triangleMesh->getNbTriangles(); i++)
+					{
+						uint32 ix1;
+						uint32 ix2;
+						uint32 ix3;
+
+						if (e16Bit)
+						{
+							ix1 = *(uint16*)(Triangles + 2 * 3 * i);
+							ix2 = *(uint16*)(Triangles + 2 * (3 * i + 1));
+							ix3 = *(uint16*)(Triangles + 2 * (3 * i + 2));
+						}
+						else
+						{
+							ix1 = *(uint32*)(Triangles + 2 * 3 * i);
+							ix2 = *(uint32*)(Triangles + 2 * (3 * i + 1));
+							ix3 = *(uint32*)(Triangles + 2 * (3 * i + 2));
+						}
+
+						Vector P1 = RigidTransform.TransformPosition(P2Vector( Scale.transform(Vertecies[ix1])) );
+						Vector P2 = RigidTransform.TransformPosition(P2Vector( Scale.transform(Vertecies[ix2])) );
+						Vector P3 = RigidTransform.TransformPosition(P2Vector( Scale.transform(Vertecies[ix3])) );
+
+						m_OwningWorld->DrawDebugLine(P1, P2, DebugDrawColor, 0, 0);
+						m_OwningWorld->DrawDebugLine(P2, P3, DebugDrawColor, 0, 0);
+						m_OwningWorld->DrawDebugLine(P3, P1, DebugDrawColor, 0, 0);
+					}
+				}
 			}
 
-			delete Shapes;
+			delete[] Shapes;
 		}
 	}
 

@@ -68,7 +68,8 @@ namespace Drn
 		{
 			for (int32 i = 0; i < Setup->m_TriMeshes.size(); i++)
 			{
-				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh), *m_Material);
+				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(m_OwnerComponent->GetWorldScale())), *m_Material);
+				shape->userData = &Setup->m_TriMeshes[i].GetUserData();
 
 				m_RigidActor->attachShape( *shape );
 				PX_RELEASE(shape);
@@ -144,44 +145,60 @@ namespace Drn
 			for (PxShape* Shape : Shapes)
 			{
 				Transform LocalTransform = P2Transform( Shape->getLocalPose() );
-				ShapeElem* Elem = PhysicUserData::Get<ShapeElem>(Shape->userData);
 
-				if (Elem->GetType() == EAggCollisionShape::Sphere)
+				if ( ShapeElem* Elem = PhysicUserData::Get<ShapeElem>( Shape->userData ) )
 				{
-					SphereElem* sphereElem = Elem->GetShape<SphereElem>();
-
-					PxGeometryHolder GeoHolder = Shape->getGeometry();
-					PxSphereGeometry& Sphere = GeoHolder.sphere();
-
-					float MaxAxis = std::max( std::max( InScale.GetX(), InScale.GetY() ), InScale.GetZ() );
-					Sphere.radius = sphereElem->Radius * MaxAxis;
-
-					if (Sphere.isValid())
+					if (Elem->GetType() == EAggCollisionShape::Sphere)
 					{
-						Shape->setGeometry(Sphere);
+						SphereElem* sphereElem = Elem->GetShape<SphereElem>();
+
+						PxGeometryHolder GeoHolder = Shape->getGeometry();
+						PxSphereGeometry& Sphere = GeoHolder.sphere();
+
+						float MaxAxis = std::max( std::max( InScale.GetX(), InScale.GetY() ), InScale.GetZ() );
+						Sphere.radius = sphereElem->Radius * MaxAxis;
+
+						if (Sphere.isValid())
+						{
+							Shape->setGeometry(Sphere);
+						}
+
+						// TODO: add translation after scale
 					}
 
-					// TODO: add translation after scale
-				}
-
-				else if (Elem->GetType() == EAggCollisionShape::Box)
-				{
-					BoxElem* boxElem = Elem->GetShape<BoxElem>();
-
-					PxGeometryHolder GeoHolder = Shape->getGeometry();
-					PxBoxGeometry& Box = GeoHolder.box();
-
-					Box.halfExtents.x = boxElem->Extent.GetX() * InScale.GetX();
-					Box.halfExtents.y = boxElem->Extent.GetY() * InScale.GetY();
-					Box.halfExtents.z = boxElem->Extent.GetZ() * InScale.GetZ();
-
-					if (Box.isValid())
+					else if (Elem->GetType() == EAggCollisionShape::Box)
 					{
-						Shape->setGeometry(Box);
-					}
+						BoxElem* boxElem = Elem->GetShape<BoxElem>();
 
-					// TODO: add translation after scale
+						PxGeometryHolder GeoHolder = Shape->getGeometry();
+						PxBoxGeometry& Box = GeoHolder.box();
+
+						Box.halfExtents.x = boxElem->Extent.GetX() * InScale.GetX();
+						Box.halfExtents.y = boxElem->Extent.GetY() * InScale.GetY();
+						Box.halfExtents.z = boxElem->Extent.GetZ() * InScale.GetZ();
+
+						if (Box.isValid())
+						{
+							Shape->setGeometry(Box);
+						}
+
+						// TODO: add translation after scale
+					}
 				}
+
+				else if ( TriMeshGeom* Elem = PhysicUserData::Get<TriMeshGeom>( Shape->userData ) )
+				{
+					PxGeometryHolder NewGeom = Shape->getGeometry();
+					PxTriangleMeshGeometry& Tri = NewGeom.triangleMesh();
+					Tri.scale = Vector2P(InScale);
+
+					if (Tri.isValid())
+					{
+						Shape->setGeometry(Tri);
+					}
+					
+				}
+
 			}
 
 		}

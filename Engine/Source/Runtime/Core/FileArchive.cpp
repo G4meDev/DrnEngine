@@ -28,7 +28,8 @@ namespace Drn
 				m_ValidArchive = false;
 				return;
 			}
-			*this << ARCHIVE_VERSION;
+			m_ArchiveVersion = ARCHIVE_VERSION;
+			*this << m_ArchiveVersion;
 		}
 		m_ValidArchive = true;
 	}
@@ -97,6 +98,15 @@ namespace Drn
 		uint64 size = (uint64)Value.size();
 		*this << size;
 		File.write(Value.data(), size);
+
+		return *this;
+	}
+
+	FileArchive& FileArchive::operator<<( const std::vector<uint8>& Value )
+	{
+		uint64 size = (uint64)Value.size();
+		*this << size;
+		File.write((char*)Value.data(), size);
 
 		return *this;
 	}
@@ -170,15 +180,6 @@ namespace Drn
 		return *this;
 	}
 
-	FileArchive& FileArchive::operator<<( const PxMemoryStream& Value )
-	{
-		uint64 Size = Value.m_Buffer.size();
-		*this << Size;
-
-		File.write( (char*)(Value.m_Buffer.data()), Size );
-		return *this;
-	}
-
 	FileArchive& FileArchive::operator>>( uint8& Value )
 	{
 		File.read( (char*)(&Value), 1 );
@@ -242,6 +243,16 @@ namespace Drn
 		Value.resize(size);
 
 		File.read( Value.data(), size );
+		return *this;
+	}
+
+	FileArchive& FileArchive::operator>>( std::vector<uint8>& Value )
+	{
+		uint64 size;
+		*this >> size;
+		Value.resize(size);
+
+		File.read( (char*)Value.data(), size );
 		return *this;
 	}
 
@@ -316,16 +327,6 @@ namespace Drn
 		Value.m_ArchiveVersion = GetVersion();
 		Value.m_ValidArchive = true;
 
-		return *this;
-	}
-
-	FileArchive& FileArchive::operator>>( PxMemoryStream& Value )
-	{
-		uint64 Size;
-		*this >> Size;
-
-		Value.m_Buffer.resize(Size);
-		File.read(reinterpret_cast<char*>(Value.m_Buffer.data()), Size);
 		return *this;
 	}
 

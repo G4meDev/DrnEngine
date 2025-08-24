@@ -89,4 +89,9 @@ namespace Drn
 		InScene = nullptr;
 	}
 
+	void PxCustomErrorCallback::reportError( PxErrorCode::Enum code, const char* message, const char* file, int line )
+	{
+		LOG(LogPhysicManager, Error, "%s", message);
+	}
+
 }

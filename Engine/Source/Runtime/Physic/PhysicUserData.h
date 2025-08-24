@@ -10,6 +10,7 @@ namespace Drn
 		BodyInstance,
 		AggShape,
 		ShapeElem,
+		TriangleMesh
 	};
 
 	class PhysicUserData
@@ -30,6 +31,11 @@ namespace Drn
 		PhysicUserData(class ShapeElem* InShape)
 			: Type(EPhysicUserDataType::ShapeElem)
 			, Payload(InShape) {}
+
+		PhysicUserData(class TriMeshGeom* InShape)
+			: Type(EPhysicUserDataType::ShapeElem)
+			, Payload(InShape) {}
+
 
 		template<typename T>
 		static T* Get(void* UserData);
@@ -58,6 +64,16 @@ namespace Drn
 		return nullptr;
 	}
 
+	template<>
+	inline TriMeshGeom* PhysicUserData::Get( void* UserData )
+	{
+		if (UserData && ((PhysicUserData*)UserData)->Type == EPhysicUserDataType::TriangleMesh)
+		{
+			return (TriMeshGeom*)((PhysicUserData*)UserData)->Payload;
+		}
+		return nullptr;
+	}
+
 
 	//template<>
 	//inline BodyInstance* PhysicUserData::Get( void* UserData )
@@ -73,6 +89,13 @@ namespace Drn
 	inline void PhysicUserData::Set( void* UserData, class ShapeElem* Payload )
 	{
 		((PhysicUserData*)UserData)->Type = EPhysicUserDataType::ShapeElem;
+		((PhysicUserData*)UserData)->Payload = Payload;
+	}
+
+	template<>
+	inline void PhysicUserData::Set( void* UserData, class TriMeshGeom* Payload )
+	{
+		((PhysicUserData*)UserData)->Type = EPhysicUserDataType::TriangleMesh;
 		((PhysicUserData*)UserData)->Payload = Payload;
 	}
 }

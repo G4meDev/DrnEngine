@@ -49,9 +49,9 @@ namespace Drn
 			BuffAr.Decompress();
 			Data.Serialize(BuffAr);
 
-			Ar >> ImportScale;
+			BuffAr >> ImportScale;
 			
-			m_BodySetup.Serialize(Ar);
+			m_BodySetup.Serialize(BuffAr);
 		}
 
 #if WITH_EDITOR
@@ -61,12 +61,12 @@ namespace Drn
 
 			BufferArchive BufArr(10, false);
 			Data.Serialize( BufArr );
+
+			BufArr << ImportScale;
+			m_BodySetup.Serialize(BufArr);
+
 			BufArr.Compress();
 			Ar << BufArr;
-
-			Ar << ImportScale;
-
-			m_BodySetup.Serialize(Ar);
 		}
 #endif
 	}

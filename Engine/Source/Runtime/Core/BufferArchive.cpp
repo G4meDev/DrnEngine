@@ -157,6 +157,17 @@ namespace Drn
 		return *this;
 	}
 
+	BufferArchive& BufferArchive::operator<<( const std::vector<uint8>& Value )
+	{
+		uint64 Size = (uint64)Value.size();
+		*this << Size;
+
+		CheckForAvaliableSpaceAndExpandConditional(Size);
+		memcpy(m_HeapPointer, Value.data(), Size);
+		m_HeapPointer += Size;
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator<<( const Vector& Value )
 	{
 		*this << Value.GetX();
@@ -227,18 +238,6 @@ namespace Drn
 	BufferArchive& BufferArchive::operator<<( const BufferArchive& Value )
 	{
 		
-
-		return *this;
-	}
-
-	BufferArchive& BufferArchive::operator<<( const PxMemoryStream& Value )
-	{
-		uint64 Size = Value.m_Buffer.size();
-		*this << Size;
-
-		CheckForAvaliableSpaceAndExpandConditional(Size);
-		memcpy(m_HeapPointer, Value.m_Buffer.data(), Size);
-		m_HeapPointer += Size;
 
 		return *this;
 	}
@@ -321,6 +320,17 @@ namespace Drn
 		return *this;
 	}
 
+	BufferArchive& BufferArchive::operator>>( std::vector<uint8>& Value )
+	{
+		uint64 Size;
+		*this >> Size;
+
+		Value.resize(Size);
+		memcpy(Value.data(), m_HeapPointer, Size);
+		m_HeapPointer += Size;
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator>>( Vector& Value )
 	{
 		float X, Y, Z;
@@ -389,16 +399,6 @@ namespace Drn
 	{
 		
 
-		return *this;
-	}
-
-	BufferArchive& BufferArchive::operator>>( PxMemoryStream& Value )
-	{
-		uint64 Size;
-		*this >> Size;
-
-		Value.read(m_HeapPointer, Size);
-		m_HeapPointer += Size;
 		return *this;
 	}
 

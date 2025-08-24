@@ -3,7 +3,6 @@
 #include "ForwardTypes.h"
 #include "ShapeElem.h"
 
-#include <PxConfig.h>
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 

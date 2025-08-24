@@ -2,7 +2,6 @@
 
 #include "ForwardTypes.h"
 
-#include <PxConfig.h>
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 
@@ -10,6 +9,15 @@ LOG_DECLARE_CATEGORY(LogPhysicManager)
 
 namespace Drn
 {
+	class PxCustomErrorCallback : public PxErrorCallback
+	{
+	public:
+		PxCustomErrorCallback() {};
+		virtual	~PxCustomErrorCallback() {};
+
+		virtual void reportError(PxErrorCode::Enum code, const char* message, const char* file, int line) override;
+	};
+
 	class PhysicManager
 	{
 	public:
@@ -34,7 +42,8 @@ namespace Drn
 
 		static PhysicManager* m_SingletonInstance;
 
-		physx::PxDefaultErrorCallback m_DefaultErrorCallback;
+		//physx::PxDefaultErrorCallback m_DefaultErrorCallback;
+		PxCustomErrorCallback m_DefaultErrorCallback;
 		physx::PxDefaultAllocator m_DefaultAllocatorCallback;
 
 		physx::PxFoundation* m_Foundation;

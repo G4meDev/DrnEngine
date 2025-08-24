@@ -384,6 +384,7 @@ target_compile_definitions( Engine
     PUBLIC NOMINMAX
 )
 
+add_compile_definitions(PX_PHYSX_STATIC_LIB)
 add_compile_definitions($<$<CONFIG:Debug>:WITH_EDITOR>)
 add_compile_definitions($<$<CONFIG:Debug>:WITH_PVD>)
 add_compile_definitions($<$<CONFIG:Debug>:WITH_DEBUG>)
@@ -436,7 +437,6 @@ target_link_libraries( Engine
     PUBLIC PhysXExtensions_static_64.lib
     PUBLIC PhysXFoundation_static_64.lib
     PUBLIC PhysXPvdSDK_static_64.lib
-    PUBLIC PhysXVehicle_static_64.lib
     PUBLIC PhysXVehicle2_static_64.lib
     
 	PUBLIC dxcompiler.lib

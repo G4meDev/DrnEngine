@@ -3,38 +3,15 @@
 #include "ForwardTypes.h"
 #include "AggregateGeom.h"
 
-#include <PxConfig.h>
 #include <PxPhysics.h>
 #include <PxPhysicsAPI.h>
 
 namespace Drn
 {
-	class PxMemoryStream : public PxOutputStream, public PxInputStream
+	class TriMeshGeom : public Serializable
 	{
 	public:
-		PxMemoryStream() 
-		{}
 
-		virtual ~PxMemoryStream()
-		{}
-
-		uint32 read( void* dest, uint32 count ) override
-		{
-			memcpy(dest, m_Buffer.data(), count);
-			return count;
-		}
-		uint32 write( const void* src, uint32 count ) override
-		{
-			m_Buffer.resize(count);
-			memcpy(m_Buffer.data(), src, count);
-			return count;
-		}
-
-		std::vector<uint8> m_Buffer;
-	};
-
-	struct TriMeshGeom : public Serializable
-	{
 		TriMeshGeom()
 			: TriMesh(nullptr)
 		{};
@@ -42,10 +19,18 @@ namespace Drn
 		~TriMeshGeom() { ReleaseTriMesh(); }
 		void ReleaseTriMesh() { PX_RELEASE(TriMesh); }
 
+		inline PhysicUserData& GetUserData()
+		{
+			PhysicUserData::Set<TriMeshGeom>((void*)&UserData, const_cast<TriMeshGeom*>(this));
+			return UserData;
+		}
+
 		virtual void Serialize(Archive& Ar) override;
 
-		PxMemoryStream CookData;
+		std::vector<uint8> CookData;
 		physx::PxTriangleMesh* TriMesh;
+
+		PhysicUserData UserData;
 	};
 
 	class BodySetup : public Serializable
