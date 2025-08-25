@@ -47,6 +47,8 @@ namespace Drn
 			ImGui::Separator();
 
 			DrawSceneComponents(DeltaTime);
+			ImGui::Separator();
+			DrawActorComponents(DeltaTime);
 			DrawDetails(DeltaTime);
 		}
 	}
@@ -113,10 +115,67 @@ namespace Drn
 		ImGui::PopID();
 	}
 
+	void ActorDetailPanel::DrawActorComponents( float DeltaTime )
+	{
+		if (m_SelectedActor && m_SelectedActor->Components.size() > 0)
+		{
+			if (ImGui::BeginChild("ActorComponent", ImVec2(0, 50), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
+			{
+				ImGui::BeginGroup();
+
+				if (ImGui::BeginTable("##bg", 1, ImGuiTableFlags_RowBg))
+				{
+					for (Component* Comp : m_SelectedActor->Components)
+					{
+						if (Comp->ShouldDrawInComponentHeirarchy())
+						{
+							ImGui::TableNextRow();
+							ImGui::TableNextColumn();
+							ImGui::PushID( Comp->GetComponentLabel().c_str() );
+
+							ImGuiTreeNodeFlags tree_flags = ImGuiTreeNodeFlags_None;
+							tree_flags |= ImGuiTreeNodeFlags_OpenOnArrow |
+							ImGuiTreeNodeFlags_OpenOnDoubleClick;
+							tree_flags |= ImGuiTreeNodeFlags_NavLeftJumpsBackHere;
+
+							if ( Comp == m_SelectedComponent)
+								tree_flags |= ImGuiTreeNodeFlags_Selected;
+
+							tree_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
+	
+							ImGui::SetNextItemOpen( true, ImGuiCond_::ImGuiCond_FirstUseEver);
+							bool node_open = ImGui::TreeNodeEx( "", tree_flags, "%s", Comp->GetComponentLabel().c_str());
+
+							if (ImGui::IsItemFocused())
+							{
+								OnSelectedNewComponent.Braodcast(Comp);
+							}
+
+							ImGui::TreePop();
+							ImGui::PopID();
+						}
+					}
+
+					ImGui::EndTable();
+				}
+
+				ImGui::EndGroup();
+			}
+			ImGui::EndChild();
+		}
+	}
+
 	void ActorDetailPanel::DrawDetails( float DeltaTime )
 	{
 		if (ImGui::BeginChild("Details", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 		{
+			if (m_SelectedActor)
+			{
+				m_SelectedActor->DrawDetailPanel();
+			}
+
+			ImGui::Separator();
+
 			if (m_SelectedActor && m_SelectedComponent)
 			{
 				m_SelectedComponent->DrawDetailPanel(DeltaTime);

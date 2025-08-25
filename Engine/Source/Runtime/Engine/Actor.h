@@ -18,6 +18,7 @@ namespace Drn
 		DirectionalLight,
 		SkyLight,
 		Pawn,
+		Controller,
 	};
 
 	class Actor : public Serializable
@@ -57,6 +58,7 @@ namespace Drn
 		void AddComponent(Component* InComponent);
 
 		SceneComponent* GetRoot() const;
+		inline World* GetWorld() const { return m_World; }
 
 		void Destroy();
 		bool IsMarkedPendingKill() const;
@@ -76,6 +78,8 @@ namespace Drn
 		inline bool IsTransient() const { return m_Transient; }
 
 		void SetComponentsSelectedInEditor( bool SelectedInEditor );
+
+		virtual bool DrawDetailPanel() { return false; };
 #endif
 
 		void RegisterComponents(World* InWorld);
@@ -88,17 +92,24 @@ namespace Drn
 		void RegisterSceneComponentRecursive( SceneComponent* InComponent, World* InWorld );
 		void UnRegisterSceneComponentRecursive( SceneComponent* InComponent);
 
+		void RemoveOwnedComponent(Component* InComponent);
+
 		//std::unique_ptr<SceneComponent> Root;
 		SceneComponent* Root;
 
 		/** this only contains non scene components */
-		std::vector<std::shared_ptr<Component>> Components;
+		std::vector<Component*> Components;
 
 		bool m_PendingKill;
+		World* m_World;
 
 #if WITH_EDITOR
 		std::string ActorLabel = "Actor_00";
 		bool m_Transient = false;
 #endif
+
+		friend class World;
+		friend class Component;
+		friend class ActorDetailPanel;
 	};
 }

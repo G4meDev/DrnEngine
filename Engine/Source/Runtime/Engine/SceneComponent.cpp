@@ -236,6 +236,13 @@ namespace Drn
 		UpdateCachedTransform( true );
 	}
 
+	void SceneComponent::DestroyComponent()
+	{
+		//Component::DestroyComponent();
+
+
+	}
+
 	void SceneComponent::OnUpdateTransform( bool SkipPhysic )
 	{
 		

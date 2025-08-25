@@ -26,6 +26,7 @@ namespace Drn
 		T* SpawnActor()
 		{
 			T* NewActor = new T();
+			NewActor->m_World = this;
 			m_NewActors.insert(NewActor);
 
 			return NewActor;
@@ -75,8 +76,10 @@ namespace Drn
 
 	protected:
 
+		void DestroyActor(Actor* InActor);
+
 		void DestroyInternal();
-		void DestroyWorldActors();
+		void DestroyWorldActorsAndComponents();
 
 		void InitPlayerPawn();
 		template<typename T>
@@ -86,6 +89,14 @@ namespace Drn
 
 		// actors added in middle of frame get added to actor list at start of next frame
 		std::set<Actor*> m_NewActors;
+
+		std::vector<Component*> m_PendingKillComponents;
+
+		inline void AddPendingkillComponent( Component* InComponent )
+		{
+			if (InComponent)
+				m_PendingKillComponents.push_back(InComponent);
+		};
 
 		bool m_ShouldTick;
 

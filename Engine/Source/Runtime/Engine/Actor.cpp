@@ -7,6 +7,7 @@ namespace Drn
 {
 	Actor::Actor()
 		: Root(nullptr)
+		, m_World(nullptr)
 		, m_PendingKill(false)
 	{
 
@@ -87,7 +88,7 @@ namespace Drn
 
 	void Actor::AddComponent(Component* InComponent)
 	{
-		Components.push_back(std::shared_ptr<Component>(InComponent));
+		Components.push_back(InComponent);
 		InComponent->SetOwningActor(this);
 	}
 
@@ -160,13 +161,16 @@ namespace Drn
 		}
 	}
 
+#else
+	void Actor::SetActorLabel(const std::string& InLabel) {}
 #endif
 
 	void Actor::RegisterComponents( World* InWorld )
 	{
 		for (auto Comp : Components)
 		{
-			Comp->RegisterComponent(InWorld);
+			if(!Comp->IsRegistered())
+				Comp->RegisterComponent(InWorld);
 		}
 
 		RegisterSceneComponentRecursive(Root, InWorld);
@@ -176,7 +180,8 @@ namespace Drn
 	{
 		for (auto Comp : Components)
 		{
-			Comp->UnRegisterComponent();
+			if(Comp->IsRegistered())
+				Comp->UnRegisterComponent();
 		}
 
 		UnRegisterSceneComponentRecursive(Root);
@@ -194,7 +199,8 @@ namespace Drn
 
 	void Actor::RegisterSceneComponentRecursive( SceneComponent* InComponent, World* InWorld )
 	{
-		InComponent->RegisterComponent(InWorld);
+		if (!InComponent->IsRegistered())
+			InComponent->RegisterComponent(InWorld);
 
 		for ( auto Child: InComponent->GetChilds() )
 		{
@@ -204,11 +210,28 @@ namespace Drn
 
 	void Actor::UnRegisterSceneComponentRecursive( SceneComponent* InComponent )
 	{
-		InComponent->UnRegisterComponent();
+		if (InComponent->IsRegistered())
+			InComponent->UnRegisterComponent();
 
 		for ( auto Child: InComponent->GetChilds() )
 		{
 			UnRegisterSceneComponentRecursive(Child);
+		}
+	}
+
+	void Actor::RemoveOwnedComponent( Component* InComponent )
+	{
+		if (InComponent)
+		{
+			for ( int32 i = 0; i < Components.size(); i++ )
+			{
+				Component*& Comp = Components[i];
+				if (Comp == InComponent)
+				{
+					Components.erase(Components.begin() + i);
+					return;
+				}
+			}
 		}
 	}
 

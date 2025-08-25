@@ -9,6 +9,7 @@
 #include "Runtime/Core/Taskflow.h"
 
 #include "Runtime/Engine/WorldManager.h"
+#include "Runtime/Engine/InputManager.h"
 #include "Runtime/Engine/World.h"
 #include "Runtime/Engine/Level.h"
 #include "Runtime/Engine/Scene.h"

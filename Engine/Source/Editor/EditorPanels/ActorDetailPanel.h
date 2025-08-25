@@ -26,6 +26,7 @@ namespace Drn
 
 		void DrawSceneComponents(float DeltaTime);
 		void DrawNextSceneComponent(SceneComponent* Comp);
+		void DrawActorComponents(float DeltaTime);
 		
 		void DrawDetails(float DeltaTime);
 

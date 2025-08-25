@@ -107,6 +107,7 @@ void Application::OnKeyPressed( WPARAM Key )
 		Time::Init();
 		m_ApplicationTime = Time::GetSeconds();
 
+		InputManager::Get()->Init();
 		AssetManager::Get()->Init();
 		PhysicManager::Init();
 		Renderer::Init( m_hInstance, m_MainWindow );
@@ -157,6 +158,8 @@ void Application::OnKeyPressed( WPARAM Key )
 		PhysicManager::Shutdown();
 		AssetManager::Shutdown();
 
+		InputManager::Get()->Shutdown();
+
 		m_MainWindow->OnWindowResize.Remove(this);
 		m_MainWindow->OnKeyPress.Remove(this);
 
@@ -203,6 +206,8 @@ void Application::OnKeyPressed( WPARAM Key )
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+			InputManager::Get()->Get()->HandleMessage(msg);
 		}
 	}
 

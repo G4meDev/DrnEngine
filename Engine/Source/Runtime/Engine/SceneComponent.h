@@ -88,6 +88,8 @@ namespace Drn
 
 		inline SceneComponent* GetParent() const { return Parent; }
 
+		virtual void DestroyComponent() override;
+
 	protected:
 
 		virtual void OnUpdateTransform( bool SkipPhysic );

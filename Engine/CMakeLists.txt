@@ -46,6 +46,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/SkyLightSceneProxy.h
 	Source/Runtime/Engine/PostProcessSettings.h
 	Source/Runtime/Engine/PostProcessVolume.h
+	Source/Runtime/Engine/InputManager.h
 
 	Source/Runtime/GameFramework/Pawn.h
 	Source/Runtime/GameFramework/Controller.h
@@ -93,6 +94,7 @@ set( HEADER_FILES
 	Source/Runtime/Components/DirectionalLightComponent.h
 	Source/Runtime/Components/SkyLightComponent.h
 	Source/Runtime/Components/BillboardComponent.h
+	Source/Runtime/Components/InputComponent.h
 
 	Source/Runtime/Physic/PhysicCore.h
 	Source/Runtime/Physic/PhysicManager.h
@@ -214,6 +216,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/SkyLightSceneProxy.cpp
 	Source/Runtime/Engine/PostProcessSettings.cpp
 	Source/Runtime/Engine/PostProcessVolume.cpp
+	Source/Runtime/Engine/InputManager.cpp
 	
 	Source/Runtime/GameFramework/Pawn.cpp
 	Source/Runtime/GameFramework/Controller.cpp
@@ -261,6 +264,7 @@ set( SOURCE_FILES
 	Source/Runtime/Components/DirectionalLightComponent.cpp
 	Source/Runtime/Components/SkyLightComponent.cpp
 	Source/Runtime/Components/BillboardComponent.cpp
+	Source/Runtime/Components/InputComponent.cpp
 
 	Source/Runtime/Physic/PhysicCore.cpp
 	Source/Runtime/Physic/PhysicManager.cpp

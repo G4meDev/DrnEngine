@@ -5,6 +5,8 @@ namespace Drn
 {
 	Component::Component()
 		: m_Guid(Guid::NewGuid())
+		, m_Registered(false)
+		, m_PendingKill(false)
 	{
 		
 	}
@@ -67,6 +69,12 @@ namespace Drn
 	{
 		m_SelectedInEditor = SelectedInEditor;
 	}
+
+	void Component::MarkPendingKill()
+	{
+		m_PendingKill = true;
+	}
+
 #else
 	std::string Component::GetComponentLabel() const
 	{
@@ -81,13 +89,26 @@ namespace Drn
 	void Component::RegisterComponent( World* InOwningWorld )
 	{
 		m_OwningWorld = InOwningWorld;
-
-
+		m_Registered = true;
 	}
 
 	void Component::UnRegisterComponent()
 	{
 		m_OwningWorld = nullptr;
+	}
+
+	void Component::DestroyComponent()
+	{
+		if (!m_PendingKill)
+		{
+			if (IsRegistered())
+			{
+				UnRegisterComponent();
+			}
+
+			Owner->RemoveOwnedComponent(this);
+			MarkPendingKill();
+		}
 	}
 
 }

@@ -12,6 +12,7 @@ namespace Drn
 		SceneComponenet,
 		StaticMeshComponent,
 		CameraComponent,
+		InputComponent
 	};
 
 	class Component : public Serializable
@@ -45,7 +46,11 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld);
 		virtual void UnRegisterComponent();
 
+		virtual void DestroyComponent();
+
 		inline const Guid& GetGuid() const { return m_Guid; }
+
+		inline bool IsRegistered() const { return m_Registered; }
 
 #if WITH_EDITOR
 		inline bool IsSelectedInEditor() const { return m_SelectedInEditor; }
@@ -55,6 +60,8 @@ namespace Drn
 #endif
 
 	protected:
+		void MarkPendingKill();
+
 		Guid m_Guid;
 
 #if WITH_EDITOR
@@ -68,6 +75,8 @@ namespace Drn
 		Actor* Owner = nullptr;
 
 		bool bActive = true;
+		bool m_PendingKill;
+		bool m_Registered;
 
 		friend class Actor;
 	};

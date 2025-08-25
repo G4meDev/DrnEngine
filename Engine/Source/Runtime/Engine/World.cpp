@@ -79,20 +79,19 @@ namespace Drn
 		{
 			SCOPE_STAT("PendingDestroyAddActors");
 
+			for (Component* Comp : m_PendingKillComponents)
+			{
+				delete Comp;
+			}
+			m_PendingKillComponents.clear();
+
 			for (auto it = m_Actors.begin(); it != m_Actors.end();)
 			{
 				if (*it && (*it)->IsMarkedPendingKill())
 				{
 					Actor* ToDelActor = *it;
-
-					std::vector<Actor*> RemovedActorList;
-					RemovedActorList.push_back(ToDelActor);
-					OnRemoveActors.Braodcast( RemovedActorList );
-
-					ToDelActor->UnRegisterComponents();
-
 					it = m_Actors.erase(it);
-					delete ToDelActor;
+					DestroyActor(ToDelActor);
 				}
 
 				else
@@ -106,15 +105,8 @@ namespace Drn
 				if (*it && (*it)->IsMarkedPendingKill())
 				{
 					Actor* ToDelActor = *it;
-
-					std::vector<Actor*> RemovedActorList;
-					RemovedActorList.push_back(ToDelActor);
-					OnRemoveActors.Braodcast( RemovedActorList );
-
-					ToDelActor->UnRegisterComponents();
-
 					it = m_NewActors.erase(it);
-					delete ToDelActor;
+					DestroyActor(ToDelActor);
 				}
 				else
 				{
@@ -374,13 +366,23 @@ namespace Drn
 		DrawDebugLine(Vertices[0][1][1], Vertices[1][1][1], Color, Thickness, Lifetime);
 	}
 
+	void World::DestroyActor( Actor* InActor )
+	{
+		std::vector<Actor*> RemovedActorList;
+		RemovedActorList.push_back(InActor);
+		OnRemoveActors.Braodcast( RemovedActorList );
+
+		InActor->UnRegisterComponents();
+		delete InActor;
+	}
+
 	void World::DestroyInternal()
 	{
 		m_LineBatchCompponent->UnRegisterComponent();
 		delete m_LineBatchCompponent;
 		m_LineBatchCompponent = nullptr;
 
-		DestroyWorldActors();
+		DestroyWorldActorsAndComponents();
 
 		PhysicManager::Get()->RemoveAndInvalidateScene(m_PhysicScene);
 		Renderer::Get()->ReleaseScene(m_Scene);
@@ -388,50 +390,55 @@ namespace Drn
 		delete this;
 	}
 
-	void World::DestroyWorldActors()
+	void World::DestroyWorldActorsAndComponents()
 	{
 		for (auto it = m_Actors.begin(); it != m_Actors.end(); )
 		{
 			Actor* ToDelActor = *it;
-
-			std::vector<Actor*> RemovedActorList;
-			RemovedActorList.push_back(ToDelActor);
-			OnRemoveActors.Braodcast( RemovedActorList );
-
-			ToDelActor->UnRegisterComponents();
 			it = m_Actors.erase(it);
-
-			delete ToDelActor;
+			DestroyActor(ToDelActor);
 		}
 		
 		for (auto it = m_NewActors.begin(); it != m_NewActors.end(); )
 		{
 			Actor* ToDelActor = *it;
-
-			std::vector<Actor*> RemovedActorList;
-			RemovedActorList.push_back(ToDelActor);
-			OnRemoveActors.Braodcast( RemovedActorList );
-
-			ToDelActor->UnRegisterComponents();
 			it = m_NewActors.erase(it);
+			DestroyActor(ToDelActor);
+		}
 
-			delete ToDelActor;
+		for (Component* Comp : m_PendingKillComponents)
+		{
+			delete Comp;
 		}
 	}
 
 	void World::InitPlayerPawn()
 	{
-		Pawn* PlayerPawn = GetActorFromClass<Pawn>();
+		Controller* PC = SpawnActor<Controller>();
+		PC->SetActorLabel("PlayerController");
+
+		Pawn* PlayerPawn = nullptr;
+		for (Actor* A : m_NewActors)
+		{
+			// TODO: actor and component type inheritance e.g. Character -> Pawn -> Actor
+			if (A->GetActorType() == EActorType::Pawn)
+			{
+				Pawn* P = static_cast<Pawn*>(A);
+				if (P->GetAutoPossessPlayer())
+				{
+					PlayerPawn = P;
+					break;
+				}
+			}
+		}
 
 		if (!PlayerPawn)
 		{
-			Pawn* PlayerPawn = SpawnActor<Pawn>();
-#if WITH_EDITOR
+			PlayerPawn = SpawnActor<Pawn>();
 			PlayerPawn->SetActorLabel("PlayerPawn");
-#endif
 		}
 
-
+		PlayerPawn->PossessBy(PC);
 	}
 
 #if WITH_EDITOR
