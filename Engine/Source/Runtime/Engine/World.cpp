@@ -65,6 +65,11 @@ namespace Drn
 		m_PendingDestory = true;
 	}
 
+	void World::InitPlay()
+	{
+		InitPlayerPawn();
+	}
+
 	void World::Tick( float DeltaTime )
 	{
 		SCOPE_STAT();
@@ -412,6 +417,21 @@ namespace Drn
 
 			delete ToDelActor;
 		}
+	}
+
+	void World::InitPlayerPawn()
+	{
+		Pawn* PlayerPawn = GetActorFromClass<Pawn>();
+
+		if (!PlayerPawn)
+		{
+			Pawn* PlayerPawn = SpawnActor<Pawn>();
+#if WITH_EDITOR
+			PlayerPawn->SetActorLabel("PlayerPawn");
+#endif
+		}
+
+
 	}
 
 #if WITH_EDITOR

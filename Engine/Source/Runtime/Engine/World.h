@@ -18,8 +18,8 @@ namespace Drn
 
 		void Destroy();
 
+		void InitPlay();
 		void Tick(float DeltaTime);
-
 		inline void SetTickEnabled( bool Enabled ) { m_ShouldTick = Enabled; }
 
 		template<typename T>
@@ -78,6 +78,10 @@ namespace Drn
 		void DestroyInternal();
 		void DestroyWorldActors();
 
+		void InitPlayerPawn();
+		template<typename T>
+		T* GetActorFromClass();
+
 		std::set<Actor*> m_Actors;
 
 		// actors added in middle of frame get added to actor list at start of next frame
@@ -104,4 +108,23 @@ namespace Drn
 
 	private:
 	};
+
+	template<typename T>
+	T* World::GetActorFromClass()
+	{
+		for (Actor* A : m_Actors)
+		{
+			if (A->GetActorType() == T::GetActorTypeStatic())
+				return static_cast<T*>(A);
+		}
+
+		for (Actor* A : m_NewActors)
+		{
+			if (A->GetActorType() == T::GetActorTypeStatic())
+				return static_cast<T*>(A);
+		}
+
+		return nullptr;
+	}
+
 }

@@ -116,6 +116,10 @@ namespace Drn
 			CubeStaticMeshActor->SetActorLabel("Cube_1");
 #endif
 		}
+
+#if !WITH_EDITOR
+		m_PendingLevel->InitPlay();
+#endif
 	}
 
 #if WITH_EDITOR
@@ -138,6 +142,7 @@ namespace Drn
 		LoadLevel(m_LastLoadedLevel);
 		m_PendingLevel->SetTransient(true);
 		m_PendingLevel->m_ShouldTick = true;
+		m_PendingLevel->InitPlay();
 	}
 
 	void WorldManager::EndPlayInEditor()

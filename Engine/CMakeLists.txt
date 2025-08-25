@@ -46,6 +46,9 @@ set( HEADER_FILES
 	Source/Runtime/Engine/SkyLightSceneProxy.h
 	Source/Runtime/Engine/PostProcessSettings.h
 	Source/Runtime/Engine/PostProcessVolume.h
+
+	Source/Runtime/GameFramework/Pawn.h
+	Source/Runtime/GameFramework/Controller.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/CommonResources.h
@@ -212,6 +215,9 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/PostProcessSettings.cpp
 	Source/Runtime/Engine/PostProcessVolume.cpp
 	
+	Source/Runtime/GameFramework/Pawn.cpp
+	Source/Runtime/GameFramework/Controller.cpp
+
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/CommonResources.cpp
 	Source/Runtime/Renderer/D3D12CommandList.cpp

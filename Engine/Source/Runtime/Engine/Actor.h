@@ -17,6 +17,7 @@ namespace Drn
 		PostProcessVolume,
 		DirectionalLight,
 		SkyLight,
+		Pawn,
 	};
 
 	class Actor : public Serializable

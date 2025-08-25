@@ -278,6 +278,12 @@ namespace Drn
 					ImGui::CloseCurrentPopup();
 				}
 
+				if (ImGui::Button( "Pawn" ))
+				{
+					SpawnActorFromClassInLevel<Pawn>("Pawn_00");
+					ImGui::CloseCurrentPopup();
+				}
+
 				ImGui::EndPopup();
 			}
 

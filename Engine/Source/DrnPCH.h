@@ -31,6 +31,9 @@
 #include "Runtime/Components/BillboardComponent.h"
 #include "Runtime/Components/SpotLightComponent.h"
 
+#include "Runtime/GameFramework/Pawn.h"
+#include "Runtime/GameFramework/Controller.h"
+
 #include "Runtime/Renderer/Device.h"
 #include "Runtime/Renderer/SwapChain.h"
 

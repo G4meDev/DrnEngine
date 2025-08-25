@@ -108,41 +108,13 @@ namespace Drn
 			Ar >> ActorTypeByte;
 			ActorType = static_cast<EActorType>(ActorTypeByte);
 
-			if (ActorType == EActorType::StaticMeshActor)
-			{
-				StaticMeshActor* NewActor = InWorld->SpawnActor<StaticMeshActor>();
-				NewActor->Serialize(Ar);
-			}
-
-			else if ( ActorType == EActorType::PointLight )
-			{
-				PointLightActor* NewPointLightActor = InWorld->SpawnActor<PointLightActor>();
-				NewPointLightActor->Serialize(Ar);
-			}
-
-			else if ( ActorType == EActorType::SpotLight )
-			{
-				SpotLightActor* NewSpotLightActor = InWorld->SpawnActor<SpotLightActor>();
-				NewSpotLightActor->Serialize(Ar);
-			}
-
-			else if ( ActorType == EActorType::DirectionalLight )
-			{
-				DirectionalLightActor* NewDirectionalLightActor = InWorld->SpawnActor<DirectionalLightActor>();
-				NewDirectionalLightActor->Serialize(Ar);
-			}
-
-			else if ( ActorType == EActorType::SkyLight )
-			{
-				SkyLightActor* NewSkyLightActor = InWorld->SpawnActor<SkyLightActor>();
-				NewSkyLightActor->Serialize(Ar);
-			}
-
-			else if ( ActorType == EActorType::PostProcessVolume )
-			{
-				PostProcessVolume* NewPostProcessVolume = InWorld->SpawnActor<PostProcessVolume>();
-				NewPostProcessVolume->Serialize(Ar);
-			}
+			if (ActorType == EActorType::StaticMeshActor) { SerializeActorToWorld<StaticMeshActor>(InWorld, Ar); }
+			else if ( ActorType == EActorType::PointLight ) { SerializeActorToWorld<PointLightActor>(InWorld, Ar); }
+			else if ( ActorType == EActorType::SpotLight ){ SerializeActorToWorld<SpotLightActor>(InWorld, Ar); }
+			else if ( ActorType == EActorType::DirectionalLight ) { SerializeActorToWorld<DirectionalLightActor>(InWorld, Ar); }
+			else if ( ActorType == EActorType::SkyLight ) { SerializeActorToWorld<SkyLightActor>(InWorld, Ar); }
+			else if ( ActorType == EActorType::PostProcessVolume ) { SerializeActorToWorld<PostProcessVolume>(InWorld, Ar); }
+			else if ( ActorType == EActorType::Pawn ) { SerializeActorToWorld<Pawn>(InWorld, Ar); }
 
 		}
 	
