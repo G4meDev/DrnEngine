@@ -372,7 +372,18 @@ namespace Drn
 		RemovedActorList.push_back(InActor);
 		OnRemoveActors.Braodcast( RemovedActorList );
 
-		InActor->UnRegisterComponents();
+		for (Component* Comp : InActor->Components)
+		{
+			Comp->DestroyComponent();
+		}
+
+		// TODO: destroy recursive on scene comp
+		//for (Component* Comp : InActor->Components)
+		//{
+		//	Comp->DestroyComponent();
+		//}
+
+		//InActor->UnRegisterComponents();
 		delete InActor;
 	}
 

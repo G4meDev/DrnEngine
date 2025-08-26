@@ -78,6 +78,23 @@ namespace Drn
 		}
 	}
 
+	void Pawn::SetupPlayerInputComponent( class InputComponent* PlayerInputComponent )
+	{
+		PlayerInputComponent->AddAxis(1, 1.0f, 1.0f, this, &Pawn::OnMoveUp);
+		PlayerInputComponent->AddAxisMapping(1, gainput::KeyW, 1);
+		PlayerInputComponent->AddAxisMapping(1, gainput::KeyS, -1);
+
+		PlayerInputComponent->AddAxis(2, 1.0f, 1.0f, this, &Pawn::OnMoveRight);
+		PlayerInputComponent->AddAxisMapping(2, gainput::KeyD, 1);
+		PlayerInputComponent->AddAxisMapping(2, gainput::KeyA, -1);
+
+		PlayerInputComponent->AddAnalog(3, this, &Pawn::OnLookRight);
+		PlayerInputComponent->AddAnalogMapping(3, gainput::MouseAxisX, 1);
+
+		PlayerInputComponent->AddAnalog(4, this, &Pawn::OnLookUp);
+		PlayerInputComponent->AddAnalogMapping(4, gainput::MouseAxisY, 1);
+	}
+
 #if WITH_EDITOR
 	bool Pawn::DrawDetailPanel()
 	{
@@ -94,6 +111,7 @@ namespace Drn
 		m_InputComponent->SetComponentLabel("InputComponent");
 		AddComponent(m_InputComponent);
 		m_InputComponent->RegisterComponent(GetWorld());
+		SetupPlayerInputComponent(m_InputComponent);
 	}
 
 	void Pawn::DestroyPlayerInputComponent()
@@ -102,6 +120,26 @@ namespace Drn
 		{
 			m_InputComponent->DestroyComponent();
 		}
+	}
+
+	void Pawn::OnMoveUp( float Value )
+	{
+		SetActorLocation( GetActorLocation() + Vector::UpVector * Value * 100 * Time::GetApplicationDeltaTime() );
+	}
+
+	void Pawn::OnMoveRight( float Value )
+	{
+		SetActorLocation( GetActorLocation() + Vector::RightVector * Value * 100 * Time::GetApplicationDeltaTime() );
+	}
+
+	void Pawn::OnLookUp( float Value )
+	{
+		
+	}
+
+	void Pawn::OnLookRight( float Value )
+	{
+		
 	}
 
 #endif

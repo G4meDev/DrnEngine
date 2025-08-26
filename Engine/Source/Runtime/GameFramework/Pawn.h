@@ -22,6 +22,8 @@ namespace Drn
 		virtual void PossessBy(class Controller* InController);
 		virtual void UnPossess();
 
+		virtual void SetupPlayerInputComponent( class InputComponent* PlayerInputComponent );
+
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
 #endif
@@ -30,6 +32,12 @@ namespace Drn
 
 		void CreatePlayerInputComponent();
 		void DestroyPlayerInputComponent();
+
+		void OnMoveUp(float Value);
+		void OnMoveRight(float Value);
+
+		void OnLookUp(float Value);
+		void OnLookRight(float Value);
 
 		std::shared_ptr<SceneComponent> m_RootComponent;
 		std::shared_ptr<StaticMeshComponent> m_MeshComponent;

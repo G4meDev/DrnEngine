@@ -70,6 +70,11 @@ namespace Drn
 
 		std::string ToString() const;
 
+		inline uint32 GetA() const { return A; }
+		inline uint32 GetB() const { return B; }
+		inline uint32 GetC() const { return C; }
+		inline uint32 GetD() const { return D; }
+
 	private:
 		uint32 A;
 		uint32 B;

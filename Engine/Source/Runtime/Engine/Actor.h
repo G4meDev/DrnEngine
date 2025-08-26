@@ -33,6 +33,7 @@ namespace Drn
 		template<typename T>
 		void GetComponents(std::vector<T*>& OutComponents, EComponentType Type, bool Recursive)
 		{
+			OutComponents = Components;
 			return GetRoot()->GetComponents<T>(OutComponents, Type, Recursive);
 		}
 

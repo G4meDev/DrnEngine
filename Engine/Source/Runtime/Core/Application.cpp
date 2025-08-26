@@ -180,6 +180,8 @@ void Application::OnKeyPressed( WPARAM Key )
 		HandleWindowMessages();
 		UpdateWindowTitle(DeltaTime);
 
+		InputManager::Get()->Tick(m_DeltaTime);
+
 #if 0
 
 		WorldManager::Get()->Tick(m_DeltaTime);
