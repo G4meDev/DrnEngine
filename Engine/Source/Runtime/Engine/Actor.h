@@ -8,6 +8,8 @@ LOG_DECLARE_CATEGORY( LogActor );
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_OneParam(OnActorDestroyedDelegate, Actor*);
+
 	enum class EActorType : uint16
 	{
 		StaticMeshActor = 0,
@@ -19,6 +21,8 @@ namespace Drn
 		SkyLight,
 		Pawn,
 		Controller,
+		PlayerController,
+		CameraManager
 	};
 
 	class Actor : public Serializable
@@ -68,6 +72,8 @@ namespace Drn
 
 		virtual void Serialize(Archive& Ar) override;
 
+		OnActorDestroyedDelegate OnActorKilled;
+
 #if WITH_EDITOR
 		virtual bool IsVisibleInWorldOutliner() const { return true; };
 		
@@ -81,6 +87,9 @@ namespace Drn
 		void SetComponentsSelectedInEditor( bool SelectedInEditor );
 
 		virtual bool DrawDetailPanel() { return false; };
+
+#else
+		void SetTransient(bool Transient){};
 #endif
 
 		void RegisterComponents(World* InWorld);

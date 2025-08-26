@@ -99,7 +99,12 @@ namespace Drn
 
 	void Actor::Destroy()
 	{
-		m_PendingKill = true;
+		if (!m_PendingKill)
+		{
+			m_PendingKill = true;
+			OnActorKilled.Braodcast(this);
+		}
+
 	}
 
 	bool Actor::IsMarkedPendingKill() const

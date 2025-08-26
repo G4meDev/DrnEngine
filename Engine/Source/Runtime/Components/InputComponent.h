@@ -2,7 +2,6 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Engine/Component.h"
-#include "Runtime/Core/Delegate.h"
 
 #include <gainput/gainput.h>
 

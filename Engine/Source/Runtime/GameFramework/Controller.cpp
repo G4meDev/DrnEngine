@@ -5,7 +5,10 @@ namespace Drn
 {
 	Controller::Controller()
 		: Actor()
+		, m_Pawn(nullptr)
 	{
+		SetTransient(true);
+
 		m_RootComponent = std::make_unique<class SceneComponent>();
 		m_RootComponent->SetComponentLabel( "RootComponent" );
 		SetRootComponent(m_RootComponent.get());
@@ -25,17 +28,42 @@ namespace Drn
 
 	void Controller::Serialize( Archive& Ar )
 	{
-		Actor::Serialize(Ar);
+		// Nothing. Transient
+	}
 
-		if (Ar.IsLoading())
+	void Controller::Possess( class Pawn* InPawn )
+	{
+		if (GetPawn() && InPawn != GetPawn())
 		{
-			
+			UnPossess();
 		}
 
-		else
+		if (InPawn)
 		{
-			
+			OnPossess(InPawn);
+			m_Pawn = InPawn;
+			InPawn->PossessBy(this);
 		}
+	}
+
+	void Controller::UnPossess()
+	{
+		if (GetPawn())
+		{
+			OnUnPossess();
+			GetPawn()->UnPossess();
+			m_Pawn = nullptr;
+		}
+	}
+
+	void Controller::OnPossess( class Pawn* InPawn )
+	{
+		
+	}
+
+	void Controller::OnUnPossess()
+	{
+		
 	}
 
 #if WITH_EDITOR

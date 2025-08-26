@@ -50,6 +50,8 @@ set( HEADER_FILES
 
 	Source/Runtime/GameFramework/Pawn.h
 	Source/Runtime/GameFramework/Controller.h
+	Source/Runtime/GameFramework/PlayerController.h
+	Source/Runtime/GameFramework/CameraManager.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/CommonResources.h
@@ -220,6 +222,8 @@ set( SOURCE_FILES
 	
 	Source/Runtime/GameFramework/Pawn.cpp
 	Source/Runtime/GameFramework/Controller.cpp
+	Source/Runtime/GameFramework/PlayerController.cpp
+	Source/Runtime/GameFramework/CameraManager.cpp
 
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/CommonResources.cpp

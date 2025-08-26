@@ -3,7 +3,6 @@
 #if WITH_EDITOR
 
 #include "ForwardTypes.h"
-#include "Runtime/Core/Delegate.h"
 
 LOG_DECLARE_CATEGORY( LogWorldOutliner );
 

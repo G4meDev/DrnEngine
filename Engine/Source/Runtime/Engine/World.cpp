@@ -14,6 +14,7 @@ namespace Drn
 		, m_Transient(false)
 		, m_PendingDestory(false)
 		, m_TimeSeconds(0)
+		, m_PlayerController(nullptr)
 	{
 		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
 		m_Scene = Renderer::Get()->AllocateScene(this);
@@ -425,8 +426,8 @@ namespace Drn
 
 	void World::InitPlayerPawn()
 	{
-		Controller* PC = SpawnActor<Controller>();
-		PC->SetActorLabel("PlayerController");
+		m_PlayerController = SpawnActor<PlayerController>();
+		m_PlayerController->SetActorLabel("PlayerController");
 
 		Pawn* PlayerPawn = nullptr;
 		for (Actor* A : m_NewActors)
@@ -449,7 +450,7 @@ namespace Drn
 			PlayerPawn->SetActorLabel("PlayerPawn");
 		}
 
-		PlayerPawn->PossessBy(PC);
+		m_PlayerController->Possess(PlayerPawn);
 	}
 
 #if WITH_EDITOR

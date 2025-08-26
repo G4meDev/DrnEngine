@@ -34,6 +34,8 @@
 
 #include "Runtime/GameFramework/Pawn.h"
 #include "Runtime/GameFramework/Controller.h"
+#include "Runtime/GameFramework/PlayerController.h"
+#include "Runtime/GameFramework/CameraManager.h"
 
 #include "Runtime/Renderer/Device.h"
 #include "Runtime/Renderer/SwapChain.h"

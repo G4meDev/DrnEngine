@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ForwardTypes.h"
-#include "Runtime/Core/Delegate.h"
 
 namespace Drn
 {

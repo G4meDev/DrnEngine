@@ -2,7 +2,6 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/Resource.h"
-#include "Runtime/Core/Delegate.h"
 
 #include "Runtime/Engine/PostProcessSettings.h"
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ForwardTypes.h"
-#include "Runtime/Core/Delegate.h"
 
 LOG_DECLARE_CATEGORY(LogWindow);
 #define DEFAULT_WINDOW_CLASS_NAME L"DefaultWindowClass"

@@ -4,7 +4,6 @@
 
 #include "ForwardTypes.h"
 #include <Editor/Misc/GizmoState.h>
-#include "Runtime/Core/Delegate.h"
 
 LOG_DECLARE_CATEGORY(LogViewportPanel);
 

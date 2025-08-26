@@ -26,6 +26,8 @@
 #include "Runtime/Math/Matrix.h"
 #include "Runtime/Math/Color.h"
 
+#include "Runtime/Core/Delegate.h"
+
 class UpdateEventArgs;
 class KeyEventArgs;
 class ResizeEventArgs;

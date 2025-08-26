@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ForwardTypes.h"
-#include "Runtime/Core/Delegate.h"
 
 LOG_DECLARE_CATEGORY(LogWorld);
 
@@ -43,6 +42,8 @@ namespace Drn
 		inline bool IsTransient() { return m_Transient; }
 
 		inline bool IsTicking() const { return m_ShouldTick; }
+
+		inline class PlayerController* GetPlayerController() const { return m_PlayerController; }
 
 		inline double GetTimeSeconds() const { return m_TimeSeconds; }
 
@@ -105,6 +106,8 @@ namespace Drn
 
 		Scene* m_Scene;
 		PhysicScene* m_PhysicScene;
+
+		class PlayerController* m_PlayerController;
 
 #if WITH_EDITOR
 		StaticMeshActor* m_AxisGridPlane;

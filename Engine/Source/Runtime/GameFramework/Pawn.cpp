@@ -62,9 +62,9 @@ namespace Drn
 
 	void Pawn::PossessBy( Controller* InController )
 	{
-		UnPossess();
-
 		m_Controller = InController;
+
+		//TODO: check for player controller
 		CreatePlayerInputComponent();
 	}
 
@@ -72,10 +72,7 @@ namespace Drn
 	{
 		DestroyPlayerInputComponent();
 
-		if (m_Controller)
-		{
-			m_Controller = nullptr;
-		}
+		m_Controller = nullptr;
 	}
 
 	void Pawn::SetupPlayerInputComponent( class InputComponent* PlayerInputComponent )
@@ -93,16 +90,6 @@ namespace Drn
 
 		PlayerInputComponent->AddAnalog(4, this, &Pawn::OnLookUp);
 		PlayerInputComponent->AddAnalogMapping(4, gainput::MouseAxisY, 1);
-	}
-
-#if WITH_EDITOR
-	bool Pawn::DrawDetailPanel()
-	{
-		bool Dirty = Actor::DrawDetailPanel();
-
-		Dirty |= ImGui::Checkbox( "AutoPossessPlayer", &m_AutoPossessPlayer);
-
-		return Dirty;
 	}
 
 	void Pawn::CreatePlayerInputComponent()
@@ -142,5 +129,14 @@ namespace Drn
 		
 	}
 
+#if WITH_EDITOR
+	bool Pawn::DrawDetailPanel()
+	{
+		bool Dirty = Actor::DrawDetailPanel();
+
+		Dirty |= ImGui::Checkbox( "AutoPossessPlayer", &m_AutoPossessPlayer);
+
+		return Dirty;
+	}
 #endif
 }
