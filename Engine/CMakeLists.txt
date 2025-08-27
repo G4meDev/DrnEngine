@@ -47,6 +47,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/PostProcessSettings.h
 	Source/Runtime/Engine/PostProcessVolume.h
 	Source/Runtime/Engine/InputManager.h
+	Source/Runtime/Engine/CameraTypes.h
 
 	Source/Runtime/GameFramework/Pawn.h
 	Source/Runtime/GameFramework/Controller.h
@@ -219,6 +220,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/PostProcessSettings.cpp
 	Source/Runtime/Engine/PostProcessVolume.cpp
 	Source/Runtime/Engine/InputManager.cpp
+	Source/Runtime/Engine/CameraTypes.cpp
 	
 	Source/Runtime/GameFramework/Pawn.cpp
 	Source/Runtime/GameFramework/Controller.cpp

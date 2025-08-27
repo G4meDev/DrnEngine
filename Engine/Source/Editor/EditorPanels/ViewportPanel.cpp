@@ -103,7 +103,18 @@ namespace Drn
 			XMMATRIX viewMatrix;
 			XMMATRIX projectionMatrix;
 		
-			m_SceneRenderer->m_CameraActor->GetCameraComponent()->CalculateMatrices(viewMatrix, projectionMatrix, aspectRatio);
+			ViewInfo VInfo;
+			m_SceneRenderer->m_CameraActor->GetCameraComponent()->GetCameraView(VInfo);
+
+			CameraManager* CM = m_SceneRenderer->GetScene()->GetWorld()->GetPlayerController() ? m_SceneRenderer->GetScene()->GetWorld()->GetPlayerController()->GetCameraManager() : nullptr;
+			if (CM)
+			{
+				VInfo = CM->GetViewInfo();
+			}
+
+			VInfo.AspectRatio = aspectRatio;
+			viewMatrix = VInfo.CalculateViewMatrix().Get();
+			projectionMatrix = VInfo.CalculateProjectionMatrix().Get();
 
 			XMFLOAT4X4 V;
 			XMStoreFloat4x4(&V, viewMatrix);

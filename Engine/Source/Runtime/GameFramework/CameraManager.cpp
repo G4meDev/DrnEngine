@@ -28,6 +28,10 @@ namespace Drn
 	{
 		Actor::Tick(DeltaTime);
 
+		if (m_ViewTarget)
+		{
+			m_ViewTarget->CalcCamera(m_ViewInfo);
+		}
 	}
 
 	void CameraManager::SetViewTarget( Actor* Target )
@@ -48,7 +52,7 @@ namespace Drn
 	{
 		if (Target == m_ViewTarget)
 		{
-			m_ViewTarget == nullptr;
+			m_ViewTarget = nullptr;
 		}
 	}
 

@@ -21,8 +21,11 @@ namespace Drn
 		void SetViewTarget(Actor* Target);
 		void OnViewTargetDestroyed(Actor* Target);
 
+		inline ViewInfo GetViewInfo() const { return m_ViewInfo; }
+
  protected:
-		
+
+		ViewInfo m_ViewInfo;
 		Actor* m_ViewTarget;
 
 		std::shared_ptr<SceneComponent> m_RootComponent;

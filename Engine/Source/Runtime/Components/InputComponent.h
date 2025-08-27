@@ -107,7 +107,6 @@ namespace Drn
 		void Tick( float DeltaTime ) override;
 		EComponentType GetComponentType() override { return EComponentType::InputComponent; };
 		void Serialize( Archive& Ar ) override;
-		void DrawDetailPanel( float DeltaTime ) override;
 		void RegisterComponent( World* InOwningWorld ) override;
 		void UnRegisterComponent() override;
 		void DestroyComponent() override;
@@ -125,6 +124,10 @@ namespace Drn
 		template<class UserClass, class Func>
 		void AddAnalog(gainput::UserButtonId UserButtonID, UserClass* Class, Func&& F);
 		void AddAnalogMapping(gainput::UserButtonId UserButtonID, gainput::DeviceButtonId DeviceButtonID, float Scale);
+
+#if WITH_EDITOR
+		void DrawDetailPanel( float DeltaTime ) override;
+#endif
 
 	protected:
 

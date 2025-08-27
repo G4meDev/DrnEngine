@@ -18,13 +18,6 @@ namespace Drn
 		m_RootComponent = std::make_unique<class SceneComponent>();
 		m_RootComponent->SetComponentLabel( "RootComponent" );
 		SetRootComponent(m_RootComponent.get());
-
-		m_MeshComponent = std::make_unique<class StaticMeshComponent>();
-		m_RootComponent->AttachSceneComponent(m_MeshComponent.get());
-
-		AssetHandle<StaticMesh> SphereMesh( "Engine\\Content\\BasicShapes\\SM_Sphere.drn" );
-		SphereMesh.Load();
-		m_MeshComponent->SetMesh(SphereMesh);
 	}
 
 	Pawn::~Pawn()
@@ -47,7 +40,6 @@ namespace Drn
 		Actor::Serialize(Ar);
 
 		m_RootComponent->Serialize(Ar);
-		m_MeshComponent->Serialize(Ar);
 
 		if (Ar.IsLoading())
 		{
@@ -77,7 +69,7 @@ namespace Drn
 
 	void Pawn::SetupPlayerInputComponent( class InputComponent* PlayerInputComponent )
 	{
-		PlayerInputComponent->AddAxis(1, 1.0f, 1.0f, this, &Pawn::OnMoveUp);
+		PlayerInputComponent->AddAxis(1, 1.0f, 1.0f, this, &Pawn::OnMoveForward);
 		PlayerInputComponent->AddAxisMapping(1, gainput::KeyW, 1);
 		PlayerInputComponent->AddAxisMapping(1, gainput::KeyS, -1);
 
@@ -109,24 +101,24 @@ namespace Drn
 		}
 	}
 
-	void Pawn::OnMoveUp( float Value )
+	void Pawn::OnMoveForward( float Value )
 	{
-		SetActorLocation( GetActorLocation() + Vector::UpVector * Value * 100 * Time::GetApplicationDeltaTime() );
+		SetActorLocation( GetActorLocation() + GetActorForwardVector() * Value * 100 * Time::GetApplicationDeltaTime() );
 	}
 
 	void Pawn::OnMoveRight( float Value )
 	{
-		SetActorLocation( GetActorLocation() + Vector::RightVector * Value * 100 * Time::GetApplicationDeltaTime() );
+		SetActorLocation( GetActorLocation() + GetActorRightVector() * Value * 100 * Time::GetApplicationDeltaTime() );
 	}
 
 	void Pawn::OnLookUp( float Value )
 	{
-		
+		SetActorRotation( Quat( GetActorRightVector(), Value * -0.005f) * GetActorRotation() );
 	}
 
 	void Pawn::OnLookRight( float Value )
 	{
-		
+		SetActorRotation( Quat( Vector::UpVector, Value * -0.005f) * GetActorRotation());
 	}
 
 #if WITH_EDITOR

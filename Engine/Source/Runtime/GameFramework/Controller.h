@@ -23,6 +23,8 @@ namespace Drn
 		virtual void OnPossess(class Pawn* InPawn);
 		virtual void OnUnPossess();
 
+		virtual void PostInitializeComponents() override;
+
 		inline class Pawn* GetPawn() const { return m_Pawn; }
 
 #if WITH_EDITOR

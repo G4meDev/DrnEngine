@@ -74,6 +74,11 @@ namespace Drn
 		return Result;
 	}
 
+	Vector Transform::TransformVectorNoScale( const Vector& V ) const
+	{
+		return GetRotation().RotateVector(V);
+	}
+
 	Vector Transform::GetSafeScaleReciprocal( const Vector& InScale ) const
 	{
 		XMVECTOR SafeReciprocalScale;

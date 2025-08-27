@@ -36,6 +36,8 @@ namespace Drn
 		inline void SetRotation( const Quat& InRotation) { Rotation = InRotation; }
 		inline void SetScale( const Vector& InScale ) { Scale = InScale; }
 
+		Vector TransformVectorNoScale(const Vector& V) const;
+
 		inline bool Equals( const Transform& Other ) { return Location.Equals(Other.Location) && Rotation.Equals(Other.Rotation) && Scale.Equals(Other.Scale); }
 
 		inline Vector TransformPosition(const Vector& Pos) const

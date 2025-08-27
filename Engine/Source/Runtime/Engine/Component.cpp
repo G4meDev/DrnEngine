@@ -54,6 +54,11 @@ namespace Drn
 		}
 	}
 
+	void Component::MarkPendingKill()
+	{
+		m_PendingKill = true;
+	}
+
 #if WITH_EDITOR
 	std::string Component::GetComponentLabel() const
 	{
@@ -69,12 +74,6 @@ namespace Drn
 	{
 		m_SelectedInEditor = SelectedInEditor;
 	}
-
-	void Component::MarkPendingKill()
-	{
-		m_PendingKill = true;
-	}
-
 #else
 	std::string Component::GetComponentLabel() const
 	{

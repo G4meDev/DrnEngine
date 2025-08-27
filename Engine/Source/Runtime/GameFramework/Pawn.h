@@ -35,14 +35,13 @@ namespace Drn
 		void CreatePlayerInputComponent();
 		void DestroyPlayerInputComponent();
 
-		void OnMoveUp(float Value);
+		void OnMoveForward( float Value );
 		void OnMoveRight(float Value);
 
 		void OnLookUp(float Value);
 		void OnLookRight(float Value);
 
 		std::shared_ptr<SceneComponent> m_RootComponent;
-		std::shared_ptr<StaticMeshComponent> m_MeshComponent;
 		class InputComponent* m_InputComponent;
 
 		Controller* m_Controller;

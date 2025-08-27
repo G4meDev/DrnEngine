@@ -27,32 +27,17 @@ namespace Drn
 
 	}
 
-	void CameraComponent::CalculateMatrices( XMMATRIX& InViewMatrix, XMMATRIX& InProjectionMatrix, float AspectRatio )
+	void CameraComponent::GetCameraView( ViewInfo& Info )
 	{
-		XMVECTOR CameraPos = XMLoadFloat3( GetWorldLocation().Get() );
-		XMVECTOR CamearRot = GetWorldRotation().Get();
+		Info.Location = GetWorldLocation();
+		Info.Rotation = GetWorldRotation();
 
-		XMVECTOR FocusPointOffset = XMVectorSet( 0, 0, 10, 0 );
-		FocusPointOffset = XMVector3Rotate(FocusPointOffset, CamearRot);
+		Info.ProjectionMode = ECameraProjectionMode::Perspective;
+		Info.FOV = m_FOV;
+		Info.NearClipPlane = m_ClipMin;
+		Info.FarClipPlane = m_ClipMax;
 
-		m_FocusPoint = CameraPos + FocusPointOffset;
-
-		InViewMatrix = XMMatrixLookAtLH( CameraPos, m_FocusPoint, m_UpVector);
-		//InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMin, m_ClipMax);
-		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMax, m_ClipMin);
-	}
-
-	void CameraComponent::CalculateMatrices( Matrix& InViewMatrix, Matrix& InProjectionMatrix, float AspectRatio )
-	{
-		XMVECTOR CameraPos = XMLoadFloat3( GetWorldLocation().Get() );
-		XMVECTOR CamearRot = GetWorldRotation().Get();
-
-		XMVECTOR FocusPointOffset = XMVectorSet( 0, 0, 10, 0 );
-		FocusPointOffset = XMVector3Rotate(FocusPointOffset, CamearRot);
-
-		m_FocusPoint = CameraPos + FocusPointOffset;
-
-		InViewMatrix = XMMatrixLookAtLH( CameraPos, m_FocusPoint, m_UpVector);
-		InProjectionMatrix = XMMatrixPerspectiveFovLH( XMConvertToRadians( m_FOV ), AspectRatio, m_ClipMax, m_ClipMin);
+		Info.OrthoWidth = 10.0f;
+		Info.AspectRatio = 1.0f;
 	}
 }

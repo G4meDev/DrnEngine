@@ -41,18 +41,24 @@ namespace Drn
 			return GetRoot()->GetComponents<T>(OutComponents, Type, Recursive);
 		}
 
-		Vector GetActorLocation();
+		Vector GetActorLocation() const;
 		void SetActorLocation(const Vector& InLocation);
 
-		Quat GetActorRotation();
+		Quat GetActorRotation() const;
 		void SetActorRotation(const Quat& InRotator);
+		//void AddWorldRotation(const Quat& InRotator);
+		//void AddRelativeRotation(const Quat& InRotator);
 
-		Vector GetActorScale();
+		Vector GetActorScale() const;
 		void SetActorScale(const Vector& InScale);
 
-		Transform GetActorTransform();
+		Transform GetActorTransform() const;
 		void SetActorTransform( const Transform& InTransform );
-		
+
+		Vector GetActorForwardVector() const;
+		Vector GetActorUpVector() const;
+		Vector GetActorRightVector() const;
+
 		inline void SetRootComponent( SceneComponent* InRootComponent )
 		{
 			Root = InRootComponent;
@@ -72,6 +78,9 @@ namespace Drn
 
 		virtual void Serialize(Archive& Ar) override;
 
+		virtual void GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const;
+		virtual void CalcCamera( struct ViewInfo& OutResult );
+
 		OnActorDestroyedDelegate OnActorKilled;
 
 #if WITH_EDITOR
@@ -89,11 +98,14 @@ namespace Drn
 		virtual bool DrawDetailPanel() { return false; };
 
 #else
+		void SetActorLabel(const std::string& InLabel){};
 		void SetTransient(bool Transient){};
 #endif
 
 		void RegisterComponents(World* InWorld);
 		void UnRegisterComponents();
+
+		virtual void PostInitializeComponents();
 
 		void DispatchPhysicsCollisionHit(const RigidBodyCollisionInfo& MyInfo, const RigidBodyCollisionInfo& OtherInfo, const CollisionImpactData& RigidCollisionData);
 

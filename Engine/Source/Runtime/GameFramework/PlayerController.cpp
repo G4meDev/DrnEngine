@@ -7,9 +7,7 @@ namespace Drn
 		: Controller()
 		, m_CameraManager(nullptr)
 	{
-		
-		m_CameraManager = GetWorld()->SpawnActor<CameraManager>();
-		m_CameraManager->SetActorLabel("CameraManager");
+
 	}
 
 	PlayerController::~PlayerController()
@@ -36,6 +34,16 @@ namespace Drn
 		Controller::OnUnPossess();
 
 
+	}
+
+	void PlayerController::PostInitializeComponents()
+	{
+		Controller::PostInitializeComponents();
+
+		m_CameraManager = GetWorld()->SpawnActor<CameraManager>();
+		m_CameraManager->SetActorLabel("CameraManager");
+
+		SetViewTarget(m_Pawn);
 	}
 
 	void PlayerController::SetViewTarget( Actor* Target )

@@ -170,6 +170,16 @@ namespace Drn
 		SetRelativeRotation(NewRotation);
 	}
 
+	//void SceneComponent::AddRelativeRotation( const Quat& InRotator )
+	//{
+	//	SetRelativeLocationAndRotation(GetRelativeLocation(), InRotator * GetRelativeRotation());
+	//}
+
+	// void SceneComponent::AddWorldRotation( const Quat& InRotator )
+	//{
+	//	SetWorldRotation(GetWorldTransform().GetRotation() * InRotator);
+	//}
+
 	Vector SceneComponent::GetRelativeScale() const
 	{
 		return RelativeTransform.GetScale();
@@ -234,6 +244,21 @@ namespace Drn
 		RelativeTransform.SetLocation(Location);
 		RelativeTransform.SetRotation(Rotation);
 		UpdateCachedTransform( true );
+	}
+
+	Vector SceneComponent::GetForwardVector() const
+	{
+		return GetWorldTransform().TransformVectorNoScale(Vector::ForwardVector);
+	}
+
+	Vector SceneComponent::GetUpVector() const
+	{
+		return GetWorldTransform().TransformVectorNoScale(Vector::UpVector);
+	}
+
+	Vector SceneComponent::GetRightVector() const
+	{
+		return GetWorldTransform().TransformVectorNoScale(Vector::RightVector);
 	}
 
 	void SceneComponent::DestroyComponent()

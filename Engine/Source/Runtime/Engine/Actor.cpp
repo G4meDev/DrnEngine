@@ -31,7 +31,7 @@ namespace Drn
 		}
 	}
 
-	Vector Actor::GetActorLocation()
+	Vector Actor::GetActorLocation() const
 	{
 		return Root->GetWorldLocation();
 	}
@@ -42,7 +42,7 @@ namespace Drn
 	}
 
 
-	Quat Actor::GetActorRotation()
+	Quat Actor::GetActorRotation() const
 	{
 		return Root->GetWorldRotation();
 	}
@@ -52,7 +52,17 @@ namespace Drn
 		Root->SetWorldRotation(InRotator);
 	}
 
-	Vector Actor::GetActorScale()
+	//void Actor::AddRelativeRotation( const Quat& InRotator )
+	//{
+	//	Root->AddRelativeRotation(InRotator);
+	//}
+
+	//void Actor::AddWorldRotation( const Quat& InRotator )
+	//{
+	//	Root->AddWorldRotation(InRotator);
+	//}
+
+	Vector Actor::GetActorScale() const
 	{
 		return Root->GetWorldScale();
 	}
@@ -62,7 +72,7 @@ namespace Drn
 		Root->SetWorldScale(InScale);
 	}
 
-	Transform Actor::GetActorTransform()
+	Transform Actor::GetActorTransform() const
 	{
 		return Root->GetWorldTransform();
 	}
@@ -70,6 +80,21 @@ namespace Drn
 	void Actor::SetActorTransform( const Transform& InTransform )
 	{
 		Root->SetWorldTransform(InTransform);
+	}
+
+	Vector Actor::GetActorForwardVector() const
+	{
+		return Root ? Root->GetForwardVector() : Vector::ForwardVector;
+	}
+
+	Vector Actor::GetActorUpVector() const
+	{
+		return Root ? Root->GetUpVector() : Vector::UpVector;
+	}
+
+	Vector Actor::GetActorRightVector() const
+	{
+		return Root ? Root->GetRightVector() : Vector::RightVector;
 	}
 
 	void Actor::AttachSceneComponent( SceneComponent* InSceneComponent, SceneComponent* Target )
@@ -139,6 +164,17 @@ namespace Drn
 #endif
 	}
 
+	void Actor::GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const
+	{
+		OutLocation = GetActorLocation();
+		OutRotation = GetActorRotation();
+	}
+
+	void Actor::CalcCamera( struct ViewInfo& OutResult )
+	{
+		GetActorEyesViewPoint(OutResult.Location, OutResult.Rotation);
+	}
+
 #if WITH_EDITOR
 	std::string Actor::GetActorLabel() const
 	{
@@ -165,9 +201,6 @@ namespace Drn
 			Comp->SetSelectedInEditor(SelectedInEditor);
 		}
 	}
-
-#else
-	void Actor::SetActorLabel(const std::string& InLabel) {}
 #endif
 
 	void Actor::RegisterComponents( World* InWorld )
@@ -190,6 +223,11 @@ namespace Drn
 		}
 
 		UnRegisterSceneComponentRecursive(Root);
+	}
+
+	void Actor::PostInitializeComponents()
+	{
+		
 	}
 
 	void Actor::DispatchPhysicsCollisionHit( const RigidBodyCollisionInfo& MyInfo,

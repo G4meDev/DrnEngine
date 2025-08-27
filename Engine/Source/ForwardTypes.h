@@ -27,6 +27,7 @@
 #include "Runtime/Math/Color.h"
 
 #include "Runtime/Core/Delegate.h"
+#include "Runtime/Engine/CameraTypes.h"
 
 class UpdateEventArgs;
 class KeyEventArgs;

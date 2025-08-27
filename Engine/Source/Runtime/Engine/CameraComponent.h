@@ -29,11 +29,7 @@ namespace Drn
 		float m_ClipMin;
 		float m_ClipMax;
 
-		// TODO: remove
-		void CalculateMatrices( XMMATRIX& InViewMatrix, XMMATRIX& InProjectionMatrix, float AspectRatio);
-
-		void CalculateMatrices( Matrix& InViewMatrix, Matrix& InProjectionMatrix, float AspectRatio);
-
+		virtual void GetCameraView(ViewInfo& Info);
 
 	protected:
 

@@ -66,6 +66,13 @@ namespace Drn
 		
 	}
 
+	void Controller::PostInitializeComponents()
+	{
+		Actor::PostInitializeComponents();
+
+
+	}
+
 #if WITH_EDITOR
 	bool Controller::DrawDetailPanel()
 	{

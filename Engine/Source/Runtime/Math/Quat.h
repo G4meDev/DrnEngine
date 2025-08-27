@@ -16,6 +16,7 @@ namespace Drn
 
 		inline Quat( float X, float Y, float Z, float W ) { XMStoreFloat4(&m_Vector, XMVectorSet(X, Y, Z, W)); }
 		inline Quat( float Roll, float Pitch, float Yaw ) { XMStoreFloat4(&m_Vector, XMQuaternionRotationRollPitchYaw(Pitch, Yaw, Roll)); }
+		inline Quat( const Vector& Axis, float Angle ) { XMStoreFloat4(&m_Vector, XMQuaternionRotationAxis(XMLoadFloat3(Axis.Get()), Angle)); }
 		inline Quat() { XMStoreFloat4(&m_Vector, XMQuaternionIdentity()); }
 
 		inline Quat( const XMVECTOR& InVector ) { XMStoreFloat4(&m_Vector, InVector); }

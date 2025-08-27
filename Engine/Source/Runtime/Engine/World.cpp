@@ -112,6 +112,7 @@ namespace Drn
 				else
 				{
 					(*it)->RegisterComponents(this);
+					(*it)->PostInitializeComponents();
 
 					it++;
 				}
@@ -384,7 +385,7 @@ namespace Drn
 		//	Comp->DestroyComponent();
 		//}
 
-		//InActor->UnRegisterComponents();
+		InActor->UnRegisterComponents();
 		delete InActor;
 	}
 

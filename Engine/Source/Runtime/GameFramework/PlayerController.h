@@ -19,6 +19,8 @@ namespace Drn
 		void OnPossess( class Pawn* InPawn ) override;
 		void OnUnPossess() override;
 
+		void PostInitializeComponents() override;
+
 		void SetViewTarget( Actor* Target );
 
  protected:

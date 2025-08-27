@@ -75,7 +75,9 @@ namespace Drn
 
 		void SetRelativeRotation(const Quat& InRotator);
 		void SetWorldRotation(const Quat& InRotator);
-		
+		//void AddRelativeRotation(const Quat& InRotator);
+		//void AddWorldRotation(const Quat& InRotator);
+
 		Vector GetRelativeScale() const;
 		Vector GetWorldScale() const;
 		
@@ -85,6 +87,10 @@ namespace Drn
 		void SetRelativeLocationAndRotation(const Vector& InLocation, const Quat& InRotation);
 		void SetWorldLocationAndRotation(const Vector& InLocation, const Quat& InRotation);
 		void SetWorldLocationAndRotation_SkipPhysic( const Vector& InLocation, const Quat& InRotation );
+
+		Vector GetForwardVector() const;
+		Vector GetUpVector() const;
+		Vector GetRightVector() const;
 
 		inline SceneComponent* GetParent() const { return Parent; }
 
