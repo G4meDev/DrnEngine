@@ -50,6 +50,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/CameraTypes.h
 
 	Source/Runtime/GameFramework/Pawn.h
+	Source/Runtime/GameFramework/Character.h
 	Source/Runtime/GameFramework/Controller.h
 	Source/Runtime/GameFramework/PlayerController.h
 	Source/Runtime/GameFramework/CameraManager.h
@@ -98,6 +99,7 @@ set( HEADER_FILES
 	Source/Runtime/Components/SkyLightComponent.h
 	Source/Runtime/Components/BillboardComponent.h
 	Source/Runtime/Components/InputComponent.h
+	Source/Runtime/Components/CharacterMovementComponent.h
 
 	Source/Runtime/Physic/PhysicCore.h
 	Source/Runtime/Physic/PhysicManager.h
@@ -223,6 +225,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/CameraTypes.cpp
 	
 	Source/Runtime/GameFramework/Pawn.cpp
+	Source/Runtime/GameFramework/Character.cpp
 	Source/Runtime/GameFramework/Controller.cpp
 	Source/Runtime/GameFramework/PlayerController.cpp
 	Source/Runtime/GameFramework/CameraManager.cpp
@@ -271,6 +274,7 @@ set( SOURCE_FILES
 	Source/Runtime/Components/SkyLightComponent.cpp
 	Source/Runtime/Components/BillboardComponent.cpp
 	Source/Runtime/Components/InputComponent.cpp
+	Source/Runtime/Components/CharacterMovementComponent.cpp
 
 	Source/Runtime/Physic/PhysicCore.cpp
 	Source/Runtime/Physic/PhysicManager.cpp

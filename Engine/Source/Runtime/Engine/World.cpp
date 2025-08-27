@@ -368,6 +368,18 @@ namespace Drn
 		DrawDebugLine(Vertices[0][1][1], Vertices[1][1][1], Color, Thickness, Lifetime);
 	}
 
+	void World::DrawDebugCapsule( const Vector& Center, float HalfHeight, float Radius, const Quat& Rotation, const Color& Color, float Thickness, float Lifetime )
+	{
+		if (Thickness == 0.0f)
+		{
+			m_LineBatchCompponent->DrawCapsule(Center, HalfHeight, Radius, Rotation, Color, Thickness, Lifetime);
+		}
+		else
+		{
+			m_LineBatchThicknessCompponent->DrawCapsule(Center, HalfHeight, Radius, Rotation, Color, Thickness, Lifetime);
+		}
+	}
+
 	void World::DestroyActor( Actor* InActor )
 	{
 		std::vector<Actor*> RemovedActorList;
@@ -434,7 +446,7 @@ namespace Drn
 		for (Actor* A : m_NewActors)
 		{
 			// TODO: actor and component type inheritance e.g. Character -> Pawn -> Actor
-			if (A->GetActorType() == EActorType::Pawn)
+			if (A->GetActorType() == EActorType::Pawn || A->GetActorType() == EActorType::Character)
 			{
 				Pawn* P = static_cast<Pawn*>(A);
 				if (P->GetAutoPossessPlayer())

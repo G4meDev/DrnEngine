@@ -12,7 +12,8 @@ namespace Drn
 		SceneComponenet,
 		StaticMeshComponent,
 		CameraComponent,
-		InputComponent
+		InputComponent,
+		CharacterMovementComponent,
 	};
 
 	class Component : public Serializable

@@ -52,9 +52,11 @@ namespace Drn
 		void DrawLines(const std::vector<BatchLine>& InLines);
 
 		void DrawCircle(const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
+		void DrawHalfCircle(const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
 		void DrawSphere(const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
 
 		void DrawBox(const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime);
+		void DrawCapsule(const Vector& Center, float HalfHeight, float Radius, const Quat& Rotation, const Color& Color, float Thickness, float Lifetime);
 
 		void Flush();
 

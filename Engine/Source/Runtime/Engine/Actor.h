@@ -22,7 +22,8 @@ namespace Drn
 		Pawn,
 		Controller,
 		PlayerController,
-		CameraManager
+		CameraManager,
+		Character
 	};
 
 	class Actor : public Serializable

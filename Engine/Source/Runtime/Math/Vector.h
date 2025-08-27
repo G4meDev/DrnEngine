@@ -26,6 +26,10 @@ namespace Drn
 		inline float GetY() const { return m_Vector.y; }
 		inline float GetZ() const { return m_Vector.z; }
 
+		inline void SetX(float Value) { m_Vector.x = Value; }
+		inline void SetY(float Value) { m_Vector.y = Value; }
+		inline void SetZ(float Value) { m_Vector.z = Value; }
+
 		inline Vector operator-( const Vector& other ) const
 		{
 			return Vector( XMVectorSubtract(

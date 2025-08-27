@@ -115,6 +115,7 @@ namespace Drn
 			else if ( ActorType == EActorType::SkyLight ) { SerializeActorToWorld<SkyLightActor>(InWorld, Ar); }
 			else if ( ActorType == EActorType::PostProcessVolume ) { SerializeActorToWorld<PostProcessVolume>(InWorld, Ar); }
 			else if ( ActorType == EActorType::Pawn ) { SerializeActorToWorld<Pawn>(InWorld, Ar); }
+			else if ( ActorType == EActorType::Character ) { SerializeActorToWorld<Character>(InWorld, Ar); }
 
 		}
 	

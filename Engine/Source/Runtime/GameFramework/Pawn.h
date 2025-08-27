@@ -24,8 +24,6 @@ namespace Drn
 
 		virtual void SetupPlayerInputComponent( class InputComponent* PlayerInputComponent );
 
-		virtual CameraComponent* GetViewCamera() const { return nullptr; }
-
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
 #endif

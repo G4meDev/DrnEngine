@@ -1,13 +1,12 @@
 #include "DrnPCH.h"
 #include "PhysicScene.h"
 #include "PhysicManager.h"
+#include "Runtime/Components/CharacterMovementComponent.h"
 
 LOG_DEFINE_CATEGORY( LogPhysicScene, "PhysicScene" )
 
 namespace Drn
 {
-
-
 	PhysicScene::PhysicScene(World* InWorld)
 		: m_OwningWorld(InWorld)
 		, m_SimEventCallback(nullptr)
@@ -28,6 +27,8 @@ namespace Drn
 
 		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
 		m_PhysxScene = PhysicManager::Get()->GetPhysics()->createScene(sceneDesc);
+
+		m_ControllerManager = PxCreateControllerManager( *m_PhysxScene );
 
 #if WITH_EDITOR
 		//m_PhysxScene->setVisualizationParameter( PxVisualizationParameter::eSCALE, 1 );
@@ -51,6 +52,7 @@ namespace Drn
 
 	PhysicScene::~PhysicScene()
 	{
+		PX_RELEASE(m_ControllerManager);
 		PX_RELEASE(m_PhysxScene);
 		PX_RELEASE(m_Dispatcher);
 		if (m_SimEventCallback)
@@ -217,7 +219,19 @@ namespace Drn
 			}
 		}
 
-		delete Actors;
+		delete[] Actors;
+
+// ------------------------------------------------------------------------------------------------------------
+
+		uint32 NumController = m_ControllerManager->getNbControllers();
+		for (uint32 i = 0; i < NumController; i++)
+		{
+			physx::PxController* PC = m_ControllerManager->getController(i);
+			Vector Position = Pd2Vector(PC->getPosition());
+
+			CharacterMovementComponent* MC = PhysicUserData::Get<CharacterMovementComponent>( PC->getUserData() );
+			m_OwningWorld->DrawDebugCapsule(Position, MC->GetHalfHeight(), MC->GetRadius(), Quat::Identity, Color::Red, 0, 0);
+		}
 	}
 
 	void PhysicScene::DrawDebugForRigidActor( PxRigidActor* RigidActor )

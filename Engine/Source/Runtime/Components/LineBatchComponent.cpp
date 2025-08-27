@@ -78,6 +78,23 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
+	void LineBatchComponent::DrawHalfCircle( const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
+	{
+		const float	AngleDelta = 2.0f * Math::PI / NumSides;
+		Vector	LastVertex = Base + X * Radius;
+
+		for(int32 SideIndex = 0;SideIndex < (NumSides/2);SideIndex++)
+		{
+			const Vector Vertex = Base + (X * Math::Cos(AngleDelta * (SideIndex + 1)) + Z * Math::Sin(AngleDelta * (SideIndex + 1))) * Radius;
+			m_Lines.push_back(BatchLine(LastVertex, Vertex, Color, Thickness, Lifetime));
+
+			LastVertex = Vertex;
+		}
+
+		MarkRenderStateDirty();
+
+	}
+
 	void LineBatchComponent::DrawSphere( const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime )
 	{
 		Vector ForwardVector = Rotation.RotateVector(Vector::ForwardVector);
@@ -116,6 +133,36 @@ namespace Drn
 			DrawLine(T.TransformPosition(Vector(P_X, P_Y, P_Z)), T.TransformPosition(Vector(Q_X, Q_Y, Q_Z)), Color, Thickness, Lifetime);
 		}
 		MarkRenderStateDirty();
+	}
+
+	void LineBatchComponent::DrawCapsule( const Vector& Center, float HalfHeight, float Radius, const Quat& Rotation, const Color& Color, float Thickness, float Lifetime )
+	{
+		const int32 NumSides = 16;
+
+		Matrix Axes = Matrix(Transform(Vector::ZeroVector, Rotation));
+		Vector AxisX = Axes.Rotation().GetAxisX();
+		Vector AxisY = Axes.Rotation().GetAxisY();
+		Vector AxisZ = Axes.Rotation().GetAxisZ();
+
+		float HalfAxis = std::max(HalfHeight - Radius, 0.01f);
+		Vector TopEnd = Center + AxisY * HalfAxis;
+		Vector ButtomEnd = Center - AxisY * HalfAxis;
+
+		DrawCircle(TopEnd, AxisX, AxisZ, Color, Radius, NumSides, Thickness, Lifetime);
+		DrawCircle(ButtomEnd, AxisX, AxisZ, Color, Radius, NumSides, Thickness, Lifetime);
+
+		DrawHalfCircle(TopEnd, AxisZ, AxisY, Color, Radius, NumSides, Thickness, Lifetime);
+		DrawHalfCircle(TopEnd, AxisX, AxisY, Color, Radius, NumSides, Thickness, Lifetime);
+
+		Vector NegAxisY = AxisY * -1;
+
+		DrawHalfCircle(ButtomEnd, AxisZ, NegAxisY, Color, Radius, NumSides, Thickness, Lifetime);
+		DrawHalfCircle(ButtomEnd, AxisX, NegAxisY, Color, Radius, NumSides, Thickness, Lifetime);
+
+		DrawLine(TopEnd + AxisX * Radius, ButtomEnd + AxisX * Radius, Color, Thickness, Lifetime);
+		DrawLine(TopEnd - AxisX * Radius, ButtomEnd - AxisX * Radius, Color, Thickness, Lifetime);
+		DrawLine(TopEnd + AxisZ * Radius, ButtomEnd + AxisZ * Radius, Color, Thickness, Lifetime);
+		DrawLine(TopEnd - AxisZ * Radius, ButtomEnd - AxisZ * Radius, Color, Thickness, Lifetime);
 	}
 
 	void LineBatchComponent::Flush()

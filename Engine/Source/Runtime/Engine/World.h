@@ -56,6 +56,8 @@ namespace Drn
 		void DrawDebugArrow(const Vector& LineStart, const Vector& LineEnd, float ArrowSize, const Color& Color, float Thickness, float Lifetime);
 		void DrawDebugFrustum(const Matrix& Frustum, const Color& Color, float Thickness, float Lifetime);
 
+		void DrawDebugCapsule(const Vector& Center, float HalfHeight, float Radius, const Quat& Rotation, const Color& Color, float Thickness, float Lifetime);
+
 		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
 

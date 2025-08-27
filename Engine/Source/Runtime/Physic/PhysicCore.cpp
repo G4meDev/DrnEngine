@@ -8,9 +8,19 @@ namespace Drn
 		return Vector(Vec.x, Vec.y, Vec.z);
 	}
 
+	Vector Pd2Vector( const PxVec3d& Vec )
+	{
+		return Vector(Vec.x, Vec.y, Vec.z);
+	}
+
 	PxVec3 Vector2P( const Vector& Vec )
 	{
 		return PxVec3(Vec.GetX(), Vec.GetY(), Vec.GetZ());
+	}
+
+	PxVec3d Vector2Pd( const Vector& Vec )
+	{
+		return PxVec3d(Vec.GetX(), Vec.GetY(), Vec.GetZ());
 	}
 
 	Quat P2Quat( const PxQuat& Q )

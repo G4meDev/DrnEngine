@@ -284,6 +284,12 @@ namespace Drn
 					ImGui::CloseCurrentPopup();
 				}
 
+				if (ImGui::Button( "Character" ))
+				{
+					SpawnActorFromClassInLevel<Character>("Character_00");
+					ImGui::CloseCurrentPopup();
+				}
+
 				ImGui::EndPopup();
 			}
 

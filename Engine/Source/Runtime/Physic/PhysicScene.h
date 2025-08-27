@@ -41,6 +41,7 @@ namespace Drn
 
 		inline World* GetOwningWorld() { return m_OwningWorld; }
 		inline physx::PxScene* GetPhysxScene() { return m_PhysxScene; }
+		inline physx::PxControllerManager* GetControllerManager() { return m_ControllerManager; }
 
 		virtual void Tick(float DeltaTime);
 
@@ -70,6 +71,7 @@ namespace Drn
 
 		World* m_OwningWorld;
 		physx::PxScene* m_PhysxScene;
+		physx::PxControllerManager* m_ControllerManager;
 
 		physx::PxDefaultCpuDispatcher* m_Dispatcher;
 		physx::PxSimulationEventCallback* m_SimEventCallback;

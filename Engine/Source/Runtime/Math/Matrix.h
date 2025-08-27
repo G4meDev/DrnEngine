@@ -50,6 +50,27 @@ namespace Drn
 			return XMMatrixTranspose(XMLoadFloat4x4(&m_Matrix));
 		}
 
+		inline void Decompose(Vector& Location, Quat& Rotation, Vector Scale) const
+		{
+			XMVECTOR Loc;
+			XMVECTOR Rot;
+			XMVECTOR Sca;
+
+			XMMatrixDecompose(&Sca, &Rot, &Loc, XMLoadFloat4x4(&m_Matrix));
+			Location = Loc;
+			Rotation = Rot;
+			Scale = Sca;
+		}
+
+		inline Quat Rotation() const
+		{
+			Vector Location;
+			Quat Rotation;
+			Vector Scale;
+			Decompose(Location, Rotation, Scale);
+			return Rotation;
+		}
+
 		static Matrix MatrixIdentity;
 		XMFLOAT4X4 m_Matrix;
 
