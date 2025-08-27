@@ -24,6 +24,8 @@ namespace Drn
 		void OnLookUp(float Value);
 		void OnLookRight(float Value);
 
+		void OnRootTransformUpdate(SceneComponent* Comp, bool bSkipPhysic);
+
 		inline class CharacterMovementComponent* GetCharacterMovementComponent() const { return m_MovementComponent; }
 
 #if WITH_EDITOR

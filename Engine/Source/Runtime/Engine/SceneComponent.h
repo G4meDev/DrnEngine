@@ -5,6 +5,8 @@
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_TwoParams(OnTransformUpdateDelegate, SceneComponent*, bool);
+
 	enum class EUpdateTransformFlags : uint8
 	{
 		None,
@@ -95,6 +97,8 @@ namespace Drn
 		inline SceneComponent* GetParent() const { return Parent; }
 
 		virtual void DestroyComponent() override;
+
+		OnTransformUpdateDelegate OnTransformUpdateDel;
 
 	protected:
 

@@ -52,6 +52,7 @@ namespace Drn
 		inline const Guid& GetGuid() const { return m_Guid; }
 
 		inline bool IsRegistered() const { return m_Registered; }
+		inline bool IsPendingKill() const { return m_PendingKill; }
 
 #if WITH_EDITOR
 		inline bool IsSelectedInEditor() const { return m_SelectedInEditor; }

@@ -270,7 +270,7 @@ namespace Drn
 
 	void SceneComponent::OnUpdateTransform( bool SkipPhysic )
 	{
-		
+		OnTransformUpdateDel.Braodcast(this, SkipPhysic);
 	}
 
 	void SceneComponent::UpdateCachedTransform( bool SkipPhysic )

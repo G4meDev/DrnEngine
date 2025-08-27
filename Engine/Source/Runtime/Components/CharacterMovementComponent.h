@@ -26,14 +26,22 @@ namespace Drn
 
 		inline Vector GetPosition() const { return m_Controller ? Pd2Vector(m_Controller->getFootPosition()) : GetOwningActor()->GetActorLocation(); }
 
+		void SendPhysicTranform(const Transform& InTransform);
+
+		Vector CalculateCapsulePosition() const;
+		float CalculateRealHeight() const;
+
+		void SetHalfHeight(float HalfHeight);
+		void SetRadius(float Radius);
+
+		inline float GetHalfHeight() const { return m_HalfHeight; }
+		inline float GetRadius() const { return m_Radius; }
+
 		PhysicUserData& GetUserData()
 		{
 			PhysicUserData::Set<CharacterMovementComponent>((void*)&UserData, const_cast<CharacterMovementComponent*>(this));
 			return UserData;
 		}
-
-		inline float GetHalfHeight() const { return m_HalfHeight; }
-		inline float GetRadius() const { return m_Radius; }
 
 #if WITH_EDITOR
 		void DrawDetailPanel( float DeltaTime ) override;

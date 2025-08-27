@@ -145,6 +145,19 @@ namespace Drn
 				Body->GetOwnerComponent()->SetWorldLocationAndRotation_SkipPhysic(WorldTransform.GetLocation(), WorldTransform.GetRotation());
 			}
 		}
+
+		uint32 NumController = m_ControllerManager->getNbControllers();
+		for (uint32 i = 0; i < NumController; i++)
+		{
+			physx::PxController* PC = m_ControllerManager->getController(i);
+			Vector Position = Pd2Vector(PC->getPosition());
+
+			CharacterMovementComponent* MC = PhysicUserData::Get<CharacterMovementComponent>( PC->getUserData() );
+			if (MC && !MC->IsPendingKill())
+			{
+				MC->GetOwningActor()->GetRoot()->SetWorldLocationAndRotation_SkipPhysic(Position, Quat::Identity);
+			}
+		}
 	}
 
 	void PhysicScene::DispatchPhysicEvents()

@@ -11,6 +11,8 @@ namespace Drn
 		m_MovementComponent = new CharacterMovementComponent();
 		m_MovementComponent->SetComponentLabel("MovementComponent");
 		AddComponent(m_MovementComponent);
+
+		GetRoot()->OnTransformUpdateDel.Add(this, &Character::OnRootTransformUpdate);
 	}
 
 	Character::~Character()
@@ -22,7 +24,6 @@ namespace Drn
 	{
 		Pawn::Tick(DeltaTime);
 
-		SetActorLocation(m_MovementComponent->GetPosition());
 		m_MovementComponent->SetMovementInput(m_MovementInput * 2);
 		m_MovementInput = Vector::ZeroVector;
 	}
@@ -87,6 +88,14 @@ namespace Drn
 	void Character::OnLookRight( float Value )
 	{
 		
+	}
+
+	void Character::OnRootTransformUpdate( SceneComponent* Comp, bool bSkipPhysic )
+	{
+		if (!bSkipPhysic)
+		{
+			m_MovementComponent->SendPhysicTranform(GetActorTransform());
+		}
 	}
 
 #if WITH_EDITOR

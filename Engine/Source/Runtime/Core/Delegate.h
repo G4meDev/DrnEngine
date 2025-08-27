@@ -25,6 +25,9 @@
 #define DECLARE_MULTICAST_DELEGATE_OneParam( DelegateName, Param1Type )					\
 	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type )
 
+#define DECLARE_MULTICAST_DELEGATE_TwoParams( DelegateName, Param1Type, Param2Type )					\
+	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type, Param2Type )
+
 namespace Drn
 {
 	class DummyLambda{};
@@ -151,6 +154,10 @@ namespace Drn
 				InvokationList.emplace_back( UClass, std::bind( F, UClass, std::placeholders::_1 ) );
 			}
 
+			if constexpr ( sizeof...( DelegateSignature ) == 2)
+			{
+				InvokationList.emplace_back( UClass, std::bind( F, UClass, std::placeholders::_1, std::placeholders::_2 ) );
+			}
 		}
 
 		template<class Func>
@@ -166,6 +173,10 @@ namespace Drn
 				InvokationList.emplace_back( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1 ) );
 			}
 
+			if constexpr ( sizeof...( DelegateSignature ) == 2)
+			{
+				InvokationList.emplace_back( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1, std::placeholders::_2 ) );
+			}
 		}
 
 		template<class UserClass>
