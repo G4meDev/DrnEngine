@@ -86,7 +86,7 @@ namespace Drn
 
 	bool PhysicScene::IsSimulating() const
 	{
-		return m_PhysxScene && m_OwningWorld && m_OwningWorld->IsTicking();
+		return m_PhysxScene && m_OwningWorld && !m_OwningWorld->IsPaused();
 	}
 
 	void PhysicScene::AddActor( physx::PxActor* InActor )

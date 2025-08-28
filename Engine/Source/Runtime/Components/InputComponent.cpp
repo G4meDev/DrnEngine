@@ -20,6 +20,8 @@ namespace Drn
 	{
 		Component::Tick(DeltaTime);
 
+		const bool ShouldExecute = ShouldExecuteInputs();
+
 		for (int32 i = 0; i < m_KeyBinds.size(); i++)
 		{
 			auto& KeyMaps = m_KeyBinds[i].m_KeyMap;
@@ -33,10 +35,10 @@ namespace Drn
 				HasReleaseEvent |= m_InputMap->GetBoolWasDown(KeyMaps[j].ID);
 			}
 
-			if (HasReleaseEvent)
+			if (HasReleaseEvent && ShouldExecuteInputs())
 				m_KeyBinds[i].ReleaseDel.Execute();
 
-			if (HasPressEvent)
+			if (HasPressEvent && ShouldExecuteInputs())
 				m_KeyBinds[i].PressDel.Execute();
 		}
 
@@ -51,7 +53,7 @@ namespace Drn
 
 			// TODO: raise and lower
 
-			if (NewValue != 0)
+			if (NewValue != 0 && ShouldExecuteInputs())
 			{
 				m_AxisBinds[i].Del.Execute(NewValue);
 			}
@@ -66,7 +68,7 @@ namespace Drn
 				NewValue += m_InputMap->GetFloatDelta(AxisMaps[j].ID) * AxisMaps[j].Scale;
 			}
 
-			if (NewValue != 0)
+			if (NewValue != 0 && ShouldExecuteInputs())
 			{
 				m_AnalogBinds[i].Del.Execute(NewValue);
 			}
@@ -166,6 +168,19 @@ namespace Drn
 				m_InputMap->MapFloat(ID, IsMouseKey(DeviceButtonID) ? InputManager::Get()->GetMouseID() : InputManager::Get()->GetKeyboardID(), DeviceButtonID);
 			}
 		}
+	}
+
+	bool InputComponent::ShouldExecuteInputs() const
+	{
+#if WITH_EDITOR
+		if (GetWorld()->ShouldUseViewportCamera())
+		{
+			return false;
+		}
+#endif
+
+		//return !GetWorld()->IsPaused();
+		return true;
 	}
 
 #if WITH_EDITOR

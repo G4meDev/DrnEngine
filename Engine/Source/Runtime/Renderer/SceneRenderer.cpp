@@ -648,16 +648,7 @@ namespace Drn
 		m_SceneView.FrameIndex = ++m_FrameIndex;
 		m_SceneView.FrameIndexMod8 = m_FrameIndex % 8;
 
-		ViewInfo VInfo;
-		m_CameraActor->GetCameraComponent()->GetCameraView(VInfo);
-
-		CameraManager* CM = GetScene()->GetWorld()->GetPlayerController() ? GetScene()->GetWorld()->GetPlayerController()->GetCameraManager() : nullptr;
-
-		if (CM)
-		{
-			VInfo = CM->GetViewInfo();
-		}
-
+		ViewInfo VInfo = m_Scene->GetWorld()->GetPlayerWorldView();
 		VInfo.AspectRatio = (float) GetViewportSize().X / GetViewportSize().Y;
 
 		m_SceneView.AspectRatio = VInfo.AspectRatio;

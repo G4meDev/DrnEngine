@@ -37,7 +37,6 @@ namespace Drn
 
 		void StartPlayInEditor();
 		void EndPlayInEditor();
-		void SetPlayInEditorPaused(bool Paused);
 
 #endif
 
@@ -53,9 +52,6 @@ namespace Drn
 		void LoadDefaultWorld();
 
 		std::string m_LastLoadedLevel = "";
-
-		bool m_PlayInEditor = false;
-		bool m_PlayInEditorPaused = false;
 
 		friend class LevelViewportGuiLayer;
 		friend class Editor;

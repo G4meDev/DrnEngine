@@ -43,7 +43,6 @@ namespace Drn
 
 		IntPoint CachedSize = IntPoint( 1920, 1080 );
 
-		CameraActor* m_ViewportCamera;
 		StaticMeshActor* m_GridActor;
 
 		ViewportCameraInputHandler CameraInputHandler;

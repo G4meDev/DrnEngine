@@ -75,6 +75,9 @@ namespace Drn
 	{
 #if WITH_EDITOR
 		m_SingletonInstance->LoadDefaultWorld();
+
+		m_MainWorld->SetPaused(true);
+		m_MainWorld->SetEditorWorld();
 #else
 		//m_SingletonInstance->LoadDefaultWorld();
 
@@ -82,9 +85,11 @@ namespace Drn
 		DefaultLevel.Load();
 
 		m_MainWorld = AllocateWorld();
-		m_MainWorld->SetTickEnabled(true);
 
 		DefaultLevel->LoadToWorld(m_MainWorld);
+		m_MainWorld->SetPaused(false);
+		m_MainWorld->SetGameWorld();
+		m_MainWorld->InitPlay();
 #endif
 	}
 
@@ -111,14 +116,15 @@ namespace Drn
 
 			StaticMeshActor* CubeStaticMeshActor = m_PendingLevel->SpawnActor<StaticMeshActor>();
 			CubeStaticMeshActor->GetMeshComponent()->SetMesh(CubeMesh);
-
-#if WITH_EDITOR
 			CubeStaticMeshActor->SetActorLabel("Cube_1");
-#endif
 		}
 
-#if !WITH_EDITOR
-		m_PendingLevel->InitPlay();
+#if WITH_EDITOR
+		m_PendingLevel->SetPaused(true);
+		m_PendingLevel->SetEditorWorld();
+#else
+		m_PendingLevel->SetPaused(false);
+		m_PendingLevel->SetGameWorld();
 #endif
 	}
 
@@ -126,44 +132,29 @@ namespace Drn
 
 	void WorldManager::StartPlayInEditor()
 	{
-		if (m_PlayInEditor)
+		if (m_MainWorld && !m_MainWorld->IsPlayInEditorWorld())
 		{
-			return;
+			if (!m_MainWorld->IsTransient())
+			{
+				m_MainWorld->Save();
+			}
+
+			LoadLevel(m_LastLoadedLevel);
+			m_PendingLevel->SetTransient(true);
+			m_PendingLevel->SetPaused(false);
+			m_PendingLevel->SetPlayInEditorWorld();
+			m_PendingLevel->InitPlay();
 		}
-
-		m_PlayInEditor = true;
-		m_PlayInEditorPaused = false;
-
-		if (!m_MainWorld->IsTransient())
-		{
-			m_MainWorld->Save();
-		}
-
-		LoadLevel(m_LastLoadedLevel);
-		m_PendingLevel->SetTransient(true);
-		m_PendingLevel->m_ShouldTick = true;
-		m_PendingLevel->InitPlay();
 	}
 
 	void WorldManager::EndPlayInEditor()
 	{
-		if (!m_PlayInEditor)
+		if ( m_MainWorld && m_MainWorld->IsPlayInEditorWorld() )
 		{
-			return;
-		}
-
-		m_PlayInEditor = false;
-
-		LoadLevel(m_LastLoadedLevel);
-	}
-
-	void WorldManager::SetPlayInEditorPaused( bool Paused )
-	{
-		if (m_PlayInEditor)
-		{
-			m_PlayInEditorPaused = Paused;
-
-			m_MainWorld->SetTickEnabled(!m_PlayInEditorPaused);
+			LoadLevel(m_LastLoadedLevel);
+			m_PendingLevel->SetTransient(false);
+			m_PendingLevel->SetPaused(true);
+			m_PendingLevel->SetEditorWorld();
 		}
 	}
 

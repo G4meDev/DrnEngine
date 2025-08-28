@@ -31,6 +31,9 @@ namespace Drn
 		m_OwningAsset.Load();
 
 		PreviewWorld = WorldManager::Get()->AllocateWorld();
+		PreviewWorld->SetTransient(true);
+		PreviewWorld->SetPaused(true);
+		PreviewWorld->SetEditorWorld();
 
 		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
 		PreviewMesh->GetMeshComponent()->SetSelectable(false);

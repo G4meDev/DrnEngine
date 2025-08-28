@@ -9,6 +9,13 @@ namespace Drn
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnAddActorsDelegate, const std::set<Actor*>&);
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnRemoveActorsDelegate, const std::vector<Actor*>&);
 
+	enum class EWorldType
+	{
+		Editor,
+		PlayInEditor,
+		Game,
+	};
+
 	class World
 	{
 	public:
@@ -19,7 +26,6 @@ namespace Drn
 
 		void InitPlay();
 		void Tick(float DeltaTime);
-		inline void SetTickEnabled( bool Enabled ) { m_ShouldTick = Enabled; }
 
 		template<typename T>
 		T* SpawnActor()
@@ -41,8 +47,6 @@ namespace Drn
 		inline void SetTransient( bool Transient ) { m_Transient = true; }
 		inline bool IsTransient() { return m_Transient; }
 
-		inline bool IsTicking() const { return m_ShouldTick; }
-
 		inline class PlayerController* GetPlayerController() const { return m_PlayerController; }
 
 		inline double GetTimeSeconds() const { return m_TimeSeconds; }
@@ -63,10 +67,28 @@ namespace Drn
 
 		inline bool IsPendingDestroy() const { return m_PendingDestory; }
 
+		ViewInfo GetPlayerWorldView() const;
+
+		inline void SetEditorWorld() { m_WorldType = EWorldType::Editor; }
+		inline void SetPlayInEditorWorld() { m_WorldType = EWorldType::PlayInEditor; }
+		inline void SetGameWorld() { m_WorldType = EWorldType::Game; }
+		inline void SetPaused(bool Paused) { m_Paused = Paused; }
+
+		inline bool IsEditorWorld() const { return m_WorldType == EWorldType::Editor; }
+		inline bool IsPlayInEditorWorld() const { return m_WorldType == EWorldType::PlayInEditor; }
+		inline bool IsGameWorld() const { return m_WorldType == EWorldType::Game; }
+
+		inline bool IsPaused() const { return m_Paused; }
+
 		class LineBatchComponent* m_LineBatchCompponent;
 		class LineBatchComponent* m_LineBatchThicknessCompponent;
 
 #if WITH_EDITOR
+		void SetEjected(bool Ejected);
+		inline bool IsEjected() const { return m_Ejected; }
+		inline bool ShouldUseViewportCamera() const { return m_WorldType == EWorldType::Editor || IsEjected(); }
+		inline CameraActor* GetViewportCamera() const { return m_ViewportCamera; }
+
 		void Save();
 
 		uint32 GetNonTransientActorCount();
@@ -101,8 +123,6 @@ namespace Drn
 				m_PendingKillComponents.push_back(InComponent);
 		};
 
-		bool m_ShouldTick;
-
 		std::string m_LevelPath;
 		bool m_Transient;
 
@@ -116,7 +136,18 @@ namespace Drn
 #endif
 
 		bool m_PendingDestory;
-		double m_TimeSeconds;
+		float m_TimeSeconds;
+		float m_UnpausedSeconds;
+
+		bool m_Paused;
+
+		EWorldType m_WorldType;
+
+#if WITH_EDITOR
+		bool m_Ejected = false;
+		bool m_EverEjected = false;
+		class CameraActor* m_ViewportCamera = nullptr;
+#endif
 
 		friend Scene;
 		friend class Level;

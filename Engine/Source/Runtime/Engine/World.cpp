@@ -9,23 +9,20 @@ LOG_DEFINE_CATEGORY( LogWorld, "LogWorld" );
 namespace Drn
 {
 	World::World() 
-		: m_ShouldTick(false)
-		, m_LevelPath("")
+		: m_LevelPath("")
 		, m_Transient(false)
 		, m_PendingDestory(false)
 		, m_TimeSeconds(0)
+		, m_UnpausedSeconds(0)
 		, m_PlayerController(nullptr)
+		, m_WorldType(EWorldType::Game)
+		, m_Paused(false)
 	{
 		m_PhysicScene = PhysicManager::Get()->AllocateScene(this);
 		m_Scene = Renderer::Get()->AllocateScene(this);
 
-		// TODO: proper camera and scene render management
 #ifndef WITH_EDITOR
-		CameraActor* Cam = SpawnActor<CameraActor>();
-		Cam->SetActorLocation(XMVectorSet(0, 5, -10, 0));
-
 		Renderer::Get()->m_MainSceneRenderer = m_Scene->AllocateSceneRenderer();
-		Renderer::Get()->m_MainSceneRenderer->m_CameraActor = Cam;
 #endif
 
 #if WITH_EDITOR
@@ -44,6 +41,12 @@ namespace Drn
 		m_AxisGridPlane->GetMeshComponent()->SetMesh(AxisGridMesh);
 		m_AxisGridPlane->GetMeshComponent()->SetMaterial(0, AxisGridMaterial);
 		m_AxisGridPlane->GetMeshComponent()->SetEditorPrimitive(true);
+
+		m_ViewportCamera = SpawnActor<CameraActor>();
+		m_ViewportCamera->SetActorLabel("ViewportCamera");
+		m_ViewportCamera->SetActorLocation(XMVectorSet(20, 28, 20, 0));
+		m_ViewportCamera->SetActorRotation( Quat(Math::PI / 4, Math::PI * 5 / 4, 0) );
+		m_ViewportCamera->SetTransient(true);
 
 #endif
 
@@ -75,7 +78,9 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		m_TimeSeconds += DeltaTime;
+		m_UnpausedSeconds += DeltaTime;
+		if (!IsPaused())
+			m_TimeSeconds += DeltaTime;
 
 		{
 			SCOPE_STAT("PendingDestroyAddActors");
@@ -130,11 +135,7 @@ namespace Drn
 		m_LineBatchCompponent->TickComponent(DeltaTime);
 		m_LineBatchThicknessCompponent->TickComponent(DeltaTime);
 
-		if (!m_ShouldTick)
-		{
-			return;
-		}
-
+		if (!IsPaused())
 		{
 			SCOPE_STAT();
 
@@ -380,6 +381,26 @@ namespace Drn
 		}
 	}
 
+	ViewInfo World::GetPlayerWorldView() const
+	{
+#if WITH_EDITOR
+		if (ShouldUseViewportCamera())
+		{
+			ViewInfo Result;
+			m_ViewportCamera->GetCameraComponent()->GetCameraView(Result);
+			return Result;
+		}
+#endif
+
+		CameraManager* CM = m_PlayerController ? m_PlayerController->GetCameraManager() : nullptr;
+		if (CM)
+		{
+			return CM->GetViewInfo();
+		}
+
+		return ViewInfo();
+	}
+
 	void World::DestroyActor( Actor* InActor )
 	{
 		std::vector<Actor*> RemovedActorList;
@@ -467,6 +488,19 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+
+	void World::SetEjected( bool Ejected )
+	{
+		if (Ejected && !m_EverEjected)
+		{
+			ViewInfo VInfo = GetPlayerWorldView();
+			m_ViewportCamera->SetActorLocation(VInfo.Location);
+			m_ViewportCamera->SetActorRotation(VInfo.Rotation);
+		}
+
+		m_Ejected = Ejected;
+		m_EverEjected |= Ejected;
+	}
 
 	void World::Save()
 	{

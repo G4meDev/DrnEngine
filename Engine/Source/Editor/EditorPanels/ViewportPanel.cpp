@@ -23,16 +23,8 @@ namespace Drn
 		m_SceneRenderer->SetName(InScene->GetWorld()->GetLabel());
 #endif
 
-		m_ViewportCamera = m_World->SpawnActor<CameraActor>();
-		m_ViewportCamera->SetActorLocation(XMVectorSet(20, 28, 20, 0));
-
 		XMVECTOR CameraRotation = XMQuaternionRotationRollPitchYaw(Math::PI / 4, Math::PI * 5 / 4, 0);
-		m_ViewportCamera->SetActorRotation( CameraRotation );
-
-		m_ViewportCamera->SetActorLabel( "ViewportCamera" );
-		m_ViewportCamera->SetTransient(true);
-
-		m_SceneRenderer->m_CameraActor = m_ViewportCamera;
+		m_World->GetViewportCamera()->SetActorRotation( CameraRotation );
 
 		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc( &ViewCpuHandle, &ViewGpuHandle );
 	}
@@ -55,9 +47,9 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		if (CameraInputHandler.Tick(DeltaTime))
+		if (CameraInputHandler.Tick(DeltaTime) && m_World->ShouldUseViewportCamera())
 		{
-			m_ViewportCamera->ApplyViewportInput(CameraInputHandler, CameraMovementSpeed, CameraRotationSpeed);
+			m_World->GetViewportCamera()->ApplyViewportInput(CameraInputHandler, CameraMovementSpeed, CameraRotationSpeed);
 		}
 
 		DrawHeader();
@@ -103,14 +95,7 @@ namespace Drn
 			XMMATRIX viewMatrix;
 			XMMATRIX projectionMatrix;
 		
-			ViewInfo VInfo;
-			m_SceneRenderer->m_CameraActor->GetCameraComponent()->GetCameraView(VInfo);
-
-			CameraManager* CM = m_SceneRenderer->GetScene()->GetWorld()->GetPlayerController() ? m_SceneRenderer->GetScene()->GetWorld()->GetPlayerController()->GetCameraManager() : nullptr;
-			if (CM)
-			{
-				VInfo = CM->GetViewInfo();
-			}
+			ViewInfo VInfo = m_World->GetPlayerWorldView();
 
 			VInfo.AspectRatio = aspectRatio;
 			viewMatrix = VInfo.CalculateViewMatrix().Get();

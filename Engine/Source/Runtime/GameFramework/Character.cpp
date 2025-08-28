@@ -32,15 +32,14 @@ namespace Drn
 	{
 		Pawn::Serialize(Ar);
 
+		m_MovementComponent->Serialize(Ar);
+		
 		if (Ar.IsLoading())
 		{
-			m_MovementComponent->Serialize(Ar);
 		}
 
 		else
 		{
-			m_MovementComponent->Serialize(Ar);
-
 		}
 	}
 
@@ -71,12 +70,12 @@ namespace Drn
 	void Character::OnMoveForward( float Value )
 	{
 		//SetActorLocation( GetActorLocation() + GetActorForwardVector() * Value * 100 * Time::GetApplicationDeltaTime() );
-		m_MovementInput.SetZ(Value * 0.1f);
+		m_MovementInput.SetZ(Value * 10.0f * Time::GetApplicationDeltaTime());
 	}
 
 	void Character::OnMoveRight( float Value )
 	{
-		m_MovementInput.SetX(Value * 0.1f);
+		m_MovementInput.SetX(Value * 10.0f * Time::GetApplicationDeltaTime());
 		//SetActorLocation( GetActorLocation() + GetActorRightVector() * Value * 100 * Time::GetApplicationDeltaTime() );
 	}
 

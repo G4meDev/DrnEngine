@@ -125,6 +125,8 @@ namespace Drn
 		void AddAnalog(gainput::UserButtonId UserButtonID, UserClass* Class, Func&& F);
 		void AddAnalogMapping(gainput::UserButtonId UserButtonID, gainput::DeviceButtonId DeviceButtonID, float Scale);
 
+		bool ShouldExecuteInputs() const;
+
 #if WITH_EDITOR
 		void DrawDetailPanel( float DeltaTime ) override;
 #endif

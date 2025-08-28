@@ -21,6 +21,9 @@ namespace Drn
 		m_OwningAsset.Load();
 
 		PreviewWorld = WorldManager::Get()->AllocateWorld();
+		PreviewWorld->SetTransient(true);
+		PreviewWorld->SetPaused(true);
+		PreviewWorld->SetEditorWorld();
 
 		AssetHandle<StaticMesh> SphereMesh( "Engine\\Content\\BasicShapes\\SM_Sphere.drn" );
 		SphereMesh.Load();

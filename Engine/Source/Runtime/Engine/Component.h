@@ -26,7 +26,7 @@ namespace Drn
 
 		inline virtual EComponentType GetComponentType() { return EComponentType::Component; }
 
-		inline World* GetWorld() { return m_OwningWorld; }
+		inline World* GetWorld() const { return m_OwningWorld; }
 
 		Actor* GetOwningActor() const;
 		void SetOwningActor(Actor* InActor);

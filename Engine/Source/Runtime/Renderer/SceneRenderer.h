@@ -112,8 +112,6 @@ namespace Drn
 
 		uint32 m_FrameIndex;
 
-		CameraActor* m_CameraActor;
-
 		OnSceneRendererResizedDelegate OnSceneRendererResized;
 		OnSceneRendererDestroyDelegate OnSceneRendererDestroy;
 

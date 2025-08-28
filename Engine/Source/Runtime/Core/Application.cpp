@@ -47,8 +47,8 @@ void Application::OnKeyPressed( WPARAM Key )
 	{
 		switch ( Key )
 		{
-		case VK_F3:
 #if WITH_EDITOR
+		case VK_F3:
 			if (Editor::Get())
 			{
 				Editor::Get()->OpenTaskGraphVisualizer();
@@ -62,7 +62,37 @@ void Application::OnKeyPressed( WPARAM Key )
 				WorldManager::Get()->GetMainWorld()->GetPhysicScene()->ToggleShowCollision();
 			}
 			break;
-		
+
+#if WITH_EDITOR
+		case VK_F5:
+			if (World* MainWorld = WorldManager::Get()->GetMainWorld())
+			{
+				if (MainWorld->IsPlayInEditorWorld())
+				{
+					WorldManager::Get()->EndPlayInEditor();
+				}
+				else
+				{
+					WorldManager::Get()->StartPlayInEditor();
+				}
+			}
+			break;
+
+		case VK_F6:
+			if (World* MainWorld = WorldManager::Get()->GetMainWorld())
+			{
+				MainWorld->SetPaused(!MainWorld->IsPaused());
+			}
+			break;
+
+		case VK_F7:
+			if (World* MainWorld = WorldManager::Get()->GetMainWorld())
+			{
+				MainWorld->SetEjected(!MainWorld->IsEjected());
+			}
+			break;
+#endif
+
 		case VK_SPACE:
 			if (Renderer::Get())
 			{

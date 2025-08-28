@@ -138,7 +138,10 @@ namespace Drn
 		XMVECTOR Rotation;
 		XMMatrixDecompose( &Scale, &Rotation, &Translation, m_LocalToWorld.Get() );
 		
-		Quat CameraRotation =  Renderer->m_CameraActor->GetActorRotation();
+		ViewInfo VInfo = Renderer->GetScene()->GetWorld()->GetPlayerWorldView();
+		Quat CameraRotation =  VInfo.Rotation;
+		//Quat CameraRotation =  Renderer->GetScene()->GetWorld()->;
+
 		Quat LocalRotation = Quat(0, 0, XM_PI);
 
 		Matrix LocalToWorld = Transform(Translation, CameraRotation * LocalRotation);

@@ -19,6 +19,9 @@ namespace Drn
 		m_OwningAsset.Load();
 
 		m_PreviewWorld = WorldManager::Get()->AllocateWorld();
+		m_PreviewWorld->SetTransient(true);
+		m_PreviewWorld->SetPaused(true);
+		m_PreviewWorld->SetEditorWorld();
 
 		AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
 		PlaneMesh.Load();

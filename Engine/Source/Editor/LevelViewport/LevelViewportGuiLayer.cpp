@@ -161,37 +161,34 @@ namespace Drn
 
 	void LevelViewportGuiLayer::DrawViewportMenu( float DeltaTime )
 	{
-		if (WorldManager::Get()->m_PlayInEditor)
+		if ( World* MainWorld = WorldManager::Get()->GetMainWorld() )
 		{
-			if (ImGui::Button("End Play"))
+			if (MainWorld->IsPlayInEditorWorld())
 			{
-				WorldManager::Get()->EndPlayInEditor();
-			}
-
-			ImGui::SameLine();
-
-			if (WorldManager::Get()->m_PlayInEditorPaused)
-			{
-				if (ImGui::Button("Unpause"))
+				if (ImGui::Button("End Play"))
 				{
-					WorldManager::Get()->SetPlayInEditorPaused(false);
+					WorldManager::Get()->EndPlayInEditor();
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button(MainWorld->IsPaused() ? "Unpause" : "Pause"))
+				{
+					MainWorld->SetPaused(!MainWorld->IsPaused());
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button(MainWorld->IsEjected() ? "Possess" : "Eject"))
+				{
+					MainWorld->SetEjected(!MainWorld->IsEjected());
 				}
 			}
-
+			
 			else
 			{
-				if (ImGui::Button("Pause"))
+				if (ImGui::Button("Play"))
 				{
-					WorldManager::Get()->SetPlayInEditorPaused(true);
+					WorldManager::Get()->StartPlayInEditor();
 				}
-			}
-		}
-
-		else
-		{
-			if (ImGui::Button("Play"))
-			{
-				WorldManager::Get()->StartPlayInEditor();
 			}
 		}
 	}
