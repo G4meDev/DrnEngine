@@ -137,14 +137,27 @@ namespace Drn
 			}
 		}
 
-		if ( !UsingGizmo && ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left) )
+		if ( ImGui::IsItemHovered() )
 		{
 			const ImVec2 RectMin = ImGui::GetItemRectMin();
+			const ImVec2 RectMax = ImGui::GetItemRectMax();
 			const ImVec2 MousePos = ImGui::GetMousePos();
-			const IntPoint ClickPos = IntPoint( MousePos.x - RectMin.x, MousePos.y - RectMin.y );
-			m_SceneRenderer->QueueMousePickEvent(ClickPos);
-		}
 
+			if ( !UsingGizmo && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left) && m_World->ShouldUseViewportCamera() )
+			{
+				const IntPoint ClickPos = IntPoint( MousePos.x - RectMin.x, MousePos.y - RectMin.y );
+				m_SceneRenderer->QueueMousePickEvent(ClickPos);
+			}
+
+			//if ( !m_World->ShouldUseViewportCamera() )
+			//{
+			//	//ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+			//	int32 PosX = std::clamp(MousePos.x, RectMin.x, RectMax.x);
+			//	int32 PosY = std::clamp(MousePos.y, RectMin.y, RectMax.y);
+			//	//::SetCursorPos(PosX, PosY);
+			//	::SetCursorPos(1000, 500);
+			//}
+		}
 
 	}
 

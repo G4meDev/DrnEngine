@@ -5,11 +5,15 @@
 
 #include "Editor/Editor.h"
 #include "Editor/EditorConfig.h"
+#include "Editor/Misc/EditorMisc.h"
 
 #include <imgui.h>
 
 namespace Drn
 {
+	//DECLARE_LEVEL_SPAWNABLE_CLASS(Character);
+	DECLARE_LEVEL_SPAWNABLE_CLASS(Character);
+
 	LevelViewportGuiLayer::LevelViewportGuiLayer(LevelViewport* InOwningLevelViewport)
 		: m_OwningLevelViewport(InOwningLevelViewport)
 		, m_ShowOutliner(true)
@@ -281,10 +285,19 @@ namespace Drn
 					ImGui::CloseCurrentPopup();
 				}
 
-				if (ImGui::Button( "Character" ))
+				//if (ImGui::Button( "Character" ))
+				//{
+				//	SpawnActorFromClassInLevel<Character>("Character_00");
+				//	ImGui::CloseCurrentPopup();
+				//}
+
+				for (const EditorLevelSpawnable& Spawnable : EditorMisc::Get()->EditorLevelSpawnables)
 				{
-					SpawnActorFromClassInLevel<Character>("Character_00");
-					ImGui::CloseCurrentPopup();
+					if (ImGui::Button( Spawnable.Name.c_str() ))
+					{
+						Spawnable.SpawnFunc( m_OwningLevelViewport->m_OwningWorld );
+						ImGui::CloseCurrentPopup();
+					}
 				}
 
 				ImGui::EndPopup();

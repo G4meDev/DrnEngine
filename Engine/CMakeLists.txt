@@ -153,6 +153,7 @@ set( HEADER_FILES
 	Source/Editor/OutputLog/OutputLogGuiLayer.h
 
 	Source/Editor/Misc/TaskGraphVisualizer.h
+	Source/Editor/Misc/EditorMisc.h
 
 	Source/Editor/ContentBrowser/ContentBrowser.h
 	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.h
@@ -323,6 +324,7 @@ set( SOURCE_FILES
 
 	Source/Editor/Misc/ViewportCameraInputHandler.cpp
 	Source/Editor/Misc/GizmoState.cpp
+	Source/Editor/Misc/EditorMisc.cpp
 	
 	Source/Editor/OutputLog/OutputLog.cpp
 	Source/Editor/OutputLog/OutputLogGuiLayer.cpp
