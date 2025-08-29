@@ -3,8 +3,12 @@
 
 #include "Runtime/Components/SpotLightComponent.h"
 
+#include "Editor/Misc/EditorMisc.h"
+
 namespace Drn
 {
+	DECLARE_LEVEL_SPAWNABLE_CLASS( SpotLightActor, Light );
+
 	SpotLightActor::SpotLightActor()
 		: LightActor()
 	{

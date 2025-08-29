@@ -3,8 +3,12 @@
 #include "Runtime/Components/InputComponent.h"
 #include "Runtime/Components/CharacterMovementComponent.h"
 
+#include "Editor/Misc/EditorMisc.h"
+
 namespace Drn
 {
+	DECLARE_LEVEL_SPAWNABLE_CLASS( Character, Player );
+
 	Character::Character()
 		: Pawn()
 	{

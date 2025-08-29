@@ -3,8 +3,12 @@
 
 #include "Runtime/Components/SkyLightComponent.h"
 
+#include "Editor/Misc/EditorMisc.h"
+
 namespace Drn
 {
+	DECLARE_LEVEL_SPAWNABLE_CLASS( SkyLightActor, Light );
+
 	SkyLightActor::SkyLightActor()
 		: LightActor()
 	{

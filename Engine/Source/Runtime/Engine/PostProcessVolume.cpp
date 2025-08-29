@@ -1,8 +1,12 @@
 #include "DrnPCH.h"
 #include "PostProcessVolume.h"
 
+#include "Editor/Misc/EditorMisc.h"
+
 namespace Drn
 {
+	DECLARE_LEVEL_SPAWNABLE_CLASS( PostProcessVolume, Volume );
+
 	PostProcessVolumeComponent::PostProcessVolumeComponent()
 		: SceneComponent()
 		, m_SceneProxy(nullptr)

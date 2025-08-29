@@ -15,6 +15,7 @@
 #include "Editor/EditorPanels/ViewportPanel.h"
 #include "Editor/EditorPanels/WorldOutlinerPanel.h"
 #include "Editor/EditorPanels/ActorDetailPanel.h"
+#include "Editor/EditorPanels/ModesPanel.h"
 
 struct ImGuiPayload;
 
@@ -41,6 +42,8 @@ namespace Drn
 		void HandleViewportPayload(const ImGuiPayload* Payload);
 		void HandleViewportInputs();
 
+		void HandleEditorSpwan(const ImGuiPayload* Payload);
+
 		void OnHitPlay();
 		void DrawContextPopup();
 
@@ -53,9 +56,11 @@ namespace Drn
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;
 		std::unique_ptr<ActorDetailPanel> m_ActorDetailPanel;
+		std::unique_ptr<ModesPanel> m_ModesPanel;
 
 		LevelViewport* m_OwningLevelViewport;
 
+		bool m_ShowModes;
 		bool m_ShowOutliner;
 		bool m_ShowDetail;
 

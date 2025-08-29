@@ -145,6 +145,7 @@ set( HEADER_FILES
 	Source/Editor/EditorPanels/ViewportPanel.h
 	Source/Editor/EditorPanels/ActorDetailPanel.h
 	Source/Editor/EditorPanels/WorldOutlinerPanel.h
+	Source/Editor/EditorPanels/ModesPanel.h
 
 	Source/Editor/LevelViewport/LevelViewport.h
 	Source/Editor/LevelViewport/LevelViewportGuiLayer.h
@@ -318,6 +319,7 @@ set( SOURCE_FILES
 	Source/Editor/EditorPanels/ViewportPanel.cpp
 	Source/Editor/EditorPanels/ActorDetailPanel.cpp
 	Source/Editor/EditorPanels/WorldOutlinerPanel.cpp
+	Source/Editor/EditorPanels/ModesPanel.cpp
 
 	Source/Editor/LevelViewport/LevelViewport.cpp
 	Source/Editor/LevelViewport/LevelViewportGuiLayer.cpp

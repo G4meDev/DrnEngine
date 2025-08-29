@@ -12,6 +12,11 @@ namespace Drn
 		return "ASSET_PATH";
 	}
 
+	const char* EditorConfig::Payload_EditorSpawnable()
+	{
+		return "EDITOR_SPAWNABLE";
+	}
+
 }
 
 #endif

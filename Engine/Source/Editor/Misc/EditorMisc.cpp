@@ -5,6 +5,11 @@
 
 EditorMisc* EditorMisc::m_SingletonInstance = nullptr;
 
+EditorMisc::EditorMisc()
+{
+	EditorLevelSpawnablesCategories.insert("All");
+}
+
 EditorMisc* EditorMisc::Get()
 {
 	if ( !m_SingletonInstance )
@@ -14,11 +19,13 @@ EditorMisc* EditorMisc::Get()
 	return m_SingletonInstance;
 }
 
-EditorLevelSpawnable::EditorLevelSpawnable( const char* InName, std::function<Drn::Actor*( Drn::World* )> InSpawnFunc )
+EditorLevelSpawnable::EditorLevelSpawnable( const char* InName, const char* InCategory, std::function<Drn::Actor*( Drn::World* )> InSpawnFunc )
 	: Name( InName )
+	, Category( InCategory)
 	, SpawnFunc( InSpawnFunc )
 {
 	EditorMisc::Get()->EditorLevelSpawnables.push_back( std::move(*this) );
+	EditorMisc::Get()->EditorLevelSpawnablesCategories.insert(InCategory);
 }
 
 #endif

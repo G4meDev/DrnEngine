@@ -3,12 +3,16 @@
 
 #include "Runtime/Components/InputComponent.h"
 
+#include "Editor/Misc/EditorMisc.h"
+
 #if WITH_EDITOR
 #include <imgui.h>
 #endif
 
 namespace Drn
 {
+	DECLARE_LEVEL_SPAWNABLE_CLASS( Pawn, Player );
+
 	Pawn::Pawn() 
 		: Actor()
 		, m_InputComponent(nullptr)

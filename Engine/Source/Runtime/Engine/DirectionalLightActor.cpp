@@ -1,8 +1,12 @@
 #include "DrnPCH.h"
 #include "DirectionalLightActor.h"
 
+#include "Editor/Misc/EditorMisc.h"
+
 namespace Drn
 {
+	DECLARE_LEVEL_SPAWNABLE_CLASS( DirectionalLightActor, Light );
+
 	DirectionalLightActor::DirectionalLightActor()
 		: LightActor()
 	{

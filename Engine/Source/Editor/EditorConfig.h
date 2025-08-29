@@ -13,6 +13,7 @@ namespace Drn
 		static ImVec4 AssetInputColor;
 
 		const static char* Payload_AssetPath();
+		const static char* Payload_EditorSpawnable();
 	};
 }
 

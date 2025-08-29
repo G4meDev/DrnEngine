@@ -11,11 +11,9 @@
 
 namespace Drn
 {
-	//DECLARE_LEVEL_SPAWNABLE_CLASS(Character);
-	DECLARE_LEVEL_SPAWNABLE_CLASS(Character);
-
 	LevelViewportGuiLayer::LevelViewportGuiLayer(LevelViewport* InOwningLevelViewport)
 		: m_OwningLevelViewport(InOwningLevelViewport)
+		, m_ShowModes(true)
 		, m_ShowOutliner(true)
 		, m_ShowDetail(true)
 	{
@@ -31,6 +29,8 @@ namespace Drn
 		m_ActorDetailPanel = std::make_unique<ActorDetailPanel>();
 		m_ActorDetailPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent );
 		m_ActorDetailPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent);
+
+		m_ModesPanel = std::make_unique<ModesPanel>();
 	}
 
 	LevelViewportGuiLayer::~LevelViewportGuiLayer()
@@ -55,17 +55,33 @@ namespace Drn
 		ImVec2 Size = ImGui::GetContentRegionAvail();
 		float BorderSize = ImGui::GetStyle().FramePadding.x;
 
-		bool bLeftPanel = m_ShowOutliner;
+		bool bLeftPanel = m_ShowOutliner || m_ShowModes;
 		bool bRightPanel = m_ShowDetail;
 
 		ImVec2 SidePanelSize = ImVec2( Editor::Get()->SidePanelSize, 0.0f );
 		ImVec2 ViewportSize = ImVec2( Size.x - (SidePanelSize.x + 2 * BorderSize) * (bLeftPanel + bRightPanel) , 0.0f );
 
-		if ( m_ShowOutliner && ImGui::BeginChild( "World Outliner", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
+		if (bLeftPanel && ImGui::BeginChild("Mode", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 		{
-			m_WorldOutlinerPanel->Draw(DeltaTime);
+			if ( ImGui::BeginTabBar( "Tab" ))
+			{
+				if (m_ShowModes && ImGui::BeginTabItem(" Modes "))
+				{
+					m_ModesPanel->Draw(DeltaTime);
+					ImGui::EndTabItem();
+				}
+
+				if (m_ShowOutliner && ImGui::BeginTabItem("Outliner"))
+				{
+					m_WorldOutlinerPanel->Draw(DeltaTime);
+					ImGui::EndTabItem();
+				}
+
+				ImGui::EndTabBar();
+			}
+
+			ImGui::EndChild();
 		}
-		ImGui::EndChild();
 
 		ImGui::SameLine();
 		if ( ImGui::BeginChild( "Viewport", ViewportSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened ) )
@@ -82,20 +98,26 @@ namespace Drn
 					HandleViewportPayload(Payload);
 				}
 
+				else if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_EditorSpawnable()))
+				{
+					HandleEditorSpwan(Payload);
+				}
+
 				ImGui::EndDragDropTarget();
 			}
 
 			DrawContextPopup();
+
+			ImGui::EndChild();
 		}
-		ImGui::EndChild();
 
 		ImGui::SameLine();
 		if (m_ShowDetail && ImGui::BeginChild( "Detail", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened) )
 		{
 			m_ActorDetailPanel->Draw(DeltaTime);
 		
+			ImGui::EndChild();
 		}
-		ImGui::EndChild();
 
 		ImGui::End();
 	}
@@ -116,6 +138,7 @@ namespace Drn
 
 			if (ImGui::BeginMenu( "Window" ))
 			{
+				ImGui::MenuItem( "Modes", NULL, &m_ShowModes);
 				ImGui::MenuItem( "Outliner", NULL, &m_ShowOutliner);
 				ImGui::MenuItem( "Detail", NULL, &m_ShowDetail);
 
@@ -233,6 +256,14 @@ namespace Drn
 
 	}
 
+	void LevelViewportGuiLayer::HandleEditorSpwan( const ImGuiPayload* Payload )
+	{
+		if (EditorLevelSpawnable** Spawnable = reinterpret_cast<EditorLevelSpawnable**>(Payload->Data))
+		{
+			Actor* SpawnActor = (*Spawnable)->SpawnFunc(m_OwningLevelViewport->m_OwningWorld);
+		}
+	}
+
 	void LevelViewportGuiLayer::OnHitPlay()
 	{
 		
@@ -242,67 +273,6 @@ namespace Drn
 	{
 		if ( ImGui::BeginPopup( "ContextMenuPopup" ) )
 		{
-			if (ImGui::Button("Add"))
-			{
-				ImGui::OpenPopup( "AddPopup" );
-			}
-
-			if (ImGui::BeginPopup( "AddPopup" ))
-			{
-				if (ImGui::Button( "PointLight" ))
-				{
-					SpawnActorFromClassInLevel<PointLightActor>("PointLight_00");
-					ImGui::CloseCurrentPopup();
-				}
-
-				if (ImGui::Button( "SpotLight" ))
-				{
-					SpawnActorFromClassInLevel<SpotLightActor>("SpotLight_00");
-					ImGui::CloseCurrentPopup();
-				}
-
-				if (ImGui::Button( "DirectionalLight" ))
-				{
-					SpawnActorFromClassInLevel<DirectionalLightActor>("DirectionalLight_00");
-					ImGui::CloseCurrentPopup();
-				}
-
-				if (ImGui::Button( "SkyLight" ))
-				{
-					SpawnActorFromClassInLevel<SkyLightActor>("SkyLight_00");
-					ImGui::CloseCurrentPopup();
-				}
-
-				if (ImGui::Button( "PostProcessVolume" ))
-				{
-					SpawnActorFromClassInLevel<PostProcessVolume>("PostProcessVolume");
-					ImGui::CloseCurrentPopup();
-				}
-
-				if (ImGui::Button( "Pawn" ))
-				{
-					SpawnActorFromClassInLevel<Pawn>("Pawn_00");
-					ImGui::CloseCurrentPopup();
-				}
-
-				//if (ImGui::Button( "Character" ))
-				//{
-				//	SpawnActorFromClassInLevel<Character>("Character_00");
-				//	ImGui::CloseCurrentPopup();
-				//}
-
-				for (const EditorLevelSpawnable& Spawnable : EditorMisc::Get()->EditorLevelSpawnables)
-				{
-					if (ImGui::Button( Spawnable.Name.c_str() ))
-					{
-						Spawnable.SpawnFunc( m_OwningLevelViewport->m_OwningWorld );
-						ImGui::CloseCurrentPopup();
-					}
-				}
-
-				ImGui::EndPopup();
-			}
-
 			if (ImGui::Button("Edit"))
 			{
 				ImGui::OpenPopup( "EditPopup" );
