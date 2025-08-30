@@ -28,6 +28,7 @@
 #include "Runtime/Engine/SpotLightActor.h"
 #include "Runtime/Engine/DirectionalLightActor.h"
 #include "Runtime/Engine/SkyLightActor.h"
+#include "Runtime/Engine/PostProcessVolume.h"
 
 #include "Runtime/Components/BillboardComponent.h"
 #include "Runtime/Components/SpotLightComponent.h"

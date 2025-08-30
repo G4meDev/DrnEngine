@@ -5,9 +5,6 @@
 
 namespace Drn
 {
-	//REGISTER_SERIALIZABLE_ACTOR( EActorType::SpotLight, SpotLightActor );
-	//DECLARE_LEVEL_SPAWNABLE_CLASS( SpotLightActor, Light );
-
 	void RigidBodyCollisionInfo::SetFrom( const BodyInstance* BodyInst )
 	{
 		if (BodyInst)
@@ -48,11 +45,25 @@ namespace Drn
 	}
 
 	EngineTypes* EngineTypes::m_SingletonInstance;
-	SerializableActor::SerializableActor( EActorType InActorType, std::function<Actor*( World*, Archive& Ar )> InFunc )
+
+	void EngineTypes::RegisterSerializableActor( EActorType ActorType, std::function<Actor*( World* InWorld, Archive& Ar )>&& Func )
 	{
-		EngineTypes::Get()->m_ActorSerializationMap[InActorType] = InFunc;
+		EngineTypes::Get()->m_ActorSerializationMap[ActorType] = Func;
 	}
-	
+
+	void EngineTypes::Register()
+	{
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::StaticMeshActor		, StaticMeshActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::PointLight				, PointLightActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::SpotLight				, SpotLightActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::DirectionalLight		, DirectionalLightActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::SkyLight				, SkyLightActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::PostProcessVolume		, PostProcessVolume );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::Pawn					, Pawn );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::Character				, Character );
+
+	}
+
 	EngineTypes* EngineTypes::Get()
 	{
 		if ( !m_SingletonInstance )

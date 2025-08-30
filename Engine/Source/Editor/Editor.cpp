@@ -10,6 +10,8 @@
 #include "Editor/LevelViewport/LevelViewport.h"
 #include "Editor/Misc/TaskGraphVisualizer.h"
 
+#include "Editor/Misc/EditorMisc.h"
+
 #include "Editor/FileImportMenu/FileImportMenu.h"
 
 #include "Runtime/Core/Application.h"
@@ -44,6 +46,8 @@ namespace Drn
 		OutputLog::Get()->Init();
 		ContentBrowser::Get()->Init();
 		LevelViewport::Get()->Init( WorldManager::Get()->GetMainWorld() );
+
+		EditorMisc::Get()->Register();
 	}
 
 	void Editor::Tick(float DeltaTime)

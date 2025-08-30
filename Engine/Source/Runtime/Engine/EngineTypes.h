@@ -41,6 +41,7 @@ namespace Drn
 	class Actor;
 	class PrimitiveComponent;
 	class BodyInstance;
+	class World;
 
 	struct HitResult
 	{
@@ -131,11 +132,6 @@ namespace Drn
 
 		bool IsValidForNotify() const;
 	};
-
-	struct SerializableActor
-	{
-		SerializableActor(EActorType InActorType, std::function<class Actor*( class World*, Archive& Ar )> InFunc);
-	};
 	
 	class EngineTypes
 	{
@@ -143,13 +139,17 @@ namespace Drn
 	
 		EngineTypes() {};
 		~EngineTypes() {};
-	
+
+		void RegisterSerializableActor(EActorType ActorType, std::function< Actor* (World* InWorld, Archive& Ar)>&& Func);
+
+		void Register();
+
 		static EngineTypes* Get();
 		static EngineTypes* m_SingletonInstance;
 		std::unordered_map<EActorType, std::function<Actor*(World* InWorld, Archive& Ar)>> m_ActorSerializationMap;
 	};
 
 #define REGISTER_SERIALIZABLE_ACTOR( type , class )																		\
-	SerializableActor SerializableActor##class( static_cast<EActorType>( type ), []( World * InWorld, Archive& Ar )	\
+	EngineTypes::Get()->RegisterSerializableActor( static_cast<EActorType>( type ), []( World * InWorld, Archive& Ar )	\
 	{ class* NewActor = InWorld->SpawnActor<class>(); NewActor->Serialize(Ar); return NewActor; });
 }

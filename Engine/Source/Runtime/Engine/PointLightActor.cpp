@@ -6,9 +6,6 @@
 
 namespace Drn
 {
-	REGISTER_SERIALIZABLE_ACTOR( EActorType::PointLight, PointLightActor );
-	DECLARE_LEVEL_SPAWNABLE_CLASS( PointLightActor, Light );
-
 	PointLightActor::PointLightActor()
 		: LightActor()
 	{

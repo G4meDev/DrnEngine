@@ -7,32 +7,43 @@
 
 #if WITH_EDITOR
 
-struct EditorLevelSpawnable
+namespace Drn
 {
-	EditorLevelSpawnable(const char* InName, const char* InCategory, std::function<Drn::Actor*(Drn::World*)> InSpawnFunc);
+	struct EditorLevelSpawnable
+	{
+		EditorLevelSpawnable(const char* InName, const char* InCategory, std::function<Actor*(World*)>&& InSpawnFunc)
+			: Name( InName )
+			, Category( InCategory )
+			, SpawnFunc( InSpawnFunc )
+		{}
 
-	std::string Name;
-	std::string Category;
-	std::function<Drn::Actor*(Drn::World*)> SpawnFunc;
-};
+		std::string Name;
+		std::string Category;
+		std::function<Actor*(World*)> SpawnFunc;
+	};
 
-class EditorMisc
-{
-public:
+	class EditorMisc
+	{
+	public:
 
-	EditorMisc();
-	~EditorMisc() {};
+		EditorMisc();
+		~EditorMisc() {};
 
-	static EditorMisc* Get();
 
-	static EditorMisc* m_SingletonInstance;
-	std::vector<EditorLevelSpawnable> EditorLevelSpawnables;
-	std::set<std::string> EditorLevelSpawnablesCategories;
-};
+		void Register();
+		void RegisterLevelSpawnableClass(const char* Name, const char* Category, std::function<Actor*(World*)>&& SpawnFunc);
 
-#define DECLARE_LEVEL_SPAWNABLE_CLASS( name , category )												\
-	EditorLevelSpawnable EditorSpawn_##name( #name , #category , []( Drn::World* InWorld ) {							\
-		Drn::Actor* actor = InWorld->SpawnActor<name>(); actor->SetActorLabel(#name); return actor; });
+		static EditorMisc* Get();
+
+		static EditorMisc* m_SingletonInstance;
+		std::vector<EditorLevelSpawnable> EditorLevelSpawnables;
+		std::set<std::string> EditorLevelSpawnablesCategories;
+	};
+
+#define REGISTER_LEVEL_SPAWNABLE_CLASS( name , category )											\
+	EditorMisc::Get()->RegisterLevelSpawnableClass( #name, #category, []( World* InWorld ) {		\
+		Actor* actor = InWorld->SpawnActor<name>(); actor->SetActorLabel(#name); return actor; });
 #else
-#define DECLARE_LEVEL_SPAWNABLE_CLASS( name , category);
+#define REGISTER_LEVEL_SPAWNABLE_CLASS( name, category ) ;
 #endif
+}

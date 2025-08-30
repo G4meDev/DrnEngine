@@ -10,7 +10,7 @@
 namespace Drn
 {
 	
-	DECLARE_LEVEL_SPAWNABLE_CLASS( TestPlayerCharacter, Game );
+	//DECLARE_LEVEL_SPAWNABLE_CLASS( TestPlayerCharacter, Game );
 
 	TestPlayerCharacter::TestPlayerCharacter()
 		: Character()

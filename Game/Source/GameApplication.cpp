@@ -2,17 +2,29 @@
 #include "GameApplication.h"
 #include <iostream>
 
-void GameApplication::Startup()
-{
-	Application::Startup();
-}
+#include "Editor/Misc/EditorMisc.h"
+#include "Player/TestPlayerCharacter.h"
 
-void GameApplication::Shutdown()
+namespace Drn
 {
-	Application::Shutdown();
-}
+	void GameApplication::Startup()
+	{
+		REGISTER_LEVEL_SPAWNABLE_CLASS( TestPlayerCharacter, Game );
+		REGISTER_SERIALIZABLE_ACTOR( EGameActorType::TestPlayerCharacter , TestPlayerCharacter );
 
-void GameApplication::Tick(float DeltaTime)
-{
-	Application::Tick(DeltaTime);
+		Application::Startup();
+
+
+	}
+
+	void GameApplication::Shutdown()
+	{
+		Application::Shutdown();
+	}
+
+	void GameApplication::Tick(float DeltaTime)
+	{
+		Application::Tick(DeltaTime);
+	}
+
 }

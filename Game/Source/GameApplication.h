@@ -2,16 +2,18 @@
 
 #include "Runtime/Core/Application.h"
 
-class GameApplication : public Drn::Application
+namespace Drn
 {
-public:
+	class GameApplication : public Application
+	{
+	public:
 	
 
-protected:
-	virtual void Startup() override;
-	virtual void Shutdown() override;
+	protected:
+		virtual void Startup() override;
+		virtual void Shutdown() override;
 	
-	virtual void Tick(float DeltaTime) override;
+		virtual void Tick(float DeltaTime) override;
 
-};
-
+	};
+}

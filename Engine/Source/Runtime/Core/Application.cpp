@@ -137,6 +137,8 @@ void Application::OnKeyPressed( WPARAM Key )
 		Time::Init();
 		m_ApplicationTime = Time::GetSeconds();
 
+		EngineTypes::Get()->Register();
+
 		InputManager::Get()->Init();
 		AssetManager::Get()->Init();
 		PhysicManager::Init();

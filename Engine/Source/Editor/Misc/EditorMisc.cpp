@@ -1,31 +1,46 @@
 #include "DrnPCH.h"
 #include "EditorMisc.h"
 
+#include "Runtime/Engine/SpotLightActor.h"
+#include "Runtime/Engine/PostProcessVolume.h"
+
 #if WITH_EDITOR
 
-EditorMisc* EditorMisc::m_SingletonInstance = nullptr;
-
-EditorMisc::EditorMisc()
+namespace Drn
 {
-	EditorLevelSpawnablesCategories.insert("All");
-}
+	EditorMisc* EditorMisc::m_SingletonInstance = nullptr;
 
-EditorMisc* EditorMisc::Get()
-{
-	if ( !m_SingletonInstance )
+	EditorMisc::EditorMisc()
 	{
-		m_SingletonInstance = new EditorMisc();
+		EditorLevelSpawnablesCategories.insert("All");
 	}
-	return m_SingletonInstance;
-}
 
-EditorLevelSpawnable::EditorLevelSpawnable( const char* InName, const char* InCategory, std::function<Drn::Actor*( Drn::World* )> InSpawnFunc )
-	: Name( InName )
-	, Category( InCategory)
-	, SpawnFunc( InSpawnFunc )
-{
-	EditorMisc::Get()->EditorLevelSpawnables.push_back( std::move(*this) );
-	EditorMisc::Get()->EditorLevelSpawnablesCategories.insert(InCategory);
+	void EditorMisc::Register()
+	{
+		REGISTER_LEVEL_SPAWNABLE_CLASS( PointLightActor			, Light );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( SpotLightActor			, Light );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( SkyLightActor			, Light );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( DirectionalLightActor	, Light );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( PostProcessVolume		, Volume );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( Pawn					, Player );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( Character				, Player );
+	}
+
+	void EditorMisc::RegisterLevelSpawnableClass( const char* Name, const char* Category, std::function<Actor*(World*)>&& SpawnFunc)
+	{
+		EditorLevelSpawnables.emplace_back(Name, Category, std::move(SpawnFunc));
+		EditorMisc::Get()->EditorLevelSpawnablesCategories.insert(Category);
+	}
+
+	EditorMisc* EditorMisc::Get()
+	{
+		if ( !m_SingletonInstance )
+		{
+			m_SingletonInstance = new EditorMisc();
+		}
+		return m_SingletonInstance;
+	}
+
 }
 
 #endif
