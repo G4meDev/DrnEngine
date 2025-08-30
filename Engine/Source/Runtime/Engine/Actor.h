@@ -10,22 +10,6 @@ namespace Drn
 {
 	DECLARE_MULTICAST_DELEGATE_OneParam(OnActorDestroyedDelegate, Actor*);
 
-	enum class EActorType : uint16
-	{
-		StaticMeshActor = 0,
-		CameraActor,
-		PointLight,
-		SpotLight,
-		PostProcessVolume,
-		DirectionalLight,
-		SkyLight,
-		Pawn,
-		Controller,
-		PlayerController,
-		CameraManager,
-		Character
-	};
-
 	class Actor : public Serializable
 	{
 	public:

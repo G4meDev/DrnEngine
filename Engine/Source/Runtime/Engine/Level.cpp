@@ -1,8 +1,5 @@
 #include "DrnPCH.h"
 #include "Level.h"
-#include "Runtime/Engine/DirectionalLightActor.h"
-#include "Runtime/Engine/SkyLightActor.h"
-#include "Runtime/Engine/PostProcessVolume.h"
 
 namespace Drn
 {
@@ -108,15 +105,7 @@ namespace Drn
 			Ar >> ActorTypeByte;
 			ActorType = static_cast<EActorType>(ActorTypeByte);
 
-			if (ActorType == EActorType::StaticMeshActor) { SerializeActorToWorld<StaticMeshActor>(InWorld, Ar); }
-			else if ( ActorType == EActorType::PointLight ) { SerializeActorToWorld<PointLightActor>(InWorld, Ar); }
-			else if ( ActorType == EActorType::SpotLight ){ SerializeActorToWorld<SpotLightActor>(InWorld, Ar); }
-			else if ( ActorType == EActorType::DirectionalLight ) { SerializeActorToWorld<DirectionalLightActor>(InWorld, Ar); }
-			else if ( ActorType == EActorType::SkyLight ) { SerializeActorToWorld<SkyLightActor>(InWorld, Ar); }
-			else if ( ActorType == EActorType::PostProcessVolume ) { SerializeActorToWorld<PostProcessVolume>(InWorld, Ar); }
-			else if ( ActorType == EActorType::Pawn ) { SerializeActorToWorld<Pawn>(InWorld, Ar); }
-			else if ( ActorType == EActorType::Character ) { SerializeActorToWorld<Character>(InWorld, Ar); }
-
+			Actor* NewActor = EngineTypes::Get()->m_ActorSerializationMap[ActorType](InWorld, Ar);
 		}
 	
 	}

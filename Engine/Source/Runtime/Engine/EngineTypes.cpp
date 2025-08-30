@@ -1,8 +1,13 @@
 #include "DrnPCH.h"
 #include "EngineTypes.h"
 
+#include "Editor/Misc/EditorMisc.h"
+
 namespace Drn
 {
+	//REGISTER_SERIALIZABLE_ACTOR( EActorType::SpotLight, SpotLightActor );
+	//DECLARE_LEVEL_SPAWNABLE_CLASS( SpotLightActor, Light );
+
 	void RigidBodyCollisionInfo::SetFrom( const BodyInstance* BodyInst )
 	{
 		if (BodyInst)
@@ -40,6 +45,21 @@ namespace Drn
 	void RigidBodyContactInfo::SwapOrder()
 	{
 		ContactNormal = ContactNormal * -1;
+	}
+
+	EngineTypes* EngineTypes::m_SingletonInstance;
+	SerializableActor::SerializableActor( EActorType InActorType, std::function<Actor*( World*, Archive& Ar )> InFunc )
+	{
+		EngineTypes::Get()->m_ActorSerializationMap[InActorType] = InFunc;
+	}
+	
+	EngineTypes* EngineTypes::Get()
+	{
+		if ( !m_SingletonInstance )
+		{
+			m_SingletonInstance = new EngineTypes();
+		}
+		return m_SingletonInstance;
 	}
 
 }

@@ -11,6 +11,7 @@
 
 namespace Drn
 {
+	REGISTER_SERIALIZABLE_ACTOR( EActorType::Pawn, Pawn );
 	DECLARE_LEVEL_SPAWNABLE_CLASS( Pawn, Player );
 
 	Pawn::Pawn() 

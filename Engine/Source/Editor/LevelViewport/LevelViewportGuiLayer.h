@@ -50,9 +50,6 @@ namespace Drn
 		void DeleteSelectedActor();
 		void AlignSelectedComponentToSurfaceBelow();
 
-		template<typename T>
-		T* SpawnActorFromClassInLevel(const std::string SpawnName);
-
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;
 		std::unique_ptr<ActorDetailPanel> m_ActorDetailPanel;
@@ -68,14 +65,6 @@ namespace Drn
 
 	protected:
 	};
-
-	template<typename T>
-	T* LevelViewportGuiLayer::SpawnActorFromClassInLevel( const std::string SpawnName )
-	{
-		T* SpawnedActor = m_OwningLevelViewport->m_OwningWorld->SpawnActor<T>();
-		SpawnedActor->SetActorLabel(SpawnName);
-		return SpawnedActor;
-	}
 
 }
 

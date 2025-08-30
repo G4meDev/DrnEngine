@@ -4,6 +4,8 @@ set( TARGET_NAME Game )
 
 set( HEADER_FILES
 	Source/GameApplication.h
+	Source/GameForwardTypes.h
+
 	Source/Player/TestPlayerCharacter.h
 )
 
@@ -12,6 +14,8 @@ set( SRC_FILES
 	Source/GamePCH.cpp
 	Source/main.cpp
 	Source/GameApplication.cpp
+	Source/GameForwardTypes.cpp
+
 	Source/Player/TestPlayerCharacter.cpp
 )
 

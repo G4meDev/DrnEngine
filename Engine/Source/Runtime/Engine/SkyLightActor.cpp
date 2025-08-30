@@ -7,6 +7,7 @@
 
 namespace Drn
 {
+	REGISTER_SERIALIZABLE_ACTOR( EActorType::SkyLight, SkyLightActor );
 	DECLARE_LEVEL_SPAWNABLE_CLASS( SkyLightActor, Light );
 
 	SkyLightActor::SkyLightActor()

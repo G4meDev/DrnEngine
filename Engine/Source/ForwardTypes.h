@@ -29,6 +29,8 @@
 #include "Runtime/Core/Delegate.h"
 #include "Runtime/Engine/CameraTypes.h"
 
+#include "Runtime/Engine/EngineTypes.h"
+
 class UpdateEventArgs;
 class KeyEventArgs;
 class ResizeEventArgs;

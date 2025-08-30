@@ -5,6 +5,7 @@
 
 namespace Drn
 {
+	REGISTER_SERIALIZABLE_ACTOR( EActorType::DirectionalLight, DirectionalLightActor );
 	DECLARE_LEVEL_SPAWNABLE_CLASS( DirectionalLightActor, Light );
 
 	DirectionalLightActor::DirectionalLightActor()

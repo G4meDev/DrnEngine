@@ -7,6 +7,7 @@
 
 namespace Drn
 {
+	REGISTER_SERIALIZABLE_ACTOR( EActorType::Character, Character );
 	DECLARE_LEVEL_SPAWNABLE_CLASS( Character, Player );
 
 	Character::Character()

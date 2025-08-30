@@ -3,6 +3,8 @@
 
 namespace Drn
 {
+	REGISTER_SERIALIZABLE_ACTOR( EActorType::StaticMeshActor, StaticMeshActor );
+
 	StaticMeshActor::StaticMeshActor()
 		: Actor()
 	{

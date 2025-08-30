@@ -1,12 +1,12 @@
 #include "DrnPCH.h"
 #include "PointLightActor.h"
 #include "Runtime/Components/PointLightComponent.h"
-#include "Runtime/Components/BillboardComponent.h"
 
 #include "Editor/Misc/EditorMisc.h"
 
 namespace Drn
 {
+	REGISTER_SERIALIZABLE_ACTOR( EActorType::PointLight, PointLightActor );
 	DECLARE_LEVEL_SPAWNABLE_CLASS( PointLightActor, Light );
 
 	PointLightActor::PointLightActor()

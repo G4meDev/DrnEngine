@@ -4,6 +4,32 @@
 
 namespace Drn
 {
+	enum class EActorType : uint16
+	{
+		StaticMeshActor = 0,
+		CameraActor,
+		PointLight,
+		SpotLight,
+		PostProcessVolume,
+		DirectionalLight,
+		SkyLight,
+		Pawn,
+		Controller,
+		PlayerController,
+		CameraManager,
+		Character
+	};
+
+	enum class EComponentType : uint32
+	{
+		Component = 0,
+		SceneComponenet,
+		StaticMeshComponent,
+		CameraComponent,
+		InputComponent,
+		CharacterMovementComponent,
+	};
+
 	enum class ELightType : uint8
 	{
 		PointLight,
@@ -11,6 +37,10 @@ namespace Drn
 		DirectionalLight,
 		SkyLight,
 	};
+
+	class Actor;
+	class PrimitiveComponent;
+	class BodyInstance;
 
 	struct HitResult
 	{
@@ -101,4 +131,25 @@ namespace Drn
 
 		bool IsValidForNotify() const;
 	};
+
+	struct SerializableActor
+	{
+		SerializableActor(EActorType InActorType, std::function<class Actor*( class World*, Archive& Ar )> InFunc);
+	};
+	
+	class EngineTypes
+	{
+	public:
+	
+		EngineTypes() {};
+		~EngineTypes() {};
+	
+		static EngineTypes* Get();
+		static EngineTypes* m_SingletonInstance;
+		std::unordered_map<EActorType, std::function<Actor*(World* InWorld, Archive& Ar)>> m_ActorSerializationMap;
+	};
+
+#define REGISTER_SERIALIZABLE_ACTOR( type , class )																		\
+	SerializableActor SerializableActor##class( static_cast<EActorType>( type ), []( World * InWorld, Archive& Ar )	\
+	{ class* NewActor = InWorld->SpawnActor<class>(); NewActor->Serialize(Ar); return NewActor; });
 }

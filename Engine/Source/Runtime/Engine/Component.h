@@ -6,16 +6,6 @@
 
 namespace Drn
 {
-	enum class EComponentType : uint32
-	{
-		Component = 0,
-		SceneComponenet,
-		StaticMeshComponent,
-		CameraComponent,
-		InputComponent,
-		CharacterMovementComponent,
-	};
-
 	class Component : public Serializable
 	{
 	public:

@@ -7,6 +7,7 @@
 
 namespace Drn
 {
+	REGISTER_SERIALIZABLE_ACTOR( EActorType::SpotLight, SpotLightActor );
 	DECLARE_LEVEL_SPAWNABLE_CLASS( SpotLightActor, Light );
 
 	SpotLightActor::SpotLightActor()

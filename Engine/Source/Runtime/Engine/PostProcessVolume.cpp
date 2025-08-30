@@ -5,6 +5,7 @@
 
 namespace Drn
 {
+	REGISTER_SERIALIZABLE_ACTOR( EActorType::PostProcessVolume, PostProcessVolume );
 	DECLARE_LEVEL_SPAWNABLE_CLASS( PostProcessVolume, Volume );
 
 	PostProcessVolumeComponent::PostProcessVolumeComponent()

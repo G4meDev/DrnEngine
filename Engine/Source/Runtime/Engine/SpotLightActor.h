@@ -10,24 +10,11 @@ namespace Drn
 	public:
 		SpotLightActor();
 		virtual ~SpotLightActor();
-	
-		//inline float GetRadius() const
-		//{
-		//	return m_PointLightComponent ? m_PointLightComponent->GetRadius() : 1.0f;
-		//}
-		//inline void SetRadius( float InRadius )
-		//{
-		//	if ( m_PointLightComponent )
-		//	{
-		//		m_PointLightComponent->SetRadius( InRadius );
-		//	}
-		//}
-	
+
+		virtual EActorType GetActorType() override { return EActorType::SpotLight; }
+		inline static EActorType GetActorTypeStatic() { return EActorType::SpotLight; };
+
 	protected:
-		virtual EActorType GetActorType() override
-		{
-			return EActorType::SpotLight;
-		}
 		std::unique_ptr<class SpotLightComponent> m_SpotLightComponent;
 	
 	private:

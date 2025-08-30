@@ -32,20 +32,11 @@ namespace Drn
 #endif
 
 		void LoadToWorld(World* InWorld);
-		template<typename T>
-		void SerializeActorToWorld(World* InWorld, Archive& Ar);
 
 	protected:
 
 	private:
 
 	};
-
-	template<typename T>
-	void Level::SerializeActorToWorld( World* InWorld, Archive& Ar )
-	{
-		T* NewActor = InWorld->SpawnActor<T>();
-		NewActor->Serialize(Ar);
-	}
 
 }

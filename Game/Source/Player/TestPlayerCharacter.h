@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/GameFramework/Character.h"
+#include "GameForwardTypes.h"
 
 namespace Drn
 {
@@ -11,6 +12,17 @@ namespace Drn
 		TestPlayerCharacter();
 		virtual ~TestPlayerCharacter();
 
+		virtual void Serialize( Archive& Ar ) override;
+
+		virtual EActorType GetActorType() override { return static_cast<EActorType>(EGameActorType::TestPlayerCharacter); }
+		inline static EActorType GetActorTypeStatic() { return static_cast<EActorType>(EGameActorType::TestPlayerCharacter); };
+
+#if WITH_EDITOR
+		virtual bool DrawDetailPanel() override;
+#endif
+
 	protected:
+
+		float m_Dummy = 0;
 	};
 }
