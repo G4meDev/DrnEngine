@@ -26,6 +26,9 @@ namespace Drn
 #if WITH_EDITOR
 		virtual void DrawDetailPanel( float DeltaTime ) override;
 
+		void DrawDirection();
+
+		virtual void DrawEditorDefault() override;
 		virtual void DrawEditorSelected() override;
 #endif
 	protected:

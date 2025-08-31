@@ -147,7 +147,17 @@ namespace Drn
 
 			if (ImGui::BeginMenu( "View" ))
 			{
-				ImGui::MenuItem( "Collision", NULL, &WorldManager::Get()->GetMainWorld()->GetPhysicScene()->m_DrawDebugCollision);
+				auto DrawViewFlag = [&](EWorldViewFlag Flag, const char* Name)
+				{
+					bool ViewHasFlag = m_OwningLevelViewport->m_OwningWorld->HasViewFlag(Flag);
+					if (ImGui::MenuItem( Name, NULL, &ViewHasFlag))
+					{
+						m_OwningLevelViewport->m_OwningWorld->SetViewFlag(Flag, ViewHasFlag);
+					}
+				};
+
+				DrawViewFlag( EWorldViewFlag::Collision, "Collision" );
+				DrawViewFlag( EWorldViewFlag::Light, "Light" );
 
 				ImGui::EndMenu();
 			}

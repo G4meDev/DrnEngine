@@ -182,6 +182,18 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+
+	void Actor::DrawEditorDefault()
+	{
+		std::vector<Component*> Comps;
+		GetComponentsInline(Comps);
+
+		for (Component* Comp : Comps)
+		{
+			Comp->DrawEditorDefault();
+		}
+	}
+
 	void Actor::DrawEditorSelected()
 	{
 		std::vector<Component*> Comps;

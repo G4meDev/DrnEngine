@@ -118,13 +118,31 @@ namespace Drn
 		}
 	}
 
+	void PointLightComponent::DrawAttenuation()
+	{
+		if (GetWorld())
+		{
+			GetWorld()->DrawDebugSphere( GetWorldLocation(), Quat::Identity, Color::White, GetRadius(), 36, 0.0, 0 );
+		}
+	}
+
+	void PointLightComponent::DrawEditorDefault()
+	{
+		LightComponent::DrawEditorDefault();
+
+		if (GetWorld() && GetWorld()->HasViewFlag(EWorldViewFlag::Light))
+		{
+			DrawAttenuation();
+		}
+	}
+
 	void PointLightComponent::DrawEditorSelected()
 	{
 		LightComponent::DrawEditorSelected();
 
-		if (GetWorld())
+		if (GetWorld() && !GetWorld()->HasViewFlag(EWorldViewFlag::Light))
 		{
-			GetWorld()->DrawDebugSphere( GetWorldLocation(), Quat::Identity, Color::White, GetRadius(), 36, 0.0, 0 );
+			DrawAttenuation();
 		}
 	}
 

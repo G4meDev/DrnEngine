@@ -121,10 +121,8 @@ namespace Drn
 		}
 	}
 
-	void SpotLightComponent::DrawEditorSelected()
+	void SpotLightComponent::DrawAttenuation()
 	{
-		LightComponent::DrawEditorSelected();
-
 		if (GetWorld())
 		{
 			const float Inner = Math::DegreesToRadians(GetInnerRadius());
@@ -135,6 +133,26 @@ namespace Drn
 
 			if ( GetInnerRadius() > 0 )
 				GetWorld()->DrawDebugCone(GetWorldLocation(), GetDirection(), GetAttenuation(), Inner, Inner, Color::Blue, 32, 0, 0);
+		}
+	}
+
+	void SpotLightComponent::DrawEditorDefault()
+	{
+		LightComponent::DrawEditorDefault();
+
+		if (GetWorld() && GetWorld()->HasViewFlag(EWorldViewFlag::Light))
+		{
+			DrawAttenuation();
+		}
+	}
+
+	void SpotLightComponent::DrawEditorSelected()
+	{
+		LightComponent::DrawEditorSelected();
+
+		if (GetWorld() && !GetWorld()->HasViewFlag(EWorldViewFlag::Light))
+		{
+			DrawAttenuation();
 		}
 	}
 

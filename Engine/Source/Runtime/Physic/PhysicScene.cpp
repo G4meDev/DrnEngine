@@ -78,10 +78,12 @@ namespace Drn
 			DispatchPhysicEvents();
 		}
 
-		if (m_DrawDebugCollision)
+#if WITH_EDITOR
+		if (m_OwningWorld && m_OwningWorld->HasViewFlag(EWorldViewFlag::Collision))
 		{
 			DrawDebugCollisions();
 		}
+#endif
 	}
 
 	bool PhysicScene::IsSimulating() const

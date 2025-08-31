@@ -150,13 +150,31 @@ namespace Drn
 		}
 	}
 
+	void DirectionalLightComponent::DrawDirection()
+	{
+		if (GetWorld())
+		{
+			GetWorld()->DrawDebugArrow(GetWorldLocation(), GetWorldLocation() + GetWorldRotation().GetVector() * 1.2f, 0.1f, Color::White, 0.0f, 0.0f);
+		}
+	}
+
+	void DirectionalLightComponent::DrawEditorDefault()
+	{
+		LightComponent::DrawEditorDefault();
+
+		if (GetWorld() && GetWorld()->HasViewFlag(EWorldViewFlag::Light))
+		{
+			DrawDirection();
+		}
+	}
+
 	void DirectionalLightComponent::DrawEditorSelected()
 	{
 		LightComponent::DrawEditorSelected();
 
-		if (GetWorld())
+		if (GetWorld() && !GetWorld()->HasViewFlag(EWorldViewFlag::Light))
 		{
-			GetWorld()->DrawDebugArrow(GetWorldLocation(), GetWorldLocation() + GetWorldRotation().GetVector() * 1.2f, 0.1f, Color::White, 0.0f, 0.0f);
+			DrawDirection();
 		}
 	}
 

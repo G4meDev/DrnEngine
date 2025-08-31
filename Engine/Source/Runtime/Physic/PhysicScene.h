@@ -56,8 +56,6 @@ namespace Drn
 		void RaycastSingle( HitResult& Result, const Vector& Start, const Vector& Dir, float MaxDistance );
 		void RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance );
 
-		inline void ToggleShowCollision() { m_DrawDebugCollision = !m_DrawDebugCollision; }
-
 	private:
 
 		void StepSimulation(float DeltaTime);
@@ -79,8 +77,6 @@ namespace Drn
 		physx::PxMaterial* m_Material;
 
 		std::vector<CollisionNotifyInfo> m_PendingCollisionNotifies;
-
-		bool m_DrawDebugCollision = true;
 
 		friend class LevelViewportGuiLayer;
 		friend class AssetPreviewStaticMeshGuiLayer;

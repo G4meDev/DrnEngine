@@ -84,7 +84,7 @@ namespace Drn
 
 		virtual bool DrawDetailPanel() { return false; };
 
-		virtual void DrawEditorDefault() {}
+		virtual void DrawEditorDefault();
 		virtual void DrawEditorSelected();
 #else
 		void SetActorLabel(const std::string& InLabel){};

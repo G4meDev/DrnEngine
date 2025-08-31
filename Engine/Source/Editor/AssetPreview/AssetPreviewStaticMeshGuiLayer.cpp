@@ -136,7 +136,16 @@ namespace Drn
 
 			if (ImGui::BeginMenu( "View" ))
 			{
-				ImGui::MenuItem( "Collision", NULL, &PreviewWorld->GetPhysicScene()->m_DrawDebugCollision);
+				auto DrawViewFlag = [&](EWorldViewFlag Flag, const char* Name)
+				{
+					bool ViewHasFlag = PreviewWorld->HasViewFlag(Flag);
+					if (ImGui::MenuItem( Name, NULL, &ViewHasFlag))
+					{
+						PreviewWorld->SetViewFlag(Flag, ViewHasFlag);
+					}
+				};
+
+				DrawViewFlag( EWorldViewFlag::Collision, "Collision" );
 
 				ImGui::EndMenu();
 			}

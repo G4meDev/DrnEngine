@@ -54,16 +54,14 @@ void Application::OnKeyPressed( WPARAM Key )
 				Editor::Get()->OpenTaskGraphVisualizer();
 			}
 			break;
-#endif
 
 		case VK_F4:
-			if (WorldManager::Get())
+			if (World* MainWorld = WorldManager::Get()->GetMainWorld())
 			{
-				WorldManager::Get()->GetMainWorld()->GetPhysicScene()->ToggleShowCollision();
+				MainWorld->SetViewFlag(EWorldViewFlag::Collision, !MainWorld->HasViewFlag(EWorldViewFlag::Collision));
 			}
 			break;
 
-#if WITH_EDITOR
 		case VK_F5:
 			if (World* MainWorld = WorldManager::Get()->GetMainWorld())
 			{

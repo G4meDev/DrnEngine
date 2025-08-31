@@ -58,6 +58,9 @@ namespace Drn
 	
 		virtual void DrawDetailPanel( float DeltaTime ) override;
 
+		void DrawAttenuation();
+
+		virtual void DrawEditorDefault() override;
 		virtual void DrawEditorSelected() override;
 #endif
 	

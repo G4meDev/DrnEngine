@@ -19,6 +19,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
+		virtual void DrawEditorDefault() override;
 		virtual void DrawEditorSelected() override;
 #endif
 

@@ -9,6 +9,12 @@ namespace Drn
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnAddActorsDelegate, const std::set<Actor*>&);
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnRemoveActorsDelegate, const std::vector<Actor*>&);
 
+	enum class EWorldViewFlag : uint64
+	{
+		Collision			= 1 << 0,
+		Light				= 1 << 1,
+	};
+
 	enum class EWorldType
 	{
 		Editor,
@@ -84,6 +90,23 @@ namespace Drn
 		class LineBatchComponent* m_LineBatchThicknessCompponent;
 
 #if WITH_EDITOR
+
+		EWorldViewFlag m_WorldViewFlags = EWorldViewFlag::Collision;
+
+		inline bool HasViewFlag( EWorldViewFlag Flag ) const { return static_cast<uint64>(m_WorldViewFlags) & static_cast<uint64>(Flag); }
+		inline void SetViewFlag( EWorldViewFlag Flag, bool Value )
+		{
+			if (Value)
+			{
+				m_WorldViewFlags = static_cast<EWorldViewFlag>(static_cast<uint64>(m_WorldViewFlags) | static_cast<uint64>(Flag));
+			}
+
+			else
+			{
+				m_WorldViewFlags = static_cast<EWorldViewFlag>(static_cast<uint64>(m_WorldViewFlags) & ~static_cast<uint64>(Flag));
+			}
+		}
+
 		void SetEjected(bool Ejected);
 		inline bool IsEjected() const { return m_Ejected; }
 		inline bool ShouldUseViewportCamera() const { return m_WorldType == EWorldType::Editor || IsEjected(); }

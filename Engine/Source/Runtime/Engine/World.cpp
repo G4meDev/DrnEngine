@@ -135,6 +135,16 @@ namespace Drn
 		m_LineBatchCompponent->TickComponent(DeltaTime);
 		m_LineBatchThicknessCompponent->TickComponent(DeltaTime);
 
+#if WITH_EDITOR
+		if (ShouldUseViewportCamera())
+		{
+			for (Actor* actor : m_Actors)
+			{
+				actor->DrawEditorDefault();
+			}
+		}
+#endif
+
 		if (!IsPaused())
 		{
 			SCOPE_STAT();
