@@ -47,7 +47,7 @@ namespace Drn
 
 		inline Quat Normalize() { return Quat(XMQuaternionNormalize(Get())); }
 
-		inline bool Equals( const Quat& Other, float Tolerance = KINDA_SMALL_NUMBER ) 
+		inline bool Equals( const Quat& Other, float Tolerance = KINDA_SMALL_NUMBER ) const
 		{
 			const XMVECTOR ToleranceV = XMVectorReplicatePtr( (const float*)(&Tolerance) );
 			const XMVECTOR RotationSub = XMVectorAbs( Get() - Other.Get() );
@@ -60,6 +60,19 @@ namespace Drn
 			B = XMComparisonAnyTrue( B );
 
 			return !A || !B;
+		}
+
+		inline static Quat Slerp(const Quat& Q1, const Quat& Q2, float Slerp)
+		{
+			return XMQuaternionSlerp(Q1.Get(), Q2.Get(), Slerp);
+		}
+
+		inline Quat GetNormalized() { return XMQuaternionNormalize(XMLoadFloat4(&m_Vector)); }
+
+		inline float AngularDistance(const Quat& Q)
+		{
+			float Product = XMVectorGetX( XMVector4Dot(Get(), Q.Get()) );
+			return std::acos((2 * Product * Product) - 1.0f);
 		}
 
 		inline Vector GetAxisX() const { return RotateVector(Vector(1, 0, 0)); }

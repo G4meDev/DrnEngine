@@ -23,6 +23,8 @@ namespace Drn
 		virtual Transform GetSocketTransform( const std::string& SocketName,
 			ERelativeTransformSpace TransformSpace = ERelativeTransformSpace::World ) const override;
 
+		virtual void RegisterComponent(World* InOwningWorld) override;
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 
@@ -37,10 +39,12 @@ namespace Drn
 
 		float m_ArmLength;
 		bool m_LocationLag;
+		float m_LocationLagSpeed;
 		bool m_RotationLag;
+		float m_RotationLagSpeed;
 
-		Vector m_DesiredLocation;
-		Quat m_DesiredRotation;
+		Vector m_PreviousDesiredLocation;
+		Quat m_PreviousDesiredRotation;
 
 		Vector m_RelativeSocketLocation;
 		Quat m_RelativeSocketRotation;

@@ -10,6 +10,8 @@ namespace Drn
 		, m_RotationLag(false)
 		, m_RelativeSocketLocation(Vector::ZeroVector)
 		, m_RelativeSocketRotation(Quat::Identity)
+		, m_LocationLagSpeed(3.0f)
+		, m_RotationLagSpeed(3.0f)
 	{
 		
 	}
@@ -25,16 +27,20 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			Ar >> m_LocationLag;
-			Ar >> m_RotationLag;
 			Ar >> m_ArmLength;
+			Ar >> m_LocationLag;
+			Ar >> m_LocationLagSpeed;
+			Ar >> m_RotationLag;
+			Ar >> m_RotationLagSpeed;
 		}
 
 		else
 		{
-			Ar << m_LocationLag;
-			Ar << m_RotationLag;
 			Ar << m_ArmLength;
+			Ar << m_LocationLag;
+			Ar << m_LocationLagSpeed;
+			Ar << m_RotationLag;
+			Ar << m_RotationLagSpeed;
 		}
 	}
 
@@ -68,28 +74,38 @@ namespace Drn
 		}
 	}
 
+	void SpringArmComponent::RegisterComponent( World* InOwningWorld )
+	{
+		SceneComponent::RegisterComponent(InOwningWorld);
+
+		// TODO: move to begin play event
+		UpdateDesiredLocationAndRotation(0, false, false);
+	}
+
 	void SpringArmComponent::UpdateDesiredLocationAndRotation( float DeltaTime, bool LocationLag, bool RotationLag )
 	{
-		if (LocationLag)
-		{
-
-		}
-
-		else
-		{
-			//m_DesiredLocation = GetWorldLocation() + GetWorldRotation().GetVector() * -m_ArmLength;
-			m_RelativeSocketLocation = GetWorldRotation().GetVector() * -m_ArmLength;
-		}
+		Quat DesireRotation = GetWorldRotation();
 
 		if (RotationLag)
 		{
-			
+			DesireRotation = Math::QInterpTo(m_PreviousDesiredRotation, DesireRotation, DeltaTime, m_LocationLagSpeed);
 		}
 
-		else
+		m_PreviousDesiredRotation = DesireRotation;
+
+		const Vector SocketLocation = GetWorldRotation().GetVector() * -m_ArmLength;
+		Vector DesireLocation = GetWorldTransform().TransformPosition(SocketLocation);
+
+		if (LocationLag)
 		{
-			m_DesiredRotation = GetWorldRotation();
+			DesireLocation = Math::VInterpTo(m_PreviousDesiredLocation, DesireLocation, DeltaTime, m_RotationLagSpeed);
 		}
+
+		m_PreviousDesiredLocation = DesireLocation;
+
+		Transform RelTransform = Transform(DesireLocation, DesireRotation).GetRelativeTransform(GetWorldTransform());
+		m_RelativeSocketLocation = RelTransform.GetLocation();
+		m_RelativeSocketRotation = RelTransform.GetRotation();
 
 		UpdateChildTransforms(true);
 	}

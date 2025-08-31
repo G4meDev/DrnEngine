@@ -19,6 +19,14 @@ namespace Drn
 
 		virtual void CalcCamera( struct ViewInfo& OutResult ) override;
 
+		void SetupPlayerInputComponent( class InputComponent* PlayerInputComponent ) override;
+
+		void OnMoveForward( float Value );
+		void OnMoveRight(float Value);
+
+		void OnLookUp(float Value);
+		void OnLookRight(float Value);
+
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
 		virtual void DrawEditorDefault() override;

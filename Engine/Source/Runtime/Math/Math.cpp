@@ -43,5 +43,38 @@ namespace Drn
 		float Delta = A - B;
 		return Delta > -Telorance && Delta < Telorance;
 	}
+
+	Vector Math::VInterpTo( const Vector& Current, const Vector& Target, float DeltaTime, float InterpSpeed )
+	{
+		if (InterpSpeed <= 0.0f)
+		{
+			return Target;
+		}
+
+		const Vector Dist = Target - Current;
+		if (Dist.SizeSquared() < KINDA_SMALL_NUMBER)
+		{
+			return Target;
+		}
+
+		const Vector Delta = Dist * std::clamp(DeltaTime * InterpSpeed, 0.0f, 1.0f);
+		return Current + Delta;
+	}
+
+	Quat Math::QInterpTo( const Quat& Current, const Quat& Target, float DeltaTime, float InterpSpeed )
+	{
+		if (InterpSpeed <= 0.0f)
+		{
+			return Target;
+		}
+
+		if (Current.Equals(Target))
+		{
+			return Target;
+		}
+
+		return Quat::Slerp( Current, Target, std::clamp(DeltaTime * InterpSpeed, 0.0f, 1.0f) );
+	}
+
 }
 

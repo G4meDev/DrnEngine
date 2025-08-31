@@ -5,6 +5,7 @@
 //#define PI 3.14159
 #define PI_ON_180_DEGREES 0.0174532778 // PI / 180
 
+#include "Runtime/Math/Vector.h"
 #include <algorithm>
 
 namespace Drn
@@ -99,5 +100,8 @@ namespace Drn
 			int32 Exp = std::floor(std::log2(Value));
 			return std::pow(2, Exp);
 		}
+
+		static Vector VInterpTo(const Vector& Current, const Vector& Target, float DeltaTime, float InterpSpeed);
+		static Quat QInterpTo(const Quat& Current, const Quat& Target, float DeltaTime, float InterpSpeed);
 	};
 }
