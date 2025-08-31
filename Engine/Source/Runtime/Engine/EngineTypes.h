@@ -28,6 +28,7 @@ namespace Drn
 		CameraComponent,
 		InputComponent,
 		CharacterMovementComponent,
+		SpringArmComponent,
 	};
 
 	enum class ELightType : uint8

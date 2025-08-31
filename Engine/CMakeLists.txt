@@ -100,6 +100,7 @@ set( HEADER_FILES
 	Source/Runtime/Components/BillboardComponent.h
 	Source/Runtime/Components/InputComponent.h
 	Source/Runtime/Components/CharacterMovementComponent.h
+	Source/Runtime/Components/SpringArmComponent.h
 
 	Source/Runtime/Physic/PhysicCore.h
 	Source/Runtime/Physic/PhysicManager.h
@@ -277,6 +278,7 @@ set( SOURCE_FILES
 	Source/Runtime/Components/BillboardComponent.cpp
 	Source/Runtime/Components/InputComponent.cpp
 	Source/Runtime/Components/CharacterMovementComponent.cpp
+	Source/Runtime/Components/SpringArmComponent.cpp
 
 	Source/Runtime/Physic/PhysicCore.cpp
 	Source/Runtime/Physic/PhysicManager.cpp

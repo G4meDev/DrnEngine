@@ -2,6 +2,7 @@
 #include "TestPlayerCharacter.h"
 
 #include "Editor/Misc/EditorMisc.h"
+#include "Runtime/Components/SpringArmComponent.h"
 
 #if WITH_EDITOR
 #include <Imgui.h>
@@ -9,13 +10,12 @@
 
 namespace Drn
 {
-	
-	//DECLARE_LEVEL_SPAWNABLE_CLASS( TestPlayerCharacter, Game );
-
 	TestPlayerCharacter::TestPlayerCharacter()
 		: Character()
 	{
-		
+		m_SpringArm = std::make_shared<class SpringArmComponent>();
+		GetRoot()->AttachSceneComponent(m_SpringArm.get());
+		m_SpringArm->SetComponentLabel("SpringArm");
 	}
 
 	TestPlayerCharacter::~TestPlayerCharacter()
@@ -29,12 +29,10 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			Ar >> m_Dummy;
 		}
 
 		else
 		{
-			Ar << m_Dummy;
 		}
 	}
 
@@ -43,8 +41,6 @@ namespace Drn
 	{
 		bool Dirty = Character::DrawDetailPanel();
 
-		ImGui::InputFloat( "Dummy", &m_Dummy );
-
 		return Dirty;
 	}
 
@@ -52,20 +48,12 @@ namespace Drn
 	{
 		Character::DrawEditorDefault();
 
-		if (GetWorld())
-		{
-			GetWorld()->DrawDebugLine(GetActorLocation(), GetActorLocation() + Vector::UpVector * 10, Color::Green, 0, 0);
-		}
 	}
 
 	void TestPlayerCharacter::DrawEditorSelected()
 	{
 		Character::DrawEditorSelected();
 
-		//if (GetWorld())
-		//{
-		//	GetWorld()->DrawDebugLine(GetActorLocation(), GetActorLocation() + Vector::UpVector * 10, Color::Green, 0, 0);
-		//}
 	}
 
 #endif

@@ -25,6 +25,7 @@ namespace Drn
 
 	protected:
 
-		float m_Dummy = 0;
+		std::shared_ptr<class SpringArmComponent> m_SpringArm;
+
 	};
 }
