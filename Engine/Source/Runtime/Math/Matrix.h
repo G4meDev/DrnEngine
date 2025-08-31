@@ -50,6 +50,11 @@ namespace Drn
 			return XMMatrixTranspose(XMLoadFloat4x4(&m_Matrix));
 		}
 
+		inline Matrix Inverse() const
+		{
+			return XMMatrixInverse(NULL, XMLoadFloat4x4(&m_Matrix));
+		}
+
 		inline void Decompose(Vector& Location, Quat& Rotation, Vector Scale) const
 		{
 			XMVECTOR Loc;

@@ -7,6 +7,13 @@ namespace Drn
 {
 	DECLARE_MULTICAST_DELEGATE_TwoParams(OnTransformUpdateDelegate, SceneComponent*, bool);
 
+	enum class ERelativeTransformSpace
+	{
+		World,
+		Actor,
+		Component,
+	};
+
 	enum class EUpdateTransformFlags : uint8
 	{
 		None,
@@ -92,6 +99,10 @@ namespace Drn
 		void SetWorldLocationAndRotation(const Vector& InLocation, const Quat& InRotation);
 		void SetWorldLocationAndRotation_SkipPhysic( const Vector& InLocation, const Quat& InRotation );
 
+		virtual Transform GetSocketTransform( const std::string& SocketName,
+			ERelativeTransformSpace TransformSpace = ERelativeTransformSpace::World ) const;
+		inline std::string GetAttachSocketName() const { return m_AttachSocketName; }
+
 		Vector GetForwardVector() const;
 		Vector GetUpVector() const;
 		Vector GetRightVector() const;
@@ -110,8 +121,6 @@ namespace Drn
 		std::unique_ptr<class BillboardComponent> m_Sprite = nullptr;
 #endif
 
-	private:
-
 		Transform RelativeTransform;
 		Transform CachedWorldTransform;
 
@@ -123,6 +132,8 @@ namespace Drn
 
 		SceneComponent* Parent = nullptr;
 		std::vector<SceneComponent*> Childs;
+
+		std::string m_AttachSocketName;
 
 		friend class Actor;
 	};

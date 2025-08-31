@@ -12,6 +12,7 @@ namespace Drn
 {
 	SceneComponent::SceneComponent() 
 		: Component() 
+		, m_AttachSocketName("")
 	{
 
 	}
@@ -118,7 +119,8 @@ namespace Drn
 
 		if (Parent)
 		{
-			NewRelativeTransform = InTransform.GetRelativeTransform(Parent->GetWorldTransform());
+			const Transform ParentToWorld = Parent->GetSocketTransform(GetAttachSocketName());
+			NewRelativeTransform = InTransform.GetRelativeTransform(ParentToWorld);
 		}
 
 		else
@@ -150,7 +152,8 @@ namespace Drn
 		
 		if (Parent)
 		{
-			NewLocation = Parent->GetWorldTransform().InverseTransformPosition(NewLocation);
+			const Transform ParentToWorld = Parent->GetSocketTransform(GetAttachSocketName());
+			NewLocation = ParentToWorld.InverseTransformPosition(NewLocation);
 		}
 
 		SetRelativeLocation(NewLocation);
@@ -177,7 +180,8 @@ namespace Drn
 		
 		if (Parent)
 		{
-			NewRotation = Parent->GetWorldRotation().Inverse() * NewRotation;
+			const Transform ParentToWorld = Parent->GetSocketTransform(GetAttachSocketName());
+			NewRotation = ParentToWorld.GetRotation().Inverse() * NewRotation;
 		}
 
 		SetRelativeRotation(NewRotation);
@@ -215,7 +219,7 @@ namespace Drn
 
 		if( Parent )
 		{
-			Transform ParentToWorld = Parent->GetWorldTransform();
+			const Transform ParentToWorld = Parent->GetSocketTransform(GetAttachSocketName());
 			NewRelScale = ParentToWorld.GetSafeScaleReciprocal(ParentToWorld.GetScale()) * InScale;
 		}
 
@@ -236,8 +240,10 @@ namespace Drn
 
 		if (Parent)
 		{
-			Location = Parent->GetWorldTransform().InverseTransformPosition(InLocation);
-			Rotation = Parent->GetWorldTransform().GetRotation().Inverse() * InRotation;
+			const Transform ParentToWorld = Parent->GetSocketTransform(GetAttachSocketName());
+
+			Location = ParentToWorld.InverseTransformPosition(InLocation);
+			Rotation = ParentToWorld.GetRotation().Inverse() * InRotation;
 		}
 
 		SetRelativeLocationAndRotation(Location, Rotation);
@@ -250,13 +256,28 @@ namespace Drn
 
 		if (Parent)
 		{
-			Location = Parent->GetWorldTransform().InverseTransformPosition(InLocation);
-			Rotation = Parent->GetWorldTransform().GetRotation().Inverse() * InRotation;
+			const Transform ParentToWorld = Parent->GetSocketTransform(GetAttachSocketName());
+
+			Location = ParentToWorld.InverseTransformPosition(InLocation);
+			Rotation = ParentToWorld.GetRotation().Inverse() * InRotation;
 		}
 
 		RelativeTransform.SetLocation(Location);
 		RelativeTransform.SetRotation(Rotation);
 		UpdateCachedTransform( true );
+	}
+
+	Transform SceneComponent::GetSocketTransform( const std::string& SocketName, ERelativeTransformSpace TransformSpace ) const
+	{
+		switch ( TransformSpace )
+		{
+		case ERelativeTransformSpace::Actor:
+			return GetWorldTransform().GetRelativeTransform(GetOwningActor()->GetActorTransform());
+		case ERelativeTransformSpace::Component:
+			return Transform::Identity;
+		default:
+			return GetWorldTransform();
+		}
 	}
 
 	Vector SceneComponent::GetForwardVector() const
@@ -302,7 +323,8 @@ namespace Drn
 	{
 		if (Parent)
 		{
-			return InRelativeTransform * Parent->GetWorldTransform();
+			const Transform ParentToWorld = Parent->GetSocketTransform(GetAttachSocketName());
+			return InRelativeTransform * ParentToWorld;
 		}
 
 		return InRelativeTransform;

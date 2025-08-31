@@ -55,6 +55,8 @@ namespace Drn
 			return ss.str();
 		}
 
+		static Transform Identity;
+
 	private:
 		Vector Location;
 		Quat Rotation;

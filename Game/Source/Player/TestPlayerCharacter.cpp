@@ -13,9 +13,13 @@ namespace Drn
 	TestPlayerCharacter::TestPlayerCharacter()
 		: Character()
 	{
-		m_SpringArm = std::make_shared<class SpringArmComponent>();
+		m_SpringArm = std::make_shared<SpringArmComponent>();
 		GetRoot()->AttachSceneComponent(m_SpringArm.get());
 		m_SpringArm->SetComponentLabel("SpringArm");
+
+		m_Camera = std::make_shared<CameraComponent>();
+		m_SpringArm->AttachSceneComponent(m_Camera.get());
+		m_Camera->SetComponentLabel("Camera");
 	}
 
 	TestPlayerCharacter::~TestPlayerCharacter()
@@ -27,13 +31,13 @@ namespace Drn
 	{
 		Character::Serialize(Ar);
 
-		if (Ar.IsLoading())
-		{
-		}
+		m_SpringArm->Serialize(Ar);
+		m_Camera->Serialize(Ar);
+	}
 
-		else
-		{
-		}
+	void TestPlayerCharacter::CalcCamera( struct ViewInfo& OutResult )
+	{
+		m_Camera->GetCameraView(OutResult);
 	}
 
 #if WITH_EDITOR

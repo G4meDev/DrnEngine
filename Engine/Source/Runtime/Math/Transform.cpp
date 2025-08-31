@@ -5,6 +5,8 @@
 
 namespace Drn
 {
+	Transform Transform::Identity = Transform(XMMatrixIdentity());
+
 	Transform::Transform( const Matrix& InMatrix )
 	{
 		XMVECTOR DecompLocation;

@@ -17,6 +17,8 @@ namespace Drn
 		virtual EActorType GetActorType() override { return static_cast<EActorType>(EGameActorType::TestPlayerCharacter); }
 		inline static EActorType GetActorTypeStatic() { return static_cast<EActorType>(EGameActorType::TestPlayerCharacter); };
 
+		virtual void CalcCamera( struct ViewInfo& OutResult ) override;
+
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
 		virtual void DrawEditorDefault() override;
@@ -26,6 +28,6 @@ namespace Drn
 	protected:
 
 		std::shared_ptr<class SpringArmComponent> m_SpringArm;
-
+		std::shared_ptr<class CameraComponent> m_Camera;
 	};
 }

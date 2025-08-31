@@ -8,6 +8,8 @@ namespace Drn
 		, m_ArmLength(5.0f)
 		, m_LocationLag(false)
 		, m_RotationLag(false)
+		, m_RelativeSocketLocation(Vector::ZeroVector)
+		, m_RelativeSocketRotation(Quat::Identity)
 	{
 		
 	}
@@ -41,13 +43,29 @@ namespace Drn
 		SceneComponent::Tick(DeltaTime);
 
 		UpdateDesiredLocationAndRotation(DeltaTime, m_LocationLag, m_RotationLag);
-		UpdateChildTransforms();
 	}
 
 	void SpringArmComponent::OnUpdateTransform( bool SkipPhysic )
 	{
 		SceneComponent::OnUpdateTransform(SkipPhysic);
 
+	}
+
+	Transform SpringArmComponent::GetSocketTransform( const std::string& SocketName, ERelativeTransformSpace TransformSpace ) const
+	{
+		Transform RelativeTransform = Transform(m_RelativeSocketLocation, m_RelativeSocketRotation);
+
+		switch ( TransformSpace )
+		{
+			// TODO: implement
+			case ERelativeTransformSpace::Actor:
+				
+			case ERelativeTransformSpace::Component:
+				return RelativeTransform;
+			default:
+				//return RelativeTransform * GetWorldTransform();
+				return GetWorldTransform() * RelativeTransform;
+		}
 	}
 
 	void SpringArmComponent::UpdateDesiredLocationAndRotation( float DeltaTime, bool LocationLag, bool RotationLag )
@@ -59,7 +77,8 @@ namespace Drn
 
 		else
 		{
-			m_DesiredLocation = GetWorldLocation() + GetWorldRotation().GetVector() * -m_ArmLength;
+			//m_DesiredLocation = GetWorldLocation() + GetWorldRotation().GetVector() * -m_ArmLength;
+			m_RelativeSocketLocation = GetWorldRotation().GetVector() * -m_ArmLength;
 		}
 
 		if (RotationLag)
@@ -71,11 +90,8 @@ namespace Drn
 		{
 			m_DesiredRotation = GetWorldRotation();
 		}
-	}
 
-	void SpringArmComponent::UpdateChildTransforms()
-	{
-		
+		UpdateChildTransforms(true);
 	}
 
 #if WITH_EDITOR
@@ -83,13 +99,17 @@ namespace Drn
 	{
 		SceneComponent::DrawDetailPanel(DeltaTime);
 
+		ImGui::DragFloat( "ArmLength", &m_ArmLength, 0.1f, 0.0f, 100.0f, "%.1f" );
+
+		ImGui::Checkbox( "LocationLag", &m_LocationLag );
+		ImGui::Checkbox( "RotationLag", &m_RotationLag );
 	}
 
 	void SpringArmComponent::DrawArm()
 	{
 		if (GetWorld())
 		{
-			GetWorld()->DrawDebugLine(GetWorldLocation(), m_DesiredLocation, Color::Red, 0, 0);
+			GetWorld()->DrawDebugLine(GetWorldLocation(), GetSocketTransform("").GetLocation(), Color::Red, 0, 0);
 		}
 	}
 

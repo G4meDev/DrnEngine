@@ -20,6 +20,9 @@ namespace Drn
 
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
+		virtual Transform GetSocketTransform( const std::string& SocketName,
+			ERelativeTransformSpace TransformSpace = ERelativeTransformSpace::World ) const override;
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 
@@ -31,7 +34,6 @@ namespace Drn
 	protected:
 
 		void UpdateDesiredLocationAndRotation(float DeltaTime, bool LocationLag, bool RotationLag);
-		void UpdateChildTransforms();
 
 		float m_ArmLength;
 		bool m_LocationLag;
@@ -39,5 +41,8 @@ namespace Drn
 
 		Vector m_DesiredLocation;
 		Quat m_DesiredRotation;
+
+		Vector m_RelativeSocketLocation;
+		Quat m_RelativeSocketRotation;
 	};
 }

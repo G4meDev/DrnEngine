@@ -16,20 +16,25 @@ namespace Drn
 
 		virtual void Tick(float DeltaTime) override;
 
+		virtual void Serialize( Archive& Ar ) override;
+
 		inline virtual EComponentType GetComponentType() override { return EComponentType::CameraComponent; }
 
-		XMVECTOR m_FocusPoint;
-		XMVECTOR m_UpVector;
-
-		XMVECTOR m_Rotation;
-
-		float m_AspectRatio;
+		bool m_Perspective;
 		float m_FOV;
-
+		float m_OrthoWidth;
 		float m_ClipMin;
 		float m_ClipMax;
 
 		virtual void GetCameraView(ViewInfo& Info);
+
+#if WITH_EDITOR
+		virtual void DrawDetailPanel(float DeltaTime) override;
+		void DrawFrustum();
+
+		virtual void DrawEditorDefault() override;
+		virtual void DrawEditorSelected() override;
+#endif
 
 	protected:
 
