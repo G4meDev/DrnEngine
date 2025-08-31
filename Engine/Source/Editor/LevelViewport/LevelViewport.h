@@ -17,7 +17,7 @@ namespace Drn
 
 		static void Init( World* InOwningWorld );
 		static void Shutdown();
-		static void Tick( float DeltaTime );
+		void Tick( float DeltaTime );
 
 		static LevelViewport* Get();
 

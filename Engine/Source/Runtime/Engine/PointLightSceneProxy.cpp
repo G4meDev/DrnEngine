@@ -213,13 +213,6 @@ namespace Drn
 		}
 	}
 
-#if WITH_EDITOR
-	void PointLightSceneProxy::DrawAttenuation(World* InWorld)
-	{
-		InWorld->DrawDebugSphere( m_WorldPosition, Quat::Identity, Color::White, m_Radius, 36, 0.0, 0 );
-	}
-#endif
-
 	void PointLightSceneProxy::CalculateLocalToProjectionForDirection( Matrix& Mat, const Vector& Direction, const Vector& UpVector)
 	{
 		XMVECTOR LightPosition = XMLoadFloat3(m_WorldPosition.Get());

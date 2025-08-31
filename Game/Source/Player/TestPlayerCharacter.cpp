@@ -47,5 +47,14 @@ namespace Drn
 
 		return Dirty;
 	}
+
+	void TestPlayerCharacter::DrawEditorSelected()
+	{
+		if (GetWorld())
+		{
+			GetWorld()->DrawDebugLine(GetActorLocation(), GetActorLocation() + Vector::UpVector * 10, Color::Green, 0, 0);
+		}
+	}
+
 #endif
 }

@@ -14,7 +14,8 @@ namespace Drn
 		virtual ~SpotLightComponent();
 	
 		virtual void Serialize( Archive& Ar ) override;
-	
+
+		inline Vector GetDirection() const { return GetWorldRotation().GetVector(); }
 		inline float GetAttenuation() const { return m_Attenuation; }
 		inline float GetOutterRadius() const { return m_OuterRadius; }
 		inline float GetInnerRadius() const { return m_InnerRadius; }
@@ -56,6 +57,8 @@ namespace Drn
 		}
 	
 		virtual void DrawDetailPanel( float DeltaTime ) override;
+
+		virtual void DrawEditorSelected() override;
 #endif
 	
 	private:

@@ -23,6 +23,11 @@ namespace Drn
 		inline float GetCascadeLogDistribution() const	{ return m_CascadeLogDistribution; }
 		inline float GetCascadeDepthScale() const		{ return m_CascadeDepthScale; }
 
+#if WITH_EDITOR
+		virtual void DrawDetailPanel( float DeltaTime ) override;
+
+		virtual void DrawEditorSelected() override;
+#endif
 	protected:
 
 		virtual void RegisterComponent(World* InOwningWorld) override;
@@ -39,7 +44,6 @@ namespace Drn
 
 #if WITH_EDITOR
 		inline virtual bool HasSprite() const override { return true; }
-		virtual void DrawDetailPanel( float DeltaTime ) override;
 #endif
 	};
 }

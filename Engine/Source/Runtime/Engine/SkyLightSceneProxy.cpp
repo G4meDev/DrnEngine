@@ -76,9 +76,4 @@ namespace Drn
 		}
 	}
 
-#if WITH_EDITOR
-	void SkyLightSceneProxy::DrawAttenuation( World* InWorld )
-	{
-	}
-#endif
 }

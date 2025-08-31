@@ -19,4 +19,11 @@ namespace Drn
 		
 	}
 
+#if WITH_EDITOR
+	void DirectionalLightActor::DrawEditorSelected()
+	{
+		LightActor::DrawEditorSelected();
+
+	}
+#endif
 }

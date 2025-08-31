@@ -117,5 +117,16 @@ namespace Drn
 			SetDepthBias(m_DepthBias);
 		}
 	}
+
+	void PointLightComponent::DrawEditorSelected()
+	{
+		LightComponent::DrawEditorSelected();
+
+		if (GetWorld())
+		{
+			GetWorld()->DrawDebugSphere( GetWorldLocation(), Quat::Identity, Color::White, GetRadius(), 36, 0.0, 0 );
+		}
+	}
+
 #endif
 }

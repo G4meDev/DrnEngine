@@ -43,6 +43,19 @@ namespace Drn
 		return Childs;
 	}
 
+	void SceneComponent::GetComponentsInline( std::vector<Component*>& OutComponents )
+	{
+		OutComponents.push_back(this);
+
+		for (SceneComponent* Child : Childs)
+		{
+			if (Child)
+			{
+				Child->GetComponentsInline(OutComponents);
+			}
+		}
+	}
+
 	void SceneComponent::Serialize( Archive& Ar )
 	{
 		Component::Serialize(Ar);

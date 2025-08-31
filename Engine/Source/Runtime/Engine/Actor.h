@@ -26,6 +26,8 @@ namespace Drn
 			return GetRoot()->GetComponents<T>(OutComponents, Type, Recursive);
 		}
 
+		void GetComponentsInline(std::vector<Component*>& Comps);
+
 		Vector GetActorLocation() const;
 		void SetActorLocation(const Vector& InLocation);
 
@@ -82,6 +84,8 @@ namespace Drn
 
 		virtual bool DrawDetailPanel() { return false; };
 
+		virtual void DrawEditorDefault() {}
+		virtual void DrawEditorSelected();
 #else
 		void SetActorLabel(const std::string& InLabel){};
 		void SetTransient(bool Transient){};

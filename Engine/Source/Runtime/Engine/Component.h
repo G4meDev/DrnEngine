@@ -30,8 +30,10 @@ namespace Drn
 		void SetComponentLabel(const std::string& InLabel);
 
 #if WITH_EDITOR
-
 		virtual void DrawDetailPanel(float DeltaTime) {};
+
+		virtual void DrawEditorDefault() {}
+		virtual void DrawEditorSelected() {}
 #endif
 
 		virtual void RegisterComponent(World* InOwningWorld);

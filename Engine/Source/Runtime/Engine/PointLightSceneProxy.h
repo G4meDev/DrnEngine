@@ -59,10 +59,6 @@ namespace Drn
 
 		class PointLightComponent* m_PointLightComponent;
 
-#if WITH_EDITOR
-		virtual void DrawAttenuation(World* InWorld) override;
-#endif
-
 		void CalculateLocalToProjectionForDirection(Matrix& Mat, const Vector& Direction, const Vector& UpVector);
 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;

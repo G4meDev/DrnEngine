@@ -56,7 +56,7 @@ namespace Drn
 
 		OutputLog::Get()->Tick(DeltaTime);
 		ContentBrowser::Get()->Tick(DeltaTime);
-		//LevelViewport::Get()->Tick(DeltaTime);
+		LevelViewport::Get()->Tick(DeltaTime);
 	}
 
 	void Editor::Shutdown() 

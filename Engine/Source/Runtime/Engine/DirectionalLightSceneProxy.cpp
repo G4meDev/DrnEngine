@@ -433,11 +433,4 @@ namespace Drn
 		return Result;
 	}
 
-#if WITH_EDITOR
-	void DirectionalLightSceneProxy::DrawAttenuation( World* InWorld )
-	{
-		InWorld->DrawDebugArrow(m_DirectionalLightComponent->GetWorldLocation(),
-			m_DirectionalLightComponent->GetWorldLocation() + m_DirectionalLightComponent->GetWorldRotation().GetVector() * 1.2f, 0.1f, Color::White, 0.0f, 0.0f);
-	}
-#endif
 }

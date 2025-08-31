@@ -466,10 +466,8 @@ namespace Drn
 		Pawn* PlayerPawn = nullptr;
 		for (Actor* A : m_NewActors)
 		{
-			// TODO: actor and component type inheritance e.g. Character -> Pawn -> Actor
-			if (A->GetActorType() == EActorType::Pawn || A->GetActorType() == EActorType::Character)
+			if (Pawn* P = dynamic_cast<Pawn*>(A))
 			{
-				Pawn* P = static_cast<Pawn*>(A);
 				if (P->GetAutoPossessPlayer())
 				{
 					PlayerPawn = P;

@@ -231,14 +231,4 @@ m_ShadowDepthBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_
 		}
 	}
 
-#if WITH_EDITOR
-	void SpotLightSceneProxy::DrawAttenuation( World* InWorld )
-	{
-		InWorld->DrawDebugCone(m_WorldPosition, m_Direction, m_Attenuation, m_OuterRadius, m_OuterRadius, Color::White, 32, 0, 0);
-		InWorld->DrawDebugConeCap(m_WorldPosition, m_Direction, m_Attenuation, m_OuterRadius, Color::White, 16, 0, 0);
-
-		if (m_SpotLightData.InnerRadius > 0)
-			InWorld->DrawDebugCone(m_WorldPosition, m_Direction, m_Attenuation, m_InnerRadius, m_InnerRadius, Color::Blue, 32, 0, 0);
-	}
-#endif
 }

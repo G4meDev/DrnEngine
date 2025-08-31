@@ -23,12 +23,6 @@ namespace Drn
 
 		inline virtual ELightType GetLightType() const = 0;
 
-#if WITH_EDITOR
-		virtual void DrawAttenuation(World* InWorld) = 0;
-		inline void SetSelectedInEditor( bool Selected ) { m_SelectedInEditor = Selected; }
-		bool m_SelectedInEditor = false;
-#endif
-
 	protected:
 		LightSceneProxy( class LightComponent* InComponent );
 		virtual ~LightSceneProxy();

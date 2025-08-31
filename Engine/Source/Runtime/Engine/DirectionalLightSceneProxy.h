@@ -63,10 +63,6 @@ namespace Drn
 		void CalculateSplitDistance();
 		Matrix GetShadowSplitBoundsMatrix( const SceneRendererView& View, const Vector& ViewOrigin, float SplitNear, float SplitFar );
 
-#if WITH_EDITOR
-		virtual void DrawAttenuation(World* InWorld) override;
-#endif
-
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
 		
 		Resource* m_ShadowmapResource;

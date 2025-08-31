@@ -120,5 +120,23 @@ namespace Drn
 			SetDepthBias(m_DepthBias);
 		}
 	}
+
+	void SpotLightComponent::DrawEditorSelected()
+	{
+		LightComponent::DrawEditorSelected();
+
+		if (GetWorld())
+		{
+			const float Inner = Math::DegreesToRadians(GetInnerRadius());
+			const float Outer = Math::DegreesToRadians(GetOutterRadius());
+
+			GetWorld()->DrawDebugCone(GetWorldLocation(), GetDirection(), GetAttenuation(), Outer, Outer, Color::White, 32, 0, 0);
+			GetWorld()->DrawDebugConeCap(GetWorldLocation(), GetDirection(), GetAttenuation(), Outer, Color::White, 16, 0, 0);
+
+			if ( GetInnerRadius() > 0 )
+				GetWorld()->DrawDebugCone(GetWorldLocation(), GetDirection(), GetAttenuation(), Inner, Inner, Color::Blue, 32, 0, 0);
+		}
+	}
+
 #endif
 }

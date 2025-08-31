@@ -149,5 +149,16 @@ namespace Drn
 			SetDepthBias(m_DepthBias);
 		}
 	}
+
+	void DirectionalLightComponent::DrawEditorSelected()
+	{
+		LightComponent::DrawEditorSelected();
+
+		if (GetWorld())
+		{
+			GetWorld()->DrawDebugArrow(GetWorldLocation(), GetWorldLocation() + GetWorldRotation().GetVector() * 1.2f, 0.1f, Color::White, 0.0f, 0.0f);
+		}
+	}
+
 #endif
 }

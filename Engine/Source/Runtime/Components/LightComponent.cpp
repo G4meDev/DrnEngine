@@ -92,10 +92,7 @@ namespace Drn
 	{
 		SceneComponent::SetSelectedInEditor(SelectedInEditor);
 
-		if (m_LightSceneProxy)
-		{
-			m_LightSceneProxy->SetSelectedInEditor(SelectedInEditor);
-		}
+
 	}
 #endif
 }

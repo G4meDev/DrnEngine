@@ -40,10 +40,6 @@ namespace Drn
 		bool m_BlockLowerHemesphere;
 		Vector m_LowerHemesphereColor;
 
-#if WITH_EDITOR
-		virtual void DrawAttenuation(World* InWorld) override;
-#endif
-
 		SkyLightData m_SkyLightData;
 		Resource* m_LightBuffer;
 

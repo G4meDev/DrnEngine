@@ -2,10 +2,10 @@
 
 #include "ForwardTypes.h"
 
+#if WITH_EDITOR
+
 #include "Runtime/Engine/Actor.h"
 #include "Runtime/Engine/World.h"
-
-#if WITH_EDITOR
 
 namespace Drn
 {
@@ -43,7 +43,8 @@ namespace Drn
 #define REGISTER_LEVEL_SPAWNABLE_CLASS( name , category )											\
 	EditorMisc::Get()->RegisterLevelSpawnableClass( #name, #category, []( World* InWorld ) {		\
 		Actor* actor = InWorld->SpawnActor<name>(); actor->SetActorLabel(#name); return actor; });
-#else
-#define REGISTER_LEVEL_SPAWNABLE_CLASS( name, category ) ;
-#endif
 }
+
+#else
+#define REGISTER_LEVEL_SPAWNABLE_CLASS( name, category )
+#endif

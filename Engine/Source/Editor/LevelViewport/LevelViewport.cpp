@@ -56,7 +56,12 @@ namespace Drn
 
 	void LevelViewport::Tick( float DeltaTime )
 	{
-		
+		Actor* SelectedActor = m_SelectedComponent ? m_SelectedComponent->GetOwningActor() : nullptr;
+
+		if (SelectedActor)
+		{
+			SelectedActor->DrawEditorSelected();
+		}
 	}
 
 	LevelViewport* LevelViewport::Get()

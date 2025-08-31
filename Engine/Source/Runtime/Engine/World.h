@@ -44,7 +44,7 @@ namespace Drn
 		OnAddActorsDelegate OnAddActors;
 		OnRemoveActorsDelegate OnRemoveActors;
 
-		inline void SetTransient( bool Transient ) { m_Transient = true; }
+		inline void SetTransient( bool Transient ) { m_Transient = Transient; }
 		inline bool IsTransient() { return m_Transient; }
 
 		inline class PlayerController* GetPlayerController() const { return m_PlayerController; }

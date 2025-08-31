@@ -18,6 +18,12 @@ namespace Drn
 
 		void SetRadius( float Radius );
 
+#if WITH_EDITOR
+		virtual void DrawDetailPanel(float DeltaTime) override;
+
+		void DrawEditorSelected() override;
+#endif
+
 	protected:
 
 		virtual void RegisterComponent(World* InOwningWorld) override;
@@ -31,7 +37,6 @@ namespace Drn
 #if WITH_EDITOR
 		inline virtual bool HasSprite() const override { return true; }
 
-		virtual void DrawDetailPanel(float DeltaTime) override;
 #endif
 
 	private:

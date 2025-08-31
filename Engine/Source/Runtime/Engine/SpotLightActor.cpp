@@ -21,4 +21,12 @@ namespace Drn
 		
 	}
 
+#if WITH_EDITOR
+	void SpotLightActor::DrawEditorSelected()
+	{
+		LightActor::DrawEditorSelected();
+
+	}
+#endif
+
 }

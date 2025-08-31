@@ -72,10 +72,6 @@ namespace Drn
 
 		SpotLightComponent* m_SpotLightComponent = nullptr;
 
-#if WITH_EDITOR
-		virtual void DrawAttenuation(World* InWorld) override;
-#endif
-
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
 		
 		Resource* m_ShadowmapResource;

@@ -10,9 +10,6 @@ namespace Drn
 		, m_Name( InComponent ? InComponent->GetComponentLabel() : "InvalidLightComponent" )
 #endif
 	{
-#if WITH_EDITOR
-		m_SelectedInEditor = InComponent ? InComponent->IsSelectedInEditor() : false;
-#endif
 	}
 
 	LightSceneProxy::~LightSceneProxy()

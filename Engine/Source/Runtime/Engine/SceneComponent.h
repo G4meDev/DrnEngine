@@ -30,6 +30,8 @@ namespace Drn
 
 		std::vector<SceneComponent*> GetChilds() const;
 
+		void GetComponentsInline(std::vector<Component*>& OutComponents);
+
 		// TODO: make type as a static function
 		// TODO: make this only recursive
 		template<typename T>

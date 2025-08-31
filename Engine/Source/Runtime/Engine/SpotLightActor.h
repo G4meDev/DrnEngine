@@ -14,6 +14,10 @@ namespace Drn
 		virtual EActorType GetActorType() override { return EActorType::SpotLight; }
 		inline static EActorType GetActorTypeStatic() { return EActorType::SpotLight; };
 
+#if WITH_EDITOR
+		virtual void DrawEditorSelected() override;
+#endif
+
 	protected:
 		std::unique_ptr<class SpotLightComponent> m_SpotLightComponent;
 	

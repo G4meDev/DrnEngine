@@ -21,6 +21,10 @@ namespace Drn
 			}
 		}
 
+#if WITH_EDITOR
+		virtual void DrawEditorSelected() override;
+#endif
+
 	protected:
 
 		virtual EActorType GetActorType() override { return EActorType::PointLight; }

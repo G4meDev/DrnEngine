@@ -31,6 +31,12 @@ namespace Drn
 		}
 	}
 
+	void Actor::GetComponentsInline( std::vector<Component*>& Comps )
+	{
+		Comps = Components;
+		Root->GetComponentsInline(Comps);
+	}
+
 	Vector Actor::GetActorLocation() const
 	{
 		return Root->GetWorldLocation();
@@ -176,12 +182,23 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+	void Actor::DrawEditorSelected()
+	{
+		std::vector<Component*> Comps;
+		GetComponentsInline(Comps);
+
+		for (Component* Comp : Comps)
+		{
+			Comp->DrawEditorSelected();
+		}
+	}
+
 	std::string Actor::GetActorLabel() const
 	{
 		return ActorLabel;
 	}
 
-	void Actor::SetActorLabel(const std::string& InLabel)
+	void Actor::SetActorLabel( const std::string& InLabel )
 	{
 		ActorLabel = InLabel;
 	}

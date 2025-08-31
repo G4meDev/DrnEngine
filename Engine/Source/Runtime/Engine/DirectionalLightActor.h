@@ -12,6 +12,9 @@ namespace Drn
 		DirectionalLightActor();
 		virtual ~DirectionalLightActor();
 
+#if WITH_EDITOR
+		virtual void DrawEditorSelected() override;
+#endif
 
 	protected:
 		virtual EActorType GetActorType() override { return EActorType::DirectionalLight; }
