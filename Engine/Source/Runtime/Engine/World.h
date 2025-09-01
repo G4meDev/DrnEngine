@@ -11,6 +11,7 @@ namespace Drn
 
 	enum class EWorldViewFlag : uint64
 	{
+		None				= 0,
 		Collision			= 1 << 0,
 		Light				= 1 << 1,
 	};
@@ -91,7 +92,7 @@ namespace Drn
 
 #if WITH_EDITOR
 
-		EWorldViewFlag m_WorldViewFlags = EWorldViewFlag::Collision;
+		EWorldViewFlag m_WorldViewFlags = EWorldViewFlag::None;
 
 		inline bool HasViewFlag( EWorldViewFlag Flag ) const { return static_cast<uint64>(m_WorldViewFlags) & static_cast<uint64>(Flag); }
 		inline void SetViewFlag( EWorldViewFlag Flag, bool Value )

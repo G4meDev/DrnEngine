@@ -126,7 +126,7 @@ namespace Drn
 		{
 			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-			desc.NumDescriptors             = 256;
+			desc.NumDescriptors             = 2048;
 			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_BindlessSrvHeap.GetAddressOf() ) );
 			m_BindlessSrvHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessSrvHeap.Get() );
@@ -193,12 +193,14 @@ namespace Drn
 		{
 			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearSamplerCpuHandle, &m_BindlessLinearSamplerGpuHandle);
 			D3D12_SAMPLER_DESC SamplerDesc = {};
-			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			//SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.MinLOD = 0.0f;
 			SamplerDesc.MaxLOD = FLT_MAX;
+			SamplerDesc.MaxAnisotropy = 16;
 			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearSamplerCpuHandle);
 
 			m_StaticSamplers.LinearSampler = GetBindlessSamplerIndex(m_BindlessLinearSamplerGpuHandle);
@@ -207,12 +209,14 @@ namespace Drn
 		{
 			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessPointSamplerCpuHandle, &m_BindlessPointSamplerGpuHandle);
 			D3D12_SAMPLER_DESC SamplerDesc = {};
-			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+			//SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+			SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.MinLOD = 0.0f;
 			SamplerDesc.MaxLOD = FLT_MAX;
+			SamplerDesc.MaxAnisotropy = 16;
 			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessPointSamplerCpuHandle);
 
 			m_StaticSamplers.PointSampler = GetBindlessSamplerIndex(m_BindlessPointSamplerGpuHandle);

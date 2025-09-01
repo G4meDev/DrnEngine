@@ -43,13 +43,16 @@ namespace Drn
 					m_FileImportMenu->m_OnSelectedFileDelegate(filePathName);
 				}
 			}
-		
-			ImGuiFileDialog::Instance()->Close();
 
-			LOG( LogFileImportMenu, Info, "closed file import menu." );
-			Editor::Get()->CloseImportMenu();
+			else
+			{
+				ImGuiFileDialog::Instance()->Close();
 
-			m_Open = false;
+				LOG( LogFileImportMenu, Info, "closed file import menu." );
+				Editor::Get()->CloseImportMenu();
+
+				m_Open = false;
+			}
 		}
 	}
 }
