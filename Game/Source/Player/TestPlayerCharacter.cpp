@@ -36,6 +36,21 @@ namespace Drn
 		m_Camera->Serialize(Ar);
 	}
 
+	void TestPlayerCharacter::Tick( float DeltaTime )
+	{
+		Character::Tick(DeltaTime);
+
+		Vector ForwardVector = m_SpringArm->GetForwardVector() * Vector(1, 0, 1);
+		ForwardVector = ForwardVector.GetSafeNormal();
+
+		Vector RightVector = Vector::CrossProduct( Vector::UpVector, ForwardVector );
+
+		m_MovementInput = ForwardVector * m_ForwardInput + RightVector * m_RightInput;
+		m_MovementInput = m_MovementInput * DeltaTime * 10.0f;
+
+		m_ForwardInput = m_RightInput = 0;
+	}
+
 	void TestPlayerCharacter::CalcCamera( struct ViewInfo& OutResult )
 	{
 		m_Camera->GetCameraView(OutResult);
@@ -60,12 +75,14 @@ namespace Drn
 
 	void TestPlayerCharacter::OnMoveForward( float Value )
 	{
-		m_MovementInput.SetZ(Value * 10.0f * Time::GetApplicationDeltaTime());
+		m_ForwardInput = Value;
+		//m_MovementInput.SetZ(Value * 10.0f * Time::GetApplicationDeltaTime());
 	}
 
 	void TestPlayerCharacter::OnMoveRight( float Value )
 	{
-		m_MovementInput.SetX(Value * 10.0f * Time::GetApplicationDeltaTime());
+		m_RightInput = Value;
+		//m_MovementInput.SetX(Value * 10.0f * Time::GetApplicationDeltaTime());
 	}
 
 	void TestPlayerCharacter::OnLookUp( float Value )
@@ -75,7 +92,7 @@ namespace Drn
 
 	void TestPlayerCharacter::OnLookRight( float Value )
 	{
-		m_SpringArm->SetWorldRotation( Quat( Vector::UpVector, Value * 0.005f) * m_SpringArm->GetWorldRotation());
+		m_SpringArm->SetWorldRotation( Quat( Vector::UpVector, Value * -0.005f) * m_SpringArm->GetWorldRotation());
 	}
 
 #if WITH_EDITOR

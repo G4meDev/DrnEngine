@@ -69,8 +69,7 @@ namespace Drn
 			case ERelativeTransformSpace::Component:
 				return RelativeTransform;
 			default:
-				//return RelativeTransform * GetWorldTransform();
-				return GetWorldTransform() * RelativeTransform;
+				return RelativeTransform * GetWorldTransform();
 		}
 	}
 
@@ -85,20 +84,17 @@ namespace Drn
 	void SpringArmComponent::UpdateDesiredLocationAndRotation( float DeltaTime, bool LocationLag, bool RotationLag )
 	{
 		Quat DesireRotation = GetWorldRotation();
-
 		if (RotationLag)
 		{
-			DesireRotation = Math::QInterpTo(m_PreviousDesiredRotation, DesireRotation, DeltaTime, m_LocationLagSpeed);
+			DesireRotation = Math::QInterpTo(m_PreviousDesiredRotation, DesireRotation, DeltaTime, m_RotationLagSpeed);
 		}
-
+		
 		m_PreviousDesiredRotation = DesireRotation;
 
-		const Vector SocketLocation = GetWorldRotation().GetVector() * -m_ArmLength;
-		Vector DesireLocation = GetWorldTransform().TransformPosition(SocketLocation);
-
+		Vector DesireLocation = GetWorldTransform().TransformPosition(Vector(0, 0, -m_ArmLength));
 		if (LocationLag)
 		{
-			DesireLocation = Math::VInterpTo(m_PreviousDesiredLocation, DesireLocation, DeltaTime, m_RotationLagSpeed);
+			DesireLocation = Math::VInterpTo(m_PreviousDesiredLocation, DesireLocation, DeltaTime, m_LocationLagSpeed);
 		}
 
 		m_PreviousDesiredLocation = DesireLocation;
@@ -118,7 +114,18 @@ namespace Drn
 		ImGui::DragFloat( "ArmLength", &m_ArmLength, 0.1f, 0.0f, 100.0f, "%.1f" );
 
 		ImGui::Checkbox( "LocationLag", &m_LocationLag );
+
+		if (m_LocationLag)
+		{
+			ImGui::DragFloat("LocationLagSpeed", &m_LocationLagSpeed, 0.01f, 0.01f, 10.0f, "%.2f");
+		}
+
 		ImGui::Checkbox( "RotationLag", &m_RotationLag );
+
+		if (m_RotationLag)
+		{
+			ImGui::DragFloat("RotationLagSpeed", &m_RotationLagSpeed, 0.01f, 0.01f, 10.0f, "%.2f");
+		}
 	}
 
 	void SpringArmComponent::DrawArm()

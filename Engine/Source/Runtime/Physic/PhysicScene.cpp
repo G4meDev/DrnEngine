@@ -152,7 +152,7 @@ namespace Drn
 		for (uint32 i = 0; i < NumController; i++)
 		{
 			physx::PxController* PC = m_ControllerManager->getController(i);
-			Vector Position = Pd2Vector(PC->getPosition());
+			Vector Position = Pd2Vector(PC->getFootPosition());
 
 			CharacterMovementComponent* MC = PhysicUserData::Get<CharacterMovementComponent>( PC->getUserData() );
 			if (MC && !MC->IsPendingKill())
