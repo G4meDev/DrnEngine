@@ -5,9 +5,14 @@
 // SUPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_SHADOW_PASS
 
-float3 EncodeNormal(float3 Normal)
+float2 EncodeNormal(float3 N)
 {
-    return Normal * 0.5 + 0.5;
+    N.xy /= dot(1, abs(N));
+    if (N.z <= 0)
+    {
+        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
+    }
+    return N.xy;
 }
 
 struct Resources
@@ -183,7 +188,7 @@ struct PixelShaderOutput
 #if MAIN_PASS
     float4 ColorDeferred : SV_TARGET0;
     float4 BaseColor : SV_TARGET1;
-    float4 WorldNormal : SV_TARGET2;
+    float2 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
 #elif HITPROXY_PASS
     uint4 Guid;
@@ -322,14 +327,13 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     Normal = normalize(mul(Normal, IN.TBN));
     
     Normal = lerp(Normal, float3(0, 1, 0), ClampRange(WetnessMask, 0.45, 0.95));
-    Normal = EncodeNormal(Normal);
     
     //float DitherNoise = InterleavedGradientNoise(IN.Position.xy, View.FrameIndexMod8);
     
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColor, 1);
     //OUT.BaseColor = lerp(OUT.BaseColor, Vectors.TintColor, Scalars.TintIntensity);
-    OUT.WorldNormal = float4( Normal, 0);
+    OUT.WorldNormal = EncodeNormal(Normal);
     OUT.Masks = float4(Masks, 1.0f/255);
     
 #elif HITPROXY_PASS

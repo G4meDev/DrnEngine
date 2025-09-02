@@ -29,6 +29,9 @@ namespace Drn
 		void OnLookUp(float Value);
 		void OnLookRight(float Value);
 
+		void OnBeginRun();
+		void OnEndRun();
+
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
 		virtual void DrawEditorDefault() override;
@@ -42,5 +45,10 @@ namespace Drn
 
 		Vector m_ForwardInput;
 		Vector m_RightInput;
+
+		bool m_Running = false;
+
+		float m_WalkSpeed = 10.0f;
+		float m_RunSpeed = 27.0f;
 	};
 }

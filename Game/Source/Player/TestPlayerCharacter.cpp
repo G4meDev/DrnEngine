@@ -46,7 +46,7 @@ namespace Drn
 		Vector RightVector = Vector::CrossProduct( Vector::UpVector, ForwardVector );
 
 		m_MovementInput = ForwardVector * m_ForwardInput + RightVector * m_RightInput;
-		m_MovementInput = m_MovementInput * DeltaTime * 10.0f;
+		m_MovementInput = m_MovementInput * DeltaTime * (m_Running ? m_RunSpeed : m_WalkSpeed);
 
 		m_ForwardInput = m_RightInput = 0;
 	}
@@ -71,18 +71,19 @@ namespace Drn
 
 		PlayerInputComponent->AddAnalog(4, this, &TestPlayerCharacter::OnLookUp);
 		PlayerInputComponent->AddAnalogMapping(4, gainput::MouseAxisY, 1);
+
+		PlayerInputComponent->AddKey(5, this, &TestPlayerCharacter::OnBeginRun, &TestPlayerCharacter::OnEndRun);
+		PlayerInputComponent->AddKeyMapping(5, gainput::KeyShiftL);
 	}
 
 	void TestPlayerCharacter::OnMoveForward( float Value )
 	{
 		m_ForwardInput = Value;
-		//m_MovementInput.SetZ(Value * 10.0f * Time::GetApplicationDeltaTime());
 	}
 
 	void TestPlayerCharacter::OnMoveRight( float Value )
 	{
 		m_RightInput = Value;
-		//m_MovementInput.SetX(Value * 10.0f * Time::GetApplicationDeltaTime());
 	}
 
 	void TestPlayerCharacter::OnLookUp( float Value )
@@ -93,6 +94,16 @@ namespace Drn
 	void TestPlayerCharacter::OnLookRight( float Value )
 	{
 		m_SpringArm->SetWorldRotation( Quat( Vector::UpVector, Value * -0.005f) * m_SpringArm->GetWorldRotation());
+	}
+
+	void TestPlayerCharacter::OnBeginRun()
+	{
+		m_Running = true;
+	}
+
+	void TestPlayerCharacter::OnEndRun()
+	{
+		m_Running = false;
 	}
 
 #if WITH_EDITOR
