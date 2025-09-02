@@ -86,6 +86,26 @@ struct PixelShaderInput
     float2 UV : TEXCOORD0;
 };
 
+float2 EncodeNormal(float3 N)
+{
+    N.xy /= dot(1, abs(N));
+    if (N.z <= 0)
+    {
+        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
+    }
+    return N.xy;
+}
+
+float3 DecodeNormal(float2 Oct)
+{
+    float3 N = float3(Oct, 1 - dot(1, abs(Oct)));
+    if (N.z < 0)
+    {
+        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
+    }
+    return normalize(N);
+}
+
 float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 {
     return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
@@ -117,7 +137,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     [unroll]
     for (uint i = 0; i < 4; ++i)
     {
-        Samples[i].rgb = NormalImage.Sample(LinearClampSampler, UV[i]).xyz;
+        Samples[i].rgb = DecodeNormal(NormalImage.Sample(LinearClampSampler, UV[i]).xy);
         Samples[i].a = DepthImage.Sample(LinearClampSampler, UV[i]).r;
     }
     
@@ -135,5 +155,5 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     AvgColor.rgb /= AvgColor.w;
     
     //return float4(AvgColor.xyz, LinearDepth / Constant_Float16F_Scale);
-    return float4(AvgColor.xyz, MaxDepth);
+    return float4(EncodeNormal(AvgColor.xyz), 0, MaxDepth);
 }
