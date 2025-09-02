@@ -26,10 +26,20 @@ float2 VSPosToScreenUV(float4 VSPos)
     return UV;
 }
 
-float3 DecodeNormal(float3 Normal)
+float3 DecodeNormal(float2 Oct)
 {
-    return Normal * 2 - 1;
+	float3 N = float3( Oct, 1 - dot( 1, abs(Oct) ) );
+	if( N.z < 0 )
+	{
+		N.xy = ( 1 - abs(N.yx) ) * select( N.xy >= 0, float2(1,1), float2(-1,-1) );
+	}
+	return normalize(N);
 }
+
+//float3 DecodeNormal(float3 Normal)
+//{
+//    return Normal * 2 - 1;
+//}
 
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
@@ -657,7 +667,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D SSAOTexture = ResourceDescriptorHeap[BindlessResources.SSAOIndex];
     
     float4 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV);
-    float3 WorldNormal = WorldNormalTexture.Sample(LinearSampler, IN.UV).xyz;
+    //float3 WorldNormal = WorldNormalTexture.Sample(LinearSampler, IN.UV).xyz;
+    float2 WorldNormal = WorldNormalTexture.Sample(LinearSampler, IN.UV).xy;
     float4 Masks = MasksTexture.Sample(LinearSampler, IN.UV);
     float Depth = DepthTexture.Sample(LinearSampler, IN.UV).x;
 

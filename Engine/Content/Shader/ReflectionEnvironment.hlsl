@@ -99,6 +99,16 @@ float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 
 float Square(float x) { return x * x; }
 
+float3 DecodeNormal(float2 Oct)
+{
+    float3 N = float3(Oct, 1 - dot(1, abs(Oct)));
+    if (N.z < 0)
+    {
+        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
+    }
+    return normalize(N);
+}
+
 float3 ComputeF0(float3 BaseColor, float Metallic)
 {
     //float3 F0 = float3(0.04, 0.04, 0.04);
@@ -200,8 +210,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     if(ShadingModel != 1)
         return 0;
     
-    float3 Normal = NormalImage.Sample(PointClampSampler, UV).xyz;
-    float3 WorldNormal = Normal * 2 - 1;
+    float2 EncodedNormal = NormalImage.Sample(PointClampSampler, UV).xy;
+    float3 WorldNormal = DecodeNormal(EncodedNormal);
     float Depth = DepthImage.Sample(PointClampSampler, UV).x;
     float SceneDepth = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
     

@@ -104,6 +104,15 @@ struct PixelShaderInput
     float4 Position : SV_Position;
 };
 
+float3 DecodeNormal(float2 Oct)
+{
+    float3 N = float3(Oct, 1 - dot(1, abs(Oct)));
+    if (N.z < 0)
+    {
+        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
+    }
+    return normalize(N);
+}
 
 float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 {
@@ -484,8 +493,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     uint2 PixelPos = (uint2) IN.Position.xy;
     
     float3 DeferredColor = DeferredImage.Sample(LinearSampler, UV).xyz;
-    float3 Normal = NormalImage.Sample(LinearSampler, UV).xyz;
-    float3 WorldNormal = Normal * 2 - 1;
+    float2 EncodedNormal = NormalImage.Sample(LinearSampler, UV).xy;
+    float3 WorldNormal = DecodeNormal(EncodedNormal);
     float Depth = DepthImage.Sample(LinearSampler, UV).x;
     float SceneDepth = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
     float3 PositionTranslatedWorld = mul(View.ScreenToTranslatedWorld, float4(ScreenPos * SceneDepth, SceneDepth, 1)).xyz;

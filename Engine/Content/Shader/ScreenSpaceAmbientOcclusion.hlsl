@@ -105,6 +105,15 @@ struct PixelShaderInput
     float4 UVAndScreenPos : TEXCOORD0;
 };
 
+float3 DecodeNormal(float2 Oct)
+{
+    float3 N = float3(Oct, 1 - dot(1, abs(Oct)));
+    if (N.z < 0)
+    {
+        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
+    }
+    return normalize(N);
+}
 
 float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 {
@@ -256,12 +265,16 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     //float SceneDepth = SetupSample.a * Constant_Float16F_Scale;
     float SceneDepth = ConvertFromDeviceZ(SetupSample.a, View.InvDeviceZToWorldZTransform);
     
-    float3 WorldNormal = SetupSample.xyz * 2 - 1;
+    //float3 WorldNormal = SetupSample.xyz * 2 - 1;
+    float2 EncodedNormal = SetupSample.xy;
+    float3 WorldNormal = DecodeNormal(EncodedNormal);
 #else
     float Depth = DepthImage.Sample(PointClampSampler, UV).x;
     float SceneDepth = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
     
-    float3 WorldNormal = NormalImage.Sample(PointClampSampler, UV).xyz * 2 - 1;
+    //float3 WorldNormal = NormalImage.Sample(PointClampSampler, UV).xyz * 2 - 1;
+    float2 EncodedNormal = NormalImage.Sample(PointClampSampler, UV).xy;
+    float3 WorldNormal = DecodeNormal(EncodedNormal);
 #endif
 
     float3 ViewSpacePosition = ReconstructCSPos(SceneDepth, ScreenPos);
