@@ -427,6 +427,7 @@ namespace Drn
 
 	void Renderer::InitRender(float DeltaTime)
 	{
+		SCOPE_STAT( "WaitForOnFlightCommands" );
 		WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
 
 		{
@@ -501,6 +502,8 @@ namespace Drn
 
 	void Renderer::ExecuteCommands()
 	{
+		SCOPE_STAT( "ExecuteCommands" );
+
 		uint32 NumCommandLists = 2;
 		std::vector<ID3D12CommandList*> CommandLists;
 
@@ -522,7 +525,7 @@ namespace Drn
 		}
 
 		CommandLists.push_back(m_CommandList->GetD3D12CommandList());
-
+		
 		m_CommandQueue->ExecuteCommandLists(NumCommandLists, CommandLists.data());
 	}
 

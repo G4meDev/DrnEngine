@@ -56,6 +56,7 @@ namespace Drn
 		SceneRenderer* m_SceneRenderer;
 
 		bool ValidViewportSource = false;
+		bool m_CapturingMouse = false;
 
 	private:
 	};

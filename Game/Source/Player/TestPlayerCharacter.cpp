@@ -67,13 +67,21 @@ namespace Drn
 		PlayerInputComponent->AddAxisMapping(2, gainput::KeyA, -1);
 
 		PlayerInputComponent->AddAnalog(3, this, &TestPlayerCharacter::OnLookRight);
-		PlayerInputComponent->AddAnalogMapping(3, gainput::MouseAxisX, 1);
-
+		PlayerInputComponent->AddAnalogMapping(3, gainput::MouseAxisX, -1);
+		
 		PlayerInputComponent->AddAnalog(4, this, &TestPlayerCharacter::OnLookUp);
 		PlayerInputComponent->AddAnalogMapping(4, gainput::MouseAxisY, 1);
 
 		PlayerInputComponent->AddKey(5, this, &TestPlayerCharacter::OnBeginRun, &TestPlayerCharacter::OnEndRun);
 		PlayerInputComponent->AddKeyMapping(5, gainput::KeyShiftL);
+
+		PlayerInputComponent->AddAxis(6, 1.0f, 1.0f, this, &TestPlayerCharacter::OnLookUp);
+		PlayerInputComponent->AddAxisMapping(6, gainput::KeyUp, 1);
+		PlayerInputComponent->AddAxisMapping(6, gainput::KeyDown, -1);
+
+		PlayerInputComponent->AddAxis(7, 1.0f, 1.0f, this, &TestPlayerCharacter::OnLookRight);
+		PlayerInputComponent->AddAxisMapping(7, gainput::KeyRight, 1);
+		PlayerInputComponent->AddAxisMapping(7, gainput::KeyLeft, -1);
 	}
 
 	void TestPlayerCharacter::OnMoveForward( float Value )
@@ -88,12 +96,12 @@ namespace Drn
 
 	void TestPlayerCharacter::OnLookUp( float Value )
 	{
-		m_SpringArm->SetWorldRotation( Quat( m_SpringArm->GetRightVector(), Value * -0.005f) * m_SpringArm->GetWorldRotation() );
+		m_SpringArm->SetWorldRotation( Quat( m_SpringArm->GetRightVector(), Value * -m_LookSpeed) * m_SpringArm->GetWorldRotation() );
 	}
 
 	void TestPlayerCharacter::OnLookRight( float Value )
 	{
-		m_SpringArm->SetWorldRotation( Quat( Vector::UpVector, Value * -0.005f) * m_SpringArm->GetWorldRotation());
+		m_SpringArm->SetWorldRotation( Quat( Vector::UpVector, Value * m_LookSpeed) * m_SpringArm->GetWorldRotation());
 	}
 
 	void TestPlayerCharacter::OnBeginRun()

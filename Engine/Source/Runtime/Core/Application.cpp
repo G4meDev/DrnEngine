@@ -217,7 +217,10 @@ void Application::OnKeyPressed( WPARAM Key )
 		WorldManager::Get()->Tick(m_DeltaTime);
 		PhysicManager::Get()->Tick(m_DeltaTime);
 		Renderer::Get()->Tick(m_DeltaTime);
+
+#if WITH_EDITOR
 		Editor::Get()->Tick(m_DeltaTime);
+#endif
 
 #else
 		Taskflow::GetExecuter().run(taskflow).wait();

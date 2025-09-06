@@ -189,6 +189,7 @@ namespace Drn
 		, m_Thickness(InLineBatchComponent->m_Thickness)
 		, m_VertexCount(0)
 	{
+		m_VertexData.resize(MaxNumVertex);
 	}
 
 	LineBatchSceneProxy::~LineBatchSceneProxy()
@@ -313,7 +314,7 @@ namespace Drn
 		
 			const uint32 StartIndex = i * 2;
 			const uint32 EndIndex = i * 2 + 1;
-		
+
 			m_VertexData[StartIndex].Set( Line.Start, Line.Color, Line.Thickness);
 			m_VertexData[EndIndex].Set(Line.End, Line.Color, Line.Thickness);
 		};

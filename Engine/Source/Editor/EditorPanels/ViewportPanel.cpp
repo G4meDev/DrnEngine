@@ -3,6 +3,7 @@
 
 #if WITH_EDITOR
 
+#include "Runtime/Core/Application.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 #include "Runtime/Renderer/Renderer.h"
 
@@ -143,21 +144,35 @@ namespace Drn
 			const ImVec2 RectMax = ImGui::GetItemRectMax();
 			const ImVec2 MousePos = ImGui::GetMousePos();
 
-			if ( !UsingGizmo && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left) && m_World->ShouldUseViewportCamera() )
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left))
 			{
-				const IntPoint ClickPos = IntPoint( MousePos.x - RectMin.x, MousePos.y - RectMin.y );
-				m_SceneRenderer->QueueMousePickEvent(ClickPos);
-			}
+				if ( !UsingGizmo && m_World->ShouldUseViewportCamera() )
+				{
+					const IntPoint ClickPos = IntPoint( MousePos.x - RectMin.x, MousePos.y - RectMin.y );
+					m_SceneRenderer->QueueMousePickEvent(ClickPos);
+				}
 
-			//if ( !m_World->ShouldUseViewportCamera() )
-			//{
-			//	//ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-			//	int32 PosX = std::clamp(MousePos.x, RectMin.x, RectMax.x);
-			//	int32 PosY = std::clamp(MousePos.y, RectMin.y, RectMax.y);
-			//	//::SetCursorPos(PosX, PosY);
-			//	::SetCursorPos(1000, 500);
-			//}
+				if (!m_World->ShouldUseViewportCamera())
+				{
+					m_CapturingMouse = true;
+				}
+			}
 		}
+
+		if (m_CapturingMouse)
+		{
+			//Application::SetCaptureMouse(1000, 500);
+			//::SetCursorPos(1000, 500);
+		}
+
+		//if ( !m_World->ShouldUseViewportCamera() )
+		//{
+		//	//ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+		//	int32 PosX = std::clamp(MousePos.x, RectMin.x, RectMax.x);
+		//	int32 PosY = std::clamp(MousePos.y, RectMin.y, RectMax.y);
+		//	//::SetCursorPos(PosX, PosY);
+		//	::SetCursorPos(1000, 500);
+		//}
 
 	}
 
