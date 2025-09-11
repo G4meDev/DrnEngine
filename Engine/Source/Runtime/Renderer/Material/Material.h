@@ -114,6 +114,10 @@ namespace Drn
 		bool m_SupportEditorPrimitivePass;
 		bool m_SupportEditorSelectionPass;
 
+		bool m_ScalarBufferDirty;
+		bool m_VectorBufferDirty;
+		bool m_TextureBufferDirty;
+
 		Resource* m_TextureIndexBuffer;
 
 		void ReleaseBuffers();

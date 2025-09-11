@@ -23,6 +23,9 @@ namespace Drn
 		, m_TextureIndexBuffer(nullptr)
 		, m_ScalarBuffer(nullptr)
 		, m_VectorBuffer(nullptr)
+		, m_ScalarBufferDirty(true)
+		, m_VectorBufferDirty(true)
+		, m_TextureBufferDirty(true)
 	{
 		Load();
 	}
@@ -47,6 +50,9 @@ namespace Drn
 		, m_TextureIndexBuffer(nullptr)
 		, m_ScalarBuffer(nullptr)
 		, m_VectorBuffer(nullptr)
+		, m_ScalarBufferDirty(true)
+		, m_VectorBufferDirty(true)
+		, m_TextureBufferDirty(true)
 	{
 		m_SourcePath = InSourcePath;
 		Import();
@@ -516,6 +522,8 @@ namespace Drn
 
 	void Material::BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList )
 	{
+		SCOPE_STAT();
+
 		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetPipelineState(m_HitProxyPassPSO->GetD3D12PSO());
 
@@ -525,32 +533,41 @@ namespace Drn
 
 	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
 	{
-		std::vector<uint32> TextureIndices;
-		TextureIndices.resize(m_Texture2DSlots.size() + m_TextureCubeSlots.size());
+		SCOPE_STAT();
 
-		for (auto& TextureSlot : m_Texture2DSlots)
+		if (m_TextureBufferDirty)
 		{
-			Resource* TextureResource = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetResource() : nullptr;
-			if (TextureResource)
-				TextureIndices[TextureSlot.m_Index] = (Renderer::Get()->GetBindlessSrvIndex(TextureResource->GetGpuHandle()));
+			m_TextureBufferDirty = false;
+
+			std::vector<uint32> TextureIndices;
+			TextureIndices.resize(m_Texture2DSlots.size() + m_TextureCubeSlots.size());
+
+			for (auto& TextureSlot : m_Texture2DSlots)
+			{
+				Resource* TextureResource = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetResource() : nullptr;
+				if (TextureResource)
+					TextureIndices[TextureSlot.m_Index] = (Renderer::Get()->GetBindlessSrvIndex(TextureResource->GetGpuHandle()));
+			}
+
+			for (auto& TextureSlot : m_TextureCubeSlots)
+			{
+				Resource* TextureResource = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetResource() : nullptr;
+				if (TextureResource)
+					TextureIndices[TextureSlot.m_Index] = (Renderer::Get()->GetBindlessSrvIndex(TextureResource->GetGpuHandle()));
+			}
+
+			UINT8* ConstantBufferStart;
+			CD3DX12_RANGE readRange( 0, 0 );
+			m_TextureIndexBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+			memcpy( ConstantBufferStart, TextureIndices.data(), TextureIndices.size() * sizeof(uint32));
+			m_TextureIndexBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 		}
-
-		for (auto& TextureSlot : m_TextureCubeSlots)
-		{
-			Resource* TextureResource = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetResource() : nullptr;
-			if (TextureResource)
-				TextureIndices[TextureSlot.m_Index] = (Renderer::Get()->GetBindlessSrvIndex(TextureResource->GetGpuHandle()));
-		}
-
-		UINT8* ConstantBufferStart;
-		CD3DX12_RANGE readRange( 0, 0 );
-		m_TextureIndexBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, TextureIndices.data(), TextureIndices.size() * sizeof(uint32));
-		m_TextureIndexBuffer->GetD3D12Resource()->Unmap(0, nullptr);
-
 		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TextureIndexBuffer->GetGpuHandle()), 3);
 
+		if (m_ScalarBufferDirty)
 		{
+			m_ScalarBufferDirty = false;
+
 			std::vector<float> Values;
 			for (int i = 0; i < m_FloatSlots.size(); i++)
 			{
@@ -562,11 +579,13 @@ namespace Drn
 			m_ScalarBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
 			memcpy( ConstantBufferStart, Values.data(), Values.size() * sizeof(float) );
 			m_ScalarBuffer->GetD3D12Resource()->Unmap(0, nullptr);
-
-			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ScalarBuffer->GetGpuHandle()), 4);
 		}
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ScalarBuffer->GetGpuHandle()), 4);
 
+		if (m_VectorBufferDirty)
 		{
+			m_VectorBufferDirty = false;
+
 			std::vector<Vector4> Values;
 			for (int i = 0; i < m_Vector4Slots.size(); i++)
 			{
@@ -578,10 +597,8 @@ namespace Drn
 			m_VectorBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
 			memcpy( ConstantBufferStart, Values.data(), Values.size() * sizeof(Vector4) );
 			m_VectorBuffer->GetD3D12Resource()->Unmap(0, nullptr);
-
-			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_VectorBuffer->GetGpuHandle()), 5);
 		}
-
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_VectorBuffer->GetGpuHandle()), 5);
 	}
 
 	void Material::SetNamedTexture2D( const std::string& Name, AssetHandle<Texture2D> TextureAsset )
@@ -603,6 +620,7 @@ namespace Drn
 		if (TextureAsset.IsValid() && Index >= 0 && Index < m_Texture2DSlots.size())
 		{
 			m_Texture2DSlots[Index].m_Texture2D = TextureAsset;
+			m_TextureBufferDirty = true;
 		}
 	}
 
@@ -625,6 +643,7 @@ namespace Drn
 		if (TextureAsset.IsValid() && Index >= 0 && Index < m_TextureCubeSlots.size())
 		{
 			m_TextureCubeSlots[Index].m_TextureCube = TextureAsset;
+			m_TextureBufferDirty = true;
 		}
 	}
 
@@ -633,6 +652,7 @@ namespace Drn
 		if (Index >= 0 && Index < m_FloatSlots.size())
 		{
 			m_FloatSlots[Index].m_Value = Value;
+			m_ScalarBufferDirty = true;
 		}
 	}
 
@@ -641,6 +661,7 @@ namespace Drn
 		if (Index >= 0 && Index < m_Vector4Slots.size())
 		{
 			m_Vector4Slots[Index].m_Value = Value;
+			m_VectorBufferDirty = true;
 		}
 	}
 

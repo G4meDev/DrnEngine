@@ -117,6 +117,8 @@ namespace Drn
 
 	void SceneRenderer::ResolvePostProcessSettings()
 	{
+		SCOPE_STAT();
+
 		m_PostProcessSettings = &PostProcessSettings::DefaultSettings;
 
 		float MinDistance = FLT_MAX;
@@ -144,6 +146,8 @@ namespace Drn
 
 	void SceneRenderer::RenderShadowDepths()
 	{
+		SCOPE_STAT();
+
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "ShadowDepths");
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
@@ -157,6 +161,8 @@ namespace Drn
 #if WITH_EDITOR
 	void SceneRenderer::RenderHitProxyPass()
 	{
+		SCOPE_STAT();
+
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "HitProxy");
 
 		ResourceStateTracker::Get()->TransiationResource(m_HitProxyRenderBuffer->m_DepthTarget, D3D12_RESOURCE_STATE_DEPTH_WRITE);
@@ -362,6 +368,8 @@ namespace Drn
 
 	void SceneRenderer::RenderSSR()
 	{
+		SCOPE_STAT();
+
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Screen Space Reflection" );
 
 		m_ScreenSpaceReflectionBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this, m_PostProcessSettings->m_SSRSettings);
@@ -393,6 +401,8 @@ namespace Drn
 
 	void SceneRenderer::RenderReflection()
 	{
+		SCOPE_STAT();
+
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Reflection Environment" );
 
 		m_ReflectionEnvironmentBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
@@ -599,6 +609,8 @@ namespace Drn
 
 	void SceneRenderer::ResizeView( const IntPoint& InSize )
 	{
+		SCOPE_STAT();
+
 		m_CachedRenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
 		m_RenderSize = m_CachedRenderSize;
 
@@ -625,6 +637,8 @@ namespace Drn
 
 	void SceneRenderer::ResizeViewConditional()
 	{
+		SCOPE_STAT();
+
 		if (m_RenderSize != m_CachedRenderSize)
 		{
 			ResizeView(m_RenderSize);
@@ -638,6 +652,8 @@ namespace Drn
 
 	void SceneRenderer::RecalculateView()
 	{
+		SCOPE_STAT();
+
 		m_SceneView.FrameIndex = ++m_FrameIndex;
 		m_SceneView.FrameIndexMod8 = m_FrameIndex % 8;
 
@@ -709,6 +725,8 @@ namespace Drn
 
 	void SceneRenderer::ProccessMousePickQueue()
 	{
+		SCOPE_STAT();
+
 		for ( auto it = m_MousePickQueue.begin(); it != m_MousePickQueue.end(); )
 		{
 			MousePickEvent& Event = *it;
@@ -721,7 +739,7 @@ namespace Drn
 
 			else
 			{
-				if (Event.FenceValue >= m_MousePickFence->GetCompletedValue())
+				if (Event.FenceValue <= m_MousePickFence->GetCompletedValue())
 				{
 					UINT8* MemoryStart;
 

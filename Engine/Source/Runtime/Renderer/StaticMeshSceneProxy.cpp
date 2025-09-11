@@ -39,7 +39,7 @@ namespace Drn
 		ResourceViewDesc.SizeInBytes = 256;
 		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_PrimitiveSource->GetCpuHandle());
 
-#if WITH_EDITOR
+#if D3D12_Debug_INFO
 		m_PrimitiveSource->SetName("ConstantBufferStaticMesh_" + m_Name);
 #endif
 	}
@@ -188,6 +188,8 @@ namespace Drn
 
 	void StaticMeshSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
+		SCOPE_STAT("HitProxyMesh");
+
 		if (!m_Selectable)
 		{
 			return;
@@ -203,18 +205,30 @@ namespace Drn
 				continue;
 			}
 
-			Mat->BindHitProxyPass(CommandList);
-			CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			{
+				SCOPE_STAT("Bind");
 
-			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-			m_PrimitiveBuffer.m_Guid = m_Guid;
+				Mat->BindHitProxyPass(CommandList);
+				CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			}
 
-			UINT8* ConstantBufferStart;
-			CD3DX12_RANGE readRange( 0, 0 );
-			m_PrimitiveSource->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-			memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-			m_PrimitiveSource->GetD3D12Resource()->Unmap(0, nullptr);
+			{
+				SCOPE_STAT("Calculate");
+
+				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+				m_PrimitiveBuffer.m_Guid = m_Guid;
+			}
+
+			{
+				SCOPE_STAT("Copy");
+
+				UINT8* ConstantBufferStart;
+				CD3DX12_RANGE readRange( 0, 0 );
+				m_PrimitiveSource->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
+				m_PrimitiveSource->GetD3D12Resource()->Unmap(0, nullptr);
+			}
 
 			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer->GetGpuHandle()), 0);
 			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource->GetGpuHandle()), 1);

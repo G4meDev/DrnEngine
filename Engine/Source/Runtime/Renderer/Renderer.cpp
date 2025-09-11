@@ -427,8 +427,12 @@ namespace Drn
 
 	void Renderer::InitRender(float DeltaTime)
 	{
-		SCOPE_STAT( "WaitForOnFlightCommands" );
-		WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
+		SCOPE_STAT( "InitRender" );
+
+		{
+			SCOPE_STAT( "WaitForOnFlightCommands" );
+			WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
+		}
 
 		{
 			SCOPE_STAT( "CommandlistReset" );
@@ -442,6 +446,8 @@ namespace Drn
 
 	void Renderer::UpdateSceneProxyAndResources()
 	{
+		SCOPE_STAT( "UpdateSceneProxyAndResources" );
+
 		for (Scene* S : m_AllocatedScenes)
 		{
 			S->UpdatePendingProxyAndResources(m_UploadCommandList->GetD3D12CommandList());
@@ -450,6 +456,8 @@ namespace Drn
 
 	void Renderer::RenderSceneRenderers()
 	{
+		SCOPE_STAT( "RenderSceneRenderers" );
+
 		for (Scene* S : m_AllocatedScenes)
 		{
 			for (SceneRenderer* SceneRen : S->m_SceneRenderers)
@@ -461,6 +469,8 @@ namespace Drn
 
 	void Renderer::RenderImgui()
 	{
+		SCOPE_STAT( "RenderImgui" );
+
 #if WITH_EDITOR
 
 		ID3D12Resource* backBuffer = m_SwapChain->GetBackBuffer();
@@ -484,6 +494,8 @@ namespace Drn
 
 	void Renderer::ResolveDisplayBuffer()
 	{
+		SCOPE_STAT( "ResolveDisplayBuffer" );
+
 #ifndef WITH_EDITOR
 
 		ID3D12Resource* backBuffer = m_SwapChain->GetBackBuffer();
@@ -510,7 +522,12 @@ namespace Drn
 		m_CommandList->Close();
 		m_UploadCommandList->Close();
 
-		CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
+		{
+			SCOPE_STAT( "E1" );
+			CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
+			m_CommandQueue->ExecuteCommandLists(1, CommandLists.data());
+		}
+		//CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
 
 		for (Scene* S : m_AllocatedScenes)
 		{
@@ -518,15 +535,29 @@ namespace Drn
 			{
 				if (SceneRen->m_CommandList)
 				{
-					CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
-					NumCommandLists++;
+					//CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
+					//NumCommandLists++;
+
+					{
+						SCOPE_STAT( "E2" );
+						CommandLists.clear();
+						CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
+						m_CommandQueue->ExecuteCommandLists(1, CommandLists.data());
+					}
 				}
 			}
 		}
 
-		CommandLists.push_back(m_CommandList->GetD3D12CommandList());
+		//CommandLists.push_back(m_CommandList->GetD3D12CommandList());
+
+		{
+			SCOPE_STAT( "E3" );
+			CommandLists.clear();
+			CommandLists.push_back(m_CommandList->GetD3D12CommandList());
+			m_CommandQueue->ExecuteCommandLists(1, CommandLists.data());
+		}
 		
-		m_CommandQueue->ExecuteCommandLists(NumCommandLists, CommandLists.data());
+		//m_CommandQueue->ExecuteCommandLists(NumCommandLists, CommandLists.data());
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )
