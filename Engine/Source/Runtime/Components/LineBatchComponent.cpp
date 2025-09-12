@@ -242,7 +242,7 @@ namespace Drn
 			CommandList->SetPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
 		}
 		
-		CommandList->SetGraphicsRoot32BitConstant( 0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer->GetGpuHandle()), 0 );
+		CommandList->SetGraphicsRoot32BitConstant( 0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0 );
 		
 		CommandList->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
 		CommandList->DrawInstanced( m_VertexCount, 1, 0, 0);

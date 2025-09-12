@@ -69,12 +69,12 @@ namespace Drn
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_ShadowmapCpuHandles;
 
 		DirectionalLightData m_LightData;
-		Resource* m_LightBuffer;
+		Resource* m_LightBuffer[NUM_BACKBUFFERS] = {nullptr};
 
 		DirectionalLightShadowData m_ShadowData;
-		Resource* m_ShadowBuffer;
+		Resource* m_ShadowBuffer[NUM_BACKBUFFERS] = {nullptr};
 
-		std::vector<Resource*> m_CsWorldToProjectionMatricesBuffer;
+		std::vector<Resource*> m_CsWorldToProjectionMatricesBuffer[NUM_BACKBUFFERS];
 
 		friend class DirectionalLightComponent;
 

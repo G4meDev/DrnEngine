@@ -116,6 +116,8 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12Fence>& GetFence() { return m_Fence; };
 		uint64& GetFenceValue() { return m_FenceValue; };
 
+		inline uint32 GetCurrentBackbufferIndex() const { return m_SwapChain ? m_SwapChain->GetBackBufferIndex() : 0; }
+
 		uint64_t m_FenceValue = 0;
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
 		HANDLE m_FenceEvent;

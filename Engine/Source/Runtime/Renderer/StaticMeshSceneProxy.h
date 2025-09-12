@@ -55,6 +55,6 @@ namespace Drn
 
 		PrimitiveBuffer m_PrimitiveBuffer;
 
-		Resource* m_PrimitiveSource = nullptr;
+		Resource* m_PrimitiveSource[NUM_BACKBUFFERS] = { nullptr };
 	};
 }

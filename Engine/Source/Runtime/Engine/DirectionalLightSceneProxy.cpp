@@ -16,8 +16,8 @@ namespace Drn
 		, m_CascadeCount(3)
 		, m_CascadeLogDistribution(0.65f)
 		, m_CascadeDepthScale(1.5f)
-		, m_LightBuffer(nullptr)
-		, m_ShadowBuffer(nullptr)
+		//, m_LightBuffer(nullptr)
+		//, m_ShadowBuffer(nullptr)
 		, m_ShadowmapResource(nullptr)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC DepthHeapDesc = {};
@@ -37,15 +37,18 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------
 
-		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
+		{
+			m_LightBuffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
-		m_LightBuffer->SetName("CB_DircetionalLight_" + m_Name);
+			m_LightBuffer[i]->SetName("CB_DircetionalLight_" + m_Name);
 #endif
 
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.BufferLocation = m_LightBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ResourceViewDesc.SizeInBytes = 256;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer->GetCpuHandle());
+			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+			ResourceViewDesc.BufferLocation = m_LightBuffer[i]->GetD3D12Resource()->GetGPUVirtualAddress();
+			ResourceViewDesc.SizeInBytes = 256;
+			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer[i]->GetCpuHandle());
+		}
 	}
 
 	DirectionalLightSceneProxy::~DirectionalLightSceneProxy()
@@ -56,18 +59,18 @@ namespace Drn
 
 	void DirectionalLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		// TODO: remove. should not be aware of component. lazy updae
+		// TODO: remove. should not be aware of component. lazy update
 		m_LightData.Direction = m_DirectionalLightComponent->GetWorldRotation().GetVector();
 		m_LightData.Color = m_DirectionalLightComponent->GetScaledColor();
-		m_LightData.ShadowmapBufferIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowBuffer->GetGpuHandle()) : 0;
+		m_LightData.ShadowmapBufferIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()) : 0;
 		
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
-		m_LightBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
 		memcpy( ConstantBufferStart, &m_LightData, sizeof(DirectionalLightData));
-		m_LightBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+		m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 		
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
+		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
 		
 		// TODO: make light flags enum. e. g. 1: Pointlight. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 4;
@@ -143,9 +146,9 @@ namespace Drn
 
 			UINT8* ConstantBufferStart;
 			CD3DX12_RANGE readRange( 0, 0 );
-			m_ShadowBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+			m_ShadowBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
 			memcpy( ConstantBufferStart, &m_ShadowData, sizeof(DirectionalLightShadowData));
-			m_ShadowBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+			m_ShadowBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 
 			ResourceStateTracker::Get()->TransiationResource(m_ShadowmapResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
@@ -159,14 +162,14 @@ namespace Drn
 
 				UINT8* ConstantBufferStart;
 				CD3DX12_RANGE readRange( 0, 0 );
-				m_CsWorldToProjectionMatricesBuffer[i]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+				m_CsWorldToProjectionMatricesBuffer[Renderer::Get()->GetCurrentBackbufferIndex()][i]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
 				memcpy( ConstantBufferStart, &m_ShadowData.CsWorldToProjectionMatrices[i], sizeof(float) * 16);
-				m_CsWorldToProjectionMatricesBuffer[i]->GetD3D12Resource()->Unmap(0, nullptr);
+				m_CsWorldToProjectionMatricesBuffer[Renderer::Get()->GetCurrentBackbufferIndex()][i]->GetD3D12Resource()->Unmap(0, nullptr);
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 				CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_CsWorldToProjectionMatricesBuffer[i]->GetGpuHandle()), 6);
+				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_CsWorldToProjectionMatricesBuffer[Renderer::Get()->GetCurrentBackbufferIndex()][i]->GetGpuHandle()), 6);
 				
 				for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 				{
@@ -221,31 +224,38 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------
 
-		m_ShadowBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 1024 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
+		{
+			m_ShadowBuffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 1024 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
-		m_ShadowBuffer->SetName("CB_DirectionalLightShadow_" + m_Name);
+			m_ShadowBuffer[i]->SetName("CB_DirectionalLightShadow_" + m_Name);
 #endif
 
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ShadowResourceViewDesc = {};
-		ShadowResourceViewDesc.BufferLocation = m_ShadowBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ShadowResourceViewDesc.SizeInBytes = 1024;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ShadowResourceViewDesc, m_ShadowBuffer->GetCpuHandle());
+			D3D12_CONSTANT_BUFFER_VIEW_DESC ShadowResourceViewDesc = {};
+			ShadowResourceViewDesc.BufferLocation = m_ShadowBuffer[i]->GetD3D12Resource()->GetGPUVirtualAddress();
+			ShadowResourceViewDesc.SizeInBytes = 1024;
+			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ShadowResourceViewDesc, m_ShadowBuffer[i]->GetCpuHandle());
+		}
 
 // --------------------------------------------------------------------------------------------------
 
-		m_CsWorldToProjectionMatricesBuffer.resize(m_CascadeCount);
-		for (int32 i = 0; i < m_CascadeCount; i++)
+		for (int32 k = 0; k < m_CascadeCount; k++)
 		{
-			m_CsWorldToProjectionMatricesBuffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer(256), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+			m_CsWorldToProjectionMatricesBuffer[k].resize(m_CascadeCount);
+			for (int32 i = 0; i < m_CascadeCount; i++)
+			{
+				m_CsWorldToProjectionMatricesBuffer[k][i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer(256), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
-			m_CsWorldToProjectionMatricesBuffer[i]->SetName("CB_CsProjectionMatrix_" + std::to_string(i));
+				m_CsWorldToProjectionMatricesBuffer[k][i]->SetName("CB_CsProjectionMatrix_" + std::to_string(i));
 #endif
 
-			D3D12_CONSTANT_BUFFER_VIEW_DESC Desc = {};
-			Desc.BufferLocation = m_CsWorldToProjectionMatricesBuffer[i]->GetD3D12Resource()->GetGPUVirtualAddress();
-			Desc.SizeInBytes = 256;
-			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView(&Desc, m_CsWorldToProjectionMatricesBuffer[i]->GetCpuHandle());
+				D3D12_CONSTANT_BUFFER_VIEW_DESC Desc = {};
+				Desc.BufferLocation = m_CsWorldToProjectionMatricesBuffer[k][i]->GetD3D12Resource()->GetGPUVirtualAddress();
+				Desc.SizeInBytes = 256;
+				Renderer::Get()->GetD3D12Device()->CreateConstantBufferView(&Desc, m_CsWorldToProjectionMatricesBuffer[k][i]->GetCpuHandle());
+			}
 		}
+
 	}
 
 	void DirectionalLightSceneProxy::ReleaseShadowmap()
@@ -255,26 +265,36 @@ namespace Drn
 			m_ShadowmapResource->ReleaseBufferedResource();
 			m_ShadowmapResource = nullptr;
 
-			if (m_ShadowBuffer)
+			for ( int32 i = 0; i < NUM_BACKBUFFERS; i++)
 			{
-				m_ShadowBuffer->ReleaseBufferedResource();
-				m_ShadowBuffer = nullptr;
+				if (m_ShadowBuffer[i])
+				{
+					m_ShadowBuffer[i]->ReleaseBufferedResource();
+					m_ShadowBuffer[i] = nullptr;
+				}
 			}
 
-			for (int32 i = 0; i < m_CsWorldToProjectionMatricesBuffer.size(); i++)
+			for (int32 k = 0; k < NUM_BACKBUFFERS; k++)
 			{
-				m_CsWorldToProjectionMatricesBuffer[i]->ReleaseBufferedResource();
+				for (int32 i = 0; i < m_CsWorldToProjectionMatricesBuffer[k].size(); i++)
+				{
+					m_CsWorldToProjectionMatricesBuffer[k][i]->ReleaseBufferedResource();
+				}
+				m_CsWorldToProjectionMatricesBuffer[k].clear();
 			}
-			m_CsWorldToProjectionMatricesBuffer.clear();
+
 		}
 	}
 
 	void DirectionalLightSceneProxy::ReleaseBuffers()
 	{
-		if (m_LightBuffer)
+		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
 		{
-			m_LightBuffer->ReleaseBufferedResource();
-			m_LightBuffer = nullptr;
+			if (m_LightBuffer[i])
+			{
+				m_LightBuffer[i]->ReleaseBufferedResource();
+				m_LightBuffer[i] = nullptr;
+			}
 		}
 	}
 
