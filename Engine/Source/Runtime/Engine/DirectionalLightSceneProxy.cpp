@@ -103,26 +103,6 @@ namespace Drn
 
 			CalculateSplitDistance();
 
-			//static int Counter = 0;
-			//for (int32 i = 0; i < m_CascadeCount; i++)
-			//{
-			//	m_CSWorldToProjetcionMatrices.emplace_back(GetShadowSplitBoundsMatrix(Renderer->GetSceneView(), Renderer->GetSceneView().CameraPos, m_SplitDistances[i], m_SplitDistances[i + 1]));
-			//
-			//	if (Counter == 200)
-			//	{
-			//
-			//		XMMATRIX M = XMMatrixLookAtLH(XMVectorZero(), XMLoadFloat3(m_LightData.Direction.Get()), XMLoadFloat3(Vector::UpVector.Get()));
-			//	
-			//		XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1980.0f / 1080.0f, m_SplitDistances[i], m_SplitDistances[i + 1]);
-			//		XMMATRIX W = Renderer->GetSceneView().WorldToView.Get() * P;
-			//		W = XMMatrixInverse(NULL, W);
-			//	
-			//		m_DirectionalLightComponent->GetWorld()->DrawDebugFrustum( W, Color::Red, 0, 50);
-			//		m_DirectionalLightComponent->GetWorld()->DrawDebugFrustum( Matrix(XMMatrixInverse( NULL, m_CSWorldToProjetcionMatrices[i].Get())), Color::White, 0, 50);
-			//	}
-			//}
-			//Counter++;
-
 			D3D12_RECT R = CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX );
 			CD3DX12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)DIRECTIONAL_SHADOW_SIZE, (float)DIRECTIONAL_SHADOW_SIZE);
 

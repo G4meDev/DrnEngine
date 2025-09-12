@@ -148,6 +148,34 @@ namespace Drn
 		{
 			SetDepthBias(m_DepthBias);
 		}
+
+		if ( ImGui::Button( "DrawCascadeFrustum" ) )
+		{
+			DrawCascadeFrustum();
+		}
+	}
+
+	void DirectionalLightComponent::DrawCascadeFrustum()
+	{
+		if (GetWorld() && m_DirectionalLightSceneProxy && m_DirectionalLightSceneProxy->m_CastShadow)
+		{
+			const uint32 Duration = 50.0f;
+
+			for (int32 i = 0; i < m_DirectionalLightSceneProxy->m_CascadeCount; i++)
+			{
+				const float Near = m_DirectionalLightSceneProxy->m_SplitDistances[i];
+				const float Far = m_DirectionalLightSceneProxy->m_SplitDistances[i + 1];
+
+				ViewInfo VInfo = GetWorld()->GetPlayerWorldView();
+				VInfo.NearClipPlane = Near;
+				VInfo.FarClipPlane = Far;
+
+				Matrix ViewProjectionMatrix = VInfo.CalculateViewMatrix() * VInfo.CalculateProjectionMatrix();
+				GetWorld()->DrawDebugFrustum(ViewProjectionMatrix.Inverse(), Color::White, 0, Duration);
+
+				GetWorld()->DrawDebugFrustum(m_DirectionalLightSceneProxy->m_ShadowData.CsWorldToProjectionMatrices[i].Inverse(), Color::Blue, 0, Duration);
+			}
+		}
 	}
 
 	void DirectionalLightComponent::DrawDirection()

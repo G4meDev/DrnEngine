@@ -26,6 +26,7 @@ namespace Drn
 #if WITH_EDITOR
 		virtual void DrawDetailPanel( float DeltaTime ) override;
 
+		void DrawCascadeFrustum();
 		void DrawDirection();
 
 		virtual void DrawEditorDefault() override;
