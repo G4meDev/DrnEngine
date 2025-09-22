@@ -415,6 +415,8 @@ add_compile_definitions($<$<CONFIG:Debug>:WITH_EDITOR>)
 add_compile_definitions($<$<CONFIG:Debug>:WITH_PVD>)
 add_compile_definitions($<$<CONFIG:Debug>:WITH_DEBUG>)
 add_compile_definitions($<$<CONFIG:RelWithDebInfo>:WITH_DEBUG>)
+add_compile_definitions($<$<CONFIG:Debug>:USE_PIX>)
+add_compile_definitions($<$<CONFIG:RelWithDebInfo>:USE_PIX>)
 
 target_include_directories( Engine
     PUBLIC inc Source/

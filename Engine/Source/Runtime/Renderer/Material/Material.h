@@ -46,7 +46,7 @@ namespace Drn
 
 
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
-		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
+		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; m_TextureBufferDirty = true; m_ScalarBufferDirty = true; m_VectorBufferDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
 		inline bool IsSupportingMainPass() const { return m_SupportMainPass; }

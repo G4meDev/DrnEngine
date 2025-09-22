@@ -122,6 +122,7 @@ float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 float GetRoughnessFade(float Roughness, float Fade)
 {
     return min(Roughness * Fade + 2, 1.0);
+    //return 1 - saturate(Roughness * 1.6f);
 }
 
 float Square(float x) { return x * x; }
@@ -508,6 +509,10 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     if ((uint) (Masks.a * 255) == 0)
         return 0;
     
+    [branch]
+    if (RoughnessFade <= 0.0f)
+        return 0;
+    
     float a = Roughness * Roughness;
     float a2 = a * a;
     
@@ -518,6 +523,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float4 HZBUvFactorAndInvFactor = float4(1.0f, 1.0f, 0, 0);
     HZBUvFactorAndInvFactor.zw = float2(1.0f, 1.0f) / HZBUvFactorAndInvFactor.xy;
         
+#define SSR_QUALITY 1
+    
 #if SSR_QUALITY == 1
 	uint NumSteps = 8;
 	uint NumRays = 1;
@@ -582,7 +589,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
             [branch]
             if(bHit)
             {
-                ClosestHitDistanceSqr = min(ClosestHitDistanceSqr, ComputeRayHitSqrDistance(PositionTranslatedWorld, HitUVz, View));
+                //ClosestHitDistanceSqr = min(ClosestHitDistanceSqr, ComputeRayHitSqrDistance(PositionTranslatedWorld, HitUVz, View));
                
                 // TODO: taa and reprojection
                 
@@ -598,7 +605,30 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     }
     else
     {
-        
+        float StepOffset = InterleavedGradientNoise(IN.Position.xy, View.FrameIndexMod8);
+		StepOffset -= 0.5;
+		
+        float3 L = reflect(-V, WorldNormal);
+		
+		float3 HitUVz;
+		float Level = 0;
+        bool bHit = RayCast(HzbImage, PointClampSampler, PositionTranslatedWorld, L, Roughness, SceneDepth, NumSteps, StepOffset, HZBUvFactorAndInvFactor, View, HitUVz, Level);
+
+        [branch]
+		if( bHit )
+		{
+            //ClosestHitDistanceSqr = ComputeRayHitSqrDistance(PositionTranslatedWorld, HitUVz, View);
+
+            // TODO: taa and reprojection
+            
+			//float2 SampleUV;
+			//float Vignette;
+			//ReprojectHit(PrevScreenPositionScaleBias, GBufferVelocityTexture, GBufferVelocityTextureSampler, HitUVz, SampleUV, Vignette);
+
+            float4 SampleColor = DeferredImage.Sample(LinearSampler, HitUVz.xy);
+            Result = SampleColor;
+            Result.a = 1;
+        }
     }
     
     

@@ -89,7 +89,7 @@ class LogCategory;
 
 #define D3D12_DEBUG_LAYER 0
 #define D3D12_GPU_VALIDATION 0
-#define D3D12_Debug_INFO  0
+#define D3D12_Debug_INFO 0
 
 #define NAME_NULL ""
 

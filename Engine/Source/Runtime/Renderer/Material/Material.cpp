@@ -146,8 +146,6 @@ namespace Drn
 			Ar >> m_SupportShadowPass;
 			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
 			m_SpotlightShadowDepthShaderBlob.Serialize(Ar);
-
-			InitalizeParameterMap();
 		}
 
 		else
@@ -327,6 +325,7 @@ namespace Drn
 		{
 			SCOPE_STAT();
 
+			InitalizeParameterMap();
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 

@@ -1156,6 +1156,8 @@ namespace Drn
 
 		Args.push_back(L"-Zs");
 
+		Args.push_back( L"-O3" );
+
 		for (auto& Mac : Macros)
 		{
 			Args.push_back(L"-D");

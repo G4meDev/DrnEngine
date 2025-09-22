@@ -95,7 +95,7 @@ namespace Drn
 		if (ImGui::CollapsingHeader("Screen Space Reflection", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			Dirty |= ImGui::DragFloat("Intensity", &m_Intensity, 0.05f, 0, 1, "%.2f");
-			Dirty |= ImGui::DragFloat("Roughness Fade", &m_RoughnessFade, 0.1f, 0, 8, "%.1f");
+			Dirty |= ImGui::DragFloat("Roughness Fade", &m_RoughnessFade, 0.1f, -10.0f, -2.0f, "%.1f");
 		}
 
 		ImGui::PopID();

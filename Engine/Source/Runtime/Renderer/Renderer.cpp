@@ -193,8 +193,8 @@ namespace Drn
 		{
 			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearSamplerCpuHandle, &m_BindlessLinearSamplerGpuHandle);
 			D3D12_SAMPLER_DESC SamplerDesc = {};
-			//SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			//SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
@@ -209,8 +209,8 @@ namespace Drn
 		{
 			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessPointSamplerCpuHandle, &m_BindlessPointSamplerGpuHandle);
 			D3D12_SAMPLER_DESC SamplerDesc = {};
-			//SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-			SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+			//SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
 			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
