@@ -50,6 +50,6 @@ namespace Drn
 
 		float m_WalkSpeed = 10.0f;
 		float m_RunSpeed = 27.0f;
-		float m_LookSpeed = 0.005f;
+		float m_LookSpeed = 5.0f;
 	};
 }

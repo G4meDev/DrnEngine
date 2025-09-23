@@ -119,6 +119,8 @@ float ComputeDepthSimilarity(float DepthA, float DepthB, float TweakScale)
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
+    //return 1;
+    
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
     ConstantBuffer<AoData> AoBuffer = ResourceDescriptorHeap[BindlessResources.AoBufferIndex];
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];

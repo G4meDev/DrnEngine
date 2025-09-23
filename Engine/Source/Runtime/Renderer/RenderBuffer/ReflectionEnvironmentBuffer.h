@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/RenderBuffer/RenderBuffer.h"
 

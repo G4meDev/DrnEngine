@@ -96,12 +96,12 @@ namespace Drn
 
 	void TestPlayerCharacter::OnLookUp( float Value )
 	{
-		m_SpringArm->SetWorldRotation( Quat( m_SpringArm->GetRightVector(), Value * -m_LookSpeed) * m_SpringArm->GetWorldRotation() );
+		m_SpringArm->SetWorldRotation( Quat( m_SpringArm->GetRightVector(), Value * Time::GetApplicationDeltaTime() * -m_LookSpeed) * m_SpringArm->GetWorldRotation() );
 	}
 
 	void TestPlayerCharacter::OnLookRight( float Value )
 	{
-		m_SpringArm->SetWorldRotation( Quat( Vector::UpVector, Value * m_LookSpeed) * m_SpringArm->GetWorldRotation());
+		m_SpringArm->SetWorldRotation( Quat( Vector::UpVector, Value * Time::GetApplicationDeltaTime() * m_LookSpeed) * m_SpringArm->GetWorldRotation());
 	}
 
 	void TestPlayerCharacter::OnBeginRun()

@@ -54,6 +54,7 @@ namespace Drn
 		m_AmbientOcclusionPSO = new AmbientOcclusionPSO(CommandList);
 		m_ScreenSpaceReflectionPSO = new ScreenSpaceReflectionPSO(CommandList);
 		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList);
+		m_TAAPSO = new TAAPSO(CommandList);
 		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList);
 		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList);
 		m_LightPassPSO = new LightPassPSO(CommandList);
@@ -84,6 +85,7 @@ namespace Drn
 		delete m_AmbientOcclusionPSO;
 		delete m_ScreenSpaceReflectionPSO;
 		delete m_ReflectionEnvironmentPSO;
+		delete m_TAAPSO;
 		delete m_SpriteEditorPrimitivePSO;
 		delete m_SpriteHitProxyPSO;
 		delete m_LightPassPSO;
@@ -652,6 +654,49 @@ namespace Drn
 	}
 
 	ReflectionEnvironemntPSO::~ReflectionEnvironemntPSO()
+	{
+		m_PSO->Release();
+	}
+
+// --------------------------------------------------------------------------------------
+
+	TAAPSO::TAAPSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_PSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\TemporalAA.hlsl" ) );
+
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+
+		const std::vector<const wchar_t*> Macros = {};
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+		PipelineDesc.InputLayout						= VertexLayout_PosUV;
+		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
+		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R16G16B16A16_FLOAT;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+
+#if D3D12_Debug_INFO
+		m_PSO->SetName(L"PSO_Tonemap");
+#endif
+	}
+
+	TAAPSO::~TAAPSO()
 	{
 		m_PSO->Release();
 	}

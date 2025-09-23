@@ -135,6 +135,7 @@ namespace Drn
 		std::shared_ptr<class RenderBufferAO> m_AOBuffer;
 		std::shared_ptr<class ScreenSpaceReflectionBuffer> m_ScreenSpaceReflectionBuffer;
 		std::shared_ptr<class ReflectionEnvironmentBuffer> m_ReflectionEnvironmentBuffer;
+		std::shared_ptr<class TAABuffer> m_TAABuffer;
 
 		IntPoint m_CachedRenderSize;
 		IntPoint m_RenderSize;
@@ -170,6 +171,7 @@ namespace Drn
 		friend class RenderBufferAO;
 		friend class ScreenSpaceReflectionBuffer;
 		friend class ReflectionEnvironmentBuffer;
+		friend class TAABuffer;
 
 	private:
 
@@ -183,6 +185,7 @@ namespace Drn
 		void RenderSSR();
 		void RenderReflection();
 		void RenderPostProcess();
+		void PostProcess_TemporalAA();
 		void PostProcess_Tonemapping();
 
 #if WITH_EDITOR

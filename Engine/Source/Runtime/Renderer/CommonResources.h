@@ -136,6 +136,16 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class TAAPSO
+	{
+	public:
+
+		TAAPSO( ID3D12GraphicsCommandList2* CommandList );
+		~TAAPSO();
+		
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class ResolveEditorSelectionPSO
 	{
 	public:
@@ -248,6 +258,7 @@ namespace Drn
 		LightPassPSO* m_LightPassPSO;
 		ScreenSpaceReflectionPSO* m_ScreenSpaceReflectionPSO;
 		ReflectionEnvironemntPSO* m_ReflectionEnvironmentPSO;
+		TAAPSO* m_TAAPSO;
 
 		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
 		SpriteHitProxyPSO* m_SpriteHitProxyPSO;

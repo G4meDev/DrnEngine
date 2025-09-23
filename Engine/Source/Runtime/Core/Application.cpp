@@ -212,7 +212,7 @@ void Application::OnKeyPressed( WPARAM Key )
 
 		InputManager::Get()->Tick(m_DeltaTime);
 
-#if 1
+#if 0
 
 		WorldManager::Get()->Tick(m_DeltaTime);
 		PhysicManager::Get()->Tick(m_DeltaTime);

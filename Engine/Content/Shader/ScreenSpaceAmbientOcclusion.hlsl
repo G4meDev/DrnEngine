@@ -1,11 +1,62 @@
 
-#define SAMPLESET_ARRAY_SIZE 6
-#define SAMPLE_STEPS 3
-
 const static float Constant_Float16F_Scale = 4096.0f;
 
+#define SHADER_QUALITY 0
+
+#if SHADER_QUALITY == 0
+	// very low
+	#define USE_SAMPLESET 1
+	#define SAMPLE_STEPS 1
+#elif SHADER_QUALITY == 1
+	// low
+	#define USE_SAMPLESET 1
+	#define SAMPLE_STEPS 1
+#elif SHADER_QUALITY == 2
+	// medium
+	#define USE_SAMPLESET 1
+	#define SAMPLE_STEPS 2
+#elif SHADER_QUALITY == 3
+	// high
+	#define USE_SAMPLESET 1
+	#define SAMPLE_STEPS 3
+#else // SHADER_QUALITY == 4
+	// very high
+	#define USE_SAMPLESET 3
+	#define SAMPLE_STEPS 3
+#endif
+
+#if USE_SAMPLESET == 0
+#define SAMPLESET_ARRAY_SIZE 1
+	static const float2 OcclusionSamplesOffsets[SAMPLESET_ARRAY_SIZE]=
+	{
+		// one sample, for testing
+		float2(0.500, 0.500), 
+	};
+#elif USE_SAMPLESET == 1
+#define SAMPLESET_ARRAY_SIZE 3
+	static const float2 OcclusionSamplesOffsets[SAMPLESET_ARRAY_SIZE]=
+	{
+		// 3 points distributed on the unit disc, spiral order and distance
+		float2(0, -1.0f) * 0.43f, 
+		float2(0.58f, 0.814f) * 0.7f, 
+		float2(-0.58f, 0.814f) 
+	};
+#elif USE_SAMPLESET == 2
+#define SAMPLESET_ARRAY_SIZE 5
+	static const float2 OcclusionSamplesOffsets[SAMPLESET_ARRAY_SIZE]=
+	{
+		// 5 points distributed on a ring
+		float2(0.156434, 0.987688),
+		float2(0.987688, 0.156434)*0.9,
+		float2(0.453990, -0.891007)*0.8,
+		float2(-0.707107, -0.707107)*0.7,
+		float2(-0.891006, 0.453991)*0.65,
+	};
+#else // USE_SAMPLESET == 3
+#define SAMPLESET_ARRAY_SIZE 6
 static const float2 OcclusionSamplesOffsets[SAMPLESET_ARRAY_SIZE] =
 {
+		// 6 points distributed on the unit disc, spiral order and distance
     float2(0.000, 0.200),
 		float2(0.325, 0.101),
 		float2(0.272, -0.396),
@@ -13,6 +64,17 @@ static const float2 OcclusionSamplesOffsets[SAMPLESET_ARRAY_SIZE] =
 		float2(-0.711, 0.274),
 		float2(0.060, 0.900)
 };
+#endif // USE_SAMPLESET
+
+//static const float2 OcclusionSamplesOffsets[SAMPLESET_ARRAY_SIZE] =
+//{
+//    float2(0.000, 0.200),
+//		float2(0.325, 0.101),
+//		float2(0.272, -0.396),
+//		float2(-0.385, -0.488),
+//		float2(-0.711, 0.274),
+//		float2(0.060, 0.900)
+//};
 
 struct Resources
 {
@@ -237,6 +299,8 @@ float Square(float x) { return x * x; }
 
 float Main_PS(PixelShaderInput IN) : SV_Target
 {
+    //return 1;
+    
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
     ConstantBuffer<AoData> AoBuffer = ResourceDescriptorHeap[BindlessResources.AoBufferIndex];
     ConstantBuffer<StaticSamplers> StaticSamplersBuffer = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];

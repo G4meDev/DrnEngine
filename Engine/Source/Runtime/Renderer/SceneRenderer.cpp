@@ -11,6 +11,7 @@
 #include "Runtime/Renderer/RenderBuffer/RenderBufferAO.h"
 #include "Runtime/Renderer/RenderBuffer/ScreenSpaceReflectionBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/ReflectionEnvironmentBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/TAABuffer.h"
 
 #include "Runtime/Engine/PostProcessVolume.h"
 
@@ -85,6 +86,9 @@ namespace Drn
 
 		m_ReflectionEnvironmentBuffer = std::make_shared<class ReflectionEnvironmentBuffer>();
 		m_ReflectionEnvironmentBuffer->Init();
+
+		m_TAABuffer = std::make_shared<class TAABuffer>();
+		m_TAABuffer->Init();
 
 #if WITH_EDITOR
 		// mouse picking components
@@ -441,7 +445,33 @@ namespace Drn
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Post Process" );
 
+		PostProcess_TemporalAA();
 		PostProcess_Tonemapping();
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
+	}
+
+	void SceneRenderer::PostProcess_TemporalAA()
+	{
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "TAA" );
+
+		m_TAABuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
+
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->m_TAATarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+
+		m_TAABuffer->Bind( m_CommandList->GetD3D12CommandList() );
+
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TAAPSO->m_PSO );
+
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TAABuffer->m_Buffer->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -452,14 +482,14 @@ namespace Drn
 
 		m_TonemapBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
-		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->m_TAATarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_TonemapBuffer->m_TonemapTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_ColorDeferredTarget->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TAABuffer->m_TAATarget->GetGpuHandle()), 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
@@ -623,6 +653,7 @@ namespace Drn
 		m_AOBuffer->Resize( GetViewportSize() );
 		m_ScreenSpaceReflectionBuffer->Resize( GetViewportSize() );
 		m_ReflectionEnvironmentBuffer->Resize( GetViewportSize() );
+		m_TAABuffer->Resize( GetViewportSize() );
 
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( GetViewportSize() );
