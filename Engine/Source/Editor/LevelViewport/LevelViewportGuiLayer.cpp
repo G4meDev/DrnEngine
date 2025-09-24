@@ -133,6 +133,11 @@ namespace Drn
 					WorldManager::Get()->GetMainWorld()->Save();
 				}
 				
+				if ( ImGui::MenuItem( "Reimport materials" ) )
+				{
+					Editor::Get()->ReimportMaterials();
+				}
+
 				ImGui::EndMenu();
 			}
 

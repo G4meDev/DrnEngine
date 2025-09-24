@@ -30,9 +30,31 @@ struct Resources
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
 
-struct View
+struct ViewBuffer
 {
+    matrix WorldToView;
+    matrix ViewToProjection;
+    matrix WorldToProjection;
+    matrix ProjectionToView;
+    matrix ProjectionToWorld;
+    matrix LocalToCameraView;
+
+    uint2 RenderSize;
+    float2 InvSize;
+
+    float3 CameraPos;
+    float InvTanHalfFov;
+		
+    float3 CameraDir;
+    float Pad_4;
+
+    float4 InvDeviceZToWorldZTransform;
+    matrix ViewToWorld;
+    matrix ScreenToTranslatedWorld;
     
+    uint FrameIndex;
+    uint FrameIndexMod8;
+    float2 JitterOffset;
 };
 
 struct Primitive
@@ -103,6 +125,7 @@ struct VertexShaderOutput
 VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
+    
 
 #if SHADOW_PASS_POINTLIGHT
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
@@ -137,6 +160,9 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Normal = VertexNormal;
     OUT.UV = IN.UV1;
     
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    OUT.Position.xy += View.JitterOffset * 1 * OUT.Position.w;
+
 #endif
     
     return OUT;

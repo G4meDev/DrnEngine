@@ -27,6 +27,7 @@ namespace Drn
 
 		bool ContainsDirectory();
 		std::vector<SystemFileNode*> GetFiles();
+		void GetFilesRecursive(std::vector<SystemFileNode*>& Result);
 		int GetNumberOfFiles();
 
 		void AddChild(SystemFileNode* Child);

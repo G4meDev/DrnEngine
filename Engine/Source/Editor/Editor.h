@@ -35,6 +35,8 @@ namespace Drn
 
 		void OpenTaskGraphVisualizer();
 
+		void ReimportMaterials();
+
 	protected:
 
 		std::shared_ptr<FileImportMenu> m_FileImportMenu;

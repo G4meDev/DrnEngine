@@ -55,15 +55,17 @@ namespace Drn
 		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
 		inline bool IsSupportingEditorSelectionPass() const { return m_SupportEditorSelectionPass; }
 
-	protected:
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
 
+	protected:
 		virtual void Serialize( Archive& Ar ) override;
 
 #if WITH_EDITOR
 		void Import();
 #endif
+
+		friend class Editor;
 
 	private:
 

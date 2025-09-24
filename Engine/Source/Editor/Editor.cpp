@@ -151,6 +151,44 @@ namespace Drn
 		//	m_TaskGraphVisualizer->Attach();
 		//}
 	}
+
+	void Editor::ReimportMaterials()
+	{
+		std::unique_ptr<SystemFileNode> EngineRootFolder;
+		std::unique_ptr<SystemFileNode> GameRootFolder;
+
+		FileSystem::GetFilesInDirectory( Path::GetProjectPath() + "\\Engine\\Content", EngineRootFolder, ".drn" );
+		FileSystem::GetFilesInDirectory( Path::GetProjectPath() + "\\Game\\Content", GameRootFolder, ".drn" );
+
+		std::vector<SystemFileNode*> EngineFiles;
+		EngineRootFolder->GetFilesRecursive(EngineFiles);
+
+		std::vector<SystemFileNode*> GameFiles;
+		GameRootFolder->GetFilesRecursive(GameFiles);
+
+		auto ImportMaterialConditional = [](std::string& FilePath)
+		{
+			std::string AssetPath = FilePath.substr(9, FilePath.size() - 9);
+
+			AssetHandle<Material>MatAsset (AssetPath);
+			if (MatAsset.ValidateType())
+			{
+				MatAsset.Load();
+				MatAsset->Import();
+			}
+		};
+
+		for (SystemFileNode* Node : EngineFiles)
+		{
+			ImportMaterialConditional(Node->File.m_FullPath);
+		}
+
+		for (SystemFileNode* Node : GameFiles)
+		{
+			ImportMaterialConditional(Node->File.m_FullPath);
+		}
+	}
+
 }
 
 #endif

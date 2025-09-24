@@ -65,6 +65,25 @@ namespace Drn
 		return Result;
 	}
 
+	void SystemFileNode::GetFilesRecursive( std::vector<SystemFileNode*>& Result )
+	{
+		for (SystemFileNode* Child : Childs)
+		{
+			if (!Child)
+				continue;
+
+			if (Child->File.m_IsDirectory)
+			{
+				Child->GetFilesRecursive(Result);
+			}
+
+			else
+			{
+				Result.push_back(Child);
+			}
+		}
+	}
+
 	int SystemFileNode::GetNumberOfFiles()
 	{
 		return GetFiles().size();

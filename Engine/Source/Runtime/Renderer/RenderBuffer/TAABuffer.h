@@ -11,7 +11,7 @@ namespace Drn
 		TAAData() = default;
 
 		uint32 DeferredColorTexture;
-
+		uint32 HistoryTexture;
 	};
 
 	class TAABuffer : public RenderBuffer
@@ -30,10 +30,13 @@ namespace Drn
 		void ReleaseBuffers();
 
 		Resource* m_TAATarget;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RtvHeap;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_Handle;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_CpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE m_GpuHandle;
 
 		Resource* m_Buffer;
 		TAAData m_Data;
+
+		// TODO: make vector2d
+		static float m_JitterOffsets[4][2];
 	};
 }

@@ -140,6 +140,27 @@ namespace Drn
 			return Type;
 		}
 
+		bool ValidateType()
+		{
+			FileArchive Ar(Path::ConvertProjectPath(m_Path));
+			if (!Ar.IsValid())
+			{
+				return false;
+			}
+
+			uint16 TypeByte;
+			Ar >> TypeByte;
+
+			EAssetType Type = static_cast<EAssetType>(TypeByte);
+
+			if ( Type == T::GetAssetTypeStatic() )
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		void Release() 
 		{
 			if (IsValid())

@@ -458,20 +458,21 @@ namespace Drn
 		m_TAABuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
 
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->m_TAATarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->m_TAATarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 		m_TAABuffer->Bind( m_CommandList->GetD3D12CommandList() );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+		m_CommandList->GetD3D12CommandList()->SetComputeRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TAAPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TAABuffer->m_Buffer->GetGpuHandle()), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TAABuffer->m_Buffer->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
-		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+		int32 DispatchSizeX = m_SceneView.Size.X / 8 + 1;
+		int32 DispatchSizeY = m_SceneView.Size.Y / 8 + 1;
+		m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSizeX, DispatchSizeY, 1);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -481,7 +482,7 @@ namespace Drn
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Tone mapping" );
 
 		m_TonemapBuffer->Bind(m_CommandList->GetD3D12CommandList());
-
+		
 		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->m_TAATarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_TonemapBuffer->m_TonemapTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -746,6 +747,10 @@ namespace Drn
 					-m_SceneView.ViewToProjection.m_Matrix.m[3][2] / m_SceneView.ViewToProjection.m_Matrix.m[2][2] + 1.0f, 0.0f, 1.0f);
 			}
 		}
+
+		int32 FrameIndexMod4 = m_FrameIndex % 4;
+		m_SceneView.JitterOffset[0] = TAABuffer::m_JitterOffsets[FrameIndexMod4][0] * m_SceneView.InvSizeX;
+		m_SceneView.JitterOffset[1] = TAABuffer::m_JitterOffsets[FrameIndexMod4][1] * m_SceneView.InvSizeY;
 
 		UpdateViewBuffer();
 	}

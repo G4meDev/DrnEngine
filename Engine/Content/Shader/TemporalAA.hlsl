@@ -18,58 +18,55 @@ struct ViewBuffer
     matrix LocalToCameraView;
 
     uint2 RenderSize;
+    float2 InvSize;
+
+    float3 CameraPos;
+    float InvTanHalfFov;
+		
+    float3 CameraDir;
+    float Pad_4;
+
+    float4 InvDeviceZToWorldZTransform;
+    matrix ViewToWorld;
+    matrix ScreenToTranslatedWorld;
+    
+    uint FrameIndex;
+    uint FrameIndexMod8;
 };
 
 struct TAAData
 {
     uint DeferredColorTexture;
-    
+    uint HistoryTexture;
 };
 
 struct StaticSamplers
 {
     uint LinearSamplerIndex;
+    uint PointSamplerIndex;
 };
 
-struct VertexInputPosUV
+[numthreads(8, 8, 1)]
+void Main_CS(uint2 GroupId : SV_GroupID, uint GroupThreadIndex : SV_GroupIndex)
 {
-    float3 Position : POSITION;
-    float2 UV : TEXCOORD;
-};
-
-struct VertexShaderOutput
-{
-    float2 UV : TEXCOORD0;
-    float4 Position : SV_Position;
-};
-
-VertexShaderOutput Main_VS(VertexInputPosUV IN)
-{
-    VertexShaderOutput OUT;
-
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
-    
-    OUT.Position = mul(View.LocalToCameraView, float4(IN.Position, 1.0f));
-    OUT.Position.z = 0;
-    OUT.UV = IN.UV;
-
-    return OUT;
-}
-
-struct PixelShaderInput
-{
-    float2 UV : TEXCOORD0;
-};
-
-float4 Main_PS(PixelShaderInput IN) : SV_Target
-{
     ConstantBuffer<TAAData> TAABuffer = ResourceDescriptorHeap[BindlessResources.TAABufferIndex];
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     
     Texture2D DeferredTexture = ResourceDescriptorHeap[TAABuffer.DeferredColorTexture];
+    RWTexture2D<float4> HistoryTexture = ResourceDescriptorHeap[TAABuffer.HistoryTexture];
+
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
+    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
     
-    float3 DeferredColor = DeferredTexture.Sample(LinearSampler, IN.UV).xyz;
+    uint2 GroupThreadId = uint2(GroupThreadIndex % 8, GroupThreadIndex / 8);
+    uint2 DispatchThreadId = 8 * GroupId + GroupThreadId;
+    uint2 OutputPixelPos = DispatchThreadId;
     
-    return float4(DeferredColor, 1);
+    float2 BufferUV = (DispatchThreadId + 0.5f) * View.InvSize;
+    
+    float3 DeferredColor = DeferredTexture.Sample(PointSampler, BufferUV).xyz;
+    float3 HistoryColor = HistoryTexture[OutputPixelPos].xyz;
+
+    HistoryTexture[OutputPixelPos] = float4(DeferredColor, 1);
 }
