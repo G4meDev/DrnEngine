@@ -9,6 +9,7 @@ namespace Drn
 		, m_BaseColorTarget(nullptr)
 		, m_WorldNormalTarget(nullptr)
 		, m_MasksTarget(nullptr)
+		, m_VelocityTarget(nullptr)
 		, m_DepthTarget(nullptr)
 		, m_ScissorRect(CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ))
 	{
@@ -36,6 +37,12 @@ namespace Drn
 		m_MasksClearValue.Color[2] = 0.0f;
 		m_MasksClearValue.Color[3] = 0.0f;
 
+		m_VelocityClearValue.Format   = GBUFFER_VELOCITY_FORMAT;
+		m_VelocityClearValue.Color[0] = 0.0f;
+		m_VelocityClearValue.Color[1] = 0.0f;
+		m_VelocityClearValue.Color[2] = 0.0f;
+		m_VelocityClearValue.Color[3] = 0.0f;
+
 		m_DepthClearValue.Format = DEPTH_FORMAT;
 		m_DepthClearValue.DepthStencil = { 0, 0 };
 	}
@@ -46,6 +53,7 @@ namespace Drn
 		if (m_BaseColorTarget) { m_BaseColorTarget->ReleaseBufferedResource(); }
 		if (m_WorldNormalTarget) { m_WorldNormalTarget->ReleaseBufferedResource(); }
 		if (m_MasksTarget) { m_MasksTarget->ReleaseBufferedResource(); }
+		if (m_VelocityTarget) { m_VelocityTarget->ReleaseBufferedResource(); }
 		if (m_DepthTarget) { m_DepthTarget->ReleaseBufferedResource(); }
 	}
 
@@ -56,7 +64,7 @@ namespace Drn
 
 		D3D12_DESCRIPTOR_HEAP_DESC GuidHeapDesc = {};
 		GuidHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		GuidHeapDesc.NumDescriptors = 4;
+		GuidHeapDesc.NumDescriptors = 5;
 		Device->CreateDescriptorHeap( &GuidHeapDesc, IID_PPV_ARGS(m_RtvHeap.ReleaseAndGetAddressOf()) );
 
 		D3D12_DESCRIPTOR_HEAP_DESC DepthHeapDesc = {};
@@ -68,6 +76,7 @@ namespace Drn
 		m_BaseColorCpuHandle		= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 1, Renderer::Get()->GetRtvIncrementSize());
 		m_WorldNormalCpuHandle		= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 2, Renderer::Get()->GetRtvIncrementSize());
 		m_MasksCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 3, Renderer::Get()->GetRtvIncrementSize());
+		m_VelocityCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 4, Renderer::Get()->GetRtvIncrementSize());
 		m_DepthCpuHandle			= m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 
 #if D3D12_Debug_INFO
@@ -183,6 +192,31 @@ namespace Drn
 		}
 
 		{
+			if (m_VelocityTarget)
+				m_VelocityTarget->ReleaseBufferedResource();
+
+			m_VelocityTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
+				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_VELOCITY_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+				D3D12_RESOURCE_STATE_RENDER_TARGET, m_VelocityClearValue);
+
+			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
+			RenderTargetViewDesc.Format = GBUFFER_VELOCITY_FORMAT;
+			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+			RenderTargetViewDesc.Texture2D.MipSlice = 0;
+
+			Device->CreateRenderTargetView( m_VelocityTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_VelocityCpuHandle );
+
+			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+			SrvDesc.Format = GBUFFER_VELOCITY_FORMAT;
+			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			SrvDesc.Texture2D.MipLevels = 1;
+			SrvDesc.Texture2D.MostDetailedMip = 0;
+
+			Device->CreateShaderResourceView( m_VelocityTarget->GetD3D12Resource(), &SrvDesc, m_VelocityTarget->GetCpuHandle() );
+		}
+
+		{
 			if (m_DepthTarget)
 				m_DepthTarget->ReleaseBufferedResource();
 		
@@ -214,6 +248,7 @@ namespace Drn
 		m_BaseColorTarget->SetName( "Gbuffer_BaseColor" );
 		m_WorldNormalTarget->SetName( "Gbuffer_WorldNormal" );
 		m_MasksTarget->SetName( "Gbuffer_Masks" );
+		m_VelocityTarget->SetName( "Gbuffer_Velocity" );
 		m_DepthTarget->SetName( "Gbuffer_Depth" );
 #endif
 
@@ -225,6 +260,7 @@ namespace Drn
 		CommandList->ClearRenderTargetView( m_BaseColorCpuHandle, m_BaseColorClearValue.Color, 0, nullptr );
 		CommandList->ClearRenderTargetView( m_WorldNormalCpuHandle, m_WorldNormalClearValue.Color, 0, nullptr );
 		CommandList->ClearRenderTargetView( m_MasksCpuHandle, m_MasksClearValue.Color, 0, nullptr );
+		CommandList->ClearRenderTargetView( m_VelocityCpuHandle, m_VelocityClearValue.Color, 0, nullptr );
 		CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
@@ -233,15 +269,16 @@ namespace Drn
 		CommandList->RSSetViewports(1, &m_Viewport);
 		CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[4] = 
+		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[5] = 
 		{
 			m_ColorDeferredCpuHandle,
 			m_BaseColorCpuHandle,
 			m_WorldNormalCpuHandle,
 			m_MasksCpuHandle,
+			m_VelocityCpuHandle,
 		};
 
-		CommandList->OMSetRenderTargets( 4, RenderTargets, false, &m_DepthCpuHandle );
+		CommandList->OMSetRenderTargets( 5, RenderTargets, false, &m_DepthCpuHandle );
 	}
 
 	void GBuffer::BindLightPass( ID3D12GraphicsCommandList2* CommandList )

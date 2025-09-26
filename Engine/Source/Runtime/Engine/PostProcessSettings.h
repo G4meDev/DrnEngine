@@ -54,6 +54,23 @@ namespace Drn
 #endif
 	};
 
+	class TAASettings : public Serializable
+	{
+	public:
+
+		TAASettings()
+			: m_JitterOffsetScale(1.0f)
+		{};
+
+		virtual void Serialize(Archive& Ar) override;
+
+		float m_JitterOffsetScale;
+
+#if WITH_EDITOR
+		bool Draw();
+#endif
+	};
+
 	class PostProcessSettings : public Serializable
 	{
 	public:
@@ -65,6 +82,7 @@ namespace Drn
 
 		SSAOSettings m_SSAOSettings;
 		SSRSettings m_SSRSettings;
+		TAASettings m_TAASettings;
 
 #if WITH_EDITOR
 		bool Draw();

@@ -37,11 +37,11 @@ namespace Drn
 				continue;
 			}
 
-			m_PrimitiveSource[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+			m_PrimitiveSource[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 
 			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
 			ResourceViewDesc.BufferLocation = m_PrimitiveSource[i]->GetD3D12Resource()->GetGPUVirtualAddress();
-			ResourceViewDesc.SizeInBytes = 256;
+			ResourceViewDesc.SizeInBytes = 512;
 			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_PrimitiveSource[i]->GetCpuHandle());
 
 	#if D3D12_Debug_INFO
@@ -53,6 +53,9 @@ namespace Drn
 
 	void StaticMeshSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
 	{
+		m_PrimitiveBuffer.m_PrevLocalToWorld = m_PrimitiveBuffer.m_LocalToWorld;
+		m_PrimitiveBuffer.m_PrevLocalToProjection = m_PrimitiveBuffer.m_LocalToProjection;
+
 		if (m_OwningStaticMeshComponent->IsRenderStateDirty())
 		{
 			m_Mesh = m_OwningStaticMeshComponent->GetMesh();

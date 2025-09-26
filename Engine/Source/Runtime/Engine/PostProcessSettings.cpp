@@ -38,6 +38,7 @@ namespace Drn
 	{
 		m_SSAOSettings.Serialize(Ar);
 		m_SSRSettings.Serialize(Ar);
+		m_TAASettings.Serialize(Ar);
 	}
 
 #if WITH_EDITOR
@@ -46,6 +47,7 @@ namespace Drn
 		bool Dirty = false;
 		Dirty |= m_SSAOSettings.Draw();
 		Dirty |= m_SSRSettings.Draw();
+		Dirty |= m_TAASettings.Draw();
 		return Dirty;
 	}
 	bool SSAOSettings::Draw()
@@ -102,7 +104,29 @@ namespace Drn
 
 		return Dirty;
 	}
-
 #endif
 
-}
+	void TAASettings::Serialize( Archive& Ar )
+	{
+		
+	}
+
+#if WITH_EDITOR
+	bool TAASettings::Draw()
+	{
+		bool Dirty = false;
+
+		ImGui::PushID( "TAA" );
+
+		if (ImGui::CollapsingHeader("TemporalAA", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			Dirty |= ImGui::DragFloat("Intensity", &m_JitterOffsetScale, 0.05f, 0, 10, "%.2f");
+		}
+
+		ImGui::PopID();
+
+		return Dirty;
+	}
+#endif
+
+}  // namespace Drn

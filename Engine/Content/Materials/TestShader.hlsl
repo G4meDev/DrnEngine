@@ -55,6 +55,8 @@ struct ViewBuffer
     uint FrameIndex;
     uint FrameIndexMod8;
     float2 JitterOffset;
+    
+    float2 PrevJitterOffset;
 };
 
 struct Primitive
@@ -62,6 +64,8 @@ struct Primitive
     matrix LocalToWorld;
     matrix LocalToProjection;
     uint4 Guid;
+    matrix PrevLocalToWorld;
+    matrix PrevLocalToProjection;
 };
 
 struct StaticSamplers
@@ -119,6 +123,8 @@ struct VertexShaderOutput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
+    float4 ScreenPos : TEXCOORD1;
+    float4 PrevScreenPos : TEXCOORD2;
     float4 Position : SV_Position;
 };
 
@@ -160,8 +166,11 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Normal = VertexNormal;
     OUT.UV = IN.UV1;
     
+    OUT.ScreenPos = OUT.Position;
+    OUT.PrevScreenPos = mul(P.PrevLocalToProjection, float4(IN.Position, 1.0f));
+    
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
-    OUT.Position.xy += View.JitterOffset * 1 * OUT.Position.w;
+    OUT.Position.xy += View.JitterOffset * OUT.Position.w;
 
 #endif
     
@@ -179,6 +188,8 @@ struct PixelShaderInput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
+    float4 ScreenPos : TEXCOORD1;
+    float4 PrevScreenPos : TEXCOORD2;
 #endif
 };
 
@@ -189,6 +200,7 @@ struct PixelShaderOutput
     float4 BaseColor : SV_TARGET1;
     float2 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
+    float2 Velocity : SV_TARGET4;
 #elif HITPROXY_PASS
     uint4 Guid;
 #elif EDITOR_PRIMITIVE_PASS
@@ -242,6 +254,10 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     //OUT.WorldNormal = float4( Normal, 0);
     OUT.WorldNormal = N;
     OUT.Masks = float4(Masks, 1.0f/255);
+    
+    float2 Velocity = IN.ScreenPos.xy / IN.ScreenPos.w - IN.PrevScreenPos.xy / IN.PrevScreenPos.w;
+    Velocity = Velocity * 0.25f + 0.5f;
+    OUT.Velocity = Velocity;
     
 #elif HITPROXY_PASS
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];

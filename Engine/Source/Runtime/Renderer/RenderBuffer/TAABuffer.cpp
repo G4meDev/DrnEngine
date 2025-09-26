@@ -5,17 +5,34 @@
 
 namespace Drn
 {
-	float TAABuffer::m_JitterOffsets[4][2] = 
+	float TAABuffer::m_JitterOffsets[8][2] = 
 	{
-		{-0.5f, -0.5f},
-		{0.5f, -0.5f},
-		{0.5f, 0.5f},
-		{-0.5f, 0.5f}
+		{0.0, -0.33334},
+		{-0.5, 0.333334},
+		{0.5f, -0.777778},
+		{-0.75, -0.111112},
+		{0.25, 0.555556},
+		{-0.25, -0.555556},
+		{ 0.75, 0.111112},
+		{-0.875, 0.777778},
 	};
+
+	//float TAABuffer::m_JitterOffsets[4][2] = 
+	//{
+	//	{-0.5f, -0.5f},
+	//	{0.5f, -0.5f},
+	//	{0.5f, 0.5f},
+	//	{-0.5f, 0.5f}
+	//};
+
+	//float TAABuffer::m_JitterOffsets[2][2] = 
+	//{
+	//	{0.5f, 0.0f},
+	//	{0.0f, 0.5f}
+	//};
 
 	TAABuffer::TAABuffer()
 		: RenderBuffer()
-		, m_TAATarget(nullptr)
 		, m_Buffer(nullptr)
 	{
 		
@@ -25,7 +42,11 @@ namespace Drn
 	{
 		ReleaseBuffers();
 
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+		for ( int32 i = 0; i < 2; i++)
+		{
+			m_UAVHandles[i].FreeDescriptorSlot();
+			m_SrvHandles[i].FreeDescriptorSlot();
+		}
 	}
 
 	void TAABuffer::Init()
@@ -33,7 +54,11 @@ namespace Drn
 		RenderBuffer::Init();
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc( &m_CpuHandle, &m_GpuHandle );
+		for (int32 i = 0; i < 2; i++)
+		{
+			m_UAVHandles[i].AllocateDescriptorSlot();
+			m_SrvHandles[i].AllocateDescriptorSlot();
+		}
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -53,38 +78,42 @@ namespace Drn
 		RenderBuffer::Resize(Size);
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		if (m_TAATarget)
+		for (int32 i = 0; i < 2; i++)
 		{
-			m_TAATarget->ReleaseBufferedResource();
-			m_TAATarget = nullptr;
-		}
+			if ( m_TAATarget[i] )
+			{
+				m_TAATarget[i]->ReleaseBufferedResource();
+				m_TAATarget[i] = nullptr;
+			}
 
-		m_TAATarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-			CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_COLOR_DEFERRED_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
-			D3D12_RESOURCE_STATE_COMMON);
 
-		D3D12_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
-		DescUAV.Format = GBUFFER_COLOR_DEFERRED_FORMAT;
-		DescUAV.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-		DescUAV.Texture2D.MipSlice = 0;
-		DescUAV.Texture2D.PlaneSlice = 0;
+			m_TAATarget[i] = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
+				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_COLOR_DEFERRED_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+				D3D12_RESOURCE_STATE_COMMON);
+
+			D3D12_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};
+			DescUAV.Format = GBUFFER_COLOR_DEFERRED_FORMAT;
+			DescUAV.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+			DescUAV.Texture2D.MipSlice = 0;
+			DescUAV.Texture2D.PlaneSlice = 0;
 		
-		Device->CreateUnorderedAccessView(m_TAATarget->GetD3D12Resource(), nullptr, &DescUAV, m_CpuHandle);
+			m_UAVHandles[i].CreateUnorderedView( DescUAV, m_TAATarget[i]->GetD3D12Resource() );
 
 #if D3D12_Debug_INFO
-		m_TAATarget->SetName( "TAATarget" );
+			m_TAATarget[i]->SetName( "TAATarget_" + std::to_string(i) );
 #endif
-
 // --------------------------------------------------------------------------------------------------------------
 
-		D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
-		Desc.Format = GBUFFER_COLOR_DEFERRED_FORMAT;
-		Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		Desc.Texture2D.MipLevels = 1;
-		Desc.Texture2D.MostDetailedMip = 0;
+			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
+			Desc.Format = GBUFFER_COLOR_DEFERRED_FORMAT;
+			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			Desc.Texture2D.MipLevels = 1;
+			Desc.Texture2D.MostDetailedMip = 0;
 
-		Device->CreateShaderResourceView(m_TAATarget->GetD3D12Resource(), &Desc, m_TAATarget->GetCpuHandle());
+			m_SrvHandles[i].CreateView(Desc, m_TAATarget[i]->GetD3D12Resource());
+		}
+
 	}
 
 	void TAABuffer::Clear( ID3D12GraphicsCommandList2* CommandList )
@@ -99,7 +128,9 @@ namespace Drn
 	void TAABuffer::MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
 		m_Data.DeferredColorTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_ColorDeferredTarget->GetGpuHandle());
-		m_Data.HistoryTexture = Renderer::Get()->GetBindlessSrvIndex(m_GpuHandle);
+		m_Data.VelocityTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_VelocityTarget->GetGpuHandle());
+		m_Data.HistoryTexture = GetHistorySRV(Renderer->m_SceneView.FrameIndex).GetIndex();
+		m_Data.TargetTexture = GetFrameUAV(Renderer->m_SceneView.FrameIndex).GetIndex();
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
@@ -110,10 +141,13 @@ namespace Drn
 
 	void TAABuffer::ReleaseBuffers()
 	{
-		if (m_TAATarget)
+		for (int32 i = 0; i < 2; i++)
 		{
-			m_TAATarget->ReleaseBufferedResource();
-			m_TAATarget = nullptr;
+			if (m_TAATarget[i])
+			{
+				m_TAATarget[i]->ReleaseBufferedResource();
+				m_TAATarget[i] = nullptr;
+			}
 		}
 
 		if (m_Buffer)

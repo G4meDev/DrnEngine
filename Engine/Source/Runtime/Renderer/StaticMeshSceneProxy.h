@@ -15,6 +15,8 @@ namespace Drn
 		Matrix m_LocalToWorld;
 		Matrix m_LocalToProjection;
 		Guid m_Guid;
+		Matrix m_PrevLocalToWorld;
+		Matrix m_PrevLocalToProjection;
 	};
 
 	class StaticMeshSceneProxy : public PrimitiveSceneProxy
