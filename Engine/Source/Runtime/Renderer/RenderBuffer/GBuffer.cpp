@@ -38,8 +38,8 @@ namespace Drn
 		m_MasksClearValue.Color[3] = 0.0f;
 
 		m_VelocityClearValue.Format   = GBUFFER_VELOCITY_FORMAT;
-		m_VelocityClearValue.Color[0] = 0.0f;
-		m_VelocityClearValue.Color[1] = 0.0f;
+		m_VelocityClearValue.Color[0] = 0.5f;
+		m_VelocityClearValue.Color[1] = 0.5f;
 		m_VelocityClearValue.Color[2] = 0.0f;
 		m_VelocityClearValue.Color[3] = 0.0f;
 

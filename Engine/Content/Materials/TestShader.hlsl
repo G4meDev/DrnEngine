@@ -169,8 +169,8 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.ScreenPos = OUT.Position;
     OUT.PrevScreenPos = mul(P.PrevLocalToProjection, float4(IN.Position, 1.0f));
     
-    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
-    OUT.Position.xy += View.JitterOffset * OUT.Position.w;
+    //ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    //OUT.Position.xy += View.JitterOffset * OUT.Position.w;
 
 #endif
     

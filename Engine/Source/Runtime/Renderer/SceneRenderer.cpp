@@ -695,12 +695,24 @@ namespace Drn
 		m_SceneView.FrameIndex = ++m_FrameIndex;
 		m_SceneView.FrameIndexMod8 = m_FrameIndex % 8;
 
+		m_SceneView.Size = GetViewportSize();
+		m_SceneView.InvSizeX = 1.0f / m_SceneView.Size.X;
+		m_SceneView.InvSizeY = 1.0f / m_SceneView.Size.Y;
+
+		m_SceneView.PrevJitterOffset[0] = m_SceneView.JitterOffset[0];
+		m_SceneView.PrevJitterOffset[1] = m_SceneView.JitterOffset[1];
+
+		m_SceneView.JitterOffset[0] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8][0] * m_SceneView.InvSizeX * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
+		m_SceneView.JitterOffset[1] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8][1] * m_SceneView.InvSizeY * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
+
 		ViewInfo VInfo = m_Scene->GetWorld()->GetPlayerWorldView();
 		VInfo.AspectRatio = (float) GetViewportSize().X / GetViewportSize().Y;
 
 		m_SceneView.AspectRatio = VInfo.AspectRatio;
 		m_SceneView.WorldToView = VInfo.CalculateViewMatrix();
 		m_SceneView.ViewToProjection = VInfo.CalculateProjectionMatrix();
+		m_SceneView.ViewToProjection.m_Matrix.m[2][0] += m_SceneView.JitterOffset[0];
+		m_SceneView.ViewToProjection.m_Matrix.m[2][1] += m_SceneView.JitterOffset[1];
 
 		m_SceneView.WorldToProjection = m_SceneView.WorldToView * m_SceneView.ViewToProjection;
 		m_SceneView.ProjectionToView = XMMatrixInverse( NULL, m_SceneView.ViewToProjection.Get() );
@@ -715,11 +727,7 @@ namespace Drn
 		Matrix M = Matrix(V1, V2, V3, V4);
 		m_SceneView.ScreenToTranslatedWorld = M * m_SceneView.ProjectionToWorld;
 
-		m_SceneView.LocalToCameraView = Matrix( Transform(VInfo.Location, VInfo.Rotation) ).Get() * m_SceneView.WorldToView.Get();
-		
-		m_SceneView.Size = GetViewportSize();
-		m_SceneView.InvSizeX = 1.0f / m_SceneView.Size.X;
-		m_SceneView.InvSizeY = 1.0f / m_SceneView.Size.Y;
+		m_SceneView.LocalToCameraView = Matrix( Transform(VInfo.Location, VInfo.Rotation) ).Get() * m_SceneView.WorldToView.Get();		
 
 		m_SceneView.CameraPos = VInfo.Location;
 		m_SceneView.CameraDir = VInfo.Rotation.GetVector();
@@ -750,12 +758,6 @@ namespace Drn
 					-m_SceneView.ViewToProjection.m_Matrix.m[3][2] / m_SceneView.ViewToProjection.m_Matrix.m[2][2] + 1.0f, 0.0f, 1.0f);
 			}
 		}
-
-		m_SceneView.PrevJitterOffset[0] = m_SceneView.JitterOffset[0];
-		m_SceneView.PrevJitterOffset[1] = m_SceneView.JitterOffset[1];
-
-		m_SceneView.JitterOffset[0] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8][0] * m_SceneView.InvSizeX * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
-		m_SceneView.JitterOffset[1] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8][1] * m_SceneView.InvSizeY * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
 
 		UpdateViewBuffer();
 	}

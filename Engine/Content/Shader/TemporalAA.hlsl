@@ -53,8 +53,18 @@ float3 Luminance(float3 LinearColor)
     return dot(LinearColor, float3(0.3, 0.59, 0.11));
 }
 
+float2 ViewportUVToScreenPos(float2 ViewportUV)
+{
+    return float2(2 * ViewportUV.x - 1, 1 - 2 * ViewportUV.y);
+}
+
+float2 ScreenPosToViewportUV(float2 ScreenPos)
+{
+    return float2(0.5 + 0.5 * ScreenPos.x, 0.5 - 0.5 * ScreenPos.y);
+}
+
 [numthreads(8, 8, 1)]
-void Main_CS(uint2 GroupId : SV_GroupID, uint GroupThreadIndex : SV_GroupIndex)
+void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_GroupID, uint GroupThreadIndex : SV_GroupIndex)
 {
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
     ConstantBuffer<TAAData> TAABuffer = ResourceDescriptorHeap[BindlessResources.TAABufferIndex];
@@ -68,40 +78,30 @@ void Main_CS(uint2 GroupId : SV_GroupID, uint GroupThreadIndex : SV_GroupIndex)
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
     
-    uint2 GroupThreadId = uint2(GroupThreadIndex % 8, GroupThreadIndex / 8);
-    uint2 DispatchThreadId = 8 * GroupId + GroupThreadId;
-    uint2 OutputPixelPos = DispatchThreadId;
-    
     float2 BufferUV = (DispatchThreadId + 0.5f) * View.InvSize;
+    uint2 OutputPixelPos = DispatchThreadId;
     
     float2 Velocity = VelocityTexture.Sample(PointSampler, BufferUV).xy;
     Velocity = (Velocity - 0.5f) * 4;
     
-    float2 PrevUV = BufferUV - (Velocity * View.InvSize * 0.25);
-    bool bValid = PrevUV.x >= 0 && PrevUV.x <= 1 && PrevUV.y >= 0 && PrevUV.y <= 1;
+    float2 ScreenPos = ViewportUVToScreenPos(BufferUV);
+    float2 PrevScreenPos = ScreenPos - Velocity;
+    float2 PrevUV = ScreenPosToViewportUV(PrevScreenPos);
     
     float3 DeferredColor = DeferredTexture.Sample(PointSampler, BufferUV).xyz;
     float3 Result;
 
-    if(bValid)
+    bool OffScreen = max(abs(PrevScreenPos.x), abs(PrevScreenPos.y)) >= 1.0;
+    if (!OffScreen)
     {
-        //float3 HistoryColor = HistoryTexture[OutputPixelPos].xyz;
-        
-        //uint2 HistoryPos = PrevUV * View.RenderSize;
-        //float3 HistoryColor = HistoryTexture[HistoryPos].xyz;
-        
         float3 HistoryColor = HistoryTexture.Sample(PointSampler, PrevUV).xyz;
-       
-        Result = lerp(DeferredColor, HistoryColor, 0.9f);
-        //Result = 0;
+        Result = lerp(DeferredColor, HistoryColor, 0.5f);
     }
     
     else
     {
         Result = DeferredColor;
     }
-    
-    //Result = float3(PrevUV.xy, 0);
     
     TargetTexture[OutputPixelPos] = float4(Result, 1);
 }
