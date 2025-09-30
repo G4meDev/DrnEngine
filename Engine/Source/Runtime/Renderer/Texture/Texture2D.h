@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Texture.h"
+#include "Runtime/Renderer/ResourceView.h"
 
 namespace Drn
 {
@@ -19,14 +20,18 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
+		void InitResources( ID3D12GraphicsCommandList2* CommandList );
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
-
-		void ReleaseDescriptors();
 
 		EAssetType GetAssetType() override { return EAssetType::Texture2D; };
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Texture2D; }
 
+		inline uint32 GetTextureIndex() const { return m_DescriptorHandle.GetIndex(); }
+
 	protected:
+
+		DescriptorHandleSRV m_DescriptorHandle;
+		bool m_Initialized = false;
 
 #if WITH_EDITOR
 		void Import();

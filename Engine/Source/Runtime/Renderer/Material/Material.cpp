@@ -543,16 +543,12 @@ namespace Drn
 
 			for (auto& TextureSlot : m_Texture2DSlots)
 			{
-				Resource* TextureResource = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetResource() : nullptr;
-				if (TextureResource)
-					TextureIndices[TextureSlot.m_Index] = (Renderer::Get()->GetBindlessSrvIndex(TextureResource->GetGpuHandle()));
+				TextureIndices[TextureSlot.m_Index] = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetTextureIndex() : 0;
 			}
 
 			for (auto& TextureSlot : m_TextureCubeSlots)
 			{
-				Resource* TextureResource = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetResource() : nullptr;
-				if (TextureResource)
-					TextureIndices[TextureSlot.m_Index] = (Renderer::Get()->GetBindlessSrvIndex(TextureResource->GetGpuHandle()));
+				TextureIndices[TextureSlot.m_Index] = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetTextureIndex() : 0;
 			}
 
 			UINT8* ConstantBufferStart;

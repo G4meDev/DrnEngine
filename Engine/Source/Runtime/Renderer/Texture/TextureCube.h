@@ -17,6 +17,7 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
+		void InitResources( ID3D12GraphicsCommandList2* CommandList );
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 
 		void ReleaseDescriptors();
@@ -24,7 +25,12 @@ namespace Drn
 		EAssetType GetAssetType() override { return EAssetType::TextureCube; };
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::TextureCube; }
 	
+		inline uint32 GetTextureIndex() const { return m_DescriptorHandle.GetIndex(); }
+
 	protected:
+
+		DescriptorHandleSRV m_DescriptorHandle;
+		bool m_Initialized = false;
 
 #if WITH_EDITOR
 		void Import();

@@ -41,8 +41,20 @@ namespace Drn
 		}
 	}
 
+	void TextureCube::InitResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_Initialized = true;
+
+		m_DescriptorHandle.AllocateDescriptorSlot();
+	}
+
 	void TextureCube::UploadResources( ID3D12GraphicsCommandList2* CommandList )
 	{
+		if (!m_Initialized)
+		{
+			InitResources(CommandList);
+		}
+
 		if (IsRenderStateDirty())
 		{
 			ReleaseResources();
@@ -103,7 +115,7 @@ namespace Drn
 			ResourceViewDesc.TextureCube.MostDetailedMip = 0;
 			ResourceViewDesc.TextureCube.ResourceMinLODClamp = 0;
 
-			Device->CreateShaderResourceView(m_Resource->GetD3D12Resource(), &ResourceViewDesc, m_Resource->GetCpuHandle());
+			m_DescriptorHandle.CreateView(ResourceViewDesc, m_Resource->GetD3D12Resource());
 
 			ClearRenderStateDirty();
 		}

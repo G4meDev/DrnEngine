@@ -25,14 +25,7 @@ namespace Drn
  
 	Texture2D::~Texture2D()
 	{
-		ReleaseDescriptors();
-	}
-
-	void Texture2D::ReleaseDescriptors()
-	{
-		if (Renderer::Get())
-		{
-		}
+		m_DescriptorHandle.FreeDescriptorSlot();
 	}
 
 	void Texture2D::Serialize( Archive& Ar )
@@ -50,12 +43,23 @@ namespace Drn
 		}
 	}
 
+	void Texture2D::InitResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_Initialized = true;
+
+		m_DescriptorHandle.AllocateDescriptorSlot();
+	}
+
 	void Texture2D::UploadResources( ID3D12GraphicsCommandList2* CommandList )
 	{
+		if (!m_Initialized)
+		{
+			InitResources(CommandList);
+		}
+
 		if (IsRenderStateDirty())
 		{
 			ReleaseResources();
-			ReleaseDescriptors();
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
@@ -111,7 +115,7 @@ namespace Drn
 			ResourceViewDesc.Texture2D.MipLevels = m_MipLevels;
 			ResourceViewDesc.Texture2D.MostDetailedMip = 0;
 
-			Device->CreateShaderResourceView(m_Resource->GetD3D12Resource(), &ResourceViewDesc, m_Resource->GetCpuHandle());
+			m_DescriptorHandle.CreateView(ResourceViewDesc, m_Resource->GetD3D12Resource());
 
 // -----------------------------------------------------------------------------------------------------------------------------
 

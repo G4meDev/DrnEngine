@@ -86,6 +86,14 @@ namespace Drn
 		debugInterface->EnableDebugLayer();
 #endif
 
+#if D3D12_DRED
+		ComPtr<ID3D12DeviceRemovedExtendedDataSettings> DRED;
+		D3D12GetDebugInterface( IID_PPV_ARGS( &DRED ) );
+		DRED->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+		DRED->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+		DRED->SetWatsonDumpEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+#endif
+
 #if D3D12_GPU_VALIDATION
 		Microsoft::WRL::ComPtr<ID3D12Debug> spDebugController0;
 		Microsoft::WRL::ComPtr<ID3D12Debug1> spDebugController1;
