@@ -120,7 +120,6 @@ struct VertexShaderOutput
 VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
-    
 
 #if SHADOW_PASS_POINTLIGHT
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];

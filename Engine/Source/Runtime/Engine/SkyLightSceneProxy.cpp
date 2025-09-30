@@ -37,7 +37,7 @@ namespace Drn
 		m_SkyLightData.Color = m_LightColor;
 		m_SkyLightData.BlockLowerHemesphere = m_BlockLowerHemesphere;
 		m_SkyLightData.LowerHemesphereColor = m_LowerHemesphereColor;
-		m_SkyLightData.CubemapTexture = m_Cubemap.IsValid() ? Renderer::Get()->GetBindlessSrvIndex(m_Cubemap->GetResource()->GetGpuHandle()) : 0;
+		m_SkyLightData.CubemapTexture = m_Cubemap.IsValid() ? m_Cubemap->GetTextureIndex() : 0;
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );

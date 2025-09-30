@@ -155,11 +155,8 @@ namespace Drn
 				m_Sprite->UploadResources(CommandList);
 			}
 
-			if (m_Sprite->GetResource())
-			{
-				// TODO: set default texture if null
-				m_BillboardData.m_TextureIndex = m_Sprite->GetResource() ? Renderer::Get()->GetBindlessSrvIndex(m_Sprite->GetResource()->GetGpuHandle()) : 0;
-			}
+			// TODO: set default texture if null
+			m_BillboardData.m_TextureIndex = m_Sprite.IsValid() ? m_Sprite->GetTextureIndex() : 0;
 		}
 
 		m_BillboardData.m_LocalToProjetcion = mvpMatrix;

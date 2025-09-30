@@ -1,0 +1,6 @@
+{
+  "hlsl.additionalIncludeDirectories": [
+    "C:\\SelfProjects\\DrnEngine\\Engine\\Content\\Materials"
+  ],
+  "root": true
+}

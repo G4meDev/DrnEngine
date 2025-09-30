@@ -383,11 +383,11 @@ set( OPTICK_SOURCES
 )
 
 #set( SHADER_FILES_VS
-#    Content/Shaders/TestShader_VS.hlsl
+#    Content/Shader/DebugLineShader.hlsl
 #)
 #
 #set( SHADER_FILES_PS
-#    Content/Shaders/TestShader_PS.hlsl
+#    Content/Shader/DebugLineShader.hlsl
 #)
 #
 #set( SHADER_FILES
@@ -396,6 +396,14 @@ set( OPTICK_SOURCES
 #)
 #
 #source_group( "Content\\Shaders" FILES ${SHADER_FILES_VS} ${SHADER_FILES_PS} )
+
+#set( SHADER_FILES
+#    Content/Materials/Common.hlsl
+#)
+
+file(GLOB_RECURSE SHADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Content/*.hlsl")
+
+source_group( "Content\\Shaders" FILES ${SHADER_FILES} )
 
 add_library( Engine STATIC
     ${HEADER_FILES}
@@ -502,6 +510,12 @@ add_custom_command(TARGET Engine POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${PROJECT_SOURCE_DIR}/ThirdParty/DXC/bin/
 		${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
+)
+
+set_source_files_properties( ${SHADER_FILES}
+    PROPERTIES
+        VS_SHADER_MODEL 6.2
+		VS_SETTINGS "ExcludedFromBuild=true"
 )
 
 #set_source_files_properties( ${SHADER_FILES_PS}

@@ -64,7 +64,7 @@ namespace Drn
 
 		SkyLightSceneProxy* SkyProxy = Renderer->GetScene()->m_SkyLightProxies.size() > 0 ? *Renderer->GetScene()->m_SkyLightProxies.begin() : nullptr;
 		AssetHandle<TextureCube> SkyCubemap = SkyProxy ? SkyProxy->GetCubemap() : AssetHandle<TextureCube>();
-		m_Data.SkyCubemapTexture = SkyCubemap.IsValid() ? Renderer::Get()->GetBindlessSrvIndex(SkyCubemap->GetResource()->GetGpuHandle()) : 0;
+		m_Data.SkyCubemapTexture = SkyCubemap.IsValid() ? SkyCubemap->GetTextureIndex() : 0;
 		m_Data.SkyLightMipCount = SkyCubemap.IsValid() ? SkyCubemap->GetMipLevels() : 0;
 		m_Data.SkyLightColor = SkyProxy ? SkyProxy->GetColor() : Vector::ZeroVector;
 

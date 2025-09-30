@@ -19,9 +19,19 @@ set( SRC_FILES
 	Source/Player/TestPlayerCharacter.cpp
 )
 
+#set( SHADER_FILES
+#    Content/Level_1/Prob_2/M_Prop_2.hlsl
+#    Content/Level_1/Prob_2/M_Prop_1.hlsl
+#)
+
+file(GLOB_RECURSE SHADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Content/*.hlsl")
+
+source_group( "Content\\Shaders" FILES ${SHADER_FILES} )
+
 add_executable( ${TARGET_NAME} WIN32
     ${HEADER_FILES} 
     ${SRC_FILES}
+    ${SHADER_FILES}
 )
 
 target_compile_definitions( Engine
@@ -37,6 +47,7 @@ add_compile_definitions($<$<CONFIG:RelWithDebInfo>:WITH_DEBUG>)
 target_include_directories( ${TARGET_NAME}
     PRIVATE inc
     PRIVATE inc Source/
+    PRIVATE inc ../Engine/Content/Materials/
 )
 
 target_link_libraries( ${TARGET_NAME}
@@ -53,5 +64,19 @@ set_source_files_properties( Source/GamePCH.cpp
         COMPILE_FLAGS /Yc"GamePCH.h"
 )
 
-#set( COMMAND_ARGUMENTS "-wd \"${CMAKE_SOURCE_DIR}\"" )
-#configure_file( 01-ClearScreen.vcxproj.user.in ${CMAKE_CURRENT_BINARY_DIR}/01-ClearScreen.vcxproj.user @ONLY )
+# -----------------------------------------------------------------------------------------------
+
+set_source_files_properties( ${SHADER_FILES}
+    PROPERTIES
+        VS_SHADER_MODEL 6.2
+        VS_SETTINGS "ExcludedFromBuild=true"
+)
+
+#foreach(SHADER_FILE IN LISTS SHADER_FILES)
+#    set_property(SOURCE ${SHADER_FILE} PROPERTY INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/../Engine/Content/Materials/")
+#endforeach()
+
+#set_source_files_properties( Content/Shaders/TestShader_VS.hlsl
+#    PROPERTIES
+#        VS_SHADER_VARIABLE_NAME TestShader_VS
+#)
