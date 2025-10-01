@@ -59,7 +59,7 @@ namespace Drn
 		m_Data.MasksTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_MasksTarget->GetGpuHandle());
 		m_Data.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
 		m_Data.SSRTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_ScreenSpaceReflectionBuffer->m_Target->GetGpuHandle());
-		m_Data.PreintegratedGFTexture = Renderer::Get()->GetBindlessSrvIndex(CommonResources::Get()->m_PreintegratedGF->GetResource()->GetGpuHandle());
+		m_Data.PreintegratedGFTexture = CommonResources::Get()->m_PreintegratedGF->GetTextureIndex();
 		m_Data.AOTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_AOBuffer->m_AOTarget->GetGpuHandle());
 
 		SkyLightSceneProxy* SkyProxy = Renderer->GetScene()->m_SkyLightProxies.size() > 0 ? *Renderer->GetScene()->m_SkyLightProxies.begin() : nullptr;

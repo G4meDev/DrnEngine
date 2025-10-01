@@ -190,7 +190,7 @@ namespace Drn
 		m_AoData.DownSampleTexture = Renderer::Get()->GetBindlessSrvIndex(m_AOHalfTarget->GetGpuHandle());
 
 		Texture2D* SSAO_RandomTexture = CommonResources::Get()->m_SSAO_Random.Get();
-		m_AoData.RandomTexture = Renderer::Get()->GetBindlessSrvIndex(SSAO_RandomTexture->GetResource()->GetGpuHandle());
+		m_AoData.RandomTexture = SSAO_RandomTexture->GetTextureIndex();
 
 		m_AoData.ToRandomU = (float) m_Size.X / SSAO_RandomTexture->GetSizeX();
 		m_AoData.ToRandomV = (float) m_Size.Y / SSAO_RandomTexture->GetSizeY();
