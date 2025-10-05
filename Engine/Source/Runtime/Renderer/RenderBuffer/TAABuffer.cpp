@@ -132,6 +132,8 @@ namespace Drn
 		m_Data.HistoryTexture = GetHistorySRV(Renderer->m_SceneView.FrameIndex).GetIndex();
 		m_Data.TargetTexture = GetFrameUAV(Renderer->m_SceneView.FrameIndex).GetIndex();
 
+		m_Data.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
+
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
 		m_Buffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );

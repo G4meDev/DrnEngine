@@ -40,6 +40,8 @@ struct TAAData
     uint VelocityTexture;
     uint HistoryTexture;
     uint TargetTexture;
+    
+    uint DepthTexture;
 };
 
 struct StaticSamplers
@@ -63,6 +65,36 @@ float2 ScreenPosToViewportUV(float2 ScreenPos)
     return float2(0.5 + 0.5 * ScreenPos.x, 0.5 - 0.5 * ScreenPos.y);
 }
 
+float SampleDepthTexture(Texture2D DepthTexture, SamplerState Sampler, float2 UV, int2 PixelOffset)
+{
+    return DepthTexture.SampleLevel(Sampler, UV, 0, PixelOffset).r;
+}
+
+#define CROSS_DIST 1
+
+#if CROSS_DIST
+static const int2 CrossOffset[4] =
+{
+    int2(-CROSS_DIST, -CROSS_DIST),
+    int2(CROSS_DIST, -CROSS_DIST),
+    int2(-CROSS_DIST, CROSS_DIST),
+    int2(CROSS_DIST, CROSS_DIST),
+};
+#endif
+
+#define CLAMP_COUNT 4
+#define Clamp_DIST 1
+
+#if CLAMP_COUNT
+static const int2 ClampOffset[4] =
+{
+    int2(0, -Clamp_DIST),
+    int2(Clamp_DIST, 0),
+    int2(0, Clamp_DIST),
+    int2(-Clamp_DIST, 0),
+};
+#endif
+
 [numthreads(8, 8, 1)]
 void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_GroupID, uint GroupThreadIndex : SV_GroupIndex)
 {
@@ -71,6 +103,7 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     
     Texture2D DeferredTexture = ResourceDescriptorHeap[TAABuffer.DeferredColorTexture];
+    Texture2D DepthTexture = ResourceDescriptorHeap[TAABuffer.DepthTexture];
     Texture2D VelocityTexture = ResourceDescriptorHeap[TAABuffer.VelocityTexture];
     Texture2D HistoryTexture = ResourceDescriptorHeap[TAABuffer.HistoryTexture];
     RWTexture2D<float4> TargetTexture = ResourceDescriptorHeap[TAABuffer.TargetTexture];
@@ -81,7 +114,34 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     float2 BufferUV = (DispatchThreadId + 0.5f) * View.InvSize;
     uint2 OutputPixelPos = DispatchThreadId;
     
-    float2 Velocity = VelocityTexture.Sample(PointSampler, BufferUV).xy;
+    float PixelDepth = SampleDepthTexture(DepthTexture, PointSampler, BufferUV, int2(0, 0));
+    float2 VelocityOffset = float2(0.0, 0.0);
+    
+#if CROSS_DIST
+    float4 Depths;
+    Depths.x = SampleDepthTexture(DepthTexture, PointSampler, BufferUV, CrossOffset[0]);
+    Depths.y = SampleDepthTexture(DepthTexture, PointSampler, BufferUV, CrossOffset[1]);
+    Depths.z = SampleDepthTexture(DepthTexture, PointSampler, BufferUV, CrossOffset[2]);
+    Depths.w = SampleDepthTexture(DepthTexture, PointSampler, BufferUV, CrossOffset[3]);
+    
+    int index = -1;
+    float MaxDepth = 0; // nearest
+    [unroll]
+    for (int i = 0; i < 4; i++)
+    {
+        if(Depths[i] > MaxDepth)
+        {
+            MaxDepth = Depths[i];
+            index = i;
+        }
+    }
+    
+    float2 DepthOffset = int2(CrossOffset[index]);
+    
+    VelocityOffset = DepthOffset * View.InvSize;
+#endif
+    
+    float2 Velocity = VelocityTexture.Sample(PointSampler, BufferUV + VelocityOffset).xy;
     Velocity = (Velocity - 0.5f) * 4;
     
     float2 ScreenPos = ViewportUVToScreenPos(BufferUV);
@@ -95,6 +155,23 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     if (!OffScreen)
     {
         float3 HistoryColor = HistoryTexture.Sample(PointSampler, PrevUV).xyz;
+        
+#if CLAMP_COUNT
+        float3 BoundsMin = 100000;
+        float3 BoundsMax = 0;
+        
+        [unroll]
+        for (int i = 0; i < CLAMP_COUNT; i++)
+        {
+            float3 Sample = DeferredTexture.Sample(PointSampler, BufferUV, ClampOffset[i]).rgb;
+            
+            BoundsMin = min(BoundsMin, Sample);
+            BoundsMax = max(BoundsMax, Sample);
+        }
+        
+        HistoryColor = clamp(HistoryColor, BoundsMin, BoundsMax);
+#endif
+        
         Result = lerp(DeferredColor, HistoryColor, 0.5f);
     }
     

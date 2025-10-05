@@ -15,6 +15,8 @@ namespace Drn
 		uint32 VelocityTexture;
 		uint32 HistoryTexture;
 		uint32 TargetTexture;
+
+		uint32 DepthTexture;
 	};
 
 	class TAABuffer : public RenderBuffer
