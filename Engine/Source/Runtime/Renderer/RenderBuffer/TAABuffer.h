@@ -17,6 +17,9 @@ namespace Drn
 		uint32 TargetTexture;
 
 		uint32 DepthTexture;
+		float CurrentFrameWeight;
+		float CcurrentFrameVelocityWeight;
+		float CcurrentFrameVelocityMultiplier;
 	};
 
 	class TAABuffer : public RenderBuffer
@@ -39,7 +42,7 @@ namespace Drn
 		DescriptorHandleUAV m_UAVHandles[2];
 		DescriptorHandleSRV m_SrvHandles[2];
 
-		Resource* m_Buffer;
+		Resource* m_Buffer[NUM_BACKBUFFERS] = {nullptr};
 		TAAData m_Data;
 
 		Resource* GetFrameResource( uint32 FrameIndex ) const { return m_TAATarget[FrameIndex%2]; }

@@ -65,6 +65,12 @@ static const float PI = 3.14159265359;
 //    return UV;
 //}
 
+// Luma includes a scaling by 4.
+float Luma4(float3 Color)
+{
+    return (Color.g * 2.0) + (Color.r + Color.b);
+}
+
 float2 EncodeNormal(float3 N)
 {
     N.xy /= dot(1, abs(N));

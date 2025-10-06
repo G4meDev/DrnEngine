@@ -60,11 +60,17 @@ namespace Drn
 
 		TAASettings()
 			: m_JitterOffsetScale(1.0f)
+			, m_CurrentFrameWeight(0.04f)
+			, m_CcurrentFrameVelocityWeight(0.2f)
+			, m_CcurrentFrameVelocityMultiplier(7.0f)
 		{};
 
 		virtual void Serialize(Archive& Ar) override;
 
 		float m_JitterOffsetScale;
+		float m_CurrentFrameWeight;
+		float m_CcurrentFrameVelocityWeight;
+		float m_CcurrentFrameVelocityMultiplier;
 
 #if WITH_EDITOR
 		bool Draw();

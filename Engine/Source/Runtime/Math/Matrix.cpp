@@ -111,4 +111,13 @@ namespace Drn
 		return Matrix( NewX, NewY, NewZ, Vector::ZeroVector );
 	}
 
+	Matrix Matrix::TranslationMatrix( const Vector& Translation )
+	{
+		DirectX::XMMATRIX TranslationMat = DirectX::XMMatrixTranslationFromVector(DirectX::XMLoadFloat3(&Translation.m_Vector));
+
+		Matrix Result;
+		XMStoreFloat4x4(&Result.m_Matrix, TranslationMat);
+		return Result;
+	}
+
 }

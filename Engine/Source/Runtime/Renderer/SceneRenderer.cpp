@@ -470,7 +470,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TAAPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TAABuffer->m_Buffer->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TAABuffer->m_Buffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
 		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
@@ -706,6 +706,9 @@ namespace Drn
 		m_SceneView.JitterOffset[0] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8][0] * m_SceneView.InvSizeX * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
 		m_SceneView.JitterOffset[1] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8][1] * m_SceneView.InvSizeY * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
 
+		Matrix PrevViewMatrix = m_SceneView.WorldToView;
+		Matrix PrevProjectionMatrix = m_SceneView.ViewToProjection;
+
 		ViewInfo VInfo = m_Scene->GetWorld()->GetPlayerWorldView();
 		VInfo.AspectRatio = (float) GetViewportSize().X / GetViewportSize().Y;
 
@@ -720,6 +723,21 @@ namespace Drn
 		m_SceneView.ViewToWorld = XMMatrixInverse(NULL, m_SceneView.WorldToView.Get());
 		//m_SceneView.ProjectionToWorld = m_SceneView.ViewToWorld * m_SceneView.ProjectionToView;
 		m_SceneView.ProjectionToWorld = m_SceneView.ProjectionToView * m_SceneView.ViewToWorld;
+
+		{
+			Matrix ProjectionMatrixNoAA = m_SceneView.ViewToProjection;
+			ProjectionMatrixNoAA.m_Matrix.m[2][0] -= m_SceneView.JitterOffset[0];
+			ProjectionMatrixNoAA.m_Matrix.m[2][1] -= m_SceneView.JitterOffset[1];
+
+			Matrix PrevProjectionMatrixNoAA = PrevProjectionMatrix;
+			PrevProjectionMatrixNoAA.m_Matrix.m[2][0] -= m_SceneView.PrevJitterOffset[0];
+			PrevProjectionMatrixNoAA.m_Matrix.m[2][1] -= m_SceneView.PrevJitterOffset[1];
+
+			Matrix InvViewProjection = ProjectionMatrixNoAA.Inverse() * m_SceneView.ViewToWorld;
+			Matrix Prev_ViewMatrix = PrevViewMatrix * PrevProjectionMatrixNoAA;
+
+			m_SceneView.ClipToPreviousClip = InvViewProjection * Prev_ViewMatrix;
+		}
 
 		Vector4 V1(1, 0, 0, 0);
 		Vector4 V2(0, 1, 0, 0);

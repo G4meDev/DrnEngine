@@ -25,6 +25,8 @@ namespace Drn
 		static Matrix MakeFromY( const Vector& YAxis);
 		static Matrix MakeFromZ( const Vector& ZAxis);
 
+		static Matrix TranslationMatrix( const Vector& Translation );
+
 		inline Matrix operator*( const Matrix& InMatrix ) const
 		{
 			return XMMatrixMultiply(Get(), InMatrix.Get());
@@ -55,7 +57,7 @@ namespace Drn
 			return XMMatrixInverse(NULL, XMLoadFloat4x4(&m_Matrix));
 		}
 
-		inline void Decompose(Vector& Location, Quat& Rotation, Vector Scale) const
+		inline void Decompose(Vector& Location, Quat& Rotation, Vector& Scale) const
 		{
 			XMVECTOR Loc;
 			XMVECTOR Rot;
@@ -65,6 +67,15 @@ namespace Drn
 			Location = Loc;
 			Rotation = Rot;
 			Scale = Sca;
+		}
+
+		inline Vector Location() const
+		{
+			Vector Location;
+			Quat Rotation;
+			Vector Scale;
+			Decompose(Location, Rotation, Scale);
+			return Location;
 		}
 
 		inline Quat Rotation() const

@@ -120,7 +120,10 @@ namespace Drn
 
 		if (ImGui::CollapsingHeader("TemporalAA", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			Dirty |= ImGui::DragFloat("Intensity", &m_JitterOffsetScale, 0.05f, 0, 10, "%.2f");
+			Dirty |= ImGui::DragFloat("JitterOffsetScacle", &m_JitterOffsetScale, 0.05f, 0, 10, "%.2f");
+			Dirty |= ImGui::DragFloat("CurrentFrameWeight", &m_CurrentFrameWeight, 0.05f, 0, 1, "%.2f");
+			Dirty |= ImGui::DragFloat("CcurrentFrameVelocityWeight", &m_CcurrentFrameVelocityWeight, 0.05f, 0, 1, "%.2f");
+			Dirty |= ImGui::DragFloat("CcurrentFrameVelocityMultiplier", &m_CcurrentFrameVelocityMultiplier, 0.05f, 0, 20, "%.2f");
 		}
 
 		ImGui::PopID();

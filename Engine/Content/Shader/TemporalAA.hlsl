@@ -1,4 +1,6 @@
 
+#include "Common.hlsl"
+
 struct Resources
 {
     uint ViewBufferIndex;
@@ -32,6 +34,12 @@ struct ViewBuffer
     
     uint FrameIndex;
     uint FrameIndexMod8;
+    float2 JitterOffset;
+    
+    float2 PrevJitterOffset;
+    float2 Pad_1;
+    
+    matrix ClipToPreviousClip;
 };
 
 struct TAAData
@@ -42,12 +50,18 @@ struct TAAData
     uint TargetTexture;
     
     uint DepthTexture;
+    float CcurrentFrameWeight;
+    float CcurrentFrameVelocityWeight;
+    float CcurrentFrameVelocityMultiplier;
 };
 
 struct StaticSamplers
 {
     uint LinearSamplerIndex;
     uint PointSamplerIndex;
+    uint LinearCmpSamplerIndex;
+    uint LinearClampIndex;
+    uint PointClampIndex;
 };
 
 float3 Luminance(float3 LinearColor)
@@ -108,8 +122,8 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     Texture2D HistoryTexture = ResourceDescriptorHeap[TAABuffer.HistoryTexture];
     RWTexture2D<float4> TargetTexture = ResourceDescriptorHeap[TAABuffer.TargetTexture];
 
-    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
-    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
+    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearClampIndex];
+    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointClampIndex];
     
     float2 BufferUV = (DispatchThreadId + 0.5f) * View.InvSize;
     uint2 OutputPixelPos = DispatchThreadId;
@@ -137,48 +151,63 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     }
     
     float2 DepthOffset = int2(CrossOffset[index]);
+    //DepthOffset = PixelDepth > MaxDepth ? float2(0, 0) : DepthOffset;
     
     VelocityOffset = DepthOffset * View.InvSize;
 #endif
     
-    float2 Velocity = VelocityTexture.Sample(PointSampler, BufferUV + VelocityOffset).xy;
-    Velocity = (Velocity - 0.5f) * 4;
+    //float2 Velocity = VelocityTexture.Sample(PointSampler, BufferUV + VelocityOffset).xy;
+    //Velocity = (Velocity - 0.5f) * 4;
+    //
+    //float2 VeloTemp = Velocity * View.RenderSize;
+    //float VeloLen = sqrt(dot(VeloTemp, VeloTemp));
     
     float2 ScreenPos = ViewportUVToScreenPos(BufferUV);
-    float2 PrevScreenPos = ScreenPos - Velocity;
+    //float2 PrevScreenPos = ScreenPos - Velocity;
+    //float2 PrevUV = ScreenPosToViewportUV(PrevScreenPos);
+    
+    float4 ThisClip = float4(ScreenPos, PixelDepth, 1);
+    float4 PrevClip = mul(View.ClipToPreviousClip, ThisClip);
+    float2 PrevScreenPos = PrevClip.xy / PrevClip.w;
     float2 PrevUV = ScreenPosToViewportUV(PrevScreenPos);
+    
+    float2 Velo = ScreenPos - PrevScreenPos;
+    float2 VeloTemp = Velo * View.RenderSize;
+    float VeloLen = sqrt(dot(VeloTemp, VeloTemp));
     
     float3 DeferredColor = DeferredTexture.Sample(PointSampler, BufferUV).xyz;
     float3 Result;
 
     bool OffScreen = max(abs(PrevScreenPos.x), abs(PrevScreenPos.y)) >= 1.0;
-    if (!OffScreen)
-    {
-        float3 HistoryColor = HistoryTexture.Sample(PointSampler, PrevUV).xyz;
-        
+    
+    float3 HistoryColor = HistoryTexture.Sample(LinearSampler, PrevUV).xyz;
+    
 #if CLAMP_COUNT
-        float3 BoundsMin = 100000;
-        float3 BoundsMax = 0;
+    float3 BoundsMin = 100000;
+    float3 BoundsMax = 0;
         
-        [unroll]
-        for (int i = 0; i < CLAMP_COUNT; i++)
-        {
-            float3 Sample = DeferredTexture.Sample(PointSampler, BufferUV, ClampOffset[i]).rgb;
+    [unroll]
+    for (int i = 0; i < CLAMP_COUNT; i++)
+    {
+        float3 Sample = DeferredTexture.Sample(PointSampler, BufferUV, ClampOffset[i]).rgb;
             
-            BoundsMin = min(BoundsMin, Sample);
-            BoundsMax = max(BoundsMax, Sample);
-        }
-        
-        HistoryColor = clamp(HistoryColor, BoundsMin, BoundsMax);
+        BoundsMin = min(BoundsMin, Sample);
+        BoundsMax = max(BoundsMax, Sample);
+    }
+
+    HistoryColor = clamp(HistoryColor, BoundsMin, BoundsMax);
+    
 #endif
-        
-        Result = lerp(DeferredColor, HistoryColor, 0.5f);
+    
+    //BlendFactor = lerp(0.04, 0.2f, saturate(VeloLen * 0.025f));
+    float BlendFactor = lerp(TAABuffer.CcurrentFrameWeight, TAABuffer.CcurrentFrameVelocityWeight, saturate(VeloLen * TAABuffer.CcurrentFrameVelocityMultiplier));
+    
+    if(OffScreen)
+    {
+        BlendFactor = 1.0f;
     }
     
-    else
-    {
-        Result = DeferredColor;
-    }
+    Result = lerp(HistoryColor, DeferredColor, BlendFactor);
     
     TargetTexture[OutputPixelPos] = float4(Result, 1);
 }

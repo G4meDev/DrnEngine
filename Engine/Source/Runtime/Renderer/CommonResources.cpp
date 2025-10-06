@@ -1189,6 +1189,8 @@ namespace Drn
 
 		Args.push_back( L"-O3" );
 
+		Args.push_back(L"-I ..\\..\\..\\Engine\\Content\\Materials\\");
+
 		for (auto& Mac : Macros)
 		{
 			Args.push_back(L"-D");

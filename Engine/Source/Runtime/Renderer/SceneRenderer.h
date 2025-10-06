@@ -75,7 +75,11 @@ namespace Drn
 		uint32 FrameIndex;
 		uint32 FrameIndexMod8;
 		float JitterOffset[2];
+
 		float PrevJitterOffset[2];
+		float Pad_1[2];
+
+		Matrix ClipToPreviousClip;
 	};
 
 	class SceneRenderer

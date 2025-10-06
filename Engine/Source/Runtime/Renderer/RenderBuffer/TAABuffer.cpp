@@ -33,7 +33,6 @@ namespace Drn
 
 	TAABuffer::TAABuffer()
 		: RenderBuffer()
-		, m_Buffer(nullptr)
 	{
 		
 	}
@@ -62,15 +61,19 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------------------------------
 
-		m_Buffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-		m_Buffer->SetName("CB_TAA");
-#endif
+		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
+		{
+			m_Buffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+	#if D3D12_Debug_INFO
+			m_Buffer[i]->SetName("CB_TAA");
+	#endif
 
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.BufferLocation = m_Buffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ResourceViewDesc.SizeInBytes = 256;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_Buffer->GetCpuHandle());
+			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
+			ResourceViewDesc.BufferLocation = m_Buffer[i]->GetD3D12Resource()->GetGPUVirtualAddress();
+			ResourceViewDesc.SizeInBytes = 256;
+			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_Buffer[i]->GetCpuHandle());
+		}
+
 	}
 
 	void TAABuffer::Resize( const IntPoint& Size )
@@ -133,12 +136,15 @@ namespace Drn
 		m_Data.TargetTexture = GetFrameUAV(Renderer->m_SceneView.FrameIndex).GetIndex();
 
 		m_Data.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
+		m_Data.CurrentFrameWeight = Renderer->m_PostProcessSettings->m_TAASettings.m_CurrentFrameWeight;
+		m_Data.CcurrentFrameVelocityWeight = Renderer->m_PostProcessSettings->m_TAASettings.m_CcurrentFrameVelocityWeight;
+		m_Data.CcurrentFrameVelocityMultiplier = Renderer->m_PostProcessSettings->m_TAASettings.m_CcurrentFrameVelocityMultiplier;
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
-		m_Buffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		m_Buffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
 		memcpy( ConstantBufferStart, &m_Data, sizeof(TAABuffer));
-		m_Buffer->GetD3D12Resource()->Unmap(0, nullptr);
+		m_Buffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 	}
 
 	void TAABuffer::ReleaseBuffers()
@@ -152,10 +158,13 @@ namespace Drn
 			}
 		}
 
-		if (m_Buffer)
+		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
 		{
-			m_Buffer->ReleaseBufferedResource();
-			m_Buffer = nullptr;
+			if (m_Buffer[i])
+			{
+				m_Buffer[i]->ReleaseBufferedResource();
+				m_Buffer[i] = nullptr;
+			}
 		}
 	}
 
