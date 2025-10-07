@@ -48,7 +48,7 @@ namespace Drn
 			D3D12_DESCRIPTOR_HEAP_DESC desc = heap->GetDesc();
 			HeapType                        = desc.Type;
 			HeapStartCpu                    = Heap->GetCPUDescriptorHandleForHeapStart();
-			HeapStartGpu                    = Heap->GetGPUDescriptorHandleForHeapStart();
+			HeapStartGpu                    = (HeapType == D3D12_DESCRIPTOR_HEAP_TYPE_RTV || HeapType == D3D12_DESCRIPTOR_HEAP_TYPE_DSV) ? D3D12_GPU_DESCRIPTOR_HANDLE() : Heap->GetGPUDescriptorHandleForHeapStart();
 			HeapHandleIncrement             = device->GetDescriptorHandleIncrementSize( HeapType );
 			FreeIndices.reserve( (int)desc.NumDescriptors );
 			for ( int n = 0; n < desc.NumDescriptors; n++ )
@@ -153,6 +153,9 @@ namespace Drn
 
 		TempDescriptorHeapAllocator m_BindlessSamplerHeapAllocator;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessSamplerHeap;
+
+		TempDescriptorHeapAllocator m_BindlessRTVHeapAllocator;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessRTVHeap;
 
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_BindlessRootSinature;
 

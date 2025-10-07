@@ -146,6 +146,16 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class SceneDownSamplePSO
+	{
+	public:
+
+		SceneDownSamplePSO( ID3D12GraphicsCommandList2* CommandList );
+		~SceneDownSamplePSO();
+		
+		ID3D12PipelineState* m_PSO;
+	};
+
 	class ResolveEditorSelectionPSO
 	{
 	public:
@@ -259,6 +269,7 @@ namespace Drn
 		ScreenSpaceReflectionPSO* m_ScreenSpaceReflectionPSO;
 		ReflectionEnvironemntPSO* m_ReflectionEnvironmentPSO;
 		TAAPSO* m_TAAPSO;
+		SceneDownSamplePSO* m_SceneDownSamplePSO;
 
 		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
 		SpriteHitProxyPSO* m_SpriteHitProxyPSO;

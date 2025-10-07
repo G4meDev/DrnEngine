@@ -12,6 +12,7 @@
 #include "Runtime/Renderer/RenderBuffer/ScreenSpaceReflectionBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/ReflectionEnvironmentBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/TAABuffer.h"
+#include "Runtime/Renderer/RenderBuffer/SceneDownSampleBuffer.h"
 
 #include "Runtime/Engine/PostProcessVolume.h"
 
@@ -89,6 +90,9 @@ namespace Drn
 
 		m_TAABuffer = std::make_shared<class TAABuffer>();
 		m_TAABuffer->Init();
+
+		m_SceneDownSampleBuffer = std::make_shared<class SceneDownSampleBuffer>();
+		m_SceneDownSampleBuffer->Init();
 
 #if WITH_EDITOR
 		// mouse picking components
@@ -447,6 +451,7 @@ namespace Drn
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Post Process" );
 
 		PostProcess_TemporalAA();
+		PostProcess_SceneDownSample();
 		PostProcess_Tonemapping();
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -477,6 +482,52 @@ namespace Drn
 		int32 DispatchSizeX = m_SceneView.Size.X / 8 + 1;
 		int32 DispatchSizeY = m_SceneView.Size.Y / 8 + 1;
 		m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSizeX, DispatchSizeY, 1);
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
+	}
+
+	void SceneRenderer::PostProcess_SceneDownSample()
+	{
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "SceneDownSample" );
+
+		m_SceneDownSampleBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
+
+		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[0]->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_SceneDownSampleBuffer->m_RTVHandles[0].GetCpuHandle(), true, NULL);
+
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
+
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_SceneDownSampleBuffer->m_Buffer[0]->GetGpuHandle()), 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+		
+		m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SceneDownSampleBuffer->m_Viewports[0]);
+
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+
+		for (int32 i = 1; i < NUM_SCENE_DOWNSAMPLES; i++)
+		{
+			ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[i - 1]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_SceneDownSampleBuffer->m_RTVHandles[i].GetCpuHandle(), true, NULL);
+
+			//m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+			//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
+
+			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_SceneDownSampleBuffer->m_Buffer[i]->GetGpuHandle()), 1);
+			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+			m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SceneDownSampleBuffer->m_Viewports[i]);
+			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		}
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -659,6 +710,7 @@ namespace Drn
 		m_ScreenSpaceReflectionBuffer->Resize( GetViewportSize() );
 		m_ReflectionEnvironmentBuffer->Resize( GetViewportSize() );
 		m_TAABuffer->Resize( GetViewportSize() );
+		m_SceneDownSampleBuffer->Resize( GetViewportSize() );
 
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( GetViewportSize() );

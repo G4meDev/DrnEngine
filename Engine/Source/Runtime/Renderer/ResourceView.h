@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include <type_traits>
 
 namespace Drn
 {
@@ -31,13 +32,40 @@ namespace Drn
 
 		inline void AllocateDescriptorSlot()
 		{
-			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
-			m_Index = Renderer::Get()->GetBindlessSrvIndex(m_GpuHandle);
+			if constexpr (std::is_same_v<TDesc, D3D12_RENDER_TARGET_VIEW_DESC>)
+			{
+				Renderer::Get()->m_BindlessRTVHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
+				//m_Index = Renderer::Get()->GetBindlessRTVIndex(m_GpuHandle);
+			}
+
+			else if constexpr (std::is_same_v<TDesc, D3D12_DEPTH_STENCIL_VIEW_DESC>)
+			{
+				__debugbreak();
+			}
+
+			else
+			{
+				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
+				m_Index = Renderer::Get()->GetBindlessSrvIndex(m_GpuHandle);
+			}
 		}
 
 		inline void FreeDescriptorSlot()
 		{
-			Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+			if constexpr (std::is_same_v<TDesc, D3D12_RENDER_TARGET_VIEW_DESC>)
+			{
+				Renderer::Get()->m_BindlessRTVHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+			}
+
+			else if constexpr (std::is_same_v<TDesc, D3D12_DEPTH_STENCIL_VIEW_DESC>)
+			{
+				__debugbreak();
+			}
+
+			else
+			{
+				Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+			}
 		}
 
 	private:
