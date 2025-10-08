@@ -13,6 +13,7 @@
 #include "Runtime/Renderer/RenderBuffer/ReflectionEnvironmentBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/TAABuffer.h"
 #include "Runtime/Renderer/RenderBuffer/SceneDownSampleBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/BloomBuffer.h"
 
 #include "Runtime/Engine/PostProcessVolume.h"
 
@@ -93,6 +94,9 @@ namespace Drn
 
 		m_SceneDownSampleBuffer = std::make_shared<class SceneDownSampleBuffer>();
 		m_SceneDownSampleBuffer->Init();
+
+		m_BloomBuffer = std::make_shared<class BloomBuffer>();
+		m_BloomBuffer->Init();
 
 #if WITH_EDITOR
 		// mouse picking components
@@ -452,6 +456,7 @@ namespace Drn
 
 		PostProcess_TemporalAA();
 		PostProcess_SceneDownSample();
+		PostProcess_Bloom();
 		PostProcess_Tonemapping();
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -532,6 +537,60 @@ namespace Drn
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
+	void SceneRenderer::PostProcess_Bloom()
+	{
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Bloom" );
+
+		m_BloomBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
+
+		for (int32 i = NUM_SCENE_DOWNSAMPLES - 1; i > -1; i--)
+		{
+			{
+				ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[i * 2]->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_BloomBuffer->m_RTVHandles[i * 2].GetCpuHandle(), true, NULL);
+
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+				m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
+
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BloomBuffer->m_Buffer[i * 2]->GetGpuHandle()), 1);
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+				m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_BloomBuffer->m_Viewports[i]);
+				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+			}
+
+			{
+				const bool FirstChain = i == NUM_SCENE_DOWNSAMPLES - 1;
+
+				ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[i * 2]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[i * 2 + 1]->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+				if (!FirstChain)
+				{
+					ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[(i + 1) * 2 + 1]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				}
+
+				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_BloomBuffer->m_RTVHandles[i * 2 + 1].GetCpuHandle(), true, NULL);
+
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+				m_CommandList->GetD3D12CommandList()->SetPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
+
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BloomBuffer->m_Buffer[i * 2 + 1]->GetGpuHandle()), 1);
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+				m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_BloomBuffer->m_Viewports[i]);
+				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+			}
+		}
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
+	}
+
 	void SceneRenderer::PostProcess_Tonemapping()
 	{
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Tone mapping" );
@@ -547,6 +606,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_TAABuffer->GetFrameSRV(m_SceneView.FrameIndex).GetIndex() , 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->m_SrvHandles[1].GetIndex(), 3);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
@@ -711,6 +771,7 @@ namespace Drn
 		m_ReflectionEnvironmentBuffer->Resize( GetViewportSize() );
 		m_TAABuffer->Resize( GetViewportSize() );
 		m_SceneDownSampleBuffer->Resize( GetViewportSize() );
+		m_BloomBuffer->Resize( GetViewportSize() );
 
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( GetViewportSize() );

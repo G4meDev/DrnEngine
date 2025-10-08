@@ -143,6 +143,7 @@ namespace Drn
 		std::shared_ptr<class ReflectionEnvironmentBuffer> m_ReflectionEnvironmentBuffer;
 		std::shared_ptr<class TAABuffer> m_TAABuffer;
 		std::shared_ptr<class SceneDownSampleBuffer> m_SceneDownSampleBuffer;
+		std::shared_ptr<class BloomBuffer> m_BloomBuffer;
 
 		IntPoint m_CachedRenderSize;
 		IntPoint m_RenderSize;
@@ -180,6 +181,7 @@ namespace Drn
 		friend class ReflectionEnvironmentBuffer;
 		friend class TAABuffer;
 		friend class SceneDownSampleBuffer;
+		friend class BloomBuffer;
 
 	private:
 
@@ -195,6 +197,7 @@ namespace Drn
 		void RenderPostProcess();
 		void PostProcess_TemporalAA();
 		void PostProcess_SceneDownSample();
+		void PostProcess_Bloom();
 		void PostProcess_Tonemapping();
 
 #if WITH_EDITOR

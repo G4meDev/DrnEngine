@@ -156,6 +156,18 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
+	class BloomPSO
+	{
+	public:
+
+		BloomPSO( ID3D12GraphicsCommandList2* CommandList );
+		~BloomPSO();
+		
+		ID3D12PipelineState* m_BloomYPSO;
+		ID3D12PipelineState* m_BloomXPSO;
+		ID3D12PipelineState* m_BloomXAddtivePSO;
+	};
+
 	class ResolveEditorSelectionPSO
 	{
 	public:
@@ -270,6 +282,7 @@ namespace Drn
 		ReflectionEnvironemntPSO* m_ReflectionEnvironmentPSO;
 		TAAPSO* m_TAAPSO;
 		SceneDownSamplePSO* m_SceneDownSamplePSO;
+		BloomPSO* m_BloomPSO;
 
 		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
 		SpriteHitProxyPSO* m_SpriteHitProxyPSO;

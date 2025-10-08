@@ -56,6 +56,7 @@ namespace Drn
 		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList);
 		m_TAAPSO = new TAAPSO(CommandList);
 		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList);
+		m_BloomPSO = new BloomPSO(CommandList);
 		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList);
 		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList);
 		m_LightPassPSO = new LightPassPSO(CommandList);
@@ -88,6 +89,7 @@ namespace Drn
 		delete m_ReflectionEnvironmentPSO;
 		delete m_TAAPSO;
 		delete m_SceneDownSamplePSO;
+		delete m_BloomPSO;
 		delete m_SpriteEditorPrimitivePSO;
 		delete m_SpriteHitProxyPSO;
 		delete m_LightPassPSO;
@@ -723,13 +725,120 @@ namespace Drn
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
 
 #if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_Tonemap");
+		m_PSO->SetName(L"PSO_SceneDownSample");
 #endif
 	}
 
 	SceneDownSamplePSO::~SceneDownSamplePSO()
 	{
 		m_PSO->Release();
+	}
+
+// --------------------------------------------------------------------------------------
+
+	BloomPSO::BloomPSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_BloomYPSO = nullptr;
+		m_BloomXPSO = nullptr;
+		m_BloomXAddtivePSO = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\GaussianBloom.hlsl" ) );
+
+		{
+			ID3DBlob* VertexShaderBlob;
+			ID3DBlob* PixelShaderBlob;
+
+			const std::vector<const wchar_t*> Macros = { L"BLOOM_Y=1" };
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+			PipelineDesc.InputLayout						= VertexLayout_PosUV;
+			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
+			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+			PipelineDesc.SampleMask							= UINT_MAX;
+			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+			PipelineDesc.NumRenderTargets					= 1;
+			PipelineDesc.RTVFormats[0]						= BLOOM_FORMAT;
+			PipelineDesc.SampleDesc.Count					= 1;
+
+			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_BloomYPSO ) );
+
+#if D3D12_Debug_INFO
+			m_BloomYPSO->SetName(L"PSO_BloomY");
+#endif
+		}
+
+		{
+			ID3DBlob* VertexShaderBlob;
+			ID3DBlob* PixelShaderBlob;
+
+			const std::vector<const wchar_t*> Macros = {};
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+			PipelineDesc.InputLayout						= VertexLayout_PosUV;
+			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
+			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+			PipelineDesc.SampleMask							= UINT_MAX;
+			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+			PipelineDesc.NumRenderTargets					= 1;
+			PipelineDesc.RTVFormats[0]						= BLOOM_FORMAT;
+			PipelineDesc.SampleDesc.Count					= 1;
+
+			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_BloomXPSO ) );
+
+#if D3D12_Debug_INFO
+			m_BloomXPSO->SetName(L"PSO_BloomX");
+#endif
+		}
+
+		{
+			ID3DBlob* VertexShaderBlob;
+			ID3DBlob* PixelShaderBlob;
+
+			const std::vector<const wchar_t*> Macros = { L"BLOOM_ADDTIVE=1" };
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+			PipelineDesc.InputLayout						= VertexLayout_PosUV;
+			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
+			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+			PipelineDesc.SampleMask							= UINT_MAX;
+			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+			PipelineDesc.NumRenderTargets					= 1;
+			PipelineDesc.RTVFormats[0]						= BLOOM_FORMAT;
+			PipelineDesc.SampleDesc.Count					= 1;
+
+			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_BloomXAddtivePSO ) );
+
+#if D3D12_Debug_INFO
+			m_BloomXAddtivePSO->SetName(L"PSO_BloomXAddtive");
+#endif
+		}
+	}
+
+	BloomPSO::~BloomPSO()
+	{
+		m_BloomYPSO->Release();
+		m_BloomXPSO->Release();
+		m_BloomXAddtivePSO->Release();
 	}
 
 // --------------------------------------------------------------------------------------

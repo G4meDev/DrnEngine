@@ -6,21 +6,22 @@
 
 namespace Drn
 {
-	struct SceneDownSampleData
+	struct BloomData
 	{
 	public:
-		SceneDownSampleData() = default;
+		BloomData() = default;
 
-		Vector4 ParentSizeAndInvSize;
+		Vector4 SizeAndInvSize;
 
-		uint32 ParentTexture;
+		uint32 SampleTexture;
+		uint32 AddtiveTexture;
 	};
 
-	class SceneDownSampleBuffer : public RenderBuffer
+	class BloomBuffer : public RenderBuffer
 	{
 	public:
-		SceneDownSampleBuffer();
-		virtual ~SceneDownSampleBuffer();
+		BloomBuffer();
+		virtual ~BloomBuffer();
 
 		virtual void Init() override;
 		virtual void Resize( const IntPoint& Size ) override;
@@ -31,13 +32,13 @@ namespace Drn
 		void MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer );
 		void ReleaseBuffers();
 
-		Resource* m_DownSampleTargets[NUM_SCENE_DOWNSAMPLES] = { nullptr };
+		Resource* m_BloomTargets[NUM_BLOOM_TARGETS] = { nullptr };
 
-		DescriptorHandleRTV m_RTVHandles[NUM_SCENE_DOWNSAMPLES];
-		DescriptorHandleSRV m_SrvHandles[NUM_SCENE_DOWNSAMPLES];
+		DescriptorHandleRTV m_RTVHandles[NUM_BLOOM_TARGETS];
+		DescriptorHandleSRV m_SrvHandles[NUM_BLOOM_TARGETS];
 
-		Resource* m_Buffer[NUM_SCENE_DOWNSAMPLES] = {nullptr};
-		SceneDownSampleData m_Data;
+		Resource* m_Buffer[NUM_BLOOM_TARGETS] = { nullptr };
+		BloomData m_Data;
 
 		D3D12_VIEWPORT m_Viewports[NUM_SCENE_DOWNSAMPLES];
 

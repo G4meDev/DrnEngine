@@ -53,7 +53,14 @@ namespace Drn
 		RenderBuffer::Resize(Size);
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		ReleaseBuffers();
+		for (int32 i = 0; i < NUM_SCENE_DOWNSAMPLES; i++)
+		{
+			if (m_DownSampleTargets[i])
+			{
+				m_DownSampleTargets[i]->ReleaseBufferedResource();
+				m_DownSampleTargets[i] = nullptr;
+			}
+		}
 
 		for (int32 i = 0; i < NUM_SCENE_DOWNSAMPLES; i++)
 		{
@@ -125,6 +132,15 @@ namespace Drn
 			{
 				m_DownSampleTargets[i]->ReleaseBufferedResource();
 				m_DownSampleTargets[i] = nullptr;
+			}
+		}
+
+		for (int32 i = 0; i < NUM_SCENE_DOWNSAMPLES; i++)
+		{
+			if (m_Buffer[i])
+			{
+				m_Buffer[i]->ReleaseBufferedResource();
+				m_Buffer[i] = nullptr;
 			}
 		}
 	}

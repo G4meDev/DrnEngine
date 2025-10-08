@@ -4,6 +4,7 @@ struct Resources
     uint ViewBufferIndex;
     uint DeferredColorIndex;
     uint StaticSamplerBufferIndex;
+    uint BloomIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -65,18 +66,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     
     Texture2D HdrImage = ResourceDescriptorHeap[BindlessResources.DeferredColorIndex];
+    Texture2D BloomImage = ResourceDescriptorHeap[BindlessResources.BloomIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
-    
-    //float Exposure = 1.0f;
-    //float Gamma = 2.2f;
-    //
-    //float3 HdrColor = HdrImage.Sample(LinearSampler, IN.UV).xyz;
-    //float3 Mapped = float3(1.0f, 1.0f, 1.0f) - exp(-HdrColor * Exposure.xxx);
-    //
-    //float a = 1.0f / Gamma;
-    //Mapped = pow(Mapped, float3(a.xxx));
-    //
-    //return float4(Mapped, 1);
     
     float A = 0.22f;
     float B = 0.30f;
@@ -90,6 +81,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float Gamma = 2.2f;
     
     float3 HdrColor = HdrImage.Sample(LinearSampler, IN.UV).xyz;
+    float3 Bloom = BloomImage.Sample(LinearSampler, IN.UV).xyz;
+    HdrColor += Bloom;
     HdrColor *= exp2(Exposure);
     
     float3 SDR = ACESFilmic(HdrColor, A, B, C, D, E, F) /
