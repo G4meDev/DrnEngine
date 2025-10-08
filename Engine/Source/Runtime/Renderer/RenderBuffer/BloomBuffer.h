@@ -6,15 +6,23 @@
 
 namespace Drn
 {
-	struct BloomData
+	struct BloomDataHeader
 	{
-	public:
-		BloomData() = default;
-
-		Vector4 SizeAndInvSize;
+		BloomDataHeader() = default;
 
 		uint32 SampleTexture;
 		uint32 AddtiveTexture;
+
+		float Pad_1;
+		float Pad_2;
+	};
+
+	struct BloomData
+	{
+		BloomData() = default;
+
+		BloomDataHeader Header;
+		std::vector<Vector4> SampleOffsetWeights;
 	};
 
 	class BloomBuffer : public RenderBuffer

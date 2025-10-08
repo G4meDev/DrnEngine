@@ -746,11 +746,13 @@ namespace Drn
 
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\GaussianBloom.hlsl" ) );
 
+		const std::wstring StaticSampleMacro = std::wstring(L"STATIC_SAMPLE_COUNT=") + std::to_wstring(BLOOM_STATIC_SAMPLE_COUNT);
+
 		{
 			ID3DBlob* VertexShaderBlob;
 			ID3DBlob* PixelShaderBlob;
 
-			const std::vector<const wchar_t*> Macros = { L"BLOOM_Y=1" };
+			const std::vector<const wchar_t*> Macros = { StaticSampleMacro.c_str(), L"BLOOM_Y=1" };
 			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
@@ -779,7 +781,7 @@ namespace Drn
 			ID3DBlob* VertexShaderBlob;
 			ID3DBlob* PixelShaderBlob;
 
-			const std::vector<const wchar_t*> Macros = {};
+			const std::vector<const wchar_t*> Macros = { StaticSampleMacro.c_str() };
 			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
@@ -808,7 +810,7 @@ namespace Drn
 			ID3DBlob* VertexShaderBlob;
 			ID3DBlob* PixelShaderBlob;
 
-			const std::vector<const wchar_t*> Macros = { L"BLOOM_ADDTIVE=1" };
+			const std::vector<const wchar_t*> Macros = { StaticSampleMacro.c_str(), L"BLOOM_ADDTIVE=1" };
 			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 

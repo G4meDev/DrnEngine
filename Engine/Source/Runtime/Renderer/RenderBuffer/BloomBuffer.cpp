@@ -110,27 +110,51 @@ namespace Drn
 		{
 			IntPoint Size = IntPoint(m_Viewports[i].Width, m_Viewports[i].Height);
 			Size = IntPoint::ComponentWiseMax(Size, IntPoint(1, 1));
+			float InvSizeX = 1.0f / Size.X;
+			float InvSizeY = 1.0f / Size.Y;
 
-			m_Data.SizeAndInvSize = Vector4(Size.X, Size.Y, 1.0f / Size.X, 1.0f / Size.Y);
+			//m_Data.SizeAndInvSize = Vector4(Size.X, Size.Y, 1.0f / Size.X, 1.0f / Size.Y);
+
+			std::vector<float> SampleOffsets;
+			SampleOffsets.resize(BLOOM_STATIC_SAMPLE_COUNT);
+
+			float Weight = 1.0f / BLOOM_STATIC_SAMPLE_COUNT;
+			Weight /= 5.0f;
+
+			m_Data.SampleOffsetWeights.resize( BLOOM_PACKED_SAMPLE_COUNT );
 
 			{
-				m_Data.SampleTexture = Renderer->m_SceneDownSampleBuffer->m_SrvHandles[i].GetIndex();
+				for (int32 j = 0; j < BLOOM_PACKED_SAMPLE_COUNT - 1; j++)
+				{
+					m_Data.SampleOffsetWeights[j] = Vector4(InvSizeY * j, Weight, -InvSizeY * j, Weight);
+				}
+				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, Weight, 0, 0);
+
+				m_Data.Header.SampleTexture = Renderer->m_SceneDownSampleBuffer->m_SrvHandles[i].GetIndex();
 
 				UINT8* ConstantBufferStart;
 				CD3DX12_RANGE readRange( 0, 0 );
 				m_Buffer[i * 2]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_Data, sizeof(BloomData));
+				memcpy( ConstantBufferStart, &m_Data, sizeof(BloomDataHeader));
+				memcpy( ConstantBufferStart + sizeof(BloomDataHeader), m_Data.SampleOffsetWeights.data(), sizeof(Vector4) * m_Data.SampleOffsetWeights.size());
 				m_Buffer[i * 2]->GetD3D12Resource()->Unmap(0, nullptr);
 			}
 
 			{
-				m_Data.SampleTexture = m_SrvHandles[i * 2].GetIndex();
-				m_Data.AddtiveTexture = i == NUM_SCENE_DOWNSAMPLES - 1 ? 0 : m_SrvHandles[(i + 1) * 2 + 1].GetIndex();
+				for (int32 j = 0; j < BLOOM_PACKED_SAMPLE_COUNT - 1; j++)
+				{
+					m_Data.SampleOffsetWeights[j] = Vector4(InvSizeX * j, Weight, -InvSizeX * j, Weight);
+				}
+				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, Weight, 0, 0);
+
+				m_Data.Header.SampleTexture = m_SrvHandles[i * 2].GetIndex();
+				m_Data.Header.AddtiveTexture = i == NUM_SCENE_DOWNSAMPLES - 1 ? 0 : m_SrvHandles[(i + 1) * 2 + 1].GetIndex();
 
 				UINT8* ConstantBufferStart;
 				CD3DX12_RANGE readRange( 0, 0 );
 				m_Buffer[i * 2 + 1]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_Data, sizeof(BloomData));
+				memcpy( ConstantBufferStart, &m_Data, sizeof(BloomDataHeader));
+				memcpy( ConstantBufferStart + sizeof(BloomDataHeader), m_Data.SampleOffsetWeights.data(), sizeof(Vector4) * m_Data.SampleOffsetWeights.size());
 				m_Buffer[i * 2 + 1]->GetD3D12Resource()->Unmap(0, nullptr);
 			}
 		}

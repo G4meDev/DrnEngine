@@ -1,6 +1,12 @@
 
 #include "Common.hlsl"
 
+#ifndef STATIC_SAMPLE_COUNT
+	#error STATIC_SAMPLE_COUNT is undefined
+#endif
+
+#define PACKED_STATIC_SAMPLE_COUNT ((STATIC_SAMPLE_COUNT + 1) / 2)
+
 struct Resources
 {
     uint ViewBufferIndex;
@@ -44,10 +50,12 @@ struct ViewBuffer
 
 struct BloomData
 {
-    float4 SizeAndInvSize;
-
     uint SampleTexture;
     uint AddtiveTexture;
+    
+    float2 Pad;
+    
+    float4 SampleOffsetWeights[PACKED_STATIC_SAMPLE_COUNT];
 };
 
 struct StaticSamplers
@@ -102,24 +110,39 @@ float3 Main_PS(PixelShaderInput IN) : SV_Target
     float3 Result = 0;
     
     [unroll]
-    for (int i = -8; i < 8; i++)
+    for (int SampleIndex = 0; SampleIndex < PACKED_STATIC_SAMPLE_COUNT - 1; SampleIndex++)
     {
-        float2 UV = IN.UV;
+        float4 SampleOffsetWeights = BloomBuffer.SampleOffsetWeights[SampleIndex];
         
-#if BLOOM_Y
-        UV += i * float2(0, BloomBuffer.SizeAndInvSize.w);
+        float SampleWeight_1 = SampleOffsetWeights.y;
+        float SampleWeight_2 = SampleOffsetWeights.w;
+
+        float2 SampleOffset_1;
+        float2 SampleOffset_2;
+        
+#if BLOOM_Y 
+        SampleOffset_1 = float2(0, SampleOffsetWeights.x);
+        SampleOffset_2 = float2(0, SampleOffsetWeights.z);
 #else
-        UV += i * float2(BloomBuffer.SizeAndInvSize.z, 0);
+        SampleOffset_1 = float2(SampleOffsetWeights.x, 0);
+        SampleOffset_2 = float2(SampleOffsetWeights.z, 0);
 #endif
         
-        Result += SampleTexture.Sample(LinearSampler, UV).xyz;
+        Result += SampleTexture.Sample(LinearSampler, IN.UV + SampleOffset_1).xyz * SampleWeight_1;
+        Result += SampleTexture.Sample(LinearSampler, IN.UV + SampleOffset_2).xyz * SampleWeight_2;
     }
     
-    Result /= 17.0f;
+    float4 SampleOffsetWeights = BloomBuffer.SampleOffsetWeights[PACKED_STATIC_SAMPLE_COUNT - 1];
+    float SampleWeight = SampleOffsetWeights.y;
+    float2 SampleOffset;
     
-#ifndef BLOOM_Y
-    Result /= 20;
+#if BLOOM_Y 
+    SampleOffset = float2(0, SampleOffsetWeights.x);
+#else
+    SampleOffset = float2(SampleOffsetWeights.x, 0);
 #endif
+    
+    Result += SampleTexture.Sample(LinearSampler, IN.UV + SampleOffset).xyz * SampleWeight;
     
 #if BLOOM_ADDTIVE
     Texture2D AddtiveTexture = ResourceDescriptorHeap[BloomBuffer.AddtiveTexture];
