@@ -77,6 +77,27 @@ namespace Drn
 #endif
 	};
 
+	class BloomSettings : public Serializable
+	{
+	public:
+
+		BloomSettings()
+			: m_Radius(1.0f)
+			, m_Brightness(0.2f)
+			, m_Sigma(0.85f)
+		{};
+
+		virtual void Serialize(Archive& Ar) override;
+
+		float m_Radius;
+		float m_Brightness;
+		float m_Sigma;
+
+#if WITH_EDITOR
+		bool Draw();
+#endif
+	};
+
 	class PostProcessSettings : public Serializable
 	{
 	public:
@@ -89,6 +110,7 @@ namespace Drn
 		SSAOSettings m_SSAOSettings;
 		SSRSettings m_SSRSettings;
 		TAASettings m_TAASettings;
+		BloomSettings m_BloomSettings;
 
 #if WITH_EDITOR
 		bool Draw();

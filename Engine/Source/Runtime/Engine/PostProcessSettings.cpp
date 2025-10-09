@@ -39,6 +39,7 @@ namespace Drn
 		m_SSAOSettings.Serialize(Ar);
 		m_SSRSettings.Serialize(Ar);
 		m_TAASettings.Serialize(Ar);
+		m_BloomSettings.Serialize(Ar);
 	}
 
 #if WITH_EDITOR
@@ -48,6 +49,7 @@ namespace Drn
 		Dirty |= m_SSAOSettings.Draw();
 		Dirty |= m_SSRSettings.Draw();
 		Dirty |= m_TAASettings.Draw();
+		Dirty |= m_BloomSettings.Draw();
 		return Dirty;
 	}
 	bool SSAOSettings::Draw()
@@ -124,6 +126,31 @@ namespace Drn
 			Dirty |= ImGui::DragFloat("CurrentFrameWeight", &m_CurrentFrameWeight, 0.05f, 0, 1, "%.2f");
 			Dirty |= ImGui::DragFloat("CcurrentFrameVelocityWeight", &m_CcurrentFrameVelocityWeight, 0.05f, 0, 1, "%.2f");
 			Dirty |= ImGui::DragFloat("CcurrentFrameVelocityMultiplier", &m_CcurrentFrameVelocityMultiplier, 0.05f, 0, 20, "%.2f");
+		}
+
+		ImGui::PopID();
+
+		return Dirty;
+	}
+#endif
+
+	void BloomSettings::Serialize( Archive& Ar )
+	{
+		
+	}
+
+#if WITH_EDITOR
+	bool BloomSettings::Draw()
+	{
+		bool Dirty = false;
+
+		ImGui::PushID( "Bloom" );
+
+		if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			Dirty |= ImGui::DragFloat("Radius", &m_Radius, 0.05f, 0, 10, "%.2f");
+			Dirty |= ImGui::DragFloat("Brightness", &m_Brightness, 0.05f, 0, 10, "%.2f");
+			Dirty |= ImGui::DragFloat("Sigma", &m_Sigma, 0.05f, 0, 10, "%.2f");
 		}
 
 		ImGui::PopID();

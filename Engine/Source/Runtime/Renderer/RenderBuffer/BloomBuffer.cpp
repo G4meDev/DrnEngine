@@ -106,29 +106,47 @@ namespace Drn
 
 	void BloomBuffer::MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
+		std::vector<float> SampleWeights;
+		SampleWeights.resize(BLOOM_PACKED_SAMPLE_COUNT);
+
+		BloomSettings& Settings = Renderer->m_PostProcessSettings->m_BloomSettings;
+
+		float SumWeights = 1;
+		for (int32 i = 0; i < BLOOM_PACKED_SAMPLE_COUNT - 1; i++)
+		{
+			float a = BLOOM_PACKED_SAMPLE_COUNT;
+			float X = (i + 1) / (float)(BLOOM_PACKED_SAMPLE_COUNT - 1);
+			SampleWeights[i] = GaussianDistributionUnscaled(X, Settings.m_Sigma);
+			SumWeights += SampleWeights[i] * 2;
+		}
+
+		SampleWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = GaussianDistributionUnscaled( 0.0f, Settings.m_Sigma );
+		SumWeights += SampleWeights[BLOOM_PACKED_SAMPLE_COUNT - 1];
+
+		for (int32 i = 0; i < BLOOM_PACKED_SAMPLE_COUNT; i++)
+		{
+			SampleWeights[i] = SampleWeights[i] * Settings.m_Brightness / SumWeights;
+		}
+
 		for (int32 i = 0; i < NUM_SCENE_DOWNSAMPLES; i++)
 		{
 			IntPoint Size = IntPoint(m_Viewports[i].Width, m_Viewports[i].Height);
 			Size = IntPoint::ComponentWiseMax(Size, IntPoint(1, 1));
-			float InvSizeX = 1.0f / Size.X;
-			float InvSizeY = 1.0f / Size.Y;
 
-			//m_Data.SizeAndInvSize = Vector4(Size.X, Size.Y, 1.0f / Size.X, 1.0f / Size.Y);
+			float InvSizeX = Settings.m_Radius / Size.X;
+			float InvSizeY = Settings.m_Radius/ Size.Y;
 
 			std::vector<float> SampleOffsets;
 			SampleOffsets.resize(BLOOM_STATIC_SAMPLE_COUNT);
-
-			float Weight = 1.0f / BLOOM_STATIC_SAMPLE_COUNT;
-			Weight /= 5.0f;
 
 			m_Data.SampleOffsetWeights.resize( BLOOM_PACKED_SAMPLE_COUNT );
 
 			{
 				for (int32 j = 0; j < BLOOM_PACKED_SAMPLE_COUNT - 1; j++)
 				{
-					m_Data.SampleOffsetWeights[j] = Vector4(InvSizeY * j, Weight, -InvSizeY * j, Weight);
+					m_Data.SampleOffsetWeights[j] = Vector4(InvSizeY * (j + 1), SampleWeights[j], -InvSizeY * (j + 1), SampleWeights[j]);
 				}
-				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, Weight, 0, 0);
+				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, SampleWeights[BLOOM_PACKED_SAMPLE_COUNT - 1], 0, 0);
 
 				m_Data.Header.SampleTexture = Renderer->m_SceneDownSampleBuffer->m_SrvHandles[i].GetIndex();
 
@@ -143,9 +161,9 @@ namespace Drn
 			{
 				for (int32 j = 0; j < BLOOM_PACKED_SAMPLE_COUNT - 1; j++)
 				{
-					m_Data.SampleOffsetWeights[j] = Vector4(InvSizeX * j, Weight, -InvSizeX * j, Weight);
+					m_Data.SampleOffsetWeights[j] = Vector4(InvSizeX * (j + 1), SampleWeights[j], -InvSizeX * (j + 1), SampleWeights[j]);
 				}
-				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, Weight, 0, 0);
+				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, SampleWeights[BLOOM_PACKED_SAMPLE_COUNT - 1], 0, 0);
 
 				m_Data.Header.SampleTexture = m_SrvHandles[i * 2].GetIndex();
 				m_Data.Header.AddtiveTexture = i == NUM_SCENE_DOWNSAMPLES - 1 ? 0 : m_SrvHandles[(i + 1) * 2 + 1].GetIndex();
@@ -179,6 +197,13 @@ namespace Drn
 				m_Buffer[i] = nullptr;
 			}
 		}
+	}
+
+	float BloomBuffer::GaussianDistributionUnscaled( float X, float Sigma )
+	{
+		const float DX = 1 - std::abs(X);
+		const float A = DX / Sigma;
+		return std::exp(A * A);
 	}
 
 }
