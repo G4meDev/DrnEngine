@@ -1,4 +1,6 @@
 
+#include "common.hlsl"
+
 struct Resources
 {
     uint ViewBufferIndex;
@@ -19,6 +21,26 @@ struct ViewBuffer
     matrix LocalToCameraView;
 
     uint2 RenderSize;
+    float2 InvSize;
+
+    float3 CameraPos;
+    float InvTanHalfFov;
+		
+    float3 CameraDir;
+    float Pad_4;
+
+    float4 InvDeviceZToWorldZTransform;
+    matrix ViewToWorld;
+    matrix ScreenToTranslatedWorld;
+    
+    uint FrameIndex;
+    uint FrameIndexMod8;
+    float2 JitterOffset;
+    
+    float2 PrevJitterOffset;
+    float2 Pad_1;
+    
+    matrix ClipToPreviousClip;
 };
 
 struct StaticSamplers
@@ -63,6 +85,7 @@ float3 ACESFilmic( float3 x, float A, float B, float C, float D, float E, float 
 
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     
     Texture2D HdrImage = ResourceDescriptorHeap[BindlessResources.DeferredColorIndex];
@@ -88,5 +111,14 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float3 SDR = ACESFilmic(HdrColor, A, B, C, D, E, F) /
               ACESFilmic(LinearWhite, A, B, C, D, E, F);
     
-    return float4(pow(abs(SDR), 1.0f / Gamma), 1);
+    float3 Result = pow(abs(SDR), 1.0f / Gamma);
+    
+    float2 DitherUV = IN.UV * View.RenderSize;
+    float3 Dither = float3(InterleavedGradientNoise(DitherUV, View.FrameIndex), InterleavedGradientNoise(DitherUV, View.FrameIndex * 117), InterleavedGradientNoise(DitherUV, View.FrameIndex * 53));
+    Dither /= 255.0f;
+    Result += Dither;
+    
+    //Result = Dither;
+    
+    return float4(Result, 1);
 }

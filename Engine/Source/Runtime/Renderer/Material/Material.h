@@ -24,6 +24,7 @@ namespace Drn
 
 		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
 		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindPrePass( ID3D12GraphicsCommandList2* CommandList );
 		void BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindSpotLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList );
@@ -82,7 +83,7 @@ namespace Drn
 
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
-		D3D12_CULL_MODE m_CullMode;
+		D3D12_CULL_MODE m_CullMode; // TODO: swap with two sided flag
 
 		std::vector<MaterialIndexedTexture2DParameter> m_Texture2DSlots;
 		std::vector<MaterialIndexedTextureCubeParameter> m_TextureCubeSlots;

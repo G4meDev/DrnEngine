@@ -187,6 +187,7 @@ namespace Drn
 
 		void Init();
 
+		void RenderPrepass();
 		void RenderShadowDepths();
 		void RenderBasePass();
 		void RenderHZB();

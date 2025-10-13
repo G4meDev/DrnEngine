@@ -78,6 +78,7 @@ namespace Drn
 	protected:
 
 		virtual void RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderPrePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy);
 
 #if WITH_EDITOR

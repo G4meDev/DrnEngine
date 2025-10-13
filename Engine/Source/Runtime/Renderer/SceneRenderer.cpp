@@ -159,6 +159,26 @@ namespace Drn
 		m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 	}
 
+	void SceneRenderer::RenderPrepass()
+	{
+		SCOPE_STAT();
+
+		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "Prepass");
+
+		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_DepthTarget, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+
+		m_GBuffer->ClearDepth( m_CommandList->GetD3D12CommandList() );
+		m_GBuffer->BindDepth(m_CommandList->GetD3D12CommandList());
+
+		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
+		{
+			Proxy->RenderPrePass(m_CommandList->GetD3D12CommandList(), this);
+		}
+
+		PIXEndEvent(m_CommandList->GetD3D12CommandList());
+	}
+
 	void SceneRenderer::RenderShadowDepths()
 	{
 		SCOPE_STAT();
@@ -202,7 +222,7 @@ namespace Drn
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "BasePass" );
 
-		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_DepthTarget, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_DepthTarget, D3D12_RESOURCE_STATE_DEPTH_READ);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_ColorDeferredTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_BaseColorTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_WorldNormalTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -729,6 +749,7 @@ namespace Drn
 		RenderHitProxyPass();
 #endif
 
+		RenderPrepass();
 		RenderShadowDepths();
 		RenderBasePass();
 		RenderHZB();

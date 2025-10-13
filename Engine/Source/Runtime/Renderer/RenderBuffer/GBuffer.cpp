@@ -261,6 +261,11 @@ namespace Drn
 		CommandList->ClearRenderTargetView( m_WorldNormalCpuHandle, m_WorldNormalClearValue.Color, 0, nullptr );
 		CommandList->ClearRenderTargetView( m_MasksCpuHandle, m_MasksClearValue.Color, 0, nullptr );
 		CommandList->ClearRenderTargetView( m_VelocityCpuHandle, m_VelocityClearValue.Color, 0, nullptr );
+		//CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
+	}
+
+	void GBuffer::ClearDepth( ID3D12GraphicsCommandList2* CommandList )
+	{
 		CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
@@ -279,6 +284,14 @@ namespace Drn
 		};
 
 		CommandList->OMSetRenderTargets( 5, RenderTargets, false, &m_DepthCpuHandle );
+	}
+
+	void GBuffer::BindDepth( ID3D12GraphicsCommandList2* CommandList )
+	{
+		CommandList->RSSetViewports(1, &m_Viewport);
+		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+
+		CommandList->OMSetRenderTargets( 0, NULL, true, &m_DepthCpuHandle );
 	}
 
 	void GBuffer::BindLightPass( ID3D12GraphicsCommandList2* CommandList )

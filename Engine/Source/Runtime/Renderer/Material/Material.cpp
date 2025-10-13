@@ -485,6 +485,30 @@ namespace Drn
 		BindResources(CommandList);
 	}
 
+	void Material::BindPrePass( ID3D12GraphicsCommandList2* CommandList )
+	{
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		ID3D12PipelineState* PSO = nullptr;
+		if (m_CullMode == D3D12_CULL_MODE_NONE)
+		{
+			PSO = CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO;
+		}
+
+		else if (m_CullMode == D3D12_CULL_MODE_FRONT)
+		{
+			PSO = CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullFrontPSO;
+		}
+
+		else
+		{
+			PSO = CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO;
+		}
+
+		CommandList->SetPipelineState(PSO);
+
+		BindResources(CommandList);
+	}
+
 	void Material::BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList )
 	{
 		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());

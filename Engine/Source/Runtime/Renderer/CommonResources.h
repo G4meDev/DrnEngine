@@ -168,6 +168,18 @@ namespace Drn
 		ID3D12PipelineState* m_BloomXAddtivePSO;
 	};
 
+	class PositionOnlyDepthPSO
+	{
+	public:
+
+		PositionOnlyDepthPSO( ID3D12GraphicsCommandList2* CommandList );
+		~PositionOnlyDepthPSO();
+		
+		ID3D12PipelineState* m_CullNonePSO;
+		ID3D12PipelineState* m_CullFrontPSO;
+		ID3D12PipelineState* m_CullBackPSO;
+	};
+
 	class ResolveEditorSelectionPSO
 	{
 	public:
@@ -283,6 +295,7 @@ namespace Drn
 		TAAPSO* m_TAAPSO;
 		SceneDownSamplePSO* m_SceneDownSamplePSO;
 		BloomPSO* m_BloomPSO;
+		PositionOnlyDepthPSO* m_PositionOnlyDepthPSO;
 
 		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
 		SpriteHitProxyPSO* m_SpriteHitProxyPSO;

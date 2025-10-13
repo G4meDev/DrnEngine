@@ -65,6 +65,27 @@ static const float PI = 3.14159265359;
 //    return UV;
 //}
 
+struct VertexInputStaticMesh
+{
+    float3 Position : POSITION;
+    float3 Color : COLOR;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
+    float3 Bitangent : BINORMAL;
+    float2 UV1 : TEXCOORD0;
+    float2 UV2 : TEXCOORD1;
+    float2 UV3 : TEXCOORD2;
+    float2 UV4 : TEXCOORD3;
+};
+
+float InterleavedGradientNoise(float2 uv, float FrameId)
+{
+    uv += FrameId * (float2(47, 17) * 0.695f);
+
+    const float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
+    return frac(magic.z * frac(dot(uv, magic.xy)));
+}
+
 // Luma includes a scaling by 4.
 float Luma4(float3 Color)
 {

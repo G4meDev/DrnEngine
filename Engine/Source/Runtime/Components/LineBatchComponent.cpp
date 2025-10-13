@@ -206,6 +206,12 @@ namespace Drn
 
 	}
 
+	void LineBatchSceneProxy::RenderPrePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		SCOPE_STAT();
+
+	}
+
 	void LineBatchSceneProxy::RenderShadowPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
 	{
 		

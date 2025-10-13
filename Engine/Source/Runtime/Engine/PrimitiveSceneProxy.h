@@ -28,6 +28,7 @@ namespace Drn
 	protected:
 
 		virtual void RenderMainPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderPrePass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
 		virtual void RenderShadowPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) = 0;
 
 		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) = 0;
