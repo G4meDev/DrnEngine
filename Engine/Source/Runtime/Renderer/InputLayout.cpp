@@ -3,6 +3,12 @@
 
 namespace Drn
 {
+	D3D12_INPUT_ELEMENT_DESC InputLayout::Position[1] = 
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
 	D3D12_INPUT_ELEMENT_DESC InputLayout::LineColorThickness[2] = 
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
@@ -38,6 +44,7 @@ namespace Drn
 	{
 		switch ( Type )
 		{
+		case EInputLayoutType::Position:			return { InputLayout::Position, _countof( InputLayout::Position) };
 		case EInputLayoutType::StandardMesh:		return { InputLayout::StaticMesh, _countof( InputLayout::StaticMesh) };
 		case EInputLayoutType::LineColorThickness:	return { InputLayout::LineColorThickness, _countof( InputLayout::LineColorThickness) };
 		default:									return { InputLayout::StaticMesh, _countof( InputLayout::StaticMesh) };

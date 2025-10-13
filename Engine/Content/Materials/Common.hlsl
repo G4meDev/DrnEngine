@@ -65,6 +65,11 @@ static const float PI = 3.14159265359;
 //    return UV;
 //}
 
+struct VertexInputPositionOnly
+{
+    float3 Position : POSITION;
+};
+
 struct VertexInputStaticMesh
 {
     float3 Position : POSITION;

@@ -178,7 +178,7 @@ namespace Drn
 				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
 				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		
-				RenderProxy.BindAndDraw(CommandList);
+				RenderProxy.BindAndDrawPrepass(CommandList);
 			}
 		}
 	}

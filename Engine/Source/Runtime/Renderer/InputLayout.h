@@ -9,6 +9,7 @@ namespace Drn
 	{
 		StandardMesh = 0,
 		LineColorThickness,
+		Position,
 
 		MAX_TYPE
 	};
@@ -142,6 +143,7 @@ namespace Drn
 	class InputLayout
 	{
 	public:
+		static D3D12_INPUT_ELEMENT_DESC Position[1];
 		static D3D12_INPUT_ELEMENT_DESC Color[2];
 		static D3D12_INPUT_ELEMENT_DESC LineColorThickness[2];
 		static D3D12_INPUT_ELEMENT_DESC StaticMesh[9];

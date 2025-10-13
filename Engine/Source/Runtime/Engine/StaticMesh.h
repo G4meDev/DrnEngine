@@ -24,8 +24,10 @@ namespace Drn
 		ID3DBlob* IndexBufferBlob = nullptr;
 		uint8 MaterialIndex = 0;
 
-		class VertexBuffer* m_VertexBuffer;
+		class VertexBuffer* m_VertexBuffer; // TODO: swap with pos only
 		class IndexBuffer* m_IndexBuffer;
+
+		class VertexBuffer* m_PositionOnlyVertexBuffer;
 
 #if WITH_EDITOR
 		uint64 m_VertexCount = 0;
@@ -57,6 +59,7 @@ namespace Drn
 		inline void ReleaseBuffers();
 
 		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList ) const;
+		void BindAndDrawPrepass( ID3D12GraphicsCommandList2* CommandList ) const; // TODO: remove
 	};
 
 	struct StaticMeshData : public Serializable

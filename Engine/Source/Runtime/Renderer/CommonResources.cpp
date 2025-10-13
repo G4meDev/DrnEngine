@@ -866,7 +866,7 @@ namespace Drn
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
 		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(EInputLayoutType::StandardMesh); // TODO: make position only
+		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(EInputLayoutType::Position);
 		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		PipelineDesc.RasterizerState					= RasterizerDesc;
 		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );

@@ -102,6 +102,8 @@ namespace Drn
 			uint32 IndexCount = Proxy.IndexBufferBlob->GetBufferSize() / sizeof(uint32);
 			Proxy.m_IndexBuffer = IndexBuffer::Create(CommandList, Proxy.IndexBufferBlob->GetBufferPointer(),
 				IndexCount, Proxy.IndexBufferBlob->GetBufferSize(), DXGI_FORMAT_R32_UINT, MeshName);
+
+			Proxy.m_PositionOnlyVertexBuffer = VertexBuffer::Create(CommandList, Proxy.Positions.data(), Proxy.Positions.size(), sizeof(Vector), MeshName);
 		}
 
 		ClearRenderStateDirty();
@@ -256,6 +258,12 @@ namespace Drn
 			delete m_IndexBuffer;
 			m_IndexBuffer = nullptr;
 		}
+
+		if (m_PositionOnlyVertexBuffer)
+		{
+			delete m_PositionOnlyVertexBuffer;
+			m_PositionOnlyVertexBuffer = nullptr;
+		}
 	}
 
 	void StaticMeshSlotData::BindAndDraw( ID3D12GraphicsCommandList2* CommandList ) const
@@ -265,9 +273,17 @@ namespace Drn
 		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
 	}
 
+	void StaticMeshSlotData::BindAndDrawPrepass( ID3D12GraphicsCommandList2* CommandList ) const
+	{
+		m_PositionOnlyVertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+	}
+
 	StaticMeshSlotData::StaticMeshSlotData()
 		: m_VertexBuffer(nullptr)
 		, m_IndexBuffer(nullptr)
+		, m_PositionOnlyVertexBuffer(nullptr)
 	{
 		
 	}
