@@ -19,7 +19,7 @@ namespace Drn
 		, m_SupportEditorSelectionPass(true)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
-		, m_CullMode(D3D12_CULL_MODE_BACK)
+		, m_TwoSided(false)
 		, m_TextureIndexBuffer(nullptr)
 		, m_ScalarBuffer(nullptr)
 		, m_VectorBuffer(nullptr)
@@ -46,7 +46,7 @@ namespace Drn
 		, m_SupportEditorSelectionPass(true)
 		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
 		, m_InputLayoutType(EInputLayoutType::StandardMesh)
-		, m_CullMode(D3D12_CULL_MODE_BACK)
+		, m_TwoSided(false)
 		, m_TextureIndexBuffer(nullptr)
 		, m_ScalarBuffer(nullptr)
 		, m_VectorBuffer(nullptr)
@@ -91,9 +91,7 @@ namespace Drn
 			Ar >> InputlayoutType;
 			m_InputLayoutType = static_cast<EInputLayoutType>(InputlayoutType);
 
-			uint8 CullMode;
-			Ar >> CullMode;
-			m_CullMode = static_cast<D3D12_CULL_MODE>(CullMode);
+			Ar >> m_TwoSided;
 
 			uint8 Texture2DCount;
 			Ar >> Texture2DCount;
@@ -157,7 +155,8 @@ namespace Drn
 
 			Ar << static_cast<uint8>(m_PrimitiveType);
 			Ar << static_cast<uint16>(m_InputLayoutType);
-			Ar << static_cast<uint8>(m_CullMode);
+
+			Ar << m_TwoSided;
 
 			uint8 Texture2DCount = m_Texture2DSlots.size();
 			Ar << Texture2DCount;
@@ -404,9 +403,11 @@ namespace Drn
 
 			}
 
+			const D3D12_CULL_MODE CullMode = GetCullMode();
+
 			if (m_SupportMainPass)
 			{
-				m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(m_CullMode, m_InputLayoutType,
+				m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_MainShaderBlob);
 
 #if D3D12_Debug_INFO
@@ -417,10 +418,10 @@ namespace Drn
 			if (m_SupportShadowPass)
 			{
 				m_PointLightShadowDepthPassPSO = PipelineStateObject::CreatePointLightShadowDepthPassPSO(
-					m_CullMode, m_InputLayoutType, m_PrimitiveType, m_PointlightShadowDepthShaderBlob);
+					CullMode, m_InputLayoutType, m_PrimitiveType, m_PointlightShadowDepthShaderBlob);
 
 				m_SpotLightShadowDepthPassPSO = PipelineStateObject::CreateSpotLightShadowDepthPassPSO(
-					m_CullMode, m_InputLayoutType, m_PrimitiveType, m_SpotlightShadowDepthShaderBlob);
+					CullMode, m_InputLayoutType, m_PrimitiveType, m_SpotlightShadowDepthShaderBlob);
 
 #if D3D12_Debug_INFO
 				m_PointLightShadowDepthPassPSO->SetName( "PSO_Po intLightShadowDepthPass_" + name );
@@ -432,7 +433,7 @@ namespace Drn
 
 			if (m_SupportEditorSelectionPass)
 			{
-				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(m_CullMode, m_InputLayoutType,
+				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_MainShaderBlob);
 #if D3D12_Debug_INFO
 				m_SelectionPassPSO->SetName( "PSO_SelectionPass_" + name );
@@ -441,7 +442,7 @@ namespace Drn
 
 			if (IsSupportingHitProxyPass())
 			{
-				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(m_CullMode, m_InputLayoutType,
+				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_HitProxyShaderBlob);
 
 #if D3D12_Debug_INFO
@@ -451,7 +452,7 @@ namespace Drn
 
 			if (m_SupportEditorPrimitivePass)
 			{
-				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(m_CullMode, m_InputLayoutType,
+				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(CullMode, m_InputLayoutType,
 					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
 #if D3D12_Debug_INFO
 				m_EditorProxyPSO->SetName( "PSO_EditorPrimitive_" + name );
@@ -488,21 +489,9 @@ namespace Drn
 	void Material::BindPrePass( ID3D12GraphicsCommandList2* CommandList )
 	{
 		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		ID3D12PipelineState* PSO = nullptr;
-		if (m_CullMode == D3D12_CULL_MODE_NONE)
-		{
-			PSO = CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO;
-		}
-
-		else if (m_CullMode == D3D12_CULL_MODE_FRONT)
-		{
-			PSO = CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullFrontPSO;
-		}
-
-		else
-		{
-			PSO = CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO;
-		}
+		ID3D12PipelineState* PSO = m_TwoSided 
+			? CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO 
+			: CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO;
 
 		CommandList->SetPipelineState(PSO);
 

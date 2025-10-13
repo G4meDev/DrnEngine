@@ -59,6 +59,8 @@ namespace Drn
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
 
+		inline D3D12_CULL_MODE GetCullMode() const { return m_TwoSided ? D3D12_CULL_MODE_NONE : D3D12_CULL_MODE_BACK; }
+
 	protected:
 		virtual void Serialize( Archive& Ar ) override;
 
@@ -83,7 +85,7 @@ namespace Drn
 
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
 		EInputLayoutType m_InputLayoutType;
-		D3D12_CULL_MODE m_CullMode; // TODO: swap with two sided flag
+		bool m_TwoSided;
 
 		std::vector<MaterialIndexedTexture2DParameter> m_Texture2DSlots;
 		std::vector<MaterialIndexedTextureCubeParameter> m_TextureCubeSlots;

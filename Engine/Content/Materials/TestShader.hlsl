@@ -1,21 +1,9 @@
-//#include "../../../Engine/Content/Materials/Common.hlsl"
+#include "Common.hlsl"
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_HIT_PROXY_PASS
 // SUPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_SHADOW_PASS
-
-float2 EncodeNormal(float3 N)
-{
-    N.xy /= dot(1, abs(N));
-    if (N.z <= 0)
-    {
-        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
-    }
-    return N.xy;
-    
-    //return N * 0.5 + 0.5;
-}
 
 struct Resources
 {
@@ -103,19 +91,6 @@ struct ShadowDepth
     matrix WorldToProjectionMatrix;
 };
 #endif
-
-struct VertexInputStaticMesh
-{
-    float3 Position : POSITION;
-    float3 Color : COLOR;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
-    float2 UV1 : TEXCOORD0;
-    float2 UV2 : TEXCOORD1;
-    float2 UV3 : TEXCOORD2;
-    float2 UV4 : TEXCOORD3;
-};
 
 struct VertexShaderOutput
 {

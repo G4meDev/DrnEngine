@@ -850,7 +850,6 @@ namespace Drn
 	PositionOnlyDepthPSO::PositionOnlyDepthPSO( ID3D12GraphicsCommandList2* CommandList )
 	{
 		m_CullNonePSO = nullptr;
-		m_CullFrontPSO = nullptr;
 		m_CullBackPSO = nullptr;
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
@@ -888,17 +887,6 @@ namespace Drn
 #endif
 
 		{
-			RasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
-			PipelineDesc.RasterizerState = RasterizerDesc;
-
-			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_CullFrontPSO ) );
-
-#if D3D12_Debug_INFO
-			m_CullFrontPSO->SetName(L"PSO_PositionOnlyDepth_CullFront");
-#endif
-		}
-
-		{
 			RasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 			PipelineDesc.RasterizerState = RasterizerDesc;
 
@@ -913,7 +901,6 @@ namespace Drn
 	PositionOnlyDepthPSO::~PositionOnlyDepthPSO()
 	{
 		m_CullNonePSO->Release();
-		m_CullFrontPSO->Release();
 		m_CullBackPSO->Release();
 	}
 

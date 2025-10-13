@@ -176,7 +176,6 @@ namespace Drn
 		~PositionOnlyDepthPSO();
 		
 		ID3D12PipelineState* m_CullNonePSO;
-		ID3D12PipelineState* m_CullFrontPSO;
 		ID3D12PipelineState* m_CullBackPSO;
 	};
 
