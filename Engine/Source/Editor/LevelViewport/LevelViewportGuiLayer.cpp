@@ -138,6 +138,11 @@ namespace Drn
 					Editor::Get()->ReimportMaterials();
 				}
 
+				if ( ImGui::MenuItem( "Reimport static meshes" ) )
+				{
+					Editor::Get()->ReimportStaticMeshes();
+				}
+
 				ImGui::EndMenu();
 			}
 

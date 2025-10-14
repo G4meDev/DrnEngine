@@ -93,6 +93,18 @@ namespace Drn
 		return *this;
 	}
 
+	template<typename T>
+	FileArchive& FileArchive::WriteVector( const std::vector<T>& Value )
+	{
+		uint64 size = (uint64)Value.size();
+		*this << size;
+
+		for (uint64 i = 0; i < size; i++)
+			*this << Value[i];
+
+		return *this;
+	}
+
 	FileArchive& FileArchive::operator<<( const std::vector<char>& Value )
 	{
 		uint64 size = (uint64)Value.size();
@@ -111,6 +123,26 @@ namespace Drn
 		return *this;
 	}
 
+	FileArchive& FileArchive::operator<<( const std::vector<Vector>& Value )
+	{
+		return WriteVector(Value);
+	}
+
+	FileArchive& FileArchive::operator<<( const std::vector<Vector4>& Value )
+	{
+		return WriteVector(Value);
+	}
+
+	FileArchive& FileArchive::operator<<( const std::vector<Vector2>& Value )
+	{
+		return WriteVector(Value);
+	}
+
+	FileArchive& FileArchive::operator<<( const std::vector<uint32>& Value )
+	{
+		return WriteVector(Value);
+	}
+
 	FileArchive& FileArchive::operator<<( const Vector& Value )
 	{
 		*this << Value.GetX();
@@ -126,6 +158,14 @@ namespace Drn
 		*this << Value.GetY();
 		*this << Value.GetZ();
 		*this << Value.GetW();
+
+		return *this;
+	}
+
+	FileArchive& FileArchive::operator<<( const Vector2& Value )
+	{
+		*this << Value.GetX();
+		*this << Value.GetY();
 
 		return *this;
 	}
@@ -236,6 +276,19 @@ namespace Drn
 		return *this;
 	}
 
+	template<typename T>
+	FileArchive& FileArchive::ReadVector( std::vector<T>& Value )
+	{
+		uint64 size;
+		*this >> size;
+		Value.resize(size);
+
+		for ( uint64 i = 0; i < size; i++)
+			*this >> Value[i];
+
+		return *this;
+	}
+
 	FileArchive& FileArchive::operator>>( std::vector<char>& Value )
 	{
 		uint64 size;
@@ -256,6 +309,26 @@ namespace Drn
 		return *this;
 	}
 
+	FileArchive& FileArchive::operator>>( std::vector<Vector>& Value )
+	{
+		return ReadVector(Value);
+	}
+
+	FileArchive& FileArchive::operator>>( std::vector<Vector4>& Value )
+	{
+		return ReadVector(Value);
+	}
+
+	FileArchive& FileArchive::operator>>( std::vector<Vector2>& Value )
+	{
+		return ReadVector(Value);
+	}
+
+	FileArchive& FileArchive::operator>>( std::vector<uint32>& Value )
+	{
+		return ReadVector(Value);
+	}
+
 	FileArchive& FileArchive::operator>>( Vector& Value )
 	{
 		float X, Y, Z;
@@ -271,6 +344,15 @@ namespace Drn
 		*this >> X >> Y >> Z >> W;
 
 		Value = Vector4(X, Y, Z, W);
+		return *this;
+	}
+
+	FileArchive& FileArchive::operator>>( Vector2& Value )
+	{
+		float X, Y;
+		*this >> X >> Y;
+
+		Value = Vector2(X, Y);
 		return *this;
 	}
 

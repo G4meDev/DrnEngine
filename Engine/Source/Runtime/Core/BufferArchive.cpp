@@ -168,6 +168,61 @@ namespace Drn
 		return *this;
 	}
 
+	BufferArchive& BufferArchive::operator<<( const std::vector<Vector>& Value )
+	{
+		uint64 Count = (uint64)Value.size();
+		uint64 Size = Count * sizeof(Vector);
+		*this << Count;
+
+		CheckForAvaliableSpaceAndExpandConditional(Size);
+
+		for ( uint64 i = 0; i < Count; i++)
+		{
+			*this << Value[i];
+			m_HeapPointer += sizeof(Vector);
+		}
+
+		//memcpy(m_HeapPointer, Value.data(), Size);
+		//m_HeapPointer += Size;
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator<<( const std::vector<Vector4>& Value )
+	{
+		uint64 Count = (uint64)Value.size();
+		uint64 Size = Count * sizeof(Vector4);
+		*this << Count;
+
+		CheckForAvaliableSpaceAndExpandConditional(Size);
+		memcpy(m_HeapPointer, Value.data(), Size);
+		m_HeapPointer += Size;
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator<<( const std::vector<Vector2>& Value )
+	{
+		uint64 Count = (uint64)Value.size();
+		uint64 Size = Count * sizeof(Vector2);
+		*this << Count;
+
+		CheckForAvaliableSpaceAndExpandConditional(Size);
+		memcpy(m_HeapPointer, Value.data(), Size);
+		m_HeapPointer += Size;
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator<<( const std::vector<uint32>& Value )
+	{
+		uint64 Count = (uint64)Value.size();
+		uint64 Size = Count * sizeof(uint32);
+		*this << Count;
+
+		CheckForAvaliableSpaceAndExpandConditional(Size);
+		memcpy(m_HeapPointer, Value.data(), Size);
+		m_HeapPointer += Size;
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator<<( const Vector& Value )
 	{
 		*this << Value.GetX();
@@ -183,6 +238,14 @@ namespace Drn
 		*this << Value.GetY();
 		*this << Value.GetZ();
 		*this << Value.GetW();
+
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator<<( const Vector2& Value )
+	{
+		*this << Value.GetX();
+		*this << Value.GetY();
 
 		return *this;
 	}
@@ -331,6 +394,65 @@ namespace Drn
 		return *this;
 	}
 
+	BufferArchive& BufferArchive::operator>>( std::vector<Vector>& Value )
+	{
+		uint64 Count;
+		*this >> Count;
+
+		uint64 Size = Count * sizeof(Vector);
+
+		Value.resize(Size);
+
+		for ( uint64 i = 0; i < Count; i++)
+		{
+			*this >> Value[i];
+			m_HeapPointer += sizeof(Vector);
+		}
+
+		//memcpy(Value.data(), m_HeapPointer, Size);
+		//m_HeapPointer += Size;
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator>>( std::vector<Vector4>& Value )
+	{
+		uint64 Count;
+		*this >> Count;
+
+		uint64 Size = Count * sizeof(Vector4);
+
+		Value.resize(Size);
+		memcpy(Value.data(), m_HeapPointer, Size);
+		m_HeapPointer += Size;
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator>>( std::vector<Vector2>& Value )
+	{
+		uint64 Count;
+		*this >> Count;
+
+		uint64 Size = Count * sizeof(Vector2);
+
+		Value.resize(Size);
+		memcpy(Value.data(), m_HeapPointer, Size);
+		m_HeapPointer += Size;
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator>>( std::vector<uint32>& Value )
+	{
+		uint64 Count;
+		*this >> Count;
+
+		uint64 Size = Count * sizeof(uint32);
+
+		Value.resize(Size);
+		memcpy(Value.data(), m_HeapPointer, Size);
+		m_HeapPointer += Size;
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator>>( Vector& Value )
 	{
 		float X, Y, Z;
@@ -346,6 +468,15 @@ namespace Drn
 		*this >> X >> Y >> Z >> W;
 
 		Value = Vector4(X, Y, Z, W);
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator>>( Vector2& Value )
+	{
+		float X, Y;
+		*this >> X >> Y;
+
+		Value = Vector2(X, Y);
 		return *this;
 	}
 

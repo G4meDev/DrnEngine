@@ -206,6 +206,59 @@ namespace Drn
 			memcpy(Data.IndexBufferBlob->GetBufferPointer(), IMD.Indices.data(), IndexByteCount);
 
 			Data.MaterialIndex = IMD.MaterialIndex;
+
+			{
+				const uint64 VertexCount = IMD.Vertices.size();
+				Data.VertexData.VertexCount = VertexCount;
+
+				Data.VertexData.Positions.resize(VertexCount);
+				Data.VertexData.Normals.resize(MeshAsset->m_ImportNormals ? VertexCount : 0);
+				Data.VertexData.Tangents.resize(MeshAsset->m_ImportTangents ? VertexCount : 0);
+				Data.VertexData.BitTangents.resize(MeshAsset->m_ImportBitTangents ? VertexCount : 0);
+				Data.VertexData.Color.resize(MeshAsset->m_ImportColor? VertexCount : 0);
+
+				Data.VertexData.UV_1.resize(MeshAsset->m_ImportUVs >= 1 ? VertexCount : 0);
+				Data.VertexData.UV_2.resize(MeshAsset->m_ImportUVs >= 2 ? VertexCount : 0);
+				Data.VertexData.UV_3.resize(MeshAsset->m_ImportUVs >= 3 ? VertexCount : 0);
+				Data.VertexData.UV_4.resize(MeshAsset->m_ImportUVs >= 4 ? VertexCount : 0);
+				Data.VertexData.UV_5.resize(MeshAsset->m_ImportUVs >= 5 ? VertexCount : 0);
+				Data.VertexData.UV_6.resize(MeshAsset->m_ImportUVs >= 6 ? VertexCount : 0);
+				Data.VertexData.UV_7.resize(MeshAsset->m_ImportUVs >= 7 ? VertexCount : 0);
+				Data.VertexData.UV_8.resize(MeshAsset->m_ImportUVs >= 8 ? VertexCount : 0);
+
+				for (uint64 i = 0; i < VertexCount; i++)
+				{
+					Data.VertexData.Positions[i] = Vector(IMD.Vertices[i].X, IMD.Vertices[i].Y, IMD.Vertices[i].Z);
+
+					if (MeshAsset->m_ImportNormals)
+						Data.VertexData.Normals[i] = Vector(IMD.Vertices[i].N_X, IMD.Vertices[i].N_Y, IMD.Vertices[i].N_Z);
+
+					if (MeshAsset->m_ImportTangents)
+						Data.VertexData.Tangents[i] = Vector(IMD.Vertices[i].T_X, IMD.Vertices[i].T_Y, IMD.Vertices[i].T_Z);
+
+					if (MeshAsset->m_ImportBitTangents)
+						Data.VertexData.BitTangents[i] = Vector(IMD.Vertices[i].BT_X, IMD.Vertices[i].BT_Y, IMD.Vertices[i].BT_Z);
+
+					if (MeshAsset->m_ImportColor)
+						Data.VertexData.Color[i] = Vector4(IMD.Vertices[i].R, IMD.Vertices[i].G, IMD.Vertices[i].B, 1); // TODO: add alppha channel
+
+					if (MeshAsset->m_ImportUVs >= 1)
+						Data.VertexData.UV_1[i] = Vector2(IMD.Vertices[i].U1, IMD.Vertices[i].V1);
+
+					if (MeshAsset->m_ImportUVs >= 2)
+						Data.VertexData.UV_2[i] = Vector2(IMD.Vertices[i].U2, IMD.Vertices[i].V2);
+
+					if (MeshAsset->m_ImportUVs >= 3)
+						Data.VertexData.UV_3[i] = Vector2(IMD.Vertices[i].U3, IMD.Vertices[i].V3);
+
+					if (MeshAsset->m_ImportUVs >= 4)
+						Data.VertexData.UV_4[i] = Vector2(IMD.Vertices[i].U4, IMD.Vertices[i].V4);
+
+					// TODO: add 4 more uvs
+				}
+
+				Data.VertexData.Indices = IMD.Indices;
+			}
 		}
 
 		MeshAsset->Data.Materials.resize(BuildingData.MaterialsData.size());

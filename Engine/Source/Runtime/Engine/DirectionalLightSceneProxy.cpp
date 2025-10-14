@@ -219,7 +219,7 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------
 
-		for (int32 k = 0; k < m_CascadeCount; k++)
+		for (int32 k = 0; k < NUM_BACKBUFFERS; k++)
 		{
 			m_CsWorldToProjectionMatricesBuffer[k].resize(m_CascadeCount);
 			for (int32 i = 0; i < m_CascadeCount; i++)
@@ -262,7 +262,6 @@ namespace Drn
 				}
 				m_CsWorldToProjectionMatricesBuffer[k].clear();
 			}
-
 		}
 	}
 

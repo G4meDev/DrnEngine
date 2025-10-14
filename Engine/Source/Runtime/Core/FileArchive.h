@@ -27,11 +27,20 @@ namespace Drn
 		virtual FileArchive& operator<<(Guid Value) override;
 		virtual FileArchive& operator<<(const Vector& Value) override;
 		virtual FileArchive& operator<<(const Vector4& Value) override;
+		virtual FileArchive& operator<<(const Vector2& Value) override;
 		virtual FileArchive& operator<<(const Quat& Value) override;
 		virtual FileArchive& operator<<(const Transform& Value) override;
 		virtual FileArchive& operator<<(const std::string& Value) override;
+
+		template<typename T>
+		FileArchive& WriteVector(const std::vector<T>& Value);
+
 		virtual FileArchive& operator<<(const std::vector<char>& Value) override;
 		virtual FileArchive& operator<<(const std::vector<uint8>& Value) override;
+		virtual FileArchive& operator<<(const std::vector<Vector>& Value);
+		virtual FileArchive& operator<<(const std::vector<Vector4>& Value);
+		virtual FileArchive& operator<<(const std::vector<Vector2>& Value);
+		virtual FileArchive& operator<<(const std::vector<uint32>& Value);
 		virtual FileArchive& operator<<(ID3DBlob* Value) override;
 		virtual FileArchive& operator<<(const BufferArchive& Value) override;
 
@@ -47,11 +56,20 @@ namespace Drn
 		virtual FileArchive& operator>>(Guid& Value) override;
 		virtual FileArchive& operator>>(Vector& Value) override;
 		virtual FileArchive& operator>>(Vector4& Value) override;
+		virtual FileArchive& operator>>(Vector2& Value) override;
 		virtual FileArchive& operator>>(Quat& Value) override;
 		virtual FileArchive& operator>>(Transform& Value) override;
 		virtual FileArchive& operator>>(std::string& Value) override;
+
+		template<typename T>
+		FileArchive& ReadVector(std::vector<T>& Value);
+
 		virtual FileArchive& operator>>(std::vector<char>& Value) override;
 		virtual FileArchive& operator>>(std::vector<uint8>& Value) override;
+		virtual FileArchive& operator>>(std::vector<Vector>& Value);
+		virtual FileArchive& operator>>(std::vector<Vector4>& Value);
+		virtual FileArchive& operator>>(std::vector<Vector2>& Value);
+		virtual FileArchive& operator>>(std::vector<uint32>& Value);
 		virtual FileArchive& operator>>(ID3DBlob*& Value) override;
 		virtual FileArchive& operator>>(BufferArchive& Value) override;
 
@@ -66,4 +84,5 @@ namespace Drn
 
 	private:
 	};
+
 }

@@ -152,7 +152,8 @@ namespace Drn
 		//}
 	}
 
-	void Editor::ReimportMaterials()
+	template<typename T>
+	void Editor::ReimportAsset()
 	{
 		std::unique_ptr<SystemFileNode> EngineRootFolder;
 		std::unique_ptr<SystemFileNode> GameRootFolder;
@@ -166,11 +167,11 @@ namespace Drn
 		std::vector<SystemFileNode*> GameFiles;
 		GameRootFolder->GetFilesRecursive(GameFiles);
 
-		auto ImportMaterialConditional = [](std::string& FilePath)
+		auto ImportAssetConditional = [](std::string& FilePath)
 		{
 			std::string AssetPath = FilePath.substr(9, FilePath.size() - 9);
 
-			AssetHandle<Material>MatAsset (AssetPath);
+			AssetHandle<T>MatAsset (AssetPath);
 			if (MatAsset.ValidateType())
 			{
 				MatAsset.Load();
@@ -180,13 +181,23 @@ namespace Drn
 
 		for (SystemFileNode* Node : EngineFiles)
 		{
-			ImportMaterialConditional(Node->File.m_FullPath);
+			ImportAssetConditional(Node->File.m_FullPath);
 		}
 
 		for (SystemFileNode* Node : GameFiles)
 		{
-			ImportMaterialConditional(Node->File.m_FullPath);
+			ImportAssetConditional(Node->File.m_FullPath);
 		}
+	}
+
+	void Editor::ReimportMaterials()
+	{
+		ReimportAsset<Material>();
+	}
+
+	void Editor::ReimportStaticMeshes()
+	{
+		ReimportAsset<StaticMesh>();
 	}
 
 }

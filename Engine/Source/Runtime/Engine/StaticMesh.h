@@ -14,6 +14,51 @@ namespace Drn
 {
 	class AssetPreviewStaticMeshGuiLayer;
 
+	struct StaticMeshVertexData : public Serializable
+	{
+		StaticMeshVertexData()
+		{};
+
+		virtual void Serialize(Archive& Ar) override;
+
+		uint64 GetVertexCount() const { VertexCount; }
+
+		const std::vector<Vector>& GetPositions() const { return Positions; }
+		const std::vector<uint32>& GetIndices() const { return Indices; }
+
+		bool HasNormals() const { return Normals.size() > 0; }
+		const std::vector<Vector>& GetNormals() const { return Normals; }
+
+		bool HasTangents() const { return Tangents.size() > 0; }
+		const std::vector<Vector>& GetTangents() const { return Tangents; }
+
+		bool HasBitTangents() const { return BitTangents.size() > 0; }
+		const std::vector<Vector>& GetBitTangents() const { return BitTangents; }
+
+	private:
+
+		uint64 VertexCount;
+
+		std::vector<Vector> Positions;
+		std::vector<uint32> Indices;
+
+		std::vector<Vector> Normals;
+		std::vector<Vector> Tangents;
+		std::vector<Vector> BitTangents;
+		std::vector<Vector4> Color;
+
+		std::vector<Vector2> UV_1;
+		std::vector<Vector2> UV_2;
+		std::vector<Vector2> UV_3;
+		std::vector<Vector2> UV_4;
+		std::vector<Vector2> UV_5;
+		std::vector<Vector2> UV_6;
+		std::vector<Vector2> UV_7;
+		std::vector<Vector2> UV_8;
+
+		friend class AssetImporterStaticMesh;
+	};
+
 	struct StaticMeshSlotData : public Serializable
 	{
 	public:
@@ -36,6 +81,8 @@ namespace Drn
 		std::vector<Vector> Normals;
 		std::vector<Vector> Tangents;
 		std::vector<Vector> BitTangents;
+
+		StaticMeshVertexData VertexData;
 
 		void UnpackVerticesData();
 #endif
@@ -97,14 +144,14 @@ namespace Drn
 
 		AssetHandle<Material> GetMaterialAtIndex(uint32 Index);
 
+		virtual EAssetType GetAssetType() override;
+		inline static EAssetType GetAssetTypeStatic() { return EAssetType::StaticMesh; }
+
 	protected:
 
 #if WITH_EDITOR
 		void Import();
 #endif
-
-		virtual EAssetType GetAssetType() override;
-		inline static EAssetType GetAssetTypeStatic() { return EAssetType::StaticMesh; }
 
 		StaticMeshData Data;
 		bool m_RenderStateDirty;
@@ -119,6 +166,12 @@ namespace Drn
 		float ImportScale = 1.0f;
 
 		BodySetup m_BodySetup;
+
+		bool m_ImportNormals = true;
+		bool m_ImportTangents = true;
+		bool m_ImportBitTangents = true;
+		bool m_ImportColor = false;
+		uint8 m_ImportUVs = 1;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

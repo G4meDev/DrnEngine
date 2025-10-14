@@ -233,10 +233,21 @@ namespace Drn
 // ------------------------------------------------------------------------------------------------------
 
 		ImGui::Checkbox( "Use Complex Collision", &m_OwningAsset->m_BodySetup.m_UseTriMesh );
+		ImGui::Separator();
 
 // ------------------------------------------------------------------------------------------------------
 
+		ImGui::Checkbox( "Import Normal", &m_OwningAsset->m_ImportNormals);
+		ImGui::Checkbox( "Import Tangent", &m_OwningAsset->m_ImportTangents);
+		ImGui::Checkbox( "Import BitTangent", &m_OwningAsset->m_ImportBitTangents);
+		ImGui::Checkbox( "Import Color", &m_OwningAsset->m_ImportColor);
+		int32 UvNum = m_OwningAsset->m_ImportUVs;
+		ImGui::SliderInt( "Import UVs", &UvNum, 0, 8);
+		m_OwningAsset->m_ImportUVs = UvNum;
+
 		ImGui::Separator();
+
+// ------------------------------------------------------------------------------------------------------
 
 		ImGui::Checkbox( "Draw Normals", &m_DrawNormals);
 		ImGui::Checkbox( "Draw Tangent", &m_DrawTangents);
@@ -259,19 +270,32 @@ namespace Drn
 
 	void AssetPreviewStaticMeshGuiLayer::DrawDebugs()
 	{
-		for ( StaticMeshSlotData& Data : m_OwningAsset->Data.MeshesData )
+		if (m_DrawNormals || m_DrawTangents || m_DrawBitTangents)
 		{
-			for (uint64 i = 0; i < Data.Positions.size(); i++)
+			for ( StaticMeshSlotData& Data : m_OwningAsset->Data.MeshesData )
 			{
-				const Vector& Pos = Data.Positions[i];
-				const Vector& Normal = Data.Normals[i];
-				const Vector& Tangent = Data.Tangents[i];
-				const Vector& BitTangent = Data.BitTangents[i];
+				for (uint64 i = 0; i < Data.Positions.size(); i++)
+				{
+					const Vector& Pos = Data.Positions[i];
 
-				// TODO: add specific line batch component to draw this
-				if (m_DrawNormals) { PreviewWorld->DrawDebugLine( Pos, Pos + Normal * m_DebugLinesSize, Color::Green, 0, 0 ); }
-				if (m_DrawTangents) { PreviewWorld->DrawDebugLine( Pos, Pos + Tangent * m_DebugLinesSize, Color::Blue, 0, 0 ); }
-				if (m_DrawBitTangents) { PreviewWorld->DrawDebugLine( Pos, Pos + BitTangent * m_DebugLinesSize, Color::Red, 0, 0 ); }
+					if (m_DrawNormals && Data.VertexData.HasNormals())
+					{
+						const Vector& Normal = Data.VertexData.GetNormals()[i];
+						PreviewWorld->DrawDebugLine( Pos, Pos + Normal * m_DebugLinesSize, Color::Green, 0, 0 );
+					}
+
+					if (m_DrawTangents && Data.VertexData.HasTangents())
+					{
+						const Vector& Tangent = Data.VertexData.GetTangents()[i];
+						PreviewWorld->DrawDebugLine( Pos, Pos + Tangent * m_DebugLinesSize, Color::Blue, 0, 0 );
+					}
+
+					if (m_DrawBitTangents && Data.VertexData.HasBitTangents())
+					{
+						const Vector& BitTangent = Data.VertexData.GetBitTangents()[i];
+						PreviewWorld->DrawDebugLine( Pos, Pos + BitTangent * m_DebugLinesSize, Color::Red, 0, 0 );
+					}
+				}
 			}
 		}
 	}

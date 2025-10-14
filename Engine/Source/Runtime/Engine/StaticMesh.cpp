@@ -52,6 +52,15 @@ namespace Drn
 			BuffAr >> ImportScale;
 			
 			m_BodySetup.Serialize(BuffAr);
+
+			if (Ar.GetVersion() == 20)
+			{
+				Ar >> m_ImportNormals;
+				Ar >> m_ImportTangents;
+				Ar >> m_ImportBitTangents;
+				Ar >> m_ImportColor;
+				Ar >> m_ImportUVs;
+			}
 		}
 
 #if WITH_EDITOR
@@ -67,6 +76,14 @@ namespace Drn
 
 			BufArr.Compress();
 			Ar << BufArr;
+
+			{
+				Ar << m_ImportNormals;
+				Ar << m_ImportTangents;
+				Ar << m_ImportBitTangents;
+				Ar << m_ImportColor;
+				Ar << m_ImportUVs;
+			}
 		}
 #endif
 	}
@@ -231,6 +248,12 @@ namespace Drn
 		{
 			Ar >> VertexBufferBlob;
 			Ar >> IndexBufferBlob;
+
+			if (Ar.GetVersion() == 20)
+			{
+				VertexData.Serialize(Ar);
+			}
+
 			Ar >> MaterialIndex;
 
 #if WITH_EDITOR
@@ -241,6 +264,12 @@ namespace Drn
 		{
 			Ar << VertexBufferBlob;
 			Ar << IndexBufferBlob;
+
+			//if (Ar.GetVersion() == 20)
+			{
+				VertexData.Serialize(Ar);
+			}
+
 			Ar << MaterialIndex;
 		}
 	}
@@ -293,4 +322,48 @@ namespace Drn
 		ReleaseBlobs();
 		ReleaseBuffers();
 	}
+
+	void StaticMeshVertexData::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			Ar >> Positions;
+			Ar >> Indices;
+			
+			Ar >> Normals;
+			Ar >> Tangents;
+			Ar >> BitTangents;
+			Ar >> Color;
+			
+			Ar >> UV_1;
+			Ar >> UV_2;
+			Ar >> UV_3;
+			Ar >> UV_4;
+			Ar >> UV_5;
+			Ar >> UV_6;
+			Ar >> UV_7;
+			Ar >> UV_8;
+		}
+
+		else
+		{
+			Ar << Positions;
+			Ar << Indices;
+			
+			Ar << Normals;
+			Ar << Tangents;
+			Ar << BitTangents;
+			Ar << Color;
+			
+			Ar << UV_1;
+			Ar << UV_2;
+			Ar << UV_3;
+			Ar << UV_4;
+			Ar << UV_5;
+			Ar << UV_6;
+			Ar << UV_7;
+			Ar << UV_8;
+		}
+	}
+
 }

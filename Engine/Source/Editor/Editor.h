@@ -35,7 +35,11 @@ namespace Drn
 
 		void OpenTaskGraphVisualizer();
 
+		template<typename T>
+		void ReimportAsset();
+
 		void ReimportMaterials();
+		void ReimportStaticMeshes();
 
 	protected:
 
