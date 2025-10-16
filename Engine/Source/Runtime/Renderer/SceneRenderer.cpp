@@ -246,7 +246,7 @@ namespace Drn
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "HZB" );
 
-		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_DepthTarget, D3D12_RESOURCE_STATE_DEPTH_READ);
+		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_DepthTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource(m_HZBBuffer->M_HZBTarget, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 		int32 RemainingMips = m_HZBBuffer->m_MipCount;
@@ -268,7 +268,7 @@ namespace Drn
 
 			if ( DispatchStartMipIndex != 0)
 			{
-				ResourceStateTracker::Get()->TransiationResource(m_HZBBuffer->M_HZBTarget, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, DispatchStartMipIndex - 1);
+				ResourceStateTracker::Get()->TransiationResource(m_HZBBuffer->M_HZBTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, DispatchStartMipIndex - 1);
 			}
 
 			ID3D12PipelineState* DispatchPSO = nullptr;
@@ -310,7 +310,7 @@ namespace Drn
 
 		m_AOBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this, m_PostProcessSettings->m_SSAOSettings);
 
-		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_AOBuffer->m_AOSetupTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -415,7 +415,7 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
@@ -449,7 +449,7 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
@@ -618,6 +618,7 @@ namespace Drn
 		m_TonemapBuffer->Bind(m_CommandList->GetD3D12CommandList());
 		
 		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[1], D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_TonemapBuffer->m_TonemapTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );

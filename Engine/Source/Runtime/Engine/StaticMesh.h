@@ -59,6 +59,48 @@ namespace Drn
 		friend class AssetImporterStaticMesh;
 	};
 
+	struct StaticMeshBuffers
+	{
+		StaticMeshBuffers()
+			: NormalBuffer(nullptr)
+			, TangentBuffer(nullptr)
+			, BitTangentBuffer(nullptr)
+			, ColorBuffer(nullptr)
+			, UV1Buffer(nullptr)
+			, UV2Buffer(nullptr)
+			, UV3Buffer(nullptr)
+			, UV4Buffer(nullptr)
+			, UV5Buffer(nullptr)
+			, UV6Buffer(nullptr)
+			, UV7Buffer(nullptr)
+			, UV8Buffer(nullptr)
+		{}
+
+		~StaticMeshBuffers()
+		{
+			ReleaseBuffers();
+		}
+
+		void ReleaseBuffers();
+
+		void CreateBuffers(ID3D12GraphicsCommandList2* CommandList, StaticMeshVertexData& VertexData);
+
+		class Resource* NormalBuffer;
+		class Resource* TangentBuffer;
+		class Resource* BitTangentBuffer;
+		class Resource* ColorBuffer;
+
+		class Resource* UV1Buffer;
+		class Resource* UV2Buffer;
+		class Resource* UV3Buffer;
+		class Resource* UV4Buffer;
+		class Resource* UV5Buffer;
+		class Resource* UV6Buffer;
+		class Resource* UV7Buffer;
+		class Resource* UV8Buffer;
+	};
+
+
 	struct StaticMeshSlotData : public Serializable
 	{
 	public:

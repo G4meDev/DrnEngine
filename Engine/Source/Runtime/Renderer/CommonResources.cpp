@@ -602,7 +602,7 @@ namespace Drn
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
 
 #if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_Tonemap");
+		m_PSO->SetName(L"PSO_ScreenSpaceReflection");
 #endif
 	}
 

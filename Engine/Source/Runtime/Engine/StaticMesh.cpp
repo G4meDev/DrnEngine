@@ -366,4 +366,74 @@ namespace Drn
 		}
 	}
 
+	void StaticMeshBuffers::ReleaseBuffers()
+	{
+		auto ReleaseBuffer = [](Resource*& InResource) { if (InResource){InResource->ReleaseBufferedResource(); InResource = nullptr;} };
+
+		ReleaseBuffer(NormalBuffer);
+		ReleaseBuffer(TangentBuffer);
+		ReleaseBuffer(BitTangentBuffer);
+		ReleaseBuffer(ColorBuffer);
+
+		ReleaseBuffer(UV1Buffer);
+		ReleaseBuffer(UV2Buffer);
+		ReleaseBuffer(UV3Buffer);
+		ReleaseBuffer(UV4Buffer);
+		ReleaseBuffer(UV5Buffer);
+		ReleaseBuffer(UV6Buffer);
+		ReleaseBuffer(UV7Buffer);
+		ReleaseBuffer(UV8Buffer);
+	}
+
+	void StaticMeshBuffers::CreateBuffers( ID3D12GraphicsCommandList2* CommandList, StaticMeshVertexData& VertexData )
+	{
+		ReleaseBuffers();
+
+//		if (VertexData.HasNormals())
+//		{
+//			const uint64 Stride = sizeof(Vector);
+//			const uint64 BufferSize = VertexData.GetNormals().size() * Stride;
+//
+//			NormalBuffer = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, 
+//				CD3DX12_RESOURCE_DESC::Buffer( BufferSize ), D3D12_RESOURCE_STATE_COMMON, false);
+//
+//			Resource* IntermediateVertexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, 
+//				CD3DX12_RESOURCE_DESC::Buffer( BufferSize ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+//
+////#if D3D12_Debug_INFO
+////			IntermediateVertexBuffer->SetName( Name + "_IntermediateVertexBuffer" );
+////			Result->m_VertexBuffer->SetName( Name + "_VertexBuffer" );
+////#endif
+//
+//			UINT8* pVertexDataBegin;
+//			CD3DX12_RANGE readRange( 0, 0 );
+//			IntermediateVertexBuffer->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
+//			memcpy( pVertexDataBegin, VertexData.GetNormals().data(), BufferSize );
+//			IntermediateVertexBuffer->GetD3D12Resource()->Unmap( 0, nullptr );
+//
+//			CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+//				NormalBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST );
+//			CommandList->ResourceBarrier(1, &barrier);
+//
+//			CommandList->CopyResource(NormalBuffer->GetD3D12Resource(), IntermediateVertexBuffer->GetD3D12Resource());
+//
+//			barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+//				NormalBuffer->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER );
+//			CommandList->ResourceBarrier(1, &barrier);
+//
+//			D3D12_SHADER_RESOURCE_VIEW_DESC ViewDesc = {};
+//			ViewDesc.Format = DXGI_FORMAT_R;
+//			ViewDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+//			 
+//			NormalView.AllocateDescriptorSlot();
+//			NormalView.CreateView()
+//			
+//			Result->m_VertexBufferView.BufferLocation = Result->m_VertexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
+//			Result->m_VertexBufferView.StrideInBytes  = Stride;
+//			Result->m_VertexBufferView.SizeInBytes    = VertexBufferSize;
+//			
+//			IntermediateVertexBuffer->ReleaseBufferedResource();
+//		}
+	}
+
 }

@@ -65,7 +65,7 @@ namespace Drn
 
 		if (m_CastShadow)
 		{
-			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_DEPTH_READ);
+			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
 		}
 
