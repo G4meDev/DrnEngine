@@ -119,7 +119,7 @@ namespace Drn
 			Result->m_BitTangentBuffer = VertexBuffer::Create(CommandList, Source.GetBitTangents().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_BitTangent", CreateOnDefaultHeap);
 
 		if (Source.HasColors())
-			Result->m_ColorBuffer = VertexBuffer::Create(CommandList, Source.GetColor().data(), Source.GetVertexCount(), sizeof(Vector4), Name + "_Color", CreateOnDefaultHeap);
+			Result->m_ColorBuffer = VertexBuffer::Create(CommandList, Source.GetColor().data(), Source.GetVertexCount(), sizeof(Color), Name + "_Color", CreateOnDefaultHeap);
 
 		if (Source.HasUV1())
 			Result->m_UV1Buffer = VertexBuffer::Create(CommandList, Source.GetUV1().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV1", CreateOnDefaultHeap);

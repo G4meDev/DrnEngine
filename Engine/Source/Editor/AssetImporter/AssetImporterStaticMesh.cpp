@@ -96,6 +96,7 @@ namespace Drn
 			Vertex.R = mesh->HasVertexColors(0) ? mesh->mColors[0][i].r : 1;
 			Vertex.G = mesh->HasVertexColors(0) ? mesh->mColors[0][i].g : 1;
 			Vertex.B = mesh->HasVertexColors(0) ? mesh->mColors[0][i].b : 1;
+			Vertex.A = mesh->HasVertexColors(0) ? mesh->mColors[0][i].a : 1;
 
 			Vertex.U1 = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][i].x : 0;
 			Vertex.V1 = mesh->HasTextureCoords(0) ? mesh->mTextureCoords[0][i].y : 0;
@@ -208,7 +209,7 @@ namespace Drn
 				Data.VertexData.Normals.resize(MeshAsset->m_ImportNormals ? VertexCount : 0);
 				Data.VertexData.Tangents.resize(MeshAsset->m_ImportTangents ? VertexCount : 0);
 				Data.VertexData.BitTangents.resize(MeshAsset->m_ImportBitTangents ? VertexCount : 0);
-				Data.VertexData.Color.resize(MeshAsset->m_ImportColor? VertexCount : 0);
+				Data.VertexData.Colors.resize(MeshAsset->m_ImportColor? VertexCount : 0);
 
 				Data.VertexData.UV_1.resize(MeshAsset->m_ImportUVs >= 1 ? VertexCount : 0);
 				Data.VertexData.UV_2.resize(MeshAsset->m_ImportUVs >= 2 ? VertexCount : 0);
@@ -229,7 +230,7 @@ namespace Drn
 						Data.VertexData.BitTangents[i] = Vector(IMD.Vertices[i].BT_X, IMD.Vertices[i].BT_Y, IMD.Vertices[i].BT_Z);
 
 					if (MeshAsset->m_ImportColor)
-						Data.VertexData.Color[i] = Vector4(IMD.Vertices[i].R, IMD.Vertices[i].G, IMD.Vertices[i].B, 1); // TODO: add alppha channel
+						Data.VertexData.Colors[i] = Vector4(IMD.Vertices[i].R, IMD.Vertices[i].G, IMD.Vertices[i].B, IMD.Vertices[i].A);
 
 					if (MeshAsset->m_ImportUVs >= 1)
 						Data.VertexData.UV_1[i] = Vector2(IMD.Vertices[i].U1, IMD.Vertices[i].V1);

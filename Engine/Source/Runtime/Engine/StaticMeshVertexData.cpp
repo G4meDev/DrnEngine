@@ -13,7 +13,7 @@ namespace Drn
 			Ar >> Normals;
 			Ar >> Tangents;
 			Ar >> BitTangents;
-			Ar >> Color;
+			Ar >> Colors;
 			
 			Ar >> UV_1;
 			Ar >> UV_2;
@@ -31,7 +31,7 @@ namespace Drn
 			Ar << Normals;
 			Ar << Tangents;
 			Ar << BitTangents;
-			Ar << Color;
+			Ar << Colors;
 			
 			Ar << UV_1;
 			Ar << UV_2;

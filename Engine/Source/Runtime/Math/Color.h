@@ -4,7 +4,7 @@
 
 namespace Drn
 {
-	class Color : public Serializable
+	class Color
 	{
 	public:
 		inline Color(uint8_t InR, uint8_t InG, uint8_t InB, uint8_t InA = 255)
@@ -25,7 +25,15 @@ namespace Drn
 			DWColor() = InColor;
 		}
 
-		virtual void Serialize(Archive& Ar);
+		inline Color(Vector4 InLinearColor)
+		{
+			R = std::clamp(InLinearColor.GetX(), 0.0f, 1.0f) * 255;
+			G = std::clamp(InLinearColor.GetY(), 0.0f, 1.0f) * 255;
+			B = std::clamp(InLinearColor.GetZ(), 0.0f, 1.0f) * 255;
+			A = std::clamp(InLinearColor.GetW(), 0.0f, 1.0f) * 255;
+		}
+
+		//virtual void Serialize(Archive& Ar);
 
 		inline bool operator==( const Color &C ) const
 		{
@@ -66,9 +74,7 @@ namespace Drn
 		static const Color Silver;
 		static const Color Emerald;
 
-		uint8_t R;
-		uint8_t G;
-		uint8_t B;
-		uint8_t A;
+		union { struct { uint8_t R, G, B, A; }; uint32 AlignmentDummy; };
+
 	};
 }

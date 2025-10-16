@@ -68,7 +68,7 @@ namespace Drn
 	struct InputLayout_StaticMesh
 	{
 	public:
-		InputLayout_StaticMesh(float InX, float InY, float InZ, float InR, float InG, float InB, 
+		InputLayout_StaticMesh(float InX, float InY, float InZ, float InR, float InG, float InB, float InA,
 			float InN_X, float InN_Y, float InN_Z, float InT_X, float InT_Y, float InT_Z,
 			float InBT_X, float InBT_Y, float InBT_Z, float InU1, float InV1, float InU2, float InV2,
 			float InU3, float InV3, float InU4, float InV4)
@@ -78,6 +78,7 @@ namespace Drn
 			, R(InR)
 			, G(InG)
 			, B(InB)
+			, A(InA)
 			, N_X(InN_X)
 			, N_Y(InN_Y)
 			, N_Z(InN_Z)
@@ -109,6 +110,7 @@ namespace Drn
 		float R;
 		float G;
 		float B;
+		float A;
 
 		float N_X;
 		float N_Y;

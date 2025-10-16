@@ -205,6 +205,12 @@ namespace Drn
 		return WriteVector(Value);
 	}
 
+	BufferArchive& BufferArchive::operator<<( const std::vector<Color>& Value )
+	{
+		return WriteVector(Value);
+	}
+
+
 	BufferArchive& BufferArchive::operator<<( const Vector& Value )
 	{
 		*this << Value.GetX();
@@ -229,6 +235,12 @@ namespace Drn
 		*this << Value.GetX();
 		*this << Value.GetY();
 
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator<<( const Color& Value )
+	{
+		*this << Value.DWColor();
 		return *this;
 	}
 
@@ -411,6 +423,11 @@ namespace Drn
 		return ReadVector(Value);
 	}
 
+	BufferArchive& BufferArchive::operator>>( std::vector<Color>& Value )
+	{
+		return ReadVector(Value);
+	}
+
 	BufferArchive& BufferArchive::operator>>( Vector& Value )
 	{
 		float X, Y, Z;
@@ -435,6 +452,12 @@ namespace Drn
 		*this >> X >> Y;
 
 		Value = Vector2(X, Y);
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator>>( Color& Value )
+	{
+		*this >> Value.DWColor();
 		return *this;
 	}
 

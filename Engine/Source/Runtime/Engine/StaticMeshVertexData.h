@@ -24,8 +24,8 @@ namespace Drn
 		bool HasBitTangents() const { return BitTangents.size() > 0; }
 		const std::vector<Vector>& GetBitTangents() const { return BitTangents; }
 
-		bool HasColors() const { return Color.size() > 0; }
-		const std::vector<Vector4>& GetColor() const { return Color; }
+		bool HasColors() const { return Colors.size() > 0; }
+		const std::vector<Color>& GetColor() const { return Colors; }
 
 		bool HasUV1() const { return UV_1.size() > 0; }
 		const std::vector<Vector2>& GetUV1() const { return UV_1; }
@@ -49,7 +49,7 @@ namespace Drn
 		std::vector<Vector> Normals;
 		std::vector<Vector> Tangents;
 		std::vector<Vector> BitTangents;
-		std::vector<Vector4> Color;
+		std::vector<Color> Colors;
 
 		std::vector<Vector2> UV_1;
 		std::vector<Vector2> UV_2;
