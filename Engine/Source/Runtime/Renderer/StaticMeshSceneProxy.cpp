@@ -140,15 +140,7 @@ namespace Drn
 				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
 				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
-				if (Mat->m_InputLayoutType == EInputLayoutType::StandardMeshTemp)
-				{
-					RenderProxy.BindAndDrawTemp(CommandList);
-				}
-
-				else
-				{
-					RenderProxy.BindAndDraw(CommandList);
-				}
+				RenderProxy.BindAndDraw(CommandList);
 			}
 		}
 	}
@@ -185,7 +177,7 @@ namespace Drn
 				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
 				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		
-				RenderProxy.BindAndDrawPrepass(CommandList);
+				RenderProxy.BindAndDraw(CommandList);
 			}
 		}
 	}

@@ -21,51 +21,18 @@ namespace Drn
 		StaticMeshSlotData();
 		~StaticMeshSlotData();
 
-		ID3DBlob* VertexBufferBlob = nullptr;
-		ID3DBlob* IndexBufferBlob = nullptr;
 		uint8 MaterialIndex = 0;
-
-		class VertexBuffer* m_VertexBuffer; // TODO: swap with pos only
-		class IndexBuffer* m_IndexBuffer;
-
-		class VertexBuffer* m_PositionOnlyVertexBuffer;
-
-		class StaticMeshVertexBuffer* m_StaticMeshVertexBuffer;
-
-#if WITH_EDITOR
-		uint64 m_VertexCount = 0;
-
-		std::vector<Vector> Positions;
-		std::vector<Vector> Normals;
-		std::vector<Vector> Tangents;
-		std::vector<Vector> BitTangents;
 
 		StaticMeshVertexData VertexData;
 
-		void UnpackVerticesData();
-#endif
+		class StaticMeshVertexBuffer* m_StaticMeshVertexBuffer;
+		class IndexBuffer* m_IndexBuffer;
 
 		virtual void Serialize(Archive& Ar) override;
-		
-		inline void ReleaseBlobs()
-		{
-			if (VertexBufferBlob)
-			{
-				VertexBufferBlob->Release();
-				VertexBufferBlob = nullptr;
-			}
-			if (IndexBufferBlob)
-			{
-				IndexBufferBlob->Release();
-				IndexBufferBlob = nullptr;
-			}
-		}
 
 		inline void ReleaseBuffers();
 
 		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList ) const;
-		void BindAndDrawTemp( ID3D12GraphicsCommandList2* CommandList ) const;
-		void BindAndDrawPrepass( ID3D12GraphicsCommandList2* CommandList ) const; // TODO: remove
 	};
 
 	struct StaticMeshData : public Serializable

@@ -83,8 +83,6 @@ namespace Drn
 		ShaderBlob m_PointlightShadowDepthShaderBlob;
 		ShaderBlob m_SpotlightShadowDepthShaderBlob;
 
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE m_PrimitiveType;
-		EInputLayoutType m_InputLayoutType;
 		bool m_TwoSided;
 
 		std::vector<MaterialIndexedTexture2DParameter> m_Texture2DSlots;

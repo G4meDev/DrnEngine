@@ -197,14 +197,7 @@ namespace Drn
 			ImportedStaticMeshSlotData& IMD = BuildingData.MeshesData[i];
 			StaticMeshSlotData& Data = MeshAsset->Data.MeshesData[i];
 
-			uint32 VertexByteCount = IMD.Vertices.size() * sizeof( InputLayout_StaticMesh );
-			D3DCreateBlob(VertexByteCount, &Data.VertexBufferBlob);
-			memcpy(Data.VertexBufferBlob->GetBufferPointer(), IMD.Vertices.data(), VertexByteCount);
-
-			uint32 IndexByteCount = IMD.Indices.size() * sizeof(uint32);
-			D3DCreateBlob(IndexByteCount, &Data.IndexBufferBlob);
-			memcpy(Data.IndexBufferBlob->GetBufferPointer(), IMD.Indices.data(), IndexByteCount);
-
+			Data.VertexData.Indices = IMD.Indices;
 			Data.MaterialIndex = IMD.MaterialIndex;
 
 			{
@@ -276,28 +269,6 @@ namespace Drn
 			MaterialPath = MaterialPath != "" ? MaterialPath : DEFAULT_MATERIAL_PATH;
 			M.m_Material = AssetHandle<Material>(MaterialPath);
 			M.m_Material.Load();
-		}
-
-// -------------------------------------------------------------------------------------------------------
-
-		for (int i = 0; i < BuildingData.MeshesData.size(); i++)
-		{
-			ImportedStaticMeshSlotData& IMD = BuildingData.MeshesData[i];
-			StaticMeshSlotData& Data = MeshAsset->Data.MeshesData[i];
-
-			uint64 VertexCount = IMD.Vertices.size();
-			Data.Positions.resize(VertexCount);
-			Data.Normals.resize(VertexCount);
-			Data.Tangents.resize(VertexCount);
-			Data.BitTangents.resize(VertexCount);
-
-			for (uint64 i = 0; i < VertexCount; i++)
-			{
-				Data.Positions[i] = IMD.Vertices[i].GetPosition();
-				Data.Normals[i] = IMD.Vertices[i].GetNormal();
-				Data.Tangents[i] = IMD.Vertices[i].GetTangent();
-				Data.BitTangents[i] = IMD.Vertices[i].GetBitTangent();
-			}
 		}
 	}
 

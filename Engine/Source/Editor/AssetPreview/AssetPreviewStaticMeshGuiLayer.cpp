@@ -190,7 +190,7 @@ namespace Drn
 		uint64 VertexCount = 0;
 		for (auto& MeshSlot : m_OwningAsset->Data.MeshesData)
 		{
-			VertexCount += MeshSlot.m_VertexCount;
+			VertexCount += MeshSlot.VertexData.GetVertexCount();
 		}
 
 		ImGui::Text( "%u vertecies", VertexCount);
@@ -274,9 +274,9 @@ namespace Drn
 		{
 			for ( StaticMeshSlotData& Data : m_OwningAsset->Data.MeshesData )
 			{
-				for (uint64 i = 0; i < Data.Positions.size(); i++)
+				for (uint64 i = 0; i < Data.VertexData.GetPositions().size(); i++)
 				{
-					const Vector& Pos = Data.Positions[i];
+					const Vector& Pos = Data.VertexData.GetPositions()[i];
 
 					if (m_DrawNormals && Data.VertexData.HasNormals())
 					{

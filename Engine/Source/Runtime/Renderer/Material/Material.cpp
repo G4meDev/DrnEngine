@@ -17,8 +17,6 @@ namespace Drn
 		, m_SupportHitProxyPass(false)
 		, m_SupportEditorPrimitivePass(false)
 		, m_SupportEditorSelectionPass(true)
-		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
-		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_TwoSided(false)
 		, m_TextureIndexBuffer(nullptr)
 		, m_ScalarBuffer(nullptr)
@@ -44,8 +42,6 @@ namespace Drn
 		, m_SupportHitProxyPass(false)
 		, m_SupportEditorPrimitivePass(false)
 		, m_SupportEditorSelectionPass(true)
-		, m_PrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE)
-		, m_InputLayoutType(EInputLayoutType::StandardMesh)
 		, m_TwoSided(false)
 		, m_TextureIndexBuffer(nullptr)
 		, m_ScalarBuffer(nullptr)
@@ -82,14 +78,6 @@ namespace Drn
 
 			m_MainShaderBlob.Serialize(Ar);
 			m_HitProxyShaderBlob.Serialize(Ar);
-
-			uint8 PrimitiveType;
-			Ar >> PrimitiveType;
-			m_PrimitiveType = static_cast<D3D12_PRIMITIVE_TOPOLOGY_TYPE>(PrimitiveType);
-
-			uint16 InputlayoutType;
-			Ar >> InputlayoutType;
-			m_InputLayoutType = static_cast<EInputLayoutType>(InputlayoutType);
 
 			Ar >> m_TwoSided;
 
@@ -153,8 +141,8 @@ namespace Drn
 			m_MainShaderBlob.Serialize(Ar);
 			m_HitProxyShaderBlob.Serialize(Ar);
 
-			Ar << static_cast<uint8>(m_PrimitiveType);
-			Ar << static_cast<uint16>(m_InputLayoutType);
+			//Ar << static_cast<uint8>(m_PrimitiveType);
+			//Ar << static_cast<uint16>(EInputLayoutType::StandardMeshTemp);
 
 			Ar << m_TwoSided;
 
@@ -407,8 +395,8 @@ namespace Drn
 
 			if (m_SupportMainPass)
 			{
-				m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(CullMode, m_InputLayoutType,
-					m_PrimitiveType, m_MainShaderBlob);
+				m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(CullMode, EInputLayoutType::StandardMesh,
+					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_MainShaderBlob);
 
 #if D3D12_Debug_INFO
 				m_MainPassPSO->SetName( "PSO_MainPass_" + name );
@@ -418,10 +406,12 @@ namespace Drn
 			if (m_SupportShadowPass)
 			{
 				m_PointLightShadowDepthPassPSO = PipelineStateObject::CreatePointLightShadowDepthPassPSO(
-					CullMode, m_InputLayoutType, m_PrimitiveType, m_PointlightShadowDepthShaderBlob);
+					CullMode, EInputLayoutType::StandardMesh,
+					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_PointlightShadowDepthShaderBlob);
 
 				m_SpotLightShadowDepthPassPSO = PipelineStateObject::CreateSpotLightShadowDepthPassPSO(
-					CullMode, m_InputLayoutType, m_PrimitiveType, m_SpotlightShadowDepthShaderBlob);
+					CullMode, EInputLayoutType::StandardMesh,
+					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_SpotlightShadowDepthShaderBlob);
 
 #if D3D12_Debug_INFO
 				m_PointLightShadowDepthPassPSO->SetName( "PSO_Po intLightShadowDepthPass_" + name );
@@ -433,8 +423,8 @@ namespace Drn
 
 			if (m_SupportEditorSelectionPass)
 			{
-				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(CullMode, m_InputLayoutType,
-					m_PrimitiveType, m_MainShaderBlob);
+				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(CullMode, EInputLayoutType::StandardMesh,
+					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_MainShaderBlob);
 #if D3D12_Debug_INFO
 				m_SelectionPassPSO->SetName( "PSO_SelectionPass_" + name );
 #endif
@@ -442,8 +432,8 @@ namespace Drn
 
 			if (IsSupportingHitProxyPass())
 			{
-				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(CullMode, m_InputLayoutType,
-					m_PrimitiveType, m_HitProxyShaderBlob);
+				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(CullMode, EInputLayoutType::StandardMesh,
+					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_HitProxyShaderBlob);
 
 #if D3D12_Debug_INFO
 				m_HitProxyPassPSO->SetName( "PSO_HitProxyPass_" + name );
@@ -452,8 +442,8 @@ namespace Drn
 
 			if (m_SupportEditorPrimitivePass)
 			{
-				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(CullMode, m_InputLayoutType,
-					m_PrimitiveType, m_EditorPrimitiveShaderBlob);
+				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(CullMode, EInputLayoutType::StandardMesh,
+					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_EditorPrimitiveShaderBlob);
 #if D3D12_Debug_INFO
 				m_EditorProxyPSO->SetName( "PSO_EditorPrimitive_" + name );
 #endif

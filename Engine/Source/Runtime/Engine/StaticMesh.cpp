@@ -53,7 +53,6 @@ namespace Drn
 			
 			m_BodySetup.Serialize(BuffAr);
 
-			if (Ar.GetVersion() == 20)
 			{
 				Ar >> m_ImportNormals;
 				Ar >> m_ImportTangents;
@@ -112,17 +111,10 @@ namespace Drn
 
 			Proxy.ReleaseBuffers();
 
-			uint32 Stride = sizeof(InputLayout_StaticMesh);
-			Proxy.m_VertexBuffer = VertexBuffer::Create(CommandList, Proxy.VertexBufferBlob->GetBufferPointer(),
-				Proxy.VertexBufferBlob->GetBufferSize() / Stride, Stride, MeshName);
+			uint32 IndexCount = Proxy.VertexData.GetIndices().size();
+			Proxy.m_IndexBuffer = IndexBuffer::Create(CommandList, Proxy.VertexData.GetIndices().data(),
+				IndexCount, IndexCount * sizeof(uint32), DXGI_FORMAT_R32_UINT, MeshName);
 
-			uint32 IndexCount = Proxy.IndexBufferBlob->GetBufferSize() / sizeof(uint32);
-			Proxy.m_IndexBuffer = IndexBuffer::Create(CommandList, Proxy.IndexBufferBlob->GetBufferPointer(),
-				IndexCount, Proxy.IndexBufferBlob->GetBufferSize(), DXGI_FORMAT_R32_UINT, MeshName);
-
-			Proxy.m_PositionOnlyVertexBuffer = VertexBuffer::Create(CommandList, Proxy.Positions.data(), Proxy.Positions.size(), sizeof(Vector), MeshName);
-
-			// ------------------
 			Proxy.m_StaticMeshVertexBuffer = StaticMeshVertexBuffer::Create(CommandList, Proxy.VertexData, MeshName);
 		}
 
@@ -225,54 +217,16 @@ namespace Drn
 		
 	}
 
-#if WITH_EDITOR
-	void StaticMeshSlotData::UnpackVerticesData()
-	{
-		m_VertexCount = VertexBufferBlob->GetBufferSize() / sizeof(InputLayout_StaticMesh);
-
-		Positions.resize(m_VertexCount);
-		Normals.resize(m_VertexCount);
-		Tangents.resize(m_VertexCount);
-		BitTangents.resize(m_VertexCount);
-
-		for (uint64 i = 0; i < m_VertexCount; i++)
-		{
-			memcpy( &Positions[i], (BYTE*)VertexBufferBlob->GetBufferPointer() + i * sizeof(InputLayout_StaticMesh) + 0 * sizeof(float), sizeof( Vector ) );
-			memcpy( &Normals[i], (BYTE*)VertexBufferBlob->GetBufferPointer() + i * sizeof(InputLayout_StaticMesh) + 6 * sizeof(float), sizeof( Vector ) );
-			memcpy( &Tangents[i], (BYTE*)VertexBufferBlob->GetBufferPointer() + i * sizeof(InputLayout_StaticMesh) + 9 * sizeof(float), sizeof( Vector ) );
-			memcpy( &BitTangents[i], (BYTE*)VertexBufferBlob->GetBufferPointer() + i * sizeof(InputLayout_StaticMesh) + 12 * sizeof(float), sizeof( Vector ) );
-		}
-	}
-#endif
-
 	void StaticMeshSlotData::Serialize( Archive& Ar )
 	{
 		if (Ar.IsLoading())
 		{
-			Ar >> VertexBufferBlob;
-			Ar >> IndexBufferBlob;
-
-			if (Ar.GetVersion() == 20)
-			{
-				VertexData.Serialize(Ar);
-			}
-
+			VertexData.Serialize(Ar);
 			Ar >> MaterialIndex;
-
-#if WITH_EDITOR
-			UnpackVerticesData();
-#endif
 		}
 		else
 		{
-			Ar << VertexBufferBlob;
-			Ar << IndexBufferBlob;
-
-			//if (Ar.GetVersion() == 20)
-			{
-				VertexData.Serialize(Ar);
-			}
-
+			VertexData.Serialize(Ar);
 			Ar << MaterialIndex;
 		}
 	}
@@ -280,21 +234,10 @@ namespace Drn
 
 	void StaticMeshSlotData::ReleaseBuffers()
 	{
-		if (m_VertexBuffer) 
-		{
-			delete m_VertexBuffer;
-			m_VertexBuffer = nullptr;
-		}
 		if (m_IndexBuffer)
 		{
 			delete m_IndexBuffer;
 			m_IndexBuffer = nullptr;
-		}
-
-		if (m_PositionOnlyVertexBuffer)
-		{
-			delete m_PositionOnlyVertexBuffer;
-			m_PositionOnlyVertexBuffer = nullptr;
 		}
 
 		if (m_StaticMeshVertexBuffer)
@@ -306,29 +249,13 @@ namespace Drn
 
 	void StaticMeshSlotData::BindAndDraw( ID3D12GraphicsCommandList2* CommandList ) const
 	{
-		m_VertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
-	}
-
-	void StaticMeshSlotData::BindAndDrawTemp( ID3D12GraphicsCommandList2* CommandList ) const
-	{
 		m_StaticMeshVertexBuffer->Bind(CommandList);
 		m_IndexBuffer->Bind(CommandList);
 		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
 	}
 
-	void StaticMeshSlotData::BindAndDrawPrepass( ID3D12GraphicsCommandList2* CommandList ) const
-	{
-		m_PositionOnlyVertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
-	}
-
 	StaticMeshSlotData::StaticMeshSlotData()
-		: m_VertexBuffer(nullptr)
-		, m_IndexBuffer(nullptr)
-		, m_PositionOnlyVertexBuffer(nullptr)
+		: m_IndexBuffer(nullptr)
 		, m_StaticMeshVertexBuffer(nullptr)
 	{
 		
@@ -336,7 +263,6 @@ namespace Drn
 
 	StaticMeshSlotData::~StaticMeshSlotData()
 	{
-		ReleaseBlobs();
 		ReleaseBuffers();
 	}
 
