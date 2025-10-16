@@ -40,12 +40,35 @@ namespace Drn
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
+	D3D12_INPUT_ELEMENT_DESC InputLayout::StaticMesh_Temp[9] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 2, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 3, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 4, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 5, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 6, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 7, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 8, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
 	D3D12_INPUT_LAYOUT_DESC InputLayout::GetLayoutDescriptionForType( EInputLayoutType Type )
 	{
 		switch ( Type )
 		{
 		case EInputLayoutType::Position:			return { InputLayout::Position, _countof( InputLayout::Position) };
 		case EInputLayoutType::StandardMesh:		return { InputLayout::StaticMesh, _countof( InputLayout::StaticMesh) };
+		case EInputLayoutType::StandardMeshTemp:	return { InputLayout::StaticMesh_Temp, _countof( InputLayout::StaticMesh_Temp) };
 		case EInputLayoutType::LineColorThickness:	return { InputLayout::LineColorThickness, _countof( InputLayout::LineColorThickness) };
 		default:									return { InputLayout::StaticMesh, _countof( InputLayout::StaticMesh) };
 		}
@@ -56,6 +79,7 @@ namespace Drn
 		switch ( Type )
 		{
 		case EInputLayoutType::StandardMesh:		return "StandardMesh";
+		case EInputLayoutType::StandardMeshTemp:	return "StandardMeshTemp";
 		case EInputLayoutType::LineColorThickness:	return "LineColorThickness";
 		default:									return "StandardMesh";
 		}

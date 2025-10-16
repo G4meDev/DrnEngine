@@ -221,10 +221,6 @@ namespace Drn
 				Data.VertexData.UV_2.resize(MeshAsset->m_ImportUVs >= 2 ? VertexCount : 0);
 				Data.VertexData.UV_3.resize(MeshAsset->m_ImportUVs >= 3 ? VertexCount : 0);
 				Data.VertexData.UV_4.resize(MeshAsset->m_ImportUVs >= 4 ? VertexCount : 0);
-				Data.VertexData.UV_5.resize(MeshAsset->m_ImportUVs >= 5 ? VertexCount : 0);
-				Data.VertexData.UV_6.resize(MeshAsset->m_ImportUVs >= 6 ? VertexCount : 0);
-				Data.VertexData.UV_7.resize(MeshAsset->m_ImportUVs >= 7 ? VertexCount : 0);
-				Data.VertexData.UV_8.resize(MeshAsset->m_ImportUVs >= 8 ? VertexCount : 0);
 
 				for (uint64 i = 0; i < VertexCount; i++)
 				{
@@ -253,8 +249,6 @@ namespace Drn
 
 					if (MeshAsset->m_ImportUVs >= 4)
 						Data.VertexData.UV_4[i] = Vector2(IMD.Vertices[i].U4, IMD.Vertices[i].V4);
-
-					// TODO: add 4 more uvs
 				}
 
 				Data.VertexData.Indices = IMD.Indices;

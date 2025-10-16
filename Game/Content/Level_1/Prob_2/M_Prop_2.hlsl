@@ -93,6 +93,16 @@ struct ShadowDepth
 };
 #endif
 
+struct VertexInputStaticMeshTemp
+{
+    float3 Position : POSITION;
+    float3 Color : COLOR;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
+    float3 Bitangent : BINORMAL;
+    float2 UV1 : TEXCOORD0;
+};
+
 struct VertexShaderOutput
 {
     float4 Color : COLOR;
@@ -104,7 +114,7 @@ struct VertexShaderOutput
     float4 Position : SV_Position;
 };
 
-VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
+VertexShaderOutput Main_VS(VertexInputStaticMeshTemp IN)
 {
     VertexShaderOutput OUT;
 

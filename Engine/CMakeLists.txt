@@ -26,6 +26,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/PrimitiveSceneProxy.h
 	Source/Runtime/Engine/StaticMeshComponent.h
 	Source/Runtime/Engine/StaticMesh.h
+	Source/Runtime/Engine/StaticMeshVertexData.h
 	Source/Runtime/Engine/NamedProperty.h
 	Source/Runtime/Engine/MeshTypes.h
 	Source/Runtime/Engine/CameraComponent.h
@@ -208,6 +209,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/PrimitiveSceneProxy.cpp
 	Source/Runtime/Engine/StaticMeshComponent.cpp
 	Source/Runtime/Engine/StaticMesh.cpp
+	Source/Runtime/Engine/StaticMeshVertexData.cpp
 	Source/Runtime/Engine/MeshTypes.cpp
 	Source/Runtime/Engine/NamedProperty.cpp
 	Source/Runtime/Engine/CameraComponent.cpp

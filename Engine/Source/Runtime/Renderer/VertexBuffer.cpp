@@ -7,6 +7,9 @@ namespace Drn
 	VertexBuffer::VertexBuffer()
 		: m_VertexBuffer(nullptr)
 	{
+		m_VertexBufferView.BufferLocation = 0;
+		m_VertexBufferView.StrideInBytes  = 0;
+		m_VertexBufferView.SizeInBytes    = 0;
 	}
 
 	VertexBuffer::~VertexBuffer()
@@ -67,5 +70,90 @@ namespace Drn
 	{
 		CommandList->IASetVertexBuffers(0, 1, &m_VertexBufferView);
 	}
+
+	StaticMeshVertexBuffer::StaticMeshVertexBuffer()
+		: m_PositionBuffer(nullptr)
+		, m_NormalBuffer(nullptr)
+		, m_TangentBuffer(nullptr)
+		, m_BitTangentBuffer(nullptr)
+		, m_ColorBuffer(nullptr)
+		, m_UV1Buffer(nullptr)
+		, m_UV2Buffer(nullptr)
+		, m_UV3Buffer(nullptr)
+		, m_UV4Buffer(nullptr)
+	{}
+
+	StaticMeshVertexBuffer::~StaticMeshVertexBuffer()
+	{
+		auto ReleaseBuffer = [](VertexBuffer*& VBuffer) { if (VBuffer) {delete VBuffer;} };
+
+		ReleaseBuffer(m_PositionBuffer);
+		ReleaseBuffer(m_NormalBuffer);
+		ReleaseBuffer(m_TangentBuffer);
+		ReleaseBuffer(m_BitTangentBuffer);
+		ReleaseBuffer(m_ColorBuffer);
+		ReleaseBuffer(m_UV1Buffer);
+		ReleaseBuffer(m_UV2Buffer);
+		ReleaseBuffer(m_UV3Buffer);
+		ReleaseBuffer(m_UV4Buffer);
+	}
+
+	StaticMeshVertexBuffer* StaticMeshVertexBuffer::Create( ID3D12GraphicsCommandList2* CommandList, StaticMeshVertexData& Source, const std::string& Name, bool CreateOnDefaultHeap )
+	{
+		StaticMeshVertexBuffer* Result = new StaticMeshVertexBuffer;
+
+		if (Source.GetVertexCount() == 0)
+		{
+			return Result;
+		}
+
+		Result->m_PositionBuffer = VertexBuffer::Create(CommandList, Source.GetPositions().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_Position", CreateOnDefaultHeap);
+
+		if (Source.HasNormals())
+			Result->m_NormalBuffer = VertexBuffer::Create(CommandList, Source.GetNormals().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_Normal", CreateOnDefaultHeap);
+
+		if (Source.HasTangents())
+			Result->m_TangentBuffer = VertexBuffer::Create(CommandList, Source.GetTangents().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_Tangent", CreateOnDefaultHeap);
+
+		if (Source.HasBitTangents())
+			Result->m_BitTangentBuffer = VertexBuffer::Create(CommandList, Source.GetBitTangents().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_BitTangent", CreateOnDefaultHeap);
+
+		if (Source.HasColors())
+			Result->m_ColorBuffer = VertexBuffer::Create(CommandList, Source.GetColor().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_Color", CreateOnDefaultHeap); // fix vector3 to vector4
+
+		if (Source.HasUV1())
+			Result->m_UV1Buffer = VertexBuffer::Create(CommandList, Source.GetUV1().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV1", CreateOnDefaultHeap);
+
+		if (Source.HasUV2())
+			Result->m_UV2Buffer = VertexBuffer::Create(CommandList, Source.GetUV2().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV2", CreateOnDefaultHeap);
+
+		if (Source.HasUV3())
+			Result->m_UV3Buffer = VertexBuffer::Create(CommandList, Source.GetUV3().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV3", CreateOnDefaultHeap);
+
+		if (Source.HasUV4())
+			Result->m_UV4Buffer = VertexBuffer::Create(CommandList, Source.GetUV4().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV4", CreateOnDefaultHeap);
+
+		return Result;
+	}
+
+	void StaticMeshVertexBuffer::Bind( ID3D12GraphicsCommandList2* CommandList )
+	{
+		D3D12_VERTEX_BUFFER_VIEW Views[9] = 
+		{
+			m_PositionBuffer ? m_PositionBuffer->m_VertexBufferView : VertexBufferViewNull,
+			m_ColorBuffer ? m_ColorBuffer->m_VertexBufferView : VertexBufferViewNull,
+			m_NormalBuffer ? m_NormalBuffer->m_VertexBufferView : VertexBufferViewNull,
+			m_TangentBuffer ? m_TangentBuffer->m_VertexBufferView : VertexBufferViewNull,
+			m_BitTangentBuffer ? m_BitTangentBuffer->m_VertexBufferView : VertexBufferViewNull,
+			m_UV1Buffer ? m_UV1Buffer->m_VertexBufferView : VertexBufferViewNull,
+			m_UV2Buffer ? m_UV2Buffer->m_VertexBufferView : VertexBufferViewNull,
+			m_UV3Buffer ? m_UV3Buffer->m_VertexBufferView : VertexBufferViewNull,
+			m_UV4Buffer ? m_UV4Buffer->m_VertexBufferView : VertexBufferViewNull,
+		};
+
+		CommandList->IASetVertexBuffers(0, 9, Views);
+	}
+
+	D3D12_VERTEX_BUFFER_VIEW StaticMeshVertexBuffer::VertexBufferViewNull;
 
 }

@@ -10,6 +10,7 @@ namespace Drn
 		StandardMesh = 0,
 		LineColorThickness,
 		Position,
+		StandardMeshTemp,
 
 		MAX_TYPE
 	};
@@ -147,6 +148,7 @@ namespace Drn
 		static D3D12_INPUT_ELEMENT_DESC Color[2];
 		static D3D12_INPUT_ELEMENT_DESC LineColorThickness[2];
 		static D3D12_INPUT_ELEMENT_DESC StaticMesh[9];
+		static D3D12_INPUT_ELEMENT_DESC StaticMesh_Temp[9];
 
 		static D3D12_INPUT_LAYOUT_DESC GetLayoutDescriptionForType(EInputLayoutType Type);
 		static std::string GetNameForType(EInputLayoutType Type);

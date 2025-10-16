@@ -146,6 +146,23 @@ namespace Drn
 		return *this;
 	}
 
+	template<typename T>
+	BufferArchive& BufferArchive::WriteVector( const std::vector<T>& Value )
+	{
+		uint64 Count = (uint64)Value.size();
+		uint64 Size = Count * sizeof(T);
+		*this << Count;
+
+		CheckForAvaliableSpaceAndExpandConditional(Size);
+
+		for ( uint64 i = 0; i < Count; i++)
+		{
+			*this << Value[i];
+		}
+
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator<<( const std::vector<char>& Value )
 	{
 		uint64 Size = (uint64)Value.size();
@@ -170,57 +187,22 @@ namespace Drn
 
 	BufferArchive& BufferArchive::operator<<( const std::vector<Vector>& Value )
 	{
-		uint64 Count = (uint64)Value.size();
-		uint64 Size = Count * sizeof(Vector);
-		*this << Count;
-
-		CheckForAvaliableSpaceAndExpandConditional(Size);
-
-		for ( uint64 i = 0; i < Count; i++)
-		{
-			*this << Value[i];
-			m_HeapPointer += sizeof(Vector);
-		}
-
-		//memcpy(m_HeapPointer, Value.data(), Size);
-		//m_HeapPointer += Size;
-		return *this;
+		return WriteVector(Value);
 	}
 
 	BufferArchive& BufferArchive::operator<<( const std::vector<Vector4>& Value )
 	{
-		uint64 Count = (uint64)Value.size();
-		uint64 Size = Count * sizeof(Vector4);
-		*this << Count;
-
-		CheckForAvaliableSpaceAndExpandConditional(Size);
-		memcpy(m_HeapPointer, Value.data(), Size);
-		m_HeapPointer += Size;
-		return *this;
+		return WriteVector(Value);
 	}
 
 	BufferArchive& BufferArchive::operator<<( const std::vector<Vector2>& Value )
 	{
-		uint64 Count = (uint64)Value.size();
-		uint64 Size = Count * sizeof(Vector2);
-		*this << Count;
-
-		CheckForAvaliableSpaceAndExpandConditional(Size);
-		memcpy(m_HeapPointer, Value.data(), Size);
-		m_HeapPointer += Size;
-		return *this;
+		return WriteVector(Value);
 	}
 
 	BufferArchive& BufferArchive::operator<<( const std::vector<uint32>& Value )
 	{
-		uint64 Count = (uint64)Value.size();
-		uint64 Size = Count * sizeof(uint32);
-		*this << Count;
-
-		CheckForAvaliableSpaceAndExpandConditional(Size);
-		memcpy(m_HeapPointer, Value.data(), Size);
-		m_HeapPointer += Size;
-		return *this;
+		return WriteVector(Value);
 	}
 
 	BufferArchive& BufferArchive::operator<<( const Vector& Value )
@@ -372,6 +354,21 @@ namespace Drn
 		return *this;
 	}
 
+	template<typename T>
+	BufferArchive& BufferArchive::ReadVector( std::vector<T>& Value )
+	{
+		uint64 Count;
+		*this >> Count;
+		Value.resize(Count);
+
+		for ( uint64 i = 0; i < Count; i++)
+		{
+			*this >> Value[i];
+		}
+
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator>>( std::vector<char>& Value )
 	{
 		uint64 Size;
@@ -396,61 +393,22 @@ namespace Drn
 
 	BufferArchive& BufferArchive::operator>>( std::vector<Vector>& Value )
 	{
-		uint64 Count;
-		*this >> Count;
-
-		uint64 Size = Count * sizeof(Vector);
-
-		Value.resize(Size);
-
-		for ( uint64 i = 0; i < Count; i++)
-		{
-			*this >> Value[i];
-			m_HeapPointer += sizeof(Vector);
-		}
-
-		//memcpy(Value.data(), m_HeapPointer, Size);
-		//m_HeapPointer += Size;
-		return *this;
+		return ReadVector(Value);
 	}
 
 	BufferArchive& BufferArchive::operator>>( std::vector<Vector4>& Value )
 	{
-		uint64 Count;
-		*this >> Count;
-
-		uint64 Size = Count * sizeof(Vector4);
-
-		Value.resize(Size);
-		memcpy(Value.data(), m_HeapPointer, Size);
-		m_HeapPointer += Size;
-		return *this;
+		return ReadVector(Value);
 	}
 
 	BufferArchive& BufferArchive::operator>>( std::vector<Vector2>& Value )
 	{
-		uint64 Count;
-		*this >> Count;
-
-		uint64 Size = Count * sizeof(Vector2);
-
-		Value.resize(Size);
-		memcpy(Value.data(), m_HeapPointer, Size);
-		m_HeapPointer += Size;
-		return *this;
+		return ReadVector(Value);
 	}
 
 	BufferArchive& BufferArchive::operator>>( std::vector<uint32>& Value )
 	{
-		uint64 Count;
-		*this >> Count;
-
-		uint64 Size = Count * sizeof(uint32);
-
-		Value.resize(Size);
-		memcpy(Value.data(), m_HeapPointer, Size);
-		m_HeapPointer += Size;
-		return *this;
+		return ReadVector(Value);
 	}
 
 	BufferArchive& BufferArchive::operator>>( Vector& Value )

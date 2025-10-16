@@ -35,6 +35,10 @@ namespace Drn
 		virtual BufferArchive& operator<<(const Quat& Value) override;
 		virtual BufferArchive& operator<<(const Transform& Value) override;
 		virtual BufferArchive& operator<<(const std::string& Value) override;
+
+		template<typename T>
+		BufferArchive& WriteVector(const std::vector<T>& Value);
+
 		virtual BufferArchive& operator<<(const std::vector<char>& Value) override;
 		virtual BufferArchive& operator<<(const std::vector<uint8>& Value) override;
 		virtual BufferArchive& operator<<(const std::vector<Vector>& Value) override;
@@ -61,6 +65,10 @@ namespace Drn
 		virtual BufferArchive& operator>>(Quat& Value) override;
 		virtual BufferArchive& operator>>(Transform& Value) override;
 		virtual BufferArchive& operator>>(std::string& Value) override;
+
+		template<typename T>
+		BufferArchive& ReadVector(std::vector<T>& Value);
+
 		virtual BufferArchive& operator>>(std::vector<char>& Value) override;
 		virtual BufferArchive& operator>>(std::vector<uint8>& Value) override;
 		virtual BufferArchive& operator>>(std::vector<Vector>& Value) override;
