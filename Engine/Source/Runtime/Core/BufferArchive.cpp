@@ -129,6 +129,12 @@ namespace Drn
 		return *this;
 	}
 
+	BufferArchive& BufferArchive::operator<<( Float16 Value )
+	{
+		*this << Value.Encoded;
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator<<( Guid Value )
 	{
 		*this << Value.A << Value.B << Value.C << Value.D;
@@ -200,6 +206,11 @@ namespace Drn
 		return WriteVector(Value);
 	}
 
+	BufferArchive& BufferArchive::operator<<( const std::vector<Vector2Half>& Value )
+	{
+		return WriteVector(Value);
+	}
+
 	BufferArchive& BufferArchive::operator<<( const std::vector<uint32>& Value )
 	{
 		return WriteVector(Value);
@@ -234,6 +245,14 @@ namespace Drn
 	{
 		*this << Value.GetX();
 		*this << Value.GetY();
+
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator<<( const Vector2Half& Value )
+	{
+		*this << Value.X;
+		*this << Value.Y;
 
 		return *this;
 	}
@@ -347,6 +366,12 @@ namespace Drn
 		return *this;
 	}
 
+	BufferArchive& BufferArchive::operator>>( Float16& Value )
+	{
+		*this >> Value.Encoded;
+		return *this;
+	}
+
 	BufferArchive& BufferArchive::operator>>( Guid& Value )
 	{
 		*this >> Value.A >> Value.B >> Value.C >> Value.D;
@@ -418,6 +443,11 @@ namespace Drn
 		return ReadVector(Value);
 	}
 
+	BufferArchive& BufferArchive::operator>>( std::vector<Vector2Half>& Value )
+	{
+		return ReadVector(Value);
+	}
+
 	BufferArchive& BufferArchive::operator>>( std::vector<uint32>& Value )
 	{
 		return ReadVector(Value);
@@ -452,6 +482,12 @@ namespace Drn
 		*this >> X >> Y;
 
 		Value = Vector2(X, Y);
+		return *this;
+	}
+
+	BufferArchive& BufferArchive::operator>>( Vector2Half& Value )
+	{
+		*this >> Value.X >> Value.Y;
 		return *this;
 	}
 

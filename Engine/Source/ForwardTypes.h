@@ -15,10 +15,12 @@
 #include "Runtime/Misc/StatsMisc.h"
 
 #include "Runtime/Math/MathHelper.h"
+#include "Runtime/Math/Float16.h"
 #include "Runtime/Math/IntPoint.h"
 #include "Runtime/Math/Vector.h"
 #include "Runtime/Math/Vector4.h"
 #include "Runtime/Math/Vector2.h"
+#include "Runtime/Math/Vector2Half.h"
 #include "Runtime/Math/Box.h"
 #include "Runtime/Math/Sphere.h"
 #include "Runtime/Math/Quat.h"

@@ -28,16 +28,16 @@ namespace Drn
 		const std::vector<Color>& GetColor() const { return Colors; }
 
 		bool HasUV1() const { return UV_1.size() > 0; }
-		const std::vector<Vector2>& GetUV1() const { return UV_1; }
+		const std::vector<Vector2Half>& GetUV1() const { return UV_1; }
 
 		bool HasUV2() const { return UV_2.size() > 0; }
-		const std::vector<Vector2>& GetUV2() const { return UV_2; }
+		const std::vector<Vector2Half>& GetUV2() const { return UV_2; }
 
 		bool HasUV3() const { return UV_3.size() > 0; }
-		const std::vector<Vector2>& GetUV3() const { return UV_3; }
+		const std::vector<Vector2Half>& GetUV3() const { return UV_3; }
 
 		bool HasUV4() const { return UV_4.size() > 0; }
-		const std::vector<Vector2>& GetUV4() const { return UV_4; }
+		const std::vector<Vector2Half>& GetUV4() const { return UV_4; }
 
 	private:
 
@@ -51,10 +51,10 @@ namespace Drn
 		std::vector<Vector> BitTangents;
 		std::vector<Color> Colors;
 
-		std::vector<Vector2> UV_1;
-		std::vector<Vector2> UV_2;
-		std::vector<Vector2> UV_3;
-		std::vector<Vector2> UV_4;
+		std::vector<Vector2Half> UV_1;
+		std::vector<Vector2Half> UV_2;
+		std::vector<Vector2Half> UV_3;
+		std::vector<Vector2Half> UV_4;
 
 		friend class AssetImporterStaticMesh;
 	};

@@ -122,16 +122,16 @@ namespace Drn
 			Result->m_ColorBuffer = VertexBuffer::Create(CommandList, Source.GetColor().data(), Source.GetVertexCount(), sizeof(Color), Name + "_Color", CreateOnDefaultHeap);
 
 		if (Source.HasUV1())
-			Result->m_UV1Buffer = VertexBuffer::Create(CommandList, Source.GetUV1().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV1", CreateOnDefaultHeap);
+			Result->m_UV1Buffer = VertexBuffer::Create(CommandList, Source.GetUV1().data(), Source.GetVertexCount(), sizeof(Vector2Half), Name + "_UV1", CreateOnDefaultHeap);
 
 		if (Source.HasUV2())
-			Result->m_UV2Buffer = VertexBuffer::Create(CommandList, Source.GetUV2().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV2", CreateOnDefaultHeap);
+			Result->m_UV2Buffer = VertexBuffer::Create(CommandList, Source.GetUV2().data(), Source.GetVertexCount(), sizeof(Vector2Half), Name + "_UV2", CreateOnDefaultHeap);
 
 		if (Source.HasUV3())
-			Result->m_UV3Buffer = VertexBuffer::Create(CommandList, Source.GetUV3().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV3", CreateOnDefaultHeap);
+			Result->m_UV3Buffer = VertexBuffer::Create(CommandList, Source.GetUV3().data(), Source.GetVertexCount(), sizeof(Vector2Half), Name + "_UV3", CreateOnDefaultHeap);
 
 		if (Source.HasUV4())
-			Result->m_UV4Buffer = VertexBuffer::Create(CommandList, Source.GetUV4().data(), Source.GetVertexCount(), sizeof(Vector2), Name + "_UV4", CreateOnDefaultHeap);
+			Result->m_UV4Buffer = VertexBuffer::Create(CommandList, Source.GetUV4().data(), Source.GetVertexCount(), sizeof(Vector2Half), Name + "_UV4", CreateOnDefaultHeap);
 
 		return Result;
 	}

@@ -39,10 +39,12 @@ namespace Drn
 		virtual Archive& operator<<( int32 Value ) = 0;
 
 		virtual Archive& operator<<(float Value) = 0;
+		virtual Archive& operator<<(Float16 Value) = 0;
 		virtual Archive& operator<<(Guid Value) = 0;
 		virtual Archive& operator<<(const Vector& Value) = 0;
 		virtual Archive& operator<<(const Vector4& Value) = 0;
 		virtual Archive& operator<<(const Vector2& Value) = 0;
+		virtual Archive& operator<<(const Vector2Half& Value) = 0;
 		virtual Archive& operator<<(const Color& Value) = 0;
 		virtual Archive& operator<<(const Quat& Value) = 0;
 		virtual Archive& operator<<(const Transform& Value) = 0;
@@ -52,6 +54,7 @@ namespace Drn
 		virtual Archive& operator<<(const std::vector<Vector>& Value) = 0;
 		virtual Archive& operator<<(const std::vector<Vector4>& Value) = 0;
 		virtual Archive& operator<<(const std::vector<Vector2>& Value) = 0;
+		virtual Archive& operator<<(const std::vector<Vector2Half>& Value) = 0;
 		virtual Archive& operator<<(const std::vector<uint32>& Value) = 0;
 		virtual Archive& operator<<(const std::vector<Color>& Value) = 0;
 		virtual Archive& operator<<(ID3DBlob* Value) = 0;
@@ -66,10 +69,12 @@ namespace Drn
 		virtual Archive& operator>>( int32& Value ) = 0;
 
 		virtual Archive& operator>>(float& Value) = 0;
+		virtual Archive& operator>>(Float16& Value) = 0;
 		virtual Archive& operator>>(Guid& Value) = 0;
 		virtual Archive& operator>>(Vector& Value) = 0;
 		virtual Archive& operator>>(Vector4& Value) = 0;
 		virtual Archive& operator>>(Vector2& Value) = 0;
+		virtual Archive& operator>>(Vector2Half& Value) = 0;
 		virtual Archive& operator>>(Color& Value) = 0;
 		virtual Archive& operator>>(Quat& Value) = 0;
 		virtual Archive& operator>>(Transform& Value) = 0;
@@ -79,6 +84,7 @@ namespace Drn
 		virtual Archive& operator>>(std::vector<Vector>& Value) = 0;
 		virtual Archive& operator>>(std::vector<Vector4>& Value) = 0;
 		virtual Archive& operator>>(std::vector<Vector2>& Value) = 0;
+		virtual Archive& operator>>(std::vector<Vector2Half>& Value) = 0;
 		virtual Archive& operator>>(std::vector<uint32>& Value) = 0;
 		virtual Archive& operator>>(std::vector<Color>& Value) = 0;
 		virtual Archive& operator>>(ID3DBlob*& Value) = 0;

@@ -28,10 +28,12 @@ namespace Drn
 		virtual BufferArchive& operator<<( int32 Value ) override;
 
 		virtual BufferArchive& operator<<(float Value) override;
+		virtual BufferArchive& operator<<(Float16 Value) override;
 		virtual BufferArchive& operator<<(Guid Value) override;
 		virtual BufferArchive& operator<<(const Vector& Value) override;
 		virtual BufferArchive& operator<<(const Vector4& Value) override;
 		virtual BufferArchive& operator<<(const Vector2& Value) override;
+		virtual BufferArchive& operator<<(const Vector2Half& Value) override;
 		virtual BufferArchive& operator<<(const Color& Value) override;
 		virtual BufferArchive& operator<<(const Quat& Value) override;
 		virtual BufferArchive& operator<<(const Transform& Value) override;
@@ -45,6 +47,7 @@ namespace Drn
 		virtual BufferArchive& operator<<(const std::vector<Vector>& Value) override;
 		virtual BufferArchive& operator<<(const std::vector<Vector4>& Value) override;
 		virtual BufferArchive& operator<<(const std::vector<Vector2>& Value) override;
+		virtual BufferArchive& operator<<(const std::vector<Vector2Half>& Value) override;
 		virtual BufferArchive& operator<<(const std::vector<uint32>& Value) override;
 		virtual BufferArchive& operator<<(const std::vector<Color>& Value) override;
 		virtual BufferArchive& operator<<(ID3DBlob* Value) override;
@@ -60,10 +63,12 @@ namespace Drn
 		virtual BufferArchive& operator>>( int32& Value ) override;
 
 		virtual BufferArchive& operator>>(float& Value) override;
+		virtual BufferArchive& operator>>(Float16& Value) override;
 		virtual BufferArchive& operator>>(Guid& Value) override;
 		virtual BufferArchive& operator>>(Vector& Value) override;
 		virtual BufferArchive& operator>>(Vector4& Value) override;
 		virtual BufferArchive& operator>>(Vector2& Value) override;
+		virtual BufferArchive& operator>>(Vector2Half& Value) override;
 		virtual BufferArchive& operator>>(Color& Value) override;
 		virtual BufferArchive& operator>>(Quat& Value) override;
 		virtual BufferArchive& operator>>(Transform& Value) override;
@@ -77,6 +82,7 @@ namespace Drn
 		virtual BufferArchive& operator>>(std::vector<Vector>& Value) override;
 		virtual BufferArchive& operator>>(std::vector<Vector4>& Value) override;
 		virtual BufferArchive& operator>>(std::vector<Vector2>& Value) override;
+		virtual BufferArchive& operator>>(std::vector<Vector2Half>& Value) override;
 		virtual BufferArchive& operator>>(std::vector<uint32>& Value) override;
 		virtual BufferArchive& operator>>(std::vector<Color>& Value) override;
 		virtual BufferArchive& operator>>(ID3DBlob*& Value) override;

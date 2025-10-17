@@ -233,16 +233,16 @@ namespace Drn
 						Data.VertexData.Colors[i] = Vector4(IMD.Vertices[i].R, IMD.Vertices[i].G, IMD.Vertices[i].B, IMD.Vertices[i].A);
 
 					if (MeshAsset->m_ImportUVs >= 1)
-						Data.VertexData.UV_1[i] = Vector2(IMD.Vertices[i].U1, IMD.Vertices[i].V1);
+						Data.VertexData.UV_1[i] = Vector2Half(IMD.Vertices[i].U1, IMD.Vertices[i].V1);
 
 					if (MeshAsset->m_ImportUVs >= 2)
-						Data.VertexData.UV_2[i] = Vector2(IMD.Vertices[i].U2, IMD.Vertices[i].V2);
+						Data.VertexData.UV_2[i] = Vector2Half(IMD.Vertices[i].U2, IMD.Vertices[i].V2);
 
 					if (MeshAsset->m_ImportUVs >= 3)
-						Data.VertexData.UV_3[i] = Vector2(IMD.Vertices[i].U3, IMD.Vertices[i].V3);
+						Data.VertexData.UV_3[i] = Vector2Half(IMD.Vertices[i].U3, IMD.Vertices[i].V3);
 
 					if (MeshAsset->m_ImportUVs >= 4)
-						Data.VertexData.UV_4[i] = Vector2(IMD.Vertices[i].U4, IMD.Vertices[i].V4);
+						Data.VertexData.UV_4[i] = Vector2Half(IMD.Vertices[i].U4, IMD.Vertices[i].V4);
 				}
 
 				Data.VertexData.Indices = IMD.Indices;

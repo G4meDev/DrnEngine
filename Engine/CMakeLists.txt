@@ -129,11 +129,13 @@ set( HEADER_FILES
 	Source/Runtime/Math/Vector.h
 	Source/Runtime/Math/Vector4.h
 	Source/Runtime/Math/Vector2.h
+	Source/Runtime/Math/Vector2Half.h
 	Source/Runtime/Math/Quat.h
 	Source/Runtime/Math/Transform.h
 	Source/Runtime/Math/Rotator.h
 	Source/Runtime/Math/Matrix.h
 	Source/Runtime/Math/Color.h
+	Source/Runtime/Math/Float16.h
 	
 	Source/Runtime/Misc/StringHelper.h
 	Source/Runtime/Misc/FileSystem.h
@@ -313,11 +315,13 @@ set( SOURCE_FILES
 	Source/Runtime/Math/Vector.cpp
 	Source/Runtime/Math/Vector4.cpp
 	Source/Runtime/Math/Vector2.cpp
+	Source/Runtime/Math/Vector2Half.cpp
 	Source/Runtime/Math/Quat.cpp
 	Source/Runtime/Math/Transform.cpp
 	Source/Runtime/Math/Rotator.cpp
 	Source/Runtime/Math/Matrix.cpp
 	Source/Runtime/Math/Color.cpp
+	Source/Runtime/Math/Float16.cpp
 	
 	Source/Runtime/Misc/StringHelper.cpp
 	Source/Runtime/Misc/FileSystem.cpp
