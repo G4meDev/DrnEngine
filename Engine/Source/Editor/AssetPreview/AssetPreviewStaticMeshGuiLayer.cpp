@@ -280,19 +280,19 @@ namespace Drn
 
 					if (m_DrawNormals && Data.VertexData.HasNormals())
 					{
-						const Vector& Normal = Data.VertexData.GetNormals()[i];
+						const Vector& Normal = Math::UnpackUint32ToSignedNormalizedVector(Data.VertexData.GetNormals()[i]);
 						PreviewWorld->DrawDebugLine( Pos, Pos + Normal * m_DebugLinesSize, Color::Green, 0, 0 );
 					}
 
 					if (m_DrawTangents && Data.VertexData.HasTangents())
 					{
-						const Vector& Tangent = Data.VertexData.GetTangents()[i];
+						const Vector& Tangent = Math::UnpackUint32ToSignedNormalizedVector(Data.VertexData.GetTangents()[i]);
 						PreviewWorld->DrawDebugLine( Pos, Pos + Tangent * m_DebugLinesSize, Color::Blue, 0, 0 );
 					}
 
 					if (m_DrawBitTangents && Data.VertexData.HasBitTangents())
 					{
-						const Vector& BitTangent = Data.VertexData.GetBitTangents()[i];
+						const Vector& BitTangent = Math::UnpackUint32ToSignedNormalizedVector(Data.VertexData.GetBitTangents()[i]);
 						PreviewWorld->DrawDebugLine( Pos, Pos + BitTangent * m_DebugLinesSize, Color::Red, 0, 0 );
 					}
 				}

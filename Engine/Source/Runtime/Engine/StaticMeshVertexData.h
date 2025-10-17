@@ -2,6 +2,11 @@
 
 namespace Drn
 {
+	struct LowPrecisionNormalizedVector
+	{
+		union { struct { int8 R, G, B, A; }; uint32 AlignmentDummy; };
+	};
+
 	struct StaticMeshVertexData : public Serializable
 	{
 		StaticMeshVertexData()
@@ -16,13 +21,13 @@ namespace Drn
 		const std::vector<uint32>& GetIndices() const { return Indices; }
 
 		bool HasNormals() const { return Normals.size() > 0; }
-		const std::vector<Vector>& GetNormals() const { return Normals; }
+		const std::vector<uint32>& GetNormals() const { return Normals; }
 
 		bool HasTangents() const { return Tangents.size() > 0; }
-		const std::vector<Vector>& GetTangents() const { return Tangents; }
+		const std::vector<uint32>& GetTangents() const { return Tangents; }
 
 		bool HasBitTangents() const { return BitTangents.size() > 0; }
-		const std::vector<Vector>& GetBitTangents() const { return BitTangents; }
+		const std::vector<uint32>& GetBitTangents() const { return BitTangents; }
 
 		bool HasColors() const { return Colors.size() > 0; }
 		const std::vector<Color>& GetColor() const { return Colors; }
@@ -46,9 +51,9 @@ namespace Drn
 		std::vector<Vector> Positions;
 		std::vector<uint32> Indices;
 
-		std::vector<Vector> Normals;
-		std::vector<Vector> Tangents;
-		std::vector<Vector> BitTangents;
+		std::vector<uint32> Normals;
+		std::vector<uint32> Tangents;
+		std::vector<uint32> BitTangents;
 		std::vector<Color> Colors;
 
 		std::vector<Vector2Half> UV_1;

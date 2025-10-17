@@ -33,7 +33,10 @@ namespace Drn
 			A = std::clamp(InLinearColor.GetW(), 0.0f, 1.0f) * 255;
 		}
 
-		//virtual void Serialize(Archive& Ar);
+		inline Vector4 AsLinearVector() const
+		{
+			return Vector4((float)R/255, (float)G/255, (float)B/255, (float)A/255);
+		}
 
 		inline bool operator==( const Color &C ) const
 		{

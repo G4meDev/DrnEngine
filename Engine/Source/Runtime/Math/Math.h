@@ -103,5 +103,40 @@ namespace Drn
 
 		static Vector VInterpTo(const Vector& Current, const Vector& Target, float DeltaTime, float InterpSpeed);
 		static Quat QInterpTo(const Quat& Current, const Quat& Target, float DeltaTime, float InterpSpeed);
+
+		inline static int8 NormalizedFloatToInt8(float Value)
+		{
+			Value = std::clamp(Value, -1.0f, 1.0f);
+			int32 Scaled = static_cast<int32>(std::round(Value * 127.0f));
+
+			Scaled = std::clamp(Scaled, -128, 127);
+			return static_cast<int8>(Scaled);
+		}
+
+		inline static float Int8ToNormalizedFloat( int8 Value )
+		{
+			return (float)Value/127.0f;
+		}
+
+		inline static uint32 PackSignedNormalizedVectorToUint32(const Vector& InVector)
+		{
+			Vector NormalizedVector = InVector.GetSafeNormal();
+			int8 R = NormalizedFloatToInt8(NormalizedVector.GetX());
+			int8 G = NormalizedFloatToInt8(NormalizedVector.GetY());
+			int8 B = NormalizedFloatToInt8(NormalizedVector.GetZ());
+			int8 A = NormalizedFloatToInt8(1.0f);
+
+			uint32 Result = (uint32)(uint8)R | ( (uint32)(uint8)G << 8 ) | ( (uint32)(uint8)B << 16 ) | ( (uint32)(uint8)A << 24 );
+			return Result;
+		}
+
+		inline static Vector UnpackUint32ToSignedNormalizedVector(uint32 Value)
+		{
+			int8 R = (int8)(Value & 0xFF);
+			int8 G = (int8)((Value >> 8) & 0xFF);
+			int8 B = (int8)((Value >> 16) & 0xFF);
+
+			return Vector(Int8ToNormalizedFloat(R), Int8ToNormalizedFloat(G), Int8ToNormalizedFloat(B));
+		}
 	};
 }

@@ -110,13 +110,13 @@ namespace Drn
 		Result->m_PositionBuffer = VertexBuffer::Create(CommandList, Source.GetPositions().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_Position", CreateOnDefaultHeap);
 
 		if (Source.HasNormals())
-			Result->m_NormalBuffer = VertexBuffer::Create(CommandList, Source.GetNormals().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_Normal", CreateOnDefaultHeap);
+			Result->m_NormalBuffer = VertexBuffer::Create(CommandList, Source.GetNormals().data(), Source.GetVertexCount(), sizeof(uint32), Name + "_Normal", CreateOnDefaultHeap);
 
 		if (Source.HasTangents())
-			Result->m_TangentBuffer = VertexBuffer::Create(CommandList, Source.GetTangents().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_Tangent", CreateOnDefaultHeap);
+			Result->m_TangentBuffer = VertexBuffer::Create(CommandList, Source.GetTangents().data(), Source.GetVertexCount(), sizeof(uint32), Name + "_Tangent", CreateOnDefaultHeap);
 
 		if (Source.HasBitTangents())
-			Result->m_BitTangentBuffer = VertexBuffer::Create(CommandList, Source.GetBitTangents().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_BitTangent", CreateOnDefaultHeap);
+			Result->m_BitTangentBuffer = VertexBuffer::Create(CommandList, Source.GetBitTangents().data(), Source.GetVertexCount(), sizeof(uint32), Name + "_BitTangent", CreateOnDefaultHeap);
 
 		if (Source.HasColors())
 			Result->m_ColorBuffer = VertexBuffer::Create(CommandList, Source.GetColor().data(), Source.GetVertexCount(), sizeof(Color), Name + "_Color", CreateOnDefaultHeap);

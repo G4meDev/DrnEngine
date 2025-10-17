@@ -49,6 +49,7 @@ namespace Drn
 		bool m_ShowDetail;
 
 	private:
+		
 	};
 }
 #endif

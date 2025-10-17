@@ -3,18 +3,6 @@
 
 namespace Drn
 {
-	//void Color::Serialize( Archive& Ar )
-	//{
-	//	if (Ar.IsLoading())
-	//	{
-	//		Ar >> DWColor();
-	//	}
-	//	else
-	//	{
-	//		Ar << DWColor();
-	//	}
-	//}
-
 	const Color Color::White( 255, 255, 255 );
 	const Color Color::Black( 0, 0, 0 );
 	const Color Color::Transparent( 0, 0, 0, 0 );
