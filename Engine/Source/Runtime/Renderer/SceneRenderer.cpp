@@ -202,7 +202,15 @@ namespace Drn
 		SCOPE_STAT();
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "Deferred Decals");
 
-		
+		ResourceStateTracker::Get()->TransiationResource(m_DecalBuffer->m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		ResourceStateTracker::Get()->TransiationResource(m_DecalBuffer->m_NormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		ResourceStateTracker::Get()->TransiationResource(m_DecalBuffer->m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+
+		m_DecalBuffer->Clear( m_CommandList->GetD3D12CommandList() );
+		m_DecalBuffer->Bind(m_CommandList->GetD3D12CommandList());
+
+
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());
 	}

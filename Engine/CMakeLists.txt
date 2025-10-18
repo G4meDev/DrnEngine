@@ -39,6 +39,8 @@ set( HEADER_FILES
 	Source/Runtime/Engine/SpotLightActor.h
 	Source/Runtime/Engine/LightSceneProxy.h
 	Source/Runtime/Engine/LightActor.h
+	Source/Runtime/Engine/DecalActor.h
+	Source/Runtime/Engine/DecalSceneProxy.h
 	Source/Runtime/Engine/PointLightSceneProxy.h
 	Source/Runtime/Engine/SpotLightSceneProxy.h
 	Source/Runtime/Engine/DirectionalLightSceneProxy.h
@@ -103,6 +105,7 @@ set( HEADER_FILES
 	Source/Runtime/Components/SpotLightComponent.h
 	Source/Runtime/Components/DirectionalLightComponent.h
 	Source/Runtime/Components/SkyLightComponent.h
+	Source/Runtime/Components/DecalComponent.h
 	Source/Runtime/Components/BillboardComponent.h
 	Source/Runtime/Components/InputComponent.h
 	Source/Runtime/Components/CharacterMovementComponent.h
@@ -232,6 +235,8 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/DirectionalLightSceneProxy.cpp
 	Source/Runtime/Engine/SkyLightActor.cpp
 	Source/Runtime/Engine/SkyLightSceneProxy.cpp
+	Source/Runtime/Engine/DecalActor.cpp
+	Source/Runtime/Engine/DecalSceneProxy.cpp
 	Source/Runtime/Engine/PostProcessSettings.cpp
 	Source/Runtime/Engine/PostProcessVolume.cpp
 	Source/Runtime/Engine/InputManager.cpp
@@ -290,6 +295,7 @@ set( SOURCE_FILES
 	Source/Runtime/Components/SpotLightComponent.cpp
 	Source/Runtime/Components/DirectionalLightComponent.cpp
 	Source/Runtime/Components/SkyLightComponent.cpp
+	Source/Runtime/Components/DecalComponent.cpp
 	Source/Runtime/Components/BillboardComponent.cpp
 	Source/Runtime/Components/InputComponent.cpp
 	Source/Runtime/Components/CharacterMovementComponent.cpp
