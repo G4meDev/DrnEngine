@@ -45,8 +45,9 @@ namespace Drn
 			return;
 		}
 
-		m_DecalData.LocalToProjection = Matrix(m_WorldTransform) * Matrix(Renderer->GetSceneView().WorldToProjection);
-		//m_DecalData.ProjectionToDecal = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+		Matrix LocalToWorldMatrix = Matrix( m_WorldTransform );
+		m_DecalData.LocalToProjection = LocalToWorldMatrix * Matrix(Renderer->GetSceneView().WorldToProjection);
+		m_DecalData.ProjectionToLocal = Matrix(Renderer->GetSceneView().ProjectionToWorld) * LocalToWorldMatrix.Inverse();
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );

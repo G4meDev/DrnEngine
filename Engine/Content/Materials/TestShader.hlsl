@@ -14,6 +14,9 @@ struct Resources
     uint ScalarBufferIndex;
     uint VectorBufferIndex;
     uint ShadowDepthBuffer;
+    uint DecalBaseColor;
+    uint DecalNormal;
+    uint DecalMasks;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -48,11 +51,7 @@ struct ViewBuffer
     float2 Pad_1;
     
     matrix ClipToPreviousClip;
-    
-    uint DecalBaseColor;
-    uint DecalNormal;
-    uint DecalMasks;
-    uint Pad_2;
+
 };
 
 struct Primitive
@@ -191,6 +190,8 @@ float3 ReconstructNormals(float2 xy)
     return float3(normalxy.x, 1 - dot(normalxy, normalxy), normalxy.y);
 }
 
+//#define MAIN_PASS 1
+
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
@@ -200,34 +201,40 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
+    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
+    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
     
     ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
     Texture2D BaseColorTexture = ResourceDescriptorHeap[Textures.BaseColorTexture];
     Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
     Texture2D MasksTexture = ResourceDescriptorHeap[Textures.MasksTexture];
     
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    Texture2D DecalBaseColorTexture = ResourceDescriptorHeap[BindlessResources.DecalBaseColor];
+    Texture2D DecalNormalTexture = ResourceDescriptorHeap[BindlessResources.DecalNormal];
+    Texture2D DecalMasksTexture = ResourceDescriptorHeap[BindlessResources.DecalMasks];
+    
+    float2 ScreenUV = SvPositionToViewportUV(IN.Position.xy, View.InvSize);
+    float4 DecalBaseColor = DecalBaseColorTexture.Sample(PointSampler, ScreenUV);
+    float4 DecalNormal = DecalNormalTexture.Sample(PointSampler, ScreenUV);
+    float4 DecalMasks = DecalMasksTexture.Sample(PointSampler, ScreenUV);
+    
     float3 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV).xyz;
     float3 Masks = MasksTexture.Sample(LinearSampler, IN.UV).xyz;
-
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
-
-    //float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rbg;
-    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rgb;
     Masks.g *= Scalars.RoughnessIntensity;
-    //Masks.g = Scalars.RoughnessIntensity;
+
+    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rgb;
+    Normal = lerp(DecalNormal.xyz, Normal, DecalNormal.w);
 
     Normal = ReconstructNormals(Normal.xy);
+
     Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Scalars.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
-    //Normal = EncodeNormal(Normal);
     float2 N = EncodeNormal(Normal);
     
     
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColor, 1);
-    //OUT.BaseColor = lerp(OUT.BaseColor, Vectors.TintColor, Scalars.TintIntensity);
-    //OUT.WorldNormal = float4( Normal, 0);
     OUT.WorldNormal = N;
     OUT.Masks = float4(Masks, 1.0f/255);
     
@@ -236,13 +243,8 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     //OUT.Velocity = Velocity;
     OUT.Velocity = 0;
     
-    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
-    Texture2D DecalBaseColorTexture = ResourceDescriptorHeap[View.DecalBaseColor];
-    
-    float2 ScreenUV = SvPositionToViewportUV(IN.Position.xy, View.InvSize);
-    float4 DecalBaseColor = DecalBaseColorTexture.Sample(PointSampler, ScreenUV);
-    
-    OUT.BaseColor = float4(lerp(DecalBaseColor.xyz, OUT.BaseColor.xyz, DecalBaseColor.w), 1);
+    OUT.BaseColor.xyz = lerp(DecalBaseColor.xyz, OUT.BaseColor.xyz, DecalBaseColor.w);
+    OUT.Masks.xyz = lerp(DecalMasks.xyz, OUT.Masks.xyz, DecalMasks.w);
     
 #elif HITPROXY_PASS
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];

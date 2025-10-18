@@ -59,6 +59,7 @@ namespace Drn
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::DirectionalLight		, DirectionalLightActor );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::SkyLight				, SkyLightActor );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::PostProcessVolume		, PostProcessVolume );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::DecalActor				, DecalActor );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::Pawn					, Pawn );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::Character				, Character );
 

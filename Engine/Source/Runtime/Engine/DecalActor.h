@@ -15,7 +15,7 @@ namespace Drn
 		virtual void Serialize( Archive& Ar ) override;
 
 		virtual void Tick( float DeltaTime ) override {};
-		inline virtual EActorType GetActorType() override { return EActorType::PostProcessVolume; }
+		inline virtual EActorType GetActorType() override { return EActorType::DecalActor; }
 
 		std::unique_ptr<class DecalComponent> m_DecalComponent;
 	};

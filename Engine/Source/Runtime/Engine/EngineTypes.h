@@ -17,7 +17,8 @@ namespace Drn
 		Controller,
 		PlayerController,
 		CameraManager,
-		Character
+		Character,
+		DecalActor,
 	};
 
 	enum class EComponentType : uint32

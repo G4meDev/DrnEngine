@@ -22,14 +22,16 @@ namespace Drn
 	{
 		SceneComponent::Serialize(Ar);
 		
-		if (Ar.IsLoading())
+		if ( Ar.IsLoading() )
 		{
-			
+			std::string MaterialPath;
+			Ar >> MaterialPath;
+			m_Material = AssetHandle<Material>( MaterialPath );
+			m_Material.LoadChecked();
 		}
-
 		else
 		{
-
+			Ar << m_Material.GetPath();
 		}
 	}
 
