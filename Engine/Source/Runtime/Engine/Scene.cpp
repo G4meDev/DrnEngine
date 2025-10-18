@@ -4,6 +4,7 @@
 #include "Runtime/Engine/LightSceneProxy.h"
 #include "Runtime/Engine/SkyLightSceneProxy.h"
 #include "Runtime/Engine/PostProcessVolume.h"
+#include "Runtime/Engine/DecalSceneProxy.h"
 
 LOG_DEFINE_CATEGORY( LogScene, "Scene" );
 
@@ -46,6 +47,19 @@ namespace Drn
 		{
 			Proxy->Release();
 		}
+
+// --------------------------------------------------------------------------------------
+
+		for (DecalSceneProxy* Proxy : m_PendingDecalProxies)
+		{
+			Proxy->Release();
+		}
+
+		for (DecalSceneProxy* Proxy : m_DecalProxies)
+		{
+			Proxy->Release();
+		}
+
 
 // --------------------------------------------------------------------------------------
 
@@ -135,6 +149,19 @@ namespace Drn
 			Proxy->UpdateResources();
 		}
 
+// ----------------------------------------------------------------------------------
+
+		for (auto it = m_PendingDecalProxies.begin(); it != m_PendingDecalProxies.end(); it++)
+		{
+			m_DecalProxies.insert(*it);
+		}
+		m_PendingDecalProxies.clear();
+
+		for (auto it = m_DecalProxies.begin(); it != m_DecalProxies.end(); it++)
+		{
+			DecalSceneProxy* Proxy = *it;
+			Proxy->UpdateResources();
+		}
 	}
 
 	void Scene::RegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
@@ -195,6 +222,22 @@ namespace Drn
 	{
 		m_PendingPostProcessProxies.erase(InProxy);
 		m_PostProcessProxies.erase(InProxy);
+	}
+
+	void Scene::RegisterDecalProxy( class DecalSceneProxy* InProxy )
+	{
+		m_PendingDecalProxies.insert(InProxy);
+	}
+
+	void Scene::UnRegisterDecalProxy( class DecalSceneProxy* InProxy )
+	{
+		if (InProxy)
+		{
+			m_PendingDecalProxies.erase(InProxy);
+			m_DecalProxies.erase(InProxy);
+
+			InProxy->Release();
+		}
 	}
 
 }

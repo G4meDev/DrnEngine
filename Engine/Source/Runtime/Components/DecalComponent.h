@@ -22,31 +22,15 @@ namespace Drn
 		bool m_RenderTransformDirty;
 		bool m_RenderStateDirty;
 
-		//PostProcessSceneProxy* m_SceneProxy;
+		class DecalSceneProxy* m_SceneProxy;
 
-		//inline void UpdateRenderStateConditional()
-		//{
-		//	if (m_SceneProxy)
-		//	{
-		//		if (m_RenderTransformDirty)
-		//		{
-		//			m_SceneProxy->m_WorldTransform = GetWorldTransform();
-		//		}
-		//
-		//		if (m_RenderSettingsDirty)
-		//		{
-		//			m_SceneProxy->m_Settings = m_PostProcessSettings;
-		//		}
-		//
-		//		m_RenderTransformDirty = false;
-		//		m_RenderSettingsDirty = false;
-		//	}
-		//}
+		void UpdateRenderStateConditional();
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		inline virtual bool HasSprite() const override { return true; }
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+		void DrawEditorSelected() override;
 #endif
 	};
 }

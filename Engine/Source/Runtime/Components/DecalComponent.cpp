@@ -1,11 +1,12 @@
 #include "DrnPCH.h"
 #include "DecalComponent.h"
+#include "Runtime/Engine/DecalSceneProxy.h"
 
 namespace Drn
 {
 	DecalComponent::DecalComponent()
 		: SceneComponent()
-		//, m_SceneProxy(nullptr)
+		, m_SceneProxy(nullptr)
 		, m_RenderTransformDirty(true)
 		, m_RenderStateDirty(true)
 	{
@@ -34,8 +35,8 @@ namespace Drn
 	{
 		SceneComponent::RegisterComponent(InOwningWorld);
 
-		//m_SceneProxy = new PostProcessSceneProxy(this);
-		//GetWorld()->GetScene()->RegisterPostProcessProxy(m_SceneProxy);
+		m_SceneProxy = new DecalSceneProxy(this);
+		GetWorld()->GetScene()->RegisterDecalProxy(m_SceneProxy);
 
 #if WITH_EDITOR
 		AssetHandle<Texture2D> DefaultIcon( "Engine\\Content\\EditorResources\\ComponentIcons\\T_DecalIcon.drn" );
@@ -47,9 +48,8 @@ namespace Drn
 
 	void DecalComponent::UnRegisterComponent()
 	{
-		//GetWorld()->GetScene()->UnRegisterPostProcessProxy(m_SceneProxy);
-		//delete m_SceneProxy;
-		//m_SceneProxy = nullptr;
+		GetWorld()->GetScene()->UnRegisterDecalProxy(m_SceneProxy);
+		m_SceneProxy = nullptr;
 
 		SceneComponent::UnRegisterComponent();
 	}
@@ -59,6 +59,25 @@ namespace Drn
 		SceneComponent::OnUpdateTransform(SkipPhysic);
 
 		m_RenderTransformDirty = true;
+	}
+
+	void DecalComponent::UpdateRenderStateConditional()
+	{
+		if (m_SceneProxy)
+		{
+			if (m_RenderTransformDirty)
+			{
+				m_SceneProxy->m_WorldTransform = GetWorldTransform();
+			}
+		
+			if (m_RenderStateDirty)
+			{
+				//m_SceneProxy->m_Settings = m_PostProcessSettings;
+			}
+		
+			m_RenderTransformDirty = false;
+			m_RenderStateDirty = false;
+		}
 	}
 
 #if WITH_EDITOR
@@ -72,6 +91,15 @@ namespace Drn
 	{
 		SceneComponent::SetSelectedInEditor(SelectedInEditor);
 	}
+
+	void DecalComponent::DrawEditorSelected()
+	{
+		if (GetWorld())
+		{
+			GetWorld()->DrawDebugBox(Box(Vector(-1.0f), Vector(1.0f)), GetWorldTransform(), Color::White, 0.0f, 0.0f);
+		}
+	}
+
 #endif
 
 }
