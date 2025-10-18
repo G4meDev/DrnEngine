@@ -17,6 +17,7 @@ namespace Drn
 		, m_SupportHitProxyPass(false)
 		, m_SupportEditorPrimitivePass(false)
 		, m_SupportEditorSelectionPass(true)
+		, m_MaterialDomain(EMaterialDomain::Surface)
 		, m_TwoSided(false)
 		, m_TextureIndexBuffer(nullptr)
 		, m_ScalarBuffer(nullptr)
@@ -42,6 +43,7 @@ namespace Drn
 		, m_SupportHitProxyPass(false)
 		, m_SupportEditorPrimitivePass(false)
 		, m_SupportEditorSelectionPass(true)
+		, m_MaterialDomain(EMaterialDomain::Surface)
 		, m_TwoSided(false)
 		, m_TextureIndexBuffer(nullptr)
 		, m_ScalarBuffer(nullptr)
@@ -79,6 +81,7 @@ namespace Drn
 			m_MainShaderBlob.Serialize(Ar);
 			m_HitProxyShaderBlob.Serialize(Ar);
 
+			Ar >> *((uint8*)(&m_MaterialDomain));
 			Ar >> m_TwoSided;
 
 			uint8 Texture2DCount;
@@ -141,9 +144,7 @@ namespace Drn
 			m_MainShaderBlob.Serialize(Ar);
 			m_HitProxyShaderBlob.Serialize(Ar);
 
-			//Ar << static_cast<uint8>(m_PrimitiveType);
-			//Ar << static_cast<uint16>(EInputLayoutType::StandardMeshTemp);
-
+			Ar << static_cast<uint8>(m_MaterialDomain);
 			Ar << m_TwoSided;
 
 			uint8 Texture2DCount = m_Texture2DSlots.size();
@@ -400,6 +401,15 @@ namespace Drn
 
 #if D3D12_Debug_INFO
 				m_MainPassPSO->SetName( "PSO_MainPass_" + name );
+#endif
+			}
+
+			if (m_MaterialDomain == EMaterialDomain::Decal)
+			{
+				m_MainPassPSO = PipelineStateObject::CreateDecalPassPSO(m_MainShaderBlob);
+
+#if D3D12_Debug_INFO
+				m_MainPassPSO->SetName( "PSO_DecalPass_" + name );
 #endif
 			}
 

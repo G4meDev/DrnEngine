@@ -11,6 +11,8 @@ namespace Drn
 		static PipelineStateObject* CreateMainPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 
+		static PipelineStateObject* CreateDecalPassPSO( const ShaderBlob& Shaders);
+
 		static PipelineStateObject* CreatePointLightShadowDepthPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 

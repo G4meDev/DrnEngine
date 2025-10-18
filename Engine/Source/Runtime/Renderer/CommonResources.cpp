@@ -46,6 +46,7 @@ namespace Drn
 		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList );
 		m_UniformQuad = new UniformQuad( CommandList );
 		m_UniformCube = new UniformCube( CommandList );
+		m_UniformCubePositionOnly = new UniformCubePositionOnly( CommandList );
 		m_PointLightSphere = new PointLightSphere( CommandList );
 		m_SpotLightCone = new SpotLightCone(CommandList);
 		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList);
@@ -80,6 +81,7 @@ namespace Drn
 		delete m_BackfaceScreenTriangle;
 		delete m_UniformQuad;
 		delete m_UniformCube;
+		delete m_UniformCubePositionOnly;
 		delete m_PointLightSphere;
 		delete m_SpotLightCone;
 		delete m_ResolveAlphaBlendedPSO;
@@ -254,6 +256,60 @@ namespace Drn
 	}
 
 	void UniformCube::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer->Bind(CommandList);
+		m_IndexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+	}
+
+// --------------------------------------------------------------------------------------
+
+	float UniformCubePositionVertexData[] = 
+	{
+		-1, -1, 1,	// 0
+		-1, 1, 1,	// 1
+		-1, -1, -1,	// 2
+		-1, 1, -1,	// 3
+		1, -1, 1,	// 4
+		1, 1, 1,	// 5
+		1, -1, -1,	// 6
+		1, 1, -1,	// 7
+	};
+
+	uint32 UniformCubePositionIndexData[] = {
+
+		1, 2, 0,
+		3, 6, 2,
+
+		7, 4, 6,
+		5, 0, 4,
+
+		6, 0, 2,
+		3, 5, 7,
+
+		1, 3, 2,
+		3, 7, 6,
+
+		7, 5, 4,
+		5, 1, 0,
+
+		6, 4, 0,
+		3, 1, 5
+	};
+
+	UniformCubePositionOnly::UniformCubePositionOnly( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_VertexBuffer = VertexBuffer::Create(CommandList, UniformCubePositionVertexData, 8, sizeof(UniformCubePositionVertexData) / 8, "UniformCubePosition");
+		m_IndexBuffer = IndexBuffer::Create(CommandList, UniformCubePositionIndexData, 36, sizeof(UniformCubePositionIndexData), DXGI_FORMAT_R32_UINT, "UniformCubePosition");
+	}
+
+	UniformCubePositionOnly::~UniformCubePositionOnly()
+	{
+		if (m_VertexBuffer) { delete m_VertexBuffer; }
+		if (m_IndexBuffer) { delete m_IndexBuffer; }
+	}
+
+	void UniformCubePositionOnly::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
 	{
 		m_VertexBuffer->Bind(CommandList);
 		m_IndexBuffer->Bind(CommandList);

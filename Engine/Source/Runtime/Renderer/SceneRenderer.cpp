@@ -2,6 +2,7 @@
 #include "SceneRenderer.h"
 
 #include "Runtime/Engine/LightSceneProxy.h"
+#include "Runtime/Engine/DecalSceneProxy.h"
 #include "Runtime/Renderer/RenderBuffer/HitProxyRenderBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/GBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/HZBBuffer.h"
@@ -210,7 +211,13 @@ namespace Drn
 		m_DecalBuffer->Clear( m_CommandList->GetD3D12CommandList() );
 		m_DecalBuffer->Bind(m_CommandList->GetD3D12CommandList());
 
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
+		for ( DecalSceneProxy* Proxy : m_Scene->m_DecalProxies )
+		{
+			Proxy->Render(m_CommandList->GetD3D12CommandList(), this);
+		}
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());
 	}
@@ -250,6 +257,11 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_WorldNormalTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_MasksTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_VelocityTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		ResourceStateTracker::Get()->TransiationResource(m_DecalBuffer->m_BaseColorTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource(m_DecalBuffer->m_NormalTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		ResourceStateTracker::Get()->TransiationResource(m_DecalBuffer->m_MasksTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_GBuffer->Clear( m_CommandList->GetD3D12CommandList() );
@@ -935,6 +947,13 @@ namespace Drn
 				m_SceneView.InvDeviceZToWorldZTransform = Vector4(1.0f / m_SceneView.ViewToProjection.m_Matrix.m[2][2],
 					-m_SceneView.ViewToProjection.m_Matrix.m[3][2] / m_SceneView.ViewToProjection.m_Matrix.m[2][2] + 1.0f, 0.0f, 1.0f);
 			}
+		}
+
+		if (m_DecalBuffer)
+		{
+			m_SceneView.DecalBaseColorTexture = m_DecalBuffer->m_BaseColorSRVHandle.GetIndex();
+			m_SceneView.DecalNormalTexture = m_DecalBuffer->m_NormalSRVHandle.GetIndex();
+			m_SceneView.DecalMasksTexture = m_DecalBuffer->m_MasksSRVHandle.GetIndex();
 		}
 
 		UpdateViewBuffer();

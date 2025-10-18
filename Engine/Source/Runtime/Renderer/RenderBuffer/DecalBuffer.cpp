@@ -14,7 +14,7 @@ namespace Drn
 		m_BaseColorClearValue.Color[0] = 0.0f;
 		m_BaseColorClearValue.Color[1] = 0.0f;
 		m_BaseColorClearValue.Color[2] = 0.0f;
-		m_BaseColorClearValue.Color[3] = 0.0f;
+		m_BaseColorClearValue.Color[3] = 1.0f;
 
 		m_NormalClearValue.Format   = DECAL_NORMAL_FORMAT;
 		m_NormalClearValue.Color[0] = 0.5f;
@@ -26,7 +26,7 @@ namespace Drn
 		m_MasksClearValue.Color[0] = 0.0f;
 		m_MasksClearValue.Color[1] = 0.0f;
 		m_MasksClearValue.Color[2] = 0.0f;
-		m_MasksClearValue.Color[3] = 0.0f;
+		m_MasksClearValue.Color[3] = 1.0f;
 	}
 
 	DecalBuffer::~DecalBuffer()

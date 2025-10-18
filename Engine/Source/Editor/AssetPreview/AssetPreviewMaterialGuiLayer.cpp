@@ -135,19 +135,12 @@ namespace Drn
 #endif
 		}
 
-		//const char* PrimitiveTypes[] = { "Point", "Line", "Triangle", "Patch" };
-		//int CurrentType = static_cast<int>(m_OwningAsset->m_PrimitiveType) - 1;
-		//if ( ImGui::Combo( "Primitive Type", &CurrentType, PrimitiveTypes, IM_ARRAYSIZE( PrimitiveTypes )))
-		//{
-		//	m_OwningAsset->m_PrimitiveType = static_cast<D3D12_PRIMITIVE_TOPOLOGY_TYPE>(CurrentType + 1);
-		//}
-		//
-		//const char* LayoutTypes[] = { "StandardMesh", "LineColorThickness", "Position", "StandardMeshTemp" };
-		//CurrentType = static_cast<int>(m_OwningAsset->m_InputLayoutType);
-		//if ( ImGui::Combo( "Layout Type", &CurrentType, LayoutTypes, IM_ARRAYSIZE( LayoutTypes )))
-		//{
-		//	m_OwningAsset->m_InputLayoutType = static_cast<EInputLayoutType>(CurrentType);
-		//}
+		const char* MaterialDomains[] = { "Surface", "Decal" };
+		int CurrentDomain = static_cast<int>(m_OwningAsset->m_MaterialDomain);
+		if ( ImGui::Combo( "Material Domain", &CurrentDomain, MaterialDomains, IM_ARRAYSIZE( MaterialDomains )))
+		{
+			m_OwningAsset->m_MaterialDomain = static_cast<EMaterialDomain>(CurrentDomain);
+		}
 
 		ImGui::Checkbox( "TwoSided", &m_OwningAsset->m_TwoSided );
 

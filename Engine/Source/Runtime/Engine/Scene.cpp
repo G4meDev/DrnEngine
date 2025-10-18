@@ -160,7 +160,7 @@ namespace Drn
 		for (auto it = m_DecalProxies.begin(); it != m_DecalProxies.end(); it++)
 		{
 			DecalSceneProxy* Proxy = *it;
-			Proxy->UpdateResources();
+			Proxy->UpdateResources(CommandList);
 		}
 	}
 

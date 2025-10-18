@@ -69,16 +69,6 @@ float3 Luminance(float3 LinearColor)
     return dot(LinearColor, float3(0.3, 0.59, 0.11));
 }
 
-float2 ViewportUVToScreenPos(float2 ViewportUV)
-{
-    return float2(2 * ViewportUV.x - 1, 1 - 2 * ViewportUV.y);
-}
-
-float2 ScreenPosToViewportUV(float2 ScreenPos)
-{
-    return float2(0.5 + 0.5 * ScreenPos.x, 0.5 - 0.5 * ScreenPos.y);
-}
-
 float SampleDepthTexture(Texture2D DepthTexture, SamplerState Sampler, float2 UV, int2 PixelOffset)
 {
     return DepthTexture.SampleLevel(Sampler, UV, 0, PixelOffset).r;

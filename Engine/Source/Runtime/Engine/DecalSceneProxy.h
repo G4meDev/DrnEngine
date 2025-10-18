@@ -10,8 +10,8 @@ namespace Drn
 	public:
 		DecalData() = default;
 
-		Matrix DecalToProjection;
-		Matrix ProjectionToDecal;
+		Matrix LocalToProjection;
+		Matrix ProjectionToLocal;
 	};
 
 	class DecalSceneProxy
@@ -23,10 +23,11 @@ namespace Drn
 		inline void Release() { delete this; }
 		void ReleaseBuffers();
 
-		void UpdateResources();
+		void UpdateResources( ID3D12GraphicsCommandList2* CommandList );
 		void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer );
 
 		Transform m_WorldTransform;
+		AssetHandle<Material> m_Material;
 
 		class DecalComponent* m_DecalComponent;
 

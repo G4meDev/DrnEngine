@@ -12,6 +12,12 @@ namespace Drn
 {
 	class AssetPreviewMaterialGuiLayer;
 
+	enum class EMaterialDomain : uint8
+	{
+		Surface,
+		Decal
+	};
+
 	class Material : public Asset
 	{
 	public:
@@ -50,7 +56,7 @@ namespace Drn
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; m_TextureBufferDirty = true; m_ScalarBufferDirty = true; m_VectorBufferDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
-		inline bool IsSupportingMainPass() const { return m_SupportMainPass; }
+		inline bool IsSupportingBasePass() const { return m_SupportMainPass; }
 		inline bool IsSupportingShadowPass() const { return m_SupportShadowPass; }
 		inline bool IsSupportingHitProxyPass() const { return m_SupportHitProxyPass; }
 		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
@@ -60,6 +66,8 @@ namespace Drn
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
 
 		inline D3D12_CULL_MODE GetCullMode() const { return m_TwoSided ? D3D12_CULL_MODE_NONE : D3D12_CULL_MODE_BACK; }
+
+		inline EMaterialDomain GetMaterialDomain() const { return m_MaterialDomain; }
 
 	protected:
 		virtual void Serialize( Archive& Ar ) override;
@@ -83,6 +91,7 @@ namespace Drn
 		ShaderBlob m_PointlightShadowDepthShaderBlob;
 		ShaderBlob m_SpotlightShadowDepthShaderBlob;
 
+		EMaterialDomain m_MaterialDomain;
 		bool m_TwoSided;
 
 		std::vector<MaterialIndexedTexture2DParameter> m_Texture2DSlots;

@@ -22,6 +22,9 @@ namespace Drn
 		bool m_RenderTransformDirty;
 		bool m_RenderStateDirty;
 
+		void SetMaterial(AssetHandle<Material>& InMaterial);
+
+		AssetHandle<Material> m_Material;
 		class DecalSceneProxy* m_SceneProxy;
 
 		void UpdateRenderStateConditional();
@@ -31,6 +34,8 @@ namespace Drn
 		inline virtual bool HasSprite() const override { return true; }
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
 		void DrawEditorSelected() override;
+
+		void UpdateMaterialWithPath(const std::string& InPath);
 #endif
 	};
 }

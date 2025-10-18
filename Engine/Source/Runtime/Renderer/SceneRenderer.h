@@ -80,6 +80,11 @@ namespace Drn
 		float Pad_1[2];
 
 		Matrix ClipToPreviousClip;
+
+		uint32 DecalBaseColorTexture;
+		uint32 DecalNormalTexture;
+		uint32 DecalMasksTexture;
+		uint32 Pad_2;
 	};
 
 	class SceneRenderer

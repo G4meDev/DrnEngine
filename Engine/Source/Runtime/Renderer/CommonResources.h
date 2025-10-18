@@ -58,6 +58,19 @@ namespace Drn
 		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
 	};
 
+	class UniformCubePositionOnly
+	{
+	public:
+
+		UniformCubePositionOnly( ID3D12GraphicsCommandList2* CommandList );
+		~UniformCubePositionOnly();
+
+		class VertexBuffer* m_VertexBuffer;
+		class IndexBuffer* m_IndexBuffer;
+
+		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+	};
+
 	class PointLightSphere
 	{
 	public:
@@ -281,6 +294,7 @@ namespace Drn
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
 		UniformQuad* m_UniformQuad;
 		UniformCube* m_UniformCube;
+		UniformCubePositionOnly* m_UniformCubePositionOnly;
 		PointLightSphere* m_PointLightSphere;
 		SpotLightCone* m_SpotLightCone;
 

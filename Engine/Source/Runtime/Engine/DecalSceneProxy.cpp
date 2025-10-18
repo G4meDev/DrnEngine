@@ -25,28 +25,40 @@ namespace Drn
 		ReleaseBuffers();
 	}
 
-	void DecalSceneProxy::UpdateResources()
+	void DecalSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
 	{
 		if (m_DecalComponent)
 		{
 			m_DecalComponent->UpdateRenderStateConditional();
 		}
+
+		if (m_Material.IsValid())
+		{
+			m_Material->UploadResources(CommandList);
+		}
 	}
 
 	void DecalSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		m_DecalData.DecalToProjection = Matrix(m_WorldTransform) * Matrix(Renderer->GetSceneView().WorldToProjection);
+		if (!m_Material.IsValid() || m_Material->GetMaterialDomain() != EMaterialDomain::Decal)
+		{
+			return;
+		}
+
+		m_DecalData.LocalToProjection = Matrix(m_WorldTransform) * Matrix(Renderer->GetSceneView().WorldToProjection);
 		//m_DecalData.ProjectionToDecal = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
 		m_DecalBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, &m_DecalBuffer, sizeof(DecalData));
+		memcpy( ConstantBufferStart, &m_DecalData, sizeof(DecalData));
 		m_DecalBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
 		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_DecalBuffer->GetGpuHandle()), 1);
 
-		CommonResources::Get()->m_UniformCube->BindAndDraw(CommandList);
+		m_Material->BindMainPass(CommandList);
+
+		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList);
 	}
 
 	void DecalSceneProxy::ReleaseBuffers()

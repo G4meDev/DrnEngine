@@ -21,6 +21,7 @@ namespace Drn
 		bool HasCS = ShaderString.find("Main_CS") != std::string::npos;
 
 		bool SupportMainPass = ShaderString.find( "SUPPORT_MAIN_PASS" ) != std::string::npos;
+		SupportMainPass |= MaterialAsset->m_MaterialDomain == EMaterialDomain::Decal; // if domain is decal then main pass is used for decal
 		bool SupportHitProxyPass = ShaderString.find( "SUPPORT_HIT_PROXY_PASS" ) != std::string::npos;
 		bool SupportEditorPrimitivePass = ShaderString.find( "SUPPORT_EDITOR_PRIMITIVE_PASS" ) != std::string::npos;
 		bool SupportEditorSelectionPass = ShaderString.find( "SUPPORT_EDITOR_SELECTION_PASS" ) != std::string::npos;

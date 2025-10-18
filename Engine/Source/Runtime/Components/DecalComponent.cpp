@@ -2,6 +2,8 @@
 #include "DecalComponent.h"
 #include "Runtime/Engine/DecalSceneProxy.h"
 
+#include "Editor/EditorConfig.h"
+
 namespace Drn
 {
 	DecalComponent::DecalComponent()
@@ -61,6 +63,12 @@ namespace Drn
 		m_RenderTransformDirty = true;
 	}
 
+	void DecalComponent::SetMaterial( AssetHandle<Material>& InMaterial )
+	{
+		m_Material = InMaterial;
+		m_RenderStateDirty = true;
+	}
+
 	void DecalComponent::UpdateRenderStateConditional()
 	{
 		if (m_SceneProxy)
@@ -72,7 +80,8 @@ namespace Drn
 		
 			if (m_RenderStateDirty)
 			{
-				//m_SceneProxy->m_Settings = m_PostProcessSettings;
+				m_Material.LoadChecked();
+				m_SceneProxy->m_Material = m_Material;
 			}
 		
 			m_RenderTransformDirty = false;
@@ -83,8 +92,18 @@ namespace Drn
 #if WITH_EDITOR
 	void DecalComponent::DrawDetailPanel( float DeltaTime )
 	{
-		//bool DirtySettings = m_PostProcessSettings.Draw();
-		//m_RenderSettingsDirty |= DirtySettings;
+		ImGui::TextWrapped(m_Material.IsValid() ? m_Material.GetPath().c_str() : "NULL");
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
+			{
+				auto AssetPath = static_cast<const char*>(payload->Data);
+				UpdateMaterialWithPath(AssetPath);
+			}
+
+			ImGui::EndDragDropTarget();
+		}
 	}
 
 	void DecalComponent::SetSelectedInEditor( bool SelectedInEditor )
@@ -97,6 +116,18 @@ namespace Drn
 		if (GetWorld())
 		{
 			GetWorld()->DrawDebugBox(Box(Vector(-1.0f), Vector(1.0f)), GetWorldTransform(), Color::White, 0.0f, 0.0f);
+		}
+	}
+
+	void DecalComponent::UpdateMaterialWithPath( const std::string& InPath )
+	{
+		AssetHandle<Asset> NewMesh(InPath);
+		EAssetType Type = NewMesh.LoadGeneric();
+
+		if (NewMesh.IsValid() && Type == EAssetType::Material)
+		{
+			AssetHandle<Material> NewMat = AssetHandle<Material>(InPath);
+			SetMaterial(NewMat);
 		}
 	}
 
