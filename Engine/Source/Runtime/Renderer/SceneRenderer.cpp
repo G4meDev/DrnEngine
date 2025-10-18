@@ -14,6 +14,7 @@
 #include "Runtime/Renderer/RenderBuffer/TAABuffer.h"
 #include "Runtime/Renderer/RenderBuffer/SceneDownSampleBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/BloomBuffer.h"
+#include "Runtime/Renderer/RenderBuffer/DecalBuffer.h"
 
 #include "Runtime/Engine/PostProcessVolume.h"
 
@@ -97,6 +98,9 @@ namespace Drn
 
 		m_BloomBuffer = std::make_shared<class BloomBuffer>();
 		m_BloomBuffer->Init();
+
+		m_DecalBuffer = std::make_shared<class DecalBuffer>();
+		m_DecalBuffer->Init();
 
 #if WITH_EDITOR
 		// mouse picking components
@@ -189,6 +193,16 @@ namespace Drn
 		{
 			Proxy->RenderShadowDepth(m_CommandList->GetD3D12CommandList(), this);
 		}
+
+		PIXEndEvent(m_CommandList->GetD3D12CommandList());
+	}
+
+	void SceneRenderer::RenderDecals()
+	{
+		SCOPE_STAT();
+		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "Deferred Decals");
+
+		
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());
 	}
@@ -752,6 +766,7 @@ namespace Drn
 
 		RenderPrepass();
 		RenderShadowDepths();
+		RenderDecals();
 		RenderBasePass();
 		RenderHZB();
 		RenderAO();
@@ -794,6 +809,7 @@ namespace Drn
 		m_TAABuffer->Resize( GetViewportSize() );
 		m_SceneDownSampleBuffer->Resize( GetViewportSize() );
 		m_BloomBuffer->Resize( GetViewportSize() );
+		m_DecalBuffer->Resize( GetViewportSize() );
 
 #if WITH_EDITOR
 		m_HitProxyRenderBuffer->Resize( GetViewportSize() );

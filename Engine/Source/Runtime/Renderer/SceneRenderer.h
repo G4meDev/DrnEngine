@@ -144,6 +144,7 @@ namespace Drn
 		std::shared_ptr<class TAABuffer> m_TAABuffer;
 		std::shared_ptr<class SceneDownSampleBuffer> m_SceneDownSampleBuffer;
 		std::shared_ptr<class BloomBuffer> m_BloomBuffer;
+		std::shared_ptr<class DecalBuffer> m_DecalBuffer;
 
 		IntPoint m_CachedRenderSize;
 		IntPoint m_RenderSize;
@@ -189,6 +190,7 @@ namespace Drn
 
 		void RenderPrepass();
 		void RenderShadowDepths();
+		void RenderDecals();
 		void RenderBasePass();
 		void RenderHZB();
 		void RenderAO();
