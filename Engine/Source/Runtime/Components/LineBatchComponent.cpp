@@ -217,6 +217,11 @@ namespace Drn
 		
 	}
 
+	void LineBatchSceneProxy::RenderDecalPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 #if WITH_EDITOR
 	void LineBatchSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{

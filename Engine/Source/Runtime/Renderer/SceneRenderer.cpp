@@ -216,11 +216,33 @@ namespace Drn
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 7);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 6);
 
 		for ( DecalSceneProxy* Proxy : m_Scene->m_DecalProxies )
 		{
 			Proxy->Render(m_CommandList->GetD3D12CommandList(), this);
+		}
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------
+
+		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+
+		m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_DecalBuffer->m_Viewport);
+		m_CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_DecalBuffer->m_ScissorRect);
+
+		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[3] = 
+		{
+			m_DecalBuffer->m_BaseColorRTVHandle.GetCpuHandle(),
+			m_DecalBuffer->m_NormalRTVHandle.GetCpuHandle(),
+			m_DecalBuffer->m_MasksRTVHandle.GetCpuHandle()
+		};
+
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 3, RenderTargets, false, &m_GBuffer->m_DepthCpuHandle);
+
+		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
+		{
+			Proxy->RenderDecalPass(m_CommandList->GetD3D12CommandList(), this);
 		}
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());

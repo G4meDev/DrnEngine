@@ -203,7 +203,7 @@ namespace Drn
 			m_DeferredDecalShaderBlob.Serialize(Ar);
 
 			Ar << m_SupportStaticMeshDecalPass;
-			m_DeferredDecalShaderBlob.Serialize(Ar);
+			m_StaticMeshDecalShaderBlob.Serialize(Ar);
 		}
 	}
 
@@ -445,14 +445,14 @@ namespace Drn
 #endif
 			}
 
-//			if (m_SupportStaticMeshDecalPass)
-//			{
-//				m_StaticMeshDecalPassPSO = PipelineStateObject::CreateDecalPassPSO(m_d);
-//
-//#if D3D12_Debug_INFO
-//				m_StaticMeshDecalPassPSO->SetName( "PSO_StaticMeshDecalPass_" + name );
-//#endif
-//			}
+			if (m_SupportStaticMeshDecalPass)
+			{
+				m_StaticMeshDecalPassPSO = PipelineStateObject::CreateMeshDecalPassPSO( GetCullMode(), m_StaticMeshDecalShaderBlob);
+
+#if D3D12_Debug_INFO
+				m_StaticMeshDecalPassPSO->SetName( "PSO_StaticMeshDecalPass_" + name );
+#endif
+			}
 
 			if (m_SupportShadowPass)
 			{
@@ -555,6 +555,24 @@ namespace Drn
 		BindResources(CommandList);
 	}
 
+	void Material::BindDeferredDecalPass( ID3D12GraphicsCommandList2* CommandList )
+	{
+		SCOPE_STAT();
+
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		CommandList->SetPipelineState(m_DeferredDecalPassPSO->GetD3D12PSO());
+
+		BindResources(CommandList);
+	}
+
+	void Material::BindStaticMeshDecalPass( ID3D12GraphicsCommandList2* CommandList )
+	{
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		CommandList->SetPipelineState(m_StaticMeshDecalPassPSO->GetD3D12PSO());
+
+		BindResources(CommandList);
+	}
+
 #if WITH_EDITOR
 	void Material::BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList )
 	{
@@ -579,24 +597,6 @@ namespace Drn
 
 		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetPipelineState(m_HitProxyPassPSO->GetD3D12PSO());
-
-		BindResources(CommandList);
-	}
-
-	void Material::BindDeferredDecalPass( ID3D12GraphicsCommandList2* CommandList )
-	{
-		SCOPE_STAT();
-
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_DeferredDecalPassPSO->GetD3D12PSO());
-
-		BindResources(CommandList);
-	}
-
-	void Material::BindStaticMeshDecalPass( ID3D12GraphicsCommandList2* CommandList )
-	{
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_StaticMeshDecalPassPSO->GetD3D12PSO());
 
 		BindResources(CommandList);
 	}
