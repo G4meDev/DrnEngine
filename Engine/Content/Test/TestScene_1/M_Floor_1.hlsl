@@ -1,6 +1,7 @@
 //#include "../../../Engine/Content/Materials/Common.hlsl"
 
 // SUPPORT_MAIN_PASS
+// SUPPORT_PRE_PASS
 // SUPPORT_HIT_PROXY_PASS
 // SUPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_SHADOW_PASS

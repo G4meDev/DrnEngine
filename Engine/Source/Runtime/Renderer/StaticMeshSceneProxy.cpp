@@ -154,7 +154,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				if (!Mat->IsSupportingBasePass())
+				if (!Mat->IsSupportingPrePass())
 				{
 					continue;
 				}

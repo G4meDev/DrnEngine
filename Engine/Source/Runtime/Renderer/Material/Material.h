@@ -59,6 +59,7 @@ namespace Drn
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
 		inline bool IsSupportingBasePass() const { return m_SupportMainPass; }
+		inline bool IsSupportingPrePass() const { return m_SupportPrePass; }
 		inline bool IsSupportingShadowPass() const { return m_SupportShadowPass; }
 		inline bool IsSupportingHitProxyPass() const { return m_SupportHitProxyPass; }
 		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
@@ -90,6 +91,7 @@ namespace Drn
 		std::string m_SourcePath;
 
 		ShaderBlob m_MainShaderBlob;
+		ShaderBlob m_PrePassShaderBlob;
 		ShaderBlob m_HitProxyShaderBlob;
 		ShaderBlob m_EditorPrimitiveShaderBlob;
 		ShaderBlob m_PointlightShadowDepthShaderBlob;
@@ -112,6 +114,7 @@ namespace Drn
 		std::vector<Vector4> m_VectorValues;
 
 		PipelineStateObject* m_MainPassPSO;
+		PipelineStateObject* m_PrePassPSO;
 		PipelineStateObject* m_PointLightShadowDepthPassPSO;
 		PipelineStateObject* m_SpotLightShadowDepthPassPSO;
 		PipelineStateObject* m_DeferredDecalPassPSO;
@@ -129,6 +132,8 @@ namespace Drn
 		bool m_RenderStateDirty;
 
 		bool m_SupportMainPass;
+		bool m_SupportPrePass;
+		bool m_HasCustomPrePass;
 		bool m_SupportShadowPass;
 		bool m_SupportHitProxyPass;
 		bool m_SupportEditorPrimitivePass;

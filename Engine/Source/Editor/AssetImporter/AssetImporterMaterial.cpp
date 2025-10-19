@@ -27,6 +27,9 @@ namespace Drn
 		bool SupportShadowPass = ShaderString.find( "SUPPORT_SHADOW_PASS" ) != std::string::npos;
 		bool SupportDeferredDecalPass = ShaderString.find( "SUPPORT_DEFERRED_DECAL_PASS" ) != std::string::npos;
 		bool SupportStaticMeshDecalPass = ShaderString.find( "SUPPORT_STATICMESH_DECAL_PASS" ) != std::string::npos;
+		bool SupportPrePass = ShaderString.find( "SUPPORT_PRE_PASS" ) != std::string::npos;
+		bool HasCustomPrePass = ShaderString.find( "HAS_CUSTOM_PRE_PASS" ) != std::string::npos;
+		bool HasOpacity = ShaderString.find( "HAS_OPACITY" ) != std::string::npos;
 
 		bool Successed = true;
 		ShaderBlob MainShaderBlob;
@@ -36,6 +39,7 @@ namespace Drn
 		ShaderBlob SpotLightShadowDepthShaderBlob;
 		ShaderBlob DeferredDecalShaderBlob;
 		ShaderBlob StaticMeshDecalShaderBlob;
+		ShaderBlob PrePassShaderBlob;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath,
 			const wchar_t* InEntryPoint, const wchar_t* InProfile, const std::vector<const wchar_t*>& Macros, ID3DBlob** InByteBlob) 
@@ -84,6 +88,10 @@ namespace Drn
 			{
 				const std::vector<const wchar_t*> PointLightShadowMacros = { L"SHADOW_PASS=1", L"SHADOW_PASS_POINTLIGHT=1" };
 				CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_VS);
+				if (HasOpacity)
+				{
+					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_PS);
+				}
 				CompileShaderBlobConditional(true, Path, L"PointLightShadow_GS", L"gs_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_GS);
 				CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_HS);
 				CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", PointLightShadowMacros, &PointLightShadowDepthShaderBlob.m_DS);
@@ -92,6 +100,10 @@ namespace Drn
 			{
 				const std::vector<const wchar_t*> SpotlLightShadowMacros = { L"SHADOW_PASS=1", L"SHADOW_PASS_SPOTLIGHT=1" };
 				CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_VS);
+				if (HasOpacity)
+				{
+					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_PS);
+				}
 				//CompileShaderBlobConditional(true, Path, L"PointLightShadow_GS", L"gs_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_GS);
 				CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_HS);
 				CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", SpotlLightShadowMacros, &SpotLightShadowDepthShaderBlob.m_DS);
@@ -114,6 +126,18 @@ namespace Drn
 			CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", StaticMeshDecalMacros, &StaticMeshDecalShaderBlob.m_PS);
 		}
 
+		if (SupportPrePass && HasCustomPrePass)
+		{
+			const std::vector<const wchar_t*> PrePassMacros = { L"PRE_PASS=1" };
+
+			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", PrePassMacros, &PrePassShaderBlob.m_VS);
+
+			if (HasOpacity)
+			{
+				CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", PrePassMacros, &PrePassShaderBlob.m_PS);
+			}
+		}
+
 		if (Successed)
 		{
 			MaterialAsset->ReleaseShaderBlobs();
@@ -124,6 +148,7 @@ namespace Drn
 			MaterialAsset->m_SpotlightShadowDepthShaderBlob = SpotLightShadowDepthShaderBlob;
 			MaterialAsset->m_DeferredDecalShaderBlob = DeferredDecalShaderBlob;
 			MaterialAsset->m_StaticMeshDecalShaderBlob = StaticMeshDecalShaderBlob;
+			MaterialAsset->m_PrePassShaderBlob = PrePassShaderBlob;
 
 			MaterialAsset->m_SupportMainPass = SupportMainPass;
 			MaterialAsset->m_SupportHitProxyPass = SupportHitProxyPass;
@@ -132,6 +157,8 @@ namespace Drn
 			MaterialAsset->m_SupportShadowPass = SupportShadowPass;
 			MaterialAsset->m_SupportDeferredDecalPass = SupportDeferredDecalPass;
 			MaterialAsset->m_SupportStaticMeshDecalPass = SupportStaticMeshDecalPass;
+			MaterialAsset->m_SupportPrePass = SupportPrePass;
+			MaterialAsset->m_HasCustomPrePass = HasCustomPrePass;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

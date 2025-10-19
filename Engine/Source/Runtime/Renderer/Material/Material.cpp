@@ -10,12 +10,14 @@ namespace Drn
 	Material::Material( const std::string& InPath )
 		: Asset(InPath)
 		, m_MainPassPSO(nullptr)
+		, m_PrePassPSO(nullptr)
 		, m_PointLightShadowDepthPassPSO(nullptr)
 		, m_SpotLightShadowDepthPassPSO(nullptr)
 		, m_DeferredDecalPassPSO(nullptr)
 		, m_StaticMeshDecalPassPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_SupportMainPass(true)
+		, m_SupportPrePass(true)
 		, m_SupportHitProxyPass(false)
 		, m_SupportEditorPrimitivePass(false)
 		, m_SupportEditorSelectionPass(true)
@@ -37,6 +39,7 @@ namespace Drn
 	Material::Material( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath)
 		, m_MainPassPSO(nullptr)
+		, m_PrePassPSO(nullptr)
 		, m_PointLightShadowDepthPassPSO(nullptr)
 		, m_SpotLightShadowDepthPassPSO(nullptr)
 		, m_SelectionPassPSO(nullptr)
@@ -46,6 +49,7 @@ namespace Drn
 		, m_StaticMeshDecalPassPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_SupportMainPass(true)
+		, m_SupportPrePass(true)
 		, m_SupportHitProxyPass(false)
 		, m_SupportEditorPrimitivePass(false)
 		, m_SupportEditorSelectionPass(true)
@@ -149,6 +153,10 @@ namespace Drn
 
 			Ar >> m_SupportStaticMeshDecalPass;
 			m_StaticMeshDecalShaderBlob.Serialize(Ar);
+
+			Ar >> m_SupportPrePass;
+			Ar >> m_HasCustomPrePass;
+			m_PrePassShaderBlob.Serialize(Ar);
 		}
 
 		else
@@ -204,14 +212,23 @@ namespace Drn
 
 			Ar << m_SupportStaticMeshDecalPass;
 			m_StaticMeshDecalShaderBlob.Serialize(Ar);
+
+			Ar << m_SupportPrePass;
+			Ar << m_HasCustomPrePass;
+			m_PrePassShaderBlob.Serialize(Ar);
 		}
 	}
 
 	void Material::ReleaseShaderBlobs()
 	{
 		m_MainShaderBlob.ReleaseBlobs();
+		m_PrePassShaderBlob.ReleaseBlobs();
 		m_HitProxyShaderBlob.ReleaseBlobs();
 		m_EditorPrimitiveShaderBlob.ReleaseBlobs();
+		m_PointlightShadowDepthShaderBlob.ReleaseBlobs();
+		m_SpotlightShadowDepthShaderBlob.ReleaseBlobs();
+		m_DeferredDecalShaderBlob.ReleaseBlobs();
+		m_StaticMeshDecalShaderBlob.ReleaseBlobs();
 	}
 
 	void Material::ReleasePSOs()
@@ -220,6 +237,12 @@ namespace Drn
 		{
 			m_MainPassPSO->ReleaseBufferedResource();
 			m_MainPassPSO = nullptr;
+		}
+
+		if (m_PrePassPSO)
+		{
+			m_PrePassPSO->ReleaseBufferedResource();
+			m_PrePassPSO = nullptr;
 		}
 
 		if ( m_PointLightShadowDepthPassPSO )
@@ -436,6 +459,15 @@ namespace Drn
 #endif
 			}
 
+			if (m_SupportPrePass && m_HasCustomPrePass)
+			{
+				m_PrePassPSO = PipelineStateObject::CreatePrePassPSO(CullMode, EInputLayoutType::StandardMesh, m_PrePassShaderBlob);
+
+#if D3D12_Debug_INFO
+				m_PrePassPSO->SetName( "PSO_PrePass_" + name );
+#endif
+			}
+
 			if (m_SupportDeferredDecalPass)
 			{
 				m_DeferredDecalPassPSO = PipelineStateObject::CreateDecalPassPSO(m_DeferredDecalShaderBlob);
@@ -529,11 +561,25 @@ namespace Drn
 
 	void Material::BindPrePass( ID3D12GraphicsCommandList2* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		ID3D12PipelineState* PSO = m_TwoSided 
-			? CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO 
-			: CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO;
+		ID3D12PipelineState* PSO;
+		if (m_HasCustomPrePass)
+		{
+			PSO = m_PrePassPSO->GetD3D12PSO();
+		}
+		
+		else
+		{
+			PSO = m_TwoSided 
+				? CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO 
+				: CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO;
+		}
 
+		if (!PSO)
+		{
+			return;
+		}
+
+		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetPipelineState(PSO);
 
 		BindResources(CommandList);
