@@ -140,13 +140,12 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float3 Masks = MasksTexture.Sample(LinearSampler, DecalUVs).xyz;
     
     float BlendAlpha = 1.0f;
+    BlendAlpha *= 4 * (1 - abs(LocalPosition.y));
     BlendAlpha *= Masks.r;
     
     OUT.BaseColor = float4(BaseColor, BlendAlpha);
     OUT.Normal = float4(Normal, BlendAlpha);
     OUT.Masks = float4(0.0f, Masks.gb, BlendAlpha);
-    
-    //OUT.BaseColor = float4(DecalUVs, 0, 1);
     
     return OUT;
 }

@@ -6,18 +6,17 @@ namespace Drn
 {
 	DecalSceneProxy::DecalSceneProxy( class DecalComponent* InComponent )
 		: m_DecalComponent( InComponent )
-		, m_DecalBuffer(nullptr)
 	{
-		m_DecalBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-		m_DecalBuffer->SetName("CB_Decal_Unnaemd");
-#endif
+		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
+		{
+			m_DecalBuffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
+	#if D3D12_Debug_INFO
+			m_DecalBuffer[i]->SetName("CB_Decal_Unnaemd_" + std::to_string(i));
+	#endif
 
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.BufferLocation = m_DecalBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ResourceViewDesc.SizeInBytes = 256;
-
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_DecalBuffer->GetCpuHandle());
+			m_DecalBufferView[i].AllocateDescriptorSlot();
+			m_DecalBufferView[i].Create(m_DecalBuffer[i]->GetD3D12Resource()->GetGPUVirtualAddress(), 256);
+		}
 	}
 
 	DecalSceneProxy::~DecalSceneProxy()
@@ -51,11 +50,11 @@ namespace Drn
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );
-		m_DecalBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
+		m_DecalBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
 		memcpy( ConstantBufferStart, &m_DecalData, sizeof(DecalData));
-		m_DecalBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+		m_DecalBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_DecalBuffer->GetGpuHandle()), 1);
+		CommandList->SetGraphicsRoot32BitConstant(0, m_DecalBufferView[Renderer::Get()->GetCurrentBackbufferIndex()].GetIndex(), 1);
 
 		m_Material->BindMainPass(CommandList);
 
@@ -64,10 +63,15 @@ namespace Drn
 
 	void DecalSceneProxy::ReleaseBuffers()
 	{
-		if (m_DecalBuffer)
+		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
 		{
-			delete m_DecalBuffer;
-			m_DecalBuffer = nullptr;
+			if (m_DecalBuffer[i])
+			{
+				delete m_DecalBuffer[i];
+				m_DecalBuffer[i] = nullptr;
+
+				m_DecalBufferView[i].FreeDescriptorSlot();
+			}
 		}
 	}
 }

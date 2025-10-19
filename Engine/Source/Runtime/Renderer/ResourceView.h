@@ -74,10 +74,46 @@ namespace Drn
 		uint32 m_Index;
 	};
 
-	typedef TViewDescriptorHandle<D3D12_SHADER_RESOURCE_VIEW_DESC>                  DescriptorHandleSRV;
-	typedef TViewDescriptorHandle<D3D12_RENDER_TARGET_VIEW_DESC>			        DescriptorHandleRTV;
-	typedef TViewDescriptorHandle<D3D12_DEPTH_STENCIL_VIEW_DESC>                    DescriptorHandleDSV;
-	typedef TViewDescriptorHandle<D3D12_UNORDERED_ACCESS_VIEW_DESC>                 DescriptorHandleUAV;
+	typedef TViewDescriptorHandle<D3D12_SHADER_RESOURCE_VIEW_DESC>	DescriptorHandleSRV;
+	typedef TViewDescriptorHandle<D3D12_RENDER_TARGET_VIEW_DESC>	DescriptorHandleRTV;
+	typedef TViewDescriptorHandle<D3D12_DEPTH_STENCIL_VIEW_DESC>	DescriptorHandleDSV;
+	typedef TViewDescriptorHandle<D3D12_UNORDERED_ACCESS_VIEW_DESC>	DescriptorHandleUAV;
+
+// ---------------------------------------------------------------------------------------------------------
+
+	class ConstantBufferView
+	{
+	public:
+		void Create(D3D12_GPU_VIRTUAL_ADDRESS GpuAddress, const uint32 AlignedSize)
+		{
+			m_Desc.BufferLocation = GpuAddress;
+			m_Desc.SizeInBytes = AlignedSize;
+			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView(&m_Desc, m_CpuHandle);
+		}
+
+		inline const CD3DX12_CPU_DESCRIPTOR_HANDLE& GetCpuHandle() const { return m_CpuHandle; }
+		inline const CD3DX12_GPU_DESCRIPTOR_HANDLE& GetGpuHandle() const { return m_GpuHandle; }
+		inline uint32 GetIndex() const { return m_Index; }
+
+		inline void AllocateDescriptorSlot()
+		{
+			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
+			m_Index = Renderer::Get()->GetBindlessSrvIndex(m_GpuHandle);
+		}
+
+		inline void FreeDescriptorSlot()
+		{
+			Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+		}
+
+		inline const D3D12_CONSTANT_BUFFER_VIEW_DESC& GetDesc() const { return m_Desc; }
+
+	private:
+		D3D12_CONSTANT_BUFFER_VIEW_DESC m_Desc;
+		CD3DX12_CPU_DESCRIPTOR_HANDLE m_CpuHandle;
+		CD3DX12_GPU_DESCRIPTOR_HANDLE m_GpuHandle;
+		uint32 m_Index;
+	};
 
 	//template<typename TDesc>
 	//class ResourceView
