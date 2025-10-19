@@ -38,8 +38,8 @@ namespace Drn
 				ImGui::PopStyleColor();
 			}
 
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
 
 		ImGui::SameLine();
 		if ( ImGui::BeginChild( "Child", ImVec2(0, 0), ImGuiChildFlags_Border) )
@@ -76,8 +76,8 @@ namespace Drn
 			}
 
 			ImGui::PopStyleColor();
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
 	}
 
 }

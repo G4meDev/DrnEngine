@@ -105,8 +105,8 @@ namespace Drn
 		{
 			DrawDetailsPanel();
 
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
 
 		ImGui::End();
 	}

@@ -61,23 +61,26 @@ namespace Drn
 		ImVec2 SidePanelSize = ImVec2( Editor::Get()->SidePanelSize, 0.0f );
 		ImVec2 ViewportSize = ImVec2( Size.x - (SidePanelSize.x + 2 * BorderSize) * (bLeftPanel + bRightPanel) , 0.0f );
 
-		if (bLeftPanel && ImGui::BeginChild("Mode", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
+		if (bLeftPanel)
 		{
-			if ( ImGui::BeginTabBar( "Tab" ))
+			if (ImGui::BeginChild("Mode", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
 			{
-				if (m_ShowModes && ImGui::BeginTabItem(" Modes "))
+				if ( ImGui::BeginTabBar( "Tab" ))
 				{
-					m_ModesPanel->Draw(DeltaTime);
-					ImGui::EndTabItem();
-				}
+					if (m_ShowModes && ImGui::BeginTabItem(" Modes "))
+					{
+						m_ModesPanel->Draw(DeltaTime);
+						ImGui::EndTabItem();
+					}
 
-				if (m_ShowOutliner && ImGui::BeginTabItem("Outliner"))
-				{
-					m_WorldOutlinerPanel->Draw(DeltaTime);
-					ImGui::EndTabItem();
-				}
+					if (m_ShowOutliner && ImGui::BeginTabItem("Outliner"))
+					{
+						m_WorldOutlinerPanel->Draw(DeltaTime);
+						ImGui::EndTabItem();
+					}
 
-				ImGui::EndTabBar();
+					ImGui::EndTabBar();
+				}
 			}
 
 			ImGui::EndChild();
@@ -108,14 +111,16 @@ namespace Drn
 
 			DrawContextPopup();
 
-			ImGui::EndChild();
 		}
+		ImGui::EndChild();
 
 		ImGui::SameLine();
-		if (m_ShowDetail && ImGui::BeginChild( "Detail", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened) )
+		if (m_ShowDetail)
 		{
-			m_ActorDetailPanel->Draw(DeltaTime);
-		
+			if (ImGui::BeginChild( "Detail", SidePanelSize, ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
+			{
+				m_ActorDetailPanel->Draw(DeltaTime);
+			}
 			ImGui::EndChild();
 		}
 
