@@ -36,6 +36,8 @@ namespace Drn
 		void BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList );
 		void BindSelectionPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindDeferredDecalPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindStaticMeshDecalPass( ID3D12GraphicsCommandList2* CommandList );
 
 		void BindResources( ID3D12GraphicsCommandList2* CommandList );
 
@@ -61,6 +63,8 @@ namespace Drn
 		inline bool IsSupportingHitProxyPass() const { return m_SupportHitProxyPass; }
 		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
 		inline bool IsSupportingEditorSelectionPass() const { return m_SupportEditorSelectionPass; }
+		inline bool IsSupportingDeferredDecalPass() const { return m_SupportDeferredDecalPass; }
+		inline bool IsSupportingStaticMeshDecalPass() const { return m_SupportStaticMeshDecalPass; }
 
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
@@ -90,6 +94,8 @@ namespace Drn
 		ShaderBlob m_EditorPrimitiveShaderBlob;
 		ShaderBlob m_PointlightShadowDepthShaderBlob;
 		ShaderBlob m_SpotlightShadowDepthShaderBlob;
+		ShaderBlob m_DeferredDecalShaderBlob;
+		ShaderBlob m_StaticMeshDecalShaderBlob;
 
 		EMaterialDomain m_MaterialDomain;
 		bool m_TwoSided;
@@ -108,6 +114,8 @@ namespace Drn
 		PipelineStateObject* m_MainPassPSO;
 		PipelineStateObject* m_PointLightShadowDepthPassPSO;
 		PipelineStateObject* m_SpotLightShadowDepthPassPSO;
+		PipelineStateObject* m_DeferredDecalPassPSO;
+		PipelineStateObject* m_StaticMeshDecalPassPSO;
 
 #if WITH_EDITOR
 		PipelineStateObject* m_SelectionPassPSO = nullptr;
@@ -125,6 +133,8 @@ namespace Drn
 		bool m_SupportHitProxyPass;
 		bool m_SupportEditorPrimitivePass;
 		bool m_SupportEditorSelectionPass;
+		bool m_SupportDeferredDecalPass;
+		bool m_SupportStaticMeshDecalPass;
 
 		bool m_ScalarBufferDirty;
 		bool m_VectorBufferDirty;

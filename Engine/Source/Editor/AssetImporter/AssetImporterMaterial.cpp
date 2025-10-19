@@ -21,11 +21,12 @@ namespace Drn
 		bool HasCS = ShaderString.find("Main_CS") != std::string::npos;
 
 		bool SupportMainPass = ShaderString.find( "SUPPORT_MAIN_PASS" ) != std::string::npos;
-		SupportMainPass |= MaterialAsset->m_MaterialDomain == EMaterialDomain::Decal; // if domain is decal then main pass is used for decal
 		bool SupportHitProxyPass = ShaderString.find( "SUPPORT_HIT_PROXY_PASS" ) != std::string::npos;
 		bool SupportEditorPrimitivePass = ShaderString.find( "SUPPORT_EDITOR_PRIMITIVE_PASS" ) != std::string::npos;
 		bool SupportEditorSelectionPass = ShaderString.find( "SUPPORT_EDITOR_SELECTION_PASS" ) != std::string::npos;
 		bool SupportShadowPass = ShaderString.find( "SUPPORT_SHADOW_PASS" ) != std::string::npos;
+		bool SupportDeferredDecalPass = ShaderString.find( "SUPPORT_DEFERRED_DECAL_PASS" ) != std::string::npos;
+		bool SupportStaticMeshDecalPass = ShaderString.find( "SUPPORT_STATICMESH_DECAL_PASS" ) != std::string::npos;
 
 		bool Successed = true;
 		ShaderBlob MainShaderBlob;
@@ -33,6 +34,8 @@ namespace Drn
 		ShaderBlob EditorPrimitiveShaderBlob;
 		ShaderBlob PointLightShadowDepthShaderBlob;
 		ShaderBlob SpotLightShadowDepthShaderBlob;
+		ShaderBlob DeferredDecalShaderBlob;
+		ShaderBlob StaticMeshDecalShaderBlob;
 
 		auto CompileShaderBlobConditional = [&](bool Condition, const std::string& InPath,
 			const wchar_t* InEntryPoint, const wchar_t* InProfile, const std::vector<const wchar_t*>& Macros, ID3DBlob** InByteBlob) 
@@ -95,6 +98,22 @@ namespace Drn
 			}
 		}
 
+		if (SupportDeferredDecalPass)
+		{
+			const std::vector<const wchar_t*> DeferredDecalMacros = { L"DEFERRED_DECAL_PASS=1" };
+
+			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", DeferredDecalMacros, &DeferredDecalShaderBlob.m_VS);
+			CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", DeferredDecalMacros, &DeferredDecalShaderBlob.m_PS);
+		}
+
+		if (SupportStaticMeshDecalPass)
+		{
+			const std::vector<const wchar_t*> StaticMeshDecalMacros = { L"STATICMESH_DECAL_PASS=1" };
+
+			CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", StaticMeshDecalMacros, &StaticMeshDecalShaderBlob.m_VS);
+			CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", StaticMeshDecalMacros, &StaticMeshDecalShaderBlob.m_PS);
+		}
+
 		if (Successed)
 		{
 			MaterialAsset->ReleaseShaderBlobs();
@@ -103,12 +122,16 @@ namespace Drn
 			MaterialAsset->m_EditorPrimitiveShaderBlob = EditorPrimitiveShaderBlob;
 			MaterialAsset->m_PointlightShadowDepthShaderBlob = PointLightShadowDepthShaderBlob;
 			MaterialAsset->m_SpotlightShadowDepthShaderBlob = SpotLightShadowDepthShaderBlob;
+			MaterialAsset->m_DeferredDecalShaderBlob = DeferredDecalShaderBlob;
+			MaterialAsset->m_StaticMeshDecalShaderBlob = StaticMeshDecalShaderBlob;
 
 			MaterialAsset->m_SupportMainPass = SupportMainPass;
 			MaterialAsset->m_SupportHitProxyPass = SupportHitProxyPass;
 			MaterialAsset->m_SupportEditorPrimitivePass = SupportEditorPrimitivePass;
 			MaterialAsset->m_SupportEditorSelectionPass = SupportEditorSelectionPass;
 			MaterialAsset->m_SupportShadowPass = SupportShadowPass;
+			MaterialAsset->m_SupportDeferredDecalPass = SupportDeferredDecalPass;
+			MaterialAsset->m_SupportStaticMeshDecalPass = SupportStaticMeshDecalPass;
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

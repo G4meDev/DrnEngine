@@ -1,5 +1,7 @@
 #include "Common.hlsl"
 
+// SUPPORT_DEFERRED_DECAL_PASS
+
 struct Resources
 {
     uint ViewIndex;

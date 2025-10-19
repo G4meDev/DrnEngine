@@ -56,7 +56,7 @@ namespace Drn
 
 		CommandList->SetGraphicsRoot32BitConstant(0, m_DecalBufferView[Renderer::Get()->GetCurrentBackbufferIndex()].GetIndex(), 1);
 
-		m_Material->BindMainPass(CommandList);
+		m_Material->BindDeferredDecalPass(CommandList);
 
 		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList);
 	}
