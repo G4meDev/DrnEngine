@@ -105,17 +105,23 @@ struct ShadowDepth
 struct VertexShaderInput
 {
     float3 Position : POSITION;
+    float2 UV1 : TEXCOORD0;
+
+#if MAIN_PASS
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
     float3 Bitangent : BINORMAL;
-    float2 UV1 : TEXCOORD0;
+#endif
 };
 
 struct VertexShaderOutput
 {
-    float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
     float4 Position : SV_Position;
+    
+#if MAIN_PASS
+    float3x3 TBN : TBN;
+#endif
 };
 
 VertexShaderOutput Main_VS(VertexShaderInput IN)
@@ -125,25 +131,16 @@ VertexShaderOutput Main_VS(VertexShaderInput IN)
 
 #if SHADOW_PASS_POINTLIGHT
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    OUT.Position = mul(P.LocalToWorld, float4(IN.Position, 1.0f));
-    
-    OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
-    OUT.UV = IN.UV1;
+    OUT.Position = mul(P.LocalToWorld, float4(IN.Position, 1.0f));    
 #elif SHADOW_PASS_SPOTLIGHT
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
     float3 WorldPosition = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
     OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, float4(WorldPosition, 1));
-
-    OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
-    OUT.UV = IN.UV1;
 #elif PRE_PASS
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
-    OUT.UV = IN.UV1;
-    OUT.TBN = 1;
-//#elif MAIN_PASS
-#else
+#elif MAIN_PASS
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
     float3 VertexNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
@@ -153,9 +150,12 @@ VertexShaderOutput Main_VS(VertexShaderInput IN)
     OUT.TBN = float3x3(VertexTangent, VertexNormal, VertexBiNormal);
     
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
-    OUT.UV = IN.UV1;
+#else
+    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
 #endif
     
+    OUT.UV = IN.UV1;
     return OUT;
 }
 
@@ -163,13 +163,11 @@ VertexShaderOutput Main_VS(VertexShaderInput IN)
 
 struct PixelShaderInput
 {
-//#if SHADOW_PASS
-//    float4 Position : SV_Position;
-//#else
-    float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
     float4 Position : SV_Position;
-//#endif
+#if MAIN_PASS
+    float3x3 TBN : TBN;
+#endif
 };
 
 struct PixelShaderOutput
@@ -201,38 +199,43 @@ float3 ReconstructNormals(float2 xy)
 //#define MAIN_PASS 1
 //#define PRE_PASS 1
 
-PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) : SV_Target
 {
     PixelShaderOutput OUT;
  
-#if MAIN_PASS
-
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
-    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
     
     ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
     Texture2D BaseColorOpacityTexture = ResourceDescriptorHeap[Textures.BaseColorOpacityTexture];
-    Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
     
     float4 BaseColorOpacity = BaseColorOpacityTexture.Sample(LinearSampler, IN.UV);
-    float3 Masks = float3(0, Scalars.Roughness, 1);
-
     clip(BaseColorOpacity.a - 0.33f);
+    
+#if MAIN_PASS
+
+    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
+    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    
+    Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
+    float3 Masks = float3(0, Scalars.Roughness, 1);
     
     float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rgb;
     Normal = ReconstructNormals(Normal.xy);
 
     Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Scalars.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
+    if(!FrontFace)
+    {
+        Normal = -Normal;
+    }
     float2 N = EncodeNormal(Normal);
     
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColorOpacity.rgb, 1);
     OUT.WorldNormal = N;
     OUT.Masks = float4(Masks, 1.0f/255);
+    
     
     //float2 Velocity = IN.ScreenPos.xy / IN.ScreenPos.w - IN.PrevScreenPos.xy / IN.PrevScreenPos.w;
     //Velocity = Velocity * 0.25f + 0.5f;
@@ -243,15 +246,8 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 #elif HITPROXY_PASS
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Guid = P.Guid;
+
 #elif PRE_PASS || SHADOW_PASS
-    ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
-    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
-    
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    Texture2D BaseColorOpacityTexture = ResourceDescriptorHeap[Textures.BaseColorOpacityTexture];
-    
-    float Opacity = BaseColorOpacityTexture.Sample(LinearSampler, IN.UV).a;
-    clip(Opacity - 0.33f);
 #endif
     
     return OUT;
@@ -261,6 +257,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 
 struct GeometeryShaderOutput
 {
+    float2 UV : TEXCOORD;
     float4 Position : SV_Position;
     uint TargetIndex : SV_RenderTargetArrayIndex;
 };
@@ -283,6 +280,7 @@ void PointLightShadow_GS(triangle VertexShaderOutput input[3], inout TriangleStr
 
             float3 WorldPosition = input[VertexIndex].Position.xyz;
             OUT.Position = mul(ShadowDepthBuffer.WorldToProjectionMatrices[CubeFaceIndex], float4(WorldPosition, 1.0f));
+            OUT.UV = input[VertexIndex].UV;
             OutputStream.Append(OUT);
         }
 		OutputStream.RestartStrip();

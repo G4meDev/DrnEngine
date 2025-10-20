@@ -497,7 +497,7 @@ namespace Drn
 					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_SpotlightShadowDepthShaderBlob);
 
 #if D3D12_Debug_INFO
-				m_PointLightShadowDepthPassPSO->SetName( "PSO_Po intLightShadowDepthPass_" + name );
+				m_PointLightShadowDepthPassPSO->SetName( "PSO_PointLightShadowDepthPass_" + name );
 				m_SpotLightShadowDepthPassPSO->SetName( "PSO_SpotLightShadowDepthPass_" + name );
 #endif
 			}
