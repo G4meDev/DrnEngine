@@ -1,5 +1,4 @@
-
-#define PI 3.1415926535897932f
+#include "Common.hlsl"
 
 struct Resources
 {
@@ -99,16 +98,6 @@ float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 
 float Square(float x) { return x * x; }
 
-float3 DecodeNormal(float2 Oct)
-{
-    float3 N = float3(Oct, 1 - dot(1, abs(Oct)));
-    if (N.z < 0)
-    {
-        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
-    }
-    return normalize(N);
-}
-
 float3 ComputeF0(float3 BaseColor, float Metallic)
 {
     //float3 F0 = float3(0.04, 0.04, 0.04);
@@ -206,8 +195,9 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float Roughness = Masks.g;
     float AO = Masks.b;
     
-    uint ShadingModel = (uint)(Masks.a * 255.0f);
-    if(ShadingModel != 1)
+    uint ShadingModel = FloatToUint8(Masks.a);
+    [branch]
+    if (ShadingModel == SHADING_MODEL_UNLIT)
         return 0;
     
     float2 EncodedNormal = NormalImage.Sample(PointClampSampler, UV).xy;

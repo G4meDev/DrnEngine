@@ -41,12 +41,13 @@ namespace Drn
 		if (Shaders.m_HS) PipelineDesc.HS				= CD3DX12_SHADER_BYTECODE(Shaders.m_HS);
 		if (Shaders.m_DS) PipelineDesc.DS				= CD3DX12_SHADER_BYTECODE(Shaders.m_DS);
 		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
-		PipelineDesc.NumRenderTargets					= 5;
+		PipelineDesc.NumRenderTargets					= 6;
 		PipelineDesc.RTVFormats[0]						= GBUFFER_COLOR_DEFERRED_FORMAT;
 		PipelineDesc.RTVFormats[1]						= GBUFFER_BASE_COLOR_FORMAT;
 		PipelineDesc.RTVFormats[2]						= GBUFFER_WORLD_NORMAL_FORMAT;
 		PipelineDesc.RTVFormats[3]						= GBUFFER_MASKS_FORMAT;
-		PipelineDesc.RTVFormats[4]						= GBUFFER_VELOCITY_FORMAT;
+		PipelineDesc.RTVFormats[4]						= GBUFFER_MASKS_FORMAT;
+		PipelineDesc.RTVFormats[5]						= GBUFFER_VELOCITY_FORMAT;
 		PipelineDesc.SampleDesc.Count					= 1;
 
 		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( Result->m_PipelineState.GetAddressOf() ) );

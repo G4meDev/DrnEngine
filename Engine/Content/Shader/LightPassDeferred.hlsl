@@ -1,6 +1,4 @@
-//#include "../Materials/Common.hlsl"
-
-// TODO: move to common.hlsl
+#include "Common.hlsl"
 
 #define LIGHT_BITFLAG_POINTLIGHT 1
 #define LIGHT_BITFLAG_SPOTLIGHT 2
@@ -15,8 +13,6 @@
 #define SPOTLIGHT_STENCIL_SLICES 12
 #endif
 
-static const float PI = 3.14159265359;
-
 float2 VSPosToScreenUV(float4 VSPos)
 {
     float2 UV = VSPos.xy / VSPos.w;
@@ -25,21 +21,6 @@ float2 VSPosToScreenUV(float4 VSPos)
     
     return UV;
 }
-
-float3 DecodeNormal(float2 Oct)
-{
-	float3 N = float3( Oct, 1 - dot( 1, abs(Oct) ) );
-	if( N.z < 0 )
-	{
-		N.xy = ( 1 - abs(N.yx) ) * select( N.xy >= 0, float2(1,1), float2(-1,-1) );
-	}
-	return normalize(N);
-}
-
-//float3 DecodeNormal(float3 Normal)
-//{
-//    return Normal * 2 - 1;
-//}
 
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
@@ -114,6 +95,7 @@ struct Resources
     uint DepthIndex;
     uint LightFlags;
     uint SSAOIndex;
+    uint MasksBIndex;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -373,6 +355,8 @@ struct GBufferData
     float Matallic;
     float Roughness;
     float AmbientOcclusion;
+    float3 TransmittanceColor;
+    uint ShadingModel;
 };
 
 float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
@@ -386,12 +370,28 @@ float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, f
     float DistanceSquare = dot(ToLight, ToLight);
     float3 L = ToLight * rsqrt(DistanceSquare);
     
-    return CalculateLighting(L, Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.BaseColor, Gbuffer.Matallic, Gbuffer.Roughness);
+    [branch]
+    if (Gbuffer.ShadingModel == SHADING_MODEL_FOLIAGE && dot(Gbuffer.WorldNormal, -L) > 0.0f)
+    {
+        return CalculateLighting(L, -Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.TransmittanceColor, Gbuffer.Matallic, Gbuffer.Roughness);
+    }
+    else
+    {
+        return CalculateLighting(L, Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.BaseColor, Gbuffer.Matallic, Gbuffer.Roughness);
+    }
 }
 
 float3 CalculateDirectionalLightRadiance(float3 WorldPosition, float3 LightDirection, float3 LightColor, float3 CameraVector, GBufferData Gbuffer)
 {
-    return CalculateLighting(-LightDirection, Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.BaseColor, Gbuffer.Matallic, Gbuffer.Roughness);
+    [branch]
+    if (Gbuffer.ShadingModel == SHADING_MODEL_FOLIAGE && dot(Gbuffer.WorldNormal, LightDirection) > 0.0f)
+    {
+        return CalculateLighting(-LightDirection, -Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.TransmittanceColor, Gbuffer.Matallic, Gbuffer.Roughness);
+    }
+    else
+    {
+        return CalculateLighting(-LightDirection, Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.BaseColor, Gbuffer.Matallic, Gbuffer.Roughness);
+    }
 }
 
 float CalculatePointLightAttenuation(float3 WorldPosition, float3 LightPosition, float InvRadius)
@@ -664,22 +664,25 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
+    Texture2D MasksTexture = ResourceDescriptorHeap[BindlessResources.MasksIndex];
+    float4 Masks = MasksTexture.Sample(LinearSampler, IN.UV);
+    
+    uint ShadingModel = FloatToUint8(Masks.a);
+    [branch]
+    if (ShadingModel == SHADING_MODEL_UNLIT)
+        return 0;
+    
     Texture2D BaseColorTexture = ResourceDescriptorHeap[BindlessResources.BaseColorIndex];
     Texture2D WorldNormalTexture = ResourceDescriptorHeap[BindlessResources.WorldNormalIndex];
-    Texture2D MasksTexture = ResourceDescriptorHeap[BindlessResources.MasksIndex];
+    Texture2D MasksBTexture = ResourceDescriptorHeap[BindlessResources.MasksBIndex];
     Texture2D DepthTexture = ResourceDescriptorHeap[BindlessResources.DepthIndex];
     Texture2D SSAOTexture = ResourceDescriptorHeap[BindlessResources.SSAOIndex];
     
     float4 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV);
-    //float3 WorldNormal = WorldNormalTexture.Sample(LinearSampler, IN.UV).xyz;
+    float3 Transmittance = MasksBTexture.Sample(LinearSampler, IN.UV).rgb;
     float2 WorldNormal = WorldNormalTexture.Sample(LinearSampler, IN.UV).xy;
-    float4 Masks = MasksTexture.Sample(LinearSampler, IN.UV);
     float Depth = DepthTexture.Sample(LinearSampler, IN.UV).x;
-
-    [branch]
-    //if ((uint) (Masks.a * 255) == 0)
-    if (Masks.a == 0)
-        return 0;
+    
     
     //float4 WorldPos = mul(View.ProjectionToWorld, float4(IN.ScreenPos, Depth, 1));
     //WorldPos.xyz /= WorldPos.w;
@@ -694,6 +697,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Gbuffer.Matallic = Masks.r;
     Gbuffer.Roughness = Masks.g;
     Gbuffer.AmbientOcclusion = Masks.b;
+    Gbuffer.TransmittanceColor = Transmittance;
+    Gbuffer.ShadingModel = ShadingModel;
     
     float3 CameraVector = View.CameraPos - WorldPos.xyz;
     float3 Radiance = 0;

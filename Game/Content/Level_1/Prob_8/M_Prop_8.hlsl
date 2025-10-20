@@ -83,6 +83,7 @@ struct ScalarBuffer
 {
     float Roughness; // @SCALAR RoughnessIntensity
     float NormalIntensity; // @SCALAR NormalIntensity
+    float SubsurfaceColorIntensity; // @SCALAR SubsurfaceColorIntensity
 };
 
 struct VectorBuffer
@@ -170,24 +171,7 @@ struct PixelShaderInput
 #endif
 };
 
-struct PixelShaderOutput
-{
-#if MAIN_PASS
-    float4 ColorDeferred : SV_TARGET0;
-    float4 BaseColor : SV_TARGET1;
-    float2 WorldNormal : SV_TARGET2;
-    float4 Masks : SV_TARGET3;
-    float2 Velocity : SV_TARGET4;
-#elif HITPROXY_PASS
-    uint4 Guid;
-#elif EDITOR_PRIMITIVE_PASS
-    float4 Color;
-#elif SHADOW_PASS
-    
-#elif PRE_PASS
-    
-#endif
-};
+
 
 float3 ReconstructNormals(float2 xy)
 {
@@ -199,9 +183,9 @@ float3 ReconstructNormals(float2 xy)
 //#define MAIN_PASS 1
 //#define PRE_PASS 1
 
-PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) : SV_Target
+BasePassPixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) : SV_Target
 {
-    PixelShaderOutput OUT;
+    BasePassPixelShaderOutput OUT;
  
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
@@ -234,7 +218,9 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColorOpacity.rgb, 1);
     OUT.WorldNormal = N;
-    OUT.Masks = float4(Masks, 1.0f/255);
+    OUT.Masks = float4(Masks, Uint8ToFloat(SHADING_MODEL_FOLIAGE));
+    
+    OUT.MasksB = float4(BaseColorOpacity.rgb * Scalars.SubsurfaceColorIntensity, 1);
     
     
     //float2 Velocity = IN.ScreenPos.xy / IN.ScreenPos.w - IN.PrevScreenPos.xy / IN.PrevScreenPos.w;

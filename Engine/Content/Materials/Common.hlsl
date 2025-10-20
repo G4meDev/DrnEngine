@@ -65,6 +65,20 @@ static const float PI = 3.14159265359;
 //    return UV;
 //}
 
+#define SHADING_MODEL_UNLIT 0
+#define SHADING_MODEL_LIT 1
+#define SHADING_MODEL_FOLIAGE 2
+
+float Uint8ToFloat(uint Value)
+{
+    return Value / 255.0f;
+}
+
+uint FloatToUint8(float Value)
+{
+    return (uint) (Value * 255);
+}
+
 struct VertexInputPositionOnly
 {
     float3 Position : POSITION;
@@ -81,6 +95,26 @@ struct VertexInputStaticMesh
     float2 UV2 : TEXCOORD1;
     float2 UV3 : TEXCOORD2;
     float2 UV4 : TEXCOORD3;
+};
+
+struct BasePassPixelShaderOutput
+{
+#if MAIN_PASS
+    float4 ColorDeferred : SV_TARGET0;
+    float4 BaseColor : SV_TARGET1;
+    float2 WorldNormal : SV_TARGET2;
+    float4 Masks : SV_TARGET3;
+    float4 MasksB : SV_TARGET4;
+    float2 Velocity : SV_TARGET5;
+#elif HITPROXY_PASS
+    uint4 Guid;
+#elif EDITOR_PRIMITIVE_PASS
+    float4 Color;
+#elif SHADOW_PASS
+    
+#elif PRE_PASS
+    
+#endif
 };
 
 float InterleavedGradientNoise(float2 uv, float FrameId)
@@ -120,6 +154,16 @@ float2 EncodeNormal(float3 N)
         N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
     }
     return N.xy;
+}
+
+float3 DecodeNormal(float2 Oct)
+{
+    float3 N = float3(Oct, 1 - dot(1, abs(Oct)));
+    if (N.z < 0)
+    {
+        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
+    }
+    return normalize(N);
 }
 
 //float3 DecodeNormal(float3 Normal)

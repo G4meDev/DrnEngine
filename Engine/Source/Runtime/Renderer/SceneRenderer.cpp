@@ -282,6 +282,7 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_BaseColorTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_WorldNormalTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_MasksTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_MasksBTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_VelocityTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 		ResourceStateTracker::Get()->TransiationResource(m_DecalBuffer->m_BaseColorTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
@@ -461,6 +462,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksTarget->GetGpuHandle()), 5);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 6);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOTarget->GetGpuHandle()), 8);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksBTarget->GetGpuHandle()), 9);
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{

@@ -27,6 +27,8 @@ namespace Drn
 		Resource* m_WorldNormalTarget;
 		// Metallic Roughness AO Shading id
 		Resource* m_MasksTarget;
+		// Transmittance .etc
+		Resource* m_MasksBTarget;
 		Resource* m_VelocityTarget;
 		Resource* m_DepthTarget;
 
@@ -34,6 +36,7 @@ namespace Drn
 		D3D12_CLEAR_VALUE m_BaseColorClearValue;
 		D3D12_CLEAR_VALUE m_WorldNormalClearValue;
 		D3D12_CLEAR_VALUE m_MasksClearValue;
+		D3D12_CLEAR_VALUE m_MasksBClearValue;
 		D3D12_CLEAR_VALUE m_VelocityClearValue;
 		D3D12_CLEAR_VALUE m_DepthClearValue;
 
@@ -44,6 +47,7 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE m_BaseColorCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_WorldNormalCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_MasksCpuHandle;
+		D3D12_CPU_DESCRIPTOR_HANDLE m_MasksBCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_VelocityCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthCpuHandle;
 
