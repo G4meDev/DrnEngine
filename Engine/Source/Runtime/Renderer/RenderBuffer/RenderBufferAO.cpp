@@ -208,6 +208,8 @@ namespace Drn
 		m_AoData.InvFadeRadius = InvFadeRadius;
 		m_AoData.FadeOffset = FadeOffset;
 
+		const float TemporalScalar = (float)Renderer->GetSceneView().FrameIndexMod8 / SSAO_RandomTexture->GetSizeX();
+		m_AoData.TemporalOffset = Vector2(TemporalScalar * 2.48f, TemporalScalar * 7.52f);
 
 		UINT8* ConstantBufferStart;
 		CD3DX12_RANGE readRange( 0, 0 );

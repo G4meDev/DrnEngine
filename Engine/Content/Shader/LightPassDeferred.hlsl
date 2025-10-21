@@ -359,11 +359,6 @@ struct GBufferData
     uint ShadingModel;
 };
 
-float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
-{
-    return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
-}
-
 float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, float3 LightColor, float3 CameraVector, GBufferData Gbuffer)
 {
     float3 ToLight = LightPosition - WorldPosition;

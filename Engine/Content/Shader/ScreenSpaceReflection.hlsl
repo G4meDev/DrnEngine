@@ -1,4 +1,6 @@
 
+#include "Common.hlsl"
+
 #define SAMPLESET_ARRAY_SIZE 6
 #define SAMPLE_STEPS 3
 
@@ -104,21 +106,6 @@ struct PixelShaderInput
     float4 Position : SV_Position;
 };
 
-float3 DecodeNormal(float2 Oct)
-{
-    float3 N = float3(Oct, 1 - dot(1, abs(Oct)));
-    if (N.z < 0)
-    {
-        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
-    }
-    return normalize(N);
-}
-
-float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
-{
-    return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
-}
-
 float GetRoughnessFade(float Roughness, float Fade)
 {
     return min(Roughness * Fade + 2, 1.0);
@@ -151,14 +138,6 @@ float3x3 GetTangentBasis(float3 TangentY)
     
     //return float3x3(TangentX, TangentY, TangentZ);
     return float3x3(TangentX, TangentY, TangentZ);
-}
-
-float InterleavedGradientNoise(float2 uv, float FrameId)
-{
-    uv += FrameId * (float2(47, 17) * 0.695f);
-
-    const float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
-    return frac(magic.z * frac(dot(uv, magic.xy)));
 }
 
 uint3 Rand3DPCG16(int3 p)

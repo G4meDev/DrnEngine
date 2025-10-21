@@ -27,8 +27,9 @@ namespace Drn
 		float MipBlend;
 		float InvFadeRadius;
 		float FadeOffset;
+		float Pad_1;
 
-		float Pad_3;
+		Vector2 TemporalOffset;
 	};
 
 	class RenderBufferAO : public RenderBuffer

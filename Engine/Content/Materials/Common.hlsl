@@ -117,6 +117,11 @@ struct BasePassPixelShaderOutput
 #endif
 };
 
+float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
+{
+    return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
+}
+
 float InterleavedGradientNoise(float2 uv, float FrameId)
 {
     uv += FrameId * (float2(47, 17) * 0.695f);
@@ -166,11 +171,11 @@ float3 DecodeNormal(float2 Oct)
     return normalize(N);
 }
 
-//float3 DecodeNormal(float3 Normal)
-//{
-//    return Normal * 2 - 1;
-//}
-//
+float3 ReconstructNormal(float2 In)
+{
+    return float3(In, sqrt(1 - dot(In, In)));
+}
+
 //float DistributionGGX(float3 N, float3 H, float roughness)
 //{
 //    float a = roughness * roughness;

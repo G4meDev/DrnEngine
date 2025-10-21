@@ -90,12 +90,6 @@ struct PixelShaderInput
     float4 Position : SV_Position;
 };
 
-
-float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
-{
-    return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
-}
-
 float Square(float x) { return x * x; }
 
 float3 ComputeF0(float3 BaseColor, float Metallic)

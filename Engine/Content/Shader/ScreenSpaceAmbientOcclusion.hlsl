@@ -1,28 +1,49 @@
 
+#include "Common.hlsl"
+
 const static float Constant_Float16F_Scale = 4096.0f;
 
-#define SHADER_QUALITY 0
+#define SHADER_QUALITY 1
 
 #if SHADER_QUALITY == 0
 	// very low
 	#define USE_SAMPLESET 1
 	#define SAMPLE_STEPS 1
+    #define QUAD_MESSAGE_PASSING_BLUR 0
 #elif SHADER_QUALITY == 1
 	// low
 	#define USE_SAMPLESET 1
 	#define SAMPLE_STEPS 1
+    #define QUAD_MESSAGE_PASSING_BLUR 2
 #elif SHADER_QUALITY == 2
 	// medium
 	#define USE_SAMPLESET 1
 	#define SAMPLE_STEPS 2
+    #define QUAD_MESSAGE_PASSING_BLUR 2
 #elif SHADER_QUALITY == 3
 	// high
 	#define USE_SAMPLESET 1
 	#define SAMPLE_STEPS 3
+    #define QUAD_MESSAGE_PASSING_BLUR 0
 #else // SHADER_QUALITY == 4
 	// very high
 	#define USE_SAMPLESET 3
 	#define SAMPLE_STEPS 3
+    #define QUAD_MESSAGE_PASSING_BLUR 0
+#endif
+
+#if QUAD_MESSAGE_PASSING_BLUR == 0
+	#define QUAD_MESSAGE_PASSING_NORMAL 0
+	#define QUAD_MESSAGE_PASSING_DEPTH 0
+#elif QUAD_MESSAGE_PASSING_BLUR == 1
+	#define QUAD_MESSAGE_PASSING_NORMAL 0
+	#define QUAD_MESSAGE_PASSING_DEPTH 0
+#elif QUAD_MESSAGE_PASSING_BLUR == 2
+	#define QUAD_MESSAGE_PASSING_NORMAL 1
+	#define QUAD_MESSAGE_PASSING_DEPTH 0
+#elif QUAD_MESSAGE_PASSING_BLUR == 3
+	#define QUAD_MESSAGE_PASSING_NORMAL 1
+	#define QUAD_MESSAGE_PASSING_DEPTH 1
 #endif
 
 #if USE_SAMPLESET == 0
@@ -104,6 +125,17 @@ struct ViewBuffer
     float Pad_4;
 
     float4 InvDeviceZToWorldZTransform;
+    matrix ViewToWorld;
+    matrix ScreenToTranslatedWorld;
+    
+    uint FrameIndex;
+    uint FrameIndexMod8;
+    float2 JitterOffset;
+    
+    float2 PrevJitterOffset;
+    float2 Pad_1;
+    
+    matrix ClipToPreviousClip;
 
 };
 
@@ -126,6 +158,10 @@ struct AoData
     float MipBlend;
     float InvFadeRadius;
     float FadeOffset;
+    float Pad_1;
+    
+    float2 TemporalOffset;
+    float2 Pad_2;
 };
 
 struct StaticSamplers
@@ -165,22 +201,8 @@ VertexShaderOutput Main_VS(VertexInputPosUV IN)
 struct PixelShaderInput
 {
     float4 UVAndScreenPos : TEXCOORD0;
+    float4 Position : SV_Position;
 };
-
-float3 DecodeNormal(float2 Oct)
-{
-    float3 N = float3(Oct, 1 - dot(1, abs(Oct)));
-    if (N.z < 0)
-    {
-        N.xy = (1 - abs(N.yx)) * select(N.xy >= 0, float2(1, 1), float2(-1, -1));
-    }
-    return normalize(N);
-}
-
-float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
-{
-    return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
-}
 
 float GetHZBDepth(float2 ScreenPos, float MipLevel, Texture2D Texture, SamplerState State, float4 InvDeviceZToWorldZTransform)
 {
@@ -352,10 +374,11 @@ float Main_PS(PixelShaderInput IN) : SV_Target
 #if USE_AO_SETUP_AS_INPUT
     ActualAORadius *= 2;
     ToRandomUV /= 2;
-    ScaleFactor = 4;
+    ScaleFactor = 2;
 #endif
     
     float2 RandomVec = (RandomImage.Sample(PointSampler, UV * ToRandomUV).rg * 2 - 1) * ActualAORadius;
+    //float2 RandomVec = (RandomImage.Sample(PointSampler, AoBuffer.TemporalOffset + UV * ToRandomUV).rg * 2 - 1) * ActualAORadius;
     
     ViewSpacePosition += AoBuffer.Bias * SceneDepth * ScaleFactor * (ViewSpaceNormal * FovFix);
     
@@ -367,7 +390,7 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 ScaledViewSpaceNormal = ViewSpaceNormal;
 #if OPTIMIZATION_O1
-    ScaledViewSpaceNormal *= 0.08f * 10;
+    ScaledViewSpaceNormal *= 0.08f * SceneDepth;
 #endif
     
     float2 WeightAccumulator = 0.0001f;
@@ -407,5 +430,39 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     Result = 1 - (1 - pow(abs(Result), AoBuffer.Power)) * AoBuffer.Intensity;
 #endif
 
+#if QUAD_MESSAGE_PASSING_BLUR > 0
+    float4 CenterPixel = float4(Result.r, SceneDepth, normalize(ViewSpaceNormal).xy);
+
+    float4 dX = ddx_fine(CenterPixel);
+    float4 dY = ddy_fine(CenterPixel);
+
+    int2 Mod = (uint2) (IN.Position.xy) % 2;
+
+    float4 PixA = CenterPixel;
+    float4 PixB = CenterPixel - dX * (Mod.x * 2 - 1);
+    float4 PixC = CenterPixel - dY * (Mod.y * 2 - 1);
+
+    float WeightA = 1.0f;
+    float WeightB = 1.0f;
+    float WeightC = 1.0f;
+
+#if QUAD_MESSAGE_PASSING_NORMAL
+	const float NormalTweak = 4.0f;
+	float3 NormalA = ReconstructNormal(PixA.zw);
+	float3 NormalB = ReconstructNormal(PixB.zw);
+	float3 NormalC = ReconstructNormal(PixC.zw);
+	WeightB *= saturate(pow(saturate(dot(NormalA, NormalB)), NormalTweak));
+	WeightC *= saturate(pow(saturate(dot(NormalA, NormalC)), NormalTweak));
+#endif
+    
+    float InvWeightABC = 1.0f / (WeightA + WeightB + WeightC);
+
+    WeightA *= InvWeightABC;
+    WeightB *= InvWeightABC;
+    WeightC *= InvWeightABC;
+
+    Result = WeightA * PixA.x + WeightB * PixB.x + WeightC * PixC.x;
+#endif
+    
     return Result;
 }
