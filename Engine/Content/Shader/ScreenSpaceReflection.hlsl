@@ -52,6 +52,12 @@ struct ViewBuffer
     
     uint FrameIndex;
     uint FrameIndexMod8;
+    float2 JitterOffset;
+    
+    float2 PrevJitterOffset;
+    float2 Pad_1;
+    
+    matrix ClipToPreviousClip;
 };
 
 struct SSRData
@@ -271,6 +277,16 @@ float GetStepScreenFactorToClipAtScreenEdge(float2 RayStartScreen, float2 RaySte
     const float RayStepFactor = min(S.x, S.y) / RayStepScreenInvFactor;
 
     return RayStepFactor;
+}
+
+void ReprojectHit(float3 HitUVz, out float2 OutPrevUV, matrix ClipToPrevClip)
+{
+    float2 ScreenPos = ViewportUVToScreenPos(HitUVz.xy);
+    float4 ThisClip = float4(ScreenPos, HitUVz.z, 1);
+    float4 PrevClip = mul(ClipToPrevClip, ThisClip);
+    float2 PrevScreen = PrevClip.xy / PrevClip.w;
+    
+    OutPrevUV = ScreenPosToViewportUV(PrevScreen);
 }
 
 FSSRTRay InitScreenSpaceRayFromWorldSpace(float3 RayOriginTranslatedWorld, float3 WorldRayDirection, float SceneDepth, ViewBuffer View)
@@ -502,7 +518,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float4 HZBUvFactorAndInvFactor = float4(1.0f, 1.0f, 0, 0);
     HZBUvFactorAndInvFactor.zw = float2(1.0f, 1.0f) / HZBUvFactorAndInvFactor.xy;
         
-#define SSR_QUALITY 1
+#define SSR_QUALITY 3
     
 #if SSR_QUALITY == 1
 	uint NumSteps = 8;
@@ -569,10 +585,11 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
             if(bHit)
             {
                 //ClosestHitDistanceSqr = min(ClosestHitDistanceSqr, ComputeRayHitSqrDistance(PositionTranslatedWorld, HitUVz, View));
-               
-                // TODO: taa and reprojection
+
+                float2 SampleUV = 0;
+                ReprojectHit(HitUVz, SampleUV, View.ClipToPreviousClip);
                 
-                float4 SampleColor = DeferredImage.Sample(LinearSampler, HitUVz.xy);
+                float4 SampleColor = DeferredImage.Sample(LinearSampler, SampleUV);
                 SampleColor.a = 1;
                 SampleColor.rgb *= rcp(1 + Luminance(SampleColor.rgb));
                 Result += SampleColor;
@@ -598,13 +615,10 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
 		{
             //ClosestHitDistanceSqr = ComputeRayHitSqrDistance(PositionTranslatedWorld, HitUVz, View);
 
-            // TODO: taa and reprojection
-            
-			//float2 SampleUV;
-			//float Vignette;
-			//ReprojectHit(PrevScreenPositionScaleBias, GBufferVelocityTexture, GBufferVelocityTextureSampler, HitUVz, SampleUV, Vignette);
+			float2 SampleUV = 0;
+			ReprojectHit(HitUVz, SampleUV, View.ClipToPreviousClip);
 
-            float4 SampleColor = DeferredImage.Sample(LinearSampler, HitUVz.xy);
+            float4 SampleColor = DeferredImage.Sample(LinearSampler, SampleUV);
             Result = SampleColor;
             Result.a = 1;
         }

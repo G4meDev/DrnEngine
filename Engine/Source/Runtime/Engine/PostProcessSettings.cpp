@@ -110,7 +110,21 @@ namespace Drn
 
 	void TAASettings::Serialize( Archive& Ar )
 	{
-		
+		if (Ar.IsLoading())
+		{
+			Ar >> m_JitterOffsetScale;
+			Ar >> m_CurrentFrameWeight;
+			Ar >> m_CcurrentFrameVelocityWeight;
+			Ar >> m_CcurrentFrameVelocityMultiplier;
+		}
+
+		else
+		{
+			Ar << m_JitterOffsetScale;
+			Ar << m_CurrentFrameWeight;
+			Ar << m_CcurrentFrameVelocityWeight;
+			Ar << m_CcurrentFrameVelocityMultiplier;
+		}
 	}
 
 #if WITH_EDITOR
@@ -136,7 +150,19 @@ namespace Drn
 
 	void BloomSettings::Serialize( Archive& Ar )
 	{
-		
+		if (Ar.IsLoading())
+		{
+			Ar >> m_Radius;
+			Ar >> m_Brightness;
+			Ar >> m_Sigma;
+		}
+
+		else
+		{
+			Ar << m_Radius;
+			Ar << m_Brightness;
+			Ar << m_Sigma;
+		}
 	}
 
 #if WITH_EDITOR

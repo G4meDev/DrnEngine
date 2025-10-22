@@ -11,9 +11,9 @@ namespace Drn
 
 		SSAOSettings()
 			: m_Intensity(1.0f)
-			, m_Power(4.0f)
-			, m_Bias(0.0003f)
-			, m_Radius(0.1f)
+			, m_Power(2.0f)
+			, m_Bias(0.003f)
+			, m_Radius(0.02f)
 			, m_MipBlend(0.6f)
 			, m_FadeDistance(5.0f)
 			, m_FadeRadius(30.0f)
@@ -41,7 +41,7 @@ namespace Drn
 
 		SSRSettings()
 			: m_Intensity(1.0f)
-			, m_RoughnessFade(0.8f)
+			, m_RoughnessFade(-4.0f)
 		{};
 
 		virtual void Serialize(Archive& Ar) override;
@@ -59,7 +59,7 @@ namespace Drn
 	public:
 
 		TAASettings()
-			: m_JitterOffsetScale(1.0f)
+			: m_JitterOffsetScale(0.8f)
 			, m_CurrentFrameWeight(0.04f)
 			, m_CcurrentFrameVelocityWeight(0.2f)
 			, m_CcurrentFrameVelocityMultiplier(7.0f)
