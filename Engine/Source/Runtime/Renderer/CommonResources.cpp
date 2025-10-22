@@ -73,6 +73,10 @@ namespace Drn
 		m_PreintegratedGF = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\T_IntegeratedGF.drn" );
 		m_PreintegratedGF.Load();
 		m_PreintegratedGF->UploadResources(CommandList);
+
+#if WITH_EDITOR
+		m_BufferVisualizerPSO = new BufferVisualizerPSO(CommandList);
+#endif
 	}
 
 	CommonResources::~CommonResources()
@@ -100,6 +104,10 @@ namespace Drn
 		delete m_DebugLineThicknessPSO;
 		delete m_DebugLinePSO;
 		delete m_HZBPSO;
+
+#if WITH_EDITOR
+		delete m_BufferVisualizerPSO;
+#endif
 	}
 
 	void CommonResources::Init( ID3D12GraphicsCommandList2* CommandList )
@@ -1331,6 +1339,119 @@ namespace Drn
 		m_PSO->Release();
 		m_MipPSO->Release();
 	}
+
+// --------------------------------------------------------------------------------------
+
+	BufferVisualizerPSO::BufferVisualizerPSO( ID3D12GraphicsCommandList2* CommandList )
+	{
+		m_BaseColorPSO = nullptr;
+		m_MetallicPSO = nullptr;
+		m_RoughnessPSO = nullptr;
+		m_MaterialAoPSO = nullptr;
+		m_ShadingModelPSO = nullptr;
+		m_WorldNormalPSO = nullptr;
+		m_SubsurfaceColorPSO = nullptr;
+		m_DepthPSO = nullptr;
+		m_LinearDepthPSO = nullptr;
+		m_PreTonemapPSO = nullptr;
+		m_ScreenSpaceAOPSO = nullptr;
+		m_Bloom = nullptr;
+		m_ScreenSpaceReflection = nullptr;
+
+		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\BufferVisualizer.hlsl" ) );
+
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+
+		std::vector<const wchar_t*> Macros = { L"BASECOLOR=1" };
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+		PipelineDesc.InputLayout						= VertexLayout_PosUV;
+		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
+		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+		PipelineDesc.NumRenderTargets					= 1;
+		PipelineDesc.RTVFormats[0]						= DISPLAY_OUTPUT_FORMAT;
+		PipelineDesc.SampleDesc.Count					= 1;
+
+		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_BaseColorPSO ) );
+
+		auto CreateVisualizerPSO = [&](std::vector<const wchar_t*> InMacros, ID3D12PipelineState*& PSO)
+		{
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", InMacros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", InMacros, &PixelShaderBlob);
+
+			PipelineDesc.VS	= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+			PipelineDesc.PS	= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+
+			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &PSO ) );
+		};
+
+		CreateVisualizerPSO({ L"METALLIC=1" }, m_MetallicPSO);
+		CreateVisualizerPSO({ L"ROUGHNESS=1" }, m_RoughnessPSO);
+		CreateVisualizerPSO({ L"MATERIAL_AO=1" }, m_MaterialAoPSO);
+		CreateVisualizerPSO({ L"SHADING_MODEL=1" }, m_ShadingModelPSO);
+		CreateVisualizerPSO({ L"WORLD_NORMAL=1" }, m_WorldNormalPSO);
+		CreateVisualizerPSO({ L"SUBSURFACE_COLOR=1" }, m_SubsurfaceColorPSO);
+		CreateVisualizerPSO({ L"DEPTH=1" }, m_DepthPSO);
+		CreateVisualizerPSO({ L"LINEAR_DEPTH=1" }, m_LinearDepthPSO);
+		CreateVisualizerPSO({ L"PRE_TONEMAP=1" }, m_PreTonemapPSO);
+		CreateVisualizerPSO({ L"SCREEN_SPACE_AO=1" }, m_ScreenSpaceAOPSO);
+		CreateVisualizerPSO({ L"BLOOM=1" }, m_Bloom);
+		CreateVisualizerPSO({ L"SCREEN_SPACE_REFLECTION=1" }, m_ScreenSpaceReflection);
+
+#if D3D12_Debug_INFO
+		m_BaseColorPSO->SetName(L"PSO_BufferVisualizer_BaseColor");
+#endif
+	}
+
+	BufferVisualizerPSO::~BufferVisualizerPSO()
+	{
+		m_BaseColorPSO->Release();
+		m_MetallicPSO->Release();
+		m_RoughnessPSO->Release();
+		m_MaterialAoPSO->Release();
+		m_ShadingModelPSO->Release();
+		m_WorldNormalPSO->Release();
+		m_SubsurfaceColorPSO->Release();
+		m_DepthPSO->Release();
+		m_LinearDepthPSO->Release();
+		m_PreTonemapPSO->Release();
+		m_ScreenSpaceAOPSO->Release();
+		m_Bloom->Release();
+		m_ScreenSpaceReflection->Release();
+	}
+
+	ID3D12PipelineState* BufferVisualizerPSO::GetPSOForBufferVisualizer( EBufferVisualization BufferVialization )
+	{
+		switch ( BufferVialization )
+		{
+		case EBufferVisualization::BaseColor:				return m_BaseColorPSO;
+		case EBufferVisualization::Metallic:				return m_MetallicPSO;
+		case EBufferVisualization::Roughness:				return m_RoughnessPSO;
+		case EBufferVisualization::MaterialAO:				return m_MaterialAoPSO;
+		case EBufferVisualization::ShadingModel:			return m_ShadingModelPSO;
+		case EBufferVisualization::WorldNormal:				return m_WorldNormalPSO;
+		case EBufferVisualization::SubsurfaceColor:			return m_SubsurfaceColorPSO;
+		case EBufferVisualization::Depth:					return m_DepthPSO;
+		case EBufferVisualization::LinearDepth:				return m_LinearDepthPSO;
+		case EBufferVisualization::PreTonemapColor:			return m_PreTonemapPSO;
+		case EBufferVisualization::ScreenSpaceAO:			return m_ScreenSpaceAOPSO;
+		case EBufferVisualization::Bloom:					return m_Bloom;
+		case EBufferVisualization::ScreenSpaceReflection:	return m_ScreenSpaceReflection;
+		case EBufferVisualization::FinalImage:
+		default: return nullptr;
+		}
+	}
+
 #endif
 
 // --------------------------------------------------------------------------------------

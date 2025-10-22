@@ -38,6 +38,7 @@ namespace Drn
 
 		void DrawMenuBar(float DeltaTime);
 		void DrawViewportMenu(float DeltaTime);
+		void DrawBufferVisualizationMenu();
 
 		void HandleViewportPayload(const ImGuiPayload* Payload);
 		void HandleViewportInputs();

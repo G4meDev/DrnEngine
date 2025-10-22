@@ -263,6 +263,30 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 		ID3D12PipelineState* m_MipPSO;
 	};
+
+	class BufferVisualizerPSO
+	{
+	public:
+
+		BufferVisualizerPSO( ID3D12GraphicsCommandList2* CommandList);
+		~BufferVisualizerPSO();
+		
+		ID3D12PipelineState* GetPSOForBufferVisualizer(EBufferVisualization BufferVialization);
+		
+		ID3D12PipelineState* m_BaseColorPSO;
+		ID3D12PipelineState* m_MetallicPSO;
+		ID3D12PipelineState* m_RoughnessPSO;
+		ID3D12PipelineState* m_MaterialAoPSO;
+		ID3D12PipelineState* m_ShadingModelPSO;
+		ID3D12PipelineState* m_WorldNormalPSO;
+		ID3D12PipelineState* m_SubsurfaceColorPSO;
+		ID3D12PipelineState* m_DepthPSO;
+		ID3D12PipelineState* m_LinearDepthPSO;
+		ID3D12PipelineState* m_PreTonemapPSO;
+		ID3D12PipelineState* m_ScreenSpaceAOPSO;
+		ID3D12PipelineState* m_Bloom;
+		ID3D12PipelineState* m_ScreenSpaceReflection;
+	};
 #endif
 
 	class HZBPSO
@@ -320,6 +344,10 @@ namespace Drn
 
 		AssetHandle<Texture2D> m_SSAO_Random;
 		AssetHandle<Texture2D> m_PreintegratedGF;
+
+#if WITH_EDITOR
+		BufferVisualizerPSO* m_BufferVisualizerPSO;
+#endif
 
 	private:
 

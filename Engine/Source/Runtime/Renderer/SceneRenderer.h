@@ -206,6 +206,9 @@ namespace Drn
 #if WITH_EDITOR
 		void RenderEditorPrimitives();
 		void RenderEditorSelection();
+
+		void GetResourcesForBufferVisualization(EBufferVisualization BufferVisualization, Resource*& OutResource, uint32& OutTextureIndex);
+		void RenderBufferVisulization();
 #endif
 
 		D3D12CommandList* m_CommandList;

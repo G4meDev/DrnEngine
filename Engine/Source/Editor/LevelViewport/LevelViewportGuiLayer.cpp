@@ -194,6 +194,8 @@ namespace Drn
 					Editor::Get()->OpenTaskGraphVisualizer();
 				}
 
+				DrawBufferVisualizationMenu();
+
 				ImGui::EndMenu();
 			}
 
@@ -241,6 +243,20 @@ namespace Drn
 				{
 					WorldManager::Get()->StartPlayInEditor();
 				}
+			}
+		}
+	}
+
+	void LevelViewportGuiLayer::DrawBufferVisualizationMenu()
+	{
+		if (World* OwningWorld = m_OwningLevelViewport->m_OwningWorld)
+		{
+			const char* BufferVisualizations[] = { "Final Image", "Base Color", "Metallic", "Roughness", "WorldNormal", "MaterialAO", "ScreenSpaceAO", "CombinedAO", "Depth",
+				"SubsurfaceColor", "ShadingModel", "Velocity", "PreTonemapColor", "LinearDepth", "Bloom", "ScreenSpaceReflection" };
+			int CurrentBufferVisualization = static_cast<int>(OwningWorld->GetBufferVisualization());
+			if ( ImGui::Combo( "Buffer Visualization", &CurrentBufferVisualization, BufferVisualizations, IM_ARRAYSIZE( BufferVisualizations )))
+			{
+				OwningWorld->SetBufferVisualization(static_cast<EBufferVisualization>(CurrentBufferVisualization));
 			}
 		}
 	}

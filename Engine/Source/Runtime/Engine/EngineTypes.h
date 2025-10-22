@@ -135,6 +135,26 @@ namespace Drn
 		bool IsValidForNotify() const;
 	};
 	
+	enum class EBufferVisualization
+	{
+		FinalImage,
+		BaseColor,
+		Metallic,
+		Roughness,
+		WorldNormal,
+		MaterialAO,
+		ScreenSpaceAO,
+		CombinedAO,
+		Depth,
+		SubsurfaceColor,
+		ShadingModel,
+		Velocity,
+		PreTonemapColor,
+		LinearDepth,
+		Bloom,
+		ScreenSpaceReflection
+	};
+
 	class EngineTypes
 	{
 	public:

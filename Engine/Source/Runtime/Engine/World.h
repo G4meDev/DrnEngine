@@ -121,6 +121,9 @@ namespace Drn
 
 		void SetLabel( const std::string& Label ) { m_WorldLabel = Label; }
 		const std::string& GetLabel() const { return m_WorldLabel; }
+
+		inline EBufferVisualization GetBufferVisualization() const { return m_BufferVisualization; }
+		inline void SetBufferVisualization(EBufferVisualization BufferVisualization) { m_BufferVisualization = BufferVisualization; }
 #endif
 
 	protected:
@@ -171,6 +174,7 @@ namespace Drn
 		bool m_Ejected = false;
 		bool m_EverEjected = false;
 		class CameraActor* m_ViewportCamera = nullptr;
+		EBufferVisualization m_BufferVisualization = EBufferVisualization::FinalImage;
 #endif
 
 		friend Scene;

@@ -518,7 +518,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float4 HZBUvFactorAndInvFactor = float4(1.0f, 1.0f, 0, 0);
     HZBUvFactorAndInvFactor.zw = float2(1.0f, 1.0f) / HZBUvFactorAndInvFactor.xy;
         
-#define SSR_QUALITY 3
+#define SSR_QUALITY 1
     
 #if SSR_QUALITY == 1
 	uint NumSteps = 8;

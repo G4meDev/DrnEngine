@@ -790,6 +790,69 @@ namespace Drn
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
+	void SceneRenderer::GetResourcesForBufferVisualization(EBufferVisualization BufferVisualization, Resource*& OutResource, uint32& OutTextureIndex )
+	{
+		switch ( BufferVisualization )
+		{
+		case EBufferVisualization::BaseColor: OutResource = m_GBuffer->m_BaseColorTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_BaseColorTarget->GetGpuHandle()); break;
+
+		case EBufferVisualization::Metallic:
+		case EBufferVisualization::Roughness:
+		case EBufferVisualization::MaterialAO:
+		case EBufferVisualization::ShadingModel: OutResource = m_GBuffer->m_MasksTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksTarget->GetGpuHandle()); break;
+
+		case EBufferVisualization::PreTonemapColor: OutResource = m_GBuffer->m_ColorDeferredTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_ColorDeferredTarget->GetGpuHandle()); break;
+		case EBufferVisualization::WorldNormal: OutResource = m_GBuffer->m_WorldNormalTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()); break;
+		case EBufferVisualization::SubsurfaceColor: OutResource = m_GBuffer->m_MasksBTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksBTarget->GetGpuHandle()); break;
+		case EBufferVisualization::Depth:
+		case EBufferVisualization::LinearDepth: OutResource = m_GBuffer->m_DepthTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()); break;
+
+		case EBufferVisualization::ScreenSpaceAO: OutResource = m_AOBuffer->m_AOTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOTarget->GetGpuHandle()); break;
+		case EBufferVisualization::Bloom: OutResource = m_BloomBuffer->m_BloomTargets[1]; OutTextureIndex = m_BloomBuffer->m_SrvHandles[1].GetIndex(); break;
+		case EBufferVisualization::ScreenSpaceReflection: OutResource = m_ScreenSpaceReflectionBuffer->m_Target; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_ScreenSpaceReflectionBuffer->m_Target->GetGpuHandle()); break;
+
+		case EBufferVisualization::FinalImage:
+		default: OutResource = nullptr; OutTextureIndex = 0;
+		}
+	}
+
+	void SceneRenderer::RenderBufferVisulization()
+	{
+		SCOPE_STAT();
+		
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Buffer Visualization" );
+
+		World* OwningWorld = m_Scene ? m_Scene->GetWorld() : nullptr;
+		if (OwningWorld && OwningWorld->GetBufferVisualization() != EBufferVisualization::FinalImage)
+		{
+			EBufferVisualization BufferVisulization = m_Scene->GetWorld()->GetBufferVisualization();
+			Resource* VisualizationResource = nullptr;
+			uint32 InputTextureIndex;
+
+			GetResourcesForBufferVisualization(BufferVisulization, VisualizationResource, InputTextureIndex);
+			ID3D12PipelineState* PSO = CommonResources::Get()->m_BufferVisualizerPSO->GetPSOForBufferVisualizer(BufferVisulization);
+
+			if (VisualizationResource && PSO)
+			{
+				ResourceStateTracker::Get()->TransiationResource( VisualizationResource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+
+				m_TonemapBuffer->Bind( m_CommandList->GetD3D12CommandList() );
+
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+				m_CommandList->GetD3D12CommandList()->SetPipelineState(PSO);
+
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, InputTextureIndex, 1);
+				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+
+				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+			}
+		}
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
+	}
+
 #endif
 
 	void SceneRenderer::Render()
@@ -834,6 +897,7 @@ namespace Drn
 #if WITH_EDITOR
 		RenderEditorPrimitives();
 		RenderEditorSelection();
+		RenderBufferVisulization();
 
 		{
 			ResourceStateTracker::Get()->TransiationResource( m_TonemapBuffer->m_TonemapTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
