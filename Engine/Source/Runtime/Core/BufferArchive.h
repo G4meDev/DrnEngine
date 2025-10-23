@@ -93,6 +93,8 @@ namespace Drn
 		inline uint64 GetPointerIndex() const { return m_HeapPointer - m_HeapStart; };
 		inline uint8* GetBufferPointer() const { return m_HeapStart; };
 
+		inline void ResetPointer() { m_HeapPointer = m_HeapStart; }
+
 	protected:
 
 		uint64 m_Size;

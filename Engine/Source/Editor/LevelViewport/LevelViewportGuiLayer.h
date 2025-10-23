@@ -40,16 +40,19 @@ namespace Drn
 		void DrawViewportMenu(float DeltaTime);
 		void DrawBufferVisualizationMenu();
 
-		void HandleViewportPayload(const ImGuiPayload* Payload);
+		void HandleViewportSpawnAsset(const std::string& AssetPath, const Vector& WorldPosition);
 		void HandleViewportInputs();
 
-		void HandleEditorSpwan(const ImGuiPayload* Payload);
+		void HandleViewportSpawnEditorActor(class EditorLevelSpawnable* EditorActor, const Vector& WorldPosition);
 
 		void OnHitPlay();
 		void DrawContextPopup();
 
 		void DeleteSelectedActor();
 		void AlignSelectedComponentToSurfaceBelow();
+
+		void OnScreenReprojectDropAsset(bool bHit, const Vector& WorldLocation, void* Payload);
+		void OnScreenReprojectDropEditorActor(bool bHit, const Vector& WorldLocation, void* Payload);
 
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 		std::unique_ptr<WorldOutlinerPanel> m_WorldOutlinerPanel;

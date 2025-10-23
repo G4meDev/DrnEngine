@@ -1152,11 +1152,6 @@ namespace Drn
 
 	}
 
-	void SceneRenderer::QueueScreenReprojection( const IntPoint& ScreenPosition )
-	{
-		m_ScreenReprojectionQueue.emplace_back(ScreenPosition);
-	}
-
 	void SceneRenderer::ProccessScreenReprojectionQueue()
 	{
 		SCOPE_STAT();
@@ -1186,17 +1181,12 @@ namespace Drn
 					memcpy(&Depth, MemoryStart, sizeof(float));
 
 					World* W = GetScene() ? GetScene()->GetWorld() : nullptr;
-					if (W)
+					if (W && Event.OnScreenReprojection.IsBound())
 					{
-						std::cout << Depth << "\n";
-
+						const bool bHit = Depth > 0.0f;
 						Vector WorldPosition = Event.SceneView.PixelToWorld(Event.ScreenPos.X, Event.ScreenPos.Y, Depth);
-						W->DrawDebugSphere(WorldPosition, Quat::Identity, Color::White, 0.5f, 32, 0, 5);
-
-						//if (OnPickedComponent.IsBound())
-						//{
-						//	OnPickedComponent.Braodcast( W->GetComponentWithGuid(Result) );
-						//}
+						
+						Event.OnScreenReprojection.Execute(bHit, WorldPosition, Event.Payload);
 					}
 
 					it = m_ScreenReprojectionQueue.erase(it);

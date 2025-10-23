@@ -49,12 +49,14 @@ namespace Drn
 
 	struct ScreenReprojectionEvent
 	{
-		ScreenReprojectionEvent( const IntPoint& InScreenPos)
+		ScreenReprojectionEvent( const IntPoint& InScreenPos, void* InPayload)
 			: ScreenPos(InScreenPos)
+			, Payload(InPayload)
+			, Initalized(false)
+			, ReadbackBuffer(nullptr)
+			, FenceValue(0)
 		{
 		}
-
-		ScreenReprojectionEvent() {}
 
 		~ScreenReprojectionEvent()
 		{
@@ -62,15 +64,19 @@ namespace Drn
 			{
 				ReadbackBuffer->ReleaseBufferedResource();
 			}
+
+			BufferArchive* Ar = static_cast<BufferArchive*>(Payload);
+			if (Ar)
+				delete Ar;
 		}
 
 		IntPoint ScreenPos;
-		bool Initalized = false;
+		bool Initalized;
 		SceneRendererView SceneView;
-		Resource* ReadbackBuffer = nullptr;
-		void* Payload = nullptr;
+		Resource* ReadbackBuffer;
+		void* Payload; // lifetime managed by this object. we delete it in deconstruction so avoid copy and only move
+		uint64 FenceValue;
 		OnScreenReprojectionDelegate OnScreenReprojection;
-		uint64 FenceValue = 0;
 	};
 
 	class SceneRenderer
@@ -106,7 +112,8 @@ namespace Drn
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_MousePickFence;
 		uint64 m_MousePickFenceValue = 0;
 
-		void QueueScreenReprojection(const IntPoint& ScreenPosition);
+		template<class UserClass, class Func>
+		void QueueScreenReprojection(const IntPoint& ScreenPosition, UserClass* UClass, Func&& F, void* Payload);
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_ScreenReprojectionFence;
 		uint64 m_ScreenReprojectionFenceValue = 0;
 #endif
@@ -212,4 +219,12 @@ namespace Drn
 
 		D3D12CommandList* m_CommandList;
 	};
+
+	template<class UserClass, class Func>
+	void SceneRenderer::QueueScreenReprojection( const IntPoint& ScreenPosition, UserClass* UClass, Func&& F, void* Payload )
+	{
+		m_ScreenReprojectionQueue.emplace_back(ScreenPosition, Payload);
+		m_ScreenReprojectionQueue.back().OnScreenReprojection.Bind(UClass, F);
+	}
+
 }

@@ -96,16 +96,24 @@ namespace Drn
 
 			if ( ImGui::BeginDragDropTarget() )
 			{
-
 				if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
 				{
-					HandleViewportPayload(Payload);
-					m_ViewportPanel->GetSceneRenderer()->QueueScreenReprojection(Editor::GetScreenPositionRelative());
+					std::string StringPayload = std::string(static_cast<const char*>(Payload->Data));
+					BufferArchive* Ar = new BufferArchive(StringPayload.size() + 8, false);
+					*Ar << StringPayload;
+					Ar->ResetPointer();
+
+					m_ViewportPanel->GetSceneRenderer()->QueueScreenReprojection(Editor::GetScreenPositionRelative(), this, &LevelViewportGuiLayer::OnScreenReprojectDropAsset, Ar);
 				}
 
 				else if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_EditorSpawnable()))
 				{
-					HandleEditorSpwan(Payload);
+					BufferArchive* Ar = new BufferArchive(8, false);
+					uint64 Ptr = *reinterpret_cast<uint64*>(Payload->Data);
+					*Ar << Ptr;
+					Ar->ResetPointer();
+
+					m_ViewportPanel->GetSceneRenderer()->QueueScreenReprojection(Editor::GetScreenPositionRelative(), this, &LevelViewportGuiLayer::OnScreenReprojectDropEditorActor, Ar);
 				}
 
 				ImGui::EndDragDropTarget();
@@ -263,10 +271,8 @@ namespace Drn
 		}
 	}
 
-	void LevelViewportGuiLayer::HandleViewportPayload( const ImGuiPayload* Payload )
+	void LevelViewportGuiLayer::HandleViewportSpawnAsset( const std::string& AssetPath, const Vector& WorldPosition )
 	{
-		auto AssetPath = static_cast<const char*>(Payload->Data);
-
 		AssetHandle<Asset> asset(AssetPath);
 		EAssetType Type = asset.LoadGeneric();
 
@@ -277,6 +283,7 @@ namespace Drn
 			AssetHandle<StaticMesh> MeshAsset(AssetPath);
 			MeshAsset.Load();
 			NewActor->GetMeshComponent()->SetMesh(MeshAsset);
+			NewActor->SetActorLocation(WorldPosition);
 		}
 	}
 
@@ -299,11 +306,12 @@ namespace Drn
 
 	}
 
-	void LevelViewportGuiLayer::HandleEditorSpwan( const ImGuiPayload* Payload )
+	void LevelViewportGuiLayer::HandleViewportSpawnEditorActor( EditorLevelSpawnable* EditorActor, const Vector& WorldPosition )
 	{
-		if (EditorLevelSpawnable** Spawnable = reinterpret_cast<EditorLevelSpawnable**>(Payload->Data))
+		if (EditorActor)
 		{
-			Actor* SpawnActor = (*Spawnable)->SpawnFunc(m_OwningLevelViewport->m_OwningWorld);
+			Actor* SpawnActor = (EditorActor)->SpawnFunc(m_OwningLevelViewport->m_OwningWorld);
+			SpawnActor->SetActorLocation(WorldPosition);
 		}
 	}
 
@@ -376,6 +384,25 @@ namespace Drn
 				}
 			}
 		}
+	}
+
+	void LevelViewportGuiLayer::OnScreenReprojectDropAsset( bool bHit, const Vector& WorldLocation, void* Payload )
+	{
+		BufferArchive* Ar = static_cast<BufferArchive*>(Payload);
+		std::string StringPayload;
+		*Ar >> StringPayload;
+
+		HandleViewportSpawnAsset(StringPayload, WorldLocation);
+	}
+
+	void LevelViewportGuiLayer::OnScreenReprojectDropEditorActor( bool bHit, const Vector& WorldLocation, void* Payload )
+	{
+		BufferArchive* Ar = static_cast<BufferArchive*>(Payload);
+		uint64 Ptr;
+		*Ar >> Ptr;
+		EditorLevelSpawnable* Spawnable = reinterpret_cast<EditorLevelSpawnable*>( Ptr );
+
+		HandleViewportSpawnEditorActor(Spawnable, WorldLocation);
 	}
 
 }
