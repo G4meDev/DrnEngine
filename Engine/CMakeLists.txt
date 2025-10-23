@@ -98,6 +98,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderGeometeryHelper.h
 	Source/Runtime/Renderer/ResourceStateTracker.h
 	Source/Runtime/Renderer/ResourceView.h
+	Source/Runtime/Renderer/SceneView.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -288,6 +289,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderGeometeryHelper.cpp
 	Source/Runtime/Renderer/ResourceStateTracker.cpp
 	Source/Runtime/Renderer/ResourceView.cpp
+	Source/Runtime/Renderer/SceneView.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

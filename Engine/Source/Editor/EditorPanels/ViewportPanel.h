@@ -23,6 +23,7 @@ namespace Drn
 		void Draw(float DeltaTime);
 
 		void SetRenderingEnabled(bool Enabled);
+		inline SceneRenderer* GetSceneRenderer() const { return m_SceneRenderer; };
 
 		HandleInputDelegate HandleInputDel;
 

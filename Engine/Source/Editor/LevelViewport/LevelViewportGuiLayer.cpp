@@ -96,9 +96,11 @@ namespace Drn
 
 			if ( ImGui::BeginDragDropTarget() )
 			{
+
 				if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
 				{
 					HandleViewportPayload(Payload);
+					m_ViewportPanel->GetSceneRenderer()->QueueScreenReprojection(Editor::GetScreenPositionRelative());
 				}
 
 				else if (const ImGuiPayload* Payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_EditorSpawnable()))

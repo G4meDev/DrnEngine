@@ -41,6 +41,8 @@ namespace Drn
 		void ReimportMaterials();
 		void ReimportStaticMeshes();
 
+		static IntPoint GetScreenPositionRelative();
+
 	protected:
 
 		std::shared_ptr<FileImportMenu> m_FileImportMenu;

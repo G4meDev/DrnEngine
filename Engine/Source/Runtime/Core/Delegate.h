@@ -2,17 +2,23 @@
 
 #include "ForwardTypes.h"
 
-#define FUNC_DECLARE_DELEGATE( DelegateName, ReturnType, ... )							\
+#define FUNC_DECLARE_DELEGATE( DelegateName, ReturnType, ... )									\
 	typedef Delegate<ReturnType, __VA_ARGS__> DelegateName;
 
-#define DECLARE_DELEGATE_RetVal( ReturnValueType, DelegateName )						\
+#define DECLARE_DELEGATE_RetVal( ReturnValueType, DelegateName )								\
 	FUNC_DECLARE_DELEGATE( DelegateName, ReturnValueType )
 
-#define DECLARE_DELEGATE( DelegateName )												\
+#define DECLARE_DELEGATE( DelegateName )														\
 	FUNC_DECLARE_DELEGATE( DelegateName, void )
 
-#define DECLARE_DELEGATE_OneParam( DelegateName, Param1Type )							\
+#define DECLARE_DELEGATE_OneParam( DelegateName, Param1Type )									\
 	FUNC_DECLARE_DELEGATE( DelegateName, void, Param1Type )
+
+#define DECLARE_DELEGATE_TwoParams( DelegateName, Param1Type, Param2Type )						\
+	FUNC_DECLARE_DELEGATE( DelegateName, void, Param1Type, Param2Type )
+
+#define DECLARE_DELEGATE_ThreeParams( DelegateName, Param1Type, Param2Type, Param3Type )		\
+	FUNC_DECLARE_DELEGATE( DelegateName, void, Param1Type, Param2Type, Param3Type )
 
 // ---------------------------------------------------------------------------------------------
 
@@ -83,6 +89,15 @@ namespace Drn
 				Element = InvocationElement( UClass, std::bind( F, UClass, std::placeholders::_1 ) );
 			}
 
+			if constexpr ( sizeof...( DelegateSignature ) == 2)
+			{
+				Element = InvocationElement( UClass, std::bind( F, UClass, std::placeholders::_1, std::placeholders::_2 ) );
+			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 3)
+			{
+				Element = InvocationElement( UClass, std::bind( F, UClass, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 ) );
+			}
 		}
 
 		template<class Func>
@@ -98,6 +113,15 @@ namespace Drn
 				Element = InvocationElement( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1 ) );
 			}
 
+			if constexpr ( sizeof...( DelegateSignature ) == 2)
+			{
+				Element = InvocationElement( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1, std::placeholders::_2 ) );
+			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 3)
+			{
+				Element = InvocationElement( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 ) );
+			}
 		}
 
 		inline ReturnType Execute( DelegateSignature... Pack ) const

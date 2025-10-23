@@ -56,7 +56,7 @@ namespace Drn
 		}
 
 #if WITH_EDITOR
-		if (m_MousePickQueue.size() > 0)
+		if (m_MousePickQueue.size() > 0 || m_ScreenReprojectionQueue.size() > 0)
 		{
 			LOG(LogSceneRenderer, Warning, "mouse pick event still has %i events", (int)m_MousePickQueue.size());
 			__debugbreak();
@@ -108,6 +108,7 @@ namespace Drn
 		m_HitProxyRenderBuffer = std::make_shared<class HitProxyRenderBuffer>();
 		m_HitProxyRenderBuffer->Init();
 		Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_MousePickFence.GetAddressOf()));
+		Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_ScreenReprojectionFence.GetAddressOf()));
 
 		m_EditorPrimitiveBuffer = std::make_shared<class EditorPrimitiveRenderBuffer>();
 		m_EditorPrimitiveBuffer->Init();
@@ -866,6 +867,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		ProccessMousePickQueue();
+		ProccessScreenReprojectionQueue();
 #endif
 
 		if (!m_RenderingEnabled )
@@ -1142,14 +1144,116 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
 
 			// push a fence
-			Renderer::Get()->GetCommandQueue()->Signal( m_MousePickFence.Get(), ++m_FenceValue );
-			Event.FenceValue = m_FenceValue;
+			Renderer::Get()->GetCommandQueue()->Signal( m_MousePickFence.Get(), ++m_MousePickFenceValue );
+			Event.FenceValue = m_MousePickFenceValue;
 
 			Event.Initalized = true;
 		}
 
 	}
 
+	void SceneRenderer::QueueScreenReprojection( const IntPoint& ScreenPosition )
+	{
+		m_ScreenReprojectionQueue.emplace_back(ScreenPosition);
+	}
+
+	void SceneRenderer::ProccessScreenReprojectionQueue()
+	{
+		SCOPE_STAT();
+
+		for ( auto it = m_ScreenReprojectionQueue.begin(); it != m_ScreenReprojectionQueue.end(); )
+		{
+			ScreenReprojectionEvent& Event = *it;
+
+			if (!Event.Initalized)
+			{
+				KickstartScreenReprojection(Event);
+				it++;
+			}
+
+			else
+			{
+				if (Event.FenceValue <= m_ScreenReprojectionFence->GetCompletedValue())
+				{
+					UINT8* MemoryStart;
+
+					D3D12_RANGE ReadRange = {};
+					ReadRange.Begin = 0;
+					ReadRange.End = 16;
+					Event.ReadbackBuffer->GetD3D12Resource()->Map(0, &ReadRange, reinterpret_cast<void**>(&MemoryStart));
+
+					float Depth;
+					memcpy(&Depth, MemoryStart, sizeof(float));
+
+					World* W = GetScene() ? GetScene()->GetWorld() : nullptr;
+					if (W)
+					{
+						std::cout << Depth << "\n";
+
+						Vector WorldPosition = Event.SceneView.PixelToWorld(Event.ScreenPos.X, Event.ScreenPos.Y, Depth);
+						W->DrawDebugSphere(WorldPosition, Quat::Identity, Color::White, 0.5f, 32, 0, 5);
+
+						//if (OnPickedComponent.IsBound())
+						//{
+						//	OnPickedComponent.Braodcast( W->GetComponentWithGuid(Result) );
+						//}
+					}
+
+					it = m_ScreenReprojectionQueue.erase(it);
+				}
+
+				else
+				{
+					it++;
+				}
+			}
+		}
+	}
+
+	void SceneRenderer::KickstartScreenReprojection( ScreenReprojectionEvent& Event )
+	{
+		if ( m_GBuffer && m_GBuffer->m_DepthTarget)
+		{
+			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+			Event.ReadbackBuffer = Resource::Create(D3D12_HEAP_TYPE_READBACK,
+				CD3DX12_RESOURCE_DESC::Buffer( 16 ), D3D12_RESOURCE_STATE_COPY_DEST, false);
+
+#if D3D12_Debug_INFO
+			Event.ReadbackBuffer->SetName("ReprojectionReadbackBuffer");
 #endif
+
+			ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+
+			const IntPoint ClampedPos = IntPoint( std::clamp<int32>( Event.ScreenPos.X, 0, GetViewportSize().X - 1 ),
+				std::clamp<int32>( Event.ScreenPos.Y, 0, GetViewportSize().Y - 1 ) );
+
+			CD3DX12_BOX CopyBox( ClampedPos.X, ClampedPos.Y, ClampedPos.X + 1, ClampedPos.Y + 1 );
+
+			D3D12_PLACED_SUBRESOURCE_FOOTPRINT Footprint = {};
+			Footprint.Footprint.Format                   = DEPTH_FORMAT;
+			Footprint.Footprint.Width                    = 1;
+			Footprint.Footprint.Height                   = 1;
+			Footprint.Footprint.Depth                    = 1;
+			Footprint.Footprint.RowPitch                 = 256;
+			Footprint.Offset                             = 0;
+
+			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc( m_GBuffer->m_DepthTarget->GetD3D12Resource(), 0 );
+			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( Event.ReadbackBuffer->GetD3D12Resource(), Footprint );
+
+			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+			m_CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
+
+			Renderer::Get()->GetCommandQueue()->Signal( m_ScreenReprojectionFence.Get(), ++m_ScreenReprojectionFenceValue );
+			Event.FenceValue = m_ScreenReprojectionFenceValue;
+
+			Event.Initalized = true;
+			Event.SceneView = GetSceneView();
+		}
+	}
+
+#endif
+
+
 
 }

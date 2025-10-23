@@ -1,9 +1,11 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Renderer/SceneView.h"
 #include "Runtime/Renderer/Resource.h"
 
 #include "Runtime/Engine/PostProcessSettings.h"
+
 
 LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
@@ -12,6 +14,9 @@ namespace Drn
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnPickedComponentDelegate, Component* );
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnSceneRendererResizedDelegate, const IntPoint& );
 	DECLARE_MULTICAST_DELEGATE( OnSceneRendererDestroyDelegate );
+
+	DECLARE_DELEGATE_ThreeParams( OnScreenReprojectionDelegate, bool, const Vector&, void* );
+
 
 	enum class EDebugViewFlags : uint32
 	{
@@ -42,44 +47,30 @@ namespace Drn
 		uint64 FenceValue = 0;
 	};
 
-	struct SceneRendererView
+	struct ScreenReprojectionEvent
 	{
-		SceneRendererView()
+		ScreenReprojectionEvent( const IntPoint& InScreenPos)
+			: ScreenPos(InScreenPos)
 		{
 		}
-		~SceneRendererView()
+
+		ScreenReprojectionEvent() {}
+
+		~ScreenReprojectionEvent()
 		{
+			if (ReadbackBuffer)
+			{
+				ReadbackBuffer->ReleaseBufferedResource();
+			}
 		}
 
-		Matrix WorldToView;
-		Matrix ViewToProjection;
-		Matrix WorldToProjection;
-		Matrix ProjectionToView;
-		Matrix ProjectionToWorld;
-		Matrix LocalToCameraView;
-
-		IntPoint Size;
-		float InvSizeX;
-		float InvSizeY;
-
-		Vector CameraPos;
-		float InvTanHalfFov;
-		
-		Vector CameraDir;
-		float AspectRatio;
-
-		Vector4 InvDeviceZToWorldZTransform;
-		Matrix ViewToWorld;
-		Matrix ScreenToTranslatedWorld;
-
-		uint32 FrameIndex;
-		uint32 FrameIndexMod8;
-		float JitterOffset[2];
-
-		float PrevJitterOffset[2];
-		float Pad_1[2];
-
-		Matrix ClipToPreviousClip;
+		IntPoint ScreenPos;
+		bool Initalized = false;
+		SceneRendererView SceneView;
+		Resource* ReadbackBuffer = nullptr;
+		void* Payload = nullptr;
+		OnScreenReprojectionDelegate OnScreenReprojection;
+		uint64 FenceValue = 0;
 	};
 
 	class SceneRenderer
@@ -113,7 +104,11 @@ namespace Drn
 
 		void QueueMousePickEvent( const IntPoint& ScreenPosition );
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_MousePickFence;
-		uint64 m_FenceValue = 0;
+		uint64 m_MousePickFenceValue = 0;
+
+		void QueueScreenReprojection(const IntPoint& ScreenPosition);
+		Microsoft::WRL::ComPtr<ID3D12Fence> m_ScreenReprojectionFence;
+		uint64 m_ScreenReprojectionFenceValue = 0;
 #endif
 
 		uint32 m_FrameIndex;
@@ -165,6 +160,10 @@ namespace Drn
 		void KickstartMousePickEvent( MousePickEvent& Event );
 		// event get queued from viewport/imgui renderer. right now imgui renderer is not paralleled, if remember to lock
 		std::vector<MousePickEvent> m_MousePickQueue;
+
+		void ProccessScreenReprojectionQueue();
+		void KickstartScreenReprojection( ScreenReprojectionEvent& Event );
+		std::vector<ScreenReprojectionEvent> m_ScreenReprojectionQueue;
 
 		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
 		std::shared_ptr<class EditorPrimitiveRenderBuffer> m_EditorPrimitiveBuffer;

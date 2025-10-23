@@ -200,6 +200,16 @@ namespace Drn
 		ReimportAsset<StaticMesh>();
 	}
 
+	IntPoint Editor::GetScreenPositionRelative()
+	{
+		const ImVec2 RectMin = ImGui::GetItemRectMin();
+		const ImVec2 RectMax = ImGui::GetItemRectMax();
+		const ImVec2 MousePos = ImGui::GetMousePos();
+		const IntPoint ScreenPos = IntPoint( MousePos.x - RectMin.x, MousePos.y - RectMin.y );
+
+		return ScreenPos;
+	}
+
 }
 
 #endif
