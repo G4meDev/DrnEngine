@@ -6,6 +6,7 @@
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
 #include "Runtime/Renderer/Renderer.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 
 #include "Editor/Editor.h"
 #include "Editor/EditorConfig.h"
@@ -23,7 +24,6 @@ namespace Drn
 		GameRootFolder = nullptr;
 
 		SelectedFolder = nullptr;
-		SelectedFile = nullptr;
 
 		OnRefresh();
 	}
@@ -104,7 +104,7 @@ namespace Drn
 		if (ImGui::IsItemFocused() && SelectedFolder != Node)
 		{
 			SelectedFolder = Node;
-			SelectedFile = nullptr;
+			Selection.Clear();
 			
 			if (SelectedFolder)
 			{
@@ -133,30 +133,208 @@ namespace Drn
 
 	void ContentBrowserGuiLayer::DrawFileView()
 	{
-		for ( SystemFileNode* File: SelectedFolderFiles )
+		//ImGui::SliderFloat("Icon Size")
+
+		ImGuiIO& io = ImGui::GetIO();
+		ImGui::SetNextWindowContentSize(ImVec2(0.0f, LayoutOuterPadding + LayoutLineCount * (LayoutItemSize.y + LayoutItemSpacing)));
+		if (ImGui::BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove))
 		{
-			std::string FileName = Path::RemoveFileExtension(File->File.m_ShortPath);
-			if ( ImGui::Selectable(FileName.c_str(), SelectedFile == File) )
+			//ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+			const float avail_width = ImGui::GetContentRegionAvail().x;
+			UpdateLayoutSizes( avail_width );
+
+			ImVec2 start_pos = ImGui::GetCursorScreenPos();
+			start_pos        = ImVec2( start_pos.x + LayoutOuterPadding, start_pos.y + LayoutOuterPadding );
+			ImGui::SetCursorScreenPos( start_pos );
+
+			ImGuiMultiSelectFlags ms_flags = ImGuiMultiSelectFlags_ClearOnEscape | ImGuiMultiSelectFlags_ClearOnClickVoid;
+
+			if (AllowBoxSelect)
+				ms_flags |= ImGuiMultiSelectFlags_BoxSelect2d;
+
+			if (AllowDragUnselected)
+				ms_flags |= ImGuiMultiSelectFlags_SelectOnClickRelease;
+
+			ms_flags |= ImGuiMultiSelectFlags_NavWrapX;
+			ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, Selection.Size, SelectedFolderFiles.size());
+
+			// Use custom selection adapter: store ID in selection (recommended)
+			Selection.UserData = this;
+			Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserGuiLayer* self = (ContentBrowserGuiLayer*)self_->UserData; return ImHashData(self->SelectedFolderFiles[idx]->File.m_FullPath.c_str(), 
+				std::strlen(self->SelectedFolderFiles[idx]->File.m_FullPath.c_str())); };
+			Selection.ApplyRequests(ms_io);
+
+			const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (Selection.Size > 0)) || RequestDelete;
+			//const int item_curr_idx_to_focus = want_delete ? Selection.ApplyDeletionPreLoop( ms_io, Items.Size ) : -1;
+			const int item_curr_idx_to_focus = -1;
+			RequestDelete = false;
+
+			ImGui::PushStyleVar( ImGuiStyleVar_ItemSpacing,
+				ImVec2( LayoutSelectableSpacing, LayoutSelectableSpacing ) );
+
+			const int column_count = LayoutColumnCount;
+			ImGuiListClipper clipper;
+			clipper.Begin(LayoutLineCount, LayoutItemStep.y);
+			if (item_curr_idx_to_focus != -1)
+				clipper.IncludeItemByIndex(item_curr_idx_to_focus / column_count); // Ensure focused item line is not clipped.
+			if (ms_io->RangeSrcItem != -1)
+				clipper.IncludeItemByIndex((int)ms_io->RangeSrcItem / column_count); // Ensure RangeSrc item line is not clipped.
+
+			while (clipper.Step())
 			{
-				SelectedFile = File;
-				Editor::Get()->OnSelectedFile( SelectedFile->File.m_FullPath );
+				for (int line_idx = clipper.DisplayStart; line_idx < clipper.DisplayEnd; line_idx++)
+				{
+					const int item_min_idx_for_current_line = line_idx * column_count;
+					const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, (int32)SelectedFolderFiles.size());
+					for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
+					{
+						SystemFileNode* item_data = SelectedFolderFiles[item_idx];
+						//ImGui::PushID((int)item_data->ID);
+						ImGui::PushID(item_data->File.m_FullPath.c_str());
+
+						// Position item
+						ImVec2 pos = ImVec2(start_pos.x + (item_idx % column_count) * LayoutItemStep.x, start_pos.y + line_idx * LayoutItemStep.y);
+						ImGui::SetCursorScreenPos(pos);
+
+						ImGui::SetNextItemSelectionUserData(item_idx);
+						//bool item_is_selected = Selection.Contains(ImGuiID(item_data->File.m_FullPath.c_str()));
+						bool item_is_selected = Selection.Contains(ImHashData(item_data->File.m_FullPath.c_str(), std::strlen(item_data->File.m_FullPath.c_str())));
+						bool item_is_visible = ImGui::IsRectVisible(LayoutItemSize);
+						if (ImGui::Selectable("", item_is_selected, ImGuiSelectableFlags_AllowDoubleClick, LayoutItemSize) && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+							Editor::Get()->OnSelectedFile( item_data->File.m_FullPath );
+
+						// Update our selection state immediately (without waiting for EndMultiSelect() requests)
+						// because we use this to alter the color of our text/icon.
+						if (ImGui::IsItemToggledSelection())
+							item_is_selected = !item_is_selected;
+
+						// Focus (for after deletion)
+						if (item_curr_idx_to_focus == item_idx)
+							ImGui::SetKeyboardFocusHere(-1);
+
+						if (ImGui::BeginDragDropSource())
+						{
+							if ( ImGui::GetDragDropPayload() == NULL )
+							{
+								ImGui::SetDragDropPayload( EditorConfig::Payload_AssetPath(), item_data->File.m_FullPath.c_str(), item_data->File.m_FullPath.size() + 1);
+							}
+
+							const ImGuiPayload* Payload = ImGui::GetDragDropPayload();
+							auto PayloadAssets = static_cast<const char *>(Payload->Data);
+
+							ImGui::Text( "1 asset selected:\n \t%s", PayloadAssets);
+
+							ImGui::EndDragDropSource();
+						}
+
+						// Render icon (a real app would likely display an image/thumbnail here)
+						// Because we use ImGuiMultiSelectFlags_BoxSelect2d, clipping vertical may occasionally be larger, so we coarse-clip our rendering as well.
+						if (item_is_visible)
+						{
+							DrawItem(pos, item_data);
+						}
+
+						ImGui::PopID();
+					}
+				}
+			}
+			clipper.End();
+			ImGui::PopStyleVar(); // ImGuiStyleVar_ItemSpacing
+
+			// Context menu
+			if (ImGui::BeginPopupContextWindow())
+			{
+				ImGui::Text("Selection: %d items", Selection.Size);
+				ImGui::Separator();
+				if (ImGui::MenuItem("Delete", "Del", false, Selection.Size > 0))
+					RequestDelete = true;
+				ImGui::EndPopup();
 			}
 
-			if (ImGui::BeginDragDropSource())
+			ms_io = ImGui::EndMultiSelect();
+			Selection.ApplyRequests(ms_io);
+			//if (want_delete)
+			//    Selection.ApplyDeletionPostLoop(ms_io, Items, item_curr_idx_to_focus);
+
+			// Zooming with CTRL+Wheel
+			if (ImGui::IsWindowAppearing())
+				ZoomWheelAccum = 0.0f;
+			if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f && ImGui::IsKeyDown(ImGuiMod_Ctrl) && ImGui::IsAnyItemActive() == false)
 			{
-				if ( ImGui::GetDragDropPayload() == NULL )
+				ZoomWheelAccum += io.MouseWheel;
+				if (fabsf(ZoomWheelAccum) >= 1.0f)
 				{
-					ImGui::SetDragDropPayload( EditorConfig::Payload_AssetPath(), File->File.m_FullPath.c_str(), File->File.m_FullPath.size() + 1);
+					// Calculate hovered item index from mouse location
+					// FIXME: Locking aiming on 'hovered_item_idx' (with a cool-down timer) would ensure zoom keeps on it.
+					const float hovered_item_nx = (io.MousePos.x - start_pos.x + LayoutItemSpacing * 0.5f) / LayoutItemStep.x;
+					const float hovered_item_ny = (io.MousePos.y - start_pos.y + LayoutItemSpacing * 0.5f) / LayoutItemStep.y;
+					const int hovered_item_idx = ((int)hovered_item_ny * LayoutColumnCount) + (int)hovered_item_nx;
+					//ImGui::SetTooltip("%f,%f -> item %d", hovered_item_nx, hovered_item_ny, hovered_item_idx); // Move those 4 lines in block above for easy debugging
+
+					// Zoom
+					IconSize *= powf(1.1f, (float)(int)ZoomWheelAccum);
+					IconSize = std::clamp(IconSize, IconSizeMin, IconSizeMax);
+					ZoomWheelAccum -= (int)ZoomWheelAccum;
+					UpdateLayoutSizes(avail_width);
+
+					// Manipulate scroll to that we will land at the same Y location of currently hovered item.
+					// - Calculate next frame position of item under mouse
+					// - Set new scroll position to be used in next ImGui::BeginChild() call.
+					float hovered_item_rel_pos_y = ((float)(hovered_item_idx / LayoutColumnCount) + fmodf(hovered_item_ny, 1.0f)) * LayoutItemStep.y;
+					hovered_item_rel_pos_y += ImGui::GetStyle().WindowPadding.y;
+					float mouse_local_y = io.MousePos.y - ImGui::GetWindowPos().y;
+					ImGui::SetScrollY(hovered_item_rel_pos_y - mouse_local_y);
 				}
-
-				const ImGuiPayload* Payload = ImGui::GetDragDropPayload();
-				auto PayloadAssets = static_cast<const char *>(Payload->Data);
-
-				ImGui::Text( "1 asset selected:\n \t%s", PayloadAssets);
-
-				ImGui::EndDragDropSource();
 			}
 		}
+
+		ImGui::EndChild();
+
+		ImGui::Text("Selected: %d/%d items", Selection.Size, SelectedFolderFiles.size());
+	}
+
+	void ContentBrowserGuiLayer::DrawItem(const ImVec2& pos, SystemFileNode* item_data)
+	{
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+		ImVec2 box_min(pos.x - 1, pos.y - 1);
+		ImVec2 box_max(box_min.x + LayoutItemSize.x + 2, box_min.y + LayoutItemSize.y + 2); // Dubious
+		draw_list->AddRectFilled(box_min, box_max, icon_bg_color); // Background color
+		if (ShowTypeOverlay)
+		{
+			ImU32 type_col = icon_type_overlay_colors[1 % IM_ARRAYSIZE(icon_type_overlay_colors)];
+			draw_list->AddRectFilled(ImVec2(box_min.x, box_max.y), ImVec2(box_max.x, box_max.y - icon_type_overlay_size.y), type_col);
+		}
+
+		const bool   display_label              = ( LayoutItemSize.x >= ImGui::CalcTextSize( "999" ).x );
+		bool item_is_selected = Selection.Contains(ImHashData(item_data->File.m_FullPath.c_str(), std::strlen(item_data->File.m_FullPath.c_str())));
+		if (display_label)
+		{
+			ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
+			const char* AssetLabel = item_data->File.m_ShortPath.c_str();
+
+			ImVec4 ClipRect(box_min.x, box_max.y - ImGui::GetFontSize() - icon_type_overlay_size.y, box_max.x, box_max.y);
+			draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(box_min.x, box_max.y - ImGui::GetFontSize() - icon_type_overlay_size.y), label_col, AssetLabel, AssetLabel + std::strlen(AssetLabel) - 4, 0.0f, &ClipRect);
+		}
+	}
+
+	void ContentBrowserGuiLayer::UpdateLayoutSizes( float avail_width )
+	{
+		LayoutItemSpacing = (float)IconSpacing;
+		if (StretchSpacing == false)
+			avail_width += floorf(LayoutItemSpacing * 0.5f);
+		
+		LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize));
+		LayoutColumnCount = std::max((int)(avail_width / (LayoutItemSize.x + LayoutItemSpacing)), 1);
+		LayoutLineCount = (SelectedFolderFiles.size() + LayoutColumnCount - 1) / LayoutColumnCount;
+		
+		if (StretchSpacing && LayoutColumnCount > 1)
+			LayoutItemSpacing = floorf(avail_width - LayoutItemSize.x * LayoutColumnCount) / LayoutColumnCount;
+		
+		LayoutItemStep = ImVec2(LayoutItemSize.x + LayoutItemSpacing, LayoutItemSize.y + LayoutItemSpacing);
+		LayoutSelectableSpacing = std::max(floorf(LayoutItemSpacing) - IconHitSpacing, 0.0f);
+		LayoutOuterPadding = floorf(LayoutItemSpacing * 0.5f);
 	}
 
 	void ContentBrowserGuiLayer::DrawMenuButtons()
@@ -248,7 +426,8 @@ namespace Drn
 			SelectedFolderFiles.clear();
 		}
 		
-		SelectedFile = nullptr;
+		Selection.Clear();
+		//RequestSort = true;
 	}
 
 	void ContentBrowserGuiLayer::OnSelectedFileToImport( std::string FilePath )
@@ -305,6 +484,7 @@ namespace Drn
 		OnRefresh();
 	}
 
-}
+
+		}
 
 #endif

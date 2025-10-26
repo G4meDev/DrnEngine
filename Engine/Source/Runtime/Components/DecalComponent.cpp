@@ -94,6 +94,8 @@ namespace Drn
 #if WITH_EDITOR
 	void DecalComponent::DrawDetailPanel( float DeltaTime )
 	{
+		SceneComponent::DrawDetailPanel(DeltaTime);
+
 		ImGui::TextWrapped(m_Material.IsValid() ? m_Material.GetPath().c_str() : "NULL");
 
 		if (ImGui::BeginDragDropTarget())

@@ -20,6 +20,8 @@ namespace Drn
 
 		void DrawNextFolder(SystemFileNode* Node);
 		void DrawFileView();
+		void DrawItem(const ImVec2& pos, SystemFileNode* item_data);
+		void UpdateLayoutSizes(float avail_width);
 
 		void DrawMenuButtons();
 
@@ -37,13 +39,41 @@ namespace Drn
 
 		SystemFileNode* SelectedFolder;
 		std::vector<SystemFileNode*> SelectedFolderFiles;
-		SystemFileNode* SelectedFile;
 
 		std::shared_ptr<Window> ImportWindow;
 
 		friend class ContentBrowser;
 
 		void AddEmptyLevel();
+
+		ImGuiSelectionBasicStorage Selection;
+		ImGuiID         NextItemId = 0;       
+		bool            RequestDelete = false;
+		bool            RequestSort = false;  
+		float           ZoomWheelAccum = 0.0f;
+
+		bool            ShowTypeOverlay = true;
+		bool            AllowSorting = true;
+		bool            AllowDragUnselected = false;
+		bool            AllowBoxSelect = false;
+		float IconSize = 128.0f;
+		float IconSizeMin = 64.0f;
+		float IconSizeMax = 256.0f;
+		int IconSpacing = 10;
+		int IconHitSpacing = 4;
+		bool StretchSpacing = true;
+
+		ImVec2 LayoutItemSize;
+		ImVec2 LayoutItemStep;
+		float LayoutItemSpacing = 0.0f;
+		float LayoutSelectableSpacing = 0.0f;
+		float LayoutOuterPadding = 0.0f;
+		int LayoutColumnCount = 0;
+		int LayoutLineCount = 0;
+
+		const ImU32 icon_type_overlay_colors[3] = { 0, IM_COL32( 200, 70, 70, 255 ), IM_COL32( 70, 170, 70, 255 ) };
+		const ImU32 icon_bg_color               = ImGui::GetColorU32( IM_COL32( 35, 35, 35, 220 ) );
+		const ImVec2 icon_type_overlay_size     = ImVec2( 4.0f, 4.0f );
 	};
 }
 

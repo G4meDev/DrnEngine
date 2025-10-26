@@ -20,7 +20,7 @@ namespace Drn
 
 		static ContentBrowser* Get();
 
-		std::string GetSelectedFilePath();
+		//std::string GetSelectedFilePath();
 
 	protected:
 		std::unique_ptr<ContentBrowserGuiLayer> ContentBrowserLayer;
