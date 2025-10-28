@@ -14,6 +14,8 @@ namespace Drn
 
 		const static char* Payload_AssetPath();
 		const static char* Payload_EditorSpawnable();
+
+		static Color GetAssetTypeColor(EAssetType Type);
 	};
 }
 

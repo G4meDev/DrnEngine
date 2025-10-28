@@ -17,6 +17,21 @@ namespace Drn
 		return "EDITOR_SPAWNABLE";
 	}
 
+	Color EditorConfig::GetAssetTypeColor( EAssetType Type )
+	{
+		switch ( Type )
+		{
+		case EAssetType::StaticMesh: return Color::Green;
+		case EAssetType::Level:	return Color::Silver;
+		case EAssetType::Material: return Color::Blue;
+		case EAssetType::Texture2D:
+		case EAssetType::TextureVolume:
+		case EAssetType::TextureCube: return Color::Yellow;
+		case EAssetType::Undefined:
+		default: return Color::Black;
+		}
+	}
+
 }
 
 #endif

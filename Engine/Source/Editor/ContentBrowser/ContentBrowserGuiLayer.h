@@ -8,6 +8,16 @@ LOG_DECLARE_CATEGORY( LogContentBrowser );
 
 namespace Drn
 {
+	struct AssetData
+	{
+		AssetData(class SystemFileNode* FileNode);
+
+		std::string FullPath;
+		std::string Label;
+
+		EAssetType AssetType;
+	};
+
 	class ContentBrowserGuiLayer: public ImGuiLayer
 	{
 	public:
@@ -20,7 +30,7 @@ namespace Drn
 
 		void DrawNextFolder(SystemFileNode* Node);
 		void DrawFileView();
-		void DrawItem(const ImVec2& pos, SystemFileNode* item_data);
+		void DrawItem(const ImVec2& pos, const AssetData& item_data);
 		void UpdateLayoutSizes(float avail_width);
 
 		void DrawMenuButtons();
@@ -38,7 +48,8 @@ namespace Drn
 		std::unique_ptr<SystemFileNode> GameRootFolder;
 
 		SystemFileNode* SelectedFolder;
-		std::vector<SystemFileNode*> SelectedFolderFiles;
+		//std::vector<SystemFileNode*> SelectedFolderFiles;
+		std::vector<AssetData> Assets;
 
 		std::shared_ptr<Window> ImportWindow;
 
@@ -71,7 +82,6 @@ namespace Drn
 		int LayoutColumnCount = 0;
 		int LayoutLineCount = 0;
 
-		const ImU32 icon_type_overlay_colors[3] = { 0, IM_COL32( 200, 70, 70, 255 ), IM_COL32( 70, 170, 70, 255 ) };
 		const ImU32 icon_bg_color               = ImGui::GetColorU32( IM_COL32( 35, 35, 35, 220 ) );
 		const ImVec2 icon_type_overlay_size     = ImVec2( 4.0f, 4.0f );
 	};

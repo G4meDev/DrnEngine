@@ -29,7 +29,6 @@ namespace Drn
 		EditorMisc();
 		~EditorMisc() {};
 
-
 		void Register();
 		void RegisterLevelSpawnableClass(const char* Name, const char* Category, std::function<Actor*(World*)>&& SpawnFunc);
 

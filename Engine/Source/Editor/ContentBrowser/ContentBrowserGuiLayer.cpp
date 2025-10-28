@@ -105,14 +105,14 @@ namespace Drn
 		{
 			SelectedFolder = Node;
 			Selection.Clear();
+			Assets.clear();
 			
 			if (SelectedFolder)
 			{
-				SelectedFolderFiles = SelectedFolder->GetFiles();
-			}
-			else
-			{
-				SelectedFolderFiles.clear();
+				Assets.reserve(SelectedFolder->GetFiles().size());
+
+				for (SystemFileNode* File : SelectedFolder->GetFiles())
+					Assets.emplace_back(File);
 			}
 		}
 
@@ -157,12 +157,12 @@ namespace Drn
 				ms_flags |= ImGuiMultiSelectFlags_SelectOnClickRelease;
 
 			ms_flags |= ImGuiMultiSelectFlags_NavWrapX;
-			ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, Selection.Size, SelectedFolderFiles.size());
+			ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(ms_flags, Selection.Size, Assets.size());
 
 			// Use custom selection adapter: store ID in selection (recommended)
 			Selection.UserData = this;
-			Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserGuiLayer* self = (ContentBrowserGuiLayer*)self_->UserData; return ImHashData(self->SelectedFolderFiles[idx]->File.m_FullPath.c_str(), 
-				std::strlen(self->SelectedFolderFiles[idx]->File.m_FullPath.c_str())); };
+			Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserGuiLayer* self = (ContentBrowserGuiLayer*)self_->UserData; return ImHashData(self->Assets[idx].FullPath.c_str(), 
+				std::strlen(self->Assets[idx].FullPath.c_str())); };
 			Selection.ApplyRequests(ms_io);
 
 			const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (Selection.Size > 0)) || RequestDelete;
@@ -186,12 +186,12 @@ namespace Drn
 				for (int line_idx = clipper.DisplayStart; line_idx < clipper.DisplayEnd; line_idx++)
 				{
 					const int item_min_idx_for_current_line = line_idx * column_count;
-					const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, (int32)SelectedFolderFiles.size());
+					const int item_max_idx_for_current_line = std::min((line_idx + 1) * column_count, (int32)Assets.size());
 					for (int item_idx = item_min_idx_for_current_line; item_idx < item_max_idx_for_current_line; ++item_idx)
 					{
-						SystemFileNode* item_data = SelectedFolderFiles[item_idx];
+						AssetData& item_data = Assets[item_idx];
 						//ImGui::PushID((int)item_data->ID);
-						ImGui::PushID(item_data->File.m_FullPath.c_str());
+						ImGui::PushID(item_data.FullPath.c_str());
 
 						// Position item
 						ImVec2 pos = ImVec2(start_pos.x + (item_idx % column_count) * LayoutItemStep.x, start_pos.y + line_idx * LayoutItemStep.y);
@@ -199,10 +199,10 @@ namespace Drn
 
 						ImGui::SetNextItemSelectionUserData(item_idx);
 						//bool item_is_selected = Selection.Contains(ImGuiID(item_data->File.m_FullPath.c_str()));
-						bool item_is_selected = Selection.Contains(ImHashData(item_data->File.m_FullPath.c_str(), std::strlen(item_data->File.m_FullPath.c_str())));
+						bool item_is_selected = Selection.Contains(ImHashData(item_data.FullPath.c_str(), std::strlen(item_data.FullPath.c_str())));
 						bool item_is_visible = ImGui::IsRectVisible(LayoutItemSize);
 						if (ImGui::Selectable("", item_is_selected, ImGuiSelectableFlags_AllowDoubleClick, LayoutItemSize) && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-							Editor::Get()->OnSelectedFile( item_data->File.m_FullPath );
+							Editor::Get()->OnSelectedFile( item_data.FullPath );
 
 						// Update our selection state immediately (without waiting for EndMultiSelect() requests)
 						// because we use this to alter the color of our text/icon.
@@ -217,7 +217,7 @@ namespace Drn
 						{
 							if ( ImGui::GetDragDropPayload() == NULL )
 							{
-								ImGui::SetDragDropPayload( EditorConfig::Payload_AssetPath(), item_data->File.m_FullPath.c_str(), item_data->File.m_FullPath.size() + 1);
+								ImGui::SetDragDropPayload( EditorConfig::Payload_AssetPath(), item_data.FullPath.c_str(), item_data.FullPath.size() + 1);
 							}
 
 							const ImGuiPayload* Payload = ImGui::GetDragDropPayload();
@@ -291,10 +291,10 @@ namespace Drn
 
 		ImGui::EndChild();
 
-		ImGui::Text("Selected: %d/%d items", Selection.Size, SelectedFolderFiles.size());
+		ImGui::Text("Selected: %d/%d items", Selection.Size, Assets.size());
 	}
 
-	void ContentBrowserGuiLayer::DrawItem(const ImVec2& pos, SystemFileNode* item_data)
+	void ContentBrowserGuiLayer::DrawItem(const ImVec2& pos, const AssetData& item_data)
 	{
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -303,19 +303,17 @@ namespace Drn
 		draw_list->AddRectFilled(box_min, box_max, icon_bg_color); // Background color
 		if (ShowTypeOverlay)
 		{
-			ImU32 type_col = icon_type_overlay_colors[1 % IM_ARRAYSIZE(icon_type_overlay_colors)];
-			draw_list->AddRectFilled(ImVec2(box_min.x, box_max.y), ImVec2(box_max.x, box_max.y - icon_type_overlay_size.y), type_col);
+			draw_list->AddRectFilled(ImVec2(box_min.x, box_max.y), ImVec2(box_max.x, box_max.y - icon_type_overlay_size.y), EditorConfig::GetAssetTypeColor(item_data.AssetType).DWColor());
 		}
 
 		const bool   display_label              = ( LayoutItemSize.x >= ImGui::CalcTextSize( "999" ).x );
-		bool item_is_selected = Selection.Contains(ImHashData(item_data->File.m_FullPath.c_str(), std::strlen(item_data->File.m_FullPath.c_str())));
+		bool item_is_selected = Selection.Contains(ImHashData(item_data.FullPath.c_str(), std::strlen(item_data.FullPath.c_str())));
 		if (display_label)
 		{
 			ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-			const char* AssetLabel = item_data->File.m_ShortPath.c_str();
 
 			ImVec4 ClipRect(box_min.x, box_max.y - ImGui::GetFontSize() - icon_type_overlay_size.y, box_max.x, box_max.y);
-			draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(box_min.x, box_max.y - ImGui::GetFontSize() - icon_type_overlay_size.y), label_col, AssetLabel, AssetLabel + std::strlen(AssetLabel) - 4, 0.0f, &ClipRect);
+			draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(box_min.x, box_max.y - ImGui::GetFontSize() - icon_type_overlay_size.y), label_col, item_data.Label.c_str(), NULL, 0.0f, &ClipRect);
 		}
 	}
 
@@ -327,7 +325,7 @@ namespace Drn
 		
 		LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize));
 		LayoutColumnCount = std::max((int)(avail_width / (LayoutItemSize.x + LayoutItemSpacing)), 1);
-		LayoutLineCount = (SelectedFolderFiles.size() + LayoutColumnCount - 1) / LayoutColumnCount;
+		LayoutLineCount = (Assets.size() + LayoutColumnCount - 1) / LayoutColumnCount;
 		
 		if (StretchSpacing && LayoutColumnCount > 1)
 			LayoutItemSpacing = floorf(avail_width - LayoutItemSize.x * LayoutColumnCount) / LayoutColumnCount;
@@ -416,17 +414,16 @@ namespace Drn
 			GetDirectoryWithPath( GameRootFolder.get(), CachedSelectedDirectoryPath, &SelectedFolder);
 		}
 		
+		Selection.Clear();
+		Assets.clear();
 		if (SelectedFolder)
 		{
-			SelectedFolderFiles = SelectedFolder->GetFiles();
+			Assets.reserve(SelectedFolder->GetFiles().size());
+
+			for (SystemFileNode* File : SelectedFolder->GetFiles())
+				Assets.emplace_back(File);
 		}
 
-		else
-		{
-			SelectedFolderFiles.clear();
-		}
-		
-		Selection.Clear();
 		//RequestSort = true;
 	}
 
@@ -485,6 +482,21 @@ namespace Drn
 	}
 
 
+	AssetData::AssetData( SystemFileNode* FileNode )
+	{
+		FullPath = FileNode->File.m_FullPath;
+		Label = FileNode->File.m_ShortPath.substr(0, FileNode->File.m_ShortPath.size() - 4);
+
+		FileArchive Ar(Path::ConvertProjectPath(FullPath));
+		if (Ar.IsValid())
+		{
+			uint16 TypeByte;
+			Ar >> TypeByte;
+
+			AssetType = static_cast<EAssetType>(TypeByte);
 		}
+	}
+
+}
 
 #endif
