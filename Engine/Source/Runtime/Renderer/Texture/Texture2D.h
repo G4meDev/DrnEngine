@@ -27,6 +27,7 @@ namespace Drn
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Texture2D; }
 
 		inline uint32 GetTextureIndex() const { return m_DescriptorHandle.GetIndex(); }
+		inline const DescriptorHandleSRV& GetDescriptorHandle() const { return m_DescriptorHandle; }
 
 	protected:
 

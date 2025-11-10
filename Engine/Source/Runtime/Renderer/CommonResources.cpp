@@ -76,6 +76,10 @@ namespace Drn
 
 #if WITH_EDITOR
 		m_BufferVisualizerPSO = new BufferVisualizerPSO(CommandList);
+
+		m_DefaultAssetIcon = AssetHandle<Texture2D>( "Engine\\Content\\EditorResources\\AssetIcons\\T_DefaultAssetIcon.drn" );
+		m_DefaultAssetIcon.Load();
+		m_DefaultAssetIcon->UploadResources(CommandList);
 #endif
 	}
 

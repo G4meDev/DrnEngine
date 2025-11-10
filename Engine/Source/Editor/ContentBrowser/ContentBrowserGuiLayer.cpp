@@ -300,7 +300,10 @@ namespace Drn
 
 		ImVec2 box_min(pos.x - 1, pos.y - 1);
 		ImVec2 box_max(box_min.x + LayoutItemSize.x + 2, box_min.y + LayoutItemSize.y + 2); // Dubious
-		draw_list->AddRectFilled(box_min, box_max, icon_bg_color); // Background color
+		//draw_list->AddRectFilled(box_min, box_max, icon_bg_color); // Background color
+
+		draw_list->AddImage(CommonResources::Get()->m_DefaultAssetIcon->GetDescriptorHandle().GetGpuHandle().ptr, box_min, box_max);
+
 		if (ShowTypeOverlay)
 		{
 			draw_list->AddRectFilled(ImVec2(box_min.x, box_max.y), ImVec2(box_max.x, box_max.y - icon_type_overlay_size.y), EditorConfig::GetAssetTypeColor(item_data.AssetType).DWColor());
@@ -312,8 +315,8 @@ namespace Drn
 		{
 			ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
 
-			ImVec4 ClipRect(box_min.x, box_max.y - ImGui::GetFontSize() - icon_type_overlay_size.y, box_max.x, box_max.y);
-			draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(box_min.x, box_max.y - ImGui::GetFontSize() - icon_type_overlay_size.y), label_col, item_data.Label.c_str(), NULL, 0.0f, &ClipRect);
+			ImVec4 ClipRect(box_min.x, box_max.y - ImGui::GetFontSize() - 2 * icon_type_overlay_size.y, box_max.x, box_max.y);
+			draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(box_min.x, box_max.y - ImGui::GetFontSize() - 2 * icon_type_overlay_size.y), label_col, item_data.Label.c_str(), NULL, 0.0f, &ClipRect);
 		}
 	}
 
