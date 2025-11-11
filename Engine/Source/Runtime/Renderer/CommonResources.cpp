@@ -77,9 +77,20 @@ namespace Drn
 #if WITH_EDITOR
 		m_BufferVisualizerPSO = new BufferVisualizerPSO(CommandList);
 
-		m_DefaultAssetIcon = AssetHandle<Texture2D>( "Engine\\Content\\EditorResources\\AssetIcons\\T_DefaultAssetIcon.drn" );
-		m_DefaultAssetIcon.Load();
-		m_DefaultAssetIcon->UploadResources(CommandList);
+#define LOAD_TEXTURE( name , path )				\
+	name = AssetHandle<Texture2D>(path);	\
+	name.Load();							\
+	name->UploadResources( CommandList );	
+
+		LOAD_TEXTURE(m_AssetIcon_Default, "Engine\\Content\\EditorResources\\AssetIcons\\T_AssetIcon_Default.drn");
+		LOAD_TEXTURE(m_AssetIcon_Level, "Engine\\Content\\EditorResources\\AssetIcons\\T_AssetIcon_Level.drn");
+		LOAD_TEXTURE(m_AssetIcon_StaticMesh, "Engine\\Content\\EditorResources\\AssetIcons\\T_AssetIcon_StaticMesh.drn");
+		LOAD_TEXTURE(m_AssetIcon_Material, "Engine\\Content\\EditorResources\\AssetIcons\\T_AssetIcon_Material.drn");
+		LOAD_TEXTURE(m_AssetIcon_Texture2D, "Engine\\Content\\EditorResources\\AssetIcons\\T_AssetIcon_Texture2D.drn");
+		LOAD_TEXTURE(m_AssetIcon_TextureVolume, "Engine\\Content\\EditorResources\\AssetIcons\\T_AssetIcon_TextureVolume.drn");
+		LOAD_TEXTURE(m_AssetIcon_TextureCube, "Engine\\Content\\EditorResources\\AssetIcons\\T_AssetIcon_TextureCube.drn");
+
+#undef LOAD_TEXTURE
 #endif
 	}
 

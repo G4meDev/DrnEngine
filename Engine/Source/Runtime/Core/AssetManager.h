@@ -30,15 +30,8 @@ namespace Drn
 			Release();
 		}
 
-		T* operator*()
-		{
-			return m_Asset;
-		}
-
-		T* operator->() 
-		{
-			return m_Asset;
-		}
+		inline T* operator*() const { return m_Asset; }
+		inline T* operator->() const { return m_Asset; }
 
 		bool operator==(const AssetHandle<T>& Other) const
 		{
@@ -181,7 +174,7 @@ namespace Drn
 		//	AssetManager::Get()->RegisterPendingReleaseDeferred(*this);
 		//}
 
-		inline T* Get() { return m_Asset; }
+		inline T* Get() const { return m_Asset; }
 		inline bool IsValid() const { return m_Asset != nullptr; }
 
 	private:

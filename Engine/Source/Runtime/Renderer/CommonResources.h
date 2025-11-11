@@ -347,7 +347,13 @@ namespace Drn
 
 #if WITH_EDITOR
 		BufferVisualizerPSO* m_BufferVisualizerPSO;
-		AssetHandle<Texture2D> m_DefaultAssetIcon;
+		AssetHandle<Texture2D> m_AssetIcon_Default;
+		AssetHandle<Texture2D> m_AssetIcon_Level;
+		AssetHandle<Texture2D> m_AssetIcon_StaticMesh;
+		AssetHandle<Texture2D> m_AssetIcon_Material;
+		AssetHandle<Texture2D> m_AssetIcon_Texture2D;
+		AssetHandle<Texture2D> m_AssetIcon_TextureVolume;
+		AssetHandle<Texture2D> m_AssetIcon_TextureCube;
 #endif
 
 	private:

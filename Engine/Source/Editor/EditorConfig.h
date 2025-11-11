@@ -16,6 +16,7 @@ namespace Drn
 		const static char* Payload_EditorSpawnable();
 
 		static Color GetAssetTypeColor(EAssetType Type);
+		static const AssetHandle<Texture2D>& GetAssetTypeIcon(EAssetType Type);
 	};
 }
 

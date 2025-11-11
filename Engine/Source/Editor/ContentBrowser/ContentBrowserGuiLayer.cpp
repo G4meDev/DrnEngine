@@ -302,7 +302,9 @@ namespace Drn
 		ImVec2 box_max(box_min.x + LayoutItemSize.x + 2, box_min.y + LayoutItemSize.y + 2); // Dubious
 		//draw_list->AddRectFilled(box_min, box_max, icon_bg_color); // Background color
 
-		draw_list->AddImage(CommonResources::Get()->m_DefaultAssetIcon->GetDescriptorHandle().GetGpuHandle().ptr, box_min, box_max);
+		// TODO: maybe cache in asset data
+		const AssetHandle<Texture2D>& ItemIcon = EditorConfig::GetAssetTypeIcon(item_data.AssetType);
+		draw_list->AddImage(ItemIcon->GetDescriptorHandle().GetGpuHandle().ptr, box_min, box_max);
 
 		if (ShowTypeOverlay)
 		{
