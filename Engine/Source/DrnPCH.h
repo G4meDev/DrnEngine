@@ -58,6 +58,7 @@
 #include "Runtime/Renderer/Texture/TextureVolume.h"
 #include "Runtime/Renderer/Texture/TextureCube.h"
 #include "Runtime/Renderer/ResourceStateTracker.h"
+#include "Runtime/Renderer/RenderResource.h"
 
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/Box.h"
@@ -85,6 +86,7 @@
 
 #include <iostream>
 #include <WinUser.h>
+#include <atomic>
 
 #include <sstream>
 #include <ostream>

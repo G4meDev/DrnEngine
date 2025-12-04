@@ -12,6 +12,7 @@
 
 #include <DirectXMath.h>
 
+#include "Runtime/Misc/DebugHelper.h"
 #include "Runtime/Misc/StatsMisc.h"
 
 #include "Runtime/Math/MathHelper.h"
@@ -31,8 +32,9 @@
 
 #include "Runtime/Core/Delegate.h"
 #include "Runtime/Engine/CameraTypes.h"
-
 #include "Runtime/Engine/EngineTypes.h"
+
+#include "Runtime/Renderer/RenderCommon.h"
 
 class UpdateEventArgs;
 class KeyEventArgs;

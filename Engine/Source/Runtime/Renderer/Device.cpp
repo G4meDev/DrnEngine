@@ -1,11 +1,13 @@
 #include "DrnPCH.h"
 #include "Device.h"
+#include "Runtime/Renderer/GpuFence.h"
 
 LOG_DEFINE_CATEGORY( LogDevice, "Device" );
 
 namespace Drn
 {
 	Device::Device()
+		: m_DeferredDeletionQueue(this)
 	{
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = 0;
@@ -117,4 +119,89 @@ namespace Drn
 		LOG( LogDevice, Info, "removing device %ws", m_Description.Description );
 	}
 
+
+	DeferredDeletionQueue::DeferredDeletionQueue( class Device* InParent )
+		: DeviceChild(InParent)
+	{}
+
+	DeferredDeletionQueue::~DeferredDeletionQueue()
+	{}
+
+	void DeferredDeletionQueue::EnqueueResource( ID3D12Object* pResource, class GpuFence* Fence )
+	{
+		FencedObjectType FencedObject;
+		FencedObject.D3DObject = pResource;
+		FencedObject.Type = EObjectType::D3D;
+		FencedObject.FencePair = FencePair(Fence, Fence->GetCurrentFence());
+		DeferredReleaseQueue.push(FencedObject);
+	}
+
+	void DeferredDeletionQueue::EnqueueResource( RenderResource* pResource, class GpuFence* Fence )
+	{
+		drn_check(pResource->ShouldDeferDelete());
+
+		FencedObjectType FencedObject;
+		FencedObject.RHIObject = pResource;
+		FencedObject.Type = EObjectType::RHI;
+		FencedObject.FencePair = FencePair(Fence, Fence->GetCurrentFence());
+		DeferredReleaseQueue.push(FencedObject);
+	}
+
+	void DeferredDeletionQueue::ReleaseCompletedResources()
+	{
+		FencedObjectType FencedObject;
+		while (!DeferredReleaseQueue.empty())
+		{
+			FencedObject = DeferredReleaseQueue.front();
+			if (!FencedObject.FencePair.first->IsFenceComplete(FencedObject.FencePair.second));
+			{
+				return;
+			}
+
+			if (FencedObject.Type == EObjectType::RHI)
+			{
+				drn_check(FencedObject.RHIObject->GetRefCount() == 1);
+				FencedObject.RHIObject->Release();
+			}
+			else
+			{
+				FencedObject.D3DObject->Release();
+			}
+
+			DeferredReleaseQueue.pop();
+		}
+	}
+
+	void DeferredDeletionQueue::ReleaseResources()
+	{
+		LOG(LogDevice, Info, "D3D12 ReleaseResources: %u items to release", DeferredReleaseQueue.size());
+
+		FencedObjectType FencedObject;
+		while (!DeferredReleaseQueue.empty())
+		{
+			FencedObject = DeferredReleaseQueue.front();
+			if (FencedObject.Type == EObjectType::RHI)
+			{
+				const D3D12_RESOURCE_DESC Desc = FencedObject.RHIObject->GetDesc();
+				LOG(LogDevice, Info, "D3D12 ReleaseResources: \"%s\", %llu x %u x %u, Mips: %u, Format: 0x%X, Flags: 0x%X", FencedObject.RHIObject->GetName().c_str(), Desc.Width, Desc.Height, Desc.DepthOrArraySize, Desc.MipLevels, Desc.Format, Desc.Flags);
+
+				uint32 RefCount = FencedObject.RHIObject->Release();
+				if (RefCount)
+				{
+					LOG(LogDevice, Info, TEXT("RefCount was %u"), RefCount);
+				}
+			}
+
+			else
+			{
+				const uint32 RefCount = FencedObject.D3DObject->Release();
+				if (RefCount)
+				{
+					LOG(LogDevice, Info, "RefCount was %u", RefCount);
+				}
+			}
+
+			DeferredReleaseQueue.pop();
+		}
+	}
 }

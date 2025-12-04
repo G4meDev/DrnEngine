@@ -7,6 +7,46 @@ LOG_DECLARE_CATEGORY(LogDevice);
 
 namespace Drn
 {
+	class DeferredDeletionQueue : public DeviceChild
+	{
+	public:
+		using FencePair = std::pair<class GpuFence*, uint64>;
+
+	private:
+		enum class EObjectType
+		{
+			RHI,
+			D3D,
+		};
+
+		struct FencedObjectType
+		{
+			union
+			{
+				class RenderResource* RHIObject;
+				ID3D12Object*   D3DObject;
+			};
+
+			FencePair FencePair;
+			EObjectType Type;
+		};
+		std::queue<FencedObjectType> DeferredReleaseQueue; // TODO: make thread safe
+
+	public:
+
+		void EnqueueResource(class RenderResource* pResource, class GpuFence* Fence);
+		void EnqueueResource(ID3D12Object* pResource, class GpuFence* Fence);
+
+		void ReleaseCompletedResources();
+		void ReleaseResources();
+
+
+		DeferredDeletionQueue(class Device* InParent);
+		~DeferredDeletionQueue();
+
+	private:
+	};
+
 	class Device
 	{
 	public:
@@ -15,10 +55,13 @@ namespace Drn
 		~Device();
 
 		inline ID3D12Device* GetD3D12Device() const { return m_Device.Get(); }
+		inline DeferredDeletionQueue& GetDeferredDeletionQueue() { return m_DeferredDeletionQueue; }
 
 	private:
 
 		Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
 		DXGI_ADAPTER_DESC3 m_Description;
+
+		DeferredDeletionQueue m_DeferredDeletionQueue;
 	};
 }

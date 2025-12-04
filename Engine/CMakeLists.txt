@@ -16,6 +16,7 @@ set( HEADER_FILES
 	Source/Runtime/Core/Guid.h
 	Source/Runtime/Core/Time.h
 	Source/Runtime/Core/Window.h
+	Source/Runtime/Core/RefCounting.h
 	
 	Source/Runtime/Engine/EngineTypes.h
 	Source/Runtime/Engine/WorldManager.h
@@ -99,6 +100,10 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/ResourceStateTracker.h
 	Source/Runtime/Renderer/ResourceView.h
 	Source/Runtime/Renderer/SceneView.h
+	Source/Runtime/Renderer/RenderResource.h
+	Source/Runtime/Renderer/RenderCommon.h
+	Source/Runtime/Renderer/ResourceState.h
+	Source/Runtime/Renderer/GpuFence.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -149,6 +154,7 @@ set( HEADER_FILES
 	Source/Runtime/Misc/Log.h
 	Source/Runtime/Misc/Path.h
 	Source/Runtime/Misc/StatsMisc.h
+	Source/Runtime/Misc/DebugHelper.h
 	
 	Source/Editor/Misc/ViewportCameraInputHandler.h
 	Source/Editor/Misc/GizmoState.h
@@ -206,6 +212,7 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Guid.cpp
 	Source/Runtime/Core/Time.cpp
 	Source/Runtime/Core/Window.cpp
+	Source/Runtime/Core/RefCounting.cpp
 	
 	Source/Runtime/Engine/EngineTypes.cpp
 	Source/Runtime/Engine/WorldManager.cpp
@@ -290,6 +297,10 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/ResourceStateTracker.cpp
 	Source/Runtime/Renderer/ResourceView.cpp
 	Source/Runtime/Renderer/SceneView.cpp
+	Source/Runtime/Renderer/RenderResource.cpp
+	Source/Runtime/Renderer/RenderCommon.cpp
+	Source/Runtime/Renderer/ResourceState.cpp
+	Source/Runtime/Renderer/GpuFence.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp
@@ -340,6 +351,7 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/Log.cpp
 	Source/Runtime/Misc/Path.cpp
 	Source/Runtime/Misc/StatsMisc.cpp
+	Source/Runtime/Misc/DebugHelper.cpp
 	
 	Source/Editor/Editor.cpp
 	Source/Editor/EditorConfig.cpp

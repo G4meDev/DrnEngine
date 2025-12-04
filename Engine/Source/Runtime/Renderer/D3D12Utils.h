@@ -31,4 +31,10 @@
 #define EDITOR_PRIMITIVE_COLOR_FORMAT DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
 
 
+#define D3D12_RESOURCE_STATE_TBD D3D12_RESOURCE_STATES(-1 ^ (1 << 31))
+#define D3D12_RESOURCE_STATE_CORRUPT D3D12_RESOURCE_STATES(-2 ^ (1 << 31))
+
 #define VERIFYD3D12RESULT(x)			{HRESULT hres = x; if (FAILED(hres)) { VerifyD3D12Result(hres, #x, __FILE__, __LINE__); }}
+
+void SetName(class ID3D12Object* const Object, const std::string& Name);
+//void SetName(class Drn::RenderResource* const Resource, const std::string& Name);
