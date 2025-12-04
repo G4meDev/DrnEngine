@@ -58,7 +58,6 @@ namespace Drn
 			S->Release();
 		}
 
-		CloseHandle(SingletonInstance->m_FenceEvent);
 		CommonResources::Shutdown();
 
 		BufferedResourceManager::Get()->Flush();
@@ -121,12 +120,10 @@ namespace Drn
 		m_UploadCommandList = new D3D12CommandList(m_Device->GetD3D12Device(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererUpload");
 		m_UploadCommandList->Close();
 
-		GetD3D12Device()->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_Fence.GetAddressOf()));
-		m_FenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+		m_Fence = new GpuFence( GetDevice(), 0, "RendererFence" );
 
 #if D3D12_Debug_INFO
 		m_CommandQueue->SetName(L"MainCommandQueue");
-		m_Fence->SetName(L"MainFence");
 #endif
 
 		m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
@@ -360,16 +357,6 @@ namespace Drn
 
 	}
 
-
-	uint64_t Renderer::Signal( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
-			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue )
-	{
-		SCOPE_STAT();
-		commandQueue->Signal( fence.Get(), ++fenceValue);
-
-		return fenceValue;
-	}
-
 	uint32 Renderer::GetBindlessSrvIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
 	{
 		return (Handle.ptr - m_BindlessSrvHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SrvIncrementSize;
@@ -380,17 +367,6 @@ namespace Drn
 		return (Handle.ptr - m_BindlessSamplerHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SamplerIncrementSize;
 	}
 
-	void Renderer::WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent )
-	{
-		SCOPE_STAT();
-
-		if (fence->GetCompletedValue() < fenceValue)
-		{
-			fence->SetEventOnCompletion(fenceValue, fenceEvent);
-			WaitForSingleObject(fenceEvent, DWORD_MAX);
-		}
-	}
-
 	ID3D12GraphicsCommandList2* Renderer::GetCommandList()
 	{
 		return m_CommandList->GetD3D12CommandList();
@@ -398,8 +374,8 @@ namespace Drn
 
 	void Renderer::Flush()
 	{
-		uint64_t fenceValueForSignal = Signal(m_CommandQueue, m_Fence, m_FenceValue);
-		WaitForFenceValue(m_Fence, fenceValueForSignal, m_FenceEvent);
+		m_Fence->Signal();
+		m_Fence->WaitForFence(m_Fence->GetLastSignaledFence());
 	}
 
 	void Renderer::ReportLiveObjects()
@@ -449,7 +425,7 @@ namespace Drn
 
 		{
 			SCOPE_STAT( "WaitForOnFlightCommands" );
-			WaitForFenceValue( m_Fence, m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex], m_FenceEvent );
+			m_Fence->WaitForFence(m_SwapChain->m_FrameFenceValues[m_SwapChain->m_CurrentBackbufferIndex]);
 		}
 
 		{

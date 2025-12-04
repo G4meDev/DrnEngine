@@ -219,24 +219,6 @@ namespace Drn
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		uint64 FenceValue = 0;
-		Microsoft::WRL::ComPtr<ID3D12Fence> IntermediateFence;
-		Device->CreateFence(FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(IntermediateFence.GetAddressOf()));
-		HANDLE IntermediateFenceEvent = CreateEvent( NULL, FALSE, FALSE, NULL );
-
-#if D3D12_Debug_INFO
-		IntermediateFence->SetName(L"Fence_Texture2DToTextureCube");
-#endif
-
-		D3D12_COMMAND_QUEUE_DESC QueueDesc = {};
-		QueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue> IntermediateCommandQueue;
-		Device->CreateCommandQueue(&QueueDesc, IID_PPV_ARGS(IntermediateCommandQueue.GetAddressOf()));
-#if D3D12_Debug_INFO
-		IntermediateCommandQueue->SetName(L"CommandQueue_Texture2DToTextureCube");
-#endif
-
 		D3D12CommandList* CommandList = new D3D12CommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT, 1, "Texture2DToCubemap");
 		CommandList->Close();
 		CommandList->FlipAndReset();
@@ -289,7 +271,6 @@ namespace Drn
 		IntermediateRootSinature->SetName(L"Texture2DToCubemapRootSignature");
 #endif
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(IntermediateRootSinature.Get());
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -321,6 +302,7 @@ namespace Drn
 
 		ID3D12DescriptorHeap* const Heaps[2] = { SrvHeap.Get(), SamplerHeap.Get() };
 		CommandList->GetD3D12CommandList()->SetDescriptorHeaps(2, Heaps);
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(IntermediateRootSinature.Get());
 
 		D3D12_CPU_DESCRIPTOR_HANDLE LinearSamplerCpuHandle = SamplerHeap->GetCPUDescriptorHandleForHeapStart();
 		D3D12_GPU_DESCRIPTOR_HANDLE LinearSamplerGpuHandle = SamplerHeap->GetGPUDescriptorHandleForHeapStart();
@@ -633,14 +615,9 @@ namespace Drn
 		CommandList->GetD3D12CommandList()->Close();
 
 		ID3D12CommandList* const Lists[] = { CommandList->GetD3D12CommandList() };
-		IntermediateCommandQueue->ExecuteCommandLists( 1, Lists);
-		IntermediateCommandQueue->Signal(IntermediateFence.Get(), ++FenceValue);
+		Renderer::Get()->GetCommandQueue()->ExecuteCommandLists( 1, Lists);
+		Renderer::Get()->Flush();
 
-		if (IntermediateFence->GetCompletedValue() < FenceValue)
-		{
-			IntermediateFence->SetEventOnCompletion(FenceValue, IntermediateFenceEvent);
-			WaitForSingleObject(IntermediateFenceEvent, DWORD_MAX);
-		}
 		if(rdoc_api) rdoc_api->EndFrameCapture(NULL, NULL);
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -781,7 +758,6 @@ namespace Drn
 		delete SlicePso;
 		delete RenderCube;
 		CommandList->ReleaseBufferedResource();
-		CloseHandle(IntermediateFenceEvent);
 	}
 
 }

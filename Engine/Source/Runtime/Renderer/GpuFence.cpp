@@ -6,9 +6,9 @@ namespace Drn
 	GpuFence::GpuFence( Device* InParent, uint64 InitialValue, const std::string& InName )
 		: DeviceChild(InParent)
 		, hFenceCompleteEvent(INVALID_HANDLE_VALUE)
-		, CurrentFence(1)
-		, LastSignaledFence(0)
-		, CompletedFence(0)
+		, CurrentFence(InitialValue + 1)
+		, LastSignaledFence(InitialValue)
+		, CompletedFence(InitialValue)
 		, Name(InName)
 	{
 		hFenceCompleteEvent = CreateEvent(nullptr, false, false, nullptr);
@@ -24,8 +24,6 @@ namespace Drn
 			CloseHandle(hFenceCompleteEvent);
 			hFenceCompleteEvent = INVALID_HANDLE_VALUE;
 		}
-
-		if (Fence) { Fence->Release(); }
 	}
 
 	uint64 GpuFence::Signal()
@@ -59,7 +57,7 @@ namespace Drn
 
 	void GpuFence::WaitForFence( uint64 FenceValue )
 	{
-		if (!IsFenceComplete(FenceValue) && FenceValue > PeekCompletedFence())
+		if (!IsFenceComplete(FenceValue))
 		{
 			SCOPE_STAT("FenceWait");
 

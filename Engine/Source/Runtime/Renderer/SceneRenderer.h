@@ -107,15 +107,10 @@ namespace Drn
 
 #if WITH_EDITOR
 		OnPickedComponentDelegate OnPickedComponent;
-
 		void QueueMousePickEvent( const IntPoint& ScreenPosition );
-		Microsoft::WRL::ComPtr<ID3D12Fence> m_MousePickFence;
-		uint64 m_MousePickFenceValue = 0;
 
 		template<class UserClass, class Func>
 		void QueueScreenReprojection(const IntPoint& ScreenPosition, UserClass* UClass, Func&& F, void* Payload);
-		Microsoft::WRL::ComPtr<ID3D12Fence> m_ScreenReprojectionFence;
-		uint64 m_ScreenReprojectionFenceValue = 0;
 #endif
 
 		uint32 m_FrameIndex;

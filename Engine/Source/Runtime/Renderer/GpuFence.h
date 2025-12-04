@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Core/RefCounting.h"
 
 namespace Drn
 {

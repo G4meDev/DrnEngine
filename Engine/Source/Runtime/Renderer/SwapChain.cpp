@@ -68,7 +68,7 @@ namespace Drn
 	void SwapChain::Present()
 	{
 		SCOPE_STAT();
-		m_FrameFenceValues[m_CurrentBackbufferIndex] = Renderer::Get()->Signal( m_CommandQueue, Renderer::Get()->GetFence(), Renderer::Get()->GetFenceValue());
+		m_FrameFenceValues[m_CurrentBackbufferIndex] = Renderer::Get()->GetFence()->Signal();
 		
 		UINT syncInterval = m_Vsync ? 1 : 0;
 		UINT presentFlags = m_TearingSupported && !m_Vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;

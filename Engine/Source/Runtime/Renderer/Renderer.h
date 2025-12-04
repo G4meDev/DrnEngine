@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "D3D12Utils.h"
+#include "Runtime/Renderer/GpuFence.h"
 
 LOG_DECLARE_CATEGORY( LogRenderer );
 
@@ -112,15 +113,9 @@ namespace Drn
 
 		void SetBindlessHeaps( ID3D12GraphicsCommandList* CommandList);
 
-		// TODO: delete
-		Microsoft::WRL::ComPtr<ID3D12Fence>& GetFence() { return m_Fence; };
-		uint64& GetFenceValue() { return m_FenceValue; };
-
 		inline uint32 GetCurrentBackbufferIndex() const { return m_SwapChain ? m_SwapChain->GetBackBufferIndex() : 0; }
 
-		uint64_t m_FenceValue = 0;
-		Microsoft::WRL::ComPtr<ID3D12Fence> m_Fence;
-		HANDLE m_FenceEvent;
+		inline GpuFence* GetFence() { return m_Fence; }
 
 		std::unique_ptr<Device> m_Device;
 		std::unique_ptr<SwapChain> m_SwapChain;
@@ -139,9 +134,6 @@ namespace Drn
 		static void ReportLiveObjects();
 
 		inline void ToggleVSync() const { if(m_SwapChain) m_SwapChain->ToggleVSync(); }
-
-		uint64_t Signal( Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue,
-			Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t& fenceValue );
 
 		inline uint32 GetRtvIncrementSize() const { return m_RtvIncrementSize; }
 		inline uint32 GetDsvIncrementSize() const { return m_DsvIncrementSize; }
@@ -188,8 +180,6 @@ namespace Drn
 		Window* m_MainWindow = nullptr;
 		std::set<Scene*> m_AllocatedScenes;
 
-		void WaitForFenceValue( Microsoft::WRL::ComPtr<ID3D12Fence> fence, uint64_t fenceValue, HANDLE fenceEvent );
-
 		uint32 m_RtvIncrementSize;
 		uint32 m_DsvIncrementSize;
 		uint32 m_SrvIncrementSize;
@@ -202,6 +192,6 @@ namespace Drn
 		
 		void Init_Internal();
 
-
+		TRefCountPtr<class GpuFence> m_Fence;
 	};
 }

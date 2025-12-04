@@ -107,8 +107,6 @@ namespace Drn
 		// mouse picking components
 		m_HitProxyRenderBuffer = std::make_shared<class HitProxyRenderBuffer>();
 		m_HitProxyRenderBuffer->Init();
-		Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_MousePickFence.GetAddressOf()));
-		Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_ScreenReprojectionFence.GetAddressOf()));
 
 		m_EditorPrimitiveBuffer = std::make_shared<class EditorPrimitiveRenderBuffer>();
 		m_EditorPrimitiveBuffer->Init();
@@ -1077,7 +1075,7 @@ namespace Drn
 
 			else
 			{
-				if (Event.FenceValue <= m_MousePickFence->GetCompletedValue())
+				if (Renderer::Get()->GetFence()->IsFenceComplete(Event.FenceValue))
 				{
 					UINT8* MemoryStart;
 
@@ -1143,10 +1141,7 @@ namespace Drn
 			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
 
-			// push a fence
-			Renderer::Get()->GetCommandQueue()->Signal( m_MousePickFence.Get(), ++m_MousePickFenceValue );
-			Event.FenceValue = m_MousePickFenceValue;
-
+			Event.FenceValue = Renderer::Get()->GetFence()->Signal();
 			Event.Initalized = true;
 		}
 
@@ -1168,7 +1163,7 @@ namespace Drn
 
 			else
 			{
-				if (Event.FenceValue <= m_ScreenReprojectionFence->GetCompletedValue())
+				if (Renderer::Get()->GetFence()->IsFenceComplete(Event.FenceValue))
 				{
 					UINT8* MemoryStart;
 
@@ -1234,9 +1229,7 @@ namespace Drn
 			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
 
-			Renderer::Get()->GetCommandQueue()->Signal( m_ScreenReprojectionFence.Get(), ++m_ScreenReprojectionFenceValue );
-			Event.FenceValue = m_ScreenReprojectionFenceValue;
-
+			Event.FenceValue = Renderer::Get()->GetFence()->Signal();
 			Event.Initalized = true;
 			Event.SceneView = GetSceneView();
 		}
