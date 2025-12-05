@@ -3,7 +3,6 @@
 #include "ForwardTypes.h"
 #include "Runtime/Core/RefCounting.h"
 #include "Runtime/Renderer/ResourceState.h"
-#include "Runtime/Renderer/ResourceView.h"
 
 #define DEFER_DELETE_PAGE_SIZE 64
 
@@ -203,19 +202,8 @@ namespace Drn
 		inline bool IsBackBuffer() const { return bBackBuffer; }
 		inline void SetIsBackBuffer(bool bBackBufferIn) { bBackBuffer = bBackBufferIn; }
 
-		void SetName(const std::string& Name)
-		{
-			if (DebugName != Name)
-			{
-				DebugName = Name;
-				::SetName(Resource, Name);
-			}
-		}
-
-		std::string GetName() const
-		{
-			return DebugName;
-		}
+		void SetName(const std::string& Name);
+		std::string GetName() const { return DebugName;}
 
 		void DoNotDeferDelete() { bDeferDelete = false; }
 		inline bool ShouldDeferDelete() const { return bDeferDelete; }

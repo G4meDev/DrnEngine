@@ -133,6 +133,15 @@ namespace Drn
 		}
 	}
 
+	void RenderResource::SetName( const std::string& Name )
+	{
+		if ( DebugName != Name )
+		{
+			DebugName = Name;
+			::SetName( Resource, Name );
+		}
+	}
+
 	void RenderResource::DeferDelete()
 	{
 		GetParentDevice()->GetDeferredDeletionQueue().EnqueueResource(this, Renderer::Get()->GetFence());

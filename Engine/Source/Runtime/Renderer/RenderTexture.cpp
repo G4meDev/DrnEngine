@@ -15,7 +15,7 @@ namespace Drn
 	const ClearValueBinding ClearValueBinding::Green(Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 	const ClearValueBinding ClearValueBinding::DefaultNormal8Bit(Vector4(128.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f));
 
-	RenderTexture2D* RenderTexture2D::Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo)
+	RenderTexture2D* RenderTexture2D::Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo)
 	{
 		bool bTextureArray = false;
 		bool bCubeTexture = false;
@@ -132,7 +132,7 @@ namespace Drn
 		ResourceLocation& Location = NewTexture->m_ResourceLocation;
 
 		SafeCreateTexture2D(ParentDevice, TextureDesc, ClearValuePtr, &Location, Format, Flags,
-			(CreateInfo.BulkData != nullptr) ? D3D12_RESOURCE_STATE_COPY_DEST : InitialState, CreateInfo.DebugName);
+			(CreateInfo.BulkData != nullptr) ? D3D12_RESOURCE_STATE_COPY_DEST : InitialState, bNeedsStateTracking, CreateInfo.DebugName);
 
 		uint32 RTVIndex = 0;
 		if (bCreateRTV)
@@ -339,6 +339,7 @@ namespace Drn
 	void SafeCreateTexture2D( Device* pDevice, const D3D12_RESOURCE_DESC& TextureDesc, const D3D12_CLEAR_VALUE* ClearValue, ResourceLocation* OutTexture2D,
 		DXGI_FORMAT Format, ETextureCreateFlags Flags, D3D12_RESOURCE_STATES InitialState, bool bNeedsStateTracking, const std::string& Name )
 	{
+		RenderResource* NewResource = nullptr;
 		const D3D12_HEAP_TYPE HeapType = (Flags & ETextureCreateFlags::CPUReadback) ? D3D12_HEAP_TYPE_READBACK : D3D12_HEAP_TYPE_DEFAULT;
 
 		switch (HeapType)
@@ -362,7 +363,6 @@ namespace Drn
 		case D3D12_HEAP_TYPE_DEFAULT:
 			//VERIFYD3D12CREATETEXTURERESULT(pDevice->GetTextureAllocator().AllocateTexture(TextureDesc, ClearValue, Format, *OutTexture2D, InitialState, Name), TextureDesc, pDevice->GetDevice());
 
-			RenderResource* NewResource = nullptr;
 			pDevice->CreateCommittedResource(TextureDesc, CD3DX12_HEAP_PROPERTIES(HeapType), InitialState, bNeedsStateTracking, ClearValue, &NewResource, Name);
 
 			OutTexture2D->SetType(ResourceLocation::ResourceLocationType::eStandAlone);

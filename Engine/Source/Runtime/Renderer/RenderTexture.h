@@ -477,7 +477,7 @@ namespace Drn
 			
 		}
 
-		static RenderTexture2D* Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo);
+		static RenderTexture2D* Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo);
 	};
 
 	class RenderTexture2DArray : public RenderBaseTexture2D
