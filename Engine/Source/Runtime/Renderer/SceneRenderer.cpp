@@ -70,7 +70,7 @@ namespace Drn
 	{
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		m_CommandList = new D3D12CommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, m_Name);
+		m_CommandList = new D3D12CommandList(Renderer::Get()->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, m_Name);
 		m_CommandList->Close();
 
 		m_GBuffer = std::make_shared<class GBuffer>();

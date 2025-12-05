@@ -28,16 +28,16 @@ void SetName(ID3D12Object* const Object, const std::string& Name)
 #endif
 }
 
-//void SetName(Drn::RenderResource* const Resource, const std::string& Name)
-//{
-//#if D3D12_Debug_INFO
-//	if (Resource && !Name.empty())
-//	{
-//		Resource->SetName(Name);
-//	}
-//	else if (Resource)
-//	{
-//		Resource->SetName(GetUniqueName());
-//	}
-//#endif
-//}
+void SetName(Drn::RenderResource* const Resource, const std::string& Name)
+{
+#if D3D12_Debug_INFO
+	if (Resource && !Name.empty())
+	{
+		Resource->SetName(Name);
+	}
+	else if (Resource)
+	{
+		Resource->SetName(GetUniqueName());
+	}
+#endif
+}

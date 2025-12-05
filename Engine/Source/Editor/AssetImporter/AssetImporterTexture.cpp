@@ -219,7 +219,7 @@ namespace Drn
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		D3D12CommandList* CommandList = new D3D12CommandList(Device, D3D12_COMMAND_LIST_TYPE_DIRECT, 1, "Texture2DToCubemap");
+		D3D12CommandList* CommandList = new D3D12CommandList(Renderer::Get()->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT, 1, "Texture2DToCubemap");
 		CommandList->Close();
 		CommandList->FlipAndReset();
 

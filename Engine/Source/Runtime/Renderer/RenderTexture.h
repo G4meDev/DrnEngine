@@ -138,16 +138,82 @@ namespace Drn
 		static const ClearValueBinding DefaultNormal8Bit;
 	};
 
-	class RenderTextureBase : BaseShaderResource
+	struct RenderResourceCreateInfo
+	{
+		RenderResourceCreateInfo()
+			: BulkData(nullptr)
+			, ResourceArray(nullptr)
+			, ClearValueBinding(Vector4(0))
+			, DebugName("<unnamed_resource>")
+		{}
+
+		RenderResourceCreateInfo(void* InBulkData)
+			: RenderResourceCreateInfo()
+		{
+			BulkData = InBulkData;
+		}
+
+		//RenderResourceCreateInfo(void* InResourceArray)
+		//	: RenderResourceCreateInfo()
+		//{
+		//	ResourceArray = InResourceArray;
+		//}
+
+		RenderResourceCreateInfo(const ClearValueBinding& InClearValueBinding)
+			: RenderResourceCreateInfo()
+		{
+			ClearValueBinding = InClearValueBinding;
+		}
+
+		RenderResourceCreateInfo(const std::string& InDebugName)
+			: RenderResourceCreateInfo()
+		{
+			DebugName = InDebugName;
+		}
+
+		//FResourceBulkDataInterface* BulkData;
+		//FResourceArrayInterface* ResourceArray;
+
+		void* BulkData;
+		void* ResourceArray;
+
+		ClearValueBinding ClearValueBinding;
+
+		std::string DebugName;
+	};
+
+	class RenderTextureBase : public BaseShaderResource, public SimpleRenderResource
 	{
 	public:
 
-		RenderTextureBase(class Device* InParent)
+		//FRHITexture(uint32 InNumMips, uint32 InNumSamples, EPixelFormat InFormat, ETextureCreateFlags InFlags, FLastRenderTimeContainer* InLastRenderTime, const FClearValueBinding& InClearValue)
+		//	: ClearValue(InClearValue)
+		//	, NumMips(InNumMips)
+		//	, NumSamples(InNumSamples)
+		//	, Format(InFormat)
+		//	, Flags(InFlags)
+		//, LastRenderTime(InLastRenderTime ? *InLastRenderTime : DefaultLastRenderTime)	
+		//{}
+
+		//RenderTextureBase(class Device* InParent)
+		//	: BaseShaderResource(InParent)
+		//	, MemorySize(0)
+		//	, m_BaseShaderResource(this)
+		//	, bCreatedRTVsPerSlice(false)
+		//	, NumDepthStencilViews(0)
+		//{}
+
+		RenderTextureBase(class Device* InParent, uint32 InNumMips, uint32 InNumSamples, DXGI_FORMAT InFormat, ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
 			: BaseShaderResource(InParent)
 			, MemorySize(0)
 			, m_BaseShaderResource(this)
 			, bCreatedRTVsPerSlice(false)
 			, NumDepthStencilViews(0)
+			, ClearValue(InClearValue)
+			, NumMips(InNumMips)
+			, NumSamples(InNumSamples)
+			, Format(InFormat)
+			, Flags(InFlags)
 		{}
 
 		virtual ~RenderTextureBase() {}
@@ -277,65 +343,10 @@ namespace Drn
 		uint32 NumDepthStencilViews;
 
 		//TMap<uint32, FD3D12LockedResource*> LockedMap;
-	};
 
+// ---------------------------------------------------------------------------------------------------
 
-	template<typename BaseResourceType>
-	class TRenderTexture2D : public BaseResourceType, public RenderTextureBase
-	{
 	public:
-
-		ETextureCreateFlags Flags;
-
-		TRenderTexture2D(
-			class Device* InParent,
-			uint32 InSizeX,
-			uint32 InSizeY,
-			uint32 InSizeZ,
-			uint32 InNumMips,
-			uint32 InNumSamples,
-			DXGI_FORMAT InFormat,
-			bool bInCubemap,
-			ETextureCreateFlags InFlags,
-			const ClearValueBinding& InClearValue
-			//const FD3D12TextureLayout* InTextureLayout = nullptr
-			)
-			: BaseResourceType(
-				InSizeX,
-				InSizeY,
-				InSizeZ,
-				InNumMips,
-				InNumSamples,
-				InFormat,
-				InFlags,
-				InClearValue
-				)
-			, RenderTextureBase(InParent)
-			, Flags(InFlags)
-			, bCubemap(bInCubemap)
-			, bMipOrderDescending(false)
-		{
-			//if (InTextureLayout == nullptr)
-			//{
-			//	FMemory::Memzero(TextureLayout);
-			//}
-			//else
-			//{
-			//	TextureLayout = *InTextureLayout;
-			//}
-		}
-
-		virtual ~TRenderTexture2D() {}
-
-		//void* Lock(class FRHICommandListImmediate* RHICmdList, uint32 MipIndex, uint32 ArrayIndex, EResourceLockMode LockMode, uint32& DestStride);
-		//void Unlock(class FRHICommandListImmediate* RHICmdList, uint32 MipIndex, uint32 ArrayIndex);
-		//void UpdateTexture2D(class FRHICommandListImmediate* RHICmdList, uint32 MipIndex, const struct FUpdateTextureRegion2D& UpdateRegion, uint32 SourcePitch, const uint8* SourceData);
-
-		RenderResource* GetResource() const { return RenderTextureBase::GetResource(); }
-		//void GetReadBackHeapDesc(D3D12_PLACED_SUBRESOURCE_FOOTPRINT& OutFootprint, uint32 Subresource) const;
-		bool IsCubemap() const { return bCubemap; }
-		bool IsLastMipFirst() const { return bMipOrderDescending; }
-
 		virtual uint32 AddRef() const
 		{
 			return SimpleRenderResource::AddRef();
@@ -349,32 +360,150 @@ namespace Drn
 			return SimpleRenderResource::GetRefCount();
 		}
 
-		//const FD3D12TextureLayout& GetTextureLayout() const { return TextureLayout; }
+	public:
+	
+		virtual IntVector GetSizeXYZ() const = 0;
+
+		uint32 GetNumMips() const { return NumMips; }
+		DXGI_FORMAT GetFormat() const { return Format; }
+
+		ETextureCreateFlags GetFlags() const { return Flags; }
+		uint32 GetNumSamples() const { return NumSamples; }
+		bool IsMultisampled() const { return NumSamples > 1; }
+
+		void SetName(const std::string& InName) { TextureName = InName; }
+		std::string GetName() const { return TextureName; }
+
+		bool HasClearValue() const
+		{
+			return ClearValue.ColorBinding != EClearBinding::ENoneBound;
+		}
+
+		Vector4 GetClearColor() const
+		{
+			return ClearValue.GetClearColor();
+		}
+
+		void GetDepthStencilClearValue(float& OutDepth, uint32& OutStencil) const
+		{
+			return ClearValue.GetDepthStencil(OutDepth, OutStencil);
+		}
+
+		float GetDepthClearValue() const
+		{
+			float Depth;
+			uint32 Stencil;
+			ClearValue.GetDepthStencil(Depth, Stencil);
+			return Depth;
+		}
+
+		uint32 GetStencilClearValue() const
+		{
+			float Depth;
+			uint32 Stencil;
+			ClearValue.GetDepthStencil(Depth, Stencil);
+			return Stencil;
+		}
+
+		const ClearValueBinding GetClearBinding() const
+		{
+			return ClearValue;
+		}
+
+		virtual void GetWriteMaskProperties(void*& OutData, uint32& OutSize)
+		{
+			OutData = nullptr;
+			OutSize = 0;
+		}
+
+	private:
+		ClearValueBinding ClearValue;
+		uint32 NumMips;
+		uint32 NumSamples;
+		DXGI_FORMAT Format;
+		ETextureCreateFlags Flags;
+		std::string TextureName;
+	};
+
+	class RenderBaseTexture2D : public RenderTextureBase
+	{
+	public:
+	
+		RenderBaseTexture2D(Device* InParent, uint32 InSizeX,uint32 InSizeY,uint32 InSizeZ,uint32 InNumMips,uint32 InNumSamples, DXGI_FORMAT InFormat,ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
+			: RenderTextureBase(InParent, InNumMips, InNumSamples, InFormat, InFlags, InClearValue)
+			, SizeX(InSizeX)
+			, SizeY(InSizeY)
+			, SizeZ(InSizeZ)
+		{}
+
+		uint32 GetSizeX() const { return SizeX; }	
+		uint32 GetSizeY() const { return SizeY; }
+		uint32 GetSizeZ() const { return SizeZ; }
+		inline IntPoint GetSizeXY() const { return IntPoint(SizeX, SizeY); }
+		virtual IntVector GetSizeXYZ() const override { return IntVector(SizeX, SizeY, SizeZ); }
+
+	private:
+
+		uint32 SizeX;
+		uint32 SizeY;
+		uint32 SizeZ;
+
+// -------------------------------------------------------------------------------------------------------------------------------------
+
+	public:
+
+		//void* Lock(class FRHICommandListImmediate* RHICmdList, uint32 MipIndex, uint32 ArrayIndex, EResourceLockMode LockMode, uint32& DestStride);
+		//void Unlock(class FRHICommandListImmediate* RHICmdList, uint32 MipIndex, uint32 ArrayIndex);
+		//void UpdateTexture2D(class FRHICommandListImmediate* RHICmdList, uint32 MipIndex, const struct FUpdateTextureRegion2D& UpdateRegion, uint32 SourcePitch, const uint8* SourceData);
+
+		//void GetReadBackHeapDesc(D3D12_PLACED_SUBRESOURCE_FOOTPRINT& OutFootprint, uint32 Subresource) const;
+		//bool IsCubemap() const { return bCubemap; }
+		virtual bool IsCubemap() const { return false; }
 
 	private:
 		//void UnlockInternal(class FRHICommandListImmediate* RHICmdList, FLinkedObjectIterator NextObject, uint32 MipIndex, uint32 ArrayIndex);
 
-		const uint32 bCubemap : 1;
-		uint32 bMipOrderDescending : 1;
-
-		//FD3D12TextureLayout TextureLayout;
+		//const uint32 bCubemap : 1;
 
 		//mutable TUniquePtr<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> FirstSubresourceFootprint;
 	};
 
-	//class RenderBaseTexture2D : public FRHITexture2D
-	//{
-	//public:
-	//	FD3D12BaseTexture2D(uint32 InSizeX, uint32 InSizeY, uint32 InSizeZ, uint32 InNumMips, uint32 InNumSamples, EPixelFormat InFormat, ETextureCreateFlags InFlags, const FClearValueBinding& InClearValue)
-	//		: FRHITexture2D(InSizeX, InSizeY, InNumMips, InNumSamples, InFormat, InFlags, InClearValue)
-	//	{}
-	//	uint32 GetSizeZ() const { return 0; }
-	//
-	//	virtual void GetWriteMaskProperties(void*& OutData, uint32& OutSize) override final
-	//	{
-	//		FD3D12FastClearResource::GetWriteMaskProperties(OutData, OutSize);
-	//	}
-	//};
+	class RenderTexture2D : public RenderBaseTexture2D
+	{
+	public:
+		RenderTexture2D(Device* InParent, uint32 InSizeX, uint32 InSizeY, uint32 InNumMips, uint32 InNumSamples, DXGI_FORMAT InFormat, ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
+			: RenderBaseTexture2D(InParent, InSizeX, InSizeY, 1, InNumMips, InNumSamples, InFormat, InFlags, InClearValue)
+		{
+			
+		}
 
+		static RenderTexture2D* Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo);
+	};
+
+	class RenderTexture2DArray : public RenderBaseTexture2D
+	{
+	public:
+		RenderTexture2DArray(Device* InParent, uint32 InSizeX, uint32 InSizeY, uint32 InSizeZ, uint32 InNumMips, uint32 InNumSamples, DXGI_FORMAT InFormat, ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
+			: RenderBaseTexture2D(InParent, InSizeX, InSizeY, InSizeZ, InNumMips, InNumSamples, InFormat, InFlags, InClearValue)
+		{
+		}
+	};
+
+	class RenderTextureCube : public RenderBaseTexture2D
+	{
+	public:
+		RenderTextureCube(Device* InParent,uint32 InSizeX, uint32 InSizeY, uint32 InSizeZ, uint32 InNumMips, uint32 InNumSamples, DXGI_FORMAT InFormat, ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
+			: RenderBaseTexture2D(InParent, InSizeX, InSizeY, InSizeZ, InNumSamples, InNumMips, InFormat, InFlags, InClearValue)
+		{
+		}
+
+		virtual bool IsCubemap() const override { return true; }
+
+	private:
+
+	};
+
+	void SafeCreateTexture2D(Device* pDevice, const D3D12_RESOURCE_DESC& TextureDesc, const D3D12_CLEAR_VALUE* ClearValue, ResourceLocation* OutTexture2D,
+		DXGI_FORMAT Format, ETextureCreateFlags Flags, D3D12_RESOURCE_STATES InitialState, bool bNeedsStateTracking, const std::string& Name);
 
 }

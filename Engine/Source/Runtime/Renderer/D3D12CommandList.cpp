@@ -3,8 +3,9 @@
 
 namespace Drn
 {
-	D3D12CommandList::D3D12CommandList( ID3D12Device* Device, D3D12_COMMAND_LIST_TYPE Type, uint8 NumAllocators, const std::string& Name)
+	D3D12CommandList::D3D12CommandList(Device* Device, D3D12_COMMAND_LIST_TYPE Type, uint8 NumAllocators, const std::string& Name)
 		: BufferedResource()
+		, DeviceChild(Device)
 		, m_Type(Type)
 		, m_NumAllocators(NumAllocators)
 		, m_CurrentAllocatorIndex(0)
@@ -13,14 +14,14 @@ namespace Drn
 
 		for (uint8 i = 0; i < NumAllocators; i++)
 		{
-			Device->CreateCommandAllocator(Type, IID_PPV_ARGS(m_CommandAllocators[i].GetAddressOf()));
+			Device->GetD3D12Device()->CreateCommandAllocator(Type, IID_PPV_ARGS(m_CommandAllocators[i].GetAddressOf()));
 
 #if D3D12_Debug_INFO
 			m_CommandAllocators[i]->SetName( StringHelper::s2ws( "CommandAllocator_" + Name + "_" + std::to_string(i)).c_str() );
 #endif
 		}
 
-		Device->CreateCommandList(NULL, Type, m_CommandAllocators[0].Get(), NULL, IID_PPV_ARGS(m_CommandList.GetAddressOf()));
+		Device->GetD3D12Device()->CreateCommandList(NULL, Type, m_CommandAllocators[0].Get(), NULL, IID_PPV_ARGS(m_CommandList.GetAddressOf()));
 
 #if D3D12_Debug_INFO
 		m_CommandList->SetName( StringHelper::s2ws("CommandList_" + Name).c_str() );

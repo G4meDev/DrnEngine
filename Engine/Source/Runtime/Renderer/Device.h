@@ -57,6 +57,9 @@ namespace Drn
 		inline ID3D12Device* GetD3D12Device() const { return m_Device.Get(); }
 		inline DeferredDeletionQueue& GetDeferredDeletionQueue() { return m_DeferredDeletionQueue; }
 
+		void CreateCommittedResource(const D3D12_RESOURCE_DESC& InDesc, const D3D12_HEAP_PROPERTIES& HeapProps, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking,
+			const D3D12_CLEAR_VALUE* ClearValue, class RenderResource** ppOutResource, const std::string& Name);
+
 	private:
 
 		Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;

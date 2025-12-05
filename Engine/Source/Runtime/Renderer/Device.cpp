@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "Device.h"
 #include "Runtime/Renderer/GpuFence.h"
+#include "Runtime/Renderer/RenderResource.h"
 
 LOG_DEFINE_CATEGORY( LogDevice, "Device" );
 
@@ -121,6 +122,32 @@ namespace Drn
 		LOG( LogDevice, Info, "removing device %ws", m_Description.Description );
 	}
 
+
+	void Device::CreateCommittedResource( const D3D12_RESOURCE_DESC& InDesc, const D3D12_HEAP_PROPERTIES& HeapProps, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking,
+		const D3D12_CLEAR_VALUE* ClearValue, RenderResource** ppOutResource, const std::string& Name )
+	{
+		drn_check(ppOutResource);
+
+		TRefCountPtr<ID3D12Resource> pResource;
+
+		const bool bRequiresInitialization = (InDesc.Flags & (D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL)) != 0;
+		D3D12_HEAP_FLAGS HeapFlags = !bRequiresInitialization ? D3D12_HEAP_FLAG_CREATE_NOT_ZEROED : D3D12_HEAP_FLAG_NONE;
+
+		const HRESULT hr = m_Device->CreateCommittedResource(&HeapProps, HeapFlags, &InDesc, InInitialState, ClearValue, IID_PPV_ARGS(pResource.GetInitReference()));
+
+		if (SUCCEEDED(hr))
+		{
+			*ppOutResource = new RenderResource(this, pResource, InDesc, InInitialState, bNeedsStateTracking, HeapProps.Type);
+			(*ppOutResource)->AddRef();
+
+			SetName(*ppOutResource, Name);
+
+			//if (IsCPUInaccessible(HeapProps.Type))
+			//{
+			//	(*ppOutResource)->StartTrackingForResidency();
+			//}
+		}
+	}
 
 	DeferredDeletionQueue::DeferredDeletionQueue( class Device* InParent )
 		: DeviceChild(InParent)

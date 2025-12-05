@@ -34,12 +34,16 @@
 #define D3D12_RESOURCE_STATE_TBD D3D12_RESOURCE_STATES(-1 ^ (1 << 31))
 #define D3D12_RESOURCE_STATE_CORRUPT D3D12_RESOURCE_STATES(-2 ^ (1 << 31))
 
+#define MAX_TEXTURE_SIZE_2D 4096
+#define MAX_TEXTURE_SIZE_CUBE 2048
+
 #define VERIFYD3D12RESULT(x)			{HRESULT hres = x; if (FAILED(hres)) { VerifyD3D12Result(hres, #x, __FILE__, __LINE__); }}
 
 #include <d3d12.h>
+#include "Runtime/Renderer/RenderResource.h"
 
 void SetName(class ID3D12Object* const Object, const std::string& Name);
-//void SetName(class Drn::RenderResource* const Resource, const std::string& Name);
+void SetName(class Drn::RenderResource* const Resource, const std::string& Name);
 
 inline bool IsCPUWritable(D3D12_HEAP_TYPE HeapType, const D3D12_HEAP_PROPERTIES *pCustomHeapProperties = nullptr)
 {
@@ -105,4 +109,16 @@ static uint8 GetPlaneSliceFromViewFormat(DXGI_FORMAT ResourceFormat, DXGI_FORMAT
 	}
 
 	return 0;
+}
+
+inline bool HasStencilBits(DXGI_FORMAT InFormat)
+{
+	switch (InFormat)
+	{
+	case DXGI_FORMAT_D24_UNORM_S8_UINT:
+	case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+		return true;
+	};
+
+	return false;
 }

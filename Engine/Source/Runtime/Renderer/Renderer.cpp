@@ -114,10 +114,10 @@ namespace Drn
 		
 		m_SwapChain = std::make_unique<SwapChain>(m_Device.get(), m_MainWindow->GetWindowHandle(), m_CommandQueue.Get(), m_MainWindow->GetWindowSize());
 
-		m_CommandList = new D3D12CommandList(m_Device->GetD3D12Device(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererDirect");
+		m_CommandList = new D3D12CommandList(m_Device.get(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererDirect");
 		m_CommandList->Close();
 
-		m_UploadCommandList = new D3D12CommandList(m_Device->GetD3D12Device(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererUpload");
+		m_UploadCommandList = new D3D12CommandList(m_Device.get(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererUpload");
 		m_UploadCommandList->Close();
 
 		m_Fence = new GpuFence( GetDevice(), 0, "RendererFence" );
