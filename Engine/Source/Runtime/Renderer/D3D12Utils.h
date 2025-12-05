@@ -36,5 +36,73 @@
 
 #define VERIFYD3D12RESULT(x)			{HRESULT hres = x; if (FAILED(hres)) { VerifyD3D12Result(hres, #x, __FILE__, __LINE__); }}
 
+#include <d3d12.h>
+
 void SetName(class ID3D12Object* const Object, const std::string& Name);
 //void SetName(class Drn::RenderResource* const Resource, const std::string& Name);
+
+inline bool IsCPUWritable(D3D12_HEAP_TYPE HeapType, const D3D12_HEAP_PROPERTIES *pCustomHeapProperties = nullptr)
+{
+	return HeapType == D3D12_HEAP_TYPE_UPLOAD;
+}
+
+inline bool IsCPUInaccessible(D3D12_HEAP_TYPE HeapType, const D3D12_HEAP_PROPERTIES *pCustomHeapProperties = nullptr)
+{
+	return HeapType == D3D12_HEAP_TYPE_DEFAULT;
+}
+
+inline DXGI_FORMAT FindDepthStencilParentDXGIFormat(DXGI_FORMAT InFormat)
+{
+	switch (InFormat)
+	{
+	case DXGI_FORMAT_D24_UNORM_S8_UINT:
+	case DXGI_FORMAT_X24_TYPELESS_G8_UINT:
+		return DXGI_FORMAT_R24G8_TYPELESS;
+		// Changing Depth Buffers to 32 bit on Dingo as D24S8 is actually implemented as a 32 bit buffer in the hardware
+	case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+	case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
+		return DXGI_FORMAT_R32G8X24_TYPELESS;
+	case DXGI_FORMAT_D32_FLOAT:
+		return DXGI_FORMAT_R32_TYPELESS;
+	case DXGI_FORMAT_D16_UNORM:
+		return DXGI_FORMAT_R16_TYPELESS;
+	};
+	return InFormat;
+}
+
+static uint8 GetPlaneSliceFromViewFormat(DXGI_FORMAT ResourceFormat, DXGI_FORMAT ViewFormat)
+{
+	// Currently, the only planar resources used are depth-stencil formats
+	switch (FindDepthStencilParentDXGIFormat(ResourceFormat))
+	{
+	case DXGI_FORMAT_R24G8_TYPELESS:
+		switch (ViewFormat)
+		{
+		case DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
+			return 0;
+		case DXGI_FORMAT_X24_TYPELESS_G8_UINT:
+			return 1;
+		}
+		break;
+	case DXGI_FORMAT_R32G8X24_TYPELESS:
+		switch (ViewFormat)
+		{
+		case DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
+			return 0;
+		case DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
+			return 1;
+		}
+		break;
+	case DXGI_FORMAT_NV12:
+		switch (ViewFormat)
+		{
+		case DXGI_FORMAT_R8_UNORM:
+			return 0;
+		case DXGI_FORMAT_R8G8_UNORM:
+			return 1;
+		}
+		break;
+	}
+
+	return 0;
+}

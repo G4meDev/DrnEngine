@@ -410,6 +410,9 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
+		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+		SimpleRenderResource::FlushPendingDeletes();
+
 		InitRender(DeltaTime);
 		UpdateSceneProxyAndResources();
 		RenderSceneRenderers();

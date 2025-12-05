@@ -104,6 +104,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderCommon.h
 	Source/Runtime/Renderer/ResourceState.h
 	Source/Runtime/Renderer/GpuFence.h
+	Source/Runtime/Renderer/RenderTexture.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -301,6 +302,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderCommon.cpp
 	Source/Runtime/Renderer/ResourceState.cpp
 	Source/Runtime/Renderer/GpuFence.cpp
+	Source/Runtime/Renderer/RenderTexture.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

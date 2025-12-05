@@ -116,6 +116,8 @@ namespace Drn
 
 	Device::~Device()
 	{
+		m_DeferredDeletionQueue.ReleaseResources();
+
 		LOG( LogDevice, Info, "removing device %ws", m_Description.Description );
 	}
 
@@ -174,7 +176,7 @@ namespace Drn
 
 	void DeferredDeletionQueue::ReleaseResources()
 	{
-		LOG(LogDevice, Info, "D3D12 ReleaseResources: %u items to release", DeferredReleaseQueue.size());
+		LOG(LogDevice, Info, "D3D12 ReleaseResources: %zu items to release", DeferredReleaseQueue.size());
 
 		FencedObjectType FencedObject;
 		while (!DeferredReleaseQueue.empty())

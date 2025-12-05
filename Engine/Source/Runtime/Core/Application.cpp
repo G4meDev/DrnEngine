@@ -40,6 +40,11 @@ namespace Drn
 		}
 
 		Shutdown();
+
+		std::cout << "Application Exit.";
+		uint32 X;
+		std::cin >> X;
+
 		return 0;
 	}
 

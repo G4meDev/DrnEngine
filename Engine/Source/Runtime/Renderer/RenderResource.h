@@ -3,9 +3,89 @@
 #include "ForwardTypes.h"
 #include "Runtime/Core/RefCounting.h"
 #include "Runtime/Renderer/ResourceState.h"
+#include "Runtime/Renderer/ResourceView.h"
+
+#define DEFER_DELETE_PAGE_SIZE 64
 
 namespace Drn
 {
+	class SimpleRenderResource : IRefCountedObject
+	{
+	public:
+		SimpleRenderResource(bool InDeferDelete = true)
+			: bDeferDelete(InDeferDelete)
+		{};
+
+		virtual ~SimpleRenderResource() {}
+
+		uint32 AddRef() const override
+		{
+			return uint32(++NumRefs);
+		}
+
+		uint32 Release() const override
+		{
+			uint32 Refs = uint32(--NumRefs);
+			if(Refs == 0)
+			{
+				if (bDeferDelete)
+				{
+					DeferDelete();
+				}
+				else
+				{
+					delete this;
+				}
+			}
+			return Refs;
+		}
+
+		uint32 GetRefCount() const override
+		{
+			return uint32(NumRefs);
+		}
+
+		static void FlushPendingDeletes( bool bFlushDeferredDeletes = false );
+
+	private:
+
+		void DeferDelete() const
+		{
+			SimpleRenderResource* MutablePtr = const_cast<SimpleRenderResource*>(this);
+
+			for (ResourcesToDelete& ToDeletePage : DeferredDeletionQueue)
+			{
+				if (ToDeletePage.FrameDeleted == CurrentFrame && ToDeletePage.Resources.size() < DEFER_DELETE_PAGE_SIZE)
+				{
+					ToDeletePage.Resources.push_back(MutablePtr);
+					return;
+				}
+			}
+
+			ResourcesToDelete& ToDeletePage = DeferredDeletionQueue.emplace_back(CurrentFrame);
+			ToDeletePage.Resources.push_back(MutablePtr);
+
+			MutablePtr->bMarkedForDelete = true;
+		}
+
+		mutable int NumRefs;
+		bool bDeferDelete : 1;
+		bool bMarkedForDelete : 1;
+
+		struct ResourcesToDelete
+		{
+			ResourcesToDelete(uint32 InFrameDeleted = 0)
+				: FrameDeleted(InFrameDeleted)
+			{}
+
+			std::vector<SimpleRenderResource*>	Resources;
+			uint32								FrameDeleted;
+		};
+
+		static std::vector<ResourcesToDelete> DeferredDeletionQueue;
+		static uint32 CurrentFrame;
+	};
+
 	class RenderResource : public RefCountedObject, public DeviceChild
 	{
 	private:
@@ -84,5 +164,102 @@ namespace Drn
 		inline bool IsDepthStencilResource() const { return bDepthStencil; }
 
 		void ReleaseResource();
+	};
+
+	class ResourceLocation : public DeviceChild, public Noncopyable
+	{
+	public:
+
+		enum class ResourceLocationType
+		{
+			eUndefined,
+			eStandAlone,
+			eSubAllocation,
+			eFastAllocation,
+			eMultiFrameFastAllocation,
+			eAliased,
+			eNodeReference,
+			eHeapAliased, 
+		};
+
+		enum EAllocatorType : uint8
+		{
+			AT_Default,
+			AT_SegList,
+			AT_Unknown = 0xff
+		};
+
+		ResourceLocation(Device* Parent);
+		~ResourceLocation();
+
+		void Clear();
+		static void TransferOwnership(ResourceLocation& Destination, ResourceLocation& Source);
+
+		void SetResource(class RenderResource* Value);
+		inline void SetType(ResourceLocationType Value) { Type = Value;}
+
+		inline void SetMappedBaseAddress(void* Value) { MappedBaseAddress = Value; }
+		inline void SetGPUVirtualAddress(D3D12_GPU_VIRTUAL_ADDRESS Value) { GPUVirtualAddress = Value; }
+		inline void SetSize(uint64 Value) { Size = Value; }
+
+		inline ResourceLocationType GetType() const { return Type; }
+		inline class RenderResource* GetResource() const { return UnderlyingResource; }
+		inline void* GetMappedBaseAddress() const { return MappedBaseAddress; }
+		inline D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress() const { return GPUVirtualAddress; }
+		inline uint64 GetSize() const { return Size; }
+
+		const inline bool IsValid() const { return Type != ResourceLocationType::eUndefined; }
+
+		inline void AsStandAlone(RenderResource* Resource, uint32 BufferSize = 0, bool bInIsTransient = false );
+
+		void SetTransient(bool bInTransient)
+		{
+			bTransient = bInTransient;
+		}
+		bool IsTransient() const
+		{
+			return bTransient;
+		}
+
+	private:
+
+		template<bool bReleaseResource>
+		void InternalClear();
+
+		void ReleaseResource();
+
+		ResourceLocationType Type;
+		RenderResource* UnderlyingResource;
+
+		void* MappedBaseAddress;
+		D3D12_GPU_VIRTUAL_ADDRESS GPUVirtualAddress;
+
+		uint64 Size;
+		bool bTransient;
+	};
+
+	class BaseShaderResource : public DeviceChild, public IRefCountedObject
+	{
+	protected:
+		std::vector<class BaseShaderResourceView*> DynamicSRVs;
+
+	public:
+		RenderResource* GetResource() const { return m_ResourceLocation.GetResource(); }
+
+		void AddDynamicSRV(class BaseShaderResourceView* InSRV);
+		void RemoveDynamicSRV(class BaseShaderResourceView* InSRV);
+		void RemoveAllDynamicSRVs();
+
+		ResourceLocation m_ResourceLocation;
+		uint32 BufferAlignment;
+
+	public:
+		BaseShaderResource(Device* InParent)
+			: DeviceChild(InParent)
+			, m_ResourceLocation(InParent)
+			, BufferAlignment(0)
+		{}
+
+		~BaseShaderResource();
 	};
 }
