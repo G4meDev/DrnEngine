@@ -128,6 +128,7 @@ namespace Drn
 		SceneRenderer* m_MainSceneRenderer;
 
 		ID3D12GraphicsCommandList2* GetCommandList();
+		D3D12CommandList* GetCommandList_Temp() { return m_CommandList; };
 
 		void Flush();
 

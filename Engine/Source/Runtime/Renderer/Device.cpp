@@ -117,7 +117,7 @@ namespace Drn
 
 	Device::~Device()
 	{
-		m_DeferredDeletionQueue.ReleaseResources();
+		//m_DeferredDeletionQueue.ReleaseResources();
 
 		LOG( LogDevice, Info, "removing device %ws", m_Description.Description );
 	}
@@ -182,7 +182,10 @@ namespace Drn
 		while (!DeferredReleaseQueue.empty())
 		{
 			FencedObject = DeferredReleaseQueue.front();
-			if (!FencedObject.FencePair.first->IsFenceComplete(FencedObject.FencePair.second));
+			GpuFence* Fence = FencedObject.FencePair.first;
+			uint64 SignaledValue = FencedObject.FencePair.second;
+
+			if (!Fence->IsFenceComplete(SignaledValue))
 			{
 				return;
 			}

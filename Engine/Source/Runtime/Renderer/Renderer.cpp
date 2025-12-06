@@ -58,6 +58,9 @@ namespace Drn
 			S->Release();
 		}
 
+		SimpleRenderResource::FlushPendingDeletes(true);
+		m_Device->GetDeferredDeletionQueue().ReleaseResources();
+
 		CommonResources::Shutdown();
 
 		BufferedResourceManager::Get()->Flush();
@@ -408,22 +411,22 @@ namespace Drn
 
 	void Renderer::Tick( float DeltaTime )
 	{
-		SCOPE_STAT();
-
-		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
-		SimpleRenderResource::FlushPendingDeletes();
-
-		InitRender(DeltaTime);
-		UpdateSceneProxyAndResources();
-		RenderSceneRenderers();
-		RenderImgui();
-		ResolveDisplayBuffer();
-		ExecuteCommands();
-		m_SwapChain->Present();
+		//SCOPE_STAT();
+		//
+		//InitRender(DeltaTime);
+		//UpdateSceneProxyAndResources();
+		//RenderSceneRenderers();
+		//RenderImgui();
+		//ResolveDisplayBuffer();
+		//ExecuteCommands();
+		//m_SwapChain->Present();
 	}
 
 	void Renderer::InitRender(float DeltaTime)
 	{
+		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+		SimpleRenderResource::FlushPendingDeletes();
+
 		SCOPE_STAT( "InitRender" );
 
 		{

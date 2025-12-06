@@ -341,7 +341,7 @@ namespace Drn
 		m_ViewArraySize   = m_EndArray - m_BeginArray;
 	}
 
-	CViewSubresourceSubset::CViewSubresourceSubset( const D3D12_SHADER_RESOURCE_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags /*Flags*/ )
+	CViewSubresourceSubset::CViewSubresourceSubset( const D3D12_SHADER_RESOURCE_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags Flags)
 		: CSubresourceSubset( Desc, ResourceFormat )
 		, m_MipLevels( MipLevels )
 		, m_ArraySlices( ArraySize )
@@ -357,7 +357,7 @@ namespace Drn
 		Reduce();
 	}
 
-	CViewSubresourceSubset::CViewSubresourceSubset( const D3D12_UNORDERED_ACCESS_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags /*Flags*/ )
+	CViewSubresourceSubset::CViewSubresourceSubset( const D3D12_UNORDERED_ACCESS_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags Flags)
 		: CSubresourceSubset( Desc )
 		, m_MipLevels( MipLevels )
 		, m_ArraySlices( ArraySize )
@@ -386,7 +386,7 @@ namespace Drn
 		Reduce();
 	}
 
-	CViewSubresourceSubset::CViewSubresourceSubset( const D3D12_RENDER_TARGET_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags /*Flags*/ )
+	CViewSubresourceSubset::CViewSubresourceSubset( const D3D12_RENDER_TARGET_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags Flags)
 		: CSubresourceSubset( Desc )
 		, m_MipLevels( MipLevels )
 		, m_ArraySlices( ArraySize )

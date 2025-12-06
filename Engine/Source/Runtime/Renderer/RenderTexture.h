@@ -127,6 +127,7 @@ namespace Drn
 
 		static const ClearValueBinding None;
 		static const ClearValueBinding Black;
+		static const ClearValueBinding BlackZeroAlpha;
 		static const ClearValueBinding BlackMaxAlpha;
 		static const ClearValueBinding White;
 		static const ClearValueBinding Transparent;
@@ -145,6 +146,13 @@ namespace Drn
 			, ResourceArray(nullptr)
 			, ClearValueBinding(Vector4(0))
 			, DebugName("<unnamed_resource>")
+		{}
+
+		RenderResourceCreateInfo(void* InBlukData, void* InResourceArray, const ClearValueBinding& InClearBinding, const std::string& InDebugName)
+			: BulkData(InBlukData)
+			, ResourceArray(InResourceArray)
+			, ClearValueBinding(InClearBinding)
+			, DebugName(InDebugName)
 		{}
 
 		RenderResourceCreateInfo(void* InBulkData)

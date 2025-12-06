@@ -13,18 +13,19 @@ namespace Drn
 	public:
 		SimpleRenderResource(bool InDeferDelete = true)
 			: bDeferDelete(InDeferDelete)
+			, NumRefs(0)
 		{};
 
 		virtual ~SimpleRenderResource() {}
 
 		uint32 AddRef() const override
 		{
-			return uint32(++NumRefs);
+			return ++NumRefs;
 		}
 
 		uint32 Release() const override
 		{
-			uint32 Refs = uint32(--NumRefs);
+			uint32 Refs = --NumRefs;
 			if(Refs == 0)
 			{
 				if (bDeferDelete)
@@ -41,7 +42,7 @@ namespace Drn
 
 		uint32 GetRefCount() const override
 		{
-			return uint32(NumRefs);
+			return NumRefs;
 		}
 
 		static void FlushPendingDeletes( bool bFlushDeferredDeletes = false );
@@ -51,6 +52,7 @@ namespace Drn
 		void DeferDelete() const
 		{
 			SimpleRenderResource* MutablePtr = const_cast<SimpleRenderResource*>(this);
+			MutablePtr->bMarkedForDelete = true;
 
 			for (ResourcesToDelete& ToDeletePage : DeferredDeletionQueue)
 			{
@@ -63,11 +65,9 @@ namespace Drn
 
 			ResourcesToDelete& ToDeletePage = DeferredDeletionQueue.emplace_back(CurrentFrame);
 			ToDeletePage.Resources.push_back(MutablePtr);
-
-			MutablePtr->bMarkedForDelete = true;
 		}
 
-		mutable int NumRefs;
+		mutable uint32 NumRefs;
 		bool bDeferDelete : 1;
 		bool bMarkedForDelete : 1;
 

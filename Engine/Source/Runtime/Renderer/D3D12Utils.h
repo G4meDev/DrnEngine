@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Windows.h"
+#include <d3d12.h>
+#include "Runtime/Renderer/RenderResource.h"
 
 #define NUM_BACKBUFFERS 3
 #define NUM_SCENE_DOWNSAMPLES 6
@@ -34,13 +36,15 @@
 #define D3D12_RESOURCE_STATE_TBD D3D12_RESOURCE_STATES(-1 ^ (1 << 31))
 #define D3D12_RESOURCE_STATE_CORRUPT D3D12_RESOURCE_STATES(-2 ^ (1 << 31))
 
+static bool IsValidD3D12ResourceState(D3D12_RESOURCE_STATES InState)
+{
+	return (InState != D3D12_RESOURCE_STATE_TBD && InState != D3D12_RESOURCE_STATE_CORRUPT);
+}
+
 #define MAX_TEXTURE_SIZE_2D 4096
 #define MAX_TEXTURE_SIZE_CUBE 2048
 
 #define VERIFYD3D12RESULT(x)			{HRESULT hres = x; if (FAILED(hres)) { VerifyD3D12Result(hres, #x, __FILE__, __LINE__); }}
-
-#include <d3d12.h>
-#include "Runtime/Renderer/RenderResource.h"
 
 void SetName(class ID3D12Object* const Object, const std::string& Name);
 void SetName(class Drn::RenderResource* const Resource, const std::string& Name);

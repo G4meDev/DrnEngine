@@ -5,6 +5,7 @@ namespace Drn
 {
 	const ClearValueBinding ClearValueBinding::None(EClearBinding::ENoneBound);
 	const ClearValueBinding ClearValueBinding::Black(Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+	const ClearValueBinding ClearValueBinding::BlackZeroAlpha(Vector4(0.0f, 0.0f, 0.0f, 0.0f));
 	const ClearValueBinding ClearValueBinding::BlackMaxAlpha(Vector4(0.0f, 0.0f, 0.0f, FLT_MAX));
 	const ClearValueBinding ClearValueBinding::White(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	const ClearValueBinding ClearValueBinding::Transparent(Vector4(0.0f, 0.0f, 0.0f, 0.0f));

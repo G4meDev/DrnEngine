@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "RenderBuffer.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -14,19 +15,20 @@ namespace Drn
 		virtual void Init() override;
 		virtual void Resize( const IntPoint& Size ) override;
 
-		virtual void ClearDepth( ID3D12GraphicsCommandList2* CommandList );
-		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
+		virtual void ClearDepth( D3D12CommandList* CommandList );
+		virtual void Clear( D3D12CommandList* CommandList );
 		//base pass
-		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
-		virtual void BindDepth( ID3D12GraphicsCommandList2* CommandList );
+		virtual void Bind( D3D12CommandList* CommandList );
+		virtual void BindDepth( D3D12CommandList* CommandList );
 
-		virtual void BindLightPass( ID3D12GraphicsCommandList2* CommandList );
+		virtual void BindLightPass( D3D12CommandList* CommandList );
 
 		Resource* m_ColorDeferredTarget;
 		Resource* m_BaseColorTarget;
 		Resource* m_WorldNormalTarget;
 		// Metallic Roughness AO Shading id
-		Resource* m_MasksTarget;
+		//Resource* m_MasksTarget;
+		TRefCountPtr<RenderTexture2D> m_MasksTarget;
 		// Transmittance .etc
 		Resource* m_MasksBTarget;
 		Resource* m_VelocityTarget;
@@ -35,7 +37,7 @@ namespace Drn
 		D3D12_CLEAR_VALUE m_ColorDeferredClearValue;
 		D3D12_CLEAR_VALUE m_BaseColorClearValue;
 		D3D12_CLEAR_VALUE m_WorldNormalClearValue;
-		D3D12_CLEAR_VALUE m_MasksClearValue;
+		//D3D12_CLEAR_VALUE m_MasksClearValue;
 		D3D12_CLEAR_VALUE m_MasksBClearValue;
 		D3D12_CLEAR_VALUE m_VelocityClearValue;
 		D3D12_CLEAR_VALUE m_DepthClearValue;
@@ -46,7 +48,7 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE m_ColorDeferredCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_BaseColorCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_WorldNormalCpuHandle;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_MasksCpuHandle;
+		//D3D12_CPU_DESCRIPTOR_HANDLE m_MasksCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_MasksBCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_VelocityCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthCpuHandle;

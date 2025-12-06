@@ -112,7 +112,7 @@ namespace Drn
 		m_Data.DeferredColorTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_ColorDeferredTarget->GetGpuHandle());
 		m_Data.BaseColorTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_BaseColorTarget->GetGpuHandle());
 		m_Data.WorldNormalTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_WorldNormalTarget->GetGpuHandle());
-		m_Data.MasksTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_MasksTarget->GetGpuHandle());
+		m_Data.MasksTexture = Renderer->m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
 		m_Data.HzbTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_HZBBuffer->M_HZBTarget->GetGpuHandle());
 

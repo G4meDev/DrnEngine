@@ -172,8 +172,8 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_DepthTarget, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
-		m_GBuffer->ClearDepth( m_CommandList->GetD3D12CommandList() );
-		m_GBuffer->BindDepth(m_CommandList->GetD3D12CommandList());
+		m_GBuffer->ClearDepth( m_CommandList);
+		m_GBuffer->BindDepth(m_CommandList);
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
@@ -280,7 +280,6 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_ColorDeferredTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_BaseColorTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_WorldNormalTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_MasksTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_MasksBTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		ResourceStateTracker::Get()->TransiationResource(m_GBuffer->m_VelocityTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -289,9 +288,13 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource(m_DecalBuffer->m_MasksTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+		
+		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		m_CommandList->FlushBarriers();
 
-		m_GBuffer->Clear( m_CommandList->GetD3D12CommandList() );
-		m_GBuffer->Bind(m_CommandList->GetD3D12CommandList());
+
+		m_GBuffer->Clear( m_CommandList);
+		m_GBuffer->Bind(m_CommandList);
 
 		if (m_DecalBuffer)
 		{
@@ -451,14 +454,14 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		m_CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
 
-		m_GBuffer->BindLightPass(m_CommandList->GetD3D12CommandList());
+		m_GBuffer->BindLightPass(m_CommandList);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
 		// 1 is light buffer
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_BaseColorTarget->GetGpuHandle()), 3);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()), 4);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksTarget->GetGpuHandle()), 5);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 5);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()), 6);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOTarget->GetGpuHandle()), 8);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksBTarget->GetGpuHandle()), 9);
@@ -483,11 +486,14 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_ColorDeferredTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+
+		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+		m_CommandList->FlushBarriers();
+
 		m_ScreenSpaceReflectionBuffer->Bind(m_CommandList->GetD3D12CommandList());
 		m_ScreenSpaceReflectionBuffer->Clear(m_CommandList->GetD3D12CommandList());
 
@@ -517,11 +523,14 @@ namespace Drn
 		ResourceStateTracker::Get()->TransiationResource( m_AOBuffer->m_AOTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_GBuffer->m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+		
+		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->FlushBarriers();
+
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_GBuffer->m_ColorDeferredCpuHandle, true, NULL);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
@@ -795,10 +804,11 @@ namespace Drn
 		{
 		case EBufferVisualization::BaseColor: OutResource = m_GBuffer->m_BaseColorTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_BaseColorTarget->GetGpuHandle()); break;
 
-		case EBufferVisualization::Metallic:
-		case EBufferVisualization::Roughness:
-		case EBufferVisualization::MaterialAO:
-		case EBufferVisualization::ShadingModel: OutResource = m_GBuffer->m_MasksTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksTarget->GetGpuHandle()); break;
+		// TODO: update with new texture
+		//case EBufferVisualization::Metallic:
+		//case EBufferVisualization::Roughness:
+		//case EBufferVisualization::MaterialAO:
+		//case EBufferVisualization::ShadingModel: OutResource = m_GBuffer->m_MasksTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksTarget->GetGpuHandle()); break;
 
 		case EBufferVisualization::PreTonemapColor: OutResource = m_GBuffer->m_ColorDeferredTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_ColorDeferredTarget->GetGpuHandle()); break;
 		case EBufferVisualization::WorldNormal: OutResource = m_GBuffer->m_WorldNormalTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()); break;
@@ -916,6 +926,8 @@ namespace Drn
 	void SceneRenderer::ResizeView( const IntPoint& InSize )
 	{
 		SCOPE_STAT();
+
+		LOG( LogSceneRenderer, Info, "Resize from \"%s\" to \"%s\".", m_CachedRenderSize.ToString().c_str(), m_RenderSize.ToString().c_str() );
 
 		m_CachedRenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
 		m_RenderSize = m_CachedRenderSize;

@@ -32,11 +32,11 @@ namespace Drn
 		m_WorldNormalClearValue.Color[2] = 0.0f;
 		m_WorldNormalClearValue.Color[3] = 1.0f;
 		
-		m_MasksClearValue.Format   = GBUFFER_MASKS_FORMAT;
-		m_MasksClearValue.Color[0] = 0.0f;
-		m_MasksClearValue.Color[1] = 0.0f;
-		m_MasksClearValue.Color[2] = 0.0f;
-		m_MasksClearValue.Color[3] = 0.0f;
+		//m_MasksClearValue.Format   = GBUFFER_MASKS_FORMAT;
+		//m_MasksClearValue.Color[0] = 0.0f;
+		//m_MasksClearValue.Color[1] = 0.0f;
+		//m_MasksClearValue.Color[2] = 0.0f;
+		//m_MasksClearValue.Color[3] = 0.0f;
 
 		m_MasksBClearValue.Format   = GBUFFER_MASKS_FORMAT;
 		m_MasksBClearValue.Color[0] = 0.0f;
@@ -59,7 +59,7 @@ namespace Drn
 		if (m_ColorDeferredTarget) { m_ColorDeferredTarget->ReleaseBufferedResource(); }
 		if (m_BaseColorTarget) { m_BaseColorTarget->ReleaseBufferedResource(); }
 		if (m_WorldNormalTarget) { m_WorldNormalTarget->ReleaseBufferedResource(); }
-		if (m_MasksTarget) { m_MasksTarget->ReleaseBufferedResource(); }
+		//if (m_MasksTarget) { m_MasksTarget->ReleaseBufferedResource(); }
 		if (m_MasksBTarget) { m_MasksBTarget->ReleaseBufferedResource(); }
 		if (m_VelocityTarget) { m_VelocityTarget->ReleaseBufferedResource(); }
 		if (m_DepthTarget) { m_DepthTarget->ReleaseBufferedResource(); }
@@ -83,7 +83,7 @@ namespace Drn
 		m_ColorDeferredCpuHandle	= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, Renderer::Get()->GetRtvIncrementSize());
 		m_BaseColorCpuHandle		= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 1, Renderer::Get()->GetRtvIncrementSize());
 		m_WorldNormalCpuHandle		= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 2, Renderer::Get()->GetRtvIncrementSize());
-		m_MasksCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 3, Renderer::Get()->GetRtvIncrementSize());
+		//m_MasksCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 3, Renderer::Get()->GetRtvIncrementSize());
 		m_MasksBCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 4, Renderer::Get()->GetRtvIncrementSize());
 		m_VelocityCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 5, Renderer::Get()->GetRtvIncrementSize());
 		m_DepthCpuHandle			= m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
@@ -175,30 +175,34 @@ namespace Drn
 			Device->CreateShaderResourceView( m_WorldNormalTarget->GetD3D12Resource(), &SrvDesc, m_WorldNormalTarget->GetCpuHandle() );
 		}
 
-		{
-			if (m_MasksTarget)
-				m_MasksTarget->ReleaseBufferedResource();
+		RenderResourceCreateInfo MaskACreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "Gbuffer_MasksA" );
+		m_MasksTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_MASKS_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), MaskACreateInfo);
 
-			m_MasksTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_MASKS_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET, m_MasksClearValue);
-
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = GBUFFER_MASKS_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			Device->CreateRenderTargetView( m_MasksTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_MasksCpuHandle );
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
-			SrvDesc.Format = GBUFFER_MASKS_FORMAT;
-			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			SrvDesc.Texture2D.MipLevels = 1;
-			SrvDesc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView( m_MasksTarget->GetD3D12Resource(), &SrvDesc, m_MasksTarget->GetCpuHandle() );
-		}
+		//{
+		//	if (m_MasksTarget)
+		//		m_MasksTarget->ReleaseBufferedResource();
+		//
+		//	m_MasksTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
+		//		CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_MASKS_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
+		//		D3D12_RESOURCE_STATE_RENDER_TARGET, m_MasksClearValue);
+		//
+		//	D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
+		//	RenderTargetViewDesc.Format = GBUFFER_MASKS_FORMAT;
+		//	RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		//	RenderTargetViewDesc.Texture2D.MipSlice = 0;
+		//
+		//	Device->CreateRenderTargetView( m_MasksTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_MasksCpuHandle );
+		//
+		//	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
+		//	SrvDesc.Format = GBUFFER_MASKS_FORMAT;
+		//	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		//	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		//	SrvDesc.Texture2D.MipLevels = 1;
+		//	SrvDesc.Texture2D.MostDetailedMip = 0;
+		//
+		//	Device->CreateShaderResourceView( m_MasksTarget->GetD3D12Resource(), &SrvDesc, m_MasksTarget->GetCpuHandle() );
+		//}
 
 		{
 			if (m_MasksBTarget)
@@ -281,7 +285,7 @@ namespace Drn
 		m_ColorDeferredTarget->SetName( "Gbuffer_DeferredColor" );
 		m_BaseColorTarget->SetName( "Gbuffer_BaseColor" );
 		m_WorldNormalTarget->SetName( "Gbuffer_WorldNormal" );
-		m_MasksTarget->SetName( "Gbuffer_MasksA" );
+		//m_MasksTarget->SetName( "Gbuffer_MasksA" );
 		m_MasksBTarget->SetName( "Gbuffer_MasksB" );
 		m_VelocityTarget->SetName( "Gbuffer_Velocity" );
 		m_DepthTarget->SetName( "Gbuffer_Depth" );
@@ -289,62 +293,68 @@ namespace Drn
 
 	}
 
-	void GBuffer::Clear( ID3D12GraphicsCommandList2* CommandList )
+	void GBuffer::Clear( D3D12CommandList* CommandList )
 	{
-		CommandList->ClearRenderTargetView( m_ColorDeferredCpuHandle, m_ColorDeferredClearValue.Color, 0, nullptr );
-		CommandList->ClearRenderTargetView( m_BaseColorCpuHandle, m_BaseColorClearValue.Color, 0, nullptr );
-		CommandList->ClearRenderTargetView( m_WorldNormalCpuHandle, m_WorldNormalClearValue.Color, 0, nullptr );
-		CommandList->ClearRenderTargetView( m_MasksCpuHandle, m_MasksClearValue.Color, 0, nullptr );
-		CommandList->ClearRenderTargetView( m_MasksBCpuHandle, m_MasksBClearValue.Color, 0, nullptr );
-		CommandList->ClearRenderTargetView( m_VelocityCpuHandle, m_VelocityClearValue.Color, 0, nullptr );
+		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_ColorDeferredCpuHandle, m_ColorDeferredClearValue.Color, 0, nullptr );
+		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_BaseColorCpuHandle, m_BaseColorClearValue.Color, 0, nullptr );
+		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_WorldNormalCpuHandle, m_WorldNormalClearValue.Color, 0, nullptr );
+		//CommandList->ClearRenderTargetView( m_MasksCpuHandle, m_MasksClearValue.Color, 0, nullptr );
+		CommandList->ClearColorTexture(m_MasksTarget, 0, 0, m_MasksTarget->GetClearColor());
+		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_MasksBCpuHandle, m_MasksBClearValue.Color, 0, nullptr );
+		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_VelocityCpuHandle, m_VelocityClearValue.Color, 0, nullptr );
 		//CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
-	void GBuffer::ClearDepth( ID3D12GraphicsCommandList2* CommandList )
+	void GBuffer::ClearDepth( D3D12CommandList* CommandList )
 	{
-		CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
+		CommandList->GetD3D12CommandList()->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
-	void GBuffer::Bind( ID3D12GraphicsCommandList2* CommandList )
+	void GBuffer::Bind( D3D12CommandList* CommandList )
 	{
-		CommandList->RSSetViewports(1, &m_Viewport);
-		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
+		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[6] = 
 		{
 			m_ColorDeferredCpuHandle,
 			m_BaseColorCpuHandle,
 			m_WorldNormalCpuHandle,
-			m_MasksCpuHandle,
+//			m_MasksCpuHandle,
+			m_MasksTarget->GetRenderTargetView(0, 0)->GetView(),
 			m_MasksBCpuHandle,
 			m_VelocityCpuHandle,
 		};
 
-		CommandList->OMSetRenderTargets( 6, RenderTargets, false, &m_DepthCpuHandle );
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 6, RenderTargets, false, &m_DepthCpuHandle );
 	}
 
-	void GBuffer::BindDepth( ID3D12GraphicsCommandList2* CommandList )
+	void GBuffer::BindDepth( D3D12CommandList* CommandList )
 	{
-		CommandList->RSSetViewports(1, &m_Viewport);
-		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
+		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
 
-		CommandList->OMSetRenderTargets( 0, NULL, true, &m_DepthCpuHandle );
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 0, NULL, true, &m_DepthCpuHandle );
 	}
 
-	void GBuffer::BindLightPass( ID3D12GraphicsCommandList2* CommandList )
+	void GBuffer::BindLightPass( D3D12CommandList* CommandList )
 	{
 		ResourceStateTracker::Get()->TransiationResource(m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource(m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource(m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		//ResourceStateTracker::Get()->TransiationResource(m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource(m_MasksBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource(m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
-		ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+		ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
 
-		CommandList->RSSetViewports(1, &m_Viewport);
-		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->TransitionResourceWithTracking(m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->FlushBarriers();
 
-		CommandList->OMSetRenderTargets( 1, &m_ColorDeferredCpuHandle, true, nullptr );
+
+		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
+		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
+
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &m_ColorDeferredCpuHandle, true, nullptr );
 	}
 
 }

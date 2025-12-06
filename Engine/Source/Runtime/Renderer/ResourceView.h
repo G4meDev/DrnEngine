@@ -58,11 +58,11 @@ namespace Drn
 		{
 		}
 
-		inline CViewSubresourceSubset(uint32 Subresource, uint8 MipLevels, uint16 ArraySize, uint8 PlaneCount);
-		inline CViewSubresourceSubset(const D3D12_SHADER_RESOURCE_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags /*Flags*/);
-		inline CViewSubresourceSubset(const D3D12_UNORDERED_ACCESS_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags /*Flags*/);
-		inline CViewSubresourceSubset(const D3D12_DEPTH_STENCIL_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags Flags);
-		inline CViewSubresourceSubset(const D3D12_RENDER_TARGET_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags /*Flags*/);
+		CViewSubresourceSubset(uint32 Subresource, uint8 MipLevels, uint16 ArraySize, uint8 PlaneCount);
+		CViewSubresourceSubset(const D3D12_SHADER_RESOURCE_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags Flags);
+		CViewSubresourceSubset(const D3D12_UNORDERED_ACCESS_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags Flags);
+		CViewSubresourceSubset(const D3D12_DEPTH_STENCIL_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags Flags);
+		CViewSubresourceSubset(const D3D12_RENDER_TARGET_VIEW_DESC& Desc, uint8 MipLevels, uint16 ArraySize, DXGI_FORMAT ResourceFormat, ViewSubresourceSubsetFlags Flags);
 
 		template<typename T>
 		static CViewSubresourceSubset FromView(const T* pView)
@@ -357,11 +357,7 @@ namespace Drn
 
 			Desc = InDesc;
 
-			ViewSubresourceSubset = CViewSubresourceSubset(Desc,
-				Resource->GetMipLevels(),
-				Resource->GetArraySize(),
-				Resource->GetDesc().Format,
-				Flags);
+			ViewSubresourceSubset = CViewSubresourceSubset(Desc, Resource->GetMipLevels(), Resource->GetArraySize(), Resource->GetDesc().Format, Flags);
 		}
 
 	protected:
@@ -373,10 +369,10 @@ namespace Drn
 			Descriptor.CreateView(Desc, D3DResource);
 		}
 
-		void CreateViewWithCounter(const TDesc& InDesc, ResourceLocation& InResourceLocation, RenderResource* InCounterResource)
+		void CreateViewWithCounter(const TDesc& InDesc, ResourceLocation& InResourceLocation, class RenderResource* InCounterResource)
 		{
 			Initialize(InDesc, InResourceLocation);
-		
+
 			ID3D12Resource* D3DResource = m_ResourceLocation->GetResource()->GetResource();
 			ID3D12Resource* D3DCounterResource = InCounterResource ? InCounterResource->GetResource() : nullptr;
 			Descriptor.CreateViewWithCounter(Desc, D3DResource, D3DCounterResource);
