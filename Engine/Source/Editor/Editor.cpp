@@ -7,6 +7,7 @@
 
 #include "Editor/OutputLog/OutputLog.h"
 #include "Editor/ContentBrowser/ContentBrowser.h"
+#include "Editor/StatsWindow/StatsWindow.h"
 #include "Editor/LevelViewport/LevelViewport.h"
 #include "Editor/Misc/TaskGraphVisualizer.h"
 
@@ -46,6 +47,7 @@ namespace Drn
 		OutputLog::Get()->Init();
 		ContentBrowser::Get()->Init();
 		LevelViewport::Get()->Init( WorldManager::Get()->GetMainWorld() );
+		StatsWindow::Get()->Init();
 
 		EditorMisc::Get()->Register();
 	}
@@ -56,6 +58,7 @@ namespace Drn
 
 		OutputLog::Get()->Tick(DeltaTime);
 		ContentBrowser::Get()->Tick(DeltaTime);
+		StatsWindow::Get()->Tick(DeltaTime);
 		LevelViewport::Get()->Tick(DeltaTime);
 	}
 
@@ -64,6 +67,7 @@ namespace Drn
 		CloseImportMenu();
 
 		LevelViewport::Get()->Shutdown();
+		StatsWindow::Get()->Shutdown();
 		ContentBrowser::Get()->Shutdown();
 		OutputLog::Get()->Shutdown();
 	}

@@ -16,6 +16,11 @@ namespace Drn
 	const ClearValueBinding ClearValueBinding::Green(Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 	const ClearValueBinding ClearValueBinding::DefaultNormal8Bit(Vector4(128.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f));
 
+	RenderTextureBase::~RenderTextureBase()
+	{
+		TextureStats::TextureDeleted( *this );
+	}
+
 	RenderTexture2D* RenderTexture2D::Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo)
 	{
 		bool bTextureArray = false;
@@ -322,7 +327,7 @@ namespace Drn
 		}
 
 
-		//FD3D12TextureStats::D3D12TextureAllocated(*D3D12TextureOut);
+		TextureStats::TextureAllocated(*NewTexture);
 
 		//// Initialize if data is given
 		//if (CreateInfo.BulkData != nullptr)
@@ -376,4 +381,126 @@ namespace Drn
 		}
 	}
 
-}
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#if RENDER_STATS
+	std::atomic<int32> TextureStats::TextureMemoryStats[(uint8)ETextureMemoryStatGroups::Max];
+#endif
+
+	bool TextureStats::ShouldCountAsTextureMemory( D3D12_RESOURCE_FLAGS MiscFlags )
+	{
+		return (0 == (MiscFlags & (D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL | D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)));
+	}
+
+	TextureStats::ETextureMemoryStatGroups TextureStats::GetTextureStatEnum( D3D12_RESOURCE_FLAGS MiscFlags, bool bCubeMap, bool b3D )
+	{
+#if RENDER_STATS
+		if (ShouldCountAsTextureMemory(MiscFlags))
+		{
+			if (bCubeMap)
+			{
+				return ETextureMemoryStatGroups::TextureCube;
+			}
+			else if (b3D)
+			{
+				return ETextureMemoryStatGroups::Texture3D;
+			}
+			else
+			{
+				return ETextureMemoryStatGroups::Texture2D;
+			}
+		}
+		else
+		{
+			if (bCubeMap)
+			{
+				return ETextureMemoryStatGroups::RenderTargetCube;
+			}
+			else if (b3D)
+			{
+				return ETextureMemoryStatGroups::RenderTarget3D;
+			}
+			else
+			{
+				return ETextureMemoryStatGroups::RenderTarget2D;
+			}
+		}
+#endif
+
+		drn_check(false);
+		return ETextureMemoryStatGroups::Texture2D;
+	}
+
+	std::string TextureStats::GetTextureStatName( ETextureMemoryStatGroups Group )
+	{
+		switch ( Group )
+		{
+		case TextureStats::ETextureMemoryStatGroups::TextureTotal:			return "TextureTotal";
+		case TextureStats::ETextureMemoryStatGroups::RenderTargetTotal:		return "RenderTargetTotal";
+		case TextureStats::ETextureMemoryStatGroups::Texture2D:				return "Texture2D";
+		case TextureStats::ETextureMemoryStatGroups::Texture3D:				return "Texture3D";
+		case TextureStats::ETextureMemoryStatGroups::TextureCube:			return "TextureCube";
+		case TextureStats::ETextureMemoryStatGroups::RenderTarget2D:		return "RenderTarget2D";
+		case TextureStats::ETextureMemoryStatGroups::RenderTarget3D:		return "RenderTarget3D";
+		case TextureStats::ETextureMemoryStatGroups::RenderTargetCube:		return "RenderTargetCube";
+		default: drn_check(false); return "invalid";
+		}
+	}
+
+	int32 TextureStats::GetTextureStatSize( ETextureMemoryStatGroups Group )
+	{
+		return TextureMemoryStats[(uint8)Group].load();
+	}
+
+	void TextureStats::UpdateTextureMemoryStats( const D3D12_RESOURCE_DESC& Desc, int64 TextureSize, bool b3D, bool bCubeMap )
+	{
+#if RENDER_STATS
+		if (TextureSize == 0) { return; }
+
+		const int64 AlignedSize = (TextureSize > 0) ? Align(TextureSize, 1024) / 1024 : -(Align(-TextureSize, 1024) / 1024);
+		TextureMemoryStats[(uint8)GetTextureStatEnum(Desc.Flags, bCubeMap, b3D)].fetch_add(AlignedSize);
+
+		if (ShouldCountAsTextureMemory(Desc.Flags))
+		{
+			TextureMemoryStats[(uint8)ETextureMemoryStatGroups::TextureTotal].fetch_add(AlignedSize);
+		}
+		else
+		{
+			TextureMemoryStats[(uint8)ETextureMemoryStatGroups::RenderTargetTotal].fetch_add(AlignedSize);
+		}
+#endif
+	}
+
+
+	void TextureStats::TextureAllocated( RenderTextureBase& Texture, const D3D12_RESOURCE_DESC* Desc )
+	{
+		RenderResource* Resource = Texture.GetResource();
+		if (Resource)
+		{
+			if (!Desc)
+			{
+				Desc = &Resource->GetDesc();
+			}
+
+			const D3D12_RESOURCE_ALLOCATION_INFO AllocationInfo = Texture.GetParentDevice()->GetD3D12Device()->GetResourceAllocationInfo(0, 1, Desc);
+			const int64 TextureSize = AllocationInfo.SizeInBytes;
+
+			Texture.SetMemorySize(TextureSize);
+			UpdateTextureMemoryStats(*Desc, TextureSize, Texture.Is3D(), Texture.IsCubemap());
+		}
+	}
+
+	void TextureStats::TextureDeleted( RenderTextureBase& Texture )
+	{
+		RenderResource* Resource = Texture.GetResource();
+		if (Resource)
+		{
+			const D3D12_RESOURCE_DESC& Desc = Resource->GetDesc();
+			const int64 TextureSize = Texture.GetMemorySize();
+			drn_check(TextureSize > 0);
+
+			UpdateTextureMemoryStats(Desc, -TextureSize, Texture.Is3D(), Texture.IsCubemap());
+		}
+	}
+
+}  // namespace Drn

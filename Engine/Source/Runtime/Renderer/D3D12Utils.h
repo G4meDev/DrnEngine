@@ -44,6 +44,7 @@ static bool IsValidD3D12ResourceState(D3D12_RESOURCE_STATES InState)
 #define MAX_TEXTURE_SIZE_2D 4096
 #define MAX_TEXTURE_SIZE_CUBE 2048
 
+#define RENDER_STATS 1
 #define VERIFYD3D12RESULT(x)			{HRESULT hres = x; if (FAILED(hres)) { VerifyD3D12Result(hres, #x, __FILE__, __LINE__); }}
 
 void SetName(class ID3D12Object* const Object, const std::string& Name);

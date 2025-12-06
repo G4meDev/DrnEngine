@@ -181,6 +181,9 @@ set( HEADER_FILES
 	Source/Editor/ContentBrowser/ContentBrowser.h
 	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.h
 
+	Source/Editor/StatsWindow/StatsWindow.h
+	Source/Editor/StatsWindow/StatsWindowGuiLayer.h
+
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.h
@@ -377,6 +380,9 @@ set( SOURCE_FILES
 
 	Source/Editor/ContentBrowser/ContentBrowser.cpp
 	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.cpp
+
+	Source/Editor/StatsWindow/StatsWindow.cpp
+	Source/Editor/StatsWindow/StatsWindowGuiLayer.cpp
 
 	Source/Editor/Misc/TaskGraphVisualizer.cpp
 

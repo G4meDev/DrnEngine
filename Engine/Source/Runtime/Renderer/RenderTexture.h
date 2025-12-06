@@ -224,7 +224,7 @@ namespace Drn
 			, Flags(InFlags)
 		{}
 
-		virtual ~RenderTextureBase() {}
+		virtual ~RenderTextureBase();
 
 		inline void SetCreatedRTVsPerSlice(bool Value, int32 InRTVArraySize)
 		{ 
@@ -368,6 +368,9 @@ namespace Drn
 			return SimpleRenderResource::GetRefCount();
 		}
 
+		virtual bool IsCubemap() const	{ return false; }
+		virtual bool Is3D() const		{ return false; }
+
 	public:
 	
 		virtual IntVector GetSizeXYZ() const = 0;
@@ -466,7 +469,7 @@ namespace Drn
 
 		//void GetReadBackHeapDesc(D3D12_PLACED_SUBRESOURCE_FOOTPRINT& OutFootprint, uint32 Subresource) const;
 		//bool IsCubemap() const { return bCubemap; }
-		virtual bool IsCubemap() const { return false; }
+
 
 	private:
 		//void UnlockInternal(class FRHICommandListImmediate* RHICmdList, FLinkedObjectIterator NextObject, uint32 MipIndex, uint32 ArrayIndex);
@@ -514,4 +517,39 @@ namespace Drn
 	void SafeCreateTexture2D(Device* pDevice, const D3D12_RESOURCE_DESC& TextureDesc, const D3D12_CLEAR_VALUE* ClearValue, ResourceLocation* OutTexture2D,
 		DXGI_FORMAT Format, ETextureCreateFlags Flags, D3D12_RESOURCE_STATES InitialState, bool bNeedsStateTracking, const std::string& Name);
 
+
+	class TextureStats
+	{
+	public:
+
+		enum class ETextureMemoryStatGroups : uint8
+		{
+			TextureTotal = 0,
+			RenderTargetTotal,
+
+			Texture2D,
+			Texture3D,
+			TextureCube,
+			RenderTarget2D,
+			RenderTarget3D,
+			RenderTargetCube,
+
+			Max
+		};
+
+		static bool ShouldCountAsTextureMemory(D3D12_RESOURCE_FLAGS MiscFlags);
+		static ETextureMemoryStatGroups GetTextureStatEnum(D3D12_RESOURCE_FLAGS MiscFlags, bool bCubeMap, bool b3D);
+		static void UpdateTextureMemoryStats(const D3D12_RESOURCE_DESC& Desc, int64 TextureSize, bool b3D, bool bCubeMap);
+
+		static void TextureAllocated(RenderTextureBase& Texture, const D3D12_RESOURCE_DESC *Desc = nullptr);
+		static void TextureDeleted(RenderTextureBase& Texture);
+
+		static std::string GetTextureStatName(ETextureMemoryStatGroups Group);
+		static int32 GetTextureStatSize(ETextureMemoryStatGroups Group);
+
+	private:
+#if RENDER_STATS
+		static std::atomic<int32> TextureMemoryStats[(uint8)ETextureMemoryStatGroups::Max];
+#endif
+	};
 }
