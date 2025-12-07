@@ -32,14 +32,7 @@ namespace Drn
 		TRefCountPtr<RenderTexture2D> m_MasksBTarget;
 		TRefCountPtr<RenderTexture2D> m_VelocityTarget;
 
-		Resource* m_DepthTarget;
-
-		D3D12_CLEAR_VALUE m_DepthClearValue;
-
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RtvHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthCpuHandle;
+		TRefCountPtr<RenderTexture2D> m_DepthTarget;
 
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_ScissorRect;

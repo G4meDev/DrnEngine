@@ -245,7 +245,8 @@ namespace Drn
 
 			else if constexpr (std::is_same_v<TDesc, D3D12_DEPTH_STENCIL_VIEW_DESC>)
 			{
-				__debugbreak();
+				Renderer::Get()->m_BindlessDSVHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
+				//m_Index = Renderer::Get()->GetBindlessRTVIndex(m_GpuHandle);
 			}
 
 			else
@@ -264,7 +265,7 @@ namespace Drn
 
 			else if constexpr (std::is_same_v<TDesc, D3D12_DEPTH_STENCIL_VIEW_DESC>)
 			{
-				__debugbreak();
+				Renderer::Get()->m_BindlessDSVHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
 			}
 
 			else
@@ -381,6 +382,7 @@ namespace Drn
 	public:
 		//inline FD3D12Device*					GetParentDevice()			const { return Descriptor.GetParentDevice(); }
 		//inline FD3D12Device*					GetParentDevice_Unsafe()	const { return Descriptor.GetParentDevice_Unsafe(); }
+		inline const TViewDescriptorHandle<TDesc>&	GetDescriptor()			const { return Descriptor; };
 		inline const TDesc&						GetDesc()					const { return Desc; }
 		inline CD3DX12_CPU_DESCRIPTOR_HANDLE	GetView()					const { return Descriptor.GetCpuHandle(); }
 		inline uint32							GetDescriptorHeapIndex()	const { return Descriptor.GetIndex(); }

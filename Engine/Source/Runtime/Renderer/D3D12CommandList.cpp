@@ -104,9 +104,40 @@ namespace Drn
 		m_CommandList->Reset(commandAllocator.Get(), nullptr);
 	}
 
+	void D3D12CommandList::ClearDepthTexture( class RenderTextureBase* InTexture, EDepthStencilViewType Type, bool bClearDepth, float Depth, bool bClearStencil, uint8 Stencil )
+	{
+		DepthStencilView* View = InTexture->GetDepthStencilView(Type);
+
+		uint32 ClearFlags = 0;
+		if (bClearDepth && View->HasDepth())
+		{
+			ClearFlags |= D3D12_CLEAR_FLAG_DEPTH;
+		}
+		else if (bClearDepth)
+		{
+			drn_check(false);
+		}
+
+		if (bClearStencil && View->HasStencil())
+		{
+			ClearFlags |= D3D12_CLEAR_FLAG_STENCIL;
+		}
+		else if (bClearStencil)
+		{
+			drn_check(false);
+		}
+
+		m_CommandList->ClearDepthStencilView( View->GetView(), (D3D12_CLEAR_FLAGS)ClearFlags, Depth, Stencil, 0, nullptr );
+	}
+
+	void D3D12CommandList::ClearDepthTexture( class RenderTextureBase* InTexture, EDepthStencilViewType Type, bool bClearDepth, bool bClearStencil )
+	{
+		ClearDepthTexture(InTexture, Type, bClearDepth, InTexture->GetDepthClearValue(), bClearStencil, InTexture->GetStencilClearValue());
+	}
+
 	void D3D12CommandList::ClearColorTexture( RenderTextureBase* InTexture, int32 MipIndex, int32 SliceIndex, Vector4 ClearValue )
 	{
-		m_CommandList->ClearRenderTargetView( InTexture->GetRenderTargetView(0, 0)->GetView(), (float*)(&(ClearValue)), 0, nullptr );
+		m_CommandList->ClearRenderTargetView( InTexture->GetRenderTargetView(MipIndex, SliceIndex)->GetView(), (float*)(&(ClearValue)), 0, nullptr );
 	}
 
 	void D3D12CommandList::ClearColorTexture( RenderTextureBase* InTexture, int32 MipIndex, int32 SliceIndex )
@@ -197,7 +228,8 @@ namespace Drn
 
 	//void D3D12CommandList::TransitionResourceWithTracking( class RenderResource* pResource, D3D12_RESOURCE_STATES After, const CViewSubresourceSubset& SubresourceSubset )
 	//{
-	//	
+	//	//TODO: add pending transition for start of command list
+	//
 	//}
 
 	ResourceState_New& D3D12CommandList::GetResourceState( class RenderResource* pResource )

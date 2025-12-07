@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "RenderTexture.h"
+#include <DirectXTex.h>
 
 namespace Drn
 {
@@ -28,6 +29,21 @@ namespace Drn
 
 		drn_check(SizeX > 0 && SizeY > 0 && NumMips > 0);
 		drn_check(SizeX <= MAX_TEXTURE_SIZE_2D);
+
+		// TODO: update by flag and only support typeless input
+		//const bool bSRGB = (Flags & ETextureCreateFlags::SRGB) != 0;
+		const bool bSRGB = IsSRGB(Format);
+		DXGI_FORMAT TypelessFormat = MakeTypeless(Format);
+
+		//const DXGI_FORMAT ShaderResourceFormat = FindShaderResourceDXGIFormat(ResourceFormat, bSRGB);
+		//const DXGI_FORMAT RenderTargetFormat = FindShaderResourceDXGIFormat(ResourceFormat, bSRGB);
+		//const DXGI_FORMAT DepthStencilFormat = FindDepthStencilDXGIFormat(TypelessFormat);
+
+		bool bDepthStencil = Flags& ETextureCreateFlags::DepthStencilTargetable;
+
+		DXGI_FORMAT ShaderResourceFormat = bDepthStencil ? FindDepthStencilSRVFormat(Format) : Format;
+		DXGI_FORMAT RenderTargetFormat = Format;
+		DXGI_FORMAT DepthStencilFormat = Format;
 
 		bool bCreateShaderResource = true;
 
@@ -157,7 +173,7 @@ namespace Drn
 					{
 						D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
 
-						RTVDesc.Format = Format;
+						RTVDesc.Format = RenderTargetFormat;
 						RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
 						RTVDesc.Texture2DArray.FirstArraySlice = SliceIndex;
 						RTVDesc.Texture2DArray.ArraySize = 1;
@@ -171,7 +187,7 @@ namespace Drn
 				{
 					D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
 
-					RTVDesc.Format = Format;
+					RTVDesc.Format = RenderTargetFormat;
 
 					if (bTextureArray || bCubeTexture)
 					{
@@ -213,7 +229,7 @@ namespace Drn
 		if (bCreateDSV)
 		{
 			D3D12_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
-			DSVDesc.Format = Format;
+			DSVDesc.Format = DepthStencilFormat;
 			if (bTextureArray || bCubeTexture)
 			{
 				if (bIsMultisampled)
@@ -245,21 +261,24 @@ namespace Drn
 			}
 
 			const bool HasStencil = HasStencilBits(DSVDesc.Format);
+			D3D12_DSV_FLAGS StencilFlag = HasStencil ? D3D12_DSV_FLAG_READ_ONLY_STENCIL : D3D12_DSV_FLAG_NONE;
+
 			for (uint32 AccessType = 0; AccessType < (uint8)EDepthStencilViewType::Max; ++AccessType)
 			{
-				if ((EDepthStencilViewType)AccessType == EDepthStencilViewType::ReadOnlyDepthStencil)
+
+				if ((EDepthStencilViewType)AccessType == EDepthStencilViewType::DepthStencilRead)
 				{
-					DSVDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_DEPTH | D3D12_DSV_FLAG_READ_ONLY_STENCIL;
+					DSVDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_DEPTH | StencilFlag;
 				}
 
-				else if ((EDepthStencilViewType)AccessType == EDepthStencilViewType::ReadOnlyDepth)
+				else if ((EDepthStencilViewType)AccessType == EDepthStencilViewType::DepthWrite)
+				{
+					DSVDesc.Flags = StencilFlag;
+				}
+
+				else if ((EDepthStencilViewType)AccessType == EDepthStencilViewType::StencilWrite)
 				{
 					DSVDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_DEPTH;
-				}
-
-				else if ((EDepthStencilViewType)AccessType == EDepthStencilViewType::ReadOnlyStencil)
-				{
-					DSVDesc.Flags = D3D12_DSV_FLAG_READ_ONLY_STENCIL;
 				}
 
 				NewTexture->SetDepthStencilView(new DepthStencilView(ParentDevice, DSVDesc, Location, HasStencil), AccessType);
@@ -270,7 +289,7 @@ namespace Drn
 		{
 			D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
 			SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SRVDesc.Format = Format;
+			SRVDesc.Format = ShaderResourceFormat;
 
 			//if (bCubeTexture && bTextureArray)
 			//{

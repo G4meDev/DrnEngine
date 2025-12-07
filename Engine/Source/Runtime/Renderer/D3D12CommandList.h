@@ -3,6 +3,7 @@
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/BufferedResource.h"
 #include "Runtime/Renderer/RenderCommon.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -71,6 +72,9 @@ namespace Drn
 		void Close();
 		void FlipAndReset();
 		void SetAllocatorAndReset(uint8 AllocatorIndex);
+
+		void ClearDepthTexture( class RenderTextureBase* InTexture, EDepthStencilViewType Type, bool bClearDepth, float Depth, bool bClearStencil, uint8 Stencil );
+		void ClearDepthTexture( class RenderTextureBase* InTexture, EDepthStencilViewType Type, bool bClearDepth, bool bClearStencil );
 
 		void ClearColorTexture( class RenderTextureBase* InTexture, int32 MipIndex, int32 SliceIndex, Vector4 ClearValue );
 		void ClearColorTexture( class RenderTextureBase* InTexture, int32 MipIndex = 0, int32 SliceIndex = 0 );

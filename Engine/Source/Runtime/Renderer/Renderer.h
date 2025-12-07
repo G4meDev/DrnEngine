@@ -150,6 +150,9 @@ namespace Drn
 		TempDescriptorHeapAllocator m_BindlessRTVHeapAllocator;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessRTVHeap;
 
+		TempDescriptorHeapAllocator m_BindlessDSVHeapAllocator;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessDSVHeap;
+
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_BindlessRootSinature;
 
 		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessLinearSamplerCpuHandle;

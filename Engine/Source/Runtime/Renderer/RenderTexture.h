@@ -27,11 +27,11 @@ namespace Drn
 
 	enum class EDepthStencilViewType : uint8
 	{
-		DepthStencilWrite	= 0,
-		ReadOnlyDepth		= 1,
-		ReadOnlyStencil		= 2,
-		ReadOnlyDepthStencil= 3,
-		Max					= 4
+		DepthStencilRead		= 0,
+		DepthWrite				= 1,
+		StencilWrite			= 2,
+		DepthStencilWrite		= 3,
+		Max						= 4
 	};
 
 	enum class EClearBinding

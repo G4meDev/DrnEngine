@@ -164,6 +164,15 @@ namespace Drn
 			m_BindlessRTVHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessRTVHeap.Get() );
 		}
 
+		{
+			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+			desc.NumDescriptors             = 2048;
+			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_BindlessDSVHeap.GetAddressOf() ) );
+			m_BindlessDSVHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessDSVHeap.Get() );
+		}
+
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = 
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 			D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED |
@@ -210,6 +219,7 @@ namespace Drn
 		m_BindlessSrvHeap->SetName(L"BindlessSrvHeap");
 		m_BindlessSamplerHeap->SetName(L"BindlessSamplerHeap");
 		m_BindlessRTVHeap->SetName(L"BindlessRTVHeap");
+		m_BindlessDSVHeap->SetName(L"BindlessDSVHeap");
 
 		m_BindlessRootSinature->SetName(L"BindlessRootSignature");
 #endif

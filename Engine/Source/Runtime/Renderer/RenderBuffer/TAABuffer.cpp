@@ -135,7 +135,7 @@ namespace Drn
 		m_Data.HistoryTexture = GetHistorySRV(Renderer->m_SceneView.FrameIndex).GetIndex();
 		m_Data.TargetTexture = GetFrameUAV(Renderer->m_SceneView.FrameIndex).GetIndex();
 
-		m_Data.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
+		m_Data.DepthTexture = Renderer->m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.CurrentFrameWeight = Renderer->m_PostProcessSettings->m_TAASettings.m_CurrentFrameWeight;
 		m_Data.CcurrentFrameVelocityWeight = Renderer->m_PostProcessSettings->m_TAASettings.m_CcurrentFrameVelocityWeight;
 		m_Data.CcurrentFrameVelocityMultiplier = Renderer->m_PostProcessSettings->m_TAASettings.m_CcurrentFrameVelocityMultiplier;
