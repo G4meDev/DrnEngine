@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/RenderBuffer/RenderBuffer.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -30,16 +31,13 @@ namespace Drn
 		virtual void Init() override;
 		virtual void Resize( const IntPoint& Size ) override;
 
-		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
-		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
+		void Clear( class D3D12CommandList* CommandList );
+		void Bind( class D3D12CommandList* CommandList );
 
-		void MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, const SSRSettings& Settings);
+		void MapBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer, const SSRSettings& Settings);
 		void ReleaseBuffers();
 
-		Resource* m_Target;
-		D3D12_CLEAR_VALUE m_ClearValue;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RtvHeap;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_Handle;
+		TRefCountPtr<RenderTexture2D> m_Target;
 
 		Resource* m_Buffer;
 		ScreenSpaceRefletcionData m_Data;

@@ -58,7 +58,7 @@ namespace Drn
 		m_Data.WorldNormalTexture = Renderer->m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.MasksTexture = Renderer->m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
-		m_Data.SSRTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_ScreenSpaceReflectionBuffer->m_Target->GetGpuHandle());
+		m_Data.SSRTexture = Renderer->m_ScreenSpaceReflectionBuffer->m_Target->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.PreintegratedGFTexture = CommonResources::Get()->m_PreintegratedGF->GetTextureIndex();
 		m_Data.AOTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_AOBuffer->m_AOTarget->GetGpuHandle());
 

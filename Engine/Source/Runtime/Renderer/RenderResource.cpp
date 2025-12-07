@@ -11,16 +11,18 @@ namespace Drn
 	std::vector<SimpleRenderResource::ResourcesToDelete> SimpleRenderResource::DeferredDeletionQueue;
 	uint32 SimpleRenderResource::CurrentFrame;
 
-	void SimpleRenderResource::FlushPendingDeletes(bool bFlushDeferredDeletes)
+	void SimpleRenderResource::FlushPendingDeletes( bool bFlushDeferredDeletes )
 	{
-		auto Delete = [](std::vector<SimpleRenderResource*>& ToDelete)
+		//auto Delete = [](std::vector<SimpleRenderResource*>& ToDelete) // TODO: BUG: referenced version deletes whole vector on "delete Ref"
+		auto Delete = [](std::vector<SimpleRenderResource*> ToDelete)
 		{
 			for (int32 Index = 0; Index < ToDelete.size(); Index++)
 			{
 				SimpleRenderResource* Ref = ToDelete[Index];
+
 				drn_check(Ref->bMarkedForDelete == 1);
 				drn_check(Ref->GetRefCount() == 0);
-
+		
 				delete Ref;
 			}
 		};
@@ -29,12 +31,20 @@ namespace Drn
 		{
 			if (bFlushDeferredDeletes)
 			{
-				Renderer::Get()->Flush();
-
 				for (int32 Idx = 0; Idx < DeferredDeletionQueue.size(); ++Idx)
 				{
 					ResourcesToDelete& ResourceBatch = DeferredDeletionQueue[Idx];
 					Delete(ResourceBatch.Resources);
+
+					//for (int32 Index = 0; Index < DeferredDeletionQueue[Idx].Resources.size(); Index++)
+					//{
+					//	SimpleRenderResource* Ref = DeferredDeletionQueue[Idx].Resources[Index];
+					//
+					//	drn_check(Ref->bMarkedForDelete == 1);
+					//	drn_check(Ref->GetRefCount() == 0);
+					//
+					//	delete Ref;
+					//}
 				}
 
 				DeferredDeletionQueue.clear();
@@ -45,9 +55,21 @@ namespace Drn
 				while (DeletedBatchCount < DeferredDeletionQueue.size())
 				{
 					ResourcesToDelete& ResourceBatch = DeferredDeletionQueue[DeletedBatchCount];
-					if (((ResourceBatch.FrameDeleted + NUM_BACKBUFFERS) < CurrentFrame))
+
+					if ((ResourceBatch.FrameDeleted + NUM_BACKBUFFERS) < CurrentFrame)
 					{
 						Delete(ResourceBatch.Resources);
+
+						//for (int32 Index = 0; Index < DeferredDeletionQueue[DeletedBatchCount].Resources.size(); Index++)
+						//{
+						//	SimpleRenderResource* Ref = DeferredDeletionQueue[DeletedBatchCount].Resources[Index];
+						//
+						//	drn_check(Ref->bMarkedForDelete == 1);
+						//	drn_check(Ref->GetRefCount() == 0);
+						//
+						//	delete Ref;
+						//}
+
 						++DeletedBatchCount;
 					}
 					else

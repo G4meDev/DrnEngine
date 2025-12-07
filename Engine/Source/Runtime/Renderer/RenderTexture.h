@@ -294,7 +294,7 @@ namespace Drn
 		* Get the render target view for the specified mip and array slice.
 		* An array slice of -1 is used to indicate that no array slice should be required.
 		*/
-		RenderTargetView* GetRenderTargetView(int32 MipIndex, int32 ArraySliceIndex) const
+		RenderTargetView* GetRenderTargetView(int32 MipIndex = 0 , int32 ArraySliceIndex = -1) const
 		{
 			int32 ArrayIndex = MipIndex;
 
@@ -447,7 +447,9 @@ namespace Drn
 			, SizeZ(InSizeZ)
 		{}
 
-		uint32 GetSizeX() const { return SizeX; }	
+		virtual ~RenderBaseTexture2D() {}
+
+		uint32 GetSizeX() const { return SizeX; }
 		uint32 GetSizeY() const { return SizeY; }
 		uint32 GetSizeZ() const { return SizeZ; }
 		inline IntPoint GetSizeXY() const { return IntPoint(SizeX, SizeY); }
@@ -488,6 +490,8 @@ namespace Drn
 			
 		}
 
+		virtual ~RenderTexture2D() {}
+
 		static RenderTexture2D* Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo);
 	};
 
@@ -498,6 +502,8 @@ namespace Drn
 			: RenderBaseTexture2D(InParent, InSizeX, InSizeY, InSizeZ, InNumMips, InNumSamples, InFormat, InFlags, InClearValue)
 		{
 		}
+
+		virtual ~RenderTexture2DArray() {}
 	};
 
 	class RenderTextureCube : public RenderBaseTexture2D
@@ -507,6 +513,8 @@ namespace Drn
 			: RenderBaseTexture2D(InParent, InSizeX, InSizeY, InSizeZ, InNumSamples, InNumMips, InFormat, InFlags, InClearValue)
 		{
 		}
+
+		virtual ~RenderTextureCube() {}
 
 		virtual bool IsCubemap() const override { return true; }
 

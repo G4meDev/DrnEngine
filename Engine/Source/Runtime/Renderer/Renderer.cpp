@@ -26,6 +26,7 @@ namespace Drn
 	Renderer::~Renderer()
 	{
 		LOG(LogRenderer, Info, "Renderer shutdown.");
+		drn_check(SingletonInstance->m_AllocatedScenes.size() == 0);
 
 		if (m_CommandList)
 		{
@@ -53,20 +54,22 @@ namespace Drn
 		ImGuiRenderer::Get()->Shutdown();
 #endif
 
-		for (Scene* S : SingletonInstance->m_AllocatedScenes)
-		{
-			S->Release();
-		}
+		CommonResources::Shutdown();
+		BufferedResourceManager::Get()->Flush();
 
+
+#if 0
+		SingletonInstance->Flush();
 		SimpleRenderResource::FlushPendingDeletes(true);
 		m_Device->GetDeferredDeletionQueue().ReleaseResources();
-
-		//Flush();
-		//m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
-
-		CommonResources::Shutdown();
-
-		BufferedResourceManager::Get()->Flush();
+#else
+		for (int32 i = 0; i < NUM_BACKBUFFERS + 2; i++)
+		{
+			SimpleRenderResource::FlushPendingDeletes();
+		}
+		Flush();
+		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+#endif
 	}
 
 	Renderer* Renderer::Get()
@@ -427,8 +430,8 @@ namespace Drn
 
 	void Renderer::InitRender(float DeltaTime)
 	{
-		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
 		SimpleRenderResource::FlushPendingDeletes();
+		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
 
 		SCOPE_STAT( "InitRender" );
 
