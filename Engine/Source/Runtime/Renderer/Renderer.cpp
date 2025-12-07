@@ -61,6 +61,9 @@ namespace Drn
 		SimpleRenderResource::FlushPendingDeletes(true);
 		m_Device->GetDeferredDeletionQueue().ReleaseResources();
 
+		//Flush();
+		//m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+
 		CommonResources::Shutdown();
 
 		BufferedResourceManager::Get()->Flush();

@@ -26,10 +26,16 @@ namespace Drn
 			return;
 		}
 
+		ImGui::Text( std::format( "Total render resource count {}", RenderResource::GetTotalResourceCount() ).c_str() );
+
+		ImGui::Separator();
+
 		for (int32 i = 0; i < (uint8)TextureStats::ETextureMemoryStatGroups::Max; i++)
 		{
 			TextureStats::ETextureMemoryStatGroups Group = (TextureStats::ETextureMemoryStatGroups)i;
-			std::string msg = std::format("{} {}", TextureStats::GetTextureStatName(Group), TextureStats::GetTextureStatSize(Group));
+			const int32 Size = TextureStats::GetTextureStatSize(Group);
+			const float SizeInMB = Size / 1024.f;
+			std::string msg = std::format("{} {} mb", TextureStats::GetTextureStatName(Group), SizeInMB);
 
 			ImGui::Text( msg.c_str() );
 		}

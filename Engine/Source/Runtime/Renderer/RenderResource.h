@@ -212,6 +212,10 @@ namespace Drn
 		inline bool IsDepthStencilResource() const { return bDepthStencil; }
 
 		void ReleaseResource();
+
+#if RENDER_STATS
+		static int64 GetTotalResourceCount() { return TotalResourceCount.load(); }
+#endif
 	};
 
 	class ResourceLocation : public DeviceChild, public Noncopyable

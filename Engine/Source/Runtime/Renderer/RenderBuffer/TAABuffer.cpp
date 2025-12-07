@@ -130,8 +130,8 @@ namespace Drn
 
 	void TAABuffer::MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
 	{
-		m_Data.DeferredColorTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_ColorDeferredTarget->GetGpuHandle());
-		m_Data.VelocityTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_VelocityTarget->GetGpuHandle());
+		m_Data.DeferredColorTexture = Renderer->m_GBuffer->m_ColorDeferredTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		m_Data.VelocityTexture = Renderer->m_GBuffer->m_VelocityTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.HistoryTexture = GetHistorySRV(Renderer->m_SceneView.FrameIndex).GetIndex();
 		m_Data.TargetTexture = GetFrameUAV(Renderer->m_SceneView.FrameIndex).GetIndex();
 

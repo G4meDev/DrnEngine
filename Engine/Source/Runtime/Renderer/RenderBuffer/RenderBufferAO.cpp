@@ -184,7 +184,7 @@ namespace Drn
 	void RenderBufferAO::MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, const SSAOSettings& Settings )
 	{
 		m_AoData.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
-		m_AoData.WorldNormalTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_WorldNormalTarget->GetGpuHandle());
+		m_AoData.WorldNormalTexture = Renderer->m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_AoData.HzbTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_HZBBuffer->M_HZBTarget->GetGpuHandle());
 		m_AoData.SetupTexture = Renderer::Get()->GetBindlessSrvIndex(m_AOSetupTarget->GetGpuHandle());
 		m_AoData.DownSampleTexture = Renderer::Get()->GetBindlessSrvIndex(m_AOHalfTarget->GetGpuHandle());

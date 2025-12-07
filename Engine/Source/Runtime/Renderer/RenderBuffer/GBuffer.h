@@ -23,34 +23,22 @@ namespace Drn
 
 		virtual void BindLightPass( D3D12CommandList* CommandList );
 
-		Resource* m_ColorDeferredTarget;
-		Resource* m_BaseColorTarget;
-		Resource* m_WorldNormalTarget;
+		TRefCountPtr<RenderTexture2D> m_ColorDeferredTarget;
+		TRefCountPtr<RenderTexture2D> m_BaseColorTarget;
+		TRefCountPtr<RenderTexture2D> m_WorldNormalTarget;
 		// Metallic Roughness AO Shading id
-		//Resource* m_MasksTarget;
 		TRefCountPtr<RenderTexture2D> m_MasksTarget;
 		// Transmittance .etc
-		Resource* m_MasksBTarget;
-		Resource* m_VelocityTarget;
+		TRefCountPtr<RenderTexture2D> m_MasksBTarget;
+		TRefCountPtr<RenderTexture2D> m_VelocityTarget;
+
 		Resource* m_DepthTarget;
 
-		D3D12_CLEAR_VALUE m_ColorDeferredClearValue;
-		D3D12_CLEAR_VALUE m_BaseColorClearValue;
-		D3D12_CLEAR_VALUE m_WorldNormalClearValue;
-		//D3D12_CLEAR_VALUE m_MasksClearValue;
-		D3D12_CLEAR_VALUE m_MasksBClearValue;
-		D3D12_CLEAR_VALUE m_VelocityClearValue;
 		D3D12_CLEAR_VALUE m_DepthClearValue;
 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_RtvHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE m_ColorDeferredCpuHandle;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_BaseColorCpuHandle;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_WorldNormalCpuHandle;
-		//D3D12_CPU_DESCRIPTOR_HANDLE m_MasksCpuHandle;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_MasksBCpuHandle;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_VelocityCpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_DepthCpuHandle;
 
 		D3D12_VIEWPORT m_Viewport;

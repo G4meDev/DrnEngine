@@ -54,8 +54,8 @@ namespace Drn
 
 	void ReflectionEnvironmentBuffer::MapBuffer(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer)
 	{
-		m_Data.BaseColorTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_BaseColorTarget->GetGpuHandle());
-		m_Data.WorldNormalTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_WorldNormalTarget->GetGpuHandle());
+		m_Data.BaseColorTexture = Renderer->m_GBuffer->m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		m_Data.WorldNormalTexture = Renderer->m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.MasksTexture = Renderer->m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.DepthTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_GBuffer->m_DepthTarget->GetGpuHandle());
 		m_Data.SSRTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_ScreenSpaceReflectionBuffer->m_Target->GetGpuHandle());

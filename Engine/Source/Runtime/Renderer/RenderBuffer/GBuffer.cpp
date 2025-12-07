@@ -14,54 +14,12 @@ namespace Drn
 		, m_DepthTarget(nullptr)
 		, m_ScissorRect(CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ))
 	{
-		m_ColorDeferredClearValue.Format   = GBUFFER_COLOR_DEFERRED_FORMAT;
-		m_ColorDeferredClearValue.Color[0] = 0.04f;
-		m_ColorDeferredClearValue.Color[1] = 0.07f;
-		m_ColorDeferredClearValue.Color[2] = 0.2f;
-		m_ColorDeferredClearValue.Color[3] = 1.0f;
-
-		m_BaseColorClearValue.Format   = GBUFFER_BASE_COLOR_FORMAT;
-		m_BaseColorClearValue.Color[0] = 0.0f;
-		m_BaseColorClearValue.Color[1] = 0.0f;
-		m_BaseColorClearValue.Color[2] = 0.0f;
-		m_BaseColorClearValue.Color[3] = 1.0f;
-
-		m_WorldNormalClearValue.Format   = GBUFFER_WORLD_NORMAL_FORMAT;
-		m_WorldNormalClearValue.Color[0] = 0.0f;
-		m_WorldNormalClearValue.Color[1] = 0.0f;
-		m_WorldNormalClearValue.Color[2] = 0.0f;
-		m_WorldNormalClearValue.Color[3] = 1.0f;
-		
-		//m_MasksClearValue.Format   = GBUFFER_MASKS_FORMAT;
-		//m_MasksClearValue.Color[0] = 0.0f;
-		//m_MasksClearValue.Color[1] = 0.0f;
-		//m_MasksClearValue.Color[2] = 0.0f;
-		//m_MasksClearValue.Color[3] = 0.0f;
-
-		m_MasksBClearValue.Format   = GBUFFER_MASKS_FORMAT;
-		m_MasksBClearValue.Color[0] = 0.0f;
-		m_MasksBClearValue.Color[1] = 0.0f;
-		m_MasksBClearValue.Color[2] = 0.0f;
-		m_MasksBClearValue.Color[3] = 0.0f;
-
-		m_VelocityClearValue.Format   = GBUFFER_VELOCITY_FORMAT;
-		m_VelocityClearValue.Color[0] = 0.5f;
-		m_VelocityClearValue.Color[1] = 0.5f;
-		m_VelocityClearValue.Color[2] = 0.0f;
-		m_VelocityClearValue.Color[3] = 0.0f;
-
 		m_DepthClearValue.Format = DEPTH_FORMAT;
 		m_DepthClearValue.DepthStencil = { 0, 0 };
 	}
 
 	GBuffer::~GBuffer()
 	{
-		if (m_ColorDeferredTarget) { m_ColorDeferredTarget->ReleaseBufferedResource(); }
-		if (m_BaseColorTarget) { m_BaseColorTarget->ReleaseBufferedResource(); }
-		if (m_WorldNormalTarget) { m_WorldNormalTarget->ReleaseBufferedResource(); }
-		//if (m_MasksTarget) { m_MasksTarget->ReleaseBufferedResource(); }
-		if (m_MasksBTarget) { m_MasksBTarget->ReleaseBufferedResource(); }
-		if (m_VelocityTarget) { m_VelocityTarget->ReleaseBufferedResource(); }
 		if (m_DepthTarget) { m_DepthTarget->ReleaseBufferedResource(); }
 	}
 
@@ -80,12 +38,6 @@ namespace Drn
 		DepthHeapDesc.NumDescriptors = 1;
 		Device->CreateDescriptorHeap( &DepthHeapDesc, IID_PPV_ARGS(m_DsvHeap.ReleaseAndGetAddressOf()) );
 
-		m_ColorDeferredCpuHandle	= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, Renderer::Get()->GetRtvIncrementSize());
-		m_BaseColorCpuHandle		= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 1, Renderer::Get()->GetRtvIncrementSize());
-		m_WorldNormalCpuHandle		= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 2, Renderer::Get()->GetRtvIncrementSize());
-		//m_MasksCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 3, Renderer::Get()->GetRtvIncrementSize());
-		m_MasksBCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 4, Renderer::Get()->GetRtvIncrementSize());
-		m_VelocityCpuHandle			= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(), 5, Renderer::Get()->GetRtvIncrementSize());
 		m_DepthCpuHandle			= m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 
 #if D3D12_Debug_INFO
@@ -100,159 +52,29 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Size.X), static_cast<float>(Size.Y));
 
-		{
-			if (m_ColorDeferredTarget)
-				m_ColorDeferredTarget->ReleaseBufferedResource();
+		RenderResourceCreateInfo ColorDeferredCreateInfo( nullptr, nullptr, ClearValueBinding(Vector4(0.04f, 0.07f, 0.2f, 1.0f)), "Gbuffer_DeferredColor" );
+		m_ColorDeferredTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), ColorDeferredCreateInfo);
 
-			m_ColorDeferredTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_COLOR_DEFERRED_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET, m_ColorDeferredClearValue);
+		RenderResourceCreateInfo BaseColorCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "Gbuffer_BaseColor" );
+		m_BaseColorTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_BASE_COLOR_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), BaseColorCreateInfo);
 
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = GBUFFER_COLOR_DEFERRED_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			Device->CreateRenderTargetView( m_ColorDeferredTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_ColorDeferredCpuHandle );
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
-			SrvDesc.Format = GBUFFER_COLOR_DEFERRED_FORMAT;
-			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			SrvDesc.Texture2D.MipLevels = 1;
-			SrvDesc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView( m_ColorDeferredTarget->GetD3D12Resource(), &SrvDesc, m_ColorDeferredTarget->GetCpuHandle() );
-		}
-
-		{
-			if (m_BaseColorTarget)
-				m_BaseColorTarget->ReleaseBufferedResource();
-
-			m_BaseColorTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_BASE_COLOR_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET, m_BaseColorClearValue);
-
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = GBUFFER_BASE_COLOR_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			Device->CreateRenderTargetView( m_BaseColorTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_BaseColorCpuHandle );
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
-			SrvDesc.Format = GBUFFER_BASE_COLOR_FORMAT;
-			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			SrvDesc.Texture2D.MipLevels = 1;
-			SrvDesc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView( m_BaseColorTarget->GetD3D12Resource(), &SrvDesc, m_BaseColorTarget->GetCpuHandle() );
-		}
-
-		{
-			if (m_WorldNormalTarget)
-				m_WorldNormalTarget->ReleaseBufferedResource();
-
-			m_WorldNormalTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_WORLD_NORMAL_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET, m_WorldNormalClearValue);
-
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = GBUFFER_WORLD_NORMAL_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			Device->CreateRenderTargetView( m_WorldNormalTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_WorldNormalCpuHandle );
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
-			SrvDesc.Format = GBUFFER_WORLD_NORMAL_FORMAT;
-			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			SrvDesc.Texture2D.MipLevels = 1;
-			SrvDesc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView( m_WorldNormalTarget->GetD3D12Resource(), &SrvDesc, m_WorldNormalTarget->GetCpuHandle() );
-		}
+		RenderResourceCreateInfo WorldNormalCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "Gbuffer_WorldNormal" );
+		m_WorldNormalTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_WORLD_NORMAL_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), WorldNormalCreateInfo);
 
 		RenderResourceCreateInfo MaskACreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "Gbuffer_MasksA" );
 		m_MasksTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_MASKS_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), MaskACreateInfo);
 
-		//{
-		//	if (m_MasksTarget)
-		//		m_MasksTarget->ReleaseBufferedResource();
-		//
-		//	m_MasksTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-		//		CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_MASKS_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-		//		D3D12_RESOURCE_STATE_RENDER_TARGET, m_MasksClearValue);
-		//
-		//	D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-		//	RenderTargetViewDesc.Format = GBUFFER_MASKS_FORMAT;
-		//	RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		//	RenderTargetViewDesc.Texture2D.MipSlice = 0;
-		//
-		//	Device->CreateRenderTargetView( m_MasksTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_MasksCpuHandle );
-		//
-		//	D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
-		//	SrvDesc.Format = GBUFFER_MASKS_FORMAT;
-		//	SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		//	SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		//	SrvDesc.Texture2D.MipLevels = 1;
-		//	SrvDesc.Texture2D.MostDetailedMip = 0;
-		//
-		//	Device->CreateShaderResourceView( m_MasksTarget->GetD3D12Resource(), &SrvDesc, m_MasksTarget->GetCpuHandle() );
-		//}
+		RenderResourceCreateInfo MaskBCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "Gbuffer_MasksB" );
+		m_MasksBTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_MASKS_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), MaskBCreateInfo);
 
-		{
-			if (m_MasksBTarget)
-				m_MasksBTarget->ReleaseBufferedResource();
-
-			m_MasksBTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_MASKS_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET, m_MasksBClearValue);
-
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = GBUFFER_MASKS_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			Device->CreateRenderTargetView( m_MasksBTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_MasksBCpuHandle );
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
-			SrvDesc.Format = GBUFFER_MASKS_FORMAT;
-			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			SrvDesc.Texture2D.MipLevels = 1;
-			SrvDesc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView( m_MasksBTarget->GetD3D12Resource(), &SrvDesc, m_MasksBTarget->GetCpuHandle() );
-		}
-
-		{
-			if (m_VelocityTarget)
-				m_VelocityTarget->ReleaseBufferedResource();
-
-			m_VelocityTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(GBUFFER_VELOCITY_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET, m_VelocityClearValue);
-
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = GBUFFER_VELOCITY_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			Device->CreateRenderTargetView( m_VelocityTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_VelocityCpuHandle );
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC SrvDesc = {};
-			SrvDesc.Format = GBUFFER_VELOCITY_FORMAT;
-			SrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			SrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			SrvDesc.Texture2D.MipLevels = 1;
-			SrvDesc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView( m_VelocityTarget->GetD3D12Resource(), &SrvDesc, m_VelocityTarget->GetCpuHandle() );
-		}
+		RenderResourceCreateInfo VelocityCreateInfo( nullptr, nullptr, ClearValueBinding(Vector4(0.5f, 0.5f, 0.0f, 0.0f)), "Gbuffer_Velocity" );
+		m_VelocityTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_VELOCITY_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), VelocityCreateInfo);
 
 		{
 			if (m_DepthTarget)
@@ -282,12 +104,6 @@ namespace Drn
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #if D3D12_Debug_INFO
-		m_ColorDeferredTarget->SetName( "Gbuffer_DeferredColor" );
-		m_BaseColorTarget->SetName( "Gbuffer_BaseColor" );
-		m_WorldNormalTarget->SetName( "Gbuffer_WorldNormal" );
-		//m_MasksTarget->SetName( "Gbuffer_MasksA" );
-		m_MasksBTarget->SetName( "Gbuffer_MasksB" );
-		m_VelocityTarget->SetName( "Gbuffer_Velocity" );
 		m_DepthTarget->SetName( "Gbuffer_Depth" );
 #endif
 
@@ -295,13 +111,13 @@ namespace Drn
 
 	void GBuffer::Clear( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_ColorDeferredCpuHandle, m_ColorDeferredClearValue.Color, 0, nullptr );
-		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_BaseColorCpuHandle, m_BaseColorClearValue.Color, 0, nullptr );
-		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_WorldNormalCpuHandle, m_WorldNormalClearValue.Color, 0, nullptr );
-		//CommandList->ClearRenderTargetView( m_MasksCpuHandle, m_MasksClearValue.Color, 0, nullptr );
-		CommandList->ClearColorTexture(m_MasksTarget, 0, 0, m_MasksTarget->GetClearColor());
-		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_MasksBCpuHandle, m_MasksBClearValue.Color, 0, nullptr );
-		CommandList->GetD3D12CommandList()->ClearRenderTargetView( m_VelocityCpuHandle, m_VelocityClearValue.Color, 0, nullptr );
+		CommandList->ClearColorTexture(m_ColorDeferredTarget);
+		CommandList->ClearColorTexture(m_BaseColorTarget);
+		CommandList->ClearColorTexture(m_WorldNormalTarget);
+		CommandList->ClearColorTexture(m_MasksTarget);
+		CommandList->ClearColorTexture(m_MasksBTarget);
+		CommandList->ClearColorTexture(m_VelocityTarget);
+
 		//CommandList->ClearDepthStencilView( m_DepthCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 0, 0, 0, nullptr );
 	}
 
@@ -317,13 +133,12 @@ namespace Drn
 
 		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[6] = 
 		{
-			m_ColorDeferredCpuHandle,
-			m_BaseColorCpuHandle,
-			m_WorldNormalCpuHandle,
-//			m_MasksCpuHandle,
+			m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView(),
+			m_BaseColorTarget->GetRenderTargetView( 0, 0 )->GetView(),
+			m_WorldNormalTarget->GetRenderTargetView( 0, 0 )->GetView(),
 			m_MasksTarget->GetRenderTargetView(0, 0)->GetView(),
-			m_MasksBCpuHandle,
-			m_VelocityCpuHandle,
+			m_MasksBTarget->GetRenderTargetView(0, 0)->GetView(),
+			m_VelocityTarget->GetRenderTargetView(0, 0)->GetView(),
 		};
 
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 6, RenderTargets, false, &m_DepthCpuHandle );
@@ -339,22 +154,21 @@ namespace Drn
 
 	void GBuffer::BindLightPass( D3D12CommandList* CommandList )
 	{
-		ResourceStateTracker::Get()->TransiationResource(m_BaseColorTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource(m_WorldNormalTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		//ResourceStateTracker::Get()->TransiationResource(m_MasksTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource(m_MasksBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		ResourceStateTracker::Get()->TransiationResource(m_DepthTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-
 		ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
 
+		CommandList->TransitionResourceWithTracking(m_BaseColorTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->TransitionResourceWithTracking(m_WorldNormalTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		CommandList->TransitionResourceWithTracking(m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->TransitionResourceWithTracking(m_MasksBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		CommandList->FlushBarriers();
 
 
 		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
 		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
 
-		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &m_ColorDeferredCpuHandle, true, nullptr );
+		D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView();
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DeferredColorHandle, true, nullptr );
 	}
 
 }

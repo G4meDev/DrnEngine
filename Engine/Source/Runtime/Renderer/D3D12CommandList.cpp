@@ -109,6 +109,11 @@ namespace Drn
 		m_CommandList->ClearRenderTargetView( InTexture->GetRenderTargetView(0, 0)->GetView(), (float*)(&(ClearValue)), 0, nullptr );
 	}
 
+	void D3D12CommandList::ClearColorTexture( RenderTextureBase* InTexture, int32 MipIndex, int32 SliceIndex )
+	{
+		ClearColorTexture(InTexture, MipIndex, SliceIndex, InTexture->GetClearColor());
+	}
+
 	void D3D12CommandList::AddTransitionBarrier( RenderResource* pResource, D3D12_RESOURCE_STATES Before, D3D12_RESOURCE_STATES After, uint32 Subresource )
 	{
 		drn_check(Before != After);

@@ -73,6 +73,7 @@ namespace Drn
 		void SetAllocatorAndReset(uint8 AllocatorIndex);
 
 		void ClearColorTexture( class RenderTextureBase* InTexture, int32 MipIndex, int32 SliceIndex, Vector4 ClearValue );
+		void ClearColorTexture( class RenderTextureBase* InTexture, int32 MipIndex = 0, int32 SliceIndex = 0 );
 
 		void AddTransitionBarrier(class RenderResource* pResource, D3D12_RESOURCE_STATES Before, D3D12_RESOURCE_STATES After, uint32 Subresource);
 		void FlushBarriers();

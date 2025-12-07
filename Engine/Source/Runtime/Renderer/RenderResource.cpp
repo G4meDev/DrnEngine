@@ -100,7 +100,9 @@ namespace Drn
 
 	RenderResource::~RenderResource()
 	{
-		
+#if D3D12_Debug_INFO
+		TotalResourceCount.fetch_add(-1);
+#endif
 	}
 
 	void* RenderResource::Map( const D3D12_RANGE* ReadRange /*= nullptr*/ )
