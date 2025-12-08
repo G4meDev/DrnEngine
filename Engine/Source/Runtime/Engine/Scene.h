@@ -23,7 +23,7 @@ namespace Drn
 		SceneRenderer* AllocateSceneRenderer();
 		void ReleaseSceneRenderer(SceneRenderer*& InSceneRenderer);
 
-		void UpdatePendingProxyAndResources(ID3D12GraphicsCommandList2* CommandList);
+		void UpdatePendingProxyAndResources(class D3D12CommandList* CommandList);
 
 		void RegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 		void UnRegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);

@@ -32,7 +32,7 @@ namespace Drn
 		}
 	}
 
-	void SkyLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void SkyLightSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		m_SkyLightData.Color = m_LightColor;
 		m_SkyLightData.BlockLowerHemesphere = m_BlockLowerHemesphere;
@@ -45,20 +45,20 @@ namespace Drn
 		memcpy( ConstantBufferStart, &m_SkyLightData, sizeof(SkyLightData));
 		m_LightBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
 
 		// TODO: make light flags enum. e. g. 1: Pointlight. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 8;
-		CommandList->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
 
-		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList);
+		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList->GetD3D12CommandList());
 	}
 
-	void SkyLightSceneProxy::RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void SkyLightSceneProxy::RenderShadowDepth( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 	}
 
-	void SkyLightSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	void SkyLightSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
 		if (m_SkyLightComponent && m_SkyLightComponent->IsRenderStateDirty())
 		{
@@ -72,7 +72,7 @@ namespace Drn
 
 		if (m_Cubemap.IsValid())
 		{
-			m_Cubemap->UploadResources(CommandList);
+			m_Cubemap->UploadResources(CommandList->GetD3D12CommandList());
 		}
 	}
 

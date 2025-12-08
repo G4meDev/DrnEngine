@@ -38,16 +38,16 @@ namespace Drn
 
 		inline virtual ELightType GetLightType() const { return ELightType::PointLight; };
 
-		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		virtual void RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		virtual void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 
-		void AllocateShadowmap(ID3D12GraphicsCommandList2* CommandList);
+		void AllocateShadowmap(class D3D12CommandList* CommandList);
 		void ReleaseShadowmap();
 
 		inline void SetRadius( float Radius ) { m_Radius = Radius; }
 		inline void SetDepthBias( float Bias ) { m_DepthBias = Bias; }
 
-		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
+		void UpdateResources( class D3D12CommandList* CommandList ) override;
 		void ReleaseBuffer();
 
 	protected:

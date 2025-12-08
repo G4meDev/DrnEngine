@@ -57,7 +57,7 @@ namespace Drn
 		ReleaseBuffers();
 	}
 
-	void DirectionalLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void DirectionalLightSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		// TODO: remove. should not be aware of component. lazy update
 		m_LightData.Direction = m_DirectionalLightComponent->GetWorldRotation().GetVector();
@@ -70,22 +70,22 @@ namespace Drn
 		memcpy( ConstantBufferStart, &m_LightData, sizeof(DirectionalLightData));
 		m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 		
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
 		
-		// TODO: make light flags enum. e. g. 1: Pointlight. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
+		// TODO: make light flags enum. e. g. 1: Point light. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 4;
-		CommandList->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
 		
 		if (m_CastShadow)
 		{
 			ResourceStateTracker::Get()->TransiationResource(m_ShadowmapResource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
 		}
 		
-		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList);
+		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList->GetD3D12CommandList());
 	}
 
-	void DirectionalLightSceneProxy::RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void DirectionalLightSceneProxy::RenderShadowDepth( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		if (m_CastShadow && !m_ShadowmapResource)
 		{
@@ -99,15 +99,15 @@ namespace Drn
 
 		if (m_CastShadow)
 		{
-			PIXBeginEvent( CommandList, 1, "DirectionalLightShadow");
+			PIXBeginEvent( CommandList->GetD3D12CommandList(), 1, "DirectionalLightShadow");
 
 			CalculateSplitDistance();
 
 			D3D12_RECT R = CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX );
 			CD3DX12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)DIRECTIONAL_SHADOW_SIZE, (float)DIRECTIONAL_SHADOW_SIZE);
 
-			CommandList->RSSetViewports(1, &Viewport);
-			CommandList->RSSetScissorRects(1, &R);
+			CommandList->GetD3D12CommandList()->RSSetViewports( 1, &Viewport );
+			CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &R);
 
 			m_ShadowData.DepthBias = m_DepthBias;
 			m_ShadowData.InvShadowResolution = 1.0f / DIRECTIONAL_SHADOW_SIZE;
@@ -131,12 +131,12 @@ namespace Drn
 			m_ShadowBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 
 			ResourceStateTracker::Get()->TransiationResource(m_ShadowmapResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
 
 			for (int i = 0; i < m_CascadeCount; i++)
 			{
-				CommandList->ClearDepthStencilView(m_ShadowmapCpuHandles[i], D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
-				CommandList->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandles[i]);
+				CommandList->GetD3D12CommandList()->ClearDepthStencilView(m_ShadowmapCpuHandles[i], D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
+				CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandles[i]);
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -148,21 +148,21 @@ namespace Drn
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-				CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-				CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_CsWorldToProjectionMatricesBuffer[Renderer::Get()->GetCurrentBackbufferIndex()][i]->GetGpuHandle()), 6);
+				CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_CsWorldToProjectionMatricesBuffer[Renderer::Get()->GetCurrentBackbufferIndex()][i]->GetGpuHandle()), 6);
 				
 				for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 				{
-					Proxy->RenderShadowPass(CommandList, Renderer, this);
+					Proxy->RenderShadowPass(CommandList->GetD3D12CommandList(), Renderer, this);
 				}
 			}
 
-			PIXEndEvent(CommandList);
+			PIXEndEvent(CommandList->GetD3D12CommandList());
 		}
 
 	}
 
-	void DirectionalLightSceneProxy::AllocateShadowmap( ID3D12GraphicsCommandList2* CommandList )
+	void DirectionalLightSceneProxy::AllocateShadowmap( D3D12CommandList* CommandList )
 	{
 		D3D12_CLEAR_VALUE ShadowmapClearValue = {};
 		ShadowmapClearValue.Format = DXGI_FORMAT_D16_UNORM;
@@ -277,7 +277,7 @@ namespace Drn
 		}
 	}
 
-	void DirectionalLightSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	void DirectionalLightSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
 		if (m_LightComponent && m_LightComponent->IsRenderStateDirty())
 		{

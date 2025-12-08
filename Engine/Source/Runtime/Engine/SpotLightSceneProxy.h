@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "LightSceneProxy.h"
+//#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -46,10 +47,10 @@ namespace Drn
 
 		inline virtual ELightType GetLightType() const { return ELightType::SpotLight; };
 
-		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		virtual void RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
+		void RenderShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
 
-		void AllocateShadowmap(ID3D12GraphicsCommandList2* CommandList);
+		void AllocateShadowmap(class D3D12CommandList* CommandList);
 		void ReleaseShadowmap();
 
 		inline void SetDirection( const Vector& Direction ) { m_SpotLightData.Direction = Direction; }
@@ -57,7 +58,7 @@ namespace Drn
 		inline void SetOutterRadius( float OutterRadius ) { m_SpotLightData.OutterRadius = OutterRadius; }
 		inline void SetInnerRadius( float InnerRadius ) { m_SpotLightData.InnerRadius = InnerRadius; }
 
-		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
+		void UpdateResources( class D3D12CommandList* CommandList );
 
 	protected:
 
@@ -72,10 +73,7 @@ namespace Drn
 
 		SpotLightComponent* m_SpotLightComponent = nullptr;
 
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
-		
-		Resource* m_ShadowmapResource;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_ShadowmapCpuHandle;
+		TRefCountPtr<class RenderTexture2D> m_ShadowmapResource;
 
 		SpotLightData m_SpotLightData;
 		Resource* m_LightBuffer;

@@ -466,7 +466,7 @@ namespace Drn
 
 		for (Scene* S : m_AllocatedScenes)
 		{
-			S->UpdatePendingProxyAndResources(m_UploadCommandList->GetD3D12CommandList());
+			S->UpdatePendingProxyAndResources(m_UploadCommandList);
 		}
 	}
 

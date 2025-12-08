@@ -192,7 +192,7 @@ namespace Drn
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{
-			Proxy->RenderShadowDepth(m_CommandList->GetD3D12CommandList(), this);
+			Proxy->RenderShadowDepth(m_CommandList, this);
 		}
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());
@@ -475,7 +475,7 @@ namespace Drn
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{
-			Proxy->Render(m_CommandList->GetD3D12CommandList(), this);
+			Proxy->Render(m_CommandList, this);
 		}
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());

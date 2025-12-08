@@ -14,10 +14,10 @@ namespace Drn
 		inline void SetColor ( const Vector& Color ) { m_LightColor = Color; }
 		inline void SetCastShadow( bool CastShadow ) { m_CastShadow = CastShadow; }
 
-		virtual void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) = 0;
-		virtual void RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) = 0;
+		virtual void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) = 0;
+		virtual void RenderShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) = 0;
 
-		virtual void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) = 0;
+		virtual void UpdateResources( class D3D12CommandList* CommandList ) = 0;
 
 		inline const Vector& GetColor() const { return m_LightColor; }
 

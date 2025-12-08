@@ -43,7 +43,7 @@ namespace Drn
 		ReleaseBuffer();
 	}
 
-	void PointLightSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void PointLightSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		m_Buffer.WorldPosition = m_WorldPosition;
 		m_Buffer.Scale = m_Radius;
@@ -57,36 +57,36 @@ namespace Drn
 		memcpy( ConstantBufferStart, &m_Buffer, sizeof(PointLightBuffer));
 		m_LightBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
 
-		// TODO: make light flags enum. e. g. 1: Pointlight. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
+		// TODO: make light flags enum. e. g. 1: Point light. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 1;
-		CommandList->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
 
 		if (m_CastShadow)
 		{
 			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
 		}
 
-		CommonResources::Get()->m_PointLightSphere->BindAndDraw(CommandList);
+		CommonResources::Get()->m_PointLightSphere->BindAndDraw(CommandList->GetD3D12CommandList());
 	}
 
-	void PointLightSceneProxy::RenderShadowDepth( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void PointLightSceneProxy::RenderShadowDepth( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		if (m_CastShadow)
 		{
 			D3D12_RECT R = CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX );
 
 			CD3DX12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(POINTLIGHT_SHADOW_SIZE), static_cast<float>(POINTLIGHT_SHADOW_SIZE));
-			CommandList->RSSetViewports(1, &Viewport);
-			CommandList->RSSetScissorRects(1, &R);
+			CommandList->GetD3D12CommandList()->RSSetViewports(1, &Viewport);
+			CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &R);
 
 			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
 
-			CommandList->ClearDepthStencilView(m_ShadowmapCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
-			CommandList->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandle);
+			CommandList->GetD3D12CommandList()->ClearDepthStencilView(m_ShadowmapCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
+			CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandle);
 
 			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[0], Vector::RightVector, Vector::UpVector);
 			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[1], Vector::LeftVector, Vector::UpVector);
@@ -105,18 +105,18 @@ namespace Drn
 			memcpy( ConstantBufferStart, &m_ShadowDepthData, sizeof(ShadowDepthData));
 			m_ShadowDepthBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-			CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-			CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()), 6);
+			CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()), 6);
 
 			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 			{
-				Proxy->RenderShadowPass(CommandList, Renderer, this);
+				Proxy->RenderShadowPass(CommandList->GetD3D12CommandList(), Renderer, this);
 			}
 
 		}
 	}
 
-	void PointLightSceneProxy::AllocateShadowmap( ID3D12GraphicsCommandList2* CommandList )
+	void PointLightSceneProxy::AllocateShadowmap( D3D12CommandList* CommandList )
 	{
 		D3D12_CLEAR_VALUE ShadowmapClearValue = {};
 		ShadowmapClearValue.Format = DXGI_FORMAT_D16_UNORM;
@@ -179,7 +179,7 @@ namespace Drn
 		}
 	}
 
-	void PointLightSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	void PointLightSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
 		if (m_PointLightComponent && m_PointLightComponent->IsRenderStateDirty())
 		{
