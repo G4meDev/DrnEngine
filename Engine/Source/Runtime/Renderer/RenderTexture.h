@@ -511,12 +511,14 @@ namespace Drn
 	class RenderTextureCube : public RenderBaseTexture2D
 	{
 	public:
-		RenderTextureCube(Device* InParent,uint32 InSizeX, uint32 InSizeY, uint32 InSizeZ, uint32 InNumMips, uint32 InNumSamples, DXGI_FORMAT InFormat, ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
-			: RenderBaseTexture2D(InParent, InSizeX, InSizeY, InSizeZ, InNumSamples, InNumMips, InFormat, InFlags, InClearValue)
+		RenderTextureCube(Device* InParent,uint32 InSizeX, uint32 InNumMips, uint32 InNumSamples, DXGI_FORMAT InFormat, ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
+			: RenderBaseTexture2D(InParent, InSizeX, InSizeX, 6, InNumSamples, InNumMips, InFormat, InFlags, InClearValue)
 		{
 		}
 
 		virtual ~RenderTextureCube() {}
+
+		static RenderTextureCube* Create(class D3D12CommandList* CmdList, uint32 SizeX, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo);
 
 		virtual bool IsCubemap() const override { return true; }
 

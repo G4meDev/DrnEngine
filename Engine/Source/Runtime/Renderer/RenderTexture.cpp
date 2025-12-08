@@ -158,6 +158,10 @@ namespace Drn
 		{
 			NewTexture = new RenderTexture2DArray(ParentDevice, SizeX, SizeY, SizeZ, NumMips, ActualMSAACount, Format, Flags, CreateInfo.ClearValueBinding);
 		}
+		else if constexpr (std::is_same_v<T, RenderTextureCube>)
+		{
+			NewTexture = new RenderTextureCube(ParentDevice, SizeX, NumMips, ActualMSAACount, Format, Flags, CreateInfo.ClearValueBinding);
+		}
 		else
 		{
 			drn_check(false);
@@ -423,6 +427,11 @@ namespace Drn
 		return CreateTexture2D<RenderTexture2DArray>(CmdList, SizeX, SizeY, ArraySize, NumMips, NumSamples, Format, bNeedsStateTracking, Flags, CreateInfo, true, false );
 	}
 
+	RenderTextureCube* RenderTextureCube::Create( class D3D12CommandList* CmdList, uint32 SizeX, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo )
+	{
+		return CreateTexture2D<RenderTextureCube>(CmdList, SizeX, SizeX, 6, NumMips, NumSamples, Format, bNeedsStateTracking, Flags, CreateInfo, false, true);
+	}
+
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #if RENDER_STATS
@@ -544,5 +553,6 @@ namespace Drn
 			UpdateTextureMemoryStats(Desc, -TextureSize, Texture.Is3D(), Texture.IsCubemap());
 		}
 	}
+
 
         }  // namespace Drn

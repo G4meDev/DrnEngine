@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "PointLightSceneProxy.h"
 #include "Runtime/Components/PointLightComponent.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 #define POINTLIGHT_SHADOW_SIZE 512
 #define POINTLIGHT_NEAR_Z 0.1f
@@ -14,18 +15,6 @@ namespace Drn
 		, m_ShadowDepthBuffer(nullptr)
 		, m_ShadowCubemapResource(nullptr)
 	{
-		D3D12_DESCRIPTOR_HEAP_DESC DepthHeapDesc = {};
-		DepthHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-		DepthHeapDesc.NumDescriptors = 1;
-		// TODO: make pooled and allocate on demand
-		Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &DepthHeapDesc, IID_PPV_ARGS(m_DsvHeap.ReleaseAndGetAddressOf()) );
-#if D3D12_Debug_INFO
-		m_DsvHeap->SetName(StringHelper::s2ws("DsvHeapPointLightShadowmap_" + m_Name).c_str());
-#endif
-
-		m_ShadowmapCpuHandle = m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
-
-
 		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 #if D3D12_Debug_INFO
 		m_LightBuffer->SetName("CB_PointLight_" + m_Name);
@@ -65,8 +54,8 @@ namespace Drn
 
 		if (m_CastShadow)
 		{
-			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
+			CommandList->TransitionResourceWithTracking(m_ShadowCubemapResource->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			CommandList->FlushBarriers();
 		}
 
 		CommonResources::Get()->m_PointLightSphere->BindAndDraw(CommandList->GetD3D12CommandList());
@@ -82,11 +71,12 @@ namespace Drn
 			CommandList->GetD3D12CommandList()->RSSetViewports(1, &Viewport);
 			CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &R);
 
-			ResourceStateTracker::Get()->TransiationResource(m_ShadowCubemapResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
+			CommandList->TransitionResourceWithTracking(m_ShadowCubemapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			CommandList->FlushBarriers();
 
-			CommandList->GetD3D12CommandList()->ClearDepthStencilView(m_ShadowmapCpuHandle, D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
-			CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandle);
+			CommandList->ClearDepthTexture(m_ShadowCubemapResource, EDepthStencilViewType::DepthWrite, true, false);
+			D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_ShadowCubemapResource->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+			CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &Handle);
 
 			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[0], Vector::RightVector, Vector::UpVector);
 			CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[1], Vector::LeftVector, Vector::UpVector);
@@ -97,7 +87,7 @@ namespace Drn
 
 			m_ShadowDepthData.DepthBias = m_DepthBias;
 			m_ShadowDepthData.InvShadowResolution = 1.0f / POINTLIGHT_SHADOW_SIZE;
-			m_ShadowDepthData.ShadowmapTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_ShadowCubemapResource->GetGpuHandle());
+			m_ShadowDepthData.ShadowmapTextureIndex = m_ShadowCubemapResource->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 			UINT8* ConstantBufferStart;
 			CD3DX12_RANGE readRange( 0, 0 );
@@ -118,38 +108,9 @@ namespace Drn
 
 	void PointLightSceneProxy::AllocateShadowmap( D3D12CommandList* CommandList )
 	{
-		D3D12_CLEAR_VALUE ShadowmapClearValue = {};
-		ShadowmapClearValue.Format = DXGI_FORMAT_D16_UNORM;
-		ShadowmapClearValue.DepthStencil.Depth = 1;
-
-		m_ShadowCubemapResource = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-			CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16_TYPELESS, POINTLIGHT_SHADOW_SIZE, POINTLIGHT_SHADOW_SIZE, 6, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
-			D3D12_RESOURCE_STATE_DEPTH_WRITE, ShadowmapClearValue);
-
-#if D3D12_Debug_INFO
-		// TODO: add component name
-		m_ShadowCubemapResource->SetName("PointLightShadowmap");
-#endif
-
-		D3D12_DEPTH_STENCIL_VIEW_DESC DepthViewDesc = {};
-		DepthViewDesc.Format = DXGI_FORMAT_D16_UNORM;
-		DepthViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2DARRAY;
-		DepthViewDesc.Texture2DArray.MipSlice = 0;
-		DepthViewDesc.Texture2DArray.ArraySize = 6;
-		DepthViewDesc.Texture2DArray.FirstArraySlice = 0;
-		Renderer::Get()->GetD3D12Device()->CreateDepthStencilView( m_ShadowCubemapResource->GetD3D12Resource(), &DepthViewDesc, m_ShadowmapCpuHandle );
-
-// -----------------------------------------------------------------------------------------------------------
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-		ResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		ResourceViewDesc.Format = DXGI_FORMAT_R16_UNORM;
-		ResourceViewDesc.TextureCube.MipLevels = 1;
-		ResourceViewDesc.TextureCube.MostDetailedMip = 0;
-		ResourceViewDesc.TextureCube.ResourceMinLODClamp = 0;
-
-		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView(m_ShadowCubemapResource->GetD3D12Resource(), &ResourceViewDesc, m_ShadowCubemapResource->GetCpuHandle());
+		RenderResourceCreateInfo ShadowmapCubemapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "PointLightShadowmap" );
+		m_ShadowCubemapResource = RenderTextureCube::Create(Renderer::Get()->GetCommandList_Temp(), POINTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCubemapCreateInfo);
 
 // -----------------------------------------------------------------------------------------------------------
 
@@ -166,11 +127,7 @@ namespace Drn
 
 	void PointLightSceneProxy::ReleaseShadowmap()
 	{
-		if (m_ShadowCubemapResource)
-		{
-			m_ShadowCubemapResource->ReleaseBufferedResource();
-			m_ShadowCubemapResource = nullptr;
-		}
+		m_ShadowCubemapResource = nullptr;
 
 		if (m_ShadowDepthBuffer)
 		{

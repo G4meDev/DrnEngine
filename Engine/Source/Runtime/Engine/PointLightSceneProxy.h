@@ -61,10 +61,7 @@ namespace Drn
 
 		void CalculateLocalToProjectionForDirection(Matrix& Mat, const Vector& Direction, const Vector& UpVector);
 
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
-
-		Resource* m_ShadowCubemapResource;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_ShadowmapCpuHandle;
+		TRefCountPtr<class RenderTextureCube> m_ShadowCubemapResource;
 
 		PointLightBuffer m_Buffer;
 		Resource* m_LightBuffer;
