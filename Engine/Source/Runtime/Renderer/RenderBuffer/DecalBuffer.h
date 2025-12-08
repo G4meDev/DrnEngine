@@ -15,33 +15,19 @@ namespace Drn
 		virtual void Init() override;
 		virtual void Resize( const IntPoint& Size ) override;
 
-		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
-		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
+		void Clear( class D3D12CommandList* CommandList );
+		void Bind( class D3D12CommandList* CommandList );
 
-		Resource* m_BaseColorTarget;
-		DescriptorHandleRTV m_BaseColorRTVHandle;
-		DescriptorHandleSRV m_BaseColorSRVHandle;
+		TRefCountPtr<RenderTexture2D> m_BaseColorTarget;
 
-		Resource* m_NormalTarget;
-		DescriptorHandleRTV m_NormalRTVHandle;
-		DescriptorHandleSRV m_NormalSRVHandle;
+		TRefCountPtr<RenderTexture2D> m_NormalTarget;
 
 		// Metallic Roughness AO
-		Resource* m_MasksTarget;
-		DescriptorHandleRTV m_MasksRTVHandle;
-		DescriptorHandleSRV m_MasksSRVHandle;
-
-		D3D12_CLEAR_VALUE m_BaseColorClearValue;
-		D3D12_CLEAR_VALUE m_NormalClearValue;
-		D3D12_CLEAR_VALUE m_MasksClearValue;
+		TRefCountPtr<RenderTexture2D> m_MasksTarget;
 
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_ScissorRect;
 
 	private:
-
-		void ReleaseBuffers();
-		void AllocateHandles();
-		void ReleaseHandles();
 	};
 }

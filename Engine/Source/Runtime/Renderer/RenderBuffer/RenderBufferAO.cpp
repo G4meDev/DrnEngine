@@ -30,19 +30,6 @@ namespace Drn
 		RenderBuffer::Init();
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		{
-			D3D12_DESCRIPTOR_HEAP_DESC AOHeapDesc = {};
-			AOHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-			AOHeapDesc.NumDescriptors = 3;
-			Device->CreateDescriptorHeap( &AOHeapDesc, IID_PPV_ARGS(m_AORtvHeap.ReleaseAndGetAddressOf()) );
-
-			m_AOHalfHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_AORtvHeap->GetCPUDescriptorHandleForHeapStart(), 0, Renderer::Get()->GetRtvIncrementSize());
-			m_AOSetupHandle	= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_AORtvHeap->GetCPUDescriptorHandleForHeapStart(), 1, Renderer::Get()->GetRtvIncrementSize());
-			m_AOHandle	= CD3DX12_CPU_DESCRIPTOR_HANDLE(m_AORtvHeap->GetCPUDescriptorHandleForHeapStart(), 2, Renderer::Get()->GetRtvIncrementSize());
-#if D3D12_Debug_INFO
-			m_AORtvHeap->SetName(L"RtvHeap_AO");
-#endif
-		}
 	}
 
 	void RenderBufferAO::Resize( const IntPoint& Size )
@@ -56,83 +43,17 @@ namespace Drn
 
 		ReleaseBuffers();
 
-		{
-			m_AOTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(AO_FORMAT, m_Size.X, m_Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET);
+		RenderResourceCreateInfo AOTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "AOTarget" );
+		m_AOTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, AO_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), AOTargetCreateInfo);
 
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = AO_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
+		RenderResourceCreateInfo AOHalfTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "AOHalfTarget" );
+		m_AOHalfTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), HalfSize.X, HalfSize.Y, AO_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), AOHalfTargetCreateInfo);
 
-			Device->CreateRenderTargetView( m_AOTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_AOHandle );
-
-#if D3D12_Debug_INFO
-			m_AOTarget->SetName( "AOTarget" );
-#endif
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
-			Desc.Format = AO_FORMAT;
-			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			Desc.Texture2D.MipLevels = 1;
-			Desc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView(m_AOTarget->GetD3D12Resource(), &Desc, m_AOTarget->GetCpuHandle());
-		}
-
-		{
-			m_AOHalfTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(AO_FORMAT, HalfSize.X, HalfSize.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = AO_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			Device->CreateRenderTargetView( m_AOHalfTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_AOHalfHandle );
-
-#if D3D12_Debug_INFO
-			m_AOHalfTarget->SetName( "AOHalfTarget" );
-#endif
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
-			Desc.Format = AO_FORMAT;
-			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			Desc.Texture2D.MipLevels = 1;
-			Desc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView(m_AOHalfTarget->GetD3D12Resource(), &Desc, m_AOHalfTarget->GetCpuHandle());
-		}
-
-		{
-			m_AOSetupTarget = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(AO_SETUP_FORMAT, HalfSize.X, HalfSize.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = AO_SETUP_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			Device->CreateRenderTargetView( m_AOSetupTarget->GetD3D12Resource(), &RenderTargetViewDesc, m_AOSetupHandle );
-
-#if D3D12_Debug_INFO
-			m_AOSetupTarget->SetName( "AOSetupTarget" );
-#endif
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
-			Desc.Format = AO_SETUP_FORMAT;
-			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			Desc.Texture2D.MipLevels = 1;
-			Desc.Texture2D.MostDetailedMip = 0;
-
-			Device->CreateShaderResourceView(m_AOSetupTarget->GetD3D12Resource(), &Desc, m_AOSetupTarget->GetCpuHandle());
-		}
+		RenderResourceCreateInfo AOSetupTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "AOSetupTarget" );
+		m_AOSetupTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), HalfSize.X, HalfSize.Y, AO_SETUP_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), AOSetupTargetCreateInfo);
 
 		{
 			m_AoBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
@@ -147,47 +68,49 @@ namespace Drn
 		}
 	}
 
-	void RenderBufferAO::Clear( ID3D12GraphicsCommandList2* CommandList )
+	void RenderBufferAO::Clear( D3D12CommandList* CommandList )
 	{
 		
 	}
 
-	void RenderBufferAO::Bind( ID3D12GraphicsCommandList2* CommandList )
+	void RenderBufferAO::Bind( D3D12CommandList* CommandList )
 	{
 	}
 
-	void RenderBufferAO::BindSetup( ID3D12GraphicsCommandList2* CommandList )
+	void RenderBufferAO::BindSetup( D3D12CommandList* CommandList )
 	{
-		CommandList->RSSetViewports(1, &m_SetupViewport);
-		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SetupViewport);
+		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
 		
-		CommandList->OMSetRenderTargets( 1, &m_AOSetupHandle, true, nullptr );
+		D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_AOSetupTarget->GetRenderTargetView()->GetView();
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &Handle, true, nullptr );
 	}
 
-	void RenderBufferAO::BindHalf( ID3D12GraphicsCommandList2* CommandList )
+	void RenderBufferAO::BindHalf( D3D12CommandList* CommandList )
 	{
-		CommandList->RSSetViewports(1, &m_SetupViewport);
-		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SetupViewport);
+		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
 		
-		CommandList->OMSetRenderTargets( 1, &m_AOHalfHandle, true, nullptr );
-
+		D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_AOHalfTarget->GetRenderTargetView()->GetView();
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &Handle, true, nullptr );
 	}
 
-	void RenderBufferAO::BindMain( ID3D12GraphicsCommandList2* CommandList )
+	void RenderBufferAO::BindMain( D3D12CommandList* CommandList )
 	{
-		CommandList->RSSetViewports(1, &m_Viewport);
-		CommandList->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
+		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
 		
-		CommandList->OMSetRenderTargets( 1, &m_AOHandle, true, nullptr );
+		D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_AOTarget->GetRenderTargetView()->GetView();
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &Handle, true, nullptr );
 	}
 
-	void RenderBufferAO::MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, const SSAOSettings& Settings )
+	void RenderBufferAO::MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer, const SSAOSettings& Settings )
 	{
 		m_AoData.DepthTexture = Renderer->m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_AoData.WorldNormalTexture = Renderer->m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_AoData.HzbTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_HZBBuffer->M_HZBTarget->GetGpuHandle());
-		m_AoData.SetupTexture = Renderer::Get()->GetBindlessSrvIndex(m_AOSetupTarget->GetGpuHandle());
-		m_AoData.DownSampleTexture = Renderer::Get()->GetBindlessSrvIndex(m_AOHalfTarget->GetGpuHandle());
+		m_AoData.SetupTexture = m_AOSetupTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		m_AoData.DownSampleTexture = m_AOHalfTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 		Texture2D* SSAO_RandomTexture = CommonResources::Get()->m_SSAO_Random.Get();
 		m_AoData.RandomTexture = SSAO_RandomTexture->GetTextureIndex();
@@ -220,15 +143,6 @@ namespace Drn
 
 	void RenderBufferAO::ReleaseBuffers()
 	{
-		if (m_AOTarget)
-			m_AOTarget->ReleaseBufferedResource();
-
-		if (m_AOHalfTarget)
-			m_AOHalfTarget->ReleaseBufferedResource();
-
-		if (m_AOSetupTarget)
-			m_AOSetupTarget->ReleaseBufferedResource();
-
 		if (m_AoBuffer)
 			m_AoBuffer->ReleaseBufferedResource();
 	}

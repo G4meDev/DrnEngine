@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "RenderBuffer.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -41,27 +42,21 @@ namespace Drn
 		virtual void Init() override;
 		virtual void Resize( const IntPoint& Size ) override;
 
-		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
-		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
-		void BindSetup( ID3D12GraphicsCommandList2* CommandList );
-		void BindHalf( ID3D12GraphicsCommandList2* CommandList );
-		void BindMain( ID3D12GraphicsCommandList2* CommandList );
-		void MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, const SSAOSettings& Settings);
+		void Clear( D3D12CommandList* CommandList );
+		void Bind( D3D12CommandList* CommandList );
+		void BindSetup( class D3D12CommandList* CommandList );
+		void BindHalf( class D3D12CommandList* CommandList );
+		void BindMain( class D3D12CommandList* CommandList );
+		void MapBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer, const SSAOSettings& Settings);
 
 		void ReleaseBuffers();
 
-		Resource* m_AOTarget;
-		Resource* m_AOHalfTarget;
-		Resource* m_AOSetupTarget;
+		TRefCountPtr<RenderTexture2D> m_AOTarget;
+		TRefCountPtr<RenderTexture2D> m_AOHalfTarget;
+		TRefCountPtr<RenderTexture2D> m_AOSetupTarget;
 
 		AoData m_AoData;
 		Resource* m_AoBuffer;
-
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_AORtvHeap;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE m_AOHandle;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_AOHalfHandle;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_AOSetupHandle;
 
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_VIEWPORT m_SetupViewport;
