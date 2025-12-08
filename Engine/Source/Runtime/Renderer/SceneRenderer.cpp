@@ -568,17 +568,16 @@ namespace Drn
 	{
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "TAA" );
 
-		m_TAABuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
+		m_TAABuffer->MapBuffer(m_CommandList, this);
 
-		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->GetHistoryResource(m_SceneView.FrameIndex)->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
+		m_CommandList->TransitionResourceWithTracking( m_TAABuffer->GetHistoryResource(m_SceneView.FrameIndex)->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->TransitionResourceWithTracking( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_VelocityTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->FlushBarriers();
 
-		m_TAABuffer->Bind( m_CommandList->GetD3D12CommandList() );
+		m_TAABuffer->Bind(m_CommandList);
 
 		m_CommandList->GetD3D12CommandList()->SetComputeRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TAAPSO->m_PSO );
@@ -601,8 +600,7 @@ namespace Drn
 
 		m_SceneDownSampleBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
 
-		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-
+		m_CommandList->TransitionResourceWithTracking( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking( m_SceneDownSampleBuffer->m_DownSampleTargets[0]->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->FlushBarriers();
 
@@ -710,8 +708,7 @@ namespace Drn
 
 		m_TonemapBuffer->Bind(m_CommandList);
 		
-		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-
+		m_CommandList->TransitionResourceWithTracking(m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_BloomBuffer->m_BloomTargets[1]->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_TonemapBuffer->m_TonemapTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->FlushBarriers();
@@ -720,7 +717,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_TAABuffer->GetFrameSRV(m_SceneView.FrameIndex).GetIndex() , 1);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetShaderResourceView()->GetDescriptorHeapIndex(), 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->m_BloomTargets[1]->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
 
@@ -1010,8 +1007,8 @@ namespace Drn
 		m_SceneView.PrevJitterOffset[0] = m_SceneView.JitterOffset[0];
 		m_SceneView.PrevJitterOffset[1] = m_SceneView.JitterOffset[1];
 
-		m_SceneView.JitterOffset[0] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8][0] * m_SceneView.InvSizeX * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
-		m_SceneView.JitterOffset[1] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8][1] * m_SceneView.InvSizeY * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
+		m_SceneView.JitterOffset[0] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8].GetX() * m_SceneView.InvSizeX * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
+		m_SceneView.JitterOffset[1] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8].GetY() * m_SceneView.InvSizeY * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;
 
 		Matrix PrevViewMatrix = m_SceneView.WorldToView;
 		Matrix PrevProjectionMatrix = m_SceneView.ViewToProjection;

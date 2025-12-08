@@ -75,7 +75,7 @@ namespace Drn
 			m_Data.ParentSizeAndInvSize = Vector4(ParentSize.X, ParentSize.Y, 1.0f / ParentSize.X, 1.0f / ParentSize.Y);
 
 			m_Data.ParentTexture = i == 0
-				? Renderer->m_TAABuffer->GetFrameSRV(Renderer->m_FrameIndex).GetIndex()
+				? Renderer->m_TAABuffer->GetFrameResource(Renderer->m_FrameIndex)->GetShaderResourceView()->GetDescriptorHeapIndex()
 				: m_DownSampleTargets[i - 1]->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 			UINT8* ConstantBufferStart;

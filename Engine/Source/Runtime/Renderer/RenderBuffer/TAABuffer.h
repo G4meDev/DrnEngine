@@ -2,7 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/RenderBuffer/RenderBuffer.h"
-#include "Runtime/Renderer/ResourceView.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -31,30 +31,24 @@ namespace Drn
 		virtual void Init() override;
 		virtual void Resize( const IntPoint& Size ) override;
 
-		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
-		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
+		void Clear( class D3D12CommandList* CommandList );
+		void Bind( class D3D12CommandList* CommandList );
 
-		void MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer );
+		void MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer );
 		void ReleaseBuffers();
 
-		Resource* m_TAATarget[2] = { nullptr, nullptr };
-
-		DescriptorHandleUAV m_UAVHandles[2];
-		DescriptorHandleSRV m_SrvHandles[2];
+		TRefCountPtr<RenderTexture2D> m_TAATarget[2] = { nullptr, nullptr };
+		TRefCountPtr<UnorderedAccessView> m_UavViews[2];
 
 		Resource* m_Buffer[NUM_BACKBUFFERS] = {nullptr};
 		TAAData m_Data;
 
-		Resource* GetFrameResource( uint32 FrameIndex ) const { return m_TAATarget[FrameIndex%2]; }
-		Resource* GetHistoryResource( uint32 FrameIndex ) const { return m_TAATarget[(FrameIndex+1)%2]; }
+		RenderTexture2D* GetFrameResource( uint32 FrameIndex ) const { return m_TAATarget[FrameIndex%2]; }
+		RenderTexture2D* GetHistoryResource( uint32 FrameIndex ) const { return m_TAATarget[(FrameIndex+1)%2]; }
 
-		DescriptorHandleUAV GetFrameUAV( uint32 FrameIndex ) const { return m_UAVHandles[FrameIndex%2]; }
-		DescriptorHandleUAV GetHistoryUAV( uint32 FrameIndex ) const { return m_UAVHandles[(FrameIndex+1)%2]; }
+		UnorderedAccessView* GetFrameUAV( uint32 FrameIndex ) const { return m_UavViews[FrameIndex%2]; }
+		UnorderedAccessView* GetHistoryUAV( uint32 FrameIndex ) const { return m_UavViews[(FrameIndex+1)%2]; }
 
-		DescriptorHandleSRV GetFrameSRV( uint32 FrameIndex ) const { return m_SrvHandles[FrameIndex%2]; }
-		DescriptorHandleSRV GetHistorySRV( uint32 FrameIndex ) const { return m_SrvHandles[(FrameIndex+1)%2]; }
-
-		// TODO: make vector2d
-		static float m_JitterOffsets[8][2];
+		static Vector2 m_JitterOffsets[8];
 	};
 }
