@@ -208,7 +208,7 @@ namespace Drn
 		void RenderEditorPrimitives();
 		void RenderEditorSelection();
 
-		void GetResourcesForBufferVisualization(EBufferVisualization BufferVisualization, Resource*& OutResource, uint32& OutTextureIndex);
+		void GetResourcesForBufferVisualization(EBufferVisualization BufferVisualization, RenderResource*& OutResource, uint32& OutTextureIndex);
 		void RenderBufferVisulization();
 #endif
 

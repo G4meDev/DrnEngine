@@ -651,9 +651,11 @@ namespace Drn
 		{
 			{
 				ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-				ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[i * 2]->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+				m_CommandList->TransitionResourceWithTracking(m_BloomBuffer->m_BloomTargets[i * 2]->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+				m_CommandList->FlushBarriers();
 
-				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_BloomBuffer->m_RTVHandles[i * 2].GetCpuHandle(), true, NULL);
+				D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_BloomBuffer->m_BloomTargets[i * 2]->GetRenderTargetView()->GetView();
+				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &Handle, true, NULL);
 
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 				m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
@@ -670,14 +672,16 @@ namespace Drn
 			{
 				const bool FirstChain = i == NUM_SCENE_DOWNSAMPLES - 1;
 
-				ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[i * 2]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-				ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[i * 2 + 1]->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+				m_CommandList->TransitionResourceWithTracking(m_BloomBuffer->m_BloomTargets[i * 2]->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				m_CommandList->TransitionResourceWithTracking(m_BloomBuffer->m_BloomTargets[i * 2 + 1]->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 				if (!FirstChain)
 				{
-					ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[(i + 1) * 2 + 1]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+					m_CommandList->TransitionResourceWithTracking(m_BloomBuffer->m_BloomTargets[(i + 1) * 2 + 1]->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 				}
+				m_CommandList->FlushBarriers();
 
-				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_BloomBuffer->m_RTVHandles[i * 2 + 1].GetCpuHandle(), true, NULL);
+				D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_BloomBuffer->m_BloomTargets[i * 2 + 1]->GetRenderTargetView()->GetView();
+				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &Handle, true, NULL);
 
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 				m_CommandList->GetD3D12CommandList()->SetPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
@@ -702,8 +706,8 @@ namespace Drn
 		m_TonemapBuffer->Bind(m_CommandList);
 		
 		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource( m_BloomBuffer->m_BloomTargets[1], D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
+		m_CommandList->TransitionResourceWithTracking(m_BloomBuffer->m_BloomTargets[1]->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_TonemapBuffer->m_TonemapTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->FlushBarriers();
 
@@ -713,7 +717,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_TAABuffer->GetFrameSRV(m_SceneView.FrameIndex).GetIndex() , 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->m_SrvHandles[1].GetIndex(), 3);
+		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->m_BloomTargets[1]->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
@@ -814,28 +818,26 @@ namespace Drn
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
-	void SceneRenderer::GetResourcesForBufferVisualization(EBufferVisualization BufferVisualization, Resource*& OutResource, uint32& OutTextureIndex )
+	void SceneRenderer::GetResourcesForBufferVisualization(EBufferVisualization BufferVisualization, RenderResource*& OutResource, uint32& OutTextureIndex )
 	{
 		switch ( BufferVisualization )
 		{
-		// TODO: update with new texture
+		case EBufferVisualization::BaseColor: OutResource = m_GBuffer->m_BaseColorTarget->GetResource(); OutTextureIndex = m_GBuffer->m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
 
-		//case EBufferVisualization::BaseColor: OutResource = m_GBuffer->m_BaseColorTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_BaseColorTarget->GetGpuHandle()); break;
+		case EBufferVisualization::Metallic:
+		case EBufferVisualization::Roughness:
+		case EBufferVisualization::MaterialAO:
+		case EBufferVisualization::ShadingModel: OutResource = m_GBuffer->m_MasksTarget->GetResource(); OutTextureIndex = m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
 
-		//case EBufferVisualization::Metallic:
-		//case EBufferVisualization::Roughness:
-		//case EBufferVisualization::MaterialAO:
-		//case EBufferVisualization::ShadingModel: OutResource = m_GBuffer->m_MasksTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksTarget->GetGpuHandle()); break;
-
-		//case EBufferVisualization::PreTonemapColor: OutResource = m_GBuffer->m_ColorDeferredTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_ColorDeferredTarget->GetGpuHandle()); break;
-		//case EBufferVisualization::WorldNormal: OutResource = m_GBuffer->m_WorldNormalTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_WorldNormalTarget->GetGpuHandle()); break;
-		//case EBufferVisualization::SubsurfaceColor: OutResource = m_GBuffer->m_MasksBTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_MasksBTarget->GetGpuHandle()); break;
+		case EBufferVisualization::PreTonemapColor: OutResource = m_GBuffer->m_ColorDeferredTarget->GetResource(); OutTextureIndex = m_GBuffer->m_ColorDeferredTarget->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
+		case EBufferVisualization::WorldNormal: OutResource = m_GBuffer->m_WorldNormalTarget->GetResource(); OutTextureIndex = m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
+		case EBufferVisualization::SubsurfaceColor: OutResource = m_GBuffer->m_MasksBTarget->GetResource(); OutTextureIndex = m_GBuffer->m_MasksBTarget->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
 		case EBufferVisualization::Depth:
-		//case EBufferVisualization::LinearDepth: OutResource = m_GBuffer->m_DepthTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_GBuffer->m_DepthTarget->GetGpuHandle()); break;
+		case EBufferVisualization::LinearDepth: OutResource = m_GBuffer->m_DepthTarget->GetResource(); OutTextureIndex = m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
 
-		//case EBufferVisualization::ScreenSpaceAO: OutResource = m_AOBuffer->m_AOTarget; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_AOBuffer->m_AOTarget->GetGpuHandle()); break;
-		case EBufferVisualization::Bloom: OutResource = m_BloomBuffer->m_BloomTargets[1]; OutTextureIndex = m_BloomBuffer->m_SrvHandles[1].GetIndex(); break;
-		//case EBufferVisualization::ScreenSpaceReflection: OutResource = m_ScreenSpaceReflectionBuffer->m_Target; OutTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_ScreenSpaceReflectionBuffer->m_Target->GetGpuHandle()); break;
+		case EBufferVisualization::ScreenSpaceAO: OutResource = m_AOBuffer->m_AOTarget->GetResource(); OutTextureIndex = m_AOBuffer->m_AOTarget->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
+		case EBufferVisualization::Bloom: OutResource = m_BloomBuffer->m_BloomTargets[1]->GetResource(); OutTextureIndex = m_BloomBuffer->m_BloomTargets[1]->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
+		case EBufferVisualization::ScreenSpaceReflection: OutResource = m_ScreenSpaceReflectionBuffer->m_Target->GetResource(); OutTextureIndex = m_ScreenSpaceReflectionBuffer->m_Target->GetShaderResourceView()->GetDescriptorHeapIndex(); break;
 
 		case EBufferVisualization::FinalImage:
 		default: OutResource = nullptr; OutTextureIndex = 0;
@@ -852,7 +854,7 @@ namespace Drn
 		if (OwningWorld && OwningWorld->GetBufferVisualization() != EBufferVisualization::FinalImage)
 		{
 			EBufferVisualization BufferVisulization = m_Scene->GetWorld()->GetBufferVisualization();
-			Resource* VisualizationResource = nullptr;
+			RenderResource* VisualizationResource = nullptr;
 			uint32 InputTextureIndex;
 
 			GetResourcesForBufferVisualization(BufferVisulization, VisualizationResource, InputTextureIndex);
@@ -860,8 +862,8 @@ namespace Drn
 
 			if (VisualizationResource && PSO)
 			{
-				ResourceStateTracker::Get()->TransiationResource( VisualizationResource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
+				m_CommandList->TransitionResourceWithTracking(VisualizationResource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				m_CommandList->FlushBarriers();
 
 				m_TonemapBuffer->Bind( m_CommandList );
 

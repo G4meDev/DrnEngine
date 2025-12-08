@@ -14,23 +14,12 @@ namespace Drn
 	{
 		ReleaseBuffers();
 
-		for ( int32 i = 0; i < NUM_BLOOM_TARGETS; i++ )
-		{
-			m_RTVHandles[i].FreeDescriptorSlot();
-			m_SrvHandles[i].FreeDescriptorSlot();
-		}
 	}
 
 	void BloomBuffer::Init()
 	{
 		RenderBuffer::Init();
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
-		for ( int32 i = 0; i < NUM_BLOOM_TARGETS; i++ )
-		{
-			m_RTVHandles[i].AllocateDescriptorSlot();
-			m_SrvHandles[i].AllocateDescriptorSlot();
-		}
 
 // ---------------------------------------------------------------------------------------------------------------
 
@@ -55,51 +44,24 @@ namespace Drn
 
 		for (int32 i = 0; i < NUM_BLOOM_TARGETS; i++)
 		{
-			if (m_BloomTargets[i])
-			{
-				m_BloomTargets[i]->ReleaseBufferedResource();
-				m_BloomTargets[i] = nullptr;
-			}
-		}
-
-		for (int32 i = 0; i < NUM_BLOOM_TARGETS; i++)
-		{
 			int32 DownSampleIndex = i / 2;
 			IntPoint Size = m_Size / std::pow(2, DownSampleIndex + 1);
 			Size = IntPoint::ComponentWiseMax(Size, IntPoint(1, 1));
 
 			m_Viewports[DownSampleIndex] = CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( Size.X ), static_cast<float>( Size.Y ) );
 
-			m_BloomTargets[i] = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-				CD3DX12_RESOURCE_DESC::Tex2D(BLOOM_FORMAT, Size.X, Size.Y, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET),
-				D3D12_RESOURCE_STATE_COMMON);
-
-#if D3D12_Debug_INFO
-			m_BloomTargets[i]->SetName( "Bloom" + GetDownSamplePostfix(i) + ((i%2 == 0) ? "Y" : "X") );
-#endif
-
-			D3D12_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = BLOOM_FORMAT;
-			RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-			RenderTargetViewDesc.Texture2D.MipSlice = 0;
-			m_RTVHandles[i].CreateView(RenderTargetViewDesc, m_BloomTargets[i]->GetD3D12Resource());
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC Desc = {};
-			Desc.Format = BLOOM_FORMAT;
-			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			Desc.Texture2D.MipLevels = 1;
-			Desc.Texture2D.MostDetailedMip = 0;
-			m_SrvHandles[i].CreateView(Desc, m_BloomTargets[i]->GetD3D12Resource());
+			RenderResourceCreateInfo BloomCreateInfo( nullptr, nullptr, ClearValueBinding::DepthZero, "Bloom" + GetDownSamplePostfix(i) + ((i%2 == 0) ? "Y" : "X") );
+			m_BloomTargets[i] = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), Size.X, Size.Y, BLOOM_FORMAT, 1, 1, true,
+				(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), BloomCreateInfo);
 		}
 	}
 
-	void BloomBuffer::Clear( ID3D12GraphicsCommandList2* CommandList )
+	void BloomBuffer::Clear( D3D12CommandList* CommandList )
 	{
 		
 	}
 
-	void BloomBuffer::Bind( ID3D12GraphicsCommandList2* CommandList )
+	void BloomBuffer::Bind( D3D12CommandList* CommandList )
 	{
 		
 	}
@@ -165,8 +127,8 @@ namespace Drn
 				}
 				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, SampleWeights[BLOOM_PACKED_SAMPLE_COUNT - 1], 0, 0);
 
-				m_Data.Header.SampleTexture = m_SrvHandles[i * 2].GetIndex();
-				m_Data.Header.AddtiveTexture = i == NUM_SCENE_DOWNSAMPLES - 1 ? 0 : m_SrvHandles[(i + 1) * 2 + 1].GetIndex();
+				m_Data.Header.SampleTexture = m_BloomTargets[i * 2]->GetShaderResourceView()->GetDescriptorHeapIndex();
+				m_Data.Header.AddtiveTexture = i == NUM_SCENE_DOWNSAMPLES - 1 ? 0 : m_BloomTargets[(i + 1) * 2 + 1]->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 				UINT8* ConstantBufferStart;
 				CD3DX12_RANGE readRange( 0, 0 );
@@ -180,15 +142,6 @@ namespace Drn
 
 	void BloomBuffer::ReleaseBuffers()
 	{
-		for (int32 i = 0; i < NUM_BLOOM_TARGETS; i++)
-		{
-			if (m_BloomTargets[i])
-			{
-				m_BloomTargets[i]->ReleaseBufferedResource();
-				m_BloomTargets[i] = nullptr;
-			}
-		}
-
 		for (int32 i = 0; i < NUM_BLOOM_TARGETS; i++)
 		{
 			if (m_Buffer[i])

@@ -3,6 +3,7 @@
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/RenderBuffer/RenderBuffer.h"
 #include "Runtime/Renderer/ResourceView.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -34,16 +35,13 @@ namespace Drn
 		virtual void Init() override;
 		virtual void Resize( const IntPoint& Size ) override;
 
-		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
-		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
+		void Clear( class D3D12CommandList* CommandList );
+		void Bind( class D3D12CommandList* CommandList );
 
 		void MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer );
 		void ReleaseBuffers();
 
-		Resource* m_BloomTargets[NUM_BLOOM_TARGETS] = { nullptr };
-
-		DescriptorHandleRTV m_RTVHandles[NUM_BLOOM_TARGETS];
-		DescriptorHandleSRV m_SrvHandles[NUM_BLOOM_TARGETS];
+		TRefCountPtr<RenderTexture2D> m_BloomTargets[NUM_BLOOM_TARGETS] = { nullptr };
 
 		Resource* m_Buffer[NUM_BLOOM_TARGETS] = { nullptr };
 		BloomData m_Data;
