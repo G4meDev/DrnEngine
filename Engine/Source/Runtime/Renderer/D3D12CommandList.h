@@ -73,6 +73,7 @@ namespace Drn
 		void FlipAndReset();
 		void SetAllocatorAndReset(uint8 AllocatorIndex);
 
+		void ClearDepthTexture( class DepthStencilView* InView, bool bClearDepth, float Depth, bool bClearStencil, uint8 Stencil );
 		void ClearDepthTexture( class RenderTextureBase* InTexture, EDepthStencilViewType Type, bool bClearDepth, float Depth, bool bClearStencil, uint8 Stencil );
 		void ClearDepthTexture( class RenderTextureBase* InTexture, EDepthStencilViewType Type, bool bClearDepth, bool bClearStencil );
 

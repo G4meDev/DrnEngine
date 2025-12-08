@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "DirectionalLightSceneProxy.h"
 #include "Runtime/Components/DirectionalLightComponent.h"
+#include "Runtime/Renderer/RenderTexture.h"
 #include <pix3.h>
 
 #define DIRECTIONAL_SHADOW_SIZE 2048
@@ -20,23 +21,6 @@ namespace Drn
 		//, m_ShadowBuffer(nullptr)
 		, m_ShadowmapResource(nullptr)
 	{
-		D3D12_DESCRIPTOR_HEAP_DESC DepthHeapDesc = {};
-		DepthHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-		DepthHeapDesc.NumDescriptors = DIRECTIONAL_SHADOW_CASCADE_MAX;
-		// TODO: make pooled and allocate on demand
-		Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &DepthHeapDesc, IID_PPV_ARGS(m_DsvHeap.ReleaseAndGetAddressOf()) );
-#if D3D12_Debug_INFO
-		m_DsvHeap->SetName(StringHelper::s2ws("DsvHeapDirectionalLightShadowmap_" + m_Name).c_str());
-#endif
-
-		m_ShadowmapCpuHandles.resize(DIRECTIONAL_SHADOW_CASCADE_MAX);
-		for (int32 i = 0; i < DIRECTIONAL_SHADOW_CASCADE_MAX; i++)
-		{
-			m_ShadowmapCpuHandles[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE(m_DsvHeap->GetCPUDescriptorHandleForHeapStart(), i, Renderer::Get()->GetDsvIncrementSize());;
-		}
-
-// --------------------------------------------------------------------------------------------------
-
 		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
 		{
 			m_LightBuffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
@@ -78,8 +62,8 @@ namespace Drn
 		
 		if (m_CastShadow)
 		{
-			ResourceStateTracker::Get()->TransiationResource(m_ShadowmapResource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
+			CommandList->TransitionResourceWithTracking(m_ShadowmapResource->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			CommandList->FlushBarriers();
 		}
 		
 		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList->GetD3D12CommandList());
@@ -112,7 +96,7 @@ namespace Drn
 			m_ShadowData.DepthBias = m_DepthBias;
 			m_ShadowData.InvShadowResolution = 1.0f / DIRECTIONAL_SHADOW_SIZE;
 			m_ShadowData.CacadeCount = m_CascadeCount;
-			m_ShadowData.ShadowmapTextureIndex = Renderer::Get()->GetBindlessSrvIndex(m_ShadowmapResource->GetGpuHandle());
+			m_ShadowData.ShadowmapTextureIndex = m_ShadowmapResource->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 			for (int32 i = 0; i < m_CascadeCount; i++)
 			{
@@ -130,13 +114,15 @@ namespace Drn
 			memcpy( ConstantBufferStart, &m_ShadowData, sizeof(DirectionalLightShadowData));
 			m_ShadowBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 
-			ResourceStateTracker::Get()->TransiationResource(m_ShadowmapResource, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
+			CommandList->TransitionResourceWithTracking(m_ShadowmapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
+			CommandList->FlushBarriers();
 
 			for (int i = 0; i < m_CascadeCount; i++)
 			{
-				CommandList->GetD3D12CommandList()->ClearDepthStencilView(m_ShadowmapCpuHandles[i], D3D12_CLEAR_FLAG_DEPTH, 1, 0, 0, nullptr);
-				CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &m_ShadowmapCpuHandles[i]);
+				CommandList->ClearDepthTexture( m_ShadowmapViews[i], true, 1, false, 0);
+
+				D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_ShadowmapViews[i]->GetView();
+				CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &Handle);
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -164,19 +150,11 @@ namespace Drn
 
 	void DirectionalLightSceneProxy::AllocateShadowmap( D3D12CommandList* CommandList )
 	{
-		D3D12_CLEAR_VALUE ShadowmapClearValue = {};
-		ShadowmapClearValue.Format = DXGI_FORMAT_D16_UNORM;
-		ShadowmapClearValue.DepthStencil.Depth = 1;
+		RenderResourceCreateInfo ShadowmapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "DirectionalLightShadowmap" );
+		m_ShadowmapResource = RenderTexture2DArray::Create(Renderer::Get()->GetCommandList_Temp(), DIRECTIONAL_SHADOW_SIZE, DIRECTIONAL_SHADOW_SIZE, m_CascadeCount, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCreateInfo);
 
-		m_ShadowmapResource = Resource::Create(D3D12_HEAP_TYPE_DEFAULT,
-			CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R16_TYPELESS, DIRECTIONAL_SHADOW_SIZE, DIRECTIONAL_SHADOW_SIZE, m_CascadeCount, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
-			D3D12_RESOURCE_STATE_DEPTH_WRITE, ShadowmapClearValue);
-
-#if D3D12_Debug_INFO
-		// TODO: add component name
-		m_ShadowmapResource->SetName("DirectionalLightShadowmap");
-#endif
-
+		m_ShadowmapViews.clear();
 		for (int32 i = 0; i < m_CascadeCount; i++)
 		{
 			D3D12_DEPTH_STENCIL_VIEW_DESC DepthViewDesc = {};
@@ -185,22 +163,9 @@ namespace Drn
 			DepthViewDesc.Texture2DArray.MipSlice = 0;
 			DepthViewDesc.Texture2DArray.FirstArraySlice = i;
 			DepthViewDesc.Texture2DArray.ArraySize = 1;
-			Renderer::Get()->GetD3D12Device()->CreateDepthStencilView( m_ShadowmapResource->GetD3D12Resource(), &DepthViewDesc, m_ShadowmapCpuHandles[i] );
+
+			m_ShadowmapViews.push_back(new DepthStencilView(CommandList->GetParentDevice(), DepthViewDesc, m_ShadowmapResource->m_ResourceLocation, false));
 		}
-
-// -----------------------------------------------------------------------------------------------------------
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-		ResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		ResourceViewDesc.Format = DXGI_FORMAT_R16_UNORM;
-		ResourceViewDesc.Texture2DArray.MipLevels = 1;
-		ResourceViewDesc.Texture2DArray.MostDetailedMip = 0;
-		ResourceViewDesc.Texture2DArray.ResourceMinLODClamp = 0;
-		ResourceViewDesc.Texture2DArray.ArraySize = m_CascadeCount;
-		ResourceViewDesc.Texture2DArray.FirstArraySlice = 0;
-
-		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView(m_ShadowmapResource->GetD3D12Resource(), &ResourceViewDesc, m_ShadowmapResource->GetCpuHandle());
 
 // --------------------------------------------------------------------------------------------------
 
@@ -242,7 +207,6 @@ namespace Drn
 	{
 		if (m_ShadowmapResource)
 		{
-			m_ShadowmapResource->ReleaseBufferedResource();
 			m_ShadowmapResource = nullptr;
 
 			for ( int32 i = 0; i < NUM_BACKBUFFERS; i++)
@@ -294,7 +258,7 @@ namespace Drn
 
 			CalculateSplitDistance();
 
-			if (m_CastShadow && (!m_ShadowmapResource || m_ShadowmapResource->GetD3D12Resource()->GetDesc().DepthOrArraySize != m_CascadeCount))
+			if (m_CastShadow && (!m_ShadowmapResource || m_ShadowmapResource->GetResource()->GetDesc().DepthOrArraySize != m_CascadeCount))
 			{
 				ReleaseShadowmap();
 				AllocateShadowmap(CommandList);

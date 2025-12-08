@@ -104,30 +104,26 @@ namespace Drn
 		m_CommandList->Reset(commandAllocator.Get(), nullptr);
 	}
 
+	void D3D12CommandList::ClearDepthTexture( class DepthStencilView* InView, bool bClearDepth, float Depth, bool bClearStencil, uint8 Stencil )
+	{
+		uint32 Flags = 0;
+		Flags |= bClearDepth ? D3D12_CLEAR_FLAG_DEPTH : 0;
+		Flags |= bClearStencil ? D3D12_CLEAR_FLAG_STENCIL : 0;
+
+		m_CommandList->ClearDepthStencilView( InView->GetView(), (D3D12_CLEAR_FLAGS)Flags, Depth, Stencil, 0, nullptr );
+	}
+
 	void D3D12CommandList::ClearDepthTexture( class RenderTextureBase* InTexture, EDepthStencilViewType Type, bool bClearDepth, float Depth, bool bClearStencil, uint8 Stencil )
 	{
 		DepthStencilView* View = InTexture->GetDepthStencilView(Type);
 
-		uint32 ClearFlags = 0;
-		if (bClearDepth && View->HasDepth())
-		{
-			ClearFlags |= D3D12_CLEAR_FLAG_DEPTH;
-		}
-		else if (bClearDepth)
-		{
-			drn_check(false);
-		}
+		if (bClearDepth)
+			drn_check(View->HasDepth());
 
 		if (bClearStencil && View->HasStencil())
-		{
-			ClearFlags |= D3D12_CLEAR_FLAG_STENCIL;
-		}
-		else if (bClearStencil)
-		{
-			drn_check(false);
-		}
+			drn_check(View->HasStencil());
 
-		m_CommandList->ClearDepthStencilView( View->GetView(), (D3D12_CLEAR_FLAGS)ClearFlags, Depth, Stencil, 0, nullptr );
+		ClearDepthTexture( View, bClearDepth, Depth, bClearStencil, Stencil );
 	}
 
 	void D3D12CommandList::ClearDepthTexture( class RenderTextureBase* InTexture, EDepthStencilViewType Type, bool bClearDepth, bool bClearStencil )

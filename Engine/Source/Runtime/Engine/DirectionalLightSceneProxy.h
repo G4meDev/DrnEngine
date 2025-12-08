@@ -63,10 +63,8 @@ namespace Drn
 		void CalculateSplitDistance();
 		Matrix GetShadowSplitBoundsMatrix( const SceneRendererView& View, const Vector& ViewOrigin, float SplitNear, float SplitFar );
 
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
-		
-		Resource* m_ShadowmapResource;
-		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_ShadowmapCpuHandles;
+		TRefCountPtr<class RenderTexture2DArray> m_ShadowmapResource;
+		std::vector<TRefCountPtr<class DepthStencilView>> m_ShadowmapViews;
 
 		DirectionalLightData m_LightData;
 		Resource* m_LightBuffer[NUM_BACKBUFFERS] = {nullptr};

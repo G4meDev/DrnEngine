@@ -22,11 +22,10 @@ namespace Drn
 		TextureStats::TextureDeleted( *this );
 	}
 
-	RenderTexture2D* RenderTexture2D::Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo)
+	template<typename T>
+	T* CreateTexture2D( D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, uint32 SizeZ, uint32 NumMips, uint32 NumSamples,
+		DXGI_FORMAT Format, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo, bool bTextureArray, bool bCubemap )
 	{
-		bool bTextureArray = false;
-		bool bCubeTexture = false;
-
 		drn_check(SizeX > 0 && SizeY > 0 && NumMips > 0);
 		drn_check(SizeX <= MAX_TEXTURE_SIZE_2D);
 
@@ -81,7 +80,7 @@ namespace Drn
 			Format,
 			SizeX,
 			SizeY,
-			1,
+			SizeZ,
 			NumMips,
 			ActualMSAACount,
 			ActualMSAAQuality,
@@ -150,7 +149,20 @@ namespace Drn
 
 		Device* const ParentDevice = CmdList->GetParentDevice();
 
-		RenderTexture2D* NewTexture = new RenderTexture2D(ParentDevice, SizeX, SizeY, NumMips, ActualMSAACount, Format, Flags, CreateInfo.ClearValueBinding);
+		T* NewTexture;
+		if constexpr (std::is_same_v<T, RenderTexture2D>)
+		{
+			NewTexture = new RenderTexture2D(ParentDevice, SizeX, SizeY, NumMips, ActualMSAACount, Format, Flags, CreateInfo.ClearValueBinding);
+		}
+		else if constexpr (std::is_same_v<T, RenderTexture2DArray>)
+		{
+			NewTexture = new RenderTexture2DArray(ParentDevice, SizeX, SizeY, SizeZ, NumMips, ActualMSAACount, Format, Flags, CreateInfo.ClearValueBinding);
+		}
+		else
+		{
+			drn_check(false);
+		}
+
 		ResourceLocation& Location = NewTexture->m_ResourceLocation;
 
 		SafeCreateTexture2D(ParentDevice, TextureDesc, ClearValuePtr, &Location, Format, Flags,
@@ -189,7 +201,7 @@ namespace Drn
 
 					RTVDesc.Format = RenderTargetFormat;
 
-					if (bTextureArray || bCubeTexture)
+					if (bTextureArray || bCubemap)
 					{
 						if (bIsMultisampled)
 						{
@@ -230,7 +242,7 @@ namespace Drn
 		{
 			D3D12_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
 			DSVDesc.Format = DepthStencilFormat;
-			if (bTextureArray || bCubeTexture)
+			if (bTextureArray || bCubemap)
 			{
 				if (bIsMultisampled)
 				{
@@ -301,7 +313,7 @@ namespace Drn
 			//}
 			if (false){}
 
-			else if (bCubeTexture)
+			else if (bCubemap)
 			{
 				SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
 				SRVDesc.TextureCube.MostDetailedMip = 0;
@@ -398,6 +410,17 @@ namespace Drn
 		default:
 			drn_check(false);
 		}
+	}
+
+	RenderTexture2D* RenderTexture2D::Create(D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo)
+	{
+		return CreateTexture2D<RenderTexture2D>(CmdList, SizeX, SizeY, 1, NumMips, NumSamples, Format, bNeedsStateTracking, Flags, CreateInfo, false, false );
+	}
+
+	RenderTexture2DArray* RenderTexture2DArray::Create(D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, uint32 ArraySize,
+		DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo )
+	{
+		return CreateTexture2D<RenderTexture2DArray>(CmdList, SizeX, SizeY, ArraySize, NumMips, NumSamples, Format, bNeedsStateTracking, Flags, CreateInfo, true, false );
 	}
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -522,4 +545,4 @@ namespace Drn
 		}
 	}
 
-}  // namespace Drn
+        }  // namespace Drn

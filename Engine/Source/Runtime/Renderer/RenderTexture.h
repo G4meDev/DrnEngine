@@ -504,6 +504,8 @@ namespace Drn
 		}
 
 		virtual ~RenderTexture2DArray() {}
+
+		static RenderTexture2DArray* Create(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, uint32 ArraySize, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo);
 	};
 
 	class RenderTextureCube : public RenderBaseTexture2D
@@ -522,7 +524,10 @@ namespace Drn
 
 	};
 
-	void SafeCreateTexture2D(Device* pDevice, const D3D12_RESOURCE_DESC& TextureDesc, const D3D12_CLEAR_VALUE* ClearValue, ResourceLocation* OutTexture2D,
+	template<typename T>
+	T* CreateTexture2D(class D3D12CommandList* CmdList, uint32 SizeX, uint32 SizeY, uint32 SizeZ, uint32 NumMips, uint32 NumSamples, DXGI_FORMAT Format, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo, bool bTextureArray, bool bCubemap);
+
+	void SafeCreateTexture2D( Device* pDevice, const D3D12_RESOURCE_DESC& TextureDesc, const D3D12_CLEAR_VALUE* ClearValue, ResourceLocation* OutTexture2D,
 		DXGI_FORMAT Format, ETextureCreateFlags Flags, D3D12_RESOURCE_STATES InitialState, bool bNeedsStateTracking, const std::string& Name);
 
 
