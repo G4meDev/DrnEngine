@@ -318,8 +318,7 @@ namespace Drn
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "HZB" );
 
-		ResourceStateTracker::Get()->TransiationResource(m_HZBBuffer->M_HZBTarget, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
+		m_CommandList->TransitionResourceWithTracking(m_HZBBuffer->M_HZBTarget->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->FlushBarriers();
 
@@ -336,16 +335,14 @@ namespace Drn
 			IntPoint DispatchSize = MipSize / HZB_GROUP_TILE_SIZE;
 			DispatchSize = IntPoint::ComponentWiseMax(DispatchSize, IntPoint(1));
 
-			D3D12_GPU_DESCRIPTOR_HANDLE DepthGpuHandle = {};
-			DepthGpuHandle.ptr = m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptor().GetGpuHandle().ptr;
-
-			D3D12_GPU_DESCRIPTOR_HANDLE ParentViewHandle = DispatchStartMipIndex == 0 ?
-				DepthGpuHandle :
-				m_HZBBuffer->m_SrvHandles[DispatchStartMipIndex / 4 - 1].GpuHandle;
+			uint32 ParentViewIndex = DispatchStartMipIndex == 0 ?
+				m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex() :
+				m_HZBBuffer->m_SRVHandles[DispatchStartMipIndex / 4 - 1]->GetDescriptorHeapIndex();
 
 			if ( DispatchStartMipIndex != 0)
 			{
-				ResourceStateTracker::Get()->TransiationResource(m_HZBBuffer->M_HZBTarget, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, DispatchStartMipIndex - 1);
+				m_CommandList->TransitionResourceWithTracking(m_HZBBuffer->M_HZBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, DispatchStartMipIndex - 1);
+				m_CommandList->FlushBarriers();
 			}
 
 			ID3D12PipelineState* DispatchPSO = nullptr;
@@ -358,7 +355,7 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 			m_CommandList->GetD3D12CommandList()->SetPipelineState(DispatchPSO);
 
-			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(ParentViewHandle), 1);
+			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, ParentViewIndex, 1);
 			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 			Vector4 DispatchIDToUV;
@@ -370,7 +367,7 @@ namespace Drn
 			for (int32 i = 0; i < DispatchMipCount; i++)
 			{
 				const int32 MipIndex = DispatchStartMipIndex + i;
-				m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_HZBBuffer->m_UAVHandles[MipIndex].GpuHandle), OutputIndexStart + i);
+				m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, m_HZBBuffer->m_UAVHandles[MipIndex]->GetDescriptorHeapIndex(), OutputIndexStart + i);
 			}
 
 			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
@@ -387,8 +384,7 @@ namespace Drn
 
 		m_AOBuffer->MapBuffer(m_CommandList, this, m_PostProcessSettings->m_SSAOSettings);
 
-		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		
+		m_CommandList->TransitionResourceWithTracking( m_HZBBuffer->M_HZBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOSetupTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET );
 		m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOHalfTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET );
 		m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET );
@@ -493,9 +489,7 @@ namespace Drn
 
 		m_ScreenSpaceReflectionBuffer->MapBuffer(m_CommandList, this, m_PostProcessSettings->m_SSRSettings);
 
-		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-
+		m_CommandList->TransitionResourceWithTracking( m_HZBBuffer->M_HZBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->TransitionResourceWithTracking( m_ScreenSpaceReflectionBuffer->m_Target->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET );
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_BaseColorTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
@@ -503,6 +497,7 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->FlushBarriers();
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_ScreenSpaceReflectionBuffer->Bind(m_CommandList);
 		m_ScreenSpaceReflectionBuffer->Clear(m_CommandList);
@@ -528,9 +523,7 @@ namespace Drn
 
 		m_ReflectionEnvironmentBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
 		
-		ResourceStateTracker::Get()->TransiationResource( m_HZBBuffer->M_HZBTarget->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-		
+		m_CommandList->TransitionResourceWithTracking( m_HZBBuffer->M_HZBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->TransitionResourceWithTracking(m_ScreenSpaceReflectionBuffer->m_Target->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_BaseColorTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
@@ -539,6 +532,7 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->FlushBarriers();
+		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_GBuffer->m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &DeferredColorHandle, true, NULL);

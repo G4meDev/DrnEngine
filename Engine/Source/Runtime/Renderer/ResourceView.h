@@ -491,6 +491,7 @@ namespace Drn
 
 	class UnorderedAccessView : public SimpleRenderResource, public ResourceView<D3D12_UNORDERED_ACCESS_VIEW_DESC>
 	{
+	public:
 		UnorderedAccessView(Device* InParent, D3D12_UNORDERED_ACCESS_VIEW_DESC& InDesc, ResourceLocation& InResourceLocation, RenderResource* InCounterResource = nullptr)
 			: ResourceView(InParent, ViewSubresourceSubsetFlags_None)
 			, CounterResource(InCounterResource)

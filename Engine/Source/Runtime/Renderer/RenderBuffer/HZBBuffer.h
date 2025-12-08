@@ -5,12 +5,6 @@
 
 namespace Drn
 {
-	struct HZBViewHandle
-	{
-		D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle;
-	};
-
 	class HZBBuffer : public RenderBuffer
 	{
 	public:
@@ -20,15 +14,15 @@ namespace Drn
 		virtual void Init() override;
 		virtual void Resize( const IntPoint& Size ) override;
 
-		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
-		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
+		void Clear( class D3D12CommandList* CommandList );
+		void Bind( class D3D12CommandList* CommandList );
 
-		void ReleaseResources();
 		void ReallocateViewHandles();
 
-		Resource* M_HZBTarget;
-		std::vector<HZBViewHandle> m_UAVHandles;
-		std::vector<HZBViewHandle> m_SrvHandles;
+		TRefCountPtr<RenderTexture2D> M_HZBTarget;
+
+		std::vector<TRefCountPtr<UnorderedAccessView>> m_UAVHandles;
+		std::vector<TRefCountPtr<ShaderResourceView>> m_SRVHandles;
 
 		IntPoint m_FirstMipSize;
 		int32 m_MipCount;

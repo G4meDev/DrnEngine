@@ -71,7 +71,7 @@ namespace Drn
 		m_Data.WorldNormalTexture = Renderer->m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.MasksTexture = Renderer->m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.DepthTexture = Renderer->m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
-		m_Data.HzbTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_HZBBuffer->M_HZBTarget->GetGpuHandle());
+		m_Data.HzbTexture = Renderer->m_HZBBuffer->M_HZBTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 		m_Data.Intensity = Settings.m_Intensity;
 		m_Data.RoughnessFade = Settings.m_RoughnessFade;

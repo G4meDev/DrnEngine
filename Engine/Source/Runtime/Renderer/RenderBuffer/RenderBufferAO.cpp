@@ -108,7 +108,7 @@ namespace Drn
 	{
 		m_AoData.DepthTexture = Renderer->m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_AoData.WorldNormalTexture = Renderer->m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
-		m_AoData.HzbTexture = Renderer::Get()->GetBindlessSrvIndex(Renderer->m_HZBBuffer->M_HZBTarget->GetGpuHandle());
+		m_AoData.HzbTexture = Renderer->m_HZBBuffer->M_HZBTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_AoData.SetupTexture = m_AOSetupTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_AoData.DownSampleTexture = m_AOHalfTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 
