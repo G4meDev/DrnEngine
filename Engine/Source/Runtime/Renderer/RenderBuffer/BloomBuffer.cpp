@@ -110,7 +110,7 @@ namespace Drn
 				}
 				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, SampleWeights[BLOOM_PACKED_SAMPLE_COUNT - 1], 0, 0);
 
-				m_Data.Header.SampleTexture = Renderer->m_SceneDownSampleBuffer->m_SrvHandles[i].GetIndex();
+				m_Data.Header.SampleTexture = Renderer->m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 				UINT8* ConstantBufferStart;
 				CD3DX12_RANGE readRange( 0, 0 );

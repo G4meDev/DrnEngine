@@ -602,9 +602,12 @@ namespace Drn
 		m_SceneDownSampleBuffer->MapBuffer(m_CommandList->GetD3D12CommandList(), this);
 
 		ResourceStateTracker::Get()->TransiationResource( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[0]->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_SceneDownSampleBuffer->m_RTVHandles[0].GetCpuHandle(), true, NULL);
+		m_CommandList->TransitionResourceWithTracking( m_SceneDownSampleBuffer->m_DownSampleTargets[0]->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		m_CommandList->FlushBarriers();
+
+		D3D12_CPU_DESCRIPTOR_HANDLE MainHandle = m_SceneDownSampleBuffer->m_DownSampleTargets[0]->GetRenderTargetView()->GetView();
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &MainHandle, true, NULL);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
@@ -621,10 +624,12 @@ namespace Drn
 
 		for (int32 i = 1; i < NUM_SCENE_DOWNSAMPLES; i++)
 		{
-			ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[i - 1]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-			ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+			m_CommandList->TransitionResourceWithTracking( m_SceneDownSampleBuffer->m_DownSampleTargets[i - 1]->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			m_CommandList->TransitionResourceWithTracking( m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+			m_CommandList->FlushBarriers();
 
-			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &m_SceneDownSampleBuffer->m_RTVHandles[i].GetCpuHandle(), true, NULL);
+			D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetRenderTargetView()->GetView();
+			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &Handle, true, NULL);
 
 			//m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 			//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
@@ -650,7 +655,7 @@ namespace Drn
 		for (int32 i = NUM_SCENE_DOWNSAMPLES - 1; i > -1; i--)
 		{
 			{
-				ResourceStateTracker::Get()->TransiationResource( m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetD3D12Resource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				m_CommandList->TransitionResourceWithTracking(m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 				m_CommandList->TransitionResourceWithTracking(m_BloomBuffer->m_BloomTargets[i * 2]->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 				m_CommandList->FlushBarriers();
 
