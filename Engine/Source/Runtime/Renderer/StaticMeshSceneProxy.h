@@ -31,20 +31,20 @@ namespace Drn
 
 	protected:
 
-		void RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		void RenderPrePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		virtual void RenderShadowPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;
-		virtual void RenderDecalPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) override;
+		void RenderMainPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		void RenderPrePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;
+		virtual void RenderDecalPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) override;
 
 
 #if WITH_EDITOR
-		void RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		void RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		void RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		void RenderHitProxyPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		void RenderSelectionPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		void RenderEditorPrimitivePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 #endif
 
-		void InitResources( ID3D12GraphicsCommandList2* CommandList ) override;
-		void UpdateResources( ID3D12GraphicsCommandList2* CommandList ) override;
+		void InitResources( class D3D12CommandList* CommandList ) override;
+		void UpdateResources( class D3D12CommandList* CommandList ) override;
 
 		PrimitiveComponent* GetPrimitive() override { return m_OwningStaticMeshComponent; };
 

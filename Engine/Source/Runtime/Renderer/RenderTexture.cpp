@@ -364,16 +364,14 @@ namespace Drn
 
 		TextureStats::TextureAllocated(*NewTexture);
 
-		//// Initialize if data is given
-		//if (CreateInfo.BulkData != nullptr)
-		//{
-		//	D3D12TextureOut->InitializeTextureData(RHICmdList, CreateInfo.BulkData->GetResourceBulkData(), CreateInfo.BulkData->GetResourceBulkDataSize(), SizeX, SizeY, 1, SizeZ, NumMips, Format, InitialState);
-		//
-		//	CreateInfo.BulkData->Discard();
-		//}
-		//
-		//return D3D12TextureOut;
-
+		if (CreateInfo.BulkData != nullptr)
+		{
+			//NewTexture->InitializeTextureData(CmdList, CreateInfo.BulkData->GetResourceBulkData(), CreateInfo.BulkData->GetResourceBulkDataSize(), SizeX, SizeY, 1, SizeZ, NumMips, Format, InitialState);
+			NewTexture->InitializeTextureData(CmdList, CreateInfo.BulkData, 0, SizeX, SizeY, 1, SizeZ, NumMips, Format, InitialState);
+		
+			//CreateInfo.BulkData->Discard();
+		}
+		
 		return NewTexture;
 	}
 
@@ -413,6 +411,112 @@ namespace Drn
 
 		default:
 			drn_check(false);
+		}
+	}
+
+	void RenderTextureBase::InitializeTextureData( class D3D12CommandList* CmdList, const void* InitData, uint32 InitDataSize,
+		uint32 SizeX, uint32 SizeY, uint32 SizeZ, uint32 NumSlices, uint32 NumMips, DXGI_FORMAT Format, D3D12_RESOURCE_STATES DestinationState )
+	{
+		Device* Device = GetParentDevice();
+		uint32 NumSubresources = NumMips * NumSlices;
+
+		size_t MemSize = NumSubresources * (sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64));
+		const bool bAllocateOnStack = (MemSize < 4096);
+		void* Mem = bAllocateOnStack ? alloca(MemSize) : malloc(MemSize);
+
+		D3D12_PLACED_SUBRESOURCE_FOOTPRINT* Footprints = (D3D12_PLACED_SUBRESOURCE_FOOTPRINT*) Mem;
+		drn_check(Footprints);
+		UINT* Rows = (UINT*) (Footprints + NumSubresources);
+		drn_check(Rows);
+		UINT64* RowSizeInBytes = (UINT64*) (Rows + NumSubresources);
+		drn_check(RowSizeInBytes);
+
+		uint64 Size = 0;
+		const D3D12_RESOURCE_DESC& Desc = GetResource()->GetDesc();
+		Device->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, NumSubresources, 0, Footprints, Rows, RowSizeInBytes, &Size);
+
+		ResourceLocation SrcResourceLoc(Device);
+		uint8* DstDataBase;
+
+		// TODO: add fast allocator
+		{
+			RenderResource* Resource = nullptr;
+			std::string ResourceName;
+#if D3D12_Debug_INFO
+			static int64 ID;
+			ResourceName = std::string("TextureInitalData_") + std::to_string(++ID);
+#endif
+		
+			Device->CreateBuffer(D3D12_HEAP_TYPE_UPLOAD, Size, D3D12_RESOURCE_STATE_COPY_SOURCE, false, &Resource, ResourceName, D3D12_RESOURCE_FLAG_NONE);
+			DstDataBase = (uint8*)Resource->Map();
+			SrcResourceLoc.AsStandAlone(Resource, Size);
+		}
+
+		const uint8* SrcData = (const uint8*) InitData;
+		for (uint32 Subresource = 0; Subresource < NumSubresources; Subresource++)
+		{
+			uint8* DstData = DstDataBase + Footprints[Subresource].Offset;
+
+			const uint32 NumRows = Rows[Subresource] * Footprints[Subresource].Footprint.Depth;
+			const uint32 SrcRowPitch = RowSizeInBytes[Subresource];
+			const uint32 DstRowPitch = Footprints[Subresource].Footprint.RowPitch;
+
+			// If src and dst pitch are aligned, which is typically the case for the bulk of the data (most large mips, POT textures), we can use a single large memcpy()
+			if (SrcRowPitch == DstRowPitch)
+			{
+				memcpy(DstData, SrcData, SrcRowPitch * NumRows);
+				SrcData += SrcRowPitch * NumRows;
+			}
+			else
+			{
+				for (uint32 Row = 0; Row < NumRows; ++Row)
+				{
+					memcpy(DstData, SrcData, SrcRowPitch);
+
+					SrcData += SrcRowPitch;
+					DstData += DstRowPitch;
+				}
+			}
+		}
+
+		//drn_check(SrcData == (uint8*) InitData + InitDataSize);
+
+		{
+			//uint64 Size = 0;
+			const D3D12_RESOURCE_DESC& Desc = GetResource()->GetDesc();
+			//GetParentDevice()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, NumSubresources, SrcResourceLoc.GetOffsetFromBaseOfResource(), Footprints, Rows, RowSizeInBytes, &Size);
+			Device->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, NumSubresources, 0, Footprints, Rows, RowSizeInBytes, &Size);
+
+			D3D12_TEXTURE_COPY_LOCATION Src;
+			Src.pResource = SrcResourceLoc.GetResource()->GetResource();
+			Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+
+			RenderResource* Resource = GetResource();
+			
+			D3D12_TEXTURE_COPY_LOCATION Dst;
+			Dst.pResource = Resource->GetResource();
+			Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+
+			for (uint32 Subresource = 0; Subresource < NumSubresources; Subresource++)
+			{
+				Dst.SubresourceIndex = Subresource;
+				Src.PlacedFootprint = Footprints[Subresource];
+				CmdList->GetD3D12CommandList()->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
+			}
+			
+			//if (Resource->RequiresResourceStateTracking())
+			//{
+			//	CmdList->TransitionResourceWithTracking(Resource, DestinationState);
+			//}
+			//else
+			//{
+			//	CmdList->AddTransitionBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, DestinationState, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+			//}
+		}
+
+		if (!bAllocateOnStack)
+		{
+			free(Mem);
 		}
 	}
 

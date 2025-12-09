@@ -200,40 +200,40 @@ namespace Drn
 		}
 	}
 
-	void LineBatchSceneProxy::RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void LineBatchSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		SCOPE_STAT();
 
 	}
 
-	void LineBatchSceneProxy::RenderPrePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void LineBatchSceneProxy::RenderPrePass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		SCOPE_STAT();
 
 	}
 
-	void LineBatchSceneProxy::RenderShadowPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
+	void LineBatchSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
 	{
 		
 	}
 
-	void LineBatchSceneProxy::RenderDecalPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void LineBatchSceneProxy::RenderDecalPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		
 	}
 
 #if WITH_EDITOR
-	void LineBatchSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void LineBatchSceneProxy::RenderHitProxyPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		
 	}
 
-	void LineBatchSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void LineBatchSceneProxy::RenderSelectionPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		
 	}
 
-	void LineBatchSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void LineBatchSceneProxy::RenderEditorPrimitivePass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		SCOPE_STAT();
 		
@@ -242,26 +242,26 @@ namespace Drn
 			return;
 		}
 		
-		CommandList->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		CommandList->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
+		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
 		if (m_Thickness)
 		{
-			CommandList->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
+			CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
 		}
 		else
 		{
-			CommandList->SetPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
+			CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
 		}
 		
-		CommandList->SetGraphicsRoot32BitConstant( 0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0 );
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant( 0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0 );
 		
-		CommandList->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
-		CommandList->DrawInstanced( m_VertexCount, 1, 0, 0);
+		CommandList->GetD3D12CommandList()->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
+		CommandList->GetD3D12CommandList()->DrawInstanced( m_VertexCount, 1, 0, 0);
 	}
 
 #endif
 
-	void LineBatchSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
+	void LineBatchSceneProxy::InitResources( D3D12CommandList* CommandList )
 	{
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
@@ -274,7 +274,7 @@ namespace Drn
 #endif
 	}
 
-	void LineBatchSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	void LineBatchSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
 		SCOPE_STAT();
 

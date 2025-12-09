@@ -20,19 +20,22 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
-		void InitResources( ID3D12GraphicsCommandList2* CommandList );
-		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
+		void InitResources( class D3D12CommandList* CommandList );
+		void UploadResources( class D3D12CommandList* CommandList );
 
 		EAssetType GetAssetType() override { return EAssetType::Texture2D; };
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Texture2D; }
 
-		inline uint32 GetTextureIndex() const { return m_DescriptorHandle.GetIndex(); }
-		inline const DescriptorHandleSRV& GetDescriptorHandle() const { return m_DescriptorHandle; }
+		RenderTexture2D* GetRenderTexture();
+		uint32 GetTextureIndex() const;
+		//inline const DescriptorHandleSRV& GetDescriptorHandle() const { return m_DescriptorHandle; }
 
 	protected:
 
 		DescriptorHandleSRV m_DescriptorHandle;
 		bool m_Initialized = false;
+
+		TRefCountPtr<class RenderTexture2D> m_RenderTexture;
 
 #if WITH_EDITOR
 		void Import();

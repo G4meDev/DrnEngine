@@ -27,22 +27,22 @@ namespace Drn
 
 	protected:
 
-		virtual void RenderMainPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
-		virtual void RenderPrePass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
-		virtual void RenderShadowPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) = 0;
-		virtual void RenderDecalPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderMainPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderPrePass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) = 0;
+		virtual void RenderDecalPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 
-		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) = 0;
-		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) = 0;
+		virtual void InitResources(class D3D12CommandList* CommandList) = 0;
+		virtual void UpdateResources(class D3D12CommandList* CommandList) = 0;
 		virtual PrimitiveComponent*  GetPrimitive() = 0;
 
 		bool m_EditorPrimitive;
 		Matrix m_LocalToWorld;
 
 #if WITH_EDITOR
-		virtual void RenderHitProxyPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
-		virtual void RenderSelectionPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
-		virtual void RenderEditorPrimitivePass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderHitProxyPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderSelectionPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderEditorPrimitivePass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 		bool m_SelectedInEditor = false;
 		bool m_Selectable = false;
 #endif

@@ -96,7 +96,7 @@ namespace Drn
 		for (auto it = m_PendingProxies.begin(); it != m_PendingProxies.end(); it++)
 		{
 			PrimitiveSceneProxy* SceneProxy = *it;
-			SceneProxy->InitResources(CommandList->GetD3D12CommandList());
+			SceneProxy->InitResources(CommandList);
 			m_PrimitiveProxies.insert(SceneProxy);
 		}
 		m_PendingProxies.clear();
@@ -104,7 +104,7 @@ namespace Drn
 		for (auto it = m_PrimitiveProxies.begin(); it != m_PrimitiveProxies.end(); it++)
 		{
 			PrimitiveSceneProxy* Proxy = *it;
-			Proxy->UpdateResources(CommandList->GetD3D12CommandList());
+			Proxy->UpdateResources(CommandList);
 		}
 
 // ----------------------------------------------------------------------------------
@@ -160,7 +160,7 @@ namespace Drn
 		for (auto it = m_DecalProxies.begin(); it != m_DecalProxies.end(); it++)
 		{
 			DecalSceneProxy* Proxy = *it;
-			Proxy->UpdateResources(CommandList->GetD3D12CommandList());
+			Proxy->UpdateResources(CommandList);
 		}
 	}
 

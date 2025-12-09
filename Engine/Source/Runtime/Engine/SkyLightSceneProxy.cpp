@@ -72,7 +72,7 @@ namespace Drn
 
 		if (m_Cubemap.IsValid())
 		{
-			m_Cubemap->UploadResources(CommandList->GetD3D12CommandList());
+			m_Cubemap->UploadResources(CommandList);
 		}
 	}
 

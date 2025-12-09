@@ -315,7 +315,7 @@ namespace Drn
 		m_StaticSamplersBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
 
-		CommonResources::Init(m_CommandList->GetD3D12CommandList());
+		CommonResources::Init(m_CommandList);
 
 #if WITH_EDITOR
 		ImGuiRenderer::Get()->Init(m_MainWindow);

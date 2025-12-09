@@ -178,7 +178,7 @@ namespace Drn
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderPrePass(m_CommandList->GetD3D12CommandList(), this);
+			Proxy->RenderPrePass(m_CommandList, this);
 		}
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());
@@ -221,7 +221,7 @@ namespace Drn
 
 		for ( DecalSceneProxy* Proxy : m_Scene->m_DecalProxies )
 		{
-			Proxy->Render(m_CommandList->GetD3D12CommandList(), this);
+			Proxy->Render(m_CommandList, this);
 		}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -245,7 +245,7 @@ namespace Drn
 
 		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
 		{
-			Proxy->RenderDecalPass(m_CommandList->GetD3D12CommandList(), this);
+			Proxy->RenderDecalPass(m_CommandList, this);
 		}
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());
@@ -267,7 +267,7 @@ namespace Drn
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderHitProxyPass(m_CommandList->GetD3D12CommandList(), this);
+			Proxy->RenderHitProxyPass(m_CommandList, this);
 		}
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());
@@ -307,7 +307,7 @@ namespace Drn
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderMainPass(m_CommandList->GetD3D12CommandList(), this);
+			Proxy->RenderMainPass(m_CommandList, this);
 		}
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
@@ -754,7 +754,7 @@ namespace Drn
 
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderEditorPrimitivePass(m_CommandList->GetD3D12CommandList(), this);
+			Proxy->RenderEditorPrimitivePass(m_CommandList, this);
 		}
 
 // ------------------------------------------------------------------------------------------
@@ -796,7 +796,7 @@ namespace Drn
 
 		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
 		{
-			Proxy->RenderSelectionPass( m_CommandList->GetD3D12CommandList(), this);
+			Proxy->RenderSelectionPass( m_CommandList, this);
 		}
 
 		m_CommandList->TransitionResourceWithTracking(m_EditorSelectionBuffer->m_DepthStencilTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);

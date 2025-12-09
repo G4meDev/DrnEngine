@@ -17,8 +17,8 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
-		void InitResources( ID3D12GraphicsCommandList2* CommandList );
-		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
+		void InitResources( class D3D12CommandList* CommandList );
+		void UploadResources( class D3D12CommandList* CommandList );
 
 		void ReleaseDescriptors();
 

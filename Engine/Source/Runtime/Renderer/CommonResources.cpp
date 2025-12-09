@@ -40,31 +40,31 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------------------------------------------------
 
-	CommonResources::CommonResources( ID3D12GraphicsCommandList2* CommandList )
+	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
-		m_ScreenTriangle = new ScreenTriangle( CommandList );
-		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList );
-		m_UniformQuad = new UniformQuad( CommandList );
-		m_UniformCube = new UniformCube( CommandList );
-		m_UniformCubePositionOnly = new UniformCubePositionOnly( CommandList );
-		m_PointLightSphere = new PointLightSphere( CommandList );
-		m_SpotLightCone = new SpotLightCone(CommandList);
-		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList);
-		m_ResolveEditorSelectionPSO = new ResolveEditorSelectionPSO(CommandList);
-		m_TonemapPSO = new TonemapPSO(CommandList);
-		m_AmbientOcclusionPSO = new AmbientOcclusionPSO(CommandList);
-		m_ScreenSpaceReflectionPSO = new ScreenSpaceReflectionPSO(CommandList);
-		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList);
-		m_TAAPSO = new TAAPSO(CommandList);
-		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList);
-		m_BloomPSO = new BloomPSO(CommandList);
-		m_PositionOnlyDepthPSO = new PositionOnlyDepthPSO(CommandList);
-		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList);
-		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList);
-		m_LightPassPSO = new LightPassPSO(CommandList);
-		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList);
-		m_DebugLinePSO = new DebugLinePSO(CommandList);
-		m_HZBPSO = new HZBPSO(CommandList);
+		m_ScreenTriangle = new ScreenTriangle( CommandList->GetD3D12CommandList() );
+		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList->GetD3D12CommandList() );
+		m_UniformQuad = new UniformQuad( CommandList->GetD3D12CommandList() );
+		m_UniformCube = new UniformCube( CommandList->GetD3D12CommandList() );
+		m_UniformCubePositionOnly = new UniformCubePositionOnly( CommandList->GetD3D12CommandList() );
+		m_PointLightSphere = new PointLightSphere( CommandList->GetD3D12CommandList() );
+		m_SpotLightCone = new SpotLightCone(CommandList->GetD3D12CommandList());
+		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList->GetD3D12CommandList());
+		m_ResolveEditorSelectionPSO = new ResolveEditorSelectionPSO(CommandList->GetD3D12CommandList());
+		m_TonemapPSO = new TonemapPSO(CommandList->GetD3D12CommandList());
+		m_AmbientOcclusionPSO = new AmbientOcclusionPSO(CommandList->GetD3D12CommandList());
+		m_ScreenSpaceReflectionPSO = new ScreenSpaceReflectionPSO(CommandList->GetD3D12CommandList());
+		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList->GetD3D12CommandList());
+		m_TAAPSO = new TAAPSO(CommandList->GetD3D12CommandList());
+		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList->GetD3D12CommandList());
+		m_BloomPSO = new BloomPSO(CommandList->GetD3D12CommandList());
+		m_PositionOnlyDepthPSO = new PositionOnlyDepthPSO(CommandList->GetD3D12CommandList());
+		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList->GetD3D12CommandList());
+		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList->GetD3D12CommandList());
+		m_LightPassPSO = new LightPassPSO(CommandList->GetD3D12CommandList());
+		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList->GetD3D12CommandList());
+		m_DebugLinePSO = new DebugLinePSO(CommandList->GetD3D12CommandList());
+		m_HZBPSO = new HZBPSO(CommandList->GetD3D12CommandList());
 
 		m_SSAO_Random = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\SSAO_Jitter.drn" );
 		m_SSAO_Random.Load();
@@ -75,7 +75,7 @@ namespace Drn
 		m_PreintegratedGF->UploadResources(CommandList);
 
 #if WITH_EDITOR
-		m_BufferVisualizerPSO = new BufferVisualizerPSO(CommandList);
+		m_BufferVisualizerPSO = new BufferVisualizerPSO(CommandList->GetD3D12CommandList());
 
 #define LOAD_TEXTURE( name , path )				\
 	name = AssetHandle<Texture2D>(path);	\
@@ -125,7 +125,7 @@ namespace Drn
 #endif
 	}
 
-	void CommonResources::Init( ID3D12GraphicsCommandList2* CommandList )
+	void CommonResources::Init( D3D12CommandList* CommandList )
 	{
 		if (!m_SingletonInstance)
 		{

@@ -43,14 +43,14 @@ namespace Drn
 		}
 	}
 
-	void Texture2D::InitResources( ID3D12GraphicsCommandList2* CommandList )
+	void Texture2D::InitResources( D3D12CommandList* CommandList )
 	{
 		m_Initialized = true;
 
 		m_DescriptorHandle.AllocateDescriptorSlot();
 	}
 
-	void Texture2D::UploadResources( ID3D12GraphicsCommandList2* CommandList )
+	void Texture2D::UploadResources( D3D12CommandList* CommandList )
 	{
 		if (!m_Initialized)
 		{
@@ -62,6 +62,21 @@ namespace Drn
 			ReleaseResources();
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+
+			std::string ResourceName;
+#if D3D12_Debug_INFO
+			std::string TextureName = Path::ConvertShortPath(m_Path);
+			TextureName = Path::RemoveFileExtension(TextureName);
+			ResourceName = "Texture2D_" + TextureName;
+#endif
+
+			RenderResourceCreateInfo TextureCreateInfo( m_ImageBlob->GetBufferPointer(), nullptr, ClearValueBinding::Black, ResourceName );
+			m_RenderTexture = RenderTexture2D::Create(CommandList, m_SizeX, m_SizeY, m_Format, m_MipLevels, 1, false,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), TextureCreateInfo);
+
+			// TODO: improve / remove
+			CommandList->AddTransitionBarrier(m_RenderTexture->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+			CommandList->FlushBarriers();
 
 			const uint32 SubresourceCount = m_MipLevels;
 
@@ -95,18 +110,18 @@ namespace Drn
 			// TODO: maybe 1 frame lifetime is enough instead of NUM_BACKBUFFER
 			IntermediateResource->ReleaseBufferedResource();
 
-#if D3D12_Debug_INFO
-			std::string TextureName = Path::ConvertShortPath(m_Path);
-			TextureName = Path::RemoveFileExtension(TextureName);
-			m_Resource->SetName("TextureResource_" + TextureName);
-			IntermediateResource->SetName("TextureIntermediateResource_" + TextureName);
-#endif
+//#if D3D12_Debug_INFO
+//			std::string TextureName = Path::ConvertShortPath(m_Path);
+//			TextureName = Path::RemoveFileExtension(TextureName);
+//			m_Resource->SetName("TextureResource_" + TextureName);
+//			IntermediateResource->SetName("TextureIntermediateResource_" + TextureName);
+//#endif
 
-			UpdateSubresources(CommandList, m_Resource->GetD3D12Resource(),
+			UpdateSubresources(CommandList->GetD3D12CommandList(), m_Resource->GetD3D12Resource(),
 				IntermediateResource->GetD3D12Resource(), 0, SubresourceCount, TextureMemorySize, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), TextureResource.data());
 
 			ResourceStateTracker::Get()->TransiationResource(m_Resource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
 			ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -131,6 +146,19 @@ namespace Drn
 
 			ClearRenderStateDirty();
 		}
+	}
+
+	RenderTexture2D* Texture2D::GetRenderTexture()
+	{
+		return m_RenderTexture;
+	}
+
+	uint32 Texture2D::GetTextureIndex() const
+	{
+		drn_check(m_RenderTexture);
+
+		return m_RenderTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
+		//return m_DescriptorHandle.GetIndex();
 	}
 
 #if WITH_EDITOR

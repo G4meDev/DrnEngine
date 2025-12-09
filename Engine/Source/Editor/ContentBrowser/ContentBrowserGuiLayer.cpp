@@ -304,7 +304,7 @@ namespace Drn
 
 		// TODO: maybe cache in asset data
 		const AssetHandle<Texture2D>& ItemIcon = EditorConfig::GetAssetTypeIcon(item_data.AssetType);
-		draw_list->AddImage(ItemIcon->GetDescriptorHandle().GetGpuHandle().ptr, box_min, box_max);
+		draw_list->AddImage(ItemIcon->GetRenderTexture()->GetShaderResourceView()->GetDescriptor().GetGpuHandle().ptr, box_min, box_max);
 
 		if (ShowTypeOverlay)
 		{

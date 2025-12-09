@@ -149,6 +149,15 @@ namespace Drn
 		}
 	}
 
+	void Device::CreateBuffer( D3D12_HEAP_TYPE HeapType, uint64 Size, D3D12_RESOURCE_STATES InInitialState,
+		bool bNeedsStateTracking, class RenderResource** ppOutResource, const std::string& Name, D3D12_RESOURCE_FLAGS Flags )
+	{
+		drn_check(ppOutResource);
+
+		const D3D12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(Size, Flags);
+		return CreateCommittedResource(BufferDesc, CD3DX12_HEAP_PROPERTIES(HeapType), InInitialState, bNeedsStateTracking, nullptr, ppOutResource, Name);
+	}
+
 	DeferredDeletionQueue::DeferredDeletionQueue( class Device* InParent )
 		: DeviceChild(InParent)
 	{}

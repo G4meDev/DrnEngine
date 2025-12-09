@@ -24,22 +24,22 @@ namespace Drn
 
 		inline void SetSprite( AssetHandle<Texture2D> InSprite ) { m_Sprite = InSprite; }
 
-		virtual void RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		virtual void RenderPrePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		virtual void RenderShadowPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;
-		virtual void RenderDecalPass(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer) override;
+		virtual void RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderPrePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;
+		virtual void RenderDecalPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) override;
 
 
 #if WITH_EDITOR
-		virtual void RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		virtual void RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
-		virtual void RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderHitProxyPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderSelectionPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderEditorPrimitivePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 #endif
 
-		virtual void InitResources(ID3D12GraphicsCommandList2* CommandList) override;
-		virtual void UpdateResources(ID3D12GraphicsCommandList2* CommandList) override;
+		virtual void InitResources(class D3D12CommandList* CommandList) override;
+		virtual void UpdateResources(class D3D12CommandList* CommandList) override;
 
-		virtual void SetConstantAndSrv(ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer);
+		virtual void SetConstantAndSrv(class D3D12CommandList* CommandList, SceneRenderer* Renderer);
 
 		virtual PrimitiveComponent* GetPrimitive() override;
 

@@ -118,7 +118,7 @@ namespace Drn
 
 			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 			{
-				Proxy->RenderShadowPass(CommandList->GetD3D12CommandList(), Renderer, this);
+				Proxy->RenderShadowPass(CommandList, Renderer, this);
 			}
 
 		}

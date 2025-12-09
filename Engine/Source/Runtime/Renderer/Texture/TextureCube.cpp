@@ -41,14 +41,14 @@ namespace Drn
 		}
 	}
 
-	void TextureCube::InitResources( ID3D12GraphicsCommandList2* CommandList )
+	void TextureCube::InitResources( D3D12CommandList* CommandList )
 	{
 		m_Initialized = true;
 
 		m_DescriptorHandle.AllocateDescriptorSlot();
 	}
 
-	void TextureCube::UploadResources( ID3D12GraphicsCommandList2* CommandList )
+	void TextureCube::UploadResources( D3D12CommandList* CommandList )
 	{
 		if (!m_Initialized)
 		{
@@ -101,11 +101,11 @@ namespace Drn
 			IntermediateResource->SetName("TextureIntermediateResource_" + TextureName);
 #endif
 
-			UpdateSubresources(CommandList, m_Resource->GetD3D12Resource(),
+			UpdateSubresources(CommandList->GetD3D12CommandList(), m_Resource->GetD3D12Resource(),
 				IntermediateResource->GetD3D12Resource(), 0, SubresourceCount, TextureMemorySize, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), TextureResource.data());
 
 			ResourceStateTracker::Get()->TransiationResource(m_Resource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList);
+			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
 			ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;

@@ -184,8 +184,8 @@ namespace Drn
 		operator ID3D12Resource&() { return *Resource; }
 		ID3D12Resource* GetResource() const { return Resource.GetReference(); }
 
-		inline void* Map(const D3D12_RANGE* ReadRange = nullptr);
-		inline void Unmap();
+		void* Map(const D3D12_RANGE* ReadRange = nullptr);
+		void Unmap();
 
 		D3D12_RESOURCE_DESC const& GetDesc() const { return Desc; }
 		D3D12_HEAP_TYPE GetHeapType() const { return HeapType; }
@@ -262,7 +262,7 @@ namespace Drn
 
 		const inline bool IsValid() const { return Type != ResourceLocationType::eUndefined; }
 
-		inline void AsStandAlone(RenderResource* Resource, uint32 BufferSize = 0, bool bInIsTransient = false );
+		void AsStandAlone(RenderResource* Resource, uint32 BufferSize = 0, bool bInIsTransient = false );
 
 		void SetTransient(bool bInTransient)
 		{

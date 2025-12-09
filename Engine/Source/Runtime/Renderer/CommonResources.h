@@ -306,10 +306,10 @@ namespace Drn
 	{
 	public:
 
-		CommonResources( ID3D12GraphicsCommandList2* CommandList );
+		CommonResources( class D3D12CommandList* CommandList );
 		~CommonResources();
 
-		static void Init( ID3D12GraphicsCommandList2* CommandList );
+		static void Init( class D3D12CommandList* CommandList );
 		static void Shutdown();
 
 		inline static CommonResources* Get() { return m_SingletonInstance; }

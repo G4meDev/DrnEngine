@@ -362,7 +362,7 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------------------------------
 
-	void Material::UploadResources( ID3D12GraphicsCommandList2* CommandList )
+	void Material::UploadResources( D3D12CommandList* CommandList )
 	{
 		if (IsRenderStateDirty())
 		{

@@ -24,7 +24,7 @@ namespace Drn
 		ReleaseBuffers();
 	}
 
-	void DecalSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	void DecalSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
 		if (m_DecalComponent)
 		{
@@ -37,7 +37,7 @@ namespace Drn
 		}
 	}
 
-	void DecalSceneProxy::Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void DecalSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		if (!m_Material.IsValid() || m_Material->GetMaterialDomain() != EMaterialDomain::Decal)
 		{
@@ -54,11 +54,11 @@ namespace Drn
 		memcpy( ConstantBufferStart, &m_DecalData, sizeof(DecalData));
 		m_DecalBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
 
-		CommandList->SetGraphicsRoot32BitConstant(0, m_DecalBufferView[Renderer::Get()->GetCurrentBackbufferIndex()].GetIndex(), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_DecalBufferView[Renderer::Get()->GetCurrentBackbufferIndex()].GetIndex(), 1);
 
-		m_Material->BindDeferredDecalPass(CommandList);
+		m_Material->BindDeferredDecalPass(CommandList->GetD3D12CommandList());
 
-		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList);
+		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList->GetD3D12CommandList());
 	}
 
 	void DecalSceneProxy::ReleaseBuffers()

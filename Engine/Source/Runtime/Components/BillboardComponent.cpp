@@ -73,56 +73,56 @@ namespace Drn
 		}
 	}
 
-	void BillboardSceneProxy::RenderMainPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void BillboardSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		
 	}
 
-	void BillboardSceneProxy::RenderPrePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void BillboardSceneProxy::RenderPrePass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		
 	}
 
-	void BillboardSceneProxy::RenderShadowPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
+	void BillboardSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
 	{
 		
 	}
 
-	void BillboardSceneProxy::RenderDecalPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void BillboardSceneProxy::RenderDecalPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		
 	}
 
 #if WITH_EDITOR
-	void BillboardSceneProxy::RenderHitProxyPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void BillboardSceneProxy::RenderHitProxyPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
+		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
 		
 		SetConstantAndSrv(CommandList, Renderer);
 		
-		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
+		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList->GetD3D12CommandList());
 	}
 
-	void BillboardSceneProxy::RenderSelectionPass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void BillboardSceneProxy::RenderSelectionPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		
 	}
 
-	void BillboardSceneProxy::RenderEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void BillboardSceneProxy::RenderEditorPrimitivePass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
+		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
 		
 		SetConstantAndSrv(CommandList, Renderer);
 		
-		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
+		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList->GetD3D12CommandList());
 	}
 #endif
 
-	void BillboardSceneProxy::InitResources( ID3D12GraphicsCommandList2* CommandList )
+	void BillboardSceneProxy::InitResources( D3D12CommandList* CommandList )
 	{
 		m_BillboardBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
 
@@ -136,12 +136,12 @@ namespace Drn
 #endif
 	}
 
-	void BillboardSceneProxy::UpdateResources( ID3D12GraphicsCommandList2* CommandList )
+	void BillboardSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
 		
 	}
 
-	void BillboardSceneProxy::SetConstantAndSrv( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void BillboardSceneProxy::SetConstantAndSrv( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		XMVECTOR Translation;
 		XMVECTOR Scale;
@@ -178,9 +178,9 @@ namespace Drn
 		memcpy( ConstantBufferStart, &m_BillboardData, sizeof(BillboardData));
 		m_BillboardBuffer->GetD3D12Resource()->Unmap(0, nullptr);
 
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BillboardBuffer->GetGpuHandle()), 1);
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BillboardBuffer->GetGpuHandle()), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 	}
 
 	PrimitiveComponent* BillboardSceneProxy::GetPrimitive()

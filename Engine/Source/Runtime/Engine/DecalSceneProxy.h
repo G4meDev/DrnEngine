@@ -23,8 +23,8 @@ namespace Drn
 		inline void Release() { delete this; }
 		void ReleaseBuffers();
 
-		void UpdateResources( ID3D12GraphicsCommandList2* CommandList );
-		void Render( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer );
+		void UpdateResources( class D3D12CommandList* CommandList );
+		void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
 
 		Transform m_WorldTransform;
 		AssetHandle<Material> m_Material;

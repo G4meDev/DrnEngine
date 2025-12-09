@@ -127,7 +127,7 @@ namespace Drn
 #endif
 	}
 
-	void* RenderResource::Map( const D3D12_RANGE* ReadRange /*= nullptr*/ )
+	void* RenderResource::Map( const D3D12_RANGE* ReadRange )
 	{
 		if (NumMapCalls == 0)
 		{

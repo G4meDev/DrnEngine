@@ -60,6 +60,8 @@ namespace Drn
 		void CreateCommittedResource(const D3D12_RESOURCE_DESC& InDesc, const D3D12_HEAP_PROPERTIES& HeapProps, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking,
 			const D3D12_CLEAR_VALUE* ClearValue, class RenderResource** ppOutResource, const std::string& Name);
 
+		void CreateBuffer(D3D12_HEAP_TYPE HeapType, uint64 Size, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking, class RenderResource** ppOutResource, const std::string& Name, D3D12_RESOURCE_FLAGS Flags);
+
 	private:
 
 		Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;

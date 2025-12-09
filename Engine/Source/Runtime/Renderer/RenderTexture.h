@@ -288,7 +288,7 @@ namespace Drn
 
 		//void UpdateTexture(const D3D12_TEXTURE_COPY_LOCATION& DestCopyLocation, uint32 DestX, uint32 DestY, uint32 DestZ, const D3D12_TEXTURE_COPY_LOCATION& SourceCopyLocation);
 		//void CopyTextureRegion(uint32 DestX, uint32 DestY, uint32 DestZ, RenderTextureBase* SourceTexture, const D3D12_BOX& SourceBox);
-		//void InitializeTextureData(class FRHICommandListImmediate* RHICmdList, const void* InitData, uint32 InitDataSize, uint32 SizeX, uint32 SizeY, uint32 SizeZ, uint32 NumSlices, uint32 NumMips, EPixelFormat Format, D3D12_RESOURCE_STATES DestinationState);
+		void InitializeTextureData(class D3D12CommandList* CmdList, const void* InitData, uint32 InitDataSize, uint32 SizeX, uint32 SizeY, uint32 SizeZ, uint32 NumSlices, uint32 NumMips, DXGI_FORMAT Format, D3D12_RESOURCE_STATES DestinationState);
 
 		/**
 		* Get the render target view for the specified mip and array slice.

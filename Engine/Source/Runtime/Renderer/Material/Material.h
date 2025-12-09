@@ -28,7 +28,7 @@ namespace Drn
 		Material(const std::string& InPath, const std::string& InSourcePath);
 #endif
 
-		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
+		void UploadResources( class D3D12CommandList* CommandList );
 		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindPrePass( ID3D12GraphicsCommandList2* CommandList );
 		void BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
