@@ -28,7 +28,6 @@ namespace Drn
 			, m_MipLevels(1)
 			, m_Format(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
 			, m_ImageBlob(nullptr)
-			, m_Resource(nullptr)
 			, m_RenderStateDirty(true)
 		{
 		}
@@ -46,6 +45,8 @@ namespace Drn
 		inline uint16 GetSizeY() const			{ return m_SizeY; }
 		inline uint8 GetMipLevels() const		{ return m_MipLevels; }
 		inline DXGI_FORMAT GetFormat() const	{ return m_Format; }
+
+		virtual uint32 GetTextureIndex() const = 0;
 
 #if WITH_EDITOR
 		inline ETextureCompression GetCompression() const	{ return m_Compression; }
@@ -65,14 +66,7 @@ namespace Drn
 		}
 
 		inline void ReleaseResources()
-		{
-			if (m_Resource)
-			{
-				m_Resource->ReleaseBufferedResource();
-			}
-		}
-
-		inline Resource* GetResource() const { return m_Resource; }
+		{}
 
 protected:
 		EAssetType GetAssetType() override = 0;
@@ -81,8 +75,6 @@ protected:
 		void OpenAssetPreview() override = 0;
 		void CloseAssetPreview() override = 0;
 #endif
-
-		Resource* m_Resource;
 
 		bool m_sRGB;
 		uint16 m_SizeX;

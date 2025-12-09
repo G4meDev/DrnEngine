@@ -420,7 +420,7 @@ namespace Drn
 		Device* Device = GetParentDevice();
 		uint32 NumSubresources = NumMips * NumSlices;
 
-		size_t MemSize = NumSubresources * (sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64));
+		size_t MemSize = NumSubresources * (sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64) + sizeof(D3D12_SUBRESOURCE_DATA));
 		const bool bAllocateOnStack = (MemSize < 4096);
 		void* Mem = bAllocateOnStack ? alloca(MemSize) : malloc(MemSize);
 
@@ -429,6 +429,8 @@ namespace Drn
 		UINT* Rows = (UINT*) (Footprints + NumSubresources);
 		drn_check(Rows);
 		UINT64* RowSizeInBytes = (UINT64*) (Rows + NumSubresources);
+		drn_check(RowSizeInBytes);
+		D3D12_SUBRESOURCE_DATA* SubresourceData = (D3D12_SUBRESOURCE_DATA*) (RowSizeInBytes + NumSubresources);
 		drn_check(RowSizeInBytes);
 
 		uint64 Size = 0;
@@ -452,67 +454,23 @@ namespace Drn
 			SrcResourceLoc.AsStandAlone(Resource, Size);
 		}
 
-		const uint8* SrcData = (const uint8*) InitData;
-		for (uint32 Subresource = 0; Subresource < NumSubresources; Subresource++)
+		for (int32 i = 0; i < NumSubresources; i++)
 		{
-			uint8* DstData = DstDataBase + Footprints[Subresource].Offset;
-
-			const uint32 NumRows = Rows[Subresource] * Footprints[Subresource].Footprint.Depth;
-			const uint32 SrcRowPitch = RowSizeInBytes[Subresource];
-			const uint32 DstRowPitch = Footprints[Subresource].Footprint.RowPitch;
-
-			// If src and dst pitch are aligned, which is typically the case for the bulk of the data (most large mips, POT textures), we can use a single large memcpy()
-			if (SrcRowPitch == DstRowPitch)
-			{
-				memcpy(DstData, SrcData, SrcRowPitch * NumRows);
-				SrcData += SrcRowPitch * NumRows;
-			}
-			else
-			{
-				for (uint32 Row = 0; Row < NumRows; ++Row)
-				{
-					memcpy(DstData, SrcData, SrcRowPitch);
-
-					SrcData += SrcRowPitch;
-					DstData += DstRowPitch;
-				}
-			}
+			SubresourceData[i].pData = (const uint8*) InitData + Footprints[i].Offset;
+			SubresourceData[i].RowPitch = Footprints[i].Footprint.RowPitch;
+			SubresourceData[i].SlicePitch = Footprints[i].Footprint.RowPitch * Rows[i] * Footprints[i].Footprint.Depth;
 		}
 
-		//drn_check(SrcData == (uint8*) InitData + InitDataSize);
+		UpdateSubresources(CmdList->GetD3D12CommandList(), GetResource()->GetResource(), SrcResourceLoc.GetResource()->GetResource(), 0, NumSubresources, Size, Footprints, Rows, RowSizeInBytes, SubresourceData);
 
-		{
-			//uint64 Size = 0;
-			const D3D12_RESOURCE_DESC& Desc = GetResource()->GetDesc();
-			//GetParentDevice()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, NumSubresources, SrcResourceLoc.GetOffsetFromBaseOfResource(), Footprints, Rows, RowSizeInBytes, &Size);
-			Device->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, NumSubresources, 0, Footprints, Rows, RowSizeInBytes, &Size);
-
-			D3D12_TEXTURE_COPY_LOCATION Src;
-			Src.pResource = SrcResourceLoc.GetResource()->GetResource();
-			Src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-
-			RenderResource* Resource = GetResource();
-			
-			D3D12_TEXTURE_COPY_LOCATION Dst;
-			Dst.pResource = Resource->GetResource();
-			Dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-
-			for (uint32 Subresource = 0; Subresource < NumSubresources; Subresource++)
-			{
-				Dst.SubresourceIndex = Subresource;
-				Src.PlacedFootprint = Footprints[Subresource];
-				CmdList->GetD3D12CommandList()->CopyTextureRegion(&Dst, 0, 0, 0, &Src, nullptr);
-			}
-			
-			//if (Resource->RequiresResourceStateTracking())
-			//{
-			//	CmdList->TransitionResourceWithTracking(Resource, DestinationState);
-			//}
-			//else
-			//{
-			//	CmdList->AddTransitionBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, DestinationState, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-			//}
-		}
+		//if (Resource->RequiresResourceStateTracking())
+		//{
+		//	CmdList->TransitionResourceWithTracking(Resource, DestinationState);
+		//}
+		//else
+		//{
+		//	CmdList->AddTransitionBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, DestinationState, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+		//}
 
 		if (!bAllocateOnStack)
 		{

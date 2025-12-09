@@ -2,6 +2,7 @@
 #include "TextureCube.h"
 #include "Editor/AssetImporter/AssetImporterTexture.h"
 #include "Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -44,8 +45,6 @@ namespace Drn
 	void TextureCube::InitResources( D3D12CommandList* CommandList )
 	{
 		m_Initialized = true;
-
-		m_DescriptorHandle.AllocateDescriptorSlot();
 	}
 
 	void TextureCube::UploadResources( D3D12CommandList* CommandList )
@@ -62,60 +61,20 @@ namespace Drn
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-			const uint32 SubresourceCount = m_MipLevels * 6;
-
-			CD3DX12_RESOURCE_DESC TextureDesc = CD3DX12_RESOURCE_DESC::Tex2D(m_Format, m_SizeX, m_SizeY, 6, m_MipLevels, 1, 0);
-			m_Resource = Resource::Create(D3D12_HEAP_TYPE_DEFAULT, TextureDesc, D3D12_RESOURCE_STATE_COPY_DEST);
-
-			uint64 TextureMemorySize = 0;
-			std::vector<D3D12_PLACED_SUBRESOURCE_FOOTPRINT> Layouts;
-			Layouts.resize(SubresourceCount);
-
-			std::vector<uint32> NumRows;
-			NumRows.resize(SubresourceCount);
-
-			std::vector<uint64> RowSizeInBytes;
-			RowSizeInBytes.resize(SubresourceCount);
-
-			Device->GetCopyableFootprints(&TextureDesc, 0, SubresourceCount, 0, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), &TextureMemorySize);
-
-			std::vector<D3D12_SUBRESOURCE_DATA> TextureResource;
-			TextureResource.resize(SubresourceCount);
-			for (int32 i = 0; i < SubresourceCount; i++)
-			{
-				TextureResource[i].pData = (BYTE*)m_ImageBlob->GetBufferPointer() + Layouts[i].Offset;
-				TextureResource[i].RowPitch = Layouts[i].Footprint.RowPitch;
-				TextureResource[i].SlicePitch = Layouts[i].Footprint.RowPitch * NumRows[i];
-			}
-
-			Resource* IntermediateResource = Resource::Create(D3D12_HEAP_TYPE_UPLOAD,
-				CD3DX12_RESOURCE_DESC::Buffer( TextureMemorySize ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-
-			// TODO: maybe 1 frame lifetime is enough instead of NUM_BACKBUFFER
-			IntermediateResource->ReleaseBufferedResource();
-
+			std::string ResourceName;
 #if D3D12_Debug_INFO
 			std::string TextureName = Path::ConvertShortPath(m_Path);
 			TextureName = Path::RemoveFileExtension(TextureName);
-			m_Resource->SetName("TextureResource_" + TextureName);
-			IntermediateResource->SetName("TextureIntermediateResource_" + TextureName);
+			ResourceName = "TextureCube_" + TextureName;
 #endif
 
-			UpdateSubresources(CommandList->GetD3D12CommandList(), m_Resource->GetD3D12Resource(),
-				IntermediateResource->GetD3D12Resource(), 0, SubresourceCount, TextureMemorySize, Layouts.data(), NumRows.data(), RowSizeInBytes.data(), TextureResource.data());
+			RenderResourceCreateInfo TextureCreateInfo( m_ImageBlob->GetBufferPointer(), nullptr, ClearValueBinding::Black, ResourceName );
+			m_RenderTexture = RenderTextureCube::Create(CommandList, m_SizeX, m_Format, m_MipLevels, 1, false,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), TextureCreateInfo);
 
-			ResourceStateTracker::Get()->TransiationResource(m_Resource, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-			ResourceStateTracker::Get()->FlushResourceBarriers(CommandList->GetD3D12CommandList());
-
-			D3D12_SHADER_RESOURCE_VIEW_DESC ResourceViewDesc = {};
-			ResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-			ResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			ResourceViewDesc.Format = m_Format;
-			ResourceViewDesc.TextureCube.MipLevels = m_MipLevels;
-			ResourceViewDesc.TextureCube.MostDetailedMip = 0;
-			ResourceViewDesc.TextureCube.ResourceMinLODClamp = 0;
-
-			m_DescriptorHandle.CreateView(ResourceViewDesc, m_Resource->GetD3D12Resource());
+			// TODO: improve / remove
+			CommandList->AddTransitionBarrier(m_RenderTexture->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+			CommandList->FlushBarriers();
 
 			ClearRenderStateDirty();
 		}
@@ -125,6 +84,12 @@ namespace Drn
 	void TextureCube::ReleaseDescriptors()
 	{
 		
+	}
+
+	uint32 TextureCube::GetTextureIndex() const
+	{
+		drn_check(m_RenderTexture);
+		return m_RenderTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
 	}
 
 #if WITH_EDITOR

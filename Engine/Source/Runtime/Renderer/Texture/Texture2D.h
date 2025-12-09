@@ -27,14 +27,11 @@ namespace Drn
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Texture2D; }
 
 		RenderTexture2D* GetRenderTexture();
-		uint32 GetTextureIndex() const;
-		//inline const DescriptorHandleSRV& GetDescriptorHandle() const { return m_DescriptorHandle; }
+		virtual uint32 GetTextureIndex() const override;
 
 	protected:
 
-		DescriptorHandleSRV m_DescriptorHandle;
 		bool m_Initialized = false;
-
 		TRefCountPtr<class RenderTexture2D> m_RenderTexture;
 
 #if WITH_EDITOR
