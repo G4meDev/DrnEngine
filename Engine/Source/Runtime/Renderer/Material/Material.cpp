@@ -539,6 +539,10 @@ namespace Drn
 
 		for (uint8 i = 0; i < m_Texture2DSlots.size(); i++)
 		{
+			//if (m_Texture2DSlots[i].m_Texture2D->IsRenderStateDirty())
+			//{
+			//	m_TextureBufferDirty = true;
+			//}
 			m_Texture2DSlots[i].m_Texture2D->UploadResources(CommandList);
 		}
 
@@ -546,6 +550,10 @@ namespace Drn
 		{
 			if (m_TextureCubeSlots[i].m_TextureCube.IsValid())
 			{
+				//if (m_TextureCubeSlots[i].m_TextureCube->IsRenderStateDirty())
+				//{
+				//	m_TextureBufferDirty = true;
+				//}
 				m_TextureCubeSlots[i].m_TextureCube->UploadResources(CommandList);
 			}
 		}
@@ -653,7 +661,8 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		if (m_TextureBufferDirty)
+		//if (m_TextureBufferDirty)
+		if (true) //TODO: issue with re imported textures. cached keeps texture index of destroyed texture
 		{
 			m_TextureBufferDirty = false;
 

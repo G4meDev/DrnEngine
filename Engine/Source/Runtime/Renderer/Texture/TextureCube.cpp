@@ -24,9 +24,7 @@ namespace Drn
 #endif
 
 	TextureCube::~TextureCube()
-	{
-		ReleaseDescriptors();
-	}
+	{}
 
 	void TextureCube::Serialize( Archive& Ar )
 	{
@@ -56,9 +54,6 @@ namespace Drn
 
 		if (IsRenderStateDirty())
 		{
-			ReleaseResources();
-			ReleaseDescriptors();
-
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 			std::string ResourceName;
@@ -79,11 +74,6 @@ namespace Drn
 			ClearRenderStateDirty();
 		}
 
-	}
-
-	void TextureCube::ReleaseDescriptors()
-	{
-		
 	}
 
 	uint32 TextureCube::GetTextureIndex() const

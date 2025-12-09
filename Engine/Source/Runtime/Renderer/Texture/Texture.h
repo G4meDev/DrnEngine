@@ -35,7 +35,6 @@ namespace Drn
 		virtual ~Texture()
 		{
 			ReleaseImageBlobs();
-			ReleaseResources();
 		}
 
 		virtual void Serialize( Archive& Ar ) override;
@@ -64,9 +63,6 @@ namespace Drn
 				m_ImageBlob = nullptr;
 			}
 		}
-
-		inline void ReleaseResources()
-		{}
 
 protected:
 		EAssetType GetAssetType() override = 0;

@@ -20,8 +20,6 @@ namespace Drn
 		void InitResources( class D3D12CommandList* CommandList );
 		void UploadResources( class D3D12CommandList* CommandList );
 
-		void ReleaseDescriptors();
-
 		EAssetType GetAssetType() override { return EAssetType::TextureCube; };
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::TextureCube; }
 	

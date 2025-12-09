@@ -57,8 +57,6 @@ namespace Drn
 
 		if (IsRenderStateDirty())
 		{
-			ReleaseResources();
-
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 			std::string ResourceName;
