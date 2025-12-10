@@ -17,6 +17,7 @@ set( HEADER_FILES
 	Source/Runtime/Core/Time.h
 	Source/Runtime/Core/Window.h
 	Source/Runtime/Core/RefCounting.h
+	Source/Runtime/Core/CriticalSection.h
 	
 	Source/Runtime/Engine/EngineTypes.h
 	Source/Runtime/Engine/WorldManager.h
@@ -105,6 +106,9 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/ResourceState.h
 	Source/Runtime/Renderer/GpuFence.h
 	Source/Runtime/Renderer/RenderTexture.h
+	Source/Runtime/Renderer/RenderBuffer.h
+	Source/Runtime/Renderer/RenderTypes.h
+	Source/Runtime/Renderer/RenderAllocation.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -218,6 +222,7 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Time.cpp
 	Source/Runtime/Core/Window.cpp
 	Source/Runtime/Core/RefCounting.cpp
+	Source/Runtime/Core/CriticalSection.cpp
 	
 	Source/Runtime/Engine/EngineTypes.cpp
 	Source/Runtime/Engine/WorldManager.cpp
@@ -307,6 +312,9 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/ResourceState.cpp
 	Source/Runtime/Renderer/GpuFence.cpp
 	Source/Runtime/Renderer/RenderTexture.cpp
+	Source/Runtime/Renderer/RenderBuffer.cpp
+	Source/Runtime/Renderer/RenderTypes.cpp
+	Source/Runtime/Renderer/RenderAllocation.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

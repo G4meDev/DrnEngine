@@ -2,10 +2,10 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Engine/StaticMeshVertexData.h"
+#include "Runtime/Renderer/RenderResource.h"
 
 namespace Drn
 {
-
 	class VertexBuffer
 	{
 	public:
@@ -43,4 +43,9 @@ namespace Drn
 
 		static D3D12_VERTEX_BUFFER_VIEW VertexBufferViewNull;
 	};
+
+	//class VertexBuffer_New : public SimpleRenderResource
+	//{
+	//	
+	//};
 }

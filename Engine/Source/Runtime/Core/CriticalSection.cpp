@@ -1,7 +1,7 @@
 #include "DrnPCH.h"
-#include "RenderCommon.h"
+#include "CriticalSection.h"
 
 namespace Drn
 {
-	
+
 }

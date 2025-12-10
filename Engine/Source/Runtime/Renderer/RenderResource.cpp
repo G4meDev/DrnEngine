@@ -266,6 +266,11 @@ namespace Drn
 
 		case ResourceLocation::ResourceLocationType::eUndefined:
 		case ResourceLocation::ResourceLocationType::eSubAllocation:
+		{
+			drn_check(Allocator);
+			Allocator->Deallocate(*this);
+			break;
+		}
 		case ResourceLocation::ResourceLocationType::eFastAllocation:
 		case ResourceLocation::ResourceLocationType::eMultiFrameFastAllocation:
 		case ResourceLocation::ResourceLocationType::eAliased:
@@ -312,4 +317,4 @@ namespace Drn
 		}
 	}
 
-}  // namespace Drn
+        }  // namespace Drn

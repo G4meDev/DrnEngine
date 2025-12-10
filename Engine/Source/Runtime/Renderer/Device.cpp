@@ -2,6 +2,7 @@
 #include "Device.h"
 #include "Runtime/Renderer/GpuFence.h"
 #include "Runtime/Renderer/RenderResource.h"
+#include "Runtime/Renderer/RenderBuffer.h"
 
 LOG_DEFINE_CATEGORY( LogDevice, "Device" );
 
@@ -9,6 +10,7 @@ namespace Drn
 {
 	Device::Device()
 		: m_DeferredDeletionQueue(this)
+		, DefaultBufferAllocator(this)
 	{
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = 0;
@@ -118,6 +120,7 @@ namespace Drn
 	Device::~Device()
 	{
 		//m_DeferredDeletionQueue.ReleaseResources();
+		DefaultBufferAllocator.FreeDefaultBufferPools();
 
 		LOG( LogDevice, Info, "removing device %ws", m_Description.Description );
 	}
@@ -157,6 +160,156 @@ namespace Drn
 		const D3D12_RESOURCE_DESC BufferDesc = CD3DX12_RESOURCE_DESC::Buffer(Size, Flags);
 		return CreateCommittedResource(BufferDesc, CD3DX12_HEAP_PROPERTIES(HeapType), InInitialState, bNeedsStateTracking, nullptr, ppOutResource, Name);
 	}
+
+	void Device::AllocateBuffer( const D3D12_RESOURCE_DESC& InDesc, uint32 Size, uint32 InUsage, bool bNeedsStateTracking,
+		RenderResourceCreateInfo& CreateInfo, uint32 Alignment, ResourceLocation& Location )
+	{
+		drn_check(Size > 0);
+
+		const bool bIsDynamic = InUsage & (uint32)EBufferUsageFlags::AnyDynamic;
+
+		//if (bIsDynamic)
+		//{
+		//	//drn_check(!bNeedsStateTracking);
+		//	void* pData = GetUploadHeapAllocator(Device->GetGPUIndex()).AllocUploadResource(Size, Alignment, Location);
+		//	drn_check(Location.GetSize() == Size);
+		//
+		//	if (CreateInfo.ResourceArray)
+		//	{
+		//		const void* InitialData = CreateInfo.ResourceArray->GetResourceData();
+		//
+		//		check(Size == CreateInfo.ResourceArray->GetResourceDataSize());
+		//		// Handle initial data
+		//		FMemory::Memcpy(pData, InitialData, Size);
+		//	}
+		//}
+		//else
+		{
+			GetDefaultBufferAllocator().AllocDefaultResource(D3D12_HEAP_TYPE_DEFAULT, InDesc, (EBufferUsageFlags)InUsage, bNeedsStateTracking, Location, Alignment, CreateInfo.DebugName);
+			drn_check(Location.GetSize() == Size);
+		}
+	}
+
+	template<typename BufferType>
+	BufferType* Device::CreateRenderBuffer( D3D12CommandList* CmdList, const D3D12_RESOURCE_DESC& Desc, uint32 Alignment, uint32 Stride, uint32 Size, uint32 InUsage,
+		bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo )
+	{
+		BufferType* BufferOut = nullptr;
+
+		const bool bIsDynamic = InUsage & (uint32)EBufferUsageFlags::AnyDynamic;
+		//if (bIsDynamic)
+		//{
+		//	BufferType* NewBuffer0 = nullptr;
+		//	BufferOut = CreateLinkedObject<BufferType>(CreateInfo.GPUMask, [&](FD3D12Device* Device)
+		//	{
+		//		BufferType* NewBuffer = new BufferType(Device, Stride, Size, InUsage);
+		//		NewBuffer->BufferAlignment = Alignment;
+		//
+		//		if (Device->GetGPUIndex() == FirstGPUIndex)
+		//		{
+		//			AllocateBuffer(Device, InDesc, Size, InUsage, InResourceStateMode, CreateInfo, Alignment, *NewBuffer, NewBuffer->ResourceLocation);
+		//			NewBuffer0 = NewBuffer;
+		//		}
+		//		else
+		//		{
+		//			check(NewBuffer0);
+		//			FD3D12ResourceLocation::ReferenceNode(Device, NewBuffer->ResourceLocation, NewBuffer0->ResourceLocation);
+		//		}
+		//
+		//		return NewBuffer;
+		//	});
+		//}
+		//else
+		{
+			BufferOut = new BufferType(this, Stride, Size, InUsage);
+			BufferOut->BufferAlignment = Alignment;
+
+			AllocateBuffer(Desc, Size, InUsage, bNeedsStateTracking, CreateInfo, Alignment, BufferOut->m_ResourceLocation);
+		}
+
+		//if (CreateInfo.ResourceArray)
+		//{
+		//	if (bIsDynamic == false && BufferOut->ResourceLocation.IsValid())
+		//	{
+		//		check(Size == CreateInfo.ResourceArray->GetResourceDataSize());
+		//
+		//		const bool bOnAsyncThread = !IsInRHIThread() && !IsInRenderingThread();
+		//
+		//		// Get an upload heap and initialize data
+		//		FD3D12ResourceLocation SrcResourceLoc(BufferOut->GetParentDevice());
+		//		void* pData;
+		//		if (bOnAsyncThread)
+		//		{
+		//			const uint32 GPUIdx = SrcResourceLoc.GetParentDevice()->GetGPUIndex();
+		//			pData = GetUploadHeapAllocator(GPUIdx).AllocUploadResource(Size, 4u, SrcResourceLoc);
+		//		}
+		//		else
+		//		{
+		//			pData = SrcResourceLoc.GetParentDevice()->GetDefaultFastAllocator().Allocate(Size, 4UL, &SrcResourceLoc);
+		//		}
+		//		check(pData);
+		//		FMemory::Memcpy(pData, CreateInfo.ResourceArray->GetResourceData(), Size);
+		//	
+		//		if (bOnAsyncThread)
+		//		{
+		//			// Need to update buffer content on RHI thread (immediate context) because the buffer can be a
+		//			// sub-allocation and its backing resource may be in a state incompatible with the copy queue.
+		//			// TODO:
+		//			// Create static buffers in COMMON state, rely on state promotion/decay to avoid transition barriers,
+		//			// and initialize them asynchronously on the copy queue. D3D12 buffers always allow simultaneous acess
+		//			// so it is legal to write to a region on the copy queue while other non-overlapping regions are
+		//			// being read on the graphics/compute queue. Currently, d3ddebug throws error for such usage.
+		//			// Once Microsoft (via Windows update) fix the debug layer, async static buffer initialization should
+		//			// be done on the copy queue.
+		//			FD3D12ResourceLocation* SrcResourceLoc_Heap = new FD3D12ResourceLocation(SrcResourceLoc.GetParentDevice());
+		//			FD3D12ResourceLocation::TransferOwnership(*SrcResourceLoc_Heap, SrcResourceLoc);
+		//			ENQUEUE_RENDER_COMMAND(CmdD3D12InitializeBuffer)(
+		//				[BufferOut, SrcResourceLoc_Heap, Size](FRHICommandListImmediate& RHICmdList)
+		//			{
+		//				if (RHICmdList.Bypass())
+		//				{
+		//					FD3D12RHICommandInitializeBuffer Command(BufferOut, *SrcResourceLoc_Heap, Size);
+		//					Command.ExecuteNoCmdList();
+		//				}
+		//				else
+		//				{
+		//					new (RHICmdList.AllocCommand<FD3D12RHICommandInitializeBuffer>()) FD3D12RHICommandInitializeBuffer(BufferOut, *SrcResourceLoc_Heap, Size);
+		//				}
+		//				delete SrcResourceLoc_Heap;
+		//			});
+		//		}
+		//		else if (!RHICmdList || RHICmdList->Bypass())
+		//		{
+		//			// On RHIT or RT (when bypassing), we can access immediate context directly
+		//			FD3D12RHICommandInitializeBuffer Command(BufferOut, SrcResourceLoc, Size);
+		//			Command.ExecuteNoCmdList();
+		//		}
+		//		else
+		//		{
+		//			// On RT but not bypassing
+		//			new (RHICmdList->AllocCommand<FD3D12RHICommandInitializeBuffer>()) FD3D12RHICommandInitializeBuffer(BufferOut, SrcResourceLoc, Size);
+		//		}
+		//	}
+		//
+		//	// Discard the resource array's contents.
+		//	CreateInfo.ResourceArray->Discard();
+		//}
+
+		UpdateBufferStats<BufferType>(&BufferOut->m_ResourceLocation, true);
+
+		return BufferOut;
+	}
+
+	template RenderIndexBuffer* Device::CreateRenderBuffer<RenderIndexBuffer>( D3D12CommandList* CmdList, const D3D12_RESOURCE_DESC& Desc, uint32 Alignment,
+		uint32 Stride, uint32 Size, uint32 InUsage, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo );
+
+	template<>
+	void Device::UpdateBufferStats<RenderIndexBuffer>( ResourceLocation* Location, bool bAllocating )
+	{
+		BufferStats::UpdateBufferStats(Location, true, BufferStats::EBufferMemoryStatGroups::Index);
+	}
+
+// -----------------------------------------------------------------------------------------------------------
 
 	DeferredDeletionQueue::DeferredDeletionQueue( class Device* InParent )
 		: DeviceChild(InParent)

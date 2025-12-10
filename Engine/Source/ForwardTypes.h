@@ -22,7 +22,7 @@ private:
 
 #include <DirectXMath.h>
 
-#include "Runtime/Renderer/RenderCommon.h"
+#include "Runtime/Core/CriticalSection.h"
 #include "Runtime/Misc/DebugHelper.h"
 #include "Runtime/Misc/StatsMisc.h"
 
@@ -46,6 +46,8 @@ private:
 #include "Runtime/Engine/CameraTypes.h"
 #include "Runtime/Engine/EngineTypes.h"
 
+#include "Runtime/Renderer/RenderTypes.h"
+#include "Runtime/Renderer/RenderCommon.h"
 
 class UpdateEventArgs;
 class KeyEventArgs;

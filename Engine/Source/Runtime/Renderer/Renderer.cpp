@@ -442,6 +442,7 @@ namespace Drn
 	{
 		SimpleRenderResource::FlushPendingDeletes();
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(NUM_BACKBUFFERS);
 
 		SCOPE_STAT( "InitRender" );
 

@@ -8,6 +8,18 @@
 
 namespace Drn
 {
+	struct BuddyAllocatorData
+	{
+		uint32 Offset;
+		uint32 Order;
+
+		void Init()
+		{
+			Offset = 0;
+			Order = 0;
+		}
+	};
+
 	class SimpleRenderResource : IRefCountedObject
 	{
 	public:
@@ -250,13 +262,18 @@ namespace Drn
 		void SetResource(class RenderResource* Value);
 		inline void SetType(ResourceLocationType Value) { Type = Value;}
 
+		inline void SetOffsetFromBaseOfResource(uint64 Value) { OffsetFromBaseOfResource = Value; }
 		inline void SetMappedBaseAddress(void* Value) { MappedBaseAddress = Value; }
 		inline void SetGPUVirtualAddress(D3D12_GPU_VIRTUAL_ADDRESS Value) { GPUVirtualAddress = Value; }
+		inline void SetAllocator(class RenderBuddyAllocator* Value) { Allocator = Value; }
 		inline void SetSize(uint64 Value) { Size = Value; }
 
 		inline ResourceLocationType GetType() const { return Type; }
 		inline class RenderResource* GetResource() const { return UnderlyingResource; }
+		inline uint64 GetOffsetFromBaseOfResource() const { return OffsetFromBaseOfResource; }
 		inline void* GetMappedBaseAddress() const { return MappedBaseAddress; }
+		inline BuddyAllocatorData& GetBuddyAllocatorData() { return AllocatorData; }
+		inline RenderBuddyAllocator* GetAllocator() { ; return Allocator; }
 		inline D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress() const { return GPUVirtualAddress; }
 		inline uint64 GetSize() const { return Size; }
 
@@ -282,7 +299,10 @@ namespace Drn
 
 		ResourceLocationType Type;
 		RenderResource* UnderlyingResource;
+		class RenderBuddyAllocator* Allocator;
+		BuddyAllocatorData AllocatorData;
 
+		UINT64 OffsetFromBaseOfResource;
 		void* MappedBaseAddress;
 		D3D12_GPU_VIRTUAL_ADDRESS GPUVirtualAddress;
 
@@ -314,4 +334,6 @@ namespace Drn
 
 		~BaseShaderResource();
 	};
+
+
 }
