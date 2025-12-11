@@ -236,6 +236,29 @@ namespace Drn
 		SetTransient(bInIsTransient);
 	}
 
+	void ResourceLocation::AsFastAllocation( RenderResource* Resource, uint32 BufferSize, D3D12_GPU_VIRTUAL_ADDRESS GPUBase, void* CPUBase,
+		uint64 ResourceOffsetBase, uint64 Offset, bool bMultiFrame )
+	{
+		if (bMultiFrame)
+		{
+			Resource->AddRef();
+			SetType(ResourceLocationType::eMultiFrameFastAllocation);
+		}
+		else
+		{
+			SetType(ResourceLocationType::eFastAllocation);
+		}
+		SetResource(Resource);
+		SetSize(BufferSize);
+		SetOffsetFromBaseOfResource(ResourceOffsetBase + Offset);
+
+		if (CPUBase != nullptr)
+		{
+			SetMappedBaseAddress((uint8*)CPUBase + Offset);
+		}
+		SetGPUVirtualAddress(GPUBase + Offset);
+	}
+
 	template void ResourceLocation::InternalClear<false>();
 	template void ResourceLocation::InternalClear<true>();
 
@@ -273,6 +296,7 @@ namespace Drn
 		}
 		case ResourceLocation::ResourceLocationType::eFastAllocation:
 		case ResourceLocation::ResourceLocationType::eMultiFrameFastAllocation:
+			break;
 		case ResourceLocation::ResourceLocationType::eAliased:
 		case ResourceLocation::ResourceLocationType::eNodeReference:
 		case ResourceLocation::ResourceLocationType::eHeapAliased:

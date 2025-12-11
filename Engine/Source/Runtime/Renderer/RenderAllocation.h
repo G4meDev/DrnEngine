@@ -242,5 +242,76 @@ namespace Drn
 		std::vector<DefaultBufferPool*> DefaultBufferPools;
 	};
 
+// ------------------------------------------------------------------------------------------------
 
+	struct FastAllocatorPage
+	{
+		FastAllocatorPage()
+			: PageSize(0)
+			, NextFastAllocOffset(0)
+			, FastAllocData(nullptr)
+			, FrameFence(0) {};
+
+		FastAllocatorPage(uint32 Size)
+			: PageSize(Size)
+			, NextFastAllocOffset(0)
+			, FastAllocData(nullptr)
+			, FrameFence(0) {};
+
+		void Reset()
+		{
+			NextFastAllocOffset = 0;
+			FrameFence = 0;
+		}
+
+		void UpdateFence();
+
+		const uint32 PageSize;
+		TRefCountPtr<RenderResource> FastAllocBuffer;
+		uint32 NextFastAllocOffset;
+		void* FastAllocData;
+		uint64 FrameFence;
+	};
+
+	class FastAllocatorPagePool : public DeviceChild
+	{
+	public:
+		FastAllocatorPagePool(class Device* Parent, D3D12_HEAP_TYPE InHeapType, uint32 Size);
+
+		FastAllocatorPage* RequestFastAllocatorPage();
+		void ReturnFastAllocatorPage(FastAllocatorPage* Page);
+		void CleanupPages(uint64 FrameLag);
+
+		inline uint32 GetPageSize() const { return PageSize; }
+
+		inline D3D12_HEAP_TYPE GetHeapType() const { return HeapProperties.Type; }
+		inline bool IsCPUWritable() const { return ::IsCPUWritable(GetHeapType(), &HeapProperties); }
+
+		void Destroy();
+
+	protected:
+
+		const uint32 PageSize;
+		const D3D12_HEAP_PROPERTIES HeapProperties;
+
+		std::vector<FastAllocatorPage*> Pool;
+	};
+
+	class FastAllocator : public DeviceChild
+	{
+	public:
+		FastAllocator(class Device* Parent, D3D12_HEAP_TYPE InHeapType, uint32 PageSize);
+
+		void* Allocate(uint32 Size, uint32 Alignment, class ResourceLocation* ResourceLocation);
+		void Destroy();
+
+		void CleanupPages(uint64 FrameLag);
+
+	protected:
+		FastAllocatorPagePool PagePool;
+
+		FastAllocatorPage* CurrentAllocatorPage;
+
+		CriticalSection CS;
+	};
 }

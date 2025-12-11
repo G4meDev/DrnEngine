@@ -280,6 +280,7 @@ namespace Drn
 		const inline bool IsValid() const { return Type != ResourceLocationType::eUndefined; }
 
 		void AsStandAlone(RenderResource* Resource, uint32 BufferSize = 0, bool bInIsTransient = false );
+		void AsFastAllocation(RenderResource* Resource, uint32 BufferSize, D3D12_GPU_VIRTUAL_ADDRESS GPUBase, void* CPUBase, uint64 ResourceOffsetBase, uint64 Offset, bool bMultiFrame = false);
 
 		void SetTransient(bool bInTransient)
 		{

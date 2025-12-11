@@ -59,6 +59,18 @@ inline bool IsCPUInaccessible(D3D12_HEAP_TYPE HeapType, const D3D12_HEAP_PROPERT
 	return HeapType == D3D12_HEAP_TYPE_DEFAULT;
 }
 
+inline D3D12_RESOURCE_STATES DetermineInitialResourceState(D3D12_HEAP_TYPE HeapType, const D3D12_HEAP_PROPERTIES *pCustomHeapProperties = nullptr)
+{
+	if (HeapType == D3D12_HEAP_TYPE_DEFAULT || IsCPUWritable(HeapType, pCustomHeapProperties))
+	{
+		return D3D12_RESOURCE_STATE_GENERIC_READ;
+	}
+	else
+	{
+		return D3D12_RESOURCE_STATE_COPY_DEST;
+	}
+}
+
 inline DXGI_FORMAT FindDepthStencilParentDXGIFormat(DXGI_FORMAT InFormat)
 {
 	switch (InFormat)

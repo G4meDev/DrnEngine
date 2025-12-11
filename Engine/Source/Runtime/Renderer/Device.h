@@ -59,6 +59,7 @@ namespace Drn
 		inline DeferredDeletionQueue& GetDeferredDeletionQueue() { return m_DeferredDeletionQueue; }
 
 		inline DefaultBufferAllocator& GetDefaultBufferAllocator() { return DefaultBufferAllocator; }
+		inline FastAllocator& GetDefaultFastAllocator() { return DefaultFastAllocator; }
 
 		void CreateCommittedResource(const D3D12_RESOURCE_DESC& InDesc, const D3D12_HEAP_PROPERTIES& HeapProps, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking,
 			const D3D12_CLEAR_VALUE* ClearValue, class RenderResource** ppOutResource, const std::string& Name);
@@ -82,6 +83,7 @@ namespace Drn
 
 		DeferredDeletionQueue m_DeferredDeletionQueue;
 		DefaultBufferAllocator DefaultBufferAllocator;
+		FastAllocator DefaultFastAllocator;
 
 
 		template <typename BufferType>

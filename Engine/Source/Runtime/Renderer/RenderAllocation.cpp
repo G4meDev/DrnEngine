@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "RenderAllocation.h"
 
+#define FAST_ALLOCATOR_MIN_PAGES_TO_RETAIN 5
+
 namespace Drn
 {
 	RenderResourceAllocator::RenderResourceAllocator( class Device* ParentDevice, const FInitConfig& InInitConfig, const std::string& Name, uint32 MaxSizeForPooling )
@@ -692,4 +694,186 @@ namespace Drn
 		return NewPool;
 	}
 
-}  // namespace Drn
+// -------------------------------------------------------------------------------------------------------------------------
+
+	void FastAllocatorPage::UpdateFence()
+	{
+		FrameFence = std::max(FrameFence, Renderer::Get()->GetFence()->GetCurrentFence());
+	}
+
+	FastAllocatorPagePool::FastAllocatorPagePool( Device* Parent, D3D12_HEAP_TYPE InHeapType, uint32 Size )
+		: DeviceChild(Parent)
+		, PageSize(Size)
+		, HeapProperties(CD3DX12_HEAP_PROPERTIES(InHeapType))
+	{}
+
+	FastAllocatorPage* FastAllocatorPagePool::RequestFastAllocatorPage()
+	{
+		Device* Device = GetParentDevice();
+		GpuFence& Fence = *Renderer::Get()->GetFence();
+
+		const uint64 CompletedFence = Fence.UpdateCompletedFence();
+
+		for (int32 Index = 0; Index < Pool.size(); Index++)
+		{
+			FastAllocatorPage* Page = Pool[Index];
+
+			if (Page->FastAllocBuffer->GetRefCount() == 1 &&
+				Page->FrameFence <= CompletedFence)
+			{
+				Page->Reset();
+				Pool.erase(Pool.begin() + Index);
+				return Page;
+			}
+		}
+
+		FastAllocatorPage* Page = new FastAllocatorPage(PageSize);
+
+		const D3D12_RESOURCE_STATES InitialState = DetermineInitialResourceState(HeapProperties.Type, &HeapProperties);
+		Device->CreateBuffer(HeapProperties.Type, PageSize, InitialState, false, Page->FastAllocBuffer.GetInitReference(), "Fast Allocator Page", D3D12_RESOURCE_FLAG_NONE);
+		Page->FastAllocBuffer->DoNotDeferDelete();
+
+		Page->FastAllocData = Page->FastAllocBuffer->Map();
+
+		return Page;
+	}
+
+	void FastAllocatorPagePool::ReturnFastAllocatorPage( FastAllocatorPage* Page )
+	{
+		Page->UpdateFence();
+		Pool.push_back(Page);
+	}
+
+	void FastAllocatorPagePool::CleanupPages( uint64 FrameLag )
+	{
+		if (Pool.size() <= FAST_ALLOCATOR_MIN_PAGES_TO_RETAIN)
+		{
+			return;
+		}
+
+		GpuFence& FrameFence = *Renderer::Get()->GetFence();
+
+		const uint64 CompletedFence = FrameFence.UpdateCompletedFence();
+
+		for (int32 Index = 0; Index < Pool.size(); Index++)
+		{
+			FastAllocatorPage* Page = Pool[Index];
+
+			if (Page->FastAllocBuffer->GetRefCount() == 1 &&
+				Page->FrameFence + FrameLag <= CompletedFence)
+			{
+				Pool.erase(Pool.begin() + Index);
+				delete(Page);
+
+				return;
+			}
+		}
+	}
+
+	void FastAllocatorPagePool::Destroy()
+	{
+		for (int32 i = 0; i < Pool.size(); i++)
+		{
+			{
+				FastAllocatorPage *Page = Pool[i];
+				delete(Page);
+				Page = nullptr;
+			}
+		}
+
+		Pool.clear();
+	}
+
+
+	FastAllocator::FastAllocator( class Device* Parent, D3D12_HEAP_TYPE InHeapType, uint32 PageSize )
+		: DeviceChild(Parent)
+		, PagePool(Parent, InHeapType, PageSize)
+		, CurrentAllocatorPage(nullptr)
+	{}
+
+	void* FastAllocator::Allocate( uint32 Size, uint32 Alignment, class ResourceLocation* ResourceLocation )
+	{
+		drn_check(!ResourceLocation->IsValid());
+
+		if (Size > PagePool.GetPageSize())
+		{
+			//Allocations are 64k aligned
+			if (Alignment)
+			{
+				Alignment = (D3D_BUFFER_ALIGNMENT % Alignment) == 0 ? 0 : Alignment;
+			}
+
+			RenderResource* Resource = nullptr;
+			std::string ResourceName;
+#if D3D12_Debug_INFO
+			static std::atomic<int64> ID = 0;
+			const int64 UniqueID = ID.fetch_add(1);
+			ResourceName = std::string("Stand Alone Fast Allocation ") + std::to_string(UniqueID);
+#endif
+			D3D12_RESOURCE_STATES InitalState = D3D12_RESOURCE_STATE_GENERIC_READ;
+			GetParentDevice()->CreateBuffer(PagePool.GetHeapType(), Size + Alignment, InitalState, false, &Resource, ResourceName, D3D12_RESOURCE_FLAG_NONE);
+
+			void* Data = nullptr;
+			if (PagePool.IsCPUWritable())
+			{
+				Data = Resource->Map();
+			}
+			ResourceLocation->AsStandAlone(Resource, Size + Alignment);
+
+			return Data;
+		}
+		else
+		{
+			ScopeLock Lock(&CS);
+
+			const uint32 Offset = (CurrentAllocatorPage) ? CurrentAllocatorPage->NextFastAllocOffset : 0;
+			uint32 CurrentOffset = AlignArbitrary(Offset, Alignment);
+
+			// See if there is room in the current pool
+			if (CurrentAllocatorPage == nullptr || PagePool.GetPageSize() < CurrentOffset + Size)
+			{
+				if (CurrentAllocatorPage)
+				{
+					PagePool.ReturnFastAllocatorPage(CurrentAllocatorPage);
+				}
+				CurrentAllocatorPage = PagePool.RequestFastAllocatorPage();
+
+				CurrentOffset = AlignArbitrary(CurrentAllocatorPage->NextFastAllocOffset, Alignment);
+			}
+
+			drn_check(PagePool.GetPageSize() - Size >= CurrentOffset);
+
+			ResourceLocation->AsFastAllocation(CurrentAllocatorPage->FastAllocBuffer.GetReference(),
+				Size,
+				CurrentAllocatorPage->FastAllocBuffer->GetGPUVirtualAddress(),
+				CurrentAllocatorPage->FastAllocData,
+				0,
+				CurrentOffset);
+
+			CurrentAllocatorPage->NextFastAllocOffset = CurrentOffset + Size;
+			CurrentAllocatorPage->UpdateFence();
+
+			drn_check(ResourceLocation->GetMappedBaseAddress());
+			return ResourceLocation->GetMappedBaseAddress();
+		}
+	}
+
+	void FastAllocator::Destroy()
+	{
+		ScopeLock Lock(&CS);
+		if (CurrentAllocatorPage)
+		{
+			PagePool.ReturnFastAllocatorPage(CurrentAllocatorPage);
+			CurrentAllocatorPage = nullptr;
+		}
+	
+		PagePool.Destroy();
+	}
+
+	void FastAllocator::CleanupPages( uint64 FrameLag )
+	{
+		ScopeLock Lock(&CS);
+		PagePool.CleanupPages(FrameLag);
+	}
+
+        }  // namespace Drn
