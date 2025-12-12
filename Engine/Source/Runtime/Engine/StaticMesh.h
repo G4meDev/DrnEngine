@@ -6,6 +6,7 @@
 #include "Runtime/Renderer/InputLayout.h"
 #include "MeshTypes.h"
 #include "Runtime/Engine/StaticMeshVertexData.h"
+#include "Runtime/Renderer/RenderBuffer.h"
 
 #include <wrl.h>
 
@@ -26,7 +27,8 @@ namespace Drn
 		StaticMeshVertexData VertexData;
 
 		class StaticMeshVertexBuffer* m_StaticMeshVertexBuffer;
-		class IndexBuffer* m_IndexBuffer;
+		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
+		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 
 		virtual void Serialize(Archive& Ar) override;
 
@@ -60,7 +62,7 @@ namespace Drn
 		virtual void Serialize(Archive& Ar) override;
 
 		void InitResources( ID3D12GraphicsCommandList2* CommandList );
-		void UploadResources( ID3D12GraphicsCommandList2* CommandList );
+		void UploadResources( class D3D12CommandList* CommandList );
 
 		inline BodySetup* GetBodySetup() { return &m_BodySetup; }
 

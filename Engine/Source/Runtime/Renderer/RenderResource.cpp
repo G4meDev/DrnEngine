@@ -191,7 +191,9 @@ namespace Drn
 		, Type(ResourceLocationType::eUndefined)
 		, UnderlyingResource(nullptr)
 		, MappedBaseAddress(nullptr)
+		, Allocator(nullptr)
 		, GPUVirtualAddress(0)
+		, OffsetFromBaseOfResource(0)
 		, Size(0)
 		, bTransient(false)
 	{}
@@ -287,21 +289,25 @@ namespace Drn
 			break;
 		}
 
-		case ResourceLocation::ResourceLocationType::eUndefined:
 		case ResourceLocation::ResourceLocationType::eSubAllocation:
 		{
 			drn_check(Allocator);
 			Allocator->Deallocate(*this);
 			break;
 		}
-		case ResourceLocation::ResourceLocationType::eFastAllocation:
-		case ResourceLocation::ResourceLocationType::eMultiFrameFastAllocation:
 			break;
 		case ResourceLocation::ResourceLocationType::eAliased:
 		case ResourceLocation::ResourceLocationType::eNodeReference:
+
 		case ResourceLocation::ResourceLocationType::eHeapAliased:
+
+		case ResourceLocation::ResourceLocationType::eFastAllocation:
+		case ResourceLocation::ResourceLocationType::eMultiFrameFastAllocation:
+		case ResourceLocation::ResourceLocationType::eUndefined:
+			break;
 		default:
 			drn_check(false);
+			break;
 		}
 	}
 

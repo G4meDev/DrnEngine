@@ -63,7 +63,7 @@ namespace Drn
 
 		if (m_Mesh.IsValid())
 		{
-			m_Mesh->UploadResources(CommandList->GetD3D12CommandList());
+			m_Mesh->UploadResources(CommandList);
 		}
 
 		if (m_OwningStaticMeshComponent->IsRenderStateDirty())

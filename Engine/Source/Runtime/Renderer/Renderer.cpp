@@ -63,12 +63,18 @@ namespace Drn
 		SimpleRenderResource::FlushPendingDeletes(true);
 		m_Device->GetDeferredDeletionQueue().ReleaseResources();
 #else
+
 		for (int32 i = 0; i < NUM_BACKBUFFERS + 2; i++)
 		{
 			SimpleRenderResource::FlushPendingDeletes();
 		}
+
 		Flush();
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+
+		m_Device->GetDefaultBufferAllocator().FreeDefaultBufferPools();
+		m_Device->GetDefaultFastAllocator().Destroy();
+
 #endif
 	}
 

@@ -92,7 +92,7 @@ namespace Drn
 
 	}
 
-	void StaticMesh::UploadResources( ID3D12GraphicsCommandList2* CommandList )
+	void StaticMesh::UploadResources( D3D12CommandList* CommandList )
 	{
 		if (!IsRenderStateDirty())
 			return;
@@ -112,10 +112,19 @@ namespace Drn
 			Proxy.ReleaseBuffers();
 
 			uint32 IndexCount = Proxy.VertexData.GetIndices().size();
-			Proxy.m_IndexBuffer = IndexBuffer::Create(CommandList, Proxy.VertexData.GetIndices().data(),
-				IndexCount, IndexCount * sizeof(uint32), DXGI_FORMAT_R32_UINT, MeshName);
+			//Proxy.m_IndexBuffer = IndexBuffer::Create(CommandList, Proxy.VertexData.GetIndices().data(),
+			//	IndexCount, IndexCount * sizeof(uint32), DXGI_FORMAT_R32_UINT, MeshName);
 
-			Proxy.m_StaticMeshVertexBuffer = StaticMeshVertexBuffer::Create(CommandList, Proxy.VertexData, MeshName);
+			uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+			RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, (void*)Proxy.VertexData.GetIndices().data(), ClearValueBinding::Black, MeshName);
+			Proxy.m_IndexBuffer = RenderIndexBuffer::Create(Renderer::Get()->GetDevice(), CommandList, sizeof(uint32), IndexCount * sizeof(uint32),
+				IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
+
+			Proxy.m_IndexBufferView.BufferLocation = Proxy.m_IndexBuffer->m_ResourceLocation.GetGPUVirtualAddress();
+			Proxy.m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+			Proxy.m_IndexBufferView.SizeInBytes = IndexCount * sizeof(uint32);
+
+			Proxy.m_StaticMeshVertexBuffer = StaticMeshVertexBuffer::Create(CommandList->GetD3D12CommandList(), Proxy.VertexData, MeshName);
 		}
 
 		ClearRenderStateDirty();
@@ -234,12 +243,6 @@ namespace Drn
 
 	void StaticMeshSlotData::ReleaseBuffers()
 	{
-		if (m_IndexBuffer)
-		{
-			delete m_IndexBuffer;
-			m_IndexBuffer = nullptr;
-		}
-
 		if (m_StaticMeshVertexBuffer)
 		{
 			delete m_StaticMeshVertexBuffer;
@@ -250,8 +253,9 @@ namespace Drn
 	void StaticMeshSlotData::BindAndDraw( ID3D12GraphicsCommandList2* CommandList ) const
 	{
 		m_StaticMeshVertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+		//m_IndexBuffer->Bind(CommandList);
+		CommandList->IASetIndexBuffer(&m_IndexBufferView);
+		CommandList->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 	StaticMeshSlotData::StaticMeshSlotData()

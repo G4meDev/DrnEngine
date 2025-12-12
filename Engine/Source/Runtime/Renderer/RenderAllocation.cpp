@@ -597,7 +597,7 @@ namespace Drn
 		}
 
 		// TODO: remove. for now disable for testing
-		drn_check(false);
+		//drn_check(false);
 
 		RenderResource* NewResource = nullptr;
 		Device->CreateBuffer(InHeapType, Desc.Width, InitialState, bNeedsStateTracking, &NewResource, Name, Desc.Flags);

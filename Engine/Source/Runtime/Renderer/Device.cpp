@@ -121,8 +121,8 @@ namespace Drn
 	Device::~Device()
 	{
 		//m_DeferredDeletionQueue.ReleaseResources();
-		DefaultBufferAllocator.FreeDefaultBufferPools();
-		DefaultFastAllocator.Destroy();
+		//DefaultBufferAllocator.FreeDefaultBufferPools();
+		//DefaultFastAllocator.Destroy();
 
 		LOG( LogDevice, Info, "removing device %ws", m_Description.Description );
 	}
@@ -298,6 +298,10 @@ namespace Drn
 
 						//CommandContext.numInitialResourceCopies++;
 						//hCommandList.FlushResourceBarriers();
+
+						uint64 Start = SrcResourceLoc.GetOffsetFromBaseOfResource();
+						uint64 End = BufferOut->m_ResourceLocation.GetOffsetFromBaseOfResource();
+
 						CmdList->GetD3D12CommandList()->CopyBufferRegion( Destination->GetResource(), BufferOut->m_ResourceLocation.GetOffsetFromBaseOfResource(),
 							SrcResourceLoc.GetResource()->GetResource(), SrcResourceLoc.GetOffsetFromBaseOfResource(), Size);
 

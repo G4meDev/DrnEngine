@@ -20,7 +20,7 @@ namespace Drn
 		return Desc;
 	}
 
-	void RenderBuffer::ReleaseUnderlyingResource()
+	void RenderBufferBase::ReleaseUnderlyingResource()
 	{
 		m_ResourceLocation.Clear();
 		RemoveAllDynamicSRVs();
@@ -37,16 +37,16 @@ namespace Drn
 	void RenderIndexBuffer::ReleaseUnderlyingResource()
 	{
 		BufferStats::UpdateBufferStats(&m_ResourceLocation, false, BufferStats::EBufferMemoryStatGroups::Index);
-		RenderBuffer::ReleaseUnderlyingResource();
+		RenderBufferBase::ReleaseUnderlyingResource();
 		Stride = Size = Usage = 0;
 	}
 
-	RenderIndexBuffer* RenderIndexBuffer::Create(Device* InParent, uint32 Stride, uint32 Size, uint32 InUsage, D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo )
+	RenderIndexBuffer* RenderIndexBuffer::Create(Device* InParent, D3D12CommandList* CmdList, uint32 Stride, uint32 Size, uint32 InUsage, D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo )
 	{
 		const D3D12_RESOURCE_DESC Desc = CreateIndexBufferResourceDesc(Size, InUsage);
 		const uint32 Alignment = 4;
 
-		RenderIndexBuffer* Buffer = InParent->CreateRenderBuffer<RenderIndexBuffer>(nullptr, Desc, Alignment, Stride, Size, InUsage, bNeedsStateTracking, CreateInfo);
+		RenderIndexBuffer* Buffer = InParent->CreateRenderBuffer<RenderIndexBuffer>(CmdList, Desc, Alignment, Stride, Size, InUsage, bNeedsStateTracking, CreateInfo);
 		//if (Buffer->ResourceLocation.IsTransient())
 		//{
 		//	// TODO: this should ideally be set in platform-independent code, since this tracking is for the high level

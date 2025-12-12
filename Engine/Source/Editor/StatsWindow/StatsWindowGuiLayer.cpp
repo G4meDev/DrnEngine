@@ -47,7 +47,7 @@ namespace Drn
 		{
 			BufferStats::EBufferMemoryStatGroups Group = (BufferStats::EBufferMemoryStatGroups)i;
 			const int32 Size = BufferStats::GetBufferStatSize(Group);
-			const float SizeInMB = Size / 1024.f;
+			const float SizeInMB = Size / 1024.f / 1024.f;
 			std::string msg = std::format("{} {} mb", BufferStats::GetBufferStatName(Group), SizeInMB);
 
 			ImGui::Text( msg.c_str() );

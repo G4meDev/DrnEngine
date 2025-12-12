@@ -5,13 +5,13 @@
 
 namespace Drn
 {
-	class RenderBuffer : public BaseShaderResource
+	class RenderBufferBase : public BaseShaderResource
 	{
 	public:
-		RenderBuffer (Device* InParent)
+		RenderBufferBase (Device* InParent)
 			: BaseShaderResource(InParent)
 		{}
-		virtual ~RenderBuffer ()
+		virtual ~RenderBufferBase ()
 		{}
 
 		//void Rename(ResourceLocation& NewLocation);
@@ -20,7 +20,7 @@ namespace Drn
 		void ReleaseUnderlyingResource();
 	};
 
-	class RenderIndexBuffer : public SimpleRenderResource, public RenderBuffer
+	class RenderIndexBuffer : public SimpleRenderResource, public RenderBufferBase
 	{
 	public:
 		//RenderIndexBuffer()
@@ -29,7 +29,7 @@ namespace Drn
 
 		RenderIndexBuffer(Device* InParent, uint32 InStride, uint32 InSize, uint32 InUsage)
 			: SimpleRenderResource()
-			, RenderBuffer(InParent)
+			, RenderBufferBase(InParent)
 			, Stride(InStride)
 			, Size(InSize)
 			, Usage(InUsage)
@@ -39,7 +39,7 @@ namespace Drn
 
 		void ReleaseUnderlyingResource();
 
-		static RenderIndexBuffer* Create(class Device* InParent, uint32 Stride, uint32 Size, uint32 InUsage, D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo);
+		static RenderIndexBuffer* Create(class Device* InParent, D3D12CommandList* CmdList, uint32 Stride, uint32 Size, uint32 InUsage, D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo);
 
 		// must be 2 or 4.
 		uint32 GetStride() const { return Stride; }
