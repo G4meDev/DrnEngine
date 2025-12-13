@@ -96,7 +96,6 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Texture/TextureHelper.h
 	Source/Runtime/Renderer/Material/Material.h
 	Source/Runtime/Renderer/VertexBuffer.h
-	Source/Runtime/Renderer/IndexBuffer.h
 	Source/Runtime/Renderer/RenderGeometeryHelper.h
 	Source/Runtime/Renderer/ResourceStateTracker.h
 	Source/Runtime/Renderer/ResourceView.h
@@ -302,7 +301,6 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Texture/TextureHelper.cpp
 	Source/Runtime/Renderer/Material/Material.cpp
 	Source/Runtime/Renderer/VertexBuffer.cpp
-	Source/Runtime/Renderer/IndexBuffer.cpp
 	Source/Runtime/Renderer/RenderGeometeryHelper.cpp
 	Source/Runtime/Renderer/ResourceStateTracker.cpp
 	Source/Runtime/Renderer/ResourceView.cpp

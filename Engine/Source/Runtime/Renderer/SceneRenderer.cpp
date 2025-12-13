@@ -404,7 +404,7 @@ namespace Drn
 
 			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
 
 		{
@@ -423,7 +423,7 @@ namespace Drn
 
 			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
 
 		{
@@ -441,7 +441,7 @@ namespace Drn
 
 			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
@@ -510,7 +510,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -545,7 +545,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -618,7 +618,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SceneDownSampleBuffer->m_Viewports[0]);
 
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		for (int32 i = 1; i < NUM_SCENE_DOWNSAMPLES; i++)
 		{
@@ -638,7 +638,7 @@ namespace Drn
 
 			m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SceneDownSampleBuffer->m_Viewports[i]);
 			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -669,7 +669,7 @@ namespace Drn
 
 				m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_BloomBuffer->m_Viewports[i]);
 				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 			}
 
 			{
@@ -695,7 +695,7 @@ namespace Drn
 
 				m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_BloomBuffer->m_Viewports[i]);
 				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 			}
 		}
 
@@ -723,7 +723,7 @@ namespace Drn
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -776,7 +776,7 @@ namespace Drn
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -815,7 +815,7 @@ namespace Drn
 
 		m_CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -876,7 +876,7 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, InputTextureIndex, 1);
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
-				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList->GetD3D12CommandList());
+				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 			}
 		}
 

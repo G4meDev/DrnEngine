@@ -10,91 +10,91 @@ namespace Drn
 	{
 	public:
 
-		ScreenTriangle( ID3D12GraphicsCommandList2* CommandList );
+		ScreenTriangle( class D3D12CommandList* CommandList );
 		~ScreenTriangle();
 
 		class VertexBuffer* m_VertexBuffer;
-		class IndexBuffer* m_IndexBuffer;
+		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+		void BindAndDraw( class D3D12CommandList* CommandList );
 	};
 
 	class BackfaceScreenTriangle
 	{
 	public:
 
-		BackfaceScreenTriangle( ID3D12GraphicsCommandList2* CommandList );
+		BackfaceScreenTriangle( class D3D12CommandList* CommandList );
 		~BackfaceScreenTriangle();
 
 		class VertexBuffer* m_VertexBuffer;
-		class IndexBuffer* m_IndexBuffer;
+		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+		void BindAndDraw( class D3D12CommandList* CommandList );
 	};
 
 	class UniformQuad
 	{
 	public:
 
-		UniformQuad( ID3D12GraphicsCommandList2* CommandList );
+		UniformQuad( class D3D12CommandList* CommandList );
 		~UniformQuad();
 
 		class VertexBuffer* m_VertexBuffer;
-		class IndexBuffer* m_IndexBuffer;
+		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+		void BindAndDraw( class D3D12CommandList* CommandList );
 	};
 
 	class UniformCube
 	{
 	public:
 
-		UniformCube( ID3D12GraphicsCommandList2* CommandList );
+		UniformCube( class D3D12CommandList* CommandList );
 		~UniformCube();
 
 		class VertexBuffer* m_VertexBuffer;
-		class IndexBuffer* m_IndexBuffer;
+		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+		void BindAndDraw( D3D12CommandList* CommandList );
 	};
 
 	class UniformCubePositionOnly
 	{
 	public:
 
-		UniformCubePositionOnly( ID3D12GraphicsCommandList2* CommandList );
+		UniformCubePositionOnly( class D3D12CommandList* CommandList );
 		~UniformCubePositionOnly();
 
 		class VertexBuffer* m_VertexBuffer;
-		class IndexBuffer* m_IndexBuffer;
+		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+		void BindAndDraw( class D3D12CommandList* CommandList );
 	};
 
 	class PointLightSphere
 	{
 	public:
 
-		PointLightSphere( ID3D12GraphicsCommandList2* CommandList );
+		PointLightSphere( class D3D12CommandList* CommandList );
 		~PointLightSphere();
 
 		class VertexBuffer* m_VertexBuffer;
-		class IndexBuffer* m_IndexBuffer;
+		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+		void BindAndDraw( class D3D12CommandList* CommandList );
 	};
 
 	class SpotLightCone
 	{
 	public:
 
-		SpotLightCone( ID3D12GraphicsCommandList2* CommandList );
+		SpotLightCone( class D3D12CommandList* CommandList );
 		~SpotLightCone();
 
 		class VertexBuffer* m_VertexBuffer;
-		class IndexBuffer* m_IndexBuffer;
+		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList );
+		void BindAndDraw( class D3D12CommandList* CommandList );
 	};
 
 	class ResolveAlphaBlendedPSO

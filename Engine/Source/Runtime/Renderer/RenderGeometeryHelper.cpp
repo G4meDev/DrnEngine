@@ -3,13 +3,13 @@
 
 namespace Drn
 {
-	void RenderGeometeryHelper::CreateSpotlightStencilGeometery(ID3D12GraphicsCommandList2* CommandList, VertexBuffer*& VB, IndexBuffer*& IB)
+	void RenderGeometeryHelper::CreateSpotlightStencilGeometery(D3D12CommandList* CommandList, VertexBuffer*& VB, RenderIndexBuffer*& IB)
 	{
 		const float Radius = 1.0f;
 		const float Angle = XM_PIDIV4;
 
 		std::vector<Vector> Points;
-		std::vector<uint32> Indices;
+		std::vector<uint16> Indices;
 
 		const float ZRadius = Radius * std::cos(Angle);
 		const float ConeTan = std::tan(Angle);
@@ -52,11 +52,11 @@ namespace Drn
 			{
 				int32 NextSide = (SideIndex + 1) % SPOTLIGHT_STENCIL_SIDES;
 
-				int32 Point_1 = SideIndex * SPOTLIGHT_STENCIL_SLICES + SliceIndex; 
-				int32 Point_2 = Point_1 + 1;
+				int16 Point_1 = SideIndex * SPOTLIGHT_STENCIL_SLICES + SliceIndex; 
+				int16 Point_2 = Point_1 + 1;
 
-				int32 Point_3 = NextSide * SPOTLIGHT_STENCIL_SLICES + SliceIndex; 
-				int32 Point_4 = Point_3 + 1;
+				int16 Point_3 = NextSide * SPOTLIGHT_STENCIL_SLICES + SliceIndex; 
+				int16 Point_4 = Point_3 + 1;
 
 				Indices.push_back(Point_1);
 				Indices.push_back(Point_4);
@@ -78,11 +78,11 @@ namespace Drn
 			{
 				int32 NextSide = (SideIndex + 1) % SPOTLIGHT_STENCIL_SIDES;
 
-				int32 Point_1 = SideIndex * SPOTLIGHT_STENCIL_SLICES + SliceIndex + CapIndex; 
-				int32 Point_2 = Point_1 + 1;
+				int16 Point_1 = SideIndex * SPOTLIGHT_STENCIL_SLICES + SliceIndex + CapIndex; 
+				int16 Point_2 = Point_1 + 1;
 
-				int32 Point_3 = NextSide * SPOTLIGHT_STENCIL_SLICES + SliceIndex + CapIndex;
-				int32 Point_4 = Point_3 + 1;
+				int16 Point_3 = NextSide * SPOTLIGHT_STENCIL_SLICES + SliceIndex + CapIndex;
+				int16 Point_4 = Point_3 + 1;
 
 				Indices.push_back(Point_1);
 				Indices.push_back(Point_2);
@@ -97,8 +97,11 @@ namespace Drn
 			}
 		}
 
-		VB = VertexBuffer::Create( CommandList, Points.data(), Points.size(), sizeof( Vector ), "VB_SpotlightStencilGeometery");
-		IB = IndexBuffer::Create( CommandList, Indices.data(), Indices.size(), Indices.size() * sizeof( uint32 ), DXGI_FORMAT_R32_UINT, "IB_SpotlightStencilGeometery");
+		VB = VertexBuffer::Create( CommandList->GetD3D12CommandList(), Points.data(), Points.size(), sizeof( Vector ), "VB_SpotlightStencilGeometery");
+
+		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, Indices.data(), ClearValueBinding::Black, "IB_SpotlightStencilGeometery");
+		IB = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), Indices.size() * sizeof( uint16 ), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 	}
 
 

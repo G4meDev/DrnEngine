@@ -2,6 +2,7 @@
 #include "CommonResources.h"
 
 #include "Runtime/Renderer/RenderGeometeryHelper.h"
+#include "Runtime/Renderer/RenderBuffer.h"
 
 #define PAR_SHAPES_IMPLEMENTATION
 #include "ThirdParty/par/par_shapes.h"
@@ -42,13 +43,13 @@ namespace Drn
 
 	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
-		m_ScreenTriangle = new ScreenTriangle( CommandList->GetD3D12CommandList() );
-		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList->GetD3D12CommandList() );
-		m_UniformQuad = new UniformQuad( CommandList->GetD3D12CommandList() );
-		m_UniformCube = new UniformCube( CommandList->GetD3D12CommandList() );
-		m_UniformCubePositionOnly = new UniformCubePositionOnly( CommandList->GetD3D12CommandList() );
-		m_PointLightSphere = new PointLightSphere( CommandList->GetD3D12CommandList() );
-		m_SpotLightCone = new SpotLightCone(CommandList->GetD3D12CommandList());
+		m_ScreenTriangle = new ScreenTriangle( CommandList );
+		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList );
+		m_UniformQuad = new UniformQuad( CommandList );
+		m_UniformCube = new UniformCube( CommandList );
+		m_UniformCubePositionOnly = new UniformCubePositionOnly( CommandList );
+		m_PointLightSphere = new PointLightSphere( CommandList );
+		m_SpotLightCone = new SpotLightCone(CommandList);
 		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList->GetD3D12CommandList());
 		m_ResolveEditorSelectionPSO = new ResolveEditorSelectionPSO(CommandList->GetD3D12CommandList());
 		m_TonemapPSO = new TonemapPSO(CommandList->GetD3D12CommandList());
@@ -149,25 +150,28 @@ namespace Drn
 		1, 3, 0, 1, -1
 	};
 
-	uint32 TriangleIndexData[] = { 0, 1, 2 };
+	uint16 TriangleIndexData[] = { 0, 1, 2 };
 
-	ScreenTriangle::ScreenTriangle( ID3D12GraphicsCommandList2* CommandList )
+	ScreenTriangle::ScreenTriangle( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList, TriangleVertexData, 3, sizeof(TriangleVertexData) / 3, "ScreenTriangle");
-		m_IndexBuffer = IndexBuffer::Create(CommandList, TriangleIndexData, 3, sizeof(TriangleIndexData), DXGI_FORMAT_R32_UINT, "ScreenTriangle");
+		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), TriangleVertexData, 3, sizeof(TriangleVertexData) / 3, "ScreenTriangle");
+
+		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, TriangleIndexData, ClearValueBinding::Black, "IB_ScreenTriangle");
+		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(TriangleIndexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 	}
 
 	ScreenTriangle::~ScreenTriangle()
 	{
 		if (m_VertexBuffer) { delete m_VertexBuffer; }
-		if (m_IndexBuffer) { delete m_IndexBuffer; }
 	}
 
-	void ScreenTriangle::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	void ScreenTriangle::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
+		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+
+		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------
@@ -179,25 +183,27 @@ namespace Drn
 		1, 3, 0
 	};
 
-	uint32 TrianglePosIndexData[] = { 2, 1, 0 };
+	uint16 TrianglePosIndexData[] = { 2, 1, 0 };
 
-	BackfaceScreenTriangle::BackfaceScreenTriangle( ID3D12GraphicsCommandList2* CommandList )
+	BackfaceScreenTriangle::BackfaceScreenTriangle( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList, TrianglePosVertexData, 3, sizeof(TrianglePosVertexData) / 3, "ScreenTriangleNoUV");
-		m_IndexBuffer = IndexBuffer::Create(CommandList, TrianglePosIndexData, 3, sizeof(TrianglePosIndexData), DXGI_FORMAT_R32_UINT, "ScreenTriangleNoUV");
+		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), TrianglePosVertexData, 3, sizeof(TrianglePosVertexData) / 3, "ScreenTriangleNoUV");
+
+		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, TrianglePosIndexData, ClearValueBinding::Black, "IB_ScreenTriangleNoUV");
+		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(TrianglePosIndexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 	}
 
 	BackfaceScreenTriangle::~BackfaceScreenTriangle()
 	{
 		if (m_VertexBuffer) { delete m_VertexBuffer; }
-		if (m_IndexBuffer) { delete m_IndexBuffer; }
 	}
 
-	void BackfaceScreenTriangle::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	void BackfaceScreenTriangle::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
+		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------
@@ -210,25 +216,27 @@ namespace Drn
 		-0.5, 0.5, 0, 0, 0
 	};
 
-	uint32 UniformQuadIndexData[] = { 3, 1, 2, 2, 1, 0 };
+	uint16 UniformQuadIndexData[] = { 3, 1, 2, 2, 1, 0 };
 
-	UniformQuad::UniformQuad( ID3D12GraphicsCommandList2* CommandList )
+	UniformQuad::UniformQuad( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList, UniformQuadVertexData, 4, sizeof(UniformQuadVertexData) / 4, "UniformQuad");
-		m_IndexBuffer = IndexBuffer::Create(CommandList, UniformQuadIndexData, 6, sizeof(UniformQuadIndexData), DXGI_FORMAT_R32_UINT, "UniformQuad");
+		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), UniformQuadVertexData, 4, sizeof(UniformQuadVertexData) / 4, "UniformQuad");
+
+		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, UniformQuadVertexData, ClearValueBinding::Black, "IB_UniformQuad");
+		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(UniformQuadVertexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 	}
 
 	UniformQuad::~UniformQuad()
 	{
 		if (m_VertexBuffer) { delete m_VertexBuffer; }
-		if (m_IndexBuffer) { delete m_IndexBuffer; }
 	}
 
-	void UniformQuad::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	void UniformQuad::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
+		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------
@@ -245,7 +253,7 @@ namespace Drn
 		1, 1, -1,		1, 1		// 7
 	};
 
-	uint32 UniformCubeIndexData[] = {
+	uint16 UniformCubeIndexData[] = {
 		// top
 		2, 6, 7,
 		2, 3, 7,
@@ -266,23 +274,25 @@ namespace Drn
 		4, 5, 7
 	};
 
-	UniformCube::UniformCube( ID3D12GraphicsCommandList2* CommandList )
+	UniformCube::UniformCube( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList, UniformCubeVertexData, 8, sizeof(UniformCubeVertexData) / 8, "UniformCube");
-		m_IndexBuffer = IndexBuffer::Create(CommandList, UniformCubeIndexData, 36, sizeof(UniformCubeIndexData), DXGI_FORMAT_R32_UINT, "UniformCube");
+		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), UniformCubeVertexData, 8, sizeof(UniformCubeVertexData) / 8, "UniformCube");
+
+		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, UniformCubeIndexData, ClearValueBinding::Black, "IB_UniformCube");
+		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(UniformCubeIndexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 	}
 
 	UniformCube::~UniformCube()
 	{
 		if (m_VertexBuffer) { delete m_VertexBuffer; }
-		if (m_IndexBuffer) { delete m_IndexBuffer; }
 	}
 
-	void UniformCube::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	void UniformCube::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
+		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------
@@ -299,7 +309,7 @@ namespace Drn
 		1, 1, -1,	// 7
 	};
 
-	uint32 UniformCubePositionIndexData[] = {
+	uint16 UniformCubePositionIndexData[] = {
 
 		1, 2, 0,
 		3, 6, 2,
@@ -320,28 +330,30 @@ namespace Drn
 		3, 1, 5
 	};
 
-	UniformCubePositionOnly::UniformCubePositionOnly( ID3D12GraphicsCommandList2* CommandList )
+	UniformCubePositionOnly::UniformCubePositionOnly( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList, UniformCubePositionVertexData, 8, sizeof(UniformCubePositionVertexData) / 8, "UniformCubePosition");
-		m_IndexBuffer = IndexBuffer::Create(CommandList, UniformCubePositionIndexData, 36, sizeof(UniformCubePositionIndexData), DXGI_FORMAT_R32_UINT, "UniformCubePosition");
+		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), UniformCubePositionVertexData, 8, sizeof(UniformCubePositionVertexData) / 8, "UniformCubePosition");
+
+		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, UniformCubePositionIndexData, ClearValueBinding::Black, "IB_UniformCubePosition");
+		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(UniformCubePositionIndexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 	}
 
 	UniformCubePositionOnly::~UniformCubePositionOnly()
 	{
 		if (m_VertexBuffer) { delete m_VertexBuffer; }
-		if (m_IndexBuffer) { delete m_IndexBuffer; }
 	}
 
-	void UniformCubePositionOnly::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	void UniformCubePositionOnly::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
+		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------
 
-	PointLightSphere::PointLightSphere( ID3D12GraphicsCommandList2* CommandList )
+	PointLightSphere::PointLightSphere( D3D12CommandList* CommandList )
 	{
 		par_shapes_mesh* SphereMesh = par_shapes_create_subdivided_sphere( 2 );
 
@@ -350,8 +362,11 @@ namespace Drn
 
 		const uint32 IndexBufferSize = IndexCount * sizeof(PAR_SHAPES_T);
 
-		m_VertexBuffer = VertexBuffer::Create(CommandList, SphereMesh->points, VertexCount, sizeof(float) * 3, "PointLightSphere");
-		m_IndexBuffer = IndexBuffer::Create(CommandList, SphereMesh->triangles, IndexCount, IndexBufferSize, DXGI_FORMAT_R16_UINT, "PointLightSphere");
+		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), SphereMesh->points, VertexCount, sizeof(float) * 3, "PointLightSphere");
+
+		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, SphereMesh->triangles, ClearValueBinding::Black, "IB_PointLightSphere");
+		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), IndexBufferSize, IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 
 		par_shapes_free_mesh(SphereMesh);
 	}
@@ -359,34 +374,34 @@ namespace Drn
 	PointLightSphere::~PointLightSphere()
 	{
 		if (m_VertexBuffer) { delete m_VertexBuffer; }
-		if (m_IndexBuffer) { delete m_IndexBuffer; }
 	}
 
-	void PointLightSphere::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	void PointLightSphere::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
+		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------
 
-	SpotLightCone::SpotLightCone( ID3D12GraphicsCommandList2* CommandList )
+	SpotLightCone::SpotLightCone( D3D12CommandList* CommandList )
 	{
-		RenderGeometeryHelper::CreateSpotlightStencilGeometery(CommandList, m_VertexBuffer, m_IndexBuffer);
+		RenderIndexBuffer* IB;
+		RenderGeometeryHelper::CreateSpotlightStencilGeometery(CommandList, m_VertexBuffer, IB);
+		m_IndexBuffer = IB;
 	}
 
 	SpotLightCone::~SpotLightCone()
 	{
 		if (m_VertexBuffer) { delete m_VertexBuffer; }
-		if (m_IndexBuffer) { delete m_IndexBuffer; }
 	}
 
-	void SpotLightCone::BindAndDraw( ID3D12GraphicsCommandList2* CommandList )
+	void SpotLightCone::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList);
-		m_IndexBuffer->Bind(CommandList);
-		CommandList->DrawIndexedInstanced(m_IndexBuffer->m_IndexCount, 1, 0, 0, 0);
+		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
+		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------

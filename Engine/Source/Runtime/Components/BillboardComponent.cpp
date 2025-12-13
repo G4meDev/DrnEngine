@@ -102,7 +102,7 @@ namespace Drn
 		
 		SetConstantAndSrv(CommandList, Renderer);
 		
-		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
 
 	void BillboardSceneProxy::RenderSelectionPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
@@ -118,7 +118,7 @@ namespace Drn
 		
 		SetConstantAndSrv(CommandList, Renderer);
 		
-		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_UniformQuad->BindAndDraw(CommandList);
 	}
 #endif
 

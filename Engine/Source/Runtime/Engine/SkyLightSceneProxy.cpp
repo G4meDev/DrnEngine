@@ -51,7 +51,7 @@ namespace Drn
 		uint32 LightFlags = 8;
 		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
 
-		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList);
 	}
 
 	void SkyLightSceneProxy::RenderShadowDepth( D3D12CommandList* CommandList, SceneRenderer* Renderer )

@@ -87,6 +87,8 @@ namespace Drn
 		//void TransitionResourceWithTracking(class RenderResource* pResource, D3D12_RESOURCE_STATES After, const CViewSubresourceSubset& SubresourceSubset);
 		ResourceState_New& GetResourceState(class RenderResource* pResource);
 
+		void SetIndexBuffer(const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset);
+
 	protected:
 
 	private:

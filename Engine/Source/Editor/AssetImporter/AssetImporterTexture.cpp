@@ -493,7 +493,7 @@ namespace Drn
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-		UniformCube* RenderCube = new UniformCube(CommandList->GetD3D12CommandList());
+		UniformCube* RenderCube = new UniformCube(CommandList);
 		Texture2DToTextureCubePSO* SlicePso = new Texture2DToTextureCubePSO(CommandList->GetD3D12CommandList(), IntermediateRootSinature.Get(), MetaData.format);
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -507,7 +507,7 @@ namespace Drn
 
 		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommandList->GetD3D12CommandList()->SetPipelineState(SlicePso->m_PSO);
-		RenderCube->BindAndDraw(CommandList->GetD3D12CommandList());
+		RenderCube->BindAndDraw(CommandList);
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -558,7 +558,7 @@ namespace Drn
 			CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandles[i], true, NULL);
 
 			CommandList->GetD3D12CommandList()->SetPipelineState(SlicePso->m_MipPSO);
-			RenderCube->BindAndDraw(CommandList->GetD3D12CommandList());
+			RenderCube->BindAndDraw(CommandList);
 		}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------

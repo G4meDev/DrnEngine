@@ -68,7 +68,7 @@ namespace Drn
 			CommandList->FlushBarriers();
 		}
 
-		CommonResources::Get()->m_SpotLightCone->BindAndDraw(CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_SpotLightCone->BindAndDraw(CommandList);
 	}
 
 	void SpotLightSceneProxy::RenderShadowDepth( D3D12CommandList* CommandList, SceneRenderer* Renderer )

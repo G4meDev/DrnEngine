@@ -233,6 +233,22 @@ namespace Drn
 		return TrackedResourceState.GetResourceState(pResource);
 	}
 
+	void D3D12CommandList::SetIndexBuffer( const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset )
+	{
+		D3D12_INDEX_BUFFER_VIEW View;
+
+		View.BufferLocation = IndexBufferLocation.GetGPUVirtualAddress() + Offset;
+		View.SizeInBytes = IndexBufferLocation.GetSize() - Offset;
+		View.Format = Format;
+
+		if (IndexBufferLocation.GetResource()->RequiresResourceStateTracking())
+		{
+			TransitionResourceWithTracking(IndexBufferLocation.GetResource(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		}
+
+		m_CommandList->IASetIndexBuffer(&View);
+	}
+
 	void D3D12CommandList::FlushBarriers()
 	{
 		m_ResourceBarrierBatcher.Flush(m_CommandList.Get());

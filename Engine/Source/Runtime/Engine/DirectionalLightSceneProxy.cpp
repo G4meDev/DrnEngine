@@ -66,7 +66,7 @@ namespace Drn
 			CommandList->FlushBarriers();
 		}
 		
-		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList);
 	}
 
 	void DirectionalLightSceneProxy::RenderShadowDepth( D3D12CommandList* CommandList, SceneRenderer* Renderer )

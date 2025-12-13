@@ -58,7 +58,7 @@ namespace Drn
 
 		m_Material->BindDeferredDecalPass(CommandList->GetD3D12CommandList());
 
-		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList);
 	}
 
 	void DecalSceneProxy::ReleaseBuffers()

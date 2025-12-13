@@ -5,6 +5,6 @@ namespace Drn
 	class RenderGeometeryHelper
 	{
 	public:
-		static void CreateSpotlightStencilGeometery(ID3D12GraphicsCommandList2* CommandList, VertexBuffer*& VB, IndexBuffer*& IB);
+		static void CreateSpotlightStencilGeometery(class D3D12CommandList* CommandList, VertexBuffer*& VB, class RenderIndexBuffer*& IB);
 	};
 }

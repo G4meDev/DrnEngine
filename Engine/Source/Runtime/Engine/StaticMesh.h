@@ -34,7 +34,7 @@ namespace Drn
 
 		inline void ReleaseBuffers();
 
-		void BindAndDraw( ID3D12GraphicsCommandList2* CommandList ) const;
+		void BindAndDraw( class D3D12CommandList* CommandList ) const;
 	};
 
 	struct StaticMeshData : public Serializable

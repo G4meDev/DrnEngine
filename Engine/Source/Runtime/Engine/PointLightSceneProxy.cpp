@@ -58,7 +58,7 @@ namespace Drn
 			CommandList->FlushBarriers();
 		}
 
-		CommonResources::Get()->m_PointLightSphere->BindAndDraw(CommandList->GetD3D12CommandList());
+		CommonResources::Get()->m_PointLightSphere->BindAndDraw(CommandList);
 	}
 
 	void PointLightSceneProxy::RenderShadowDepth( D3D12CommandList* CommandList, SceneRenderer* Renderer )
