@@ -118,6 +118,10 @@ namespace Drn
 			ResourceState.Initialize(SubresourceCount);
 			ResourceState.SetResourceState(InInitialResourceState);
 		}
+		else
+		{
+			DefaultResourceState = InInitialResourceState;
+		}
 	}
 
 	RenderResource::~RenderResource()

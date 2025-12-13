@@ -289,4 +289,36 @@ namespace Drn
 		return Before != After;
 	}
 
+	ConditionalScopeResourceBarrier::ConditionalScopeResourceBarrier( D3D12CommandList* InCmdList, RenderResource* pInResource,
+		const D3D12_RESOURCE_STATES InDesired, const uint32 InSubresource )
+		: CmdList( InCmdList )
+		, pResource( pInResource )
+		, Current( D3D12_RESOURCE_STATE_TBD )
+		, Desired( InDesired )
+		, Subresource( InSubresource )
+		, bRestoreDefaultState( false )
+	{
+		if ( !pResource->RequiresResourceStateTracking() )
+		{
+			Current = pResource->GetDefaultResourceState();
+			if ( Current != Desired )
+			{
+				bRestoreDefaultState = true;
+				CmdList->AddTransitionBarrier( pResource, Current, Desired, Subresource );
+			}
+		}
+		else
+		{
+			CmdList->TransitionResourceWithTracking( pResource, Desired, Subresource );
+		}
+	}
+
+	ConditionalScopeResourceBarrier::~ConditionalScopeResourceBarrier()
+	{
+		if ( bRestoreDefaultState )
+		{
+			CmdList->AddTransitionBarrier( pResource, Desired, Current, Subresource );
+		}
+	}
+
 }  // namespace Drn

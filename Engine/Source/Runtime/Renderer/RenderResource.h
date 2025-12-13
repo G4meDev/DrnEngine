@@ -166,6 +166,7 @@ namespace Drn
 		uint8 PlaneCount;
 		uint16 SubresourceCount;
 		ResourceState_New ResourceState;
+		D3D12_RESOURCE_STATES DefaultResourceState;
 
 		bool bRequiresResourceStateTracking : 1;
 		bool bDepthStencil : 1;
@@ -208,6 +209,7 @@ namespace Drn
 		uint8 GetPlaneCount() const { return PlaneCount; }
 		uint16 GetSubresourceCount() const { return SubresourceCount; }
 		ResourceState_New& GetResourceState() { drn_check(bRequiresResourceStateTracking); return ResourceState; }
+		D3D12_RESOURCE_STATES GetDefaultResourceState() const { drn_check(!bRequiresResourceStateTracking); return DefaultResourceState; }
 
 		bool RequiresResourceStateTracking() const { return bRequiresResourceStateTracking; }
 

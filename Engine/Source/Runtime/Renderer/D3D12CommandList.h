@@ -102,4 +102,19 @@ namespace Drn
 		ResourceBarrierBatcher m_ResourceBarrierBatcher;
 		CommandListResourceState TrackedResourceState;
 	};
+
+	class ConditionalScopeResourceBarrier
+	{
+	private:
+		D3D12CommandList* CmdList;
+		class RenderResource* const pResource;
+		D3D12_RESOURCE_STATES Current;
+		const D3D12_RESOURCE_STATES Desired;
+		const uint32 Subresource;
+		bool bRestoreDefaultState;
+
+	public:
+		explicit ConditionalScopeResourceBarrier(D3D12CommandList* InCmdList, class RenderResource* pInResource, const D3D12_RESOURCE_STATES InDesired, const uint32 InSubresource);
+		~ConditionalScopeResourceBarrier();
+	};
 }

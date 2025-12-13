@@ -119,6 +119,7 @@ namespace Drn
 //		}
 //		else
 		{
+			// https://stackoverflow.com/questions/77450713/why-am-i-getting-an-unhandled-exception-in-kernelbase-dll-when-im-trying-to-cal
 			Device->CreateBuffer(InitConfig.HeapType, MaxBlockSize, InitConfig.InitialResourceState, false,
 				BackingResource.GetInitReference(), "Resource Allocator Underlying Buffer", InitConfig.ResourceFlags);
 
@@ -525,7 +526,7 @@ namespace Drn
 			return;
 		}
 
-		D3D12_RESOURCE_STATES InitialState = D3D12_RESOURCE_STATE_GENERIC_READ;
+		D3D12_RESOURCE_STATES InitialState = D3D12_RESOURCE_STATE_COMMON;
 
 //#if D3D12_RHI_RAYTRACING
 //		if (InUsage & BUF_AccelerationStructure)

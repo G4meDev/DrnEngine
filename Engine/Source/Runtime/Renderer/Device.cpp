@@ -66,7 +66,8 @@ namespace Drn
  
 			// Suppress individual messages by their ID
 			D3D12_MESSAGE_ID DenyIds[] = {
-				D3D12_MESSAGE_ID_COMMAND_LIST_DRAW_VERTEX_BUFFER_NOT_SET
+				D3D12_MESSAGE_ID_COMMAND_LIST_DRAW_VERTEX_BUFFER_NOT_SET,
+				D3D12_MESSAGE_ID_CREATERESOURCE_STATE_IGNORED, // https://stackoverflow.com/questions/77450713/why-am-i-getting-an-unhandled-exception-in-kernelbase-dll-when-im-trying-to-cal
 			};
  
 			D3D12_INFO_QUEUE_FILTER NewFilter = {};
@@ -294,10 +295,10 @@ namespace Drn
 
 					{
 						// Writable structured buffers are sometimes initialized with initial data which means they sometimes need tracking.
-						//FConditionalScopeResourceBarrier ConditionalScopeResourceBarrier(hCommandList, Destination, D3D12_RESOURCE_STATE_COPY_DEST, 0);
+						ConditionalScopeResourceBarrier ConditionalScopeResourceBarrier(CmdList, Destination, D3D12_RESOURCE_STATE_COPY_DEST, 0);
+						CmdList->FlushBarriers();
 
 						//CommandContext.numInitialResourceCopies++;
-						//hCommandList.FlushResourceBarriers();
 
 						uint64 Start = SrcResourceLoc.GetOffsetFromBaseOfResource();
 						uint64 End = BufferOut->m_ResourceLocation.GetOffsetFromBaseOfResource();
