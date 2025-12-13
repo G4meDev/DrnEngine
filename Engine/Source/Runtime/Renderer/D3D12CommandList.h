@@ -4,6 +4,7 @@
 #include "Runtime/Renderer/BufferedResource.h"
 #include "Runtime/Renderer/RenderCommon.h"
 #include "Runtime/Renderer/RenderTexture.h"
+#include "Runtime/Renderer/RenderStateCache.h"
 
 namespace Drn
 {
@@ -103,6 +104,8 @@ namespace Drn
 
 		ResourceBarrierBatcher m_ResourceBarrierBatcher;
 		CommandListResourceState TrackedResourceState;
+
+		RenderStateCache StateCache;
 	};
 
 	class ConditionalScopeResourceBarrier

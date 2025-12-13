@@ -108,6 +108,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderBuffer.h
 	Source/Runtime/Renderer/RenderTypes.h
 	Source/Runtime/Renderer/RenderAllocation.h
+	Source/Runtime/Renderer/RenderStateCache.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -313,6 +314,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderBuffer.cpp
 	Source/Runtime/Renderer/RenderTypes.cpp
 	Source/Runtime/Renderer/RenderAllocation.cpp
+	Source/Runtime/Renderer/RenderStateCache.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

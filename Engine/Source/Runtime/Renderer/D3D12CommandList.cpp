@@ -76,6 +76,8 @@ namespace Drn
 #if D3D12_Debug_INFO
 		m_CommandList->SetName( StringHelper::s2ws("CommandList_" + Name).c_str() );
 #endif
+
+		StateCache.Init(Device, this, nullptr);
 	}
 
 	D3D12CommandList::~D3D12CommandList()
@@ -235,18 +237,7 @@ namespace Drn
 
 	void D3D12CommandList::SetIndexBuffer( const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset )
 	{
-		D3D12_INDEX_BUFFER_VIEW View;
-
-		View.BufferLocation = IndexBufferLocation.GetGPUVirtualAddress() + Offset;
-		View.SizeInBytes = IndexBufferLocation.GetSize() - Offset;
-		View.Format = Format;
-
-		if (IndexBufferLocation.GetResource()->RequiresResourceStateTracking())
-		{
-			TransitionResourceWithTracking(IndexBufferLocation.GetResource(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
-		}
-
-		m_CommandList->IASetIndexBuffer(&View);
+		StateCache.SetIndexBuffer(IndexBufferLocation, Format, Offset);
 	}
 
 	void D3D12CommandList::FlushBarriers()

@@ -223,8 +223,8 @@ namespace Drn
 		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), UniformQuadVertexData, 4, sizeof(UniformQuadVertexData) / 4, "UniformQuad");
 
 		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
-		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, UniformQuadVertexData, ClearValueBinding::Black, "IB_UniformQuad");
-		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(UniformQuadVertexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, UniformQuadIndexData, ClearValueBinding::Black, "IB_UniformQuad");
+		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(UniformQuadIndexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 	}
 
 	UniformQuad::~UniformQuad()
