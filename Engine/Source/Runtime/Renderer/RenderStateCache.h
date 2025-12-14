@@ -3,6 +3,7 @@
 #include "ForwardTypes.h"
 
 #define MAX_VBS D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT
+#define MAX_VERTEX_ELEMENT_COUT 16
 
 namespace Drn
 {
@@ -62,6 +63,8 @@ namespace Drn
 		void SetStreamSource(ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset);
 		void SetStreamSource(ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Offset);
 
+		void SetStreamStrides(const uint16* Strides);
+
 		void ApplyState();
 
 		inline uint32 GetVertexCountAndIncrementStat(uint32 NumPrimitives)
@@ -85,6 +88,8 @@ namespace Drn
 				uint32 PrimitiveTypeFactor;
 				uint32 PrimitiveTypeOffset;
 				uint32* CurrentPrimitiveStat;
+
+				uint16 StreamStrides[MAX_VERTEX_ELEMENT_COUT];
 			} Graphics;
 
 			struct

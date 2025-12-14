@@ -15,6 +15,42 @@ namespace Drn
 {
 	CommonResources* CommonResources::m_SingletonInstance = nullptr;
 
+	template<typename T>
+	struct TriangleIndexList
+	{
+		TriangleIndexList(T A, T B, T C)
+			: Data{A, B, C}
+		{}
+	
+		TriangleIndexList()
+			: TriangleIndexList(0, 1, 2)
+		{}
+	
+		T Data[3];
+	};
+
+	typedef TriangleIndexList<uint16> TriangleIndexList_16;
+	typedef TriangleIndexList<uint32> TriangleIndexList_32;
+
+// --------------------------------------------------------------------------------------------------------------------------------------------
+
+	struct PositionUV
+	{
+		PositionUV(float X, float Y, float Z, float U, float V)
+			: Position{X, Y, Z}
+			, UV{U, V}
+		{}
+	
+		PositionUV()
+			: PositionUV(0, 0, 0, 0, 0)
+		{}
+
+		float Position[3];
+		float UV[2];
+	};
+
+// --------------------------------------------------------------------------------------------------------------------------------------------
+
 	D3D12_INPUT_ELEMENT_DESC InputElement_PosUV[2] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
@@ -143,84 +179,82 @@ namespace Drn
 		}
 	}
 
-	float TriangleVertexData[] = 
+	PositionUV TriangleVertexData[] = 
 	{
-		1, -1, 0, 1, 1,
-		-3, -1, 0, -1, 1,
-		1, 3, 0, 1, -1
+		{ 1, -1, 0,		 1,  1},
+		{-3, -1, 0,		-1,  1},
+		{ 1,  3, 0,		 1, -1}
 	};
-
-	uint16 TriangleIndexData[] = { 0, 1, 2 };
 
 	ScreenTriangle::ScreenTriangle( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), TriangleVertexData, 3, sizeof(TriangleVertexData) / 3, "ScreenTriangle");
-
-		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
-		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, TriangleIndexData, ClearValueBinding::Black, "IB_ScreenTriangle");
-		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(TriangleIndexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
+		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, TriangleVertexData, ClearValueBinding::Black, "VB_ScreenTriangle");
+		m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(TriangleVertexData), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
 	}
 
 	ScreenTriangle::~ScreenTriangle()
-	{
-		if (m_VertexBuffer) { delete m_VertexBuffer; }
-	}
+	{}
 
 	void ScreenTriangle::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
-		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-
-		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		uint16 const Strides[] = { sizeof(PositionUV) };
+		CommandList->SetStreamStrides(Strides);
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
+		CommandList->DrawPrimitive(0, 1, 1);
 	}
 
 // --------------------------------------------------------------------------------------
 
-	float TrianglePosVertexData[] = 
+	Vector TrianglePosVertexData[] = 
 	{
-		1, -1, 0,
-		-3, -1, 0,
-		1, 3, 0
+		{ 1,  3, 0},
+		{-3, -1, 0},
+		{ 1, -1, 0}
 	};
-
-	uint16 TrianglePosIndexData[] = { 2, 1, 0 };
 
 	BackfaceScreenTriangle::BackfaceScreenTriangle( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), TrianglePosVertexData, 3, sizeof(TrianglePosVertexData) / 3, "ScreenTriangleNoUV");
-
-		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
-		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, TrianglePosIndexData, ClearValueBinding::Black, "IB_ScreenTriangleNoUV");
-		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(TrianglePosIndexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
+		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, TrianglePosVertexData, ClearValueBinding::Black, "VB_ScreenTriangleNoUV");
+		m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(TrianglePosVertexData), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
 	}
 
 	BackfaceScreenTriangle::~BackfaceScreenTriangle()
-	{
-		if (m_VertexBuffer) { delete m_VertexBuffer; }
-	}
+	{}
 
 	void BackfaceScreenTriangle::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
-		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		uint16 const Strides[] = { sizeof(Vector) };
+		CommandList->SetStreamStrides(Strides);
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
+		CommandList->DrawPrimitive(0, 1, 1);
 	}
 
 // --------------------------------------------------------------------------------------
 
-	float UniformQuadVertexData[] = 
+	PositionUV UniformQuadVertexData[] = 
 	{
-		0.5, -0.5, 0, 1, 1,
-		-0.5, -0.5, 0, 0, 1,
-		0.5, 0.5, 0, 1, 0,
-		-0.5, 0.5, 0, 0, 0
+		{ 0.5, -0.5, 0,		1, 1},
+		{-0.5, -0.5, 0,		0, 1},
+		{ 0.5,  0.5, 0,		1, 0},
+		{-0.5,  0.5, 0,		0, 0}
 	};
 
-	uint16 UniformQuadIndexData[] = { 3, 1, 2, 2, 1, 0 };
+	TriangleIndexList_16 UniformQuadIndexData[] =
+	{
+		{3, 1, 2},
+		{2, 1, 0}
+	};
 
 	UniformQuad::UniformQuad( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), UniformQuadVertexData, 4, sizeof(UniformQuadVertexData) / 4, "UniformQuad");
+		VertexCount = _countof(UniformQuadVertexData);
+		PrimitiveCount = _countof(UniformQuadIndexData);
+
+		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, UniformQuadVertexData, ClearValueBinding::Black, "VB_UniformQuad");
+		m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(UniformQuadVertexData), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
 
 		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
 		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, UniformQuadIndexData, ClearValueBinding::Black, "IB_UniformQuad");
@@ -228,55 +262,59 @@ namespace Drn
 	}
 
 	UniformQuad::~UniformQuad()
-	{
-		if (m_VertexBuffer) { delete m_VertexBuffer; }
-	}
+	{}
 
 	void UniformQuad::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
-		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		uint16 const Strides[] = { sizeof(PositionUV) };
+		CommandList->SetStreamStrides(Strides);
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
+		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
 
 // --------------------------------------------------------------------------------------
 
-	float UniformCubeVertexData[] = 
+	PositionUV UniformCubeVertexData[] = 
 	{
-		-1, -1, 1,		1, 1,		// 0
-		1, -1, 1,		1, 1,		// 1
-		-1, 1, 1,		1, 1,		// 2
-		1, 1, 1,		1, 1,		// 3
-		-1, -1, -1,		1, 1,		// 4
-		1, -1, -1,		1, 1,		// 5
-		-1, 1, -1,		1, 1,		// 6
-		1, 1, -1,		1, 1		// 7
+		{-1, -1,  1,	1, 1},		// 0
+		{ 1, -1,  1,	1, 1},		// 1
+		{-1,  1,  1,	1, 1},		// 2
+		{ 1,  1,  1,	1, 1},		// 3
+		{-1, -1, -1,	1, 1},		// 4
+		{ 1, -1, -1,	1, 1},		// 5
+		{-1,  1, -1,	1, 1},		// 6
+		{ 1,  1, -1,	1, 1}		// 7
 	};
-
-	uint16 UniformCubeIndexData[] = {
+	
+	TriangleIndexList_16 UniformCubeIndexData[] = {
 		// top
-		2, 6, 7,
-		2, 3, 7,
+		{2, 6, 7},
+		{2, 3, 7},
 		// bottom
-		0, 4, 5,
-		0, 1, 5,
+		{0, 4, 5},
+		{0, 1, 5},
 		// left
-		0, 2, 6,
-		0, 4, 6,
+		{0, 2, 6},
+		{0, 4, 6},
 		// right
-		1, 3, 7,
-		1, 5, 7,
+		{1, 3, 7},
+		{1, 5, 7},
 		// front
-		0, 2, 3,
-		0, 1, 3,
+		{0, 2, 3},
+		{0, 1, 3},
 		// back
-		4, 6, 7,
-		4, 5, 7
+		{4, 6, 7},
+		{4, 5, 7}
 	};
 
 	UniformCube::UniformCube( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), UniformCubeVertexData, 8, sizeof(UniformCubeVertexData) / 8, "UniformCube");
+		VertexCount = _countof(UniformCubeVertexData);
+		PrimitiveCount = _countof(UniformCubeIndexData);
+
+		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, UniformCubeVertexData, ClearValueBinding::Black, "VB_UniformCube");
+		m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(UniformCubeVertexData), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
 
 		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
 		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, UniformCubeIndexData, ClearValueBinding::Black, "IB_UniformCube");
@@ -284,54 +322,56 @@ namespace Drn
 	}
 
 	UniformCube::~UniformCube()
-	{
-		if (m_VertexBuffer) { delete m_VertexBuffer; }
-	}
+	{}
 
 	void UniformCube::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
-		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		uint16 const Strides[] = { sizeof(PositionUV) };
+		CommandList->SetStreamStrides(Strides);
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
+		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
 
 // --------------------------------------------------------------------------------------
 
-	float UniformCubePositionVertexData[] = 
+	Vector UniformCubePositionVertexData[] = 
 	{
-		-1, -1, 1,	// 0
-		-1, 1, 1,	// 1
-		-1, -1, -1,	// 2
-		-1, 1, -1,	// 3
-		1, -1, 1,	// 4
-		1, 1, 1,	// 5
-		1, -1, -1,	// 6
-		1, 1, -1,	// 7
+		{-1, -1,  1	},	// 0
+		{-1,  1,  1	},	// 1
+		{-1, -1, -1	},	// 2
+		{-1,  1, -1	},	// 3
+		{ 1, -1,  1	},	// 4
+		{ 1,  1,  1	},	// 5
+		{ 1, -1, -1	},	// 6
+		{ 1,  1, -1	},	// 7
 	};
 
-	uint16 UniformCubePositionIndexData[] = {
-
-		1, 2, 0,
-		3, 6, 2,
-
-		7, 4, 6,
-		5, 0, 4,
-
-		6, 0, 2,
-		3, 5, 7,
-
-		1, 3, 2,
-		3, 7, 6,
-
-		7, 5, 4,
-		5, 1, 0,
-
-		6, 4, 0,
-		3, 1, 5
+	TriangleIndexList_16 UniformCubePositionIndexData[] = 
+	{
+		{1, 2, 0},
+		{3, 6, 2},
+	
+		{7, 4, 6},
+		{5, 0, 4},
+	
+		{6, 0, 2},
+		{3, 5, 7},
+	
+		{1, 3, 2},
+		{3, 7, 6},
+	
+		{7, 5, 4},
+		{5, 1, 0},
+	
+		{6, 4, 0},
+		{3, 1, 5}
 	};
 
 	UniformCubePositionOnly::UniformCubePositionOnly( D3D12CommandList* CommandList )
 	{
+		VertexCount = _countof(UniformCubePositionVertexData);
+		PrimitiveCount = _countof(UniformCubePositionIndexData);
+
 		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
 		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, UniformCubePositionVertexData, ClearValueBinding::Black, "VB_UniformCubePosition");
 		m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(UniformCubePositionVertexData), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
@@ -346,17 +386,10 @@ namespace Drn
 
 	void UniformCubePositionOnly::BindAndDraw( D3D12CommandList* CommandList )
 	{
+		uint16 const Strides[] = { sizeof(Vector) };
+		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
-		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, 8, 0, 12, 1);
-
-		//D3D12_VERTEX_BUFFER_VIEW View;
-		//View.BufferLocation = m_VertexBuffer->m_ResourceLocation.GetGPUVirtualAddress();
-		//View.SizeInBytes = m_VertexBuffer->GetSize();
-		//View.StrideInBytes = 3 * sizeof(float);
-		//CommandList->GetD3D12CommandList()->IASetVertexBuffers(0, 1, &View);
-		//
-		//CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-		//CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
 
 // --------------------------------------------------------------------------------------
@@ -365,12 +398,15 @@ namespace Drn
 	{
 		par_shapes_mesh* SphereMesh = par_shapes_create_subdivided_sphere( 2 );
 
-		const uint32 VertexCount = SphereMesh->npoints;
-		const uint32 IndexCount = SphereMesh->ntriangles * 3;
+		VertexCount = SphereMesh->npoints;
+		PrimitiveCount = SphereMesh->ntriangles;
 
+		const uint32 IndexCount = PrimitiveCount * 3;
 		const uint32 IndexBufferSize = IndexCount * sizeof(PAR_SHAPES_T);
 
-		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), SphereMesh->points, VertexCount, sizeof(float) * 3, "PointLightSphere");
+		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, SphereMesh->points, ClearValueBinding::Black, "VB_PointLightSphere");
+		m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, VertexCount * sizeof(Vector), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
 
 		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
 		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, SphereMesh->triangles, ClearValueBinding::Black, "IB_PointLightSphere");
@@ -380,36 +416,32 @@ namespace Drn
 	}
 
 	PointLightSphere::~PointLightSphere()
-	{
-		if (m_VertexBuffer) { delete m_VertexBuffer; }
-	}
+	{}
 
 	void PointLightSphere::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
-		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		uint16 const Strides[] = { sizeof(Vector) };
+		CommandList->SetStreamStrides(Strides);
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
+		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
 
 // --------------------------------------------------------------------------------------
 
 	SpotLightCone::SpotLightCone( D3D12CommandList* CommandList )
 	{
-		RenderIndexBuffer* IB;
-		RenderGeometeryHelper::CreateSpotlightStencilGeometery(CommandList, m_VertexBuffer, IB);
-		m_IndexBuffer = IB;
+		RenderGeometeryHelper::CreateSpotlightStencilGeometery(CommandList, *m_VertexBuffer.GetInitReference(), *m_IndexBuffer.GetInitReference(), VertexCount, PrimitiveCount);
 	}
 
 	SpotLightCone::~SpotLightCone()
-	{
-		if (m_VertexBuffer) { delete m_VertexBuffer; }
-	}
+	{}
 
 	void SpotLightCone::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
-		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		uint16 const Strides[] = { sizeof(Vector) };
+		CommandList->SetStreamStrides(Strides);
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
+		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
 
 // --------------------------------------------------------------------------------------

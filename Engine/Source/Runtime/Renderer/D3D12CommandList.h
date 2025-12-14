@@ -90,6 +90,10 @@ namespace Drn
 		void SetIndexBuffer(const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset);
 		void SetStreamSource(uint32 StreamIndex, class RenderVertexBuffer* VertexBuffer, uint32 Offset);
 
+		// TODO: remove. this should happen when a new pipeline state is set
+		void SetStreamStrides(const uint16* Strides);
+
+		void DrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances);
 		void DrawIndexedPrimitive(class RenderIndexBuffer* IndexBuffer, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances);
 
 	protected:

@@ -3,7 +3,7 @@
 
 namespace Drn
 {
-	void RenderGeometeryHelper::CreateSpotlightStencilGeometery(D3D12CommandList* CommandList, VertexBuffer*& VB, RenderIndexBuffer*& IB)
+	void RenderGeometeryHelper::CreateSpotlightStencilGeometery(D3D12CommandList* CommandList, RenderVertexBuffer*& VB, RenderIndexBuffer*& IB, uint32& VertexCount, uint32& PrimitiveCount)
 	{
 		const float Radius = 1.0f;
 		const float Angle = XM_PIDIV4;
@@ -97,7 +97,13 @@ namespace Drn
 			}
 		}
 
-		VB = VertexBuffer::Create( CommandList->GetD3D12CommandList(), Points.data(), Points.size(), sizeof( Vector ), "VB_SpotlightStencilGeometery");
+		drn_check(Indices.size() % 3 == 0);
+		VertexCount = Points.size();
+		PrimitiveCount = Indices.size() / 3;
+
+		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, Points.data(), ClearValueBinding::Black, "VB_SpotlightStencilGeometery");
+		VB = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, VertexCount * sizeof(Vector), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
 
 		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
 		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, Indices.data(), ClearValueBinding::Black, "IB_SpotlightStencilGeometery");

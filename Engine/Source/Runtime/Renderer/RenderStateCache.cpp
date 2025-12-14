@@ -65,15 +65,18 @@ namespace Drn
 
 	void RenderStateCache::SetStreamSource( ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset )
 	{
-		//drn_check(Stride == PipelineState.Graphics.StreamStrides[StreamIndex]);
+		drn_check(Stride == PipelineState.Graphics.StreamStrides[StreamIndex]);
 		InternalSetStreamSource(VertexBufferLocation, StreamIndex, Stride, Offset);
 	}
 
 	void RenderStateCache::SetStreamSource( ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Offset )
 	{
-		// TODO: add stride from input layout
-		const uint32 Stride = sizeof(float) * 3; // position
-		InternalSetStreamSource(VertexBufferLocation, StreamIndex, Stride, Offset);
+		InternalSetStreamSource(VertexBufferLocation, StreamIndex, PipelineState.Graphics.StreamStrides[StreamIndex], Offset);
+	}
+
+	void RenderStateCache::SetStreamStrides(const uint16* Strides)
+	{
+		memcpy(PipelineState.Graphics.StreamStrides, Strides, sizeof(PipelineState.Graphics.StreamStrides));
 	}
 
 	void RenderStateCache::InternalSetStreamSource( ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset )

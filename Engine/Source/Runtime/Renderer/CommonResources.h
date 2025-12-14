@@ -13,8 +13,7 @@ namespace Drn
 		ScreenTriangle( class D3D12CommandList* CommandList );
 		~ScreenTriangle();
 
-		class VertexBuffer* m_VertexBuffer;
-		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
 
 		void BindAndDraw( class D3D12CommandList* CommandList );
 	};
@@ -26,8 +25,7 @@ namespace Drn
 		BackfaceScreenTriangle( class D3D12CommandList* CommandList );
 		~BackfaceScreenTriangle();
 
-		class VertexBuffer* m_VertexBuffer;
-		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
 
 		void BindAndDraw( class D3D12CommandList* CommandList );
 	};
@@ -39,10 +37,13 @@ namespace Drn
 		UniformQuad( class D3D12CommandList* CommandList );
 		~UniformQuad();
 
-		class VertexBuffer* m_VertexBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
 		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
 		void BindAndDraw( class D3D12CommandList* CommandList );
+
+		uint32 VertexCount;
+		uint32 PrimitiveCount;
 	};
 
 	class UniformCube
@@ -52,10 +53,13 @@ namespace Drn
 		UniformCube( class D3D12CommandList* CommandList );
 		~UniformCube();
 
-		class VertexBuffer* m_VertexBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
 		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
 		void BindAndDraw( D3D12CommandList* CommandList );
+
+		uint32 VertexCount;
+		uint32 PrimitiveCount;
 	};
 
 	class UniformCubePositionOnly
@@ -69,6 +73,9 @@ namespace Drn
 		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
 		void BindAndDraw( class D3D12CommandList* CommandList );
+
+		uint32 VertexCount;
+		uint32 PrimitiveCount;
 	};
 
 	class PointLightSphere
@@ -78,10 +85,13 @@ namespace Drn
 		PointLightSphere( class D3D12CommandList* CommandList );
 		~PointLightSphere();
 
-		class VertexBuffer* m_VertexBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
 		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
 		void BindAndDraw( class D3D12CommandList* CommandList );
+
+		uint32 VertexCount;
+		uint32 PrimitiveCount;
 	};
 
 	class SpotLightCone
@@ -91,10 +101,13 @@ namespace Drn
 		SpotLightCone( class D3D12CommandList* CommandList );
 		~SpotLightCone();
 
-		class VertexBuffer* m_VertexBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
 		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
 		void BindAndDraw( class D3D12CommandList* CommandList );
+
+		uint32 VertexCount;
+		uint32 PrimitiveCount;
 	};
 
 	class ResolveAlphaBlendedPSO

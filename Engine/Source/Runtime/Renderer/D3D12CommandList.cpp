@@ -245,6 +245,26 @@ namespace Drn
 		StateCache.SetStreamSource(VertexBuffer ? &VertexBuffer->m_ResourceLocation : nullptr, StreamIndex, Offset);
 	}
 
+	void D3D12CommandList::SetStreamStrides( const uint16* Strides )
+	{
+		StateCache.SetStreamStrides(Strides);
+	}
+
+	void D3D12CommandList::DrawPrimitive( uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances )
+	{
+		drn_check(NumPrimitives > 0);
+		//RHI_DRAW_CALL_STATS_MGPU(GetGPUIndex(), StateCache.GetGraphicsPipelinePrimitiveType(), FMath::Max(NumInstances, 1U) * NumPrimitives);
+
+		NumInstances = std::max<uint32>(1, NumInstances);
+
+		uint32 VertexCount = StateCache.GetVertexCountAndIncrementStat(NumPrimitives);
+
+		//StateCache.ApplyState<D3D12PT_Graphics>();
+		StateCache.ApplyState();
+
+		m_CommandList->DrawInstanced(VertexCount, NumInstances, BaseVertexIndex, 0);
+	}
+
 	void D3D12CommandList::DrawIndexedPrimitive( RenderIndexBuffer* IndexBuffer, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances )
 	{
 		drn_check(NumPrimitives > 0);
