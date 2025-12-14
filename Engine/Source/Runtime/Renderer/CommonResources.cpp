@@ -332,7 +332,9 @@ namespace Drn
 
 	UniformCubePositionOnly::UniformCubePositionOnly( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer = VertexBuffer::Create(CommandList->GetD3D12CommandList(), UniformCubePositionVertexData, 8, sizeof(UniformCubePositionVertexData) / 8, "UniformCubePosition");
+		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, UniformCubePositionVertexData, ClearValueBinding::Black, "VB_UniformCubePosition");
+		m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(UniformCubePositionVertexData), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
 
 		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
 		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, UniformCubePositionIndexData, ClearValueBinding::Black, "IB_UniformCubePosition");
@@ -340,13 +342,16 @@ namespace Drn
 	}
 
 	UniformCubePositionOnly::~UniformCubePositionOnly()
-	{
-		if (m_VertexBuffer) { delete m_VertexBuffer; }
-	}
+	{}
 
 	void UniformCubePositionOnly::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		m_VertexBuffer->Bind(CommandList->GetD3D12CommandList());
+		D3D12_VERTEX_BUFFER_VIEW View;
+		View.BufferLocation = m_VertexBuffer->m_ResourceLocation.GetGPUVirtualAddress();
+		View.SizeInBytes = m_VertexBuffer->GetSize();
+		View.StrideInBytes = 3 * sizeof(float);
+		CommandList->GetD3D12CommandList()->IASetVertexBuffers(0, 1, &View);
+
 		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
 		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}

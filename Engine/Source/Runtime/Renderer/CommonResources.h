@@ -65,7 +65,7 @@ namespace Drn
 		UniformCubePositionOnly( class D3D12CommandList* CommandList );
 		~UniformCubePositionOnly();
 
-		class VertexBuffer* m_VertexBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
 		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
 
 		void BindAndDraw( class D3D12CommandList* CommandList );

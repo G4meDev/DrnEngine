@@ -20,6 +20,30 @@ namespace Drn
 		return Desc;
 	}
 
+	D3D12_RESOURCE_DESC CreateVertexBufferResourceDesc(uint32 Size, uint32 InUsage)
+	{
+		D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Buffer(Size);
+
+		if (InUsage & (uint32)EBufferUsageFlags::UnorderedAccess)
+		{
+			Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+			//static bool bRequiresRawView = (GMaxRHIFeatureLevel < ERHIFeatureLevel::SM5);
+			//if (bRequiresRawView)
+			//{
+			//	// Force the buffer to be a raw, byte address buffer
+			//	InUsage |= BUF_ByteAddressBuffer;
+			//}
+		}
+
+		if ((InUsage & (uint32)EBufferUsageFlags::ShaderResource) == 0)
+		{
+			Desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+		}
+
+		return Desc;
+	}
+
 	void RenderBufferBase::ReleaseUnderlyingResource()
 	{
 		m_ResourceLocation.Clear();
@@ -52,6 +76,40 @@ namespace Drn
 		//	// TODO: this should ideally be set in platform-independent code, since this tracking is for the high level
 		//	Buffer->SetCommitted(false);
 		//}
+
+		return Buffer;
+	}
+
+// --------------------------------------------------------------------------------------------------------
+
+	RenderVertexBuffer::~RenderVertexBuffer()
+	{
+		if (m_ResourceLocation.IsValid())
+		{
+			BufferStats::UpdateBufferStats(&m_ResourceLocation, false, BufferStats::EBufferMemoryStatGroups::Vertex);
+		}
+	}
+
+	void RenderVertexBuffer::ReleaseUnderlyingResource()
+	{
+		BufferStats::UpdateBufferStats(&m_ResourceLocation, false, BufferStats::EBufferMemoryStatGroups::Vertex);
+		RenderBufferBase::ReleaseUnderlyingResource();
+		Size = Usage = 0;
+	}
+
+	RenderVertexBuffer* RenderVertexBuffer::Create( class Device* InParent, D3D12CommandList* CmdList, uint32 Size, uint32 InUsage,
+		D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo )
+	{
+		const D3D12_RESOURCE_DESC Desc = CreateVertexBufferResourceDesc( Size, InUsage );
+		const uint32 Alignment = 4;
+
+		RenderVertexBuffer* Buffer = InParent->CreateRenderBuffer<RenderVertexBuffer>(
+			CmdList, Desc, Alignment, 0, Size, InUsage, bNeedsStateTracking, CreateInfo );
+		// if (Buffer->ResourceLocation.IsTransient())
+		//{
+		//	// TODO: this should ideally be set in platform-independent code, since this tracking is for the
+		//high level 	Buffer->SetCommitted(false);
+		// }
 
 		return Buffer;
 	}
@@ -92,4 +150,6 @@ namespace Drn
 		return BufferMemoryStats[(uint8)Group].load();
 	}
 
-}  // namespace Drn
+
+
+        }  // namespace Drn

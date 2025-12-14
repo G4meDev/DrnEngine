@@ -28,7 +28,6 @@ namespace Drn
 
 		class StaticMeshVertexBuffer* m_StaticMeshVertexBuffer;
 		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
-		D3D12_INDEX_BUFFER_VIEW m_IndexBufferView;
 
 		virtual void Serialize(Archive& Ar) override;
 

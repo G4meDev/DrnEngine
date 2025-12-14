@@ -118,10 +118,6 @@ namespace Drn
 			Proxy.m_IndexBuffer = RenderIndexBuffer::Create(Renderer::Get()->GetDevice(), CommandList, sizeof(uint32), IndexCount * sizeof(uint32),
 				IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 
-			Proxy.m_IndexBufferView.BufferLocation = Proxy.m_IndexBuffer->m_ResourceLocation.GetGPUVirtualAddress();
-			Proxy.m_IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-			Proxy.m_IndexBufferView.SizeInBytes = IndexCount * sizeof(uint32);
-
 			Proxy.m_StaticMeshVertexBuffer = StaticMeshVertexBuffer::Create(CommandList->GetD3D12CommandList(), Proxy.VertexData, MeshName);
 		}
 

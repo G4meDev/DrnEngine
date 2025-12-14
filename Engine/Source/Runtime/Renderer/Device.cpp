@@ -326,10 +326,19 @@ namespace Drn
 	template RenderIndexBuffer* Device::CreateRenderBuffer<RenderIndexBuffer>( D3D12CommandList* CmdList, const D3D12_RESOURCE_DESC& Desc, uint32 Alignment,
 		uint32 Stride, uint32 Size, uint32 InUsage, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo );
 
+	template RenderVertexBuffer* Device::CreateRenderBuffer<RenderVertexBuffer>( D3D12CommandList* CmdList, const D3D12_RESOURCE_DESC& Desc, uint32 Alignment,
+		uint32 Stride, uint32 Size, uint32 InUsage, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo );
+
 	template<>
 	void Device::UpdateBufferStats<RenderIndexBuffer>( ResourceLocation* Location, bool bAllocating )
 	{
 		BufferStats::UpdateBufferStats(Location, true, BufferStats::EBufferMemoryStatGroups::Index);
+	}
+
+	template<>
+	void Device::UpdateBufferStats<RenderVertexBuffer>( ResourceLocation* Location, bool bAllocating )
+	{
+		BufferStats::UpdateBufferStats(Location, true, BufferStats::EBufferMemoryStatGroups::Vertex);
 	}
 
 // -----------------------------------------------------------------------------------------------------------

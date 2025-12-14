@@ -65,6 +65,48 @@ namespace Drn
 		uint32 Usage;
 	};
 
+// ---------------------------------------------------------------------------------------
+
+	class RenderVertexBuffer : public SimpleRenderResource, public RenderBufferBase
+	{
+	public:
+		//RenderIndexBuffer()
+		//	: RenderBuffer(nullptr)
+		//{}
+
+		RenderVertexBuffer( Device* InParent, uint32 InStride, uint32 InSize, uint32 InUsage )
+			: SimpleRenderResource()
+			, RenderBufferBase(InParent)
+			, Size(InSize)
+			, Usage(InUsage)
+		{}
+
+		virtual ~RenderVertexBuffer();
+
+		void ReleaseUnderlyingResource();
+
+		static RenderVertexBuffer* Create(class Device* InParent, D3D12CommandList* CmdList, uint32 Size, uint32 InUsage, D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo);
+
+		uint32 GetSize() const { return Size; }
+		uint32 GetUsage() const { return Usage; }
+
+		virtual uint32 AddRef() const
+		{
+			return SimpleRenderResource::AddRef();
+		}
+		virtual uint32 Release() const
+		{
+			return SimpleRenderResource::Release();
+		}
+		virtual uint32 GetRefCount() const
+		{
+			return SimpleRenderResource::GetRefCount();
+		}
+
+	private:
+		uint32 Size;
+		uint32 Usage;
+	};
 
 // ---------------------------------------------------------------------------------------
 
