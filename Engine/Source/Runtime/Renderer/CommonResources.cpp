@@ -346,14 +346,17 @@ namespace Drn
 
 	void UniformCubePositionOnly::BindAndDraw( D3D12CommandList* CommandList )
 	{
-		D3D12_VERTEX_BUFFER_VIEW View;
-		View.BufferLocation = m_VertexBuffer->m_ResourceLocation.GetGPUVirtualAddress();
-		View.SizeInBytes = m_VertexBuffer->GetSize();
-		View.StrideInBytes = 3 * sizeof(float);
-		CommandList->GetD3D12CommandList()->IASetVertexBuffers(0, 1, &View);
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
+		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, 8, 0, 12, 1);
 
-		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		//D3D12_VERTEX_BUFFER_VIEW View;
+		//View.BufferLocation = m_VertexBuffer->m_ResourceLocation.GetGPUVirtualAddress();
+		//View.SizeInBytes = m_VertexBuffer->GetSize();
+		//View.StrideInBytes = 3 * sizeof(float);
+		//CommandList->GetD3D12CommandList()->IASetVertexBuffers(0, 1, &View);
+		//
+		//CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+		//CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
 	}
 
 // --------------------------------------------------------------------------------------

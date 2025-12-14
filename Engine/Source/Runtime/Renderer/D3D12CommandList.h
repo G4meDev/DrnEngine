@@ -61,7 +61,6 @@ namespace Drn
 		void Empty();
 	};
 
-
 	class D3D12CommandList : public BufferedResource, public DeviceChild
 	{
 	public:
@@ -89,6 +88,9 @@ namespace Drn
 		ResourceState_New& GetResourceState(class RenderResource* pResource);
 
 		void SetIndexBuffer(const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset);
+		void SetStreamSource(uint32 StreamIndex, class RenderVertexBuffer* VertexBuffer, uint32 Offset);
+
+		void DrawIndexedPrimitive(class RenderIndexBuffer* IndexBuffer, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances);
 
 	protected:
 

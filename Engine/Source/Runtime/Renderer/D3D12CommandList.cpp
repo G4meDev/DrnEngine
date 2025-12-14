@@ -240,6 +240,35 @@ namespace Drn
 		StateCache.SetIndexBuffer(IndexBufferLocation, Format, Offset);
 	}
 
+	void D3D12CommandList::SetStreamSource( uint32 StreamIndex, RenderVertexBuffer* VertexBuffer, uint32 Offset )
+	{
+		StateCache.SetStreamSource(VertexBuffer ? &VertexBuffer->m_ResourceLocation : nullptr, StreamIndex, Offset);
+	}
+
+	void D3D12CommandList::DrawIndexedPrimitive( RenderIndexBuffer* IndexBuffer, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances )
+	{
+		drn_check(NumPrimitives > 0);
+		//RHI_DRAW_CALL_STATS_MGPU(GetGPUIndex(), StateCache.GetGraphicsPipelinePrimitiveType(), FMath::Max(NumInstances, 1U) * NumPrimitives);
+
+
+		NumInstances = std::max<uint32>(1, NumInstances);
+
+		uint32 IndexCount = StateCache.GetVertexCountAndIncrementStat(NumPrimitives);
+
+		// Verify that we are not trying to read outside the index buffer range
+		// test is an optimized version of: StartIndex + IndexCount <= IndexBuffer->GetSize() / IndexBuffer->GetStride() 
+		//checkf((StartIndex + IndexCount) * RHIIndexBuffer->GetStride() <= RHIIndexBuffer->GetSize(),
+		//	TEXT("Start %u, Count %u, Type %u, Buffer Size %u, Buffer stride %u"), StartIndex, IndexCount, StateCache.GetGraphicsPipelinePrimitiveType(), RHIIndexBuffer->GetSize(), RHIIndexBuffer->GetStride());
+
+		// determine 16bit vs 32bit indices
+		const DXGI_FORMAT Format = (IndexBuffer->GetStride() == sizeof(uint16) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT);
+		StateCache.SetIndexBuffer(IndexBuffer->m_ResourceLocation, Format, 0);
+		//StateCache.ApplyState<D3D12PT_Graphics>();
+		StateCache.ApplyState();
+
+		m_CommandList->DrawIndexedInstanced(IndexCount, NumInstances, StartIndex, BaseVertexIndex, FirstInstance);
+	}
+
 	void D3D12CommandList::FlushBarriers()
 	{
 		m_ResourceBarrierBatcher.Flush(m_CommandList.Get());
