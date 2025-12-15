@@ -87,13 +87,7 @@ namespace Drn
 
 			CalculateSplitDistance();
 
-			D3D12_RECT R = CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX );
-			CD3DX12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)DIRECTIONAL_SHADOW_SIZE, (float)DIRECTIONAL_SHADOW_SIZE);
-			
-			CommandList->GetD3D12CommandList()->RSSetViewports( 1, &Viewport );
-			CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &R);
-
-			//CommandList->SetViewport( 0, 0, 0, DIRECTIONAL_SHADOW_SIZE, DIRECTIONAL_SHADOW_SIZE, 1 );
+			CommandList->SetViewport( 0, 0, 0, DIRECTIONAL_SHADOW_SIZE, DIRECTIONAL_SHADOW_SIZE, 1 );
 
 			m_ShadowData.DepthBias = m_DepthBias;
 			m_ShadowData.InvShadowResolution = 1.0f / DIRECTIONAL_SHADOW_SIZE;

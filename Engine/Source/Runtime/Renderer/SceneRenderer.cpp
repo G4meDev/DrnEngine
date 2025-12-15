@@ -230,8 +230,7 @@ namespace Drn
 		m_CommandList->FlushBarriers();
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
-		m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_DecalBuffer->m_Viewport);
-		m_CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_DecalBuffer->m_ScissorRect);
+		m_CommandList->SetViewport( 0, 0, 0, m_RenderSize.X, m_RenderSize.Y, 1 );
 
 		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[3] = 
 		{
@@ -614,8 +613,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_SceneDownSampleBuffer->m_Buffer[0]->GetGpuHandle()), 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
-		
-		m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SceneDownSampleBuffer->m_Viewports[0]);
+		m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[0].X, m_SceneDownSampleBuffer->m_Viewports[0].Y, 1);
 
 		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
@@ -636,7 +634,7 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_SceneDownSampleBuffer->m_Buffer[i]->GetGpuHandle()), 1);
 			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
-			m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SceneDownSampleBuffer->m_Viewports[i]);
+			m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
 			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
@@ -667,7 +665,7 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BloomBuffer->m_Buffer[i * 2]->GetGpuHandle()), 1);
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
-				m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_BloomBuffer->m_Viewports[i]);
+				m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
 				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 			}
@@ -693,7 +691,7 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BloomBuffer->m_Buffer[i * 2 + 1]->GetGpuHandle()), 1);
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
-				m_CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_BloomBuffer->m_Viewports[i]);
+				m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
 				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 			}

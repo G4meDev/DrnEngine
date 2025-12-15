@@ -12,7 +12,6 @@ namespace Drn
 		, m_MasksBTarget(nullptr)
 		, m_VelocityTarget(nullptr)
 		, m_DepthTarget(nullptr)
-		, m_ScissorRect(CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ))
 	{}
 
 	GBuffer::~GBuffer()
@@ -28,7 +27,6 @@ namespace Drn
 	{
 		RenderBuffer::Resize(Size);
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Size.X), static_cast<float>(Size.Y));
 
 		RenderResourceCreateInfo ColorDeferredCreateInfo( nullptr, nullptr, ClearValueBinding(Vector4(0.04f, 0.07f, 0.2f, 1.0f)), "Gbuffer_DeferredColor" );
 		m_ColorDeferredTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
@@ -78,8 +76,7 @@ namespace Drn
 
 	void GBuffer::Bind( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
-		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->SetViewport(0 ,0, 0, m_Size.X, m_Size.Y, 1);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[6] = 
 		{
@@ -97,8 +94,7 @@ namespace Drn
 
 	void GBuffer::BindDepth( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
-		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->SetViewport(0 ,0, 0, m_Size.X, m_Size.Y, 1);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 0, NULL, true, &DepthHandle );
@@ -113,8 +109,7 @@ namespace Drn
 		CommandList->TransitionResourceWithTracking(m_MasksBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		CommandList->FlushBarriers();
 
-		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
-		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->SetViewport( 0, 0, 0, m_Size.X, m_Size.Y, 1 );
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView();
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DeferredColorHandle, true, nullptr );

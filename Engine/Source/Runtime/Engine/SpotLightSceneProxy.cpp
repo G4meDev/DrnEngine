@@ -75,11 +75,7 @@ namespace Drn
 	{
 		if (m_CastShadow)
 		{
-			D3D12_RECT R = CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX );
-			CD3DX12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)SPOTLIGHT_SHADOW_SIZE, (float)SPOTLIGHT_SHADOW_SIZE);
-
-			CommandList->GetD3D12CommandList()->RSSetViewports(1, &Viewport);
-			CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &R);
+			CommandList->SetViewport( 0, 0, 0, SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, 1 );
 
 			CommandList->TransitionResourceWithTracking(m_ShadowmapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
 			CommandList->FlushBarriers();

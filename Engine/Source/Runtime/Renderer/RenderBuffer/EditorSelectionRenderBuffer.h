@@ -21,9 +21,6 @@ namespace Drn
 		TRefCountPtr<RenderTexture2D> m_DepthStencilTarget;
 		TRefCountPtr<ShaderResourceView> m_StencilView; // default srv view is for depth
 
-		D3D12_VIEWPORT m_Viewport;
-		D3D12_RECT m_ScissorRect;
-
 	private:
 
 	};

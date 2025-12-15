@@ -54,11 +54,7 @@ namespace Drn
 
 	void ScreenSpaceReflectionBuffer::Bind( D3D12CommandList* CommandList )
 	{
-		D3D12_RECT ScissorRect = CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX);
-		D3D12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(m_Size.X), static_cast<float>(m_Size.Y));
-
-		CommandList->GetD3D12CommandList()->RSSetViewports(1, &Viewport);
-		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &ScissorRect);
+		CommandList->SetViewport( 0, 0, 0, m_Size.X, m_Size.Y, 1 );
 
 		D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_Target->GetRenderTargetView()->GetView();
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &Handle, true, nullptr );

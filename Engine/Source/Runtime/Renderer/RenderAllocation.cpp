@@ -901,8 +901,8 @@ namespace Drn
 	
 		if (Device->GetDeferredDeletionQueue().QueueSize() > 128)
 		{
-			//Device->GetDeferredDeletionQueue().ReleaseResources(true);
-			//Allocator.CleanUpAllocations(0);
+			Device->GetDeferredDeletionQueue().ReleaseResources();
+			Allocator.CleanUpAllocations(0);
 		}
 	
 		if (Size <= Allocator.GetMaximumAllocationSizeForPooling())
@@ -932,4 +932,4 @@ namespace Drn
 		Allocator.Destroy();
 	}
 
-        }  // namespace Drn
+}  // namespace Drn

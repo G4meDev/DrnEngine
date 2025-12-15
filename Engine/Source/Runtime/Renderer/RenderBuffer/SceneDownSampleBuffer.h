@@ -23,7 +23,7 @@ namespace Drn
 		virtual ~SceneDownSampleBuffer();
 
 		virtual void Init() override;
-		virtual void Resize( const IntPoint& Size ) override;
+		virtual void Resize( const IntPoint& InSize ) override;
 
 		void Clear( class D3D12CommandList* CommandList );
 		void Bind( class D3D12CommandList* CommandList );
@@ -36,7 +36,7 @@ namespace Drn
 		Resource* m_Buffer[NUM_SCENE_DOWNSAMPLES] = {nullptr};
 		SceneDownSampleData m_Data;
 
-		D3D12_VIEWPORT m_Viewports[NUM_SCENE_DOWNSAMPLES];
+		IntPoint m_Viewports[NUM_SCENE_DOWNSAMPLES];
 
 	private:
 

@@ -15,7 +15,6 @@ namespace Drn
 		, m_AOHalfTarget(nullptr)
 		, m_AOSetupTarget(nullptr)
 		, m_AoBuffer(nullptr)
-		, m_ScissorRect(CD3DX12_RECT( 0, 0, LONG_MAX, LONG_MAX ))
 	{
 		
 	}
@@ -36,10 +35,8 @@ namespace Drn
 	{
 		RenderBuffer::Resize(Size);
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-		m_Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(Size.X), static_cast<float>(Size.Y));
 
-		IntPoint HalfSize = IntPoint::ComponentWiseMax(Size / 2, IntPoint(1));
-		m_SetupViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(HalfSize.X), static_cast<float>(HalfSize.Y));
+		HalfSize = IntPoint::ComponentWiseMax(m_Size / 2, IntPoint(1));
 
 		ReleaseBuffers();
 
@@ -79,17 +76,15 @@ namespace Drn
 
 	void RenderBufferAO::BindSetup( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SetupViewport);
-		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
-		
+		CommandList->SetViewport( 0, 0, 0, HalfSize.X, HalfSize.Y, 1 );
+
 		D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_AOSetupTarget->GetRenderTargetView()->GetView();
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &Handle, true, nullptr );
 	}
 
 	void RenderBufferAO::BindHalf( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_SetupViewport);
-		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->SetViewport( 0, 0, 0, HalfSize.X, HalfSize.Y, 1 );
 		
 		D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_AOHalfTarget->GetRenderTargetView()->GetView();
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &Handle, true, nullptr );
@@ -97,8 +92,7 @@ namespace Drn
 
 	void RenderBufferAO::BindMain( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->RSSetViewports(1, &m_Viewport);
-		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &m_ScissorRect);
+		CommandList->SetViewport( 0, 0, 0, m_Size.X, m_Size.Y, 1 );
 		
 		D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_AOTarget->GetRenderTargetView()->GetView();
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &Handle, true, nullptr );

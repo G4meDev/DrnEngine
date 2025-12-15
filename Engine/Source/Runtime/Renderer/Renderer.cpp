@@ -74,6 +74,7 @@ namespace Drn
 
 		m_Device->GetDefaultBufferAllocator().FreeDefaultBufferPools();
 		m_Device->GetDefaultFastAllocator().Destroy();
+		m_Device->GetDynamicHeapAllocator().Destroy();
 
 #endif
 	}
@@ -451,8 +452,8 @@ namespace Drn
 		// TODO: move to end of frame
 		SimpleRenderResource::FlushPendingDeletes();
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
-		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(NUM_BACKBUFFERS);
-		m_Device->GetDefaultFastAllocator().CleanupPages(NUM_BACKBUFFERS);
+		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(1);
+		m_Device->GetDefaultFastAllocator().CleanupPages(1);
 		m_Device->GetDynamicHeapAllocator().CleanUpAllocations(2);
 
 		SCOPE_STAT( "InitRender" );

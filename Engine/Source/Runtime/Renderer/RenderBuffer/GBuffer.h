@@ -34,9 +34,6 @@ namespace Drn
 
 		TRefCountPtr<RenderTexture2D> m_DepthTarget;
 
-		D3D12_VIEWPORT m_Viewport;
-		D3D12_RECT m_ScissorRect;
-
 	private:
 	};
 }

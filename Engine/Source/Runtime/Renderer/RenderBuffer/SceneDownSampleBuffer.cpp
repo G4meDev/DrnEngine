@@ -37,9 +37,9 @@ namespace Drn
 		}
 	}
 
-	void SceneDownSampleBuffer::Resize( const IntPoint& Size )
+	void SceneDownSampleBuffer::Resize( const IntPoint& InSize )
 	{
-		RenderBuffer::Resize(Size);
+		RenderBuffer::Resize(InSize);
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		for (int32 i = 0; i < NUM_SCENE_DOWNSAMPLES; i++)
@@ -47,7 +47,7 @@ namespace Drn
 			IntPoint Size = m_Size / std::pow(2, i + 1);
 			Size = IntPoint::ComponentWiseMax(Size, IntPoint(1, 1));
 
-			m_Viewports[i] = CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( Size.X ), static_cast<float>( Size.Y ) );
+			m_Viewports[i] = Size;
 
 			RenderResourceCreateInfo DownSampleCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "SceneDownSample" + GetDownSamplePostfix(i) );
 			m_DownSampleTargets[i] = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), Size.X, Size.Y, SCENE_DOWN_SAMPLE_FORMAT, 1, 1, true,

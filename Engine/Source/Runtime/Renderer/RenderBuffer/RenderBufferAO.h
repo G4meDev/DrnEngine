@@ -58,9 +58,7 @@ namespace Drn
 		AoData m_AoData;
 		Resource* m_AoBuffer;
 
-		D3D12_VIEWPORT m_Viewport;
-		D3D12_VIEWPORT m_SetupViewport;
-		D3D12_RECT     m_ScissorRect;
+		IntPoint HalfSize;
 
 	private:
 	};
