@@ -2,6 +2,7 @@
 #include "StatsWindowGuiLayer.h"
 
 #if WITH_EDITOR
+#include "Runtime/Renderer/D3D12CommandList.h"
 #include "Runtime/Renderer/RenderTexture.h"
 #include "Runtime/Renderer/RenderBuffer.h"
 
@@ -49,6 +50,17 @@ namespace Drn
 			const int32 Size = BufferStats::GetBufferStatSize(Group);
 			const float SizeInMB = Size / 1024.f / 1024.f;
 			std::string msg = std::format("{} {} mb", BufferStats::GetBufferStatName(Group), SizeInMB);
+
+			ImGui::Text( msg.c_str() );
+		}
+
+		ImGui::Separator();
+
+		for (int32 i = 0; i < (uint8)PrimitiveStats::EPrimitiveStatGroups::Max; i++)
+		{
+			PrimitiveStats::EPrimitiveStatGroups Group = (PrimitiveStats::EPrimitiveStatGroups)i;
+			const int32 Size = PrimitiveStats::GetStatSize(Group);
+			std::string msg = std::format("{} primitive count: {}", PrimitiveStats::GetStatName(Group), Size);
 
 			ImGui::Text( msg.c_str() );
 		}

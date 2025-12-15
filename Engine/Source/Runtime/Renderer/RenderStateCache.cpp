@@ -38,7 +38,10 @@ namespace Drn
 
 	void RenderStateCache::DirtyState()
 	{
-		
+		bNeedSetVB = true;
+		bNeedSetViewports = true;
+		bNeedSetScissorRects = true;
+		bNeedSetPrimitiveTopology = true;
 	}
 
 	void RenderStateCache::SetIndexBuffer( const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset )
@@ -77,6 +80,77 @@ namespace Drn
 	void RenderStateCache::SetStreamStrides(const uint16* Strides)
 	{
 		memcpy(PipelineState.Graphics.StreamStrides, Strides, sizeof(PipelineState.Graphics.StreamStrides));
+	}
+
+	void RenderStateCache::ValidateScissorRect( const D3D12_VIEWPORT& Viewport, const D3D12_RECT& ScissorRect )
+	{
+		drn_check(ScissorRect.left   >= (LONG)Viewport.TopLeftX);
+		drn_check(ScissorRect.top    >= (LONG)Viewport.TopLeftY);
+		drn_check(ScissorRect.right  <= (LONG)Viewport.TopLeftX + (LONG)Viewport.Width);
+		drn_check(ScissorRect.bottom <= (LONG)Viewport.TopLeftY + (LONG)Viewport.Height);
+		drn_check(ScissorRect.left <= ScissorRect.right && ScissorRect.top <= ScissorRect.bottom);
+	}
+
+	void RenderStateCache::SetScissorRect( const D3D12_RECT& ScissorRect )
+	{
+		ValidateScissorRect(PipelineState.Graphics.CurrentViewport[0], ScissorRect);
+
+		if ((PipelineState.Graphics.CurrentNumberOfScissorRects != 1 || memcmp(&PipelineState.Graphics.CurrentScissorRects[0], &ScissorRect, sizeof(D3D12_RECT))))
+		{
+			memcpy(&PipelineState.Graphics.CurrentScissorRects[0], &ScissorRect, sizeof(D3D12_RECT));
+			PipelineState.Graphics.CurrentNumberOfScissorRects = 1;
+			bNeedSetScissorRects = true;
+		}
+	}
+
+	void RenderStateCache::SetScissorRects( uint32 Count, const D3D12_RECT* const ScissorRects )
+	{
+		drn_check(Count < ARRAYSIZE(PipelineState.Graphics.CurrentScissorRects));
+
+		for (uint32 Rect = 0; Rect < Count; ++Rect)
+		{
+			ValidateScissorRect(PipelineState.Graphics.CurrentViewport[Rect], ScissorRects[Rect]);
+		}
+
+		if ((PipelineState.Graphics.CurrentNumberOfScissorRects != Count || memcmp(&PipelineState.Graphics.CurrentScissorRects[0], ScissorRects, sizeof(D3D12_RECT) * Count)))
+		{
+			memcpy(&PipelineState.Graphics.CurrentScissorRects[0], ScissorRects, sizeof(D3D12_RECT) * Count);
+			PipelineState.Graphics.CurrentNumberOfScissorRects = Count;
+			bNeedSetScissorRects = true;
+		}
+	}
+
+	void RenderStateCache::SetViewport( const D3D12_VIEWPORT& Viewport )
+	{
+		if ((PipelineState.Graphics.CurrentNumberOfViewports != 1 || memcmp(&PipelineState.Graphics.CurrentViewport[0], &Viewport, sizeof(D3D12_VIEWPORT))))
+		{
+			memcpy(&PipelineState.Graphics.CurrentViewport[0], &Viewport, sizeof(D3D12_VIEWPORT));
+			PipelineState.Graphics.CurrentNumberOfViewports = 1;
+			bNeedSetViewports = true;
+		}
+	}
+
+	void RenderStateCache::SetViewports( uint32 Count, const D3D12_VIEWPORT* const Viewports )
+	{
+		drn_check(Count < ARRAYSIZE(PipelineState.Graphics.CurrentViewport));
+		if ((PipelineState.Graphics.CurrentNumberOfViewports != Count || memcmp(&PipelineState.Graphics.CurrentViewport[0], Viewports, sizeof(D3D12_VIEWPORT) * Count)))
+		{
+			memcpy(&PipelineState.Graphics.CurrentViewport[0], Viewports, sizeof(D3D12_VIEWPORT) * Count);
+			PipelineState.Graphics.CurrentNumberOfViewports = Count;
+			bNeedSetViewports = true;
+		}
+	}
+
+	void RenderStateCache::SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY InTopology )
+	{
+		if (PipelineState.Graphics.CurrentPrimitiveTopology != InTopology)
+		{
+			PipelineState.Graphics.CurrentPrimitiveTopology = InTopology;
+			bNeedSetPrimitiveTopology = true;
+			PipelineState.Graphics.PrimitiveTypeFactor = GetPrimitiveTopologyFactor(InTopology);
+			PipelineState.Graphics.PrimitiveTypeOffset = GetPrimitiveTopologyOffset(InTopology);
+			PipelineState.Graphics.CurrentPrimitiveStat = GetPrimitiveTopologyStat(InTopology);
+		}
 	}
 
 	void RenderStateCache::InternalSetStreamSource( ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset )
@@ -134,6 +208,33 @@ namespace Drn
 		}
 	}
 
+	uint32 RenderStateCache::GetPrimitiveTopologyFactor( D3D_PRIMITIVE_TOPOLOGY InTopology )
+	{
+		switch ( InTopology )
+		{
+		case(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST):	return 3;
+		case(D3D_PRIMITIVE_TOPOLOGY_LINELIST):		return 2;
+
+		default: drn_check(false)
+		}
+	}
+
+	uint32 RenderStateCache::GetPrimitiveTopologyOffset( D3D_PRIMITIVE_TOPOLOGY InTopology )
+	{
+		switch ( InTopology )
+		{
+		case(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST):	return 0;
+		case(D3D_PRIMITIVE_TOPOLOGY_LINELIST):		return 0;
+
+		default: drn_check(false)
+		}
+	}
+
+	uint32* RenderStateCache::GetPrimitiveTopologyStat( D3D_PRIMITIVE_TOPOLOGY InTopology )
+	{
+		return InTopology == D3D_PRIMITIVE_TOPOLOGY_LINELIST ? &PipelineState.Graphics.NumLines : &PipelineState.Graphics.NumTriangles;
+	}
+
 	void RenderStateCache::ApplyState()
 	{
 		if (bNeedSetVB)
@@ -144,6 +245,21 @@ namespace Drn
 			if (Count)
 			{
 				CmdList->GetD3D12CommandList()->IASetVertexBuffers(0, Count, Cache.CurrentVertexBufferViews);
+			}
+			if (bNeedSetViewports)
+			{
+				bNeedSetViewports = false;
+				CmdList->GetD3D12CommandList()->RSSetViewports(PipelineState.Graphics.CurrentNumberOfViewports, PipelineState.Graphics.CurrentViewport);
+			}
+			if (bNeedSetScissorRects)
+			{
+				bNeedSetScissorRects = false;
+				CmdList->GetD3D12CommandList()->RSSetScissorRects(PipelineState.Graphics.CurrentNumberOfScissorRects, PipelineState.Graphics.CurrentScissorRects);
+			}
+			if (bNeedSetPrimitiveTopology)
+			{
+				bNeedSetPrimitiveTopology = false;
+				CmdList->GetD3D12CommandList()->IASetPrimitiveTopology(PipelineState.Graphics.CurrentPrimitiveTopology);
 			}
 		}
 

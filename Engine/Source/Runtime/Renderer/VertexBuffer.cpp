@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "VertexBuffer.h"
 #include "Runtime/Renderer/Resource.h"
+#include "Runtime/Renderer/RenderBuffer.h"
 
 namespace Drn
 {
@@ -84,21 +85,9 @@ namespace Drn
 	{}
 
 	StaticMeshVertexBuffer::~StaticMeshVertexBuffer()
-	{
-		auto ReleaseBuffer = [](VertexBuffer*& VBuffer) { if (VBuffer) {delete VBuffer;} };
+	{}
 
-		ReleaseBuffer(m_PositionBuffer);
-		ReleaseBuffer(m_NormalBuffer);
-		ReleaseBuffer(m_TangentBuffer);
-		ReleaseBuffer(m_BitTangentBuffer);
-		ReleaseBuffer(m_ColorBuffer);
-		ReleaseBuffer(m_UV1Buffer);
-		ReleaseBuffer(m_UV2Buffer);
-		ReleaseBuffer(m_UV3Buffer);
-		ReleaseBuffer(m_UV4Buffer);
-	}
-
-	StaticMeshVertexBuffer* StaticMeshVertexBuffer::Create( ID3D12GraphicsCommandList2* CommandList, StaticMeshVertexData& Source, const std::string& Name, bool CreateOnDefaultHeap )
+	StaticMeshVertexBuffer* StaticMeshVertexBuffer::Create( D3D12CommandList* CommandList, StaticMeshVertexData& Source, const std::string& Name, bool CreateOnDefaultHeap )
 	{
 		StaticMeshVertexBuffer* Result = new StaticMeshVertexBuffer;
 
@@ -107,51 +96,46 @@ namespace Drn
 			return Result;
 		}
 
-		Result->m_PositionBuffer = VertexBuffer::Create(CommandList, Source.GetPositions().data(), Source.GetVertexCount(), sizeof(Vector), Name + "_Position", CreateOnDefaultHeap);
+		auto CreateVertexBufferConditional = [](bool bCreate, D3D12CommandList* CmdList, TRefCountPtr<class RenderVertexBuffer>& Buffer, void* Data, uint32 Size, const std::string& Name)
+		{
+			if (bCreate)
+			{
+				uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+				RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, Data, ClearValueBinding::Black, Name);
+				Buffer = RenderVertexBuffer::Create(CmdList->GetParentDevice(), CmdList, Size, VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
+			}
+			else
+			{
+				Buffer = nullptr;
+			}
+		};
 
-		if (Source.HasNormals())
-			Result->m_NormalBuffer = VertexBuffer::Create(CommandList, Source.GetNormals().data(), Source.GetVertexCount(), sizeof(uint32), Name + "_Normal", CreateOnDefaultHeap);
-
-		if (Source.HasTangents())
-			Result->m_TangentBuffer = VertexBuffer::Create(CommandList, Source.GetTangents().data(), Source.GetVertexCount(), sizeof(uint32), Name + "_Tangent", CreateOnDefaultHeap);
-
-		if (Source.HasBitTangents())
-			Result->m_BitTangentBuffer = VertexBuffer::Create(CommandList, Source.GetBitTangents().data(), Source.GetVertexCount(), sizeof(uint32), Name + "_BitTangent", CreateOnDefaultHeap);
-
-		if (Source.HasColors())
-			Result->m_ColorBuffer = VertexBuffer::Create(CommandList, Source.GetColor().data(), Source.GetVertexCount(), sizeof(Color), Name + "_Color", CreateOnDefaultHeap);
-
-		if (Source.HasUV1())
-			Result->m_UV1Buffer = VertexBuffer::Create(CommandList, Source.GetUV1().data(), Source.GetVertexCount(), sizeof(Vector2Half), Name + "_UV1", CreateOnDefaultHeap);
-
-		if (Source.HasUV2())
-			Result->m_UV2Buffer = VertexBuffer::Create(CommandList, Source.GetUV2().data(), Source.GetVertexCount(), sizeof(Vector2Half), Name + "_UV2", CreateOnDefaultHeap);
-
-		if (Source.HasUV3())
-			Result->m_UV3Buffer = VertexBuffer::Create(CommandList, Source.GetUV3().data(), Source.GetVertexCount(), sizeof(Vector2Half), Name + "_UV3", CreateOnDefaultHeap);
-
-		if (Source.HasUV4())
-			Result->m_UV4Buffer = VertexBuffer::Create(CommandList, Source.GetUV4().data(), Source.GetVertexCount(), sizeof(Vector2Half), Name + "_UV4", CreateOnDefaultHeap);
+		CreateVertexBufferConditional(true, CommandList, Result->m_PositionBuffer, (void*)Source.GetPositions().data(), Source.GetVertexCount() * sizeof(Vector), "VB_Position");
+		CreateVertexBufferConditional(Source.HasNormals(), CommandList, Result->m_NormalBuffer, (void*)Source.GetNormals().data(), Source.GetVertexCount() * sizeof(uint32), "VB_Normal");
+		CreateVertexBufferConditional(Source.HasTangents(), CommandList, Result->m_TangentBuffer, (void*)Source.GetTangents().data(), Source.GetVertexCount() * sizeof(uint32), "VB_Tangent");
+		CreateVertexBufferConditional(Source.HasBitTangents(), CommandList, Result->m_BitTangentBuffer, (void*)Source.GetBitTangents().data(), Source.GetVertexCount() * sizeof(uint32), "VB_BitTangent");
+		CreateVertexBufferConditional(Source.HasColors(), CommandList, Result->m_ColorBuffer, (void*)Source.GetColor().data(), Source.GetVertexCount() * sizeof(Color), "VB_Color");
+		CreateVertexBufferConditional(Source.HasUV1(), CommandList, Result->m_UV1Buffer, (void*)Source.GetUV1().data(), Source.GetVertexCount() * sizeof(Vector2Half), "VB_UV1");
+		CreateVertexBufferConditional(Source.HasUV2(), CommandList, Result->m_UV2Buffer, (void*)Source.GetUV2().data(), Source.GetVertexCount() * sizeof(Vector2Half), "VB_UV2");
+		CreateVertexBufferConditional(Source.HasUV3(), CommandList, Result->m_UV3Buffer, (void*)Source.GetUV3().data(), Source.GetVertexCount() * sizeof(Vector2Half), "VB_UV3");
+		CreateVertexBufferConditional(Source.HasUV4(), CommandList, Result->m_UV4Buffer, (void*)Source.GetUV4().data(), Source.GetVertexCount() * sizeof(Vector2Half), "VB_UV4");
 
 		return Result;
 	}
 
-	void StaticMeshVertexBuffer::Bind( ID3D12GraphicsCommandList2* CommandList )
+	void StaticMeshVertexBuffer::Bind( D3D12CommandList* CommandList )
 	{
-		D3D12_VERTEX_BUFFER_VIEW Views[9] = 
-		{
-			m_PositionBuffer ? m_PositionBuffer->m_VertexBufferView : VertexBufferViewNull,
-			m_ColorBuffer ? m_ColorBuffer->m_VertexBufferView : VertexBufferViewNull,
-			m_NormalBuffer ? m_NormalBuffer->m_VertexBufferView : VertexBufferViewNull,
-			m_TangentBuffer ? m_TangentBuffer->m_VertexBufferView : VertexBufferViewNull,
-			m_BitTangentBuffer ? m_BitTangentBuffer->m_VertexBufferView : VertexBufferViewNull,
-			m_UV1Buffer ? m_UV1Buffer->m_VertexBufferView : VertexBufferViewNull,
-			m_UV2Buffer ? m_UV2Buffer->m_VertexBufferView : VertexBufferViewNull,
-			m_UV3Buffer ? m_UV3Buffer->m_VertexBufferView : VertexBufferViewNull,
-			m_UV4Buffer ? m_UV4Buffer->m_VertexBufferView : VertexBufferViewNull,
-		};
-
-		CommandList->IASetVertexBuffers(0, 9, Views);
+		uint16 const Strides[] = { sizeof(Vector), sizeof(Color), sizeof(uint32), sizeof(uint32),  sizeof(uint32), sizeof(Vector2Half), sizeof(Vector2Half), sizeof(Vector2Half), sizeof(Vector2Half)};
+		CommandList->SetStreamStrides(Strides);
+		CommandList->SetStreamSource(0, m_PositionBuffer, 0);
+		CommandList->SetStreamSource(1, m_ColorBuffer, 0);
+		CommandList->SetStreamSource(2, m_NormalBuffer, 0);
+		CommandList->SetStreamSource(3, m_TangentBuffer, 0);
+		CommandList->SetStreamSource(4, m_BitTangentBuffer, 0);
+		CommandList->SetStreamSource(5, m_UV1Buffer, 0);
+		CommandList->SetStreamSource(6, m_UV2Buffer, 0);
+		CommandList->SetStreamSource(7, m_UV3Buffer, 0);
+		CommandList->SetStreamSource(8, m_UV4Buffer, 0);
 	}
 
 	D3D12_VERTEX_BUFFER_VIEW StaticMeshVertexBuffer::VertexBufferViewNull;

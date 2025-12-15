@@ -128,4 +128,30 @@ namespace Drn
 		explicit ConditionalScopeResourceBarrier(D3D12CommandList* InCmdList, class RenderResource* pInResource, const D3D12_RESOURCE_STATES InDesired, const uint32 InSubresource);
 		~ConditionalScopeResourceBarrier();
 	};
+
+// -------------------------------------------------------------------------------------------------
+
+	class PrimitiveStats
+	{
+	public:
+
+		enum class EPrimitiveStatGroups : uint8
+		{
+			Triangle,
+			Line,
+			Max
+		};
+
+		static void UpdateStats(uint64 Count, D3D_PRIMITIVE_TOPOLOGY Topology);
+		static void UpdateStats(uint64 Count, EPrimitiveStatGroups Group);
+		static void ClearStats();
+
+		static std::string GetStatName(EPrimitiveStatGroups Group);
+		static int32 GetStatSize(EPrimitiveStatGroups Group);
+
+	private:
+#if RENDER_STATS
+		static std::atomic<uint64> Stats[(uint8)EPrimitiveStatGroups::Max];
+#endif
+	};
 }

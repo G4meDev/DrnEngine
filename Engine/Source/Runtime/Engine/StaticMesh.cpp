@@ -118,7 +118,7 @@ namespace Drn
 			Proxy.m_IndexBuffer = RenderIndexBuffer::Create(Renderer::Get()->GetDevice(), CommandList, sizeof(uint32), IndexCount * sizeof(uint32),
 				IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 
-			Proxy.m_StaticMeshVertexBuffer = StaticMeshVertexBuffer::Create(CommandList->GetD3D12CommandList(), Proxy.VertexData, MeshName);
+			Proxy.m_StaticMeshVertexBuffer = StaticMeshVertexBuffer::Create(CommandList, Proxy.VertexData, MeshName);
 		}
 
 		ClearRenderStateDirty();
@@ -246,10 +246,11 @@ namespace Drn
 
 	void StaticMeshSlotData::BindAndDraw( D3D12CommandList* CommandList ) const
 	{
-		m_StaticMeshVertexBuffer->Bind(CommandList->GetD3D12CommandList());
-		//CommandList->IASetIndexBuffer(&m_IndexBufferView);
-		CommandList->SetIndexBuffer(m_IndexBuffer->m_ResourceLocation, m_IndexBuffer->GetStride() == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-		CommandList->GetD3D12CommandList()->DrawIndexedInstanced(m_IndexBuffer->GetSize() / m_IndexBuffer->GetStride(), 1, 0, 0, 0);
+		uint32 VertexCount = VertexData.GetVertexCount();
+		uint32 PrimitiveCount = VertexData.GetIndices().size() == 0 ? 0 : VertexData.GetIndices().size() / 3;
+
+		m_StaticMeshVertexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
 
 	StaticMeshSlotData::StaticMeshSlotData()

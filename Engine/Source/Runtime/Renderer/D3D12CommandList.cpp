@@ -253,7 +253,7 @@ namespace Drn
 	void D3D12CommandList::DrawPrimitive( uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances )
 	{
 		drn_check(NumPrimitives > 0);
-		//RHI_DRAW_CALL_STATS_MGPU(GetGPUIndex(), StateCache.GetGraphicsPipelinePrimitiveType(), FMath::Max(NumInstances, 1U) * NumPrimitives);
+		PrimitiveStats::UpdateStats(std::max(NumInstances, 1U) * NumPrimitives, StateCache.GetGraphicsPipelinePrimitiveTopology());
 
 		NumInstances = std::max<uint32>(1, NumInstances);
 
@@ -268,8 +268,7 @@ namespace Drn
 	void D3D12CommandList::DrawIndexedPrimitive( RenderIndexBuffer* IndexBuffer, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances )
 	{
 		drn_check(NumPrimitives > 0);
-		//RHI_DRAW_CALL_STATS_MGPU(GetGPUIndex(), StateCache.GetGraphicsPipelinePrimitiveType(), FMath::Max(NumInstances, 1U) * NumPrimitives);
-
+		PrimitiveStats::UpdateStats(std::max(NumInstances, 1U) * NumPrimitives, StateCache.GetGraphicsPipelinePrimitiveTopology());
 
 		NumInstances = std::max<uint32>(1, NumInstances);
 
@@ -375,6 +374,59 @@ namespace Drn
 		{
 			CmdList->AddTransitionBarrier( pResource, Desired, Current, Subresource );
 		}
+	}
+
+// -----------------------------------------------------------------------------------------
+
+	std::atomic<uint64> PrimitiveStats::Stats[(uint8)EPrimitiveStatGroups::Max];
+
+	void PrimitiveStats::UpdateStats( uint64 Count, D3D_PRIMITIVE_TOPOLOGY Topology )
+	{
+#if RENDER_STATS
+		int32 Index = -1;
+		switch ( Topology )
+		{
+		case(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST):	Index = (uint8)EPrimitiveStatGroups::Triangle; break;
+		case(D3D_PRIMITIVE_TOPOLOGY_LINELIST):		Index = (uint8)EPrimitiveStatGroups::Line; break;
+
+		default: drn_check(false)
+		}
+
+		if (Index >= 0)
+			Stats[Index].fetch_add(Count);
+#endif
+	}
+
+	void PrimitiveStats::UpdateStats( uint64 Count, EPrimitiveStatGroups Group )
+	{
+#if RENDER_STATS
+		Stats[(uint8)Group].fetch_add(Count);
+#endif
+	}
+
+	void PrimitiveStats::ClearStats()
+	{
+#if RENDER_STATS
+		for (int32 i = 0; i < (uint8)EPrimitiveStatGroups::Max; i++)
+		{
+			Stats[i].store(0);
+		}
+#endif
+	}
+
+	std::string PrimitiveStats::GetStatName( EPrimitiveStatGroups Group )
+	{
+		switch ( Group )
+		{
+		case PrimitiveStats::EPrimitiveStatGroups::Triangle:	return "Triangle";
+		case PrimitiveStats::EPrimitiveStatGroups::Line:		return "Line";
+		default: drn_check(false); return "invalid";
+		}
+	}
+
+	int32 PrimitiveStats::GetStatSize( EPrimitiveStatGroups Group )
+	{
+		return Stats[(uint8)Group].load();
 	}
 
 }  // namespace Drn

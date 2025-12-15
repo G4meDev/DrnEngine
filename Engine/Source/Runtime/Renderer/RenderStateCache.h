@@ -49,6 +49,9 @@ namespace Drn
 		RenderStateCache()
 			: DeviceChild(nullptr)
 			, bNeedSetVB(false)
+			, bNeedSetPrimitiveTopology(false)
+			, bNeedSetScissorRects(false)
+			, bNeedSetViewports(false)
 		{}
 
 		virtual ~RenderStateCache()
@@ -65,6 +68,16 @@ namespace Drn
 
 		void SetStreamStrides(const uint16* Strides);
 
+		static void ValidateScissorRect(const D3D12_VIEWPORT& Viewport, const D3D12_RECT& ScissorRect);
+
+		void SetScissorRects(uint32 Count, const D3D12_RECT* const ScissorRects);
+		void SetScissorRect(const D3D12_RECT& ScissorRect);
+
+		void SetViewport(const D3D12_VIEWPORT& Viewport);
+		void SetViewports(uint32 Count, const D3D12_VIEWPORT* const Viewports);
+
+		void SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY InTopology);
+
 		void ApplyState();
 
 		inline uint32 GetVertexCountAndIncrementStat(uint32 NumPrimitives)
@@ -73,14 +86,31 @@ namespace Drn
 			return PipelineState.Graphics.PrimitiveTypeFactor * NumPrimitives + PipelineState.Graphics.PrimitiveTypeOffset;
 		}
 
+		inline uint32 GetNumTrianglesStat() const { return PipelineState.Graphics.NumTriangles; }
+		inline uint32 GetNumLinesStat() const { return PipelineState.Graphics.NumLines; }
+
+		inline D3D_PRIMITIVE_TOPOLOGY GetGraphicsPipelinePrimitiveTopology() const
+		{
+			return PipelineState.Graphics.CurrentPrimitiveTopology;
+		}
+
 	private:
 
 		void InternalSetStreamSource(ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset);
+		uint32 GetPrimitiveTopologyFactor(D3D_PRIMITIVE_TOPOLOGY InTopology);
+		uint32 GetPrimitiveTopologyOffset(D3D_PRIMITIVE_TOPOLOGY InTopology);
+		uint32* GetPrimitiveTopologyStat(D3D_PRIMITIVE_TOPOLOGY InTopology);
 
 		struct
 		{
 			struct
 			{
+				uint32	CurrentNumberOfViewports;
+				D3D12_VIEWPORT CurrentViewport[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
+
+				D3D12_RECT CurrentScissorRects[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
+				uint32 CurrentNumberOfScissorRects;
+
 				IndexBufferCache IBCache;
 				VertexBufferCache VBCache;
 
@@ -88,6 +118,8 @@ namespace Drn
 				uint32 PrimitiveTypeFactor;
 				uint32 PrimitiveTypeOffset;
 				uint32* CurrentPrimitiveStat;
+				uint32 NumTriangles;
+				uint32 NumLines;
 
 				uint16 StreamStrides[MAX_VERTEX_ELEMENT_COUT];
 			} Graphics;
@@ -102,6 +134,9 @@ namespace Drn
 		} PipelineState;
 
 		bool bNeedSetVB;
+		bool bNeedSetViewports;
+		bool bNeedSetScissorRects;
+		bool bNeedSetPrimitiveTopology;
 
 		D3D12CommandList* CmdList;
 	};

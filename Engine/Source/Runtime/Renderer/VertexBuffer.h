@@ -26,26 +26,21 @@ namespace Drn
 		StaticMeshVertexBuffer();
 		virtual ~StaticMeshVertexBuffer();
 
-		static StaticMeshVertexBuffer* Create(ID3D12GraphicsCommandList2* CommandList, StaticMeshVertexData& Source, const std::string& Name, bool CreateOnDefaultHeap = true);
+		static StaticMeshVertexBuffer* Create(class D3D12CommandList* CommandList, StaticMeshVertexData& Source, const std::string& Name, bool CreateOnDefaultHeap = true);
 
-		void Bind(ID3D12GraphicsCommandList2* CommandList);
+		void Bind(class D3D12CommandList* CommandList);
 
-		class VertexBuffer* m_PositionBuffer;
-		class VertexBuffer* m_NormalBuffer;
-		class VertexBuffer* m_TangentBuffer;
-		class VertexBuffer* m_BitTangentBuffer;
-		class VertexBuffer* m_ColorBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_PositionBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_NormalBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_TangentBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_BitTangentBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_ColorBuffer;
 
-		class VertexBuffer* m_UV1Buffer;
-		class VertexBuffer* m_UV2Buffer;
-		class VertexBuffer* m_UV3Buffer;
-		class VertexBuffer* m_UV4Buffer;
+		TRefCountPtr<class RenderVertexBuffer> m_UV1Buffer;
+		TRefCountPtr<class RenderVertexBuffer> m_UV2Buffer;
+		TRefCountPtr<class RenderVertexBuffer> m_UV3Buffer;
+		TRefCountPtr<class RenderVertexBuffer> m_UV4Buffer;
 
 		static D3D12_VERTEX_BUFFER_VIEW VertexBufferViewNull;
 	};
-
-	//class VertexBuffer_New : public SimpleRenderResource
-	//{
-	//	
-	//};
 }

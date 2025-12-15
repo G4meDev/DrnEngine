@@ -446,6 +446,8 @@ namespace Drn
 
 	void Renderer::InitRender(float DeltaTime)
 	{
+		PrimitiveStats::ClearStats();
+
 		SimpleRenderResource::FlushPendingDeletes();
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
 		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(NUM_BACKBUFFERS);
