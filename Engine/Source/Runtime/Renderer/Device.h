@@ -41,6 +41,7 @@ namespace Drn
 		void ReleaseCompletedResources();
 		void ReleaseResources();
 
+		inline uint32 QueueSize() const { return DeferredReleaseQueue.size(); }
 
 		DeferredDeletionQueue(class Device* InParent);
 		~DeferredDeletionQueue();
@@ -60,6 +61,7 @@ namespace Drn
 
 		inline DefaultBufferAllocator& GetDefaultBufferAllocator() { return DefaultBufferAllocator; }
 		inline FastAllocator& GetDefaultFastAllocator() { return DefaultFastAllocator; }
+		inline DynamicHeapAllocator& GetDynamicHeapAllocator() { return DynamicHeapAllocator; }
 
 		void CreateCommittedResource(const D3D12_RESOURCE_DESC& InDesc, const D3D12_HEAP_PROPERTIES& HeapProps, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking,
 			const D3D12_CLEAR_VALUE* ClearValue, class RenderResource** ppOutResource, const std::string& Name);
@@ -84,7 +86,7 @@ namespace Drn
 		DeferredDeletionQueue m_DeferredDeletionQueue;
 		DefaultBufferAllocator DefaultBufferAllocator;
 		FastAllocator DefaultFastAllocator;
-
+		DynamicHeapAllocator DynamicHeapAllocator;
 
 		template <typename BufferType>
 		static void UpdateBufferStats(ResourceLocation* Location, bool bAllocating);

@@ -89,6 +89,11 @@ namespace Drn
 		inline uint32 GetNumTrianglesStat() const { return PipelineState.Graphics.NumTriangles; }
 		inline uint32 GetNumLinesStat() const { return PipelineState.Graphics.NumLines; }
 
+		inline const D3D12_VIEWPORT& GetViewport(int32 Index = 0) const
+		{
+			return PipelineState.Graphics.CurrentViewport[Index];
+		}
+
 		inline D3D_PRIMITIVE_TOPOLOGY GetGraphicsPipelinePrimitiveTopology() const
 		{
 			return PipelineState.Graphics.CurrentPrimitiveTopology;

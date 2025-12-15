@@ -97,12 +97,11 @@ namespace Drn
 	private:
 
 		void RecalculateVertexData();
-		void UploadVertexBuffer();
+		void UploadVertexBuffer(class D3D12CommandList* CommandList);
 
 		LineBatchComponent* m_LineComponent;
 
-		Resource* m_VertexBufferResource;
-		D3D12_VERTEX_BUFFER_VIEW m_VertexBufferView;
+		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
 
 		std::vector<InputLayout_LineColorThickness> m_VertexData;
 		uint32 m_VertexCount;

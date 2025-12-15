@@ -92,9 +92,15 @@ namespace Drn
 
 		// TODO: remove. this should happen when a new pipeline state is set
 		void SetStreamStrides(const uint16* Strides);
+		void SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY Topology);
+
+		void SetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ);
+		void SetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY);
 
 		void DrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances);
 		void DrawIndexedPrimitive(class RenderIndexBuffer* IndexBuffer, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances);
+
+		void ClearState();
 
 	protected:
 

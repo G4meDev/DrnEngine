@@ -2,6 +2,7 @@
 #include "LineBatchComponent.h"
 
 #include "Runtime/Core/Application.h"
+#include "Runtime/Renderer/RenderBuffer.h"
 #include <algorithm/for_each.hpp>
 
 using namespace Microsoft::WRL;
@@ -185,7 +186,7 @@ namespace Drn
 	LineBatchSceneProxy::LineBatchSceneProxy( LineBatchComponent* InLineBatchComponent )
 		: PrimitiveSceneProxy(InLineBatchComponent)
 		, m_LineComponent(InLineBatchComponent)
-		, m_VertexBufferResource(nullptr)
+		, m_VertexBuffer(nullptr)
 		, m_Thickness(InLineBatchComponent->m_Thickness)
 		, m_VertexCount(0)
 	{
@@ -193,12 +194,7 @@ namespace Drn
 	}
 
 	LineBatchSceneProxy::~LineBatchSceneProxy()
-	{
-		if (m_VertexBufferResource)
-		{
-			m_VertexBufferResource->ReleaseBufferedResource();
-		}
-	}
+	{}
 
 	void LineBatchSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
@@ -243,7 +239,7 @@ namespace Drn
 		}
 		
 		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
+		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
 		if (m_Thickness)
 		{
 			CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
@@ -254,25 +250,17 @@ namespace Drn
 		}
 		
 		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant( 0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0 );
-		
-		CommandList->GetD3D12CommandList()->IASetVertexBuffers( 0, 1, &m_VertexBufferView );
-		CommandList->GetD3D12CommandList()->DrawInstanced( m_VertexCount, 1, 0, 0);
+
+		uint16 const Strides[] = { sizeof(InputLayout_LineColorThickness) };
+		CommandList->SetStreamStrides(Strides);
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
+		CommandList->DrawPrimitive(0, m_VertexCount / 2, 1);
 	}
 
 #endif
 
 	void LineBatchSceneProxy::InitResources( D3D12CommandList* CommandList )
-	{
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
-		m_VertexBufferResource = Resource::Create( D3D12_HEAP_TYPE_UPLOAD,
-			CD3DX12_RESOURCE_DESC::Buffer( sizeof(InputLayout_LineColorThickness) * MaxNumVertex),
-			D3D12_RESOURCE_STATE_GENERIC_READ, false );
-
-#if D3D12_Debug_INFO
-		m_VertexBufferResource->SetName("LineBatchVertexBuffer");
-#endif
-	}
+	{}
 
 	void LineBatchSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
@@ -281,7 +269,7 @@ namespace Drn
 		if (GetPrimitive()->IsRenderStateDirty())
 		{
 			RecalculateVertexData();
-			UploadVertexBuffer();
+			UploadVertexBuffer(CommandList);
 
 			GetPrimitive()->ClearRenderStateDirty();
 		}
@@ -331,23 +319,16 @@ namespace Drn
 		};
 	}
 
-	void LineBatchSceneProxy::UploadVertexBuffer()
+	void LineBatchSceneProxy::UploadVertexBuffer(D3D12CommandList* CommandList)
 	{
 		if ( m_VertexCount > 0 )
 		{
 			SCOPE_STAT( "CopyBuffer" );
 
 			{
-				UINT8*        pVertexDataBegin;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_VertexBufferResource->GetD3D12Resource()->Map( 0, &readRange, reinterpret_cast<void**>( &pVertexDataBegin ) );
-				uint32 ByteSize = m_VertexCount * sizeof( InputLayout_LineColorThickness );
-				memcpy( pVertexDataBegin, &m_VertexData[0], ByteSize );
-				m_VertexBufferResource->GetD3D12Resource()->Unmap( 0, nullptr );
-
-				m_VertexBufferView.BufferLocation = m_VertexBufferResource->GetD3D12Resource()->GetGPUVirtualAddress();
-				m_VertexBufferView.StrideInBytes  = sizeof( InputLayout_LineColorThickness );
-				m_VertexBufferView.SizeInBytes    = ByteSize;
+				uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Dynamic;
+				RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, m_VertexData.data(), ClearValueBinding::Black, "VB_LineBatchVertexBuffer");
+				m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(InputLayout_LineColorThickness) * m_VertexCount, VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
 			}
 
 			m_HasValidData = true;

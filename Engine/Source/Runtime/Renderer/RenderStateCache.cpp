@@ -23,11 +23,15 @@ namespace Drn
 		PipelineState.Graphics.IBCache.Clear();
 		PipelineState.Graphics.VBCache.Clear();
 
-		// TODO: remove
-		PipelineState.Graphics.CurrentPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		PipelineState.Graphics.CurrentPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 		PipelineState.Graphics.CurrentPrimitiveStat = nullptr;
 		PipelineState.Graphics.PrimitiveTypeFactor = 3;
 		PipelineState.Graphics.PrimitiveTypeOffset = 0;
+
+		memset(PipelineState.Graphics.CurrentViewport, 0, sizeof(PipelineState.Graphics.CurrentViewport));
+		PipelineState.Graphics.CurrentNumberOfViewports = 0;
+
+		PipelineState.Graphics.CurrentNumberOfScissorRects = 0;
 	}
 
 	void RenderStateCache::InheritState( const RenderStateCache& AncestralCache )
@@ -215,7 +219,7 @@ namespace Drn
 		case(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST):	return 3;
 		case(D3D_PRIMITIVE_TOPOLOGY_LINELIST):		return 2;
 
-		default: drn_check(false)
+		default: drn_check(false); return 0;
 		}
 	}
 
@@ -226,7 +230,7 @@ namespace Drn
 		case(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST):	return 0;
 		case(D3D_PRIMITIVE_TOPOLOGY_LINELIST):		return 0;
 
-		default: drn_check(false)
+		default: drn_check(false); return 0;
 		}
 	}
 

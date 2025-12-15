@@ -448,10 +448,12 @@ namespace Drn
 	{
 		PrimitiveStats::ClearStats();
 
+		// TODO: move to end of frame
 		SimpleRenderResource::FlushPendingDeletes();
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
 		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(NUM_BACKBUFFERS);
 		m_Device->GetDefaultFastAllocator().CleanupPages(NUM_BACKBUFFERS);
+		m_Device->GetDynamicHeapAllocator().CleanUpAllocations(2);
 
 		SCOPE_STAT( "InitRender" );
 

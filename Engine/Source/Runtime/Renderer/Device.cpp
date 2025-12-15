@@ -6,12 +6,17 @@
 
 LOG_DEFINE_CATEGORY( LogDevice, "Device" );
 
+#define DEFAULT_CONTEXT_UPLOAD_POOL_SIZE (8 * 1024 * 1024)
+#define DEFAULT_CONTEXT_UPLOAD_POOL_MAX_ALLOC_SIZE (4 * 1024 * 1024)
+#define DEFAULT_CONTEXT_UPLOAD_POOL_ALIGNMENT (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT)
+
 namespace Drn
 {
 	Device::Device()
 		: m_DeferredDeletionQueue(this)
 		, DefaultBufferAllocator(this)
 		, DefaultFastAllocator(this, D3D12_HEAP_TYPE_UPLOAD, 1024 * 1024 * 4)
+		, DynamicHeapAllocator(this, "Upload Buffer Allocator", RenderBuddyAllocator::EAllocationStrategy::kManualSubAllocation, DEFAULT_CONTEXT_UPLOAD_POOL_MAX_ALLOC_SIZE, DEFAULT_CONTEXT_UPLOAD_POOL_SIZE, DEFAULT_CONTEXT_UPLOAD_POOL_ALIGNMENT)
 	{
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = 0;
@@ -171,22 +176,22 @@ namespace Drn
 
 		const bool bIsDynamic = InUsage & (uint32)EBufferUsageFlags::AnyDynamic;
 
-		//if (bIsDynamic)
-		//{
-		//	//drn_check(!bNeedsStateTracking);
-		//	void* pData = GetUploadHeapAllocator(Device->GetGPUIndex()).AllocUploadResource(Size, Alignment, Location);
-		//	drn_check(Location.GetSize() == Size);
-		//
-		//	if (CreateInfo.ResourceArray)
-		//	{
-		//		const void* InitialData = CreateInfo.ResourceArray->GetResourceData();
-		//
-		//		check(Size == CreateInfo.ResourceArray->GetResourceDataSize());
-		//		// Handle initial data
-		//		FMemory::Memcpy(pData, InitialData, Size);
-		//	}
-		//}
-		//else
+		if (bIsDynamic)
+		{
+			drn_check(!bNeedsStateTracking);
+			void* pData = GetDynamicHeapAllocator().AllocUploadResource(Size, Alignment, Location);
+			drn_check(Location.GetSize() == Size);
+		
+			if (CreateInfo.ResourceArray)
+			{
+				const void* InitialData = CreateInfo.ResourceArray;
+			
+				//check(Size == CreateInfo.ResourceArray->GetResourceDataSize());
+				// Handle initial data
+				memcpy(pData, InitialData, Size);
+			}
+		}
+		else
 		{
 			GetDefaultBufferAllocator().AllocDefaultResource(D3D12_HEAP_TYPE_DEFAULT, InDesc, (EBufferUsageFlags)InUsage, bNeedsStateTracking, Location, Alignment, CreateInfo.DebugName);
 			drn_check(Location.GetSize() == Size);

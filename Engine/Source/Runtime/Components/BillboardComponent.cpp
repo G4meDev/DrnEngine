@@ -96,7 +96,7 @@ namespace Drn
 #if WITH_EDITOR
 	void BillboardSceneProxy::RenderHitProxyPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
 		
@@ -112,7 +112,7 @@ namespace Drn
 
 	void BillboardSceneProxy::RenderEditorPrimitivePass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
 		

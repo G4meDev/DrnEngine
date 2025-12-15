@@ -250,6 +250,41 @@ namespace Drn
 		StateCache.SetStreamStrides(Strides);
 	}
 
+	void D3D12CommandList::SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY Topology )
+	{
+		StateCache.SetPrimitiveTopology(Topology);
+	}
+
+	void D3D12CommandList::SetViewport( float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ )
+	{
+		drn_check(MinX <= (uint32)D3D12_VIEWPORT_BOUNDS_MAX);
+		drn_check(MinY <= (uint32)D3D12_VIEWPORT_BOUNDS_MAX);
+		drn_check(MaxX <= (uint32)D3D12_VIEWPORT_BOUNDS_MAX);
+		drn_check(MaxY <= (uint32)D3D12_VIEWPORT_BOUNDS_MAX);
+
+		D3D12_VIEWPORT Viewport = { MinX, MinY, (MaxX - MinX), (MaxY - MinY), MinZ, MaxZ };
+		if (Viewport.Width > 0 && Viewport.Height > 0)
+		{
+			StateCache.SetViewport(Viewport);
+			SetScissorRect(true, MinX, MinY, MaxX, MaxY);
+		}
+	}
+
+	void D3D12CommandList::SetScissorRect( bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY )
+	{
+		if (bEnable)
+		{
+			const CD3DX12_RECT ScissorRect(MinX, MinY, MaxX, MaxY);
+			StateCache.SetScissorRect(ScissorRect);
+		}
+		else
+		{
+			const D3D12_VIEWPORT& Viewport = StateCache.GetViewport();
+			const CD3DX12_RECT ScissorRect((LONG) Viewport.TopLeftX, (LONG) Viewport.TopLeftY, (LONG) Viewport.TopLeftX + (LONG) Viewport.Width, (LONG) Viewport.TopLeftY + (LONG) Viewport.Height);
+			StateCache.SetScissorRect(ScissorRect);
+		}
+	}
+
 	void D3D12CommandList::DrawPrimitive( uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances )
 	{
 		drn_check(NumPrimitives > 0);
@@ -286,6 +321,11 @@ namespace Drn
 		StateCache.ApplyState();
 
 		m_CommandList->DrawIndexedInstanced(IndexCount, NumInstances, StartIndex, BaseVertexIndex, FirstInstance);
+	}
+
+	void D3D12CommandList::ClearState()
+	{
+		StateCache.ClearState();
 	}
 
 	void D3D12CommandList::FlushBarriers()

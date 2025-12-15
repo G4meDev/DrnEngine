@@ -877,4 +877,59 @@ namespace Drn
 		PagePool.CleanupPages(FrameLag);
 	}
 
+// -------------------------------------------------------------------------------------------------------------------------
+
+	DynamicHeapAllocator::DynamicHeapAllocator( class Device* InParent, const std::string& InName, RenderBuddyAllocator::EAllocationStrategy InAllocationStrategy,
+		uint32 InMaxSizeForPooling, uint32 InMaxBlockSize, uint32 InMinBlockSize )
+		: DeviceChild(InParent)
+		, Allocator(InParent, RenderResourceAllocator::FInitConfig{D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS, D3D12_RESOURCE_FLAG_NONE, D3D12_RESOURCE_STATE_GENERIC_READ}
+		, InName, InAllocationStrategy, InMaxSizeForPooling, InMaxBlockSize, InMinBlockSize)
+	{}
+
+	void DynamicHeapAllocator::Init()
+	{}
+
+	void* DynamicHeapAllocator::AllocUploadResource( uint32 Size, uint32 Alignment, ResourceLocation& ResourceLocation )
+	{
+		Device* Device = GetParentDevice();
+		ResourceLocation.Clear();
+
+		if (Size == 0)
+		{
+			Size = 16;
+		}
+	
+		if (Device->GetDeferredDeletionQueue().QueueSize() > 128)
+		{
+			//Device->GetDeferredDeletionQueue().ReleaseResources(true);
+			//Allocator.CleanUpAllocations(0);
+		}
+	
+		if (Size <= Allocator.GetMaximumAllocationSizeForPooling())
+		{
+			if (Allocator.TryAllocate(Size, Alignment, ResourceLocation))
+			{
+				return ResourceLocation.GetMappedBaseAddress();
+			}
+		}
+
+		RenderResource* NewResource = nullptr;
+
+		D3D12_RESOURCE_STATES InitalState = D3D12_RESOURCE_STATE_GENERIC_READ;
+		Device->CreateBuffer(D3D12_HEAP_TYPE_UPLOAD, Size, InitalState, false, &NewResource, "Stand Alone Upload Buffer", D3D12_RESOURCE_FLAG_NONE);
+
+		ResourceLocation.AsStandAlone(NewResource, Size);
+		return ResourceLocation.GetMappedBaseAddress();
+	}
+
+	void DynamicHeapAllocator::CleanUpAllocations( uint64 InFrameLag )
+	{
+		Allocator.CleanUpAllocations(InFrameLag);
+	}
+
+	void DynamicHeapAllocator::Destroy()
+	{
+		Allocator.Destroy();
+	}
+
         }  // namespace Drn

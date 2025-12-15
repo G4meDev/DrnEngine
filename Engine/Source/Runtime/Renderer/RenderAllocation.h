@@ -314,4 +314,26 @@ namespace Drn
 
 		CriticalSection CS;
 	};
+
+// ------------------------------------------------------------------------------------------------
+
+	class DynamicHeapAllocator : public DeviceChild
+	{
+	public:
+
+		DynamicHeapAllocator(class Device* InParent, const std::string& InName, RenderBuddyAllocator::EAllocationStrategy InAllocationStrategy,
+			uint32 InMaxSizeForPooling, uint32 InMaxBlockSize, uint32 InMinBlockSize);
+
+		void Init();
+
+		void* AllocUploadResource(uint32 Size, uint32 Alignment, ResourceLocation& ResourceLocation);
+
+		void CleanUpAllocations(uint64 InFrameLag);
+
+		void Destroy();
+
+	private:
+
+		RenderMultiBuddyAllocator Allocator;
+	};
 }
