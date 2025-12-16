@@ -28,8 +28,12 @@ namespace Drn
 		bool Draw();
 #endif
 
+		static Vector ZeroVector;
+		static Vector OneVector;
+
+		union { struct { float X, Y; }; XMFLOAT2 m_Vector; };
+
 	private:
-		XMFLOAT2 m_Vector;
 
 		friend class Vector;
 		friend class Quat;

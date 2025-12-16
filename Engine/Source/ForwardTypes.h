@@ -35,6 +35,7 @@ private:
 #include "Runtime/Math/Vector2.h"
 #include "Runtime/Math/Vector2Half.h"
 #include "Runtime/Math/Box.h"
+#include "Runtime/Math/Box2D.h"
 #include "Runtime/Math/Sphere.h"
 #include "Runtime/Math/Quat.h"
 #include "Runtime/Math/Rotator.h"

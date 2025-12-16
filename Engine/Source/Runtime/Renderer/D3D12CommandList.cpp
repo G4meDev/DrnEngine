@@ -4,6 +4,19 @@
 
 namespace Drn
 {
+	static void GetReadBackHeapDescImpl(D3D12_PLACED_SUBRESOURCE_FOOTPRINT& OutFootprint, ID3D12Device* InDevice, D3D12_RESOURCE_DESC const& InResourceDesc, uint32 InSubresource)
+	{
+		uint64 Offset = 0;
+		if (InSubresource > 0)
+		{
+			InDevice->GetCopyableFootprints(&InResourceDesc, 0, InSubresource, 0, nullptr, nullptr, nullptr, &Offset);
+			Offset = Align(Offset, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+		}
+		InDevice->GetCopyableFootprints(&InResourceDesc, InSubresource, 1, Offset, &OutFootprint, nullptr, nullptr, nullptr);
+
+		drn_check(OutFootprint.Footprint.Width > 0 && OutFootprint.Footprint.Height > 0);
+	}
+
 	int32 ResourceBarrierBatcher::AddTransition( class RenderResource* pResource, D3D12_RESOURCE_STATES Before, D3D12_RESOURCE_STATES After, uint32 Subresource )
 	{
 		drn_check( Before != After );
@@ -141,6 +154,129 @@ namespace Drn
 	void D3D12CommandList::ClearColorTexture( RenderTextureBase* InTexture, int32 MipIndex, int32 SliceIndex )
 	{
 		ClearColorTexture(InTexture, MipIndex, SliceIndex, InTexture->GetClearColor());
+	}
+
+	void D3D12CommandList::CopyTextureRegion( RenderTextureBase* SourceTexture, RenderTextureBase* DestTexture, const D3D12_BOX& SourceBox, uint32 DestX, uint32 DestY, uint32 DestZ )
+	{
+		CD3DX12_TEXTURE_COPY_LOCATION DestCopyLocation(DestTexture->GetResource()->GetResource(), 0);
+		CD3DX12_TEXTURE_COPY_LOCATION SourceCopyLocation(SourceTexture->GetResource()->GetResource(), 0);
+
+		ConditionalScopeResourceBarrier ConditionalScopeResourceBarrierDest(this, DestTexture->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, DestCopyLocation.SubresourceIndex);
+		ConditionalScopeResourceBarrier ConditionalScopeResourceBarrierSource(this, SourceTexture->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, SourceCopyLocation.SubresourceIndex);
+
+		FlushBarriers();
+		m_CommandList->CopyTextureRegion(
+			&DestCopyLocation,
+			DestX, DestY, DestZ,
+			&SourceCopyLocation,
+			&SourceBox);
+
+		//CommandListHandle.UpdateResidency(SourceTexture->GetResource());
+		//CommandListHandle.UpdateResidency(GetResource());
+	}
+
+	void D3D12CommandList::CopySubTextureRegion( RenderTexture2D* SourceTexture, RenderTexture2D* DestTexture, Box2D SourceBox, Box2D DestinationBox )
+	{
+		const uint32 XOffset = (uint32)( DestinationBox.Min.X );
+		const uint32 YOffset = (uint32)( DestinationBox.Min.Y );
+		const uint32 Width   = (uint32)( SourceBox.Max.X - SourceBox.Min.X );
+		const uint32 Height  = (uint32)( SourceBox.Max.Y - SourceBox.Min.Y );
+
+		const CD3DX12_BOX SourceBoxD3D( (LONG)SourceBox.Min.X, (LONG)SourceBox.Min.Y, (LONG)SourceBox.Max.X, (LONG)SourceBox.Max.Y );
+
+		CD3DX12_TEXTURE_COPY_LOCATION DestCopyLocation( DestTexture->GetResource()->GetResource(), 0 );
+		CD3DX12_TEXTURE_COPY_LOCATION SourceCopyLocation( SourceTexture->GetResource()->GetResource(), 0 );
+
+		m_CommandList->CopyTextureRegion(&DestCopyLocation, XOffset, YOffset, 0, &SourceCopyLocation, &SourceBoxD3D);
+	}
+
+	void D3D12CommandList::CopyTexture( RenderTextureBase* SourceTexture, RenderTextureBase* DestTexture, const CopyTextureInfo& CopyInfo )
+	{
+		ConditionalScopeResourceBarrier ConditionalScopeResourceBarrierDest(this, DestTexture->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+		ConditionalScopeResourceBarrier ConditionalScopeResourceBarrierSource(this, SourceTexture->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+		FlushBarriers();
+
+		const bool bReadback = (DestTexture->GetFlags() & ETextureCreateFlags::CPUReadback) != 0;
+
+		if (CopyInfo.Size != IntVector::Zero || bReadback)
+		{
+			const IntVector CopySize = CopyInfo.Size == IntVector::Zero ? SourceTexture->GetSizeXYZ() : CopyInfo.Size;
+
+			CD3DX12_BOX SourceBoxD3D(
+				CopyInfo.SourcePosition.X,
+				CopyInfo.SourcePosition.Y,
+				CopyInfo.SourcePosition.Z,
+				CopyInfo.SourcePosition.X + CopySize.X,
+				CopyInfo.SourcePosition.Y + CopySize.Y,
+				CopyInfo.SourcePosition.Z + CopySize.Z
+			);
+
+			D3D12_TEXTURE_COPY_LOCATION Src;
+			Src.pResource = SourceTexture->GetResource()->GetResource();
+			Src.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+
+			D3D12_TEXTURE_COPY_LOCATION Dst;
+			Dst.pResource = DestTexture->GetResource()->GetResource();
+			Dst.Type = bReadback ? D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT : D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+
+			D3D12_RESOURCE_DESC DstDesc = {};
+			IntVector TextureSize = DestTexture->GetSizeXYZ();
+			DstDesc.Dimension = DestTexture->Is3D() ? D3D12_RESOURCE_DIMENSION_TEXTURE3D : D3D12_RESOURCE_DIMENSION_TEXTURE2D; 
+			DstDesc.Width = TextureSize.X;
+			DstDesc.Height = TextureSize.Y;
+			DstDesc.DepthOrArraySize = TextureSize.Z;
+			DstDesc.MipLevels = DestTexture->GetNumMips();
+			DstDesc.Format = DestTexture->GetFormat();
+			DstDesc.SampleDesc.Count = DestTexture->GetNumSamples();
+
+			for (uint32 SliceIndex = 0; SliceIndex < CopyInfo.NumSlices; ++SliceIndex)
+			{
+				uint32 SourceSliceIndex = CopyInfo.SourceSliceIndex + SliceIndex;
+				uint32 DestSliceIndex   = CopyInfo.DestSliceIndex   + SliceIndex;
+
+				for (uint32 MipIndex = 0; MipIndex < CopyInfo.NumMips; ++MipIndex)
+				{
+					uint32 SourceMipIndex = CopyInfo.SourceMipIndex + MipIndex;
+					uint32 DestMipIndex   = CopyInfo.DestMipIndex   + MipIndex;
+
+					uint32 SizeX = std::max(CopySize.X >> MipIndex, 1);
+					uint32 SizeY = std::max(CopySize.Y >> MipIndex, 1);
+					uint32 SizeZ = std::max(CopySize.Z >> MipIndex, 1);
+
+					SourceBoxD3D.right  = CopyInfo.SourcePosition.X + SizeX;
+					SourceBoxD3D.bottom = CopyInfo.SourcePosition.Y + SizeY;
+					SourceBoxD3D.back   = CopyInfo.SourcePosition.Z + SizeZ;
+
+					Src.SubresourceIndex = CalcSubresource(SourceMipIndex, SourceSliceIndex, SourceTexture->GetNumMips());
+					Dst.SubresourceIndex = CalcSubresource(DestMipIndex, DestSliceIndex, DestTexture->GetNumMips());
+
+					if (bReadback)
+					{
+						GetReadBackHeapDescImpl(Dst.PlacedFootprint, GetParentDevice()->GetD3D12Device(), DstDesc, Dst.SubresourceIndex);
+					}
+
+					m_CommandList->CopyTextureRegion(
+						&Dst, 
+						CopyInfo.DestPosition.X,
+						CopyInfo.DestPosition.Y,
+						CopyInfo.DestPosition.Z,
+						&Src,
+						&SourceBoxD3D
+					);
+				}
+			}
+		}
+		else
+		{
+			m_CommandList->CopyResource(DestTexture->GetResource()->GetResource(), SourceTexture->GetResource()->GetResource());
+		}
+
+		//CommandListHandle.UpdateResidency(SourceTexture->GetResource());
+		//CommandListHandle.UpdateResidency(DestTexture->GetResource());
+		//
+		//ConditionalFlushCommandList();
+
+		//DestTexture->SetReadBackListHandle(CommandListHandle);
 	}
 
 	void D3D12CommandList::AddTransitionBarrier( RenderResource* pResource, D3D12_RESOURCE_STATES Before, D3D12_RESOURCE_STATES After, uint32 Subresource )

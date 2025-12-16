@@ -35,7 +35,7 @@ namespace Drn
 		// TODO: Add event to trigger
 		IntPoint ScreenPos;
 		bool Initalized = false;
-		TRefCountPtr<ID3D12Resource> ReadbackBuffer;
+		TRefCountPtr<class RenderTexture2D> ReadbackBuffer;
 		uint64 FenceValue = 0;
 	};
 

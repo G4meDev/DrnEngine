@@ -9,13 +9,22 @@ namespace Drn
 		IntVector(int Value) : IntVector(Value, Value, Value) {}
 		IntVector() : IntVector(0) {}
 
+		bool operator==( const IntVector& Other ) const;
+		bool operator!=( const IntVector& Other ) const;
+
 		inline int GetX() const { return X; }
 		inline int GetY() const { return Y; }
 		inline int GetZ() const { return Z; }
 
-	private:
+
+	public:
 		int X;
 		int Y;
 		int Z;
+
+		static IntVector Zero;
+		static IntVector One;
+
+	private:
 	};
 }

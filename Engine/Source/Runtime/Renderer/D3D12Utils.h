@@ -59,6 +59,11 @@ inline bool IsCPUInaccessible(D3D12_HEAP_TYPE HeapType, const D3D12_HEAP_PROPERT
 	return HeapType == D3D12_HEAP_TYPE_DEFAULT;
 }
 
+inline uint32 CalcSubresource(uint32 MipSlice, uint32 ArraySlice, uint32 MipLevels)
+{
+	return MipSlice + ArraySlice * MipLevels;
+}
+
 inline D3D12_RESOURCE_STATES DetermineInitialResourceState(D3D12_HEAP_TYPE HeapType, const D3D12_HEAP_PROPERTIES *pCustomHeapProperties = nullptr)
 {
 	if (HeapType == D3D12_HEAP_TYPE_DEFAULT || IsCPUWritable(HeapType, pCustomHeapProperties))

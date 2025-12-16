@@ -370,25 +370,26 @@ namespace Drn
 
 		switch (HeapType)
 		{
-		//case D3D12_HEAP_TYPE_READBACK:
-		//	{
-		//		uint64 Size = 0;
-		//		pDevice->GetD3D12Device()->GetCopyableFootprints(&TextureDesc, 0, TextureDesc.MipLevels * TextureDesc.DepthOrArraySize, 0, nullptr, nullptr, nullptr, &Size);
-		//
-		//		RenderResource* Resource = nullptr;
-		//		VERIFYD3D12CREATETEXTURERESULT(Adapter->CreateBuffer(HeapType, pDevice->GetGPUMask(), pDevice->GetVisibilityMask(), Size, &Resource, Name), TextureDesc, pDevice->GetDevice());
-		//		OutTexture2D->AsStandAlone(Resource);
-		//
-		//		if (IsCPUWritable(HeapType))
-		//		{
-		//			OutTexture2D->SetMappedBaseAddress(Resource->Map());
-		//		}
-		//	}
-		//	break;
+		case D3D12_HEAP_TYPE_READBACK:
+			{
+				uint64 Size = 0;
+				pDevice->GetD3D12Device()->GetCopyableFootprints(&TextureDesc, 0, TextureDesc.MipLevels * TextureDesc.DepthOrArraySize, 0, nullptr, nullptr, nullptr, &Size);
+		
+				RenderResource* Resource = nullptr;
+				pDevice->CreateBuffer(HeapType, Size, D3D12_RESOURCE_STATE_COMMON, bNeedsStateTracking, &Resource, Name, D3D12_RESOURCE_FLAG_NONE);
+				OutTexture2D->AsStandAlone(Resource);
+
+				if (IsCPUWritable(HeapType))
+				{
+					OutTexture2D->SetMappedBaseAddress(Resource->Map());
+				}
+			}
+		 	break;
 
 		case D3D12_HEAP_TYPE_DEFAULT:
-			//VERIFYD3D12CREATETEXTURERESULT(pDevice->GetTextureAllocator().AllocateTexture(TextureDesc, ClearValue, Format, *OutTexture2D, InitialState, Name), TextureDesc, pDevice->GetDevice());
 
+			// TODO: add texture allocator
+			//VERIFYD3D12CREATETEXTURERESULT(pDevice->GetTextureAllocator().AllocateTexture(TextureDesc, ClearValue, Format, *OutTexture2D, InitialState, Name), TextureDesc, pDevice->GetDevice());
 			pDevice->CreateCommittedResource(TextureDesc, CD3DX12_HEAP_PROPERTIES(HeapType), InitialState, bNeedsStateTracking, ClearValue, &NewResource, Name);
 
 			OutTexture2D->SetType(ResourceLocation::ResourceLocationType::eStandAlone);

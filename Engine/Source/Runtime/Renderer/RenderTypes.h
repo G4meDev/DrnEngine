@@ -76,6 +76,22 @@ namespace Drn
 		Transient						= 1<<13,
 	};
 
+	struct CopyTextureInfo
+	{
+		IntVector Size = IntVector::Zero;
+
+		IntVector SourcePosition = IntVector::Zero;
+		IntVector DestPosition = IntVector::Zero;
+
+		uint32 SourceSliceIndex = 0;
+		uint32 DestSliceIndex = 0;
+		uint32 NumSlices = 1;
+
+		uint32 SourceMipIndex = 0;
+		uint32 DestMipIndex = 0;
+		uint32 NumMips = 1;
+	};
+
 	enum class EClearBinding
 	{
 		ENoneBound,

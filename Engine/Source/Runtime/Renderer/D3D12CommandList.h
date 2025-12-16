@@ -84,6 +84,10 @@ namespace Drn
 		void ClearColorTexture( class RenderTextureBase* InTexture, int32 MipIndex, int32 SliceIndex, Vector4 ClearValue );
 		void ClearColorTexture( class RenderTextureBase* InTexture, int32 MipIndex = 0, int32 SliceIndex = 0 );
 
+		void CopyTextureRegion(class RenderTextureBase* SourceTexture, class RenderTextureBase* DestTexture, const D3D12_BOX& SourceBox, uint32 DestX, uint32 DestY, uint32 DestZ);
+		void CopySubTextureRegion(class RenderTexture2D* SourceTexture, class RenderTexture2D* DestTexture, Box2D SourceBox, Box2D DestinationBox);
+		void CopyTexture(class RenderTextureBase* SourceTexture, class RenderTextureBase* DestTexture, const CopyTextureInfo& CopyInfo);
+
 		void AddTransitionBarrier(class RenderResource* pResource, D3D12_RESOURCE_STATES Before, D3D12_RESOURCE_STATES After, uint32 Subresource);
 		void FlushBarriers();
 
