@@ -249,7 +249,7 @@ namespace Drn
 			CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
 		}
 		
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant( 0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0 );
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant( 0, Renderer->ViewBuffer->GetViewIndex(), 0 );
 
 		uint16 const Strides[] = { sizeof(InputLayout_LineColorThickness) };
 		CommandList->SetStreamStrides(Strides);

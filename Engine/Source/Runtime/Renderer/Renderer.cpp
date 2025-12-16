@@ -40,11 +40,7 @@ namespace Drn
 			m_UploadCommandList = nullptr;
 		}
 
-		if (m_StaticSamplersBuffer)
-		{
-			m_StaticSamplersBuffer->ReleaseBufferedResource();
-			m_StaticSamplersBuffer = nullptr;
-		}
+		StaticSamplersBuffer = nullptr;
 
 		m_BindlessSamplerHeapAllocator.Free(m_BindlessLinearSamplerCpuHandle, m_BindlessLinearSamplerGpuHandle);
 
@@ -306,23 +302,6 @@ namespace Drn
 			m_StaticSamplers.PointClampSampler = GetBindlessSamplerIndex(m_BindlessPointClampSamplerGpuHandle);
 		}
 
-		m_StaticSamplersBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-		m_StaticSamplersBuffer->SetName("StaticSamplerBuffer");
-#endif
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.BufferLocation = m_StaticSamplersBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ResourceViewDesc.SizeInBytes = 256;
-		GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_StaticSamplersBuffer->GetCpuHandle());
-
-		UINT8* ConstantBufferStart;
-		CD3DX12_RANGE readRange( 0, 0 );
-		m_StaticSamplersBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, &m_StaticSamplers, sizeof(StaticSamplers));
-		m_StaticSamplersBuffer->GetD3D12Resource()->Unmap(0, nullptr);
-
-
 		CommonResources::Init(m_CommandList);
 
 #if WITH_EDITOR
@@ -449,6 +428,9 @@ namespace Drn
 	void Renderer::InitRender(float DeltaTime)
 	{
 		PrimitiveStats::ClearStats();
+
+		// TODO: move to default heap and make persistent
+		StaticSamplersBuffer = RenderUniformBuffer::Create(m_Device.get(), sizeof(StaticSamplers), EUniformBufferUsage::SingleFrame, &m_StaticSamplers);
 
 		// TODO: move to end of frame
 		SimpleRenderResource::FlushPendingDeletes();

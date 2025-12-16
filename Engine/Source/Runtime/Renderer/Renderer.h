@@ -31,7 +31,9 @@ namespace Drn
 		uint32 PointSampler;
 		uint32 LinearCompLessSampler;
 		uint32 LinearClampSampler;
+
 		uint32 PointClampSampler;
+		Vector Padding;
 	};
 
 	struct TempDescriptorHeapAllocator
@@ -171,7 +173,7 @@ namespace Drn
 		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessPointClampSamplerGpuHandle;
 
 		StaticSamplers m_StaticSamplers;
-		Resource* m_StaticSamplersBuffer;
+		TRefCountPtr<class RenderUniformBuffer> StaticSamplersBuffer;
 
 		uint32 GetBindlessSrvIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
 		uint32 GetBindlessSamplerIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);

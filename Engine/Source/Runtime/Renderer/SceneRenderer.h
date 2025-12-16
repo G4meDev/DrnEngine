@@ -120,7 +120,7 @@ namespace Drn
 
 		tf::Taskflow m_RenderTask;
 
-		Resource* m_BindlessViewBuffer[NUM_BACKBUFFERS] = {nullptr};
+		TRefCountPtr<class RenderUniformBuffer> ViewBuffer;
 
 	protected:
 
