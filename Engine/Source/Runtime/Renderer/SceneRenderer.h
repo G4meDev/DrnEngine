@@ -60,7 +60,7 @@ namespace Drn
 		IntPoint ScreenPos;
 		bool Initalized;
 		SceneRendererView SceneView;
-		TRefCountPtr<ID3D12Resource> ReadbackBuffer;
+		TRefCountPtr<class RenderTexture2D> ReadbackBuffer;
 		void* Payload; // lifetime managed by this object. we delete it in deconstruction so avoid copy and only move
 		uint64 FenceValue;
 		OnScreenReprojectionDelegate OnScreenReprojection;

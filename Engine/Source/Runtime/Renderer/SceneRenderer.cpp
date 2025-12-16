@@ -1122,15 +1122,8 @@ namespace Drn
 			{
 				if (Renderer::Get()->GetFence()->IsFenceComplete(Event.FenceValue))
 				{
-					UINT8* MemoryStart;
-
-					D3D12_RANGE ReadRange = {};
-					ReadRange.Begin = 0;
-					ReadRange.End = 16;
-					Event.ReadbackBuffer->Map(0, &ReadRange, reinterpret_cast<void**>(&MemoryStart));
-
 					float Depth;
-					memcpy(&Depth, MemoryStart, sizeof(float));
+					memcpy(&Depth, Event.ReadbackBuffer->m_ResourceLocation.GetMappedBaseAddress(), sizeof(float));
 
 					World* W = GetScene() ? GetScene()->GetWorld() : nullptr;
 					if (W && Event.OnScreenReprojection.IsBound())
@@ -1158,36 +1151,17 @@ namespace Drn
 		{
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-			CD3DX12_HEAP_PROPERTIES Prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK);
-			CD3DX12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Buffer( 16 );
-
-			Device->CreateCommittedResource(&Prop, D3D12_HEAP_FLAG_NONE,
-				&Desc, D3D12_RESOURCE_STATE_COPY_DEST, NULL, IID_PPV_ARGS(Event.ReadbackBuffer.GetInitReference()));
-
-#if D3D12_Debug_INFO
-			Event.ReadbackBuffer->SetName(L"ReprojectionReadbackBuffer");
-#endif
-
-			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
-			m_CommandList->FlushBarriers();
+			RenderResourceCreateInfo CreateInfo( "ReprojectionReadbackBuffer" );
+			Event.ReadbackBuffer = RenderTexture2D::Create(m_CommandList, 1, 1, DEPTH_FORMAT, 1, 1, false, ETextureCreateFlags::CPUReadback, CreateInfo );
 
 			const IntPoint ClampedPos = IntPoint( std::clamp<int32>( Event.ScreenPos.X, 0, GetViewportSize().X - 1 ),
 				std::clamp<int32>( Event.ScreenPos.Y, 0, GetViewportSize().Y - 1 ) );
 
-			CD3DX12_BOX CopyBox( ClampedPos.X, ClampedPos.Y, ClampedPos.X + 1, ClampedPos.Y + 1 );
+			CopyTextureInfo CopyInfo;
+			CopyInfo.Size = IntVector(1, 1, 0);
+			CopyInfo.SourcePosition = IntVector(ClampedPos.X, ClampedPos.Y, 0);
 
-			D3D12_PLACED_SUBRESOURCE_FOOTPRINT Footprint = {};
-			Footprint.Footprint.Format                   = DEPTH_FORMAT;
-			Footprint.Footprint.Width                    = 1;
-			Footprint.Footprint.Height                   = 1;
-			Footprint.Footprint.Depth                    = 1;
-			Footprint.Footprint.RowPitch                 = 256;
-			Footprint.Offset                             = 0;
-
-			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc( m_GBuffer->m_DepthTarget->GetResource()->GetResource(), 0 );
-			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( Event.ReadbackBuffer, Footprint );
-
-			m_CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
+			m_CommandList->CopyTexture(m_GBuffer->m_DepthTarget, Event.ReadbackBuffer, CopyInfo);
 
 			Event.FenceValue = Renderer::Get()->GetFence()->Signal();
 			Event.Initalized = true;
