@@ -28,18 +28,8 @@ namespace Drn
 		LOG(LogRenderer, Info, "Renderer shutdown.");
 		drn_check(SingletonInstance->m_AllocatedScenes.size() == 0);
 
-		if (m_CommandList)
-		{
-			m_CommandList->ReleaseBufferedResource();
-			m_CommandList = nullptr;
-		}
-
-		if (m_UploadCommandList)
-		{
-			m_UploadCommandList->ReleaseBufferedResource();
-			m_UploadCommandList = nullptr;
-		}
-
+		m_CommandList = nullptr;
+		m_UploadCommandList = nullptr;
 		StaticSamplersBuffer = nullptr;
 
 		m_BindlessSamplerHeapAllocator.Free(m_BindlessLinearSamplerCpuHandle, m_BindlessLinearSamplerGpuHandle);

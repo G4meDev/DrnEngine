@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
-#include "Runtime/Renderer/BufferedResource.h"
+#include "Runtime/Renderer/RenderResource.h"
 #include "Runtime/Renderer/RenderCommon.h"
 #include "Runtime/Renderer/RenderTexture.h"
 #include "Runtime/Renderer/RenderStateCache.h"
@@ -61,11 +61,15 @@ namespace Drn
 		void Empty();
 	};
 
-	class D3D12CommandList : public BufferedResource, public DeviceChild
+	class D3D12CommandList : public SimpleRenderResource, public DeviceChild
 	{
 	public:
 		D3D12CommandList(class Device* Device, D3D12_COMMAND_LIST_TYPE Type, uint8 NumAllocators, const std::string& Name);
 		virtual ~D3D12CommandList();
+
+		virtual uint32 AddRef() const { return SimpleRenderResource::AddRef(); }
+		virtual uint32 Release() const { return SimpleRenderResource::Release(); }
+		virtual uint32 GetRefCount() const { return SimpleRenderResource::GetRefCount(); }
 
 		inline ID3D12GraphicsCommandList2* GetD3D12CommandList() { return m_CommandList.Get(); }
 

@@ -219,7 +219,7 @@ namespace Drn
 
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		D3D12CommandList* CommandList = new D3D12CommandList(Renderer::Get()->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT, 1, "Texture2DToCubemap");
+		TRefCountPtr<D3D12CommandList> CommandList = new D3D12CommandList(Renderer::Get()->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT, 1, "Texture2DToCubemap");
 		CommandList->Close();
 		CommandList->FlipAndReset();
 
@@ -498,14 +498,10 @@ namespace Drn
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-		D3D12_RECT ScissorRect = CD3DX12_RECT(0, 0, LONG_MAX, LONG_MAX);
-		D3D12_VIEWPORT Viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<float>(FaceSize), static_cast<float>(FaceSize));
-
-		CommandList->GetD3D12CommandList()->RSSetViewports(1, &Viewport);
-		CommandList->GetD3D12CommandList()->RSSetScissorRects(1, &ScissorRect);
+		CommandList->SetViewport(0, 0, 0, FaceSize, FaceSize, 1);
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandles[0], true, NULL);
 
-		CommandList->GetD3D12CommandList()->IASetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommandList->GetD3D12CommandList()->SetPipelineState(SlicePso->m_PSO);
 		RenderCube->BindAndDraw(CommandList);
 
@@ -757,7 +753,6 @@ namespace Drn
 
 		delete SlicePso;
 		delete RenderCube;
-		CommandList->ReleaseBufferedResource();
 	}
 
 }

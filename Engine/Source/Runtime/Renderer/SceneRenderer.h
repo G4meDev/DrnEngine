@@ -199,7 +199,7 @@ namespace Drn
 		void RenderBufferVisulization();
 #endif
 
-		D3D12CommandList* m_CommandList;
+		TRefCountPtr<D3D12CommandList> m_CommandList;
 	};
 
 	template<class UserClass, class Func>

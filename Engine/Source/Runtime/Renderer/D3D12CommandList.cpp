@@ -54,7 +54,7 @@ namespace Drn
 	}
 
 	D3D12CommandList::D3D12CommandList( Device* Device, D3D12_COMMAND_LIST_TYPE Type, uint8 NumAllocators, const std::string& Name )
-		: BufferedResource()
+		: SimpleRenderResource()
 		, DeviceChild(Device)
 		, m_Type(Type)
 		, m_NumAllocators(NumAllocators)

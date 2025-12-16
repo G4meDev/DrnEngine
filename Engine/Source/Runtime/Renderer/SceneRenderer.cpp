@@ -40,11 +40,7 @@ namespace Drn
 
 	SceneRenderer::~SceneRenderer()
 	{
-		if (m_CommandList)
-		{
-			m_CommandList->ReleaseBufferedResource();
-			m_CommandList = nullptr;
-		}
+		m_CommandList = nullptr;
 
 #if WITH_EDITOR
 		if (m_MousePickQueue.size() > 0 || m_ScreenReprojectionQueue.size() > 0)

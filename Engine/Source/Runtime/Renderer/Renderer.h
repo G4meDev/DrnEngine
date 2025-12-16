@@ -122,8 +122,8 @@ namespace Drn
 		std::unique_ptr<Device> m_Device;
 		std::unique_ptr<SwapChain> m_SwapChain;
 
-		D3D12CommandList* m_CommandList;
-		D3D12CommandList* m_UploadCommandList;
+		TRefCountPtr<D3D12CommandList> m_CommandList;
+		TRefCountPtr<D3D12CommandList> m_UploadCommandList;
 
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
 
