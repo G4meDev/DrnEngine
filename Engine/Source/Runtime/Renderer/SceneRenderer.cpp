@@ -19,6 +19,8 @@
 
 #include "Runtime/Engine/PostProcessVolume.h"
 
+#include "Editor/Thumbnail/ThumbnailManager.h"
+
 LOG_DEFINE_CATEGORY( LogSceneRenderer, "SceneRenderer" );
 
 #define HZB_GROUP_TILE_SIZE 8
@@ -48,6 +50,8 @@ namespace Drn
 			LOG(LogSceneRenderer, Warning, "mouse pick event still has %i events", (int)m_MousePickQueue.size());
 			__debugbreak();
 		}
+
+		drn_check( ThumbnailCaptureEvents.size() == 0 );
 
 		OnSceneRendererDestroy.Braodcast();
 #endif
@@ -878,6 +882,8 @@ namespace Drn
 		RenderEditorSelection();
 		RenderBufferVisulization();
 
+		ProccessThumbnailCapture();
+
 		{
 			m_CommandList->TransitionResourceWithTracking(m_TonemapBuffer->m_TonemapTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 			m_CommandList->FlushBarriers();
@@ -1034,6 +1040,25 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+	void SceneRenderer::ProccessThumbnailCapture()
+	{
+		while (ThumbnailCaptureEvents.size() > 0 && ThumbnailManager::Get()->IsCaptureThumbnailAllowed())
+		{
+			ThumbnailCaptureEvent* Event = ThumbnailCaptureEvents.back();
+			ThumbnailCaptureEvents.pop_back();
+
+			IntPoint ViewportSize = GetViewportSize();
+			RenderResourceCreateInfo CreateInfo( "ThumbnailReadbackBuffer" );
+			Event->ReadbackBuffer = RenderTexture2D::Create(m_CommandList, ViewportSize.X, ViewportSize.Y, DISPLAY_OUTPUT_FORMAT, 1, 1, false, ETextureCreateFlags::CPUReadback, CreateInfo );
+
+			CopyTextureInfo CopyInfo;
+			CopyInfo.Size = IntVector(ViewportSize.X, ViewportSize.Y, 0);
+
+			m_CommandList->CopyTexture(m_TonemapBuffer->m_TonemapTarget, Event->ReadbackBuffer, CopyInfo);
+			Event->FenceValue = Renderer::Get()->GetFence()->Signal();
+		}
+	}
+
 	// TODO: support box selection
 	void SceneRenderer::QueueMousePickEvent( const IntPoint& ScreenPosition )
 	{

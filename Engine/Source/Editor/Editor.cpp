@@ -12,6 +12,7 @@
 #include "Editor/Misc/TaskGraphVisualizer.h"
 
 #include "Editor/Misc/EditorMisc.h"
+#include "Editor/Thumbnail/ThumbnailManager.h"
 
 #include "Editor/FileImportMenu/FileImportMenu.h"
 
@@ -50,6 +51,7 @@ namespace Drn
 		StatsWindow::Get()->Init();
 
 		EditorMisc::Get()->Register();
+		ThumbnailManager::Get()->Init();
 	}
 
 	void Editor::Tick(float DeltaTime)
@@ -60,11 +62,15 @@ namespace Drn
 		ContentBrowser::Get()->Tick(DeltaTime);
 		StatsWindow::Get()->Tick(DeltaTime);
 		LevelViewport::Get()->Tick(DeltaTime);
+
+		ThumbnailManager::Get()->Tick(DeltaTime);
 	}
 
 	void Editor::Shutdown() 
 	{
 		CloseImportMenu();
+
+		ThumbnailManager::Get()->Shutdown();
 
 		LevelViewport::Get()->Shutdown();
 		StatsWindow::Get()->Shutdown();

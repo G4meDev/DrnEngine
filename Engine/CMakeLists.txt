@@ -197,6 +197,8 @@ set( HEADER_FILES
 
 	Source/Editor/FileImportMenu/FileImportMenu.h
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.h
+
+	Source/Editor/Thumbnail/ThumbnailManager.h
 	
 	Source/ThirdParty/par/par_shapes.h
 
@@ -401,6 +403,8 @@ set( SOURCE_FILES
 
 	Source/Editor/FileImportMenu/FileImportMenu.cpp
 	Source/Editor/FileImportMenu/FileImportMenuGuiLayer.cpp
+
+	Source/Editor/Thumbnail/ThumbnailManager.cpp
 )
 
 set( OPTICK_HEADERS

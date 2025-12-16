@@ -5,6 +5,7 @@
 
 #define PROJECT_PATH "..\\..\\.."
 #define INTEMEDIATE_PATH "..\\..\\..\\Intermediate\\"
+#define THUMBNAIL_PATH "..\\..\\..\\Intermediate\\Thumbnail\\"
 
 LOG_DEFINE_CATEGORY( LogPath, "LogPath" );
 
@@ -32,6 +33,32 @@ namespace Drn
 		if ( LastSlash > 0 )
 		{
 			return FullPath.substr( LastSlash + 1, -1 );
+		}
+
+		return NAME_NULL;
+	}
+
+	std::string Path::GetDirectory( const std::string& FullPath )
+	{
+		size_t found_f = FullPath.find_last_of('/');
+		size_t found_b = FullPath.find_last_of('\\');
+		size_t last_slash_idx = std::string::npos;
+
+		if (found_f != std::string::npos && found_b != std::string::npos)
+		{
+			last_slash_idx = std::max(found_f, found_b);
+		}
+		else if (found_f != std::string::npos)
+		{
+			last_slash_idx = found_f;
+		}
+		else if (found_b != std::string::npos)
+		{
+			last_slash_idx = found_b;
+		}
+
+		if (last_slash_idx != std::string::npos) {
+			return FullPath.substr(0, last_slash_idx);
 		}
 
 		return NAME_NULL;
@@ -67,6 +94,16 @@ namespace Drn
 	std::string Path::GetNewTempArchivePath()
 	{
 		return INTEMEDIATE_PATH + Guid::NewGuid().ToString();
+	}
+
+	std::string Path::GetIntemediatePath()
+	{
+		return INTEMEDIATE_PATH;
+	}
+
+	std::string Path::GetThumbnailPath()
+	{
+		return THUMBNAIL_PATH;
 	}
 
 	bool Path::GetNameForNewAsset( const std::string& TargetDirectory, const std::string& NamePrefix, std::string& Result )

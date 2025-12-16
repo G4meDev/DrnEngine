@@ -4,7 +4,6 @@
 #include "Runtime/Renderer/SceneView.h"
 #include "Runtime/Engine/PostProcessSettings.h"
 
-
 LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
 namespace Drn
@@ -98,6 +97,9 @@ namespace Drn
 
 		template<class UserClass, class Func>
 		void QueueScreenReprojection(const IntPoint& ScreenPosition, UserClass* UClass, Func&& F, void* Payload);
+
+		std::vector<class ThumbnailCaptureEvent*> ThumbnailCaptureEvents;
+		void ProccessThumbnailCapture();
 #endif
 
 		uint32 m_FrameIndex;

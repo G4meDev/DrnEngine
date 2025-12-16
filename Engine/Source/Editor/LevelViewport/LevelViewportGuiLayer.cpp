@@ -6,6 +6,7 @@
 #include "Editor/Editor.h"
 #include "Editor/EditorConfig.h"
 #include "Editor/Misc/EditorMisc.h"
+#include "Editor/Thumbnail/ThumbnailManager.h"
 
 #include <imgui.h>
 
@@ -211,6 +212,27 @@ namespace Drn
 
 			if (ImGui::BeginMenu( "Tools" ))
 			{
+				if (ImGui::MenuItem("Capture Thumbnail"))
+				{
+					SceneRenderer* TargetSceneRenderer = m_ViewportPanel ? m_ViewportPanel->GetSceneRenderer() : nullptr;
+					Scene* TargetScene = TargetSceneRenderer ? TargetSceneRenderer->GetScene() : nullptr;
+					World* TargetWorld = TargetScene ? TargetScene->GetWorld() : nullptr;
+
+					if (TargetSceneRenderer && TargetWorld && !TargetWorld->IsPendingDestroy())
+					{
+						if (TargetWorld->IsTransient())
+						{
+							drn_check(false);
+							//LOG()
+						}
+
+						else
+						{
+							ThumbnailManager::Get()->CaptureSceneThumbnail(TargetSceneRenderer, "Test.png");
+						}
+					}
+				}
+
 				if (ImGui::MenuItem( "Optick"))
 				{
 					ShellExecute(NULL, "open", "..\\..\\..\\Tools\\Optick\\Optick.exe", NULL, NULL, SW_SHOWDEFAULT);
