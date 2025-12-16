@@ -1,6 +1,5 @@
 #include "DrnPCH.h"
 #include "Renderer.h"
-#include "BufferedResource.h"
 
 #include "Runtime/Core/Window.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
@@ -41,7 +40,6 @@ namespace Drn
 #endif
 
 		CommonResources::Shutdown();
-		BufferedResourceManager::Get()->Flush();
 
 
 #if 0
@@ -73,7 +71,6 @@ namespace Drn
 
 	void Renderer::Init( HINSTANCE inhInstance, Window* InMainWindow )
 	{
-		BufferedResourceManager::Init();
 		SingletonInstance = new Renderer();
 
 		SingletonInstance->m_MainWindow = InMainWindow;
@@ -442,7 +439,6 @@ namespace Drn
 			m_UploadCommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
 		}
 
-		BufferedResourceManager::Get()->Tick(DeltaTime);
 		SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 	}
 

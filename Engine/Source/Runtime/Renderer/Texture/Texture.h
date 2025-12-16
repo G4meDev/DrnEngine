@@ -2,7 +2,6 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Core/Asset.h"
-#include "Runtime/Renderer/BufferedResource.h"
 
 namespace Drn
 {

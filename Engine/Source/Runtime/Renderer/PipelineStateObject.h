@@ -1,13 +1,17 @@
 #pragma once
 
 #include "ForwardTypes.h"
-#include "BufferedResource.h"
+#include "Runtime/Renderer/RenderResource.h"
 
 namespace Drn
 {
-	class PipelineStateObject : public BufferedResource
+	class PipelineStateObject : public SimpleRenderResource
 	{
 	public:
+		virtual uint32 AddRef() const { return SimpleRenderResource::AddRef(); }
+		virtual uint32 Release() const { return SimpleRenderResource::Release(); }
+		virtual uint32 GetRefCount() const { return SimpleRenderResource::GetRefCount(); }
+
 		static PipelineStateObject* CreateMainPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 

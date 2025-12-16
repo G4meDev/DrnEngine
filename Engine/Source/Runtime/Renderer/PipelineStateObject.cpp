@@ -4,14 +4,12 @@
 namespace Drn
 {
 	PipelineStateObject::PipelineStateObject()
-		: BufferedResource()
+		: SimpleRenderResource()
 		, m_PipelineState(nullptr)
-	{
-	}
+	{}
 
 	PipelineStateObject::~PipelineStateObject()
-	{
-	}
+	{}
 
 
 	PipelineStateObject* PipelineStateObject::CreateMainPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,

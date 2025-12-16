@@ -224,60 +224,18 @@ namespace Drn
 
 	void Material::ReleasePSOs()
 	{
-		if (m_MainPassPSO)
-		{
-			m_MainPassPSO->ReleaseBufferedResource();
-			m_MainPassPSO = nullptr;
-		}
+		m_MainPassPSO = nullptr;
+		m_PrePassPSO = nullptr;
+		m_PointLightShadowDepthPassPSO = nullptr;
+		m_SpotLightShadowDepthPassPSO = nullptr;
+		m_DeferredDecalPassPSO = nullptr;
+		m_StaticMeshDecalPassPSO = nullptr;
 
-		if (m_PrePassPSO)
-		{
-			m_PrePassPSO->ReleaseBufferedResource();
-			m_PrePassPSO = nullptr;
-		}
-
-		if ( m_PointLightShadowDepthPassPSO )
-		{
-			m_PointLightShadowDepthPassPSO->ReleaseBufferedResource();
-			m_PointLightShadowDepthPassPSO = nullptr;
-		}
-
-		if ( m_SpotLightShadowDepthPassPSO )
-		{
-			m_SpotLightShadowDepthPassPSO->ReleaseBufferedResource();
-			m_SpotLightShadowDepthPassPSO = nullptr;
-		}
-
-		if ( m_DeferredDecalPassPSO )
-		{
-			m_DeferredDecalPassPSO->ReleaseBufferedResource();
-			m_DeferredDecalPassPSO = nullptr;
-		}
-
-		if ( m_StaticMeshDecalPassPSO )
-		{
-			m_StaticMeshDecalPassPSO->ReleaseBufferedResource();
-			m_StaticMeshDecalPassPSO = nullptr;
-		}
 
 #if WITH_EDITOR
-		if (m_SelectionPassPSO)
-		{
-			m_SelectionPassPSO->ReleaseBufferedResource();
-			m_SelectionPassPSO = nullptr;
-		}
-
-		if (m_HitProxyPassPSO)
-		{
-			m_HitProxyPassPSO->ReleaseBufferedResource();
-			m_HitProxyPassPSO = nullptr;
-		}
-
-		if (m_EditorProxyPSO)
-		{
-			m_EditorProxyPSO->ReleaseBufferedResource();
-			m_HitProxyPassPSO = nullptr;
-		}
+		m_SelectionPassPSO = nullptr;
+		m_HitProxyPassPSO = nullptr;
+		m_HitProxyPassPSO = nullptr;
 #endif
 	}
 

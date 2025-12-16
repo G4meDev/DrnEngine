@@ -113,17 +113,17 @@ namespace Drn
 		std::vector<float> m_ScalarValues;
 		std::vector<Vector4> m_VectorValues;
 
-		PipelineStateObject* m_MainPassPSO;
-		PipelineStateObject* m_PrePassPSO;
-		PipelineStateObject* m_PointLightShadowDepthPassPSO;
-		PipelineStateObject* m_SpotLightShadowDepthPassPSO;
-		PipelineStateObject* m_DeferredDecalPassPSO;
-		PipelineStateObject* m_StaticMeshDecalPassPSO;
+		TRefCountPtr<PipelineStateObject> m_MainPassPSO;
+		TRefCountPtr<PipelineStateObject> m_PrePassPSO;
+		TRefCountPtr<PipelineStateObject> m_PointLightShadowDepthPassPSO;
+		TRefCountPtr<PipelineStateObject> m_SpotLightShadowDepthPassPSO;
+		TRefCountPtr<PipelineStateObject> m_DeferredDecalPassPSO;
+		TRefCountPtr<PipelineStateObject> m_StaticMeshDecalPassPSO;
 
 #if WITH_EDITOR
-		PipelineStateObject* m_SelectionPassPSO = nullptr;
-		PipelineStateObject* m_HitProxyPassPSO = nullptr;
-		PipelineStateObject* m_EditorProxyPSO = nullptr;
+		TRefCountPtr<PipelineStateObject> m_SelectionPassPSO = nullptr;
+		TRefCountPtr<PipelineStateObject> m_HitProxyPassPSO = nullptr;
+		TRefCountPtr<PipelineStateObject> m_EditorProxyPSO = nullptr;
 #endif
 
 		std::unordered_map<std::string, MaterialIndexedFloatParameter*> m_ScalarMap;
