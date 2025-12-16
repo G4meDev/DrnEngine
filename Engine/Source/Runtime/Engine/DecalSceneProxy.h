@@ -32,7 +32,5 @@ namespace Drn
 		class DecalComponent* m_DecalComponent;
 
 		DecalData m_DecalData;
-		Resource* m_DecalBuffer[NUM_BACKBUFFERS] = {nullptr};
-		ConstantBufferView m_DecalBufferView[NUM_BACKBUFFERS];
 	};
 }

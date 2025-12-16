@@ -315,6 +315,21 @@ namespace Drn
 		CriticalSection CS;
 	};
 
+	class FastConstantAllocator : public DeviceChild
+	{
+	public:
+		FastConstantAllocator(class Device* Parent);
+	
+		void* Allocate(uint32 Bytes, ResourceLocation& OutLocation);
+		void Destroy();
+	
+	private:
+		ResourceLocation UnderlyingResource;
+	
+		uint32 Offset;
+		uint32 PageSize;
+	};
+
 // ------------------------------------------------------------------------------------------------
 
 	class DynamicHeapAllocator : public DeviceChild

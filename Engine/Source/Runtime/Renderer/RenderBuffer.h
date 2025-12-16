@@ -110,6 +110,48 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------
 
+	class RenderUniformBuffer : public SimpleRenderResource
+	{
+	public:
+
+		RenderUniformBuffer(class Device* InParent, uint32 InSize, EUniformBufferUsage InUniformBufferUsage)
+			: SimpleRenderResource()
+			, View(nullptr)
+			, ResourceLocation(InParent)
+			, Size(InSize)
+			, UniformBufferUsage(InUniformBufferUsage)
+		{}
+
+		virtual ~RenderUniformBuffer();
+
+		virtual uint32 AddRef() const
+		{
+			return SimpleRenderResource::AddRef();
+		}
+		virtual uint32 Release() const
+		{
+			return SimpleRenderResource::Release();
+		}
+		virtual uint32 GetRefCount() const
+		{
+			return SimpleRenderResource::GetRefCount();
+		}
+
+		static RenderUniformBuffer* Create(class Device* InParent, uint32 InSize, EUniformBufferUsage Usage, const void* Contents);
+
+		uint32 GetSize() const { return Size; }
+		inline class ConstantBufferView* GetShaderView() const { return View; };
+		uint32 GetViewIndex() const;
+
+	private:
+		class ConstantBufferView* View;
+		ResourceLocation ResourceLocation;
+		const EUniformBufferUsage UniformBufferUsage;
+		uint32 Size;
+	};
+
+// ---------------------------------------------------------------------------------------
+
 	class BufferStats
 	{
 	public:

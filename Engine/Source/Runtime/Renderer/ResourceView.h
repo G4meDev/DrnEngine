@@ -290,6 +290,16 @@ namespace Drn
 	class ConstantBufferView
 	{
 	public:
+		ConstantBufferView()
+		{
+			AllocateDescriptorSlot();
+		}
+
+		~ConstantBufferView()
+		{
+			FreeDescriptorSlot();
+		}
+
 		void Create(D3D12_GPU_VIRTUAL_ADDRESS GpuAddress, const uint32 AlignedSize)
 		{
 			m_Desc.BufferLocation = GpuAddress;

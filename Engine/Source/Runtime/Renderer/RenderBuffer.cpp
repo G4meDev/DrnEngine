@@ -116,6 +116,55 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------------
 
+	RenderUniformBuffer::~RenderUniformBuffer()
+	{
+		BufferStats::UpdateBufferStats(&ResourceLocation, false, BufferStats::EBufferMemoryStatGroups::Constant);
+		delete View;
+	}
+
+	RenderUniformBuffer* RenderUniformBuffer::Create( Device* InParent, uint32 InSize, EUniformBufferUsage Usage, const void* Contents )
+	{
+		drn_check(InSize > 0);
+		RenderUniformBuffer* NewUniformBuffer = new RenderUniformBuffer(InParent, InSize, Usage);
+
+		drn_check(Align(InSize, 16) == InSize);
+		drn_check(InSize <= D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT * 16);
+
+		NewUniformBuffer->View = new ConstantBufferView();
+
+		void* MappedData = nullptr;
+		//if (Usage == EUniformBufferUsage::MultiFrame)
+		//{
+		//	// Uniform buffers that live for multiple frames must use the more expensive and persistent allocation path
+		//	FD3D12DynamicHeapAllocator& Allocator = GetAdapter().GetUploadHeapAllocator(Device->GetGPUIndex());
+		//	MappedData = Allocator.AllocUploadResource(NumBytesActualData, DEFAULT_CONTEXT_UPLOAD_POOL_ALIGNMENT, NewUniformBuffer->ResourceLocation);
+		//}
+		//else
+		{
+			FastConstantAllocator& Allocator = InParent->GetTransientUniformBufferAllocator();
+
+			MappedData = Allocator.Allocate(InSize, NewUniformBuffer->ResourceLocation);
+		}
+		drn_check(NewUniformBuffer->ResourceLocation.GetOffsetFromBaseOfResource() % 16 == 0);
+
+		drn_check(MappedData != nullptr);
+		memcpy(MappedData, Contents, InSize);
+
+		const uint32 AlignedSize = Align( InSize, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT );
+		NewUniformBuffer->View->Create(NewUniformBuffer->ResourceLocation.GetGPUVirtualAddress(), AlignedSize);
+
+		BufferStats::UpdateBufferStats(&NewUniformBuffer->ResourceLocation, true, BufferStats::EBufferMemoryStatGroups::Constant);
+
+		return NewUniformBuffer;
+	}
+
+	uint32 RenderUniformBuffer::GetViewIndex() const
+	{
+		return View ? View->GetIndex() : 0;
+	}
+
+// --------------------------------------------------------------------------------------------------------
+
 #if RENDER_STATS
 	std::atomic<int32> BufferStats::BufferMemoryStats[(uint8)EBufferMemoryStatGroups::Max];
 #endif
@@ -149,7 +198,6 @@ namespace Drn
 	{
 		return BufferMemoryStats[(uint8)Group].load();
 	}
-
 
 
         }  // namespace Drn

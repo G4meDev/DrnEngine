@@ -50,6 +50,13 @@ namespace Drn
 		AnyDynamic = (Dynamic | Volatile),
 	};
 
+	enum class EUniformBufferUsage : uint8
+	{
+		SingleDraw = 0,
+		SingleFrame,
+		MultiFrame,
+	};
+
 	enum ETextureCreateFlags
 	{
 		None							= 0,

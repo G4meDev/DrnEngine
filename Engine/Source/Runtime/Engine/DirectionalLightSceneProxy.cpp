@@ -20,20 +20,7 @@ namespace Drn
 		//, m_LightBuffer(nullptr)
 		//, m_ShadowBuffer(nullptr)
 		, m_ShadowmapResource(nullptr)
-	{
-		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
-		{
-			m_LightBuffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-			m_LightBuffer[i]->SetName("CB_DircetionalLight_" + m_Name);
-#endif
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-			ResourceViewDesc.BufferLocation = m_LightBuffer[i]->GetD3D12Resource()->GetGPUVirtualAddress();
-			ResourceViewDesc.SizeInBytes = 256;
-			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer[i]->GetCpuHandle());
-		}
-	}
+	{}
 
 	DirectionalLightSceneProxy::~DirectionalLightSceneProxy()
 	{
@@ -48,13 +35,9 @@ namespace Drn
 		m_LightData.Color = m_DirectionalLightComponent->GetScaledColor();
 		m_LightData.ShadowmapBufferIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()) : 0;
 		
-		UINT8* ConstantBufferStart;
-		CD3DX12_RANGE readRange( 0, 0 );
-		m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, &m_LightData, sizeof(DirectionalLightData));
-		m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
-		
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+		TRefCountPtr<RenderUniformBuffer> LightBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(DirectionalLightData), EUniformBufferUsage::SingleFrame, &m_LightData);
+
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightBuffer->GetViewIndex(), 1);
 		
 		// TODO: make light flags enum. e. g. 1: Point light. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 4;
@@ -226,16 +209,7 @@ namespace Drn
 	}
 
 	void DirectionalLightSceneProxy::ReleaseBuffers()
-	{
-		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
-		{
-			if (m_LightBuffer[i])
-			{
-				m_LightBuffer[i]->ReleaseBufferedResource();
-				m_LightBuffer[i] = nullptr;
-			}
-		}
-	}
+	{}
 
 	void DirectionalLightSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{

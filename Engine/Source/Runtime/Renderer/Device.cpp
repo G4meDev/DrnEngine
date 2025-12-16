@@ -17,6 +17,7 @@ namespace Drn
 		, DefaultBufferAllocator(this)
 		, DefaultFastAllocator(this, D3D12_HEAP_TYPE_UPLOAD, 1024 * 1024 * 4)
 		, DynamicHeapAllocator(this, "Upload Buffer Allocator", RenderBuddyAllocator::EAllocationStrategy::kManualSubAllocation, DEFAULT_CONTEXT_UPLOAD_POOL_MAX_ALLOC_SIZE, DEFAULT_CONTEXT_UPLOAD_POOL_SIZE, DEFAULT_CONTEXT_UPLOAD_POOL_ALIGNMENT)
+		, FastConstantAllocator(this)
 	{
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = 0;

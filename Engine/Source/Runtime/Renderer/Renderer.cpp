@@ -72,6 +72,7 @@ namespace Drn
 		Flush();
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
 
+		m_Device->GetTransientUniformBufferAllocator().Destroy();
 		m_Device->GetDefaultBufferAllocator().FreeDefaultBufferPools();
 		m_Device->GetDefaultFastAllocator().Destroy();
 		m_Device->GetDynamicHeapAllocator().Destroy();

@@ -877,6 +877,46 @@ namespace Drn
 		PagePool.CleanupPages(FrameLag);
 	}
 
+	FastConstantAllocator::FastConstantAllocator( Device* Parent )
+		: DeviceChild(Parent)
+		, UnderlyingResource(Parent)
+		, Offset(64 * 1024)
+		, PageSize(64 * 1024)
+	{
+		drn_check(PageSize % D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT == 0);
+	}
+
+	void* FastConstantAllocator::Allocate( uint32 Bytes, ResourceLocation& OutLocation)
+	{
+		drn_check(Bytes <= PageSize);
+
+		const uint32 AlignedSize = Align(Bytes, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+
+		if (Offset + AlignedSize > PageSize)
+		{
+			Offset = 0;
+			Device* Device = GetParentDevice();
+
+			DynamicHeapAllocator& Allocator = Device->GetDynamicHeapAllocator();
+			Allocator.AllocUploadResource(PageSize, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT, UnderlyingResource);
+		}
+
+		OutLocation.AsFastAllocation(UnderlyingResource.GetResource(),
+			AlignedSize,
+			UnderlyingResource.GetGPUVirtualAddress(),
+			UnderlyingResource.GetMappedBaseAddress(),
+			UnderlyingResource.GetOffsetFromBaseOfResource(),
+			Offset);
+
+		Offset += AlignedSize;
+		return OutLocation.GetMappedBaseAddress();
+	}
+
+	void FastConstantAllocator::Destroy()
+	{
+		UnderlyingResource.Clear();
+	}
+
 // -------------------------------------------------------------------------------------------------------------------------
 
 	DynamicHeapAllocator::DynamicHeapAllocator( class Device* InParent, const std::string& InName, RenderBuddyAllocator::EAllocationStrategy InAllocationStrategy,
@@ -932,4 +972,6 @@ namespace Drn
 		Allocator.Destroy();
 	}
 
-}  // namespace Drn
+
+
+        }  // namespace Drn

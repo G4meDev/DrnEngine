@@ -62,6 +62,7 @@ namespace Drn
 		inline DefaultBufferAllocator& GetDefaultBufferAllocator() { return DefaultBufferAllocator; }
 		inline FastAllocator& GetDefaultFastAllocator() { return DefaultFastAllocator; }
 		inline DynamicHeapAllocator& GetDynamicHeapAllocator() { return DynamicHeapAllocator; }
+		inline FastConstantAllocator& GetTransientUniformBufferAllocator() { return FastConstantAllocator; }
 
 		void CreateCommittedResource(const D3D12_RESOURCE_DESC& InDesc, const D3D12_HEAP_PROPERTIES& HeapProps, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking,
 			const D3D12_CLEAR_VALUE* ClearValue, class RenderResource** ppOutResource, const std::string& Name);
@@ -87,6 +88,7 @@ namespace Drn
 		DefaultBufferAllocator DefaultBufferAllocator;
 		FastAllocator DefaultFastAllocator;
 		DynamicHeapAllocator DynamicHeapAllocator;
+		FastConstantAllocator FastConstantAllocator;
 
 		template <typename BufferType>
 		static void UpdateBufferStats(ResourceLocation* Location, bool bAllocating);

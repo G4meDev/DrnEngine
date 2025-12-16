@@ -6,18 +6,7 @@ namespace Drn
 {
 	DecalSceneProxy::DecalSceneProxy( class DecalComponent* InComponent )
 		: m_DecalComponent( InComponent )
-	{
-		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
-		{
-			m_DecalBuffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-	#if D3D12_Debug_INFO
-			m_DecalBuffer[i]->SetName("CB_Decal_Unnaemd_" + std::to_string(i));
-	#endif
-
-			m_DecalBufferView[i].AllocateDescriptorSlot();
-			m_DecalBufferView[i].Create(m_DecalBuffer[i]->GetD3D12Resource()->GetGPUVirtualAddress(), 256);
-		}
-	}
+	{}
 
 	DecalSceneProxy::~DecalSceneProxy()
 	{
@@ -48,13 +37,9 @@ namespace Drn
 		m_DecalData.LocalToProjection = LocalToWorldMatrix * Matrix(Renderer->GetSceneView().WorldToProjection);
 		m_DecalData.ProjectionToLocal = Matrix(Renderer->GetSceneView().ProjectionToWorld) * LocalToWorldMatrix.Inverse();
 
-		UINT8* ConstantBufferStart;
-		CD3DX12_RANGE readRange( 0, 0 );
-		m_DecalBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, &m_DecalData, sizeof(DecalData));
-		m_DecalBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
+		TRefCountPtr<RenderUniformBuffer> DecalBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(DecalData), EUniformBufferUsage::SingleFrame, &m_DecalData);
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_DecalBufferView[Renderer::Get()->GetCurrentBackbufferIndex()].GetIndex(), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, DecalBuffer->GetViewIndex(), 1);
 
 		m_Material->BindDeferredDecalPass(CommandList->GetD3D12CommandList());
 
@@ -62,16 +47,5 @@ namespace Drn
 	}
 
 	void DecalSceneProxy::ReleaseBuffers()
-	{
-		for (int32 i = 0; i < NUM_BACKBUFFERS; i++)
-		{
-			if (m_DecalBuffer[i])
-			{
-				delete m_DecalBuffer[i];
-				m_DecalBuffer[i] = nullptr;
-
-				m_DecalBufferView[i].FreeDescriptorSlot();
-			}
-		}
-	}
+	{}
 }

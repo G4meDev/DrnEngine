@@ -14,6 +14,7 @@ namespace Drn
 		uint32 ShadowmapBufferIndex;
 
 		Vector Color;
+		float Padding;
 	};
 
 	struct DirectionalLightShadowData
@@ -67,7 +68,6 @@ namespace Drn
 		std::vector<TRefCountPtr<class DepthStencilView>> m_ShadowmapViews;
 
 		DirectionalLightData m_LightData;
-		Resource* m_LightBuffer[NUM_BACKBUFFERS] = {nullptr};
 
 		DirectionalLightShadowData m_ShadowData;
 		Resource* m_ShadowBuffer[NUM_BACKBUFFERS] = {nullptr};
