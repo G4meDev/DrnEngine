@@ -11,20 +11,8 @@ namespace Drn
 	PointLightSceneProxy::PointLightSceneProxy( class PointLightComponent* InComponent )
 		: LightSceneProxy(InComponent)
 		, m_PointLightComponent(InComponent)
-		, m_LightBuffer(nullptr)
-		, m_ShadowDepthBuffer(nullptr)
 		, m_ShadowCubemapResource(nullptr)
-	{
-		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-		m_LightBuffer->SetName("CB_PointLight_" + m_Name);
-#endif
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.BufferLocation = m_LightBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ResourceViewDesc.SizeInBytes = 256;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer->GetCpuHandle());
-	}
+	{}
 
 	PointLightSceneProxy::~PointLightSceneProxy()
 	{
@@ -38,15 +26,11 @@ namespace Drn
 		m_Buffer.Scale = m_Radius;
 		m_Buffer.Color = m_LightColor;
 		m_Buffer.InvRadius = 1 / m_Radius;
-		m_Buffer.ShadowBufferIndex = m_CastShadow ? Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()) : 0;
+		m_Buffer.ShadowBufferIndex = m_CastShadow ? ShadowDepthBuffer->GetViewIndex() : 0;
 
-		UINT8* ConstantBufferStart;
-		CD3DX12_RANGE readRange( 0, 0 );
-		m_LightBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, &m_Buffer, sizeof(PointLightBuffer));
-		m_LightBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+		TRefCountPtr<RenderUniformBuffer> LightBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PointLightBuffer), EUniformBufferUsage::SingleFrame, &m_Buffer);
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightBuffer->GetViewIndex(), 1);
 
 		// TODO: make light flags enum. e. g. 1: Point light. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 1;
@@ -85,14 +69,10 @@ namespace Drn
 			m_ShadowDepthData.InvShadowResolution = 1.0f / POINTLIGHT_SHADOW_SIZE;
 			m_ShadowDepthData.ShadowmapTextureIndex = m_ShadowCubemapResource->GetShaderResourceView()->GetDescriptorHeapIndex();
 
-			UINT8* ConstantBufferStart;
-			CD3DX12_RANGE readRange( 0, 0 );
-			m_ShadowDepthBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-			memcpy( ConstantBufferStart, &m_ShadowDepthData, sizeof(ShadowDepthData));
-			m_ShadowDepthBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+			ShadowDepthBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ShadowDepthData), EUniformBufferUsage::SingleFrame, &m_ShadowDepthData);
 
 			CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ShadowDepthBuffer->GetGpuHandle()), 6);
+			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ShadowDepthBuffer->GetViewIndex(), 6);
 
 			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 			{
@@ -107,29 +87,12 @@ namespace Drn
 		RenderResourceCreateInfo ShadowmapCubemapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "PointLightShadowmap" );
 		m_ShadowCubemapResource = RenderTextureCube::Create(Renderer::Get()->GetCommandList_Temp(), POINTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCubemapCreateInfo);
-
-// -----------------------------------------------------------------------------------------------------------
-
-		m_ShadowDepthBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-		m_ShadowDepthBuffer->SetName("CB_PointLightShadow_" + m_Name);
-#endif
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ShadowResourceViewDesc = {};
-		ShadowResourceViewDesc.BufferLocation = m_ShadowDepthBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ShadowResourceViewDesc.SizeInBytes = 512;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ShadowResourceViewDesc, m_ShadowDepthBuffer->GetCpuHandle());
 	}
 
 	void PointLightSceneProxy::ReleaseShadowmap()
 	{
 		m_ShadowCubemapResource = nullptr;
-
-		if (m_ShadowDepthBuffer)
-		{
-			m_ShadowDepthBuffer->ReleaseBufferedResource();
-			m_ShadowDepthBuffer = nullptr;
-		}
+		ShadowDepthBuffer = nullptr;
 	}
 
 	void PointLightSceneProxy::UpdateResources( D3D12CommandList* CommandList )
@@ -158,13 +121,7 @@ namespace Drn
 	}
 
 	void PointLightSceneProxy::ReleaseBuffer()
-	{
-		if (m_LightBuffer)
-		{
-			m_LightBuffer->ReleaseBufferedResource();
-			m_LightBuffer = nullptr;
-		}
-	}
+	{}
 
 	void PointLightSceneProxy::CalculateLocalToProjectionForDirection( Matrix& Mat, const Vector& Direction, const Vector& UpVector)
 	{

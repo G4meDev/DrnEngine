@@ -67,12 +67,9 @@ namespace Drn
 		TRefCountPtr<class RenderTexture2DArray> m_ShadowmapResource;
 		std::vector<TRefCountPtr<class DepthStencilView>> m_ShadowmapViews;
 
+		TRefCountPtr<class RenderUniformBuffer> ShadowBuffer;
 		DirectionalLightData m_LightData;
-
 		DirectionalLightShadowData m_ShadowData;
-		Resource* m_ShadowBuffer[NUM_BACKBUFFERS] = {nullptr};
-
-		std::vector<Resource*> m_CsWorldToProjectionMatricesBuffer[NUM_BACKBUFFERS];
 
 		friend class DirectionalLightComponent;
 

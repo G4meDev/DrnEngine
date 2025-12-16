@@ -17,6 +17,7 @@ namespace Drn
 		float InvRadius;
 
 		uint32 ShadowBufferIndex;
+		Vector Padding;
 	};
 
 	struct ShadowDepthData
@@ -28,6 +29,8 @@ namespace Drn
 		uint32 ShadowmapTextureIndex;
 		float DepthBias;
 		float InvShadowResolution;
+
+		float Padding;
 	};
 
 	class PointLightSceneProxy : public LightSceneProxy
@@ -64,10 +67,9 @@ namespace Drn
 		TRefCountPtr<class RenderTextureCube> m_ShadowCubemapResource;
 
 		PointLightBuffer m_Buffer;
-		Resource* m_LightBuffer;
 
 		ShadowDepthData m_ShadowDepthData;
-		Resource* m_ShadowDepthBuffer;
+		TRefCountPtr<class RenderUniformBuffer> ShadowDepthBuffer;
 
 	private:
 

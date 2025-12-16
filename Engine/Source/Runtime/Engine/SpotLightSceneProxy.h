@@ -34,9 +34,11 @@ namespace Drn
 		SpotLightShadowData() = default;
 	
 		Matrix WorldToProjectionMatrices;
+
 		uint32 ShadowmapTextureIndex;
 		float DepthBias;
 		float InvShadowResolution;
+		float Padding;
 	};
 
 	class SpotLightSceneProxy : public LightSceneProxy
@@ -75,11 +77,10 @@ namespace Drn
 
 		TRefCountPtr<class RenderTexture2D> m_ShadowmapResource;
 
-		SpotLightData m_SpotLightData;
-		Resource* m_LightBuffer;
+		TRefCountPtr<class RenderUniformBuffer> ShadowDepthBuffer;
 
+		SpotLightData m_SpotLightData;
 		SpotLightShadowData m_ShadowDepthData;
-		Resource* m_ShadowDepthBuffer;
 
 	private:
 
