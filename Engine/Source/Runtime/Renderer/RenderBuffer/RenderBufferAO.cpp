@@ -14,15 +14,12 @@ namespace Drn
 		, m_AOTarget(nullptr)
 		, m_AOHalfTarget(nullptr)
 		, m_AOSetupTarget(nullptr)
-		, m_AoBuffer(nullptr)
 	{
 		
 	}
 
 	RenderBufferAO::~RenderBufferAO()
-	{
-		ReleaseBuffers();
-	}
+	{}
 
 	void RenderBufferAO::Init()
 	{
@@ -38,8 +35,6 @@ namespace Drn
 
 		HalfSize = IntPoint::ComponentWiseMax(m_Size / 2, IntPoint(1));
 
-		ReleaseBuffers();
-
 		RenderResourceCreateInfo AOTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "AOTarget" );
 		m_AOTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, AO_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), AOTargetCreateInfo);
@@ -51,18 +46,6 @@ namespace Drn
 		RenderResourceCreateInfo AOSetupTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "AOSetupTarget" );
 		m_AOSetupTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), HalfSize.X, HalfSize.Y, AO_SETUP_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), AOSetupTargetCreateInfo);
-
-		{
-			m_AoBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-			m_AoBuffer->SetName("CB_AoBuffer_");
-#endif
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-			ResourceViewDesc.BufferLocation = m_AoBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-			ResourceViewDesc.SizeInBytes = 256;
-			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_AoBuffer->GetCpuHandle());
-		}
 	}
 
 	void RenderBufferAO::Clear( D3D12CommandList* CommandList )
@@ -128,17 +111,7 @@ namespace Drn
 		const float TemporalScalar = (float)Renderer->GetSceneView().FrameIndexMod8 / SSAO_RandomTexture->GetSizeX();
 		m_AoData.TemporalOffset = Vector2(TemporalScalar * 2.48f, TemporalScalar * 7.52f);
 
-		UINT8* ConstantBufferStart;
-		CD3DX12_RANGE readRange( 0, 0 );
-		m_AoBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, &m_AoData, sizeof(AoData));
-		m_AoBuffer->GetD3D12Resource()->Unmap(0, nullptr);
-	}
-
-	void RenderBufferAO::ReleaseBuffers()
-	{
-		if (m_AoBuffer)
-			m_AoBuffer->ReleaseBufferedResource();
+		AoBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(AoData), EUniformBufferUsage::SingleFrame, &m_AoData);
 	}
 
 }

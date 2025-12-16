@@ -35,11 +35,10 @@ namespace Drn
 		void Bind( class D3D12CommandList* CommandList );
 
 		void MapBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer, const SSRSettings& Settings);
-		void ReleaseBuffers();
 
 		TRefCountPtr<RenderTexture2D> m_Target;
 
-		Resource* m_Buffer;
+		TRefCountPtr<class RenderUniformBuffer> Buffer;
 		ScreenSpaceRefletcionData m_Data;
 	};
 }

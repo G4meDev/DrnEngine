@@ -37,10 +37,9 @@ namespace Drn
 		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
 		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
 
-		void MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer);
-		void ReleaseBuffers();
+		void MapBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer);
 
-		Resource* m_Buffer;
+		TRefCountPtr<class RenderUniformBuffer> Buffer;
 		ReflectionEnvironmentData m_Data;
 	};
 }

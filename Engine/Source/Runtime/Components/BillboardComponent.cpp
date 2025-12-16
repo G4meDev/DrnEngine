@@ -60,18 +60,10 @@ namespace Drn
 		: PrimitiveSceneProxy( InBillboardComponent )
 		, m_Sprite( InBillboardComponent->GetSprite() )
 		, m_Guid( InBillboardComponent->GetParent() ? InBillboardComponent->GetParent()->GetGuid() : InBillboardComponent->GetGuid() )
-		, m_BillboardBuffer(nullptr)
-	{
-	}
+	{}
 
 	BillboardSceneProxy::~BillboardSceneProxy()
-	{
-		if (m_BillboardBuffer)
-		{
-			m_BillboardBuffer->ReleaseBufferedResource();
-			m_BillboardBuffer = nullptr;
-		}
-	}
+	{}
 
 	void BillboardSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
@@ -123,18 +115,7 @@ namespace Drn
 #endif
 
 	void BillboardSceneProxy::InitResources( D3D12CommandList* CommandList )
-	{
-		m_BillboardBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.BufferLocation = m_BillboardBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ResourceViewDesc.SizeInBytes = 256;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_BillboardBuffer->GetCpuHandle());
-
-#if D3D12_Debug_INFO
-		m_BillboardBuffer->SetName("ConstantBufferBillboard_" + m_Name);
-#endif
-	}
+	{}
 
 	void BillboardSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
@@ -172,14 +153,10 @@ namespace Drn
 		m_BillboardData.m_LocalToProjetcion = mvpMatrix;
 		m_BillboardData.m_Guid = m_Guid;
 
-		UINT8* ConstantBufferStart;
-		CD3DX12_RANGE readRange( 0, 0 );
-		m_BillboardBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, &m_BillboardData, sizeof(BillboardData));
-		m_BillboardBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+		TRefCountPtr<RenderUniformBuffer> BillboardBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(BillboardData), EUniformBufferUsage::SingleFrame, &m_BillboardData);
 
 		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_BillboardBuffer->GetGpuHandle()), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, BillboardBuffer->GetViewIndex(), 1);
 		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 	}
 

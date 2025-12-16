@@ -17,39 +17,10 @@ namespace Drn
 	}
 
 	StaticMeshSceneProxy::~StaticMeshSceneProxy()
-	{
-		for (Resource*& Res : m_PrimitiveSource)
-		{
-			if (Res)
-			{
-				Res->ReleaseBufferedResource();
-				Res = nullptr;
-			}
-		}
-	}
+	{}
 
 	void StaticMeshSceneProxy::InitResources( D3D12CommandList* CommandList )
-	{
-		for (int32 i = 0 ; i < NUM_BACKBUFFERS; i++)
-		{
-			if (m_PrimitiveSource[i])
-			{
-				continue;
-			}
-
-			m_PrimitiveSource[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 512 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-			ResourceViewDesc.BufferLocation = m_PrimitiveSource[i]->GetD3D12Resource()->GetGPUVirtualAddress();
-			ResourceViewDesc.SizeInBytes = 512;
-			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_PrimitiveSource[i]->GetCpuHandle());
-
-	#if D3D12_Debug_INFO
-			m_PrimitiveSource[i]->SetName("ConstantBufferStaticMesh_" + m_Name);
-	#endif
-		}
-
-	}
+	{}
 
 	void StaticMeshSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
@@ -130,14 +101,11 @@ namespace Drn
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
 				m_PrimitiveBuffer.m_Guid = m_Guid;
 
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
+				// TODO: cache in different draws
+				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 				RenderProxy.BindAndDraw(CommandList);
@@ -167,14 +135,10 @@ namespace Drn
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
 				m_PrimitiveBuffer.m_Guid = m_Guid;
 		
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
+				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 		
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		
 				RenderProxy.BindAndDraw(CommandList);
@@ -215,14 +179,10 @@ namespace Drn
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
 				m_PrimitiveBuffer.m_Guid = m_Guid;
 
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
+				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		
 				RenderProxy.BindAndDraw(CommandList);
@@ -251,14 +211,10 @@ namespace Drn
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
 
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
+				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 				RenderProxy.BindAndDraw(CommandList);
@@ -302,18 +258,10 @@ namespace Drn
 				m_PrimitiveBuffer.m_Guid = m_Guid;
 			}
 
-			{
-				SCOPE_STAT("Copy");
-
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
-			}
+			TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
 			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
 			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 
 			RenderProxy.BindAndDraw(CommandList);
@@ -342,14 +290,10 @@ namespace Drn
 			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
 			m_PrimitiveBuffer.m_Guid = m_Guid;
 
-			UINT8* ConstantBufferStart;
-			CD3DX12_RANGE readRange( 0, 0 );
-			m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-			memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-			m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
+			TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
 			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
 			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		
 			RenderProxy.BindAndDraw(CommandList);
@@ -382,14 +326,10 @@ namespace Drn
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
 				m_PrimitiveBuffer.m_Guid = m_Guid;
 
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_PrimitiveBuffer, sizeof(PrimitiveBuffer));
-				m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetD3D12Resource()->Unmap(0, nullptr);
+				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer->m_BindlessViewBuffer[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_PrimitiveSource[Renderer::Get()->GetCurrentBackbufferIndex()]->GetGpuHandle()), 1);
+				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
 				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(Renderer::Get()->m_StaticSamplersBuffer->GetGpuHandle()), 2);
 		
 				RenderProxy.BindAndDraw( CommandList );

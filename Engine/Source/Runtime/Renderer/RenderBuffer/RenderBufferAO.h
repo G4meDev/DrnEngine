@@ -31,6 +31,7 @@ namespace Drn
 		float Pad_1;
 
 		Vector2 TemporalOffset;
+		Vector2 Pad_2;
 	};
 
 	class RenderBufferAO : public RenderBuffer
@@ -49,14 +50,12 @@ namespace Drn
 		void BindMain( class D3D12CommandList* CommandList );
 		void MapBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer, const SSAOSettings& Settings);
 
-		void ReleaseBuffers();
-
 		TRefCountPtr<RenderTexture2D> m_AOTarget;
 		TRefCountPtr<RenderTexture2D> m_AOHalfTarget;
 		TRefCountPtr<RenderTexture2D> m_AOSetupTarget;
 
 		AoData m_AoData;
-		Resource* m_AoBuffer;
+		TRefCountPtr<class RenderUniformBuffer> AoBuffer;
 
 		IntPoint HalfSize;
 

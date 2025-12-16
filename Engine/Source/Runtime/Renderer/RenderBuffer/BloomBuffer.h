@@ -7,23 +7,16 @@
 
 namespace Drn
 {
-	struct BloomDataHeader
-	{
-		BloomDataHeader() = default;
-
-		uint32 SampleTexture;
-		uint32 AddtiveTexture;
-
-		float Pad_1;
-		float Pad_2;
-	};
-
 	struct BloomData
 	{
 		BloomData() = default;
 
-		BloomDataHeader Header;
-		std::vector<Vector4> SampleOffsetWeights;
+		uint32 SampleTexture;
+		uint32 AddtiveTexture;
+
+		Vector2 Padding;
+
+		Vector4 SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT];
 	};
 
 	class BloomBuffer : public RenderBuffer
@@ -38,12 +31,11 @@ namespace Drn
 		void Clear( class D3D12CommandList* CommandList );
 		void Bind( class D3D12CommandList* CommandList );
 
-		void MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer );
-		void ReleaseBuffers();
+		void MapBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
 
-		TRefCountPtr<RenderTexture2D> m_BloomTargets[NUM_BLOOM_TARGETS] = { nullptr };
+		TRefCountPtr<RenderTexture2D> m_BloomTargets[NUM_BLOOM_TARGETS];
 
-		Resource* m_Buffer[NUM_BLOOM_TARGETS] = { nullptr };
+		TRefCountPtr<class RenderUniformBuffer> Buffer[NUM_BLOOM_TARGETS];
 		BloomData m_Data;
 
 		D3D12_VIEWPORT m_Viewports[NUM_SCENE_DOWNSAMPLES];

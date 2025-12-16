@@ -6,35 +6,16 @@
 namespace Drn
 {
 	SceneDownSampleBuffer::SceneDownSampleBuffer()
-	{
-		
-	}
+	{}
 
 	SceneDownSampleBuffer::~SceneDownSampleBuffer()
-	{
-		ReleaseBuffers();
-
-	}
+	{}
 
 	void SceneDownSampleBuffer::Init()
 	{
 		RenderBuffer::Init();
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-// ---------------------------------------------------------------------------------------------------------------
-
-		for (int32 i = 0; i < NUM_SCENE_DOWNSAMPLES; i++)
-		{
-			m_Buffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-			m_Buffer[i]->SetName("CB_SceneDownSample" + GetDownSamplePostfix(i));
-#endif
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-			ResourceViewDesc.BufferLocation = m_Buffer[i]->GetD3D12Resource()->GetGPUVirtualAddress();
-			ResourceViewDesc.SizeInBytes = 256;
-			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_Buffer[i]->GetCpuHandle());
-		}
 	}
 
 	void SceneDownSampleBuffer::Resize( const IntPoint& InSize )
@@ -65,7 +46,7 @@ namespace Drn
 		
 	}
 
-	void SceneDownSampleBuffer::MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void SceneDownSampleBuffer::MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		for (int32 i = 0; i < NUM_SCENE_DOWNSAMPLES; i++)
 		{
@@ -78,23 +59,7 @@ namespace Drn
 				? Renderer->m_TAABuffer->GetFrameResource(Renderer->m_FrameIndex)->GetShaderResourceView()->GetDescriptorHeapIndex()
 				: m_DownSampleTargets[i - 1]->GetShaderResourceView()->GetDescriptorHeapIndex();
 
-			UINT8* ConstantBufferStart;
-			CD3DX12_RANGE readRange( 0, 0 );
-			m_Buffer[i]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-			memcpy( ConstantBufferStart, &m_Data, sizeof(SceneDownSampleData));
-			m_Buffer[i]->GetD3D12Resource()->Unmap(0, nullptr);
-		}
-	}
-
-	void SceneDownSampleBuffer::ReleaseBuffers()
-	{
-		for (int32 i = 0; i < NUM_SCENE_DOWNSAMPLES; i++)
-		{
-			if (m_Buffer[i])
-			{
-				m_Buffer[i]->ReleaseBufferedResource();
-				m_Buffer[i] = nullptr;
-			}
+			Buffer[i] = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(SceneDownSampleData), EUniformBufferUsage::SingleFrame, &m_Data);
 		}
 	}
 

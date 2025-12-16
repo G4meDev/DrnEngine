@@ -57,9 +57,6 @@ namespace Drn
 
 		AssetHandle<StaticMesh> m_Mesh;
 
-
 		PrimitiveBuffer m_PrimitiveBuffer;
-
-		Resource* m_PrimitiveSource[NUM_BACKBUFFERS] = { nullptr };
 	};
 }

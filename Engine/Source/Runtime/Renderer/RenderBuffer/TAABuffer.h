@@ -35,12 +35,11 @@ namespace Drn
 		void Bind( class D3D12CommandList* CommandList );
 
 		void MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer );
-		void ReleaseBuffers();
 
 		TRefCountPtr<RenderTexture2D> m_TAATarget[2] = { nullptr, nullptr };
 		TRefCountPtr<UnorderedAccessView> m_UavViews[2];
 
-		Resource* m_Buffer[NUM_BACKBUFFERS] = {nullptr};
+		TRefCountPtr<class RenderUniformBuffer> Buffer;
 		TAAData m_Data;
 
 		RenderTexture2D* GetFrameResource( uint32 FrameIndex ) const { return m_TAATarget[FrameIndex%2]; }

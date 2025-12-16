@@ -12,8 +12,11 @@ namespace Drn
 		BillboardData() = default;
 
 		Matrix m_LocalToProjetcion;
+
 		Guid m_Guid;
+
 		uint32 m_TextureIndex;
+		Vector Padding;
 	};
 
 	class BillboardSceneProxy : public PrimitiveSceneProxy
@@ -48,7 +51,6 @@ namespace Drn
 		Guid m_Guid;
 
 		BillboardData m_BillboardData;
-		Resource* m_BillboardBuffer;
 
 		class BillboardComponent* m_BillboardComponent;
 	};

@@ -14,6 +14,7 @@ namespace Drn
 		Vector4 ParentSizeAndInvSize;
 
 		uint32 ParentTexture;
+		Vector Padding;
 	};
 
 	class SceneDownSampleBuffer : public RenderBuffer
@@ -28,12 +29,11 @@ namespace Drn
 		void Clear( class D3D12CommandList* CommandList );
 		void Bind( class D3D12CommandList* CommandList );
 
-		void MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer );
-		void ReleaseBuffers();
+		void MapBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
 
 		TRefCountPtr<RenderTexture2D> m_DownSampleTargets[NUM_SCENE_DOWNSAMPLES] = { nullptr };
 
-		Resource* m_Buffer[NUM_SCENE_DOWNSAMPLES] = {nullptr};
+		TRefCountPtr<class RenderUniformBuffer> Buffer[NUM_SCENE_DOWNSAMPLES];
 		SceneDownSampleData m_Data;
 
 		IntPoint m_Viewports[NUM_SCENE_DOWNSAMPLES];

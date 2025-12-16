@@ -6,35 +6,16 @@
 namespace Drn
 {
 	BloomBuffer::BloomBuffer()
-	{
-		
-	}
+	{}
 
 	BloomBuffer::~BloomBuffer()
-	{
-		ReleaseBuffers();
-
-	}
+	{}
 
 	void BloomBuffer::Init()
 	{
 		RenderBuffer::Init();
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-// ---------------------------------------------------------------------------------------------------------------
-
-		for (int32 i = 0; i < NUM_BLOOM_TARGETS; i++)
-		{
-			m_Buffer[i] = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-			m_Buffer[i]->SetName("CB_Bloom" + GetDownSamplePostfix(i) + ((i%2 == 0) ? "Y" : "X"));
-#endif
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-			ResourceViewDesc.BufferLocation = m_Buffer[i]->GetD3D12Resource()->GetGPUVirtualAddress();
-			ResourceViewDesc.SizeInBytes = 256;
-			Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_Buffer[i]->GetCpuHandle());
-		}
 	}
 
 	void BloomBuffer::Resize( const IntPoint& Size )
@@ -66,7 +47,7 @@ namespace Drn
 		
 	}
 
-	void BloomBuffer::MapBuffer( ID3D12GraphicsCommandList2* CommandList, SceneRenderer* Renderer )
+	void BloomBuffer::MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		std::vector<float> SampleWeights;
 		SampleWeights.resize(BLOOM_PACKED_SAMPLE_COUNT);
@@ -101,8 +82,6 @@ namespace Drn
 			std::vector<float> SampleOffsets;
 			SampleOffsets.resize(BLOOM_STATIC_SAMPLE_COUNT);
 
-			m_Data.SampleOffsetWeights.resize( BLOOM_PACKED_SAMPLE_COUNT );
-
 			{
 				for (int32 j = 0; j < BLOOM_PACKED_SAMPLE_COUNT - 1; j++)
 				{
@@ -110,14 +89,9 @@ namespace Drn
 				}
 				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, SampleWeights[BLOOM_PACKED_SAMPLE_COUNT - 1], 0, 0);
 
-				m_Data.Header.SampleTexture = Renderer->m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetShaderResourceView()->GetDescriptorHeapIndex();
+				m_Data.SampleTexture = Renderer->m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetShaderResourceView()->GetDescriptorHeapIndex();
 
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_Buffer[i * 2]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_Data, sizeof(BloomDataHeader));
-				memcpy( ConstantBufferStart + sizeof(BloomDataHeader), m_Data.SampleOffsetWeights.data(), sizeof(Vector4) * m_Data.SampleOffsetWeights.size());
-				m_Buffer[i * 2]->GetD3D12Resource()->Unmap(0, nullptr);
+				Buffer[i * 2] = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(BloomData), EUniformBufferUsage::SingleFrame, &m_Data);
 			}
 
 			{
@@ -127,27 +101,10 @@ namespace Drn
 				}
 				m_Data.SampleOffsetWeights[BLOOM_PACKED_SAMPLE_COUNT - 1] = Vector4(0, SampleWeights[BLOOM_PACKED_SAMPLE_COUNT - 1], 0, 0);
 
-				m_Data.Header.SampleTexture = m_BloomTargets[i * 2]->GetShaderResourceView()->GetDescriptorHeapIndex();
-				m_Data.Header.AddtiveTexture = i == NUM_SCENE_DOWNSAMPLES - 1 ? 0 : m_BloomTargets[(i + 1) * 2 + 1]->GetShaderResourceView()->GetDescriptorHeapIndex();
+				m_Data.SampleTexture = m_BloomTargets[i * 2]->GetShaderResourceView()->GetDescriptorHeapIndex();
+				m_Data.AddtiveTexture = i == NUM_SCENE_DOWNSAMPLES - 1 ? 0 : m_BloomTargets[(i + 1) * 2 + 1]->GetShaderResourceView()->GetDescriptorHeapIndex();
 
-				UINT8* ConstantBufferStart;
-				CD3DX12_RANGE readRange( 0, 0 );
-				m_Buffer[i * 2 + 1]->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-				memcpy( ConstantBufferStart, &m_Data, sizeof(BloomDataHeader));
-				memcpy( ConstantBufferStart + sizeof(BloomDataHeader), m_Data.SampleOffsetWeights.data(), sizeof(Vector4) * m_Data.SampleOffsetWeights.size());
-				m_Buffer[i * 2 + 1]->GetD3D12Resource()->Unmap(0, nullptr);
-			}
-		}
-	}
-
-	void BloomBuffer::ReleaseBuffers()
-	{
-		for (int32 i = 0; i < NUM_BLOOM_TARGETS; i++)
-		{
-			if (m_Buffer[i])
-			{
-				m_Buffer[i]->ReleaseBufferedResource();
-				m_Buffer[i] = nullptr;
+				Buffer[i * 2 + 1] = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(BloomData), EUniformBufferUsage::SingleFrame, &m_Data);
 			}
 		}
 	}
