@@ -25,9 +25,6 @@ namespace Drn
 		, m_SupportStaticMeshDecalPass(false)
 		, m_MaterialDomain(EMaterialDomain::Surface)
 		, m_TwoSided(false)
-		, m_TextureIndexBuffer(nullptr)
-		, m_ScalarBuffer(nullptr)
-		, m_VectorBuffer(nullptr)
 		, m_ScalarBufferDirty(true)
 		, m_VectorBufferDirty(true)
 		, m_TextureBufferDirty(true)
@@ -57,9 +54,6 @@ namespace Drn
 		, m_SupportStaticMeshDecalPass(false)
 		, m_MaterialDomain(EMaterialDomain::Surface)
 		, m_TwoSided(false)
-		, m_TextureIndexBuffer(nullptr)
-		, m_ScalarBuffer(nullptr)
-		, m_VectorBuffer(nullptr)
 		, m_ScalarBufferDirty(true)
 		, m_VectorBufferDirty(true)
 		, m_TextureBufferDirty(true)
@@ -72,9 +66,6 @@ namespace Drn
 	Material::~Material()
 	{
 		ReleasePSOs();
-
-		ReleaseBuffers();
-
 		
 	}
 
@@ -290,28 +281,6 @@ namespace Drn
 #endif
 	}
 
-	void Material::ReleaseBuffers()
-	{
-		if (m_TextureIndexBuffer)
-		{
-			m_TextureIndexBuffer->ReleaseBufferedResource();
-			m_TextureIndexBuffer = nullptr;
-		}
-
-		if (m_ScalarBuffer)
-		{
-			m_ScalarBuffer->ReleaseBufferedResource();
-			m_ScalarBuffer = nullptr;
-		}
-
-		if (m_VectorBuffer)
-		{
-			m_VectorBuffer->ReleaseBufferedResource();
-			m_VectorBuffer = nullptr;
-		}
-
-	}
-
 	void Material::InitalizeParameterMap()
 	{
 		m_ScalarMap.clear();
@@ -389,63 +358,11 @@ namespace Drn
 			}
 
 			ReleasePSOs();
-			ReleaseBuffers();
 
 #if D3D12_Debug_INFO
 			std::string name = Path::ConvertShortPath(m_Path);
 			name = Path::RemoveFileExtension(name);
 #endif
-
-			// TODO: support no constant buffers
-
-			{
-				m_TextureIndexBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-				m_TextureIndexBuffer->SetName("TextureBuffer_" + name);
-#endif
-
-				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-				ResourceViewDesc.BufferLocation = m_TextureIndexBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-				ResourceViewDesc.SizeInBytes = 256;
-				Device->CreateConstantBufferView( &ResourceViewDesc, m_TextureIndexBuffer->GetCpuHandle());
-
-			}
-
-			{
-				const size_t ScalarBufferSize = m_FloatSlots.size() * sizeof( float );
-				//const size_t ScalarBufferSizePadded = ( ScalarBufferSize + 255 ) & ~255 + 256;
-				// TODO: remove
-				const size_t ScalarBufferSizePadded = 256;
-
-				m_ScalarBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( ScalarBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-				m_ScalarBuffer->SetName("ScalarBuffer_" + name);
-#endif
-
-				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-				ResourceViewDesc.BufferLocation = m_ScalarBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-				ResourceViewDesc.SizeInBytes = ScalarBufferSizePadded;
-				Device->CreateConstantBufferView( &ResourceViewDesc , m_ScalarBuffer->GetCpuHandle());
-
-			}
-
-			{
-				const size_t VectorBufferSize = m_Vector4Slots.size() * sizeof( Vector4 );
-				//const size_t VectorBufferSizePadded = ( VectorBufferSize + 255 ) & ~255;
-				// TODO: remove
-				const size_t VectorBufferSizePadded = 256;
-
-				m_VectorBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( VectorBufferSizePadded ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-				m_VectorBuffer->SetName("VectorBuffer_" + name);
-#endif
-
-				D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-				ResourceViewDesc.BufferLocation = m_VectorBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-				ResourceViewDesc.SizeInBytes = VectorBufferSizePadded;
-				Device->CreateConstantBufferView( &ResourceViewDesc , m_VectorBuffer->GetCpuHandle());
-
-			}
 
 			const D3D12_CULL_MODE CullMode = GetCullMode();
 
@@ -557,6 +474,70 @@ namespace Drn
 				m_TextureCubeSlots[i].m_TextureCube->UploadResources(CommandList);
 			}
 		}
+
+		// if (m_TextureBufferDirty)
+		if (true) //TODO: issue with re imported textures. cached keeps texture index of destroyed texture
+		{
+			m_TextureBufferDirty = false;
+			TextureIndexBuffer = nullptr;
+
+			std::vector<uint32> TextureIndices;
+			TextureIndices.resize(m_Texture2DSlots.size() + m_TextureCubeSlots.size());
+
+			for (auto& TextureSlot : m_Texture2DSlots)
+			{
+				TextureIndices[TextureSlot.m_Index] = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetTextureIndex() : 0;
+			}
+
+			for (auto& TextureSlot : m_TextureCubeSlots)
+			{
+				TextureIndices[TextureSlot.m_Index] = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetTextureIndex() : 0;
+			}
+
+			if (TextureIndices.size() > 0)
+			{
+				uint32 Size = Align(TextureIndices.size() * sizeof(uint32), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				TextureIndexBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, TextureIndices.data());
+			}
+		}
+
+		//if (m_ScalarBufferDirty)
+		if (true)
+		{
+			m_ScalarBufferDirty = false;
+			ScalarBuffer = nullptr;
+
+			std::vector<float> Values;
+			for (int i = 0; i < m_FloatSlots.size(); i++)
+			{
+				Values.push_back(m_FloatSlots[i].m_Value);
+			}
+
+			if (Values.size() > 0)
+			{
+				uint32 Size = Align(Values.size() * sizeof(float), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				ScalarBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Values.data());
+			}
+		}
+
+		//if (m_VectorBufferDirty)
+		if (true)
+		{
+			m_VectorBufferDirty = false;
+			VectorBuffer = nullptr;
+
+			std::vector<Vector4> Values;
+			for (int i = 0; i < m_Vector4Slots.size(); i++)
+			{
+				Values.push_back(m_Vector4Slots[i].m_Value);
+			}
+
+			if (Values.size() > 0)
+			{
+				uint32 Size = Align(Values.size() * sizeof(Vector4), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				VectorBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Values.data());
+			}
+		}
 	}
 
 	void Material::BindMainPass( ID3D12GraphicsCommandList2* CommandList )
@@ -661,67 +642,9 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		//if (m_TextureBufferDirty)
-		if (true) //TODO: issue with re imported textures. cached keeps texture index of destroyed texture
-		{
-			m_TextureBufferDirty = false;
-
-			std::vector<uint32> TextureIndices;
-			TextureIndices.resize(m_Texture2DSlots.size() + m_TextureCubeSlots.size());
-
-			for (auto& TextureSlot : m_Texture2DSlots)
-			{
-				TextureIndices[TextureSlot.m_Index] = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetTextureIndex() : 0;
-			}
-
-			for (auto& TextureSlot : m_TextureCubeSlots)
-			{
-				TextureIndices[TextureSlot.m_Index] = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetTextureIndex() : 0;
-			}
-
-			UINT8* ConstantBufferStart;
-			CD3DX12_RANGE readRange( 0, 0 );
-			m_TextureIndexBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-			memcpy( ConstantBufferStart, TextureIndices.data(), TextureIndices.size() * sizeof(uint32));
-			m_TextureIndexBuffer->GetD3D12Resource()->Unmap(0, nullptr);
-		}
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_TextureIndexBuffer->GetGpuHandle()), 3);
-
-		if (m_ScalarBufferDirty)
-		{
-			m_ScalarBufferDirty = false;
-
-			std::vector<float> Values;
-			for (int i = 0; i < m_FloatSlots.size(); i++)
-			{
-				Values.push_back(m_FloatSlots[i].m_Value);
-			}
-
-			UINT8* ConstantBufferStart;
-			CD3DX12_RANGE readRange( 0, 0 );
-			m_ScalarBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-			memcpy( ConstantBufferStart, Values.data(), Values.size() * sizeof(float) );
-			m_ScalarBuffer->GetD3D12Resource()->Unmap(0, nullptr);
-		}
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_ScalarBuffer->GetGpuHandle()), 4);
-
-		if (m_VectorBufferDirty)
-		{
-			m_VectorBufferDirty = false;
-
-			std::vector<Vector4> Values;
-			for (int i = 0; i < m_Vector4Slots.size(); i++)
-			{
-				Values.push_back(m_Vector4Slots[i].m_Value);
-			}
-
-			UINT8* ConstantBufferStart;
-			CD3DX12_RANGE readRange( 0, 0 );
-			m_VectorBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-			memcpy( ConstantBufferStart, Values.data(), Values.size() * sizeof(Vector4) );
-			m_VectorBuffer->GetD3D12Resource()->Unmap(0, nullptr);
-		}
-		CommandList->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_VectorBuffer->GetGpuHandle()), 5);
+		CommandList->SetGraphicsRoot32BitConstant(0, TextureIndexBuffer ? TextureIndexBuffer->GetViewIndex() : 0, 3);
+		CommandList->SetGraphicsRoot32BitConstant(0, ScalarBuffer ? ScalarBuffer->GetViewIndex() : 0, 4);
+		CommandList->SetGraphicsRoot32BitConstant(0, VectorBuffer ? VectorBuffer->GetViewIndex() : 0, 5);
 	}
 
 	void Material::SetNamedTexture2D( const std::string& Name, AssetHandle<Texture2D> TextureAsset )

@@ -3,7 +3,7 @@
 
 namespace Drn
 {
-	void ResourceState_New::Initialize( uint32 SubresourceCount )
+	void ResourceState::Initialize( uint32 SubresourceCount )
 	{
 		drn_check(0 == m_SubresourceState.size());
 		drn_check(SubresourceCount > 0);
@@ -13,12 +13,12 @@ namespace Drn
 		SetResourceState(D3D12_RESOURCE_STATE_TBD);
 	}
 
-	bool ResourceState_New::AreAllSubresourcesSame() const
+	bool ResourceState::AreAllSubresourcesSame() const
 	{
 		return m_AllSubresourcesSame;
 	}
 
-	bool ResourceState_New::CheckResourceState( D3D12_RESOURCE_STATES State ) const
+	bool ResourceState::CheckResourceState( D3D12_RESOURCE_STATES State ) const
 	{
 		if (m_AllSubresourcesSame)
 		{
@@ -39,12 +39,12 @@ namespace Drn
 		}
 	}
 
-	bool ResourceState_New::CheckResourceStateInitalized() const
+	bool ResourceState::CheckResourceStateInitalized() const
 	{
 		return m_SubresourceState.size() > 0;
 	}
 
-	D3D12_RESOURCE_STATES ResourceState_New::GetSubresourceState( uint32 SubresourceIndex ) const
+	D3D12_RESOURCE_STATES ResourceState::GetSubresourceState( uint32 SubresourceIndex ) const
 	{
 		if (m_AllSubresourcesSame)
 		{
@@ -57,7 +57,7 @@ namespace Drn
 		}
 	}
 
-	bool ResourceState_New::CheckAllSubresourceSame()
+	bool ResourceState::CheckAllSubresourceSame()
 	{
 		if (m_AllSubresourcesSame)
 		{
@@ -82,7 +82,7 @@ namespace Drn
 		}
 	}
 
-	void ResourceState_New::SetResourceState( D3D12_RESOURCE_STATES State )
+	void ResourceState::SetResourceState( D3D12_RESOURCE_STATES State )
 	{
 		m_AllSubresourcesSame = 1;
 		drn_check((State & (1 << 31)) == 0);
@@ -90,7 +90,7 @@ namespace Drn
 		m_ResourceState = *reinterpret_cast<uint32*>(&State);
 	}
 
-	void ResourceState_New::SetSubresourceState( uint32 SubresourceIndex, D3D12_RESOURCE_STATES State )
+	void ResourceState::SetSubresourceState( uint32 SubresourceIndex, D3D12_RESOURCE_STATES State )
 	{
 		if (SubresourceIndex == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES || m_SubresourceState.size() == 1)
 		{

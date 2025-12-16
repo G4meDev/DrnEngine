@@ -4,7 +4,7 @@
 
 namespace Drn
 {
-	class ResourceState_New
+	class ResourceState
 	{
 	public:
 		void Initialize(uint32 SubresourceCount);

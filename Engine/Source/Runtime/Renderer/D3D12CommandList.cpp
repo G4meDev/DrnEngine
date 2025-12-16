@@ -155,7 +155,7 @@ namespace Drn
 		drn_check(pResource->RequiresResourceStateTracking());
 		drn_check(!((After & (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)) && (pResource->GetDesc().Flags & D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE)));
 
-		//ResourceState_New& ResourceState = GetResourceState(pResource);
+		//ResourceState& ResourceState = GetResourceState(pResource);
 		//if (subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES && !ResourceState.AreAllSubresourcesSame())
 		//{
 		//	const uint8 SubresourceCount = pResource->GetSubresourceCount();
@@ -195,7 +195,7 @@ namespace Drn
 
 		//TODO: add pending transition for start of command list
 
-		ResourceState_New& State = pResource->GetResourceState();
+		ResourceState& State = pResource->GetResourceState();
 		if (Subresource == D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES && !State.AreAllSubresourcesSame())
 		{
 			const uint8 SubresourceCount = pResource->GetSubresourceCount();
@@ -230,7 +230,7 @@ namespace Drn
 	//
 	//}
 
-	ResourceState_New& D3D12CommandList::GetResourceState( class RenderResource* pResource )
+	ResourceState& D3D12CommandList::GetResourceState( class RenderResource* pResource )
 	{
 		return TrackedResourceState.GetResourceState(pResource);
 	}
@@ -333,7 +333,7 @@ namespace Drn
 		m_ResourceBarrierBatcher.Flush(m_CommandList.Get());
 	}
 
-	void CommandListResourceState::ConditionalInitalize( RenderResource* pResource, ResourceState_New& ResourceState )
+	void CommandListResourceState::ConditionalInitalize( RenderResource* pResource, ResourceState& ResourceState )
 	{
 		if (!ResourceState.CheckResourceStateInitalized())
 		{
@@ -344,12 +344,12 @@ namespace Drn
 		drn_check(ResourceState.CheckResourceStateInitalized());
 	}
 
-	ResourceState_New& CommandListResourceState::GetResourceState( RenderResource* pResource )
+	ResourceState& CommandListResourceState::GetResourceState( RenderResource* pResource )
 	{
 		drn_check(pResource->RequiresResourceStateTracking());
 
-		auto it = ResourceStates.insert({pResource, ResourceState_New()}).first;
-		ResourceState_New& OutResourceState = it->second;
+		auto it = ResourceStates.insert({pResource, ResourceState()}).first;
+		ResourceState& OutResourceState = it->second;
 
 		ConditionalInitalize(pResource, OutResourceState);
 		return OutResourceState;

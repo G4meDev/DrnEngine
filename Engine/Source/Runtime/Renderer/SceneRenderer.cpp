@@ -145,7 +145,6 @@ namespace Drn
 
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_GBuffer->ClearDepth( m_CommandList);
 		m_GBuffer->BindDepth(m_CommandList);
@@ -182,7 +181,6 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking(m_DecalBuffer->m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_DecalBuffer->Clear(m_CommandList);
 		m_DecalBuffer->Bind(m_CommandList);
@@ -202,7 +200,6 @@ namespace Drn
 
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_CommandList->SetViewport( 0, 0, 0, m_RenderSize.X, m_RenderSize.Y, 1 );
 
@@ -265,7 +262,6 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_MasksBTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_VelocityTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_GBuffer->Clear( m_CommandList);
 		m_GBuffer->Bind(m_CommandList);
@@ -343,7 +339,6 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, m_HZBBuffer->m_UAVHandles[MipIndex]->GetDescriptorHeapIndex(), OutputIndexStart + i);
 			}
 
-			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSize.X, DispatchSize.Y, 1);
  		}
 
@@ -375,7 +370,6 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
@@ -394,7 +388,6 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
@@ -412,7 +405,6 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
@@ -428,7 +420,6 @@ namespace Drn
 
 		m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
@@ -470,7 +461,6 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_ScreenSpaceReflectionBuffer->Bind(m_CommandList);
 		m_ScreenSpaceReflectionBuffer->Clear(m_CommandList);
@@ -505,7 +495,6 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_GBuffer->m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &DeferredColorHandle, true, NULL);
@@ -559,7 +548,6 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, m_TAABuffer->Buffer->GetViewIndex(), 1);
 		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 		int32 DispatchSizeX = m_SceneView.Size.X / 8 + 1;
 		int32 DispatchSizeY = m_SceneView.Size.Y / 8 + 1;
 		m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSizeX, DispatchSizeY, 1);
@@ -589,7 +577,6 @@ namespace Drn
 
 		m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[0].X, m_SceneDownSampleBuffer->m_Viewports[0].Y, 1);
 
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		for (int32 i = 1; i < NUM_SCENE_DOWNSAMPLES; i++)
@@ -609,7 +596,6 @@ namespace Drn
 			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 			m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
-			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
 
@@ -640,7 +626,6 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 				m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
-				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 			}
 
@@ -666,7 +651,6 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 				m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
-				ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 			}
 		}
@@ -694,7 +678,6 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->m_BloomTargets[1]->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
 
 		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -719,7 +702,6 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking(m_EditorPrimitiveBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		m_CommandList->TransitionResourceWithTracking(m_EditorPrimitiveBuffer->m_ColorTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_EditorPrimitiveBuffer->Clear(m_CommandList);
 		m_EditorPrimitiveBuffer->Bind(m_CommandList);
@@ -747,7 +729,6 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -761,7 +742,6 @@ namespace Drn
 
 		m_CommandList->TransitionResourceWithTracking(m_EditorSelectionBuffer->m_DepthStencilTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		m_CommandList->FlushBarriers();
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 
 		m_EditorSelectionBuffer->Clear(m_CommandList);
 		m_EditorSelectionBuffer->Bind(m_CommandList);
@@ -786,7 +766,6 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -1088,7 +1067,7 @@ namespace Drn
 					D3D12_RANGE ReadRange = {};
 					ReadRange.Begin = 0;
 					ReadRange.End = 16;
-					Event.ReadbackBuffer->GetD3D12Resource()->Map(0, &ReadRange, reinterpret_cast<void**>(&MemoryStart));
+					Event.ReadbackBuffer->Map(0, &ReadRange, reinterpret_cast<void**>(&MemoryStart));
 
 					Guid Result;
 					memcpy(&Result, MemoryStart, 16);
@@ -1119,11 +1098,14 @@ namespace Drn
 		{
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-			Event.ReadbackBuffer = Resource::Create(D3D12_HEAP_TYPE_READBACK,
-				CD3DX12_RESOURCE_DESC::Buffer( 16 ), D3D12_RESOURCE_STATE_COPY_DEST, false);
+			CD3DX12_HEAP_PROPERTIES Prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK);
+			CD3DX12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Buffer( 16 );
+
+			Device->CreateCommittedResource(&Prop, D3D12_HEAP_FLAG_NONE,
+				&Desc, D3D12_RESOURCE_STATE_COPY_DEST, NULL, IID_PPV_ARGS(Event.ReadbackBuffer.GetInitReference()));
 
 #if D3D12_Debug_INFO
-			Event.ReadbackBuffer->SetName("ScreenPickReadbackBuffer");
+			Event.ReadbackBuffer->SetName(L"ScreenPickReadbackBuffer");
 #endif
 
 			m_CommandList->TransitionResourceWithTracking(m_HitProxyRenderBuffer->m_GuidTarget->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -1143,9 +1125,8 @@ namespace Drn
 			Footprint.Offset                             = 0;
 
 			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc( m_HitProxyRenderBuffer->m_GuidTarget->GetResource()->GetResource(), 0 );
-			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( Event.ReadbackBuffer->GetD3D12Resource(), Footprint );
+			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( Event.ReadbackBuffer, Footprint );
 
-			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
 
 			Event.FenceValue = Renderer::Get()->GetFence()->Signal();
@@ -1177,7 +1158,7 @@ namespace Drn
 					D3D12_RANGE ReadRange = {};
 					ReadRange.Begin = 0;
 					ReadRange.End = 16;
-					Event.ReadbackBuffer->GetD3D12Resource()->Map(0, &ReadRange, reinterpret_cast<void**>(&MemoryStart));
+					Event.ReadbackBuffer->Map(0, &ReadRange, reinterpret_cast<void**>(&MemoryStart));
 
 					float Depth;
 					memcpy(&Depth, MemoryStart, sizeof(float));
@@ -1208,11 +1189,14 @@ namespace Drn
 		{
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-			Event.ReadbackBuffer = Resource::Create(D3D12_HEAP_TYPE_READBACK,
-				CD3DX12_RESOURCE_DESC::Buffer( 16 ), D3D12_RESOURCE_STATE_COPY_DEST, false);
+			CD3DX12_HEAP_PROPERTIES Prop = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK);
+			CD3DX12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Buffer( 16 );
+
+			Device->CreateCommittedResource(&Prop, D3D12_HEAP_FLAG_NONE,
+				&Desc, D3D12_RESOURCE_STATE_COPY_DEST, NULL, IID_PPV_ARGS(Event.ReadbackBuffer.GetInitReference()));
 
 #if D3D12_Debug_INFO
-			Event.ReadbackBuffer->SetName("ReprojectionReadbackBuffer");
+			Event.ReadbackBuffer->SetName(L"ReprojectionReadbackBuffer");
 #endif
 
 			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -1232,9 +1216,8 @@ namespace Drn
 			Footprint.Offset                             = 0;
 
 			CD3DX12_TEXTURE_COPY_LOCATION SourceLoc( m_GBuffer->m_DepthTarget->GetResource()->GetResource(), 0 );
-			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( Event.ReadbackBuffer->GetD3D12Resource(), Footprint );
+			CD3DX12_TEXTURE_COPY_LOCATION DestLoc( Event.ReadbackBuffer, Footprint );
 
-			ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 			m_CommandList->GetD3D12CommandList()->CopyTextureRegion( &DestLoc, 0, 0, 0, &SourceLoc, &CopyBox );
 
 			Event.FenceValue = Renderer::Get()->GetFence()->Signal();

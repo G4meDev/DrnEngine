@@ -82,7 +82,6 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Device.h
 	Source/Runtime/Renderer/SwapChain.h
 	Source/Runtime/Renderer/BufferedResource.h
-	Source/Runtime/Renderer/Resource.h
 	Source/Runtime/Renderer/PipelineStateObject.h
 	Source/Runtime/Renderer/InputLayout.h
 	Source/Runtime/Renderer/StaticMeshSceneProxy.h
@@ -97,7 +96,6 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Material/Material.h
 	Source/Runtime/Renderer/VertexBuffer.h
 	Source/Runtime/Renderer/RenderGeometeryHelper.h
-	Source/Runtime/Renderer/ResourceStateTracker.h
 	Source/Runtime/Renderer/ResourceView.h
 	Source/Runtime/Renderer/SceneView.h
 	Source/Runtime/Renderer/RenderResource.h
@@ -288,7 +286,6 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Device.cpp
 	Source/Runtime/Renderer/SwapChain.cpp
 	Source/Runtime/Renderer/BufferedResource.cpp
-	Source/Runtime/Renderer/Resource.cpp
 	Source/Runtime/Renderer/PipelineStateObject.cpp
 	Source/Runtime/Renderer/InputLayout.cpp
 	Source/Runtime/Renderer/StaticMeshSceneProxy.cpp
@@ -303,7 +300,6 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Material/Material.cpp
 	Source/Runtime/Renderer/VertexBuffer.cpp
 	Source/Runtime/Renderer/RenderGeometeryHelper.cpp
-	Source/Runtime/Renderer/ResourceStateTracker.cpp
 	Source/Runtime/Renderer/ResourceView.cpp
 	Source/Runtime/Renderer/SceneView.cpp
 	Source/Runtime/Renderer/RenderResource.cpp

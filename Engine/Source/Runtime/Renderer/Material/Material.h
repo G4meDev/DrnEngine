@@ -107,8 +107,8 @@ namespace Drn
 		std::vector<MaterialIndexedFloatParameter> m_FloatSlots;
 		std::vector<MaterialIndexedVector4Parameter> m_Vector4Slots;
 
-		Resource* m_ScalarBuffer;
-		Resource* m_VectorBuffer;
+		TRefCountPtr<class RenderUniformBuffer> ScalarBuffer;
+		TRefCountPtr<class RenderUniformBuffer> VectorBuffer;
 
 		std::vector<float> m_ScalarValues;
 		std::vector<Vector4> m_VectorValues;
@@ -145,9 +145,7 @@ namespace Drn
 		bool m_VectorBufferDirty;
 		bool m_TextureBufferDirty;
 
-		Resource* m_TextureIndexBuffer;
-
-		void ReleaseBuffers();
+		TRefCountPtr<class RenderUniformBuffer> TextureIndexBuffer;
 
 		void InitalizeParameterMap();
 

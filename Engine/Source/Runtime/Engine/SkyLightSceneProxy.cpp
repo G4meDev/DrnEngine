@@ -7,30 +7,13 @@ namespace Drn
 	SkyLightSceneProxy::SkyLightSceneProxy( class SkyLightComponent* InComponent )
 		: LightSceneProxy( InComponent )
 		, m_SkyLightComponent(InComponent)
-		, m_LightBuffer(nullptr)
 		, m_Cubemap("")
 		, m_BlockLowerHemesphere(false)
 		, m_LowerHemesphereColor()
-	{
-		m_LightBuffer = Resource::Create(D3D12_HEAP_TYPE_UPLOAD, CD3DX12_RESOURCE_DESC::Buffer( 256 ), D3D12_RESOURCE_STATE_GENERIC_READ, false);
-#if D3D12_Debug_INFO
-		m_LightBuffer->SetName("CB_SkyLight_" + m_Name);
-#endif
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC ResourceViewDesc = {};
-		ResourceViewDesc.BufferLocation = m_LightBuffer->GetD3D12Resource()->GetGPUVirtualAddress();
-		ResourceViewDesc.SizeInBytes = 256;
-		Renderer::Get()->GetD3D12Device()->CreateConstantBufferView( &ResourceViewDesc, m_LightBuffer->GetCpuHandle());
-	}
+	{}
 
 	SkyLightSceneProxy::~SkyLightSceneProxy()
-	{
-		if (m_LightBuffer)
-		{
-			m_LightBuffer->ReleaseBufferedResource();
-			m_LightBuffer = nullptr;
-		}
-	}
+	{}
 
 	void SkyLightSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
@@ -39,13 +22,9 @@ namespace Drn
 		m_SkyLightData.LowerHemesphereColor = m_LowerHemesphereColor;
 		m_SkyLightData.CubemapTexture = m_Cubemap.IsValid() ? m_Cubemap->GetTextureIndex() : 0;
 
-		UINT8* ConstantBufferStart;
-		CD3DX12_RANGE readRange( 0, 0 );
-		m_LightBuffer->GetD3D12Resource()->Map(0, &readRange, reinterpret_cast<void**>( &ConstantBufferStart ) );
-		memcpy( ConstantBufferStart, &m_SkyLightData, sizeof(SkyLightData));
-		m_LightBuffer->GetD3D12Resource()->Unmap(0, nullptr);
+		TRefCountPtr<RenderUniformBuffer> LightBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(SkyLightData), EUniformBufferUsage::SingleFrame, &m_SkyLightData);
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->GetBindlessSrvIndex(m_LightBuffer->GetGpuHandle()), 1);
+		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightBuffer->GetViewIndex(), 1);
 
 		// TODO: make light flags enum. e. g. 1: Pointlight. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 8;
@@ -55,8 +34,7 @@ namespace Drn
 	}
 
 	void SkyLightSceneProxy::RenderShadowDepth( D3D12CommandList* CommandList, SceneRenderer* Renderer )
-	{
-	}
+	{}
 
 	void SkyLightSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{

@@ -115,8 +115,8 @@ namespace Drn
 		SubresourceCount = GetMipLevels() * GetArraySize() * GetPlaneCount();
 		if (bRequiresResourceStateTracking)
 		{
-			ResourceState.Initialize(SubresourceCount);
-			ResourceState.SetResourceState(InInitialResourceState);
+			m_ResourceState.Initialize(SubresourceCount);
+			m_ResourceState.SetResourceState(InInitialResourceState);
 		}
 		else
 		{

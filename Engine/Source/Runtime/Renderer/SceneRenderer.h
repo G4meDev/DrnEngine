@@ -2,8 +2,6 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/SceneView.h"
-#include "Runtime/Renderer/Resource.h"
-
 #include "Runtime/Engine/PostProcessSettings.h"
 
 
@@ -27,23 +25,17 @@ namespace Drn
 	{
 		MousePickEvent( const IntPoint& InScreenPos )
 			: ScreenPos(InScreenPos)
-		{
-		}
+		{}
 
 		MousePickEvent() {}
 
 		~MousePickEvent()
-		{
-			if (ReadbackBuffer)
-			{
-				ReadbackBuffer->ReleaseBufferedResource();
-			}
-		}
+		{}
 
 		// TODO: Add event to trigger
 		IntPoint ScreenPos;
 		bool Initalized = false;
-		Resource* ReadbackBuffer = nullptr;
+		TRefCountPtr<ID3D12Resource> ReadbackBuffer;
 		uint64 FenceValue = 0;
 	};
 
@@ -60,11 +52,6 @@ namespace Drn
 
 		~ScreenReprojectionEvent()
 		{
-			if (ReadbackBuffer)
-			{
-				ReadbackBuffer->ReleaseBufferedResource();
-			}
-
 			BufferArchive* Ar = static_cast<BufferArchive*>(Payload);
 			if (Ar)
 				delete Ar;
@@ -73,7 +60,7 @@ namespace Drn
 		IntPoint ScreenPos;
 		bool Initalized;
 		SceneRendererView SceneView;
-		Resource* ReadbackBuffer;
+		TRefCountPtr<ID3D12Resource> ReadbackBuffer;
 		void* Payload; // lifetime managed by this object. we delete it in deconstruction so avoid copy and only move
 		uint64 FenceValue;
 		OnScreenReprojectionDelegate OnScreenReprojection;

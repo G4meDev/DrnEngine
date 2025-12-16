@@ -1,6 +1,5 @@
 #include "DrnPCH.h"
 #include "VertexBuffer.h"
-#include "Runtime/Renderer/Resource.h"
 #include "Runtime/Renderer/RenderBuffer.h"
 
 namespace Drn

@@ -41,7 +41,7 @@ namespace Drn
 		Vector m_LowerHemesphereColor;
 
 		SkyLightData m_SkyLightData;
-		Resource* m_LightBuffer;
+		TRefCountPtr<class RenderUniformBuffer> LightBuffer;
 
 	private:
 

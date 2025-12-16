@@ -53,11 +53,11 @@ namespace Drn
 	class CommandListResourceState
 	{
 	private:
-		std::unordered_map<class RenderResource*, ResourceState_New> ResourceStates;
-		void inline ConditionalInitalize(class RenderResource* pResource, ResourceState_New& ResourceState);
+		std::unordered_map<class RenderResource*, ResourceState> ResourceStates;
+		void inline ConditionalInitalize(class RenderResource* pResource, ResourceState& ResourceState);
 
 	public:
-		ResourceState_New& GetResourceState(class RenderResource* pResource);
+		ResourceState& GetResourceState(class RenderResource* pResource);
 		void Empty();
 	};
 
@@ -85,7 +85,7 @@ namespace Drn
 
 		void TransitionResourceWithTracking(class RenderResource* pResource, D3D12_RESOURCE_STATES After, uint32 Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 		//void TransitionResourceWithTracking(class RenderResource* pResource, D3D12_RESOURCE_STATES After, const CViewSubresourceSubset& SubresourceSubset);
-		ResourceState_New& GetResourceState(class RenderResource* pResource);
+		ResourceState& GetResourceState(class RenderResource* pResource);
 
 		void SetIndexBuffer(const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset);
 		void SetStreamSource(uint32 StreamIndex, class RenderVertexBuffer* VertexBuffer, uint32 Offset);

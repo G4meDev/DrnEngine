@@ -165,7 +165,7 @@ namespace Drn
 		D3D12_RESOURCE_DESC Desc;
 		uint8 PlaneCount;
 		uint16 SubresourceCount;
-		ResourceState_New ResourceState;
+		ResourceState m_ResourceState;
 		D3D12_RESOURCE_STATES DefaultResourceState;
 
 		bool bRequiresResourceStateTracking : 1;
@@ -208,7 +208,7 @@ namespace Drn
 		uint16 GetArraySize() const { return (Desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D) ? 1 : Desc.DepthOrArraySize; }
 		uint8 GetPlaneCount() const { return PlaneCount; }
 		uint16 GetSubresourceCount() const { return SubresourceCount; }
-		ResourceState_New& GetResourceState() { drn_check(bRequiresResourceStateTracking); return ResourceState; }
+		ResourceState& GetResourceState() { drn_check(bRequiresResourceStateTracking); return m_ResourceState; }
 		D3D12_RESOURCE_STATES GetDefaultResourceState() const { drn_check(!bRequiresResourceStateTracking); return DefaultResourceState; }
 
 		bool RequiresResourceStateTracking() const { return bRequiresResourceStateTracking; }
