@@ -228,7 +228,7 @@ namespace Drn
 
 						else
 						{
-							ThumbnailManager::Get()->CaptureSceneThumbnail(TargetSceneRenderer, "Test.png");
+							ThumbnailManager::Get()->CaptureSceneThumbnail(TargetSceneRenderer, TargetWorld->GetLevelPath());
 						}
 					}
 				}

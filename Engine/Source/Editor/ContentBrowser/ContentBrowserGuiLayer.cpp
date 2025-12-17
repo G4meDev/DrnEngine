@@ -14,6 +14,8 @@
 #include "Runtime/Misc/FileSystem.h"
 #include "Editor/FileImportMenu/FileImportMenu.h"
 
+#include "Editor/Thumbnail/ThumbnailManager.h"
+
 LOG_DEFINE_CATEGORY( LogContentBrowser, "ContentBrowser" );
 
 namespace Drn
@@ -302,9 +304,22 @@ namespace Drn
 		ImVec2 box_max(box_min.x + LayoutItemSize.x + 2, box_min.y + LayoutItemSize.y + 2); // Dubious
 		//draw_list->AddRectFilled(box_min, box_max, icon_bg_color); // Background color
 
-		// TODO: maybe cache in asset data
-		const AssetHandle<Texture2D>& ItemIcon = EditorConfig::GetAssetTypeIcon(item_data.AssetType);
-		draw_list->AddImage(ItemIcon->GetRenderTexture()->GetShaderResourceView()->GetDescriptor().GetGpuHandle().ptr, box_min, box_max);
+		uint64 GpuIndex;
+		
+		RenderTexture2D* Thumbnail = ThumbnailManager::Get()->GetThumbnailWithPath(item_data.FullPath);
+
+		if (Thumbnail)
+		{
+			GpuIndex = Thumbnail->GetShaderResourceView()->GetDescriptor().GetGpuHandle().ptr;
+		}
+		else
+		{
+			// TODO: maybe cache in asset data
+			const AssetHandle<Texture2D>& ItemIcon = EditorConfig::GetAssetTypeIcon(item_data.AssetType);
+			GpuIndex = ItemIcon->GetRenderTexture()->GetShaderResourceView()->GetDescriptor().GetGpuHandle().ptr;
+		}
+
+		draw_list->AddImage(GpuIndex, box_min, ImVec2(box_max.x, box_max.y - ImGui::GetFontSize() * 2));
 
 		if (ShowTypeOverlay)
 		{

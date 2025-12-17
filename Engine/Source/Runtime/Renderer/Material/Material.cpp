@@ -454,7 +454,8 @@ namespace Drn
 
 			if (TextureIndices.size() > 0)
 			{
-				uint32 Size = Align(TextureIndices.size() * sizeof(uint32), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				//uint32 Size = Align(TextureIndices.size() * sizeof(uint32), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				uint32 Size = TextureIndices.size() * sizeof(uint32);
 				TextureIndexBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, TextureIndices.data());
 			}
 		}
@@ -473,7 +474,8 @@ namespace Drn
 
 			if (Values.size() > 0)
 			{
-				uint32 Size = Align(Values.size() * sizeof(float), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				//uint32 Size = Align(Values.size() * sizeof(float), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				uint32 Size = Values.size() * sizeof(float);
 				ScalarBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Values.data());
 			}
 		}
@@ -492,7 +494,8 @@ namespace Drn
 
 			if (Values.size() > 0)
 			{
-				uint32 Size = Align(Values.size() * sizeof(Vector4), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				//uint32 Size = Align(Values.size() * sizeof(Vector4), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				uint32 Size = Values.size() * sizeof(Vector4);
 				VectorBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Values.data());
 			}
 		}

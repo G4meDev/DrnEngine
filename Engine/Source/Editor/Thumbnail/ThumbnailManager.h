@@ -46,13 +46,22 @@ namespace Drn
 			return false;
 		};
 
-		std::vector<TRefCountPtr<ThumbnailCaptureEvent>> CaptureQueue;
+		void ProccessRequestedThumbnails(class D3D12CommandList* CmdList);
+
+		class RenderTexture2D* GetThumbnailWithPath(const std::string& Path);
+
+		void Flush();
 
 	private:
 		static TRefCountPtr<ThumbnailManager> SingletonInstance;
 
 		void ProccessCaptureQueue();
 		void WriteCaptureToDisk(const ThumbnailCaptureEvent& Event);
+
+		std::vector<TRefCountPtr<ThumbnailCaptureEvent>> CaptureQueue;
+
+		std::unordered_map<std::string, TRefCountPtr<RenderTexture2D>> ThumbnailPool;
+		std::vector<std::string> RequestedThumbnails;
 
 		std::atomic<uint32> RemainingAllowedCaptureForFrame;
 	};

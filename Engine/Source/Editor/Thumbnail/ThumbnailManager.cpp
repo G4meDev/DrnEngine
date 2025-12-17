@@ -87,7 +87,6 @@ namespace Drn
 
 		ComputePitch(Image.format, Image.width, Image.height, Image.rowPitch, Image.slicePitch);
 
-
 		D3D12_PLACED_SUBRESOURCE_FOOTPRINT Footprint;
 		uint32 Rows;
 		uint64 RowSizeInBytes;
@@ -120,6 +119,61 @@ namespace Drn
 		CoUninitialize();
 	}
 
-}
+	void ThumbnailManager::ProccessRequestedThumbnails( D3D12CommandList* CmdList )
+	{
+		CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+		for (const std::string& Path : RequestedThumbnails)
+		{
+			if (FileSystem::FileExists(Path))
+			{
+				DirectX::ScratchImage Image;
+				DirectX::TexMetadata MetaData;
+			
+				LoadFromTGAFile(StringHelper::s2ws(Path).c_str(), &MetaData, Image);
+			
+				RenderResourceCreateInfo CreateInfo( Image.GetImages()->pixels, nullptr, ClearValueBinding::Black, "Tex_Thumbnail" );
+				RenderTexture2D* Result = RenderTexture2D::Create(CmdList, MetaData.width, MetaData.height, MetaData.format, 1, 1, false,
+					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), CreateInfo);
+
+				ThumbnailPool[Path] = Result;
+
+				// TODO: improve / remove
+				CmdList->AddTransitionBarrier(Result->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+				CmdList->FlushBarriers();
+			}
+		}
+
+		RequestedThumbnails.clear();
+
+		CoUninitialize();
+	}
+
+	RenderTexture2D* ThumbnailManager::GetThumbnailWithPath( const std::string& Path )
+	{
+		const std::string ThumbnailPath = Path::GetThumbnailPath() + Path::RemoveFileExtension(Path) + ".tga";
+
+		if (!FileSystem::FileExists(ThumbnailPath))
+		{
+			return nullptr;
+		}
+
+		auto it = ThumbnailPool.find(ThumbnailPath);
+		if (it != ThumbnailPool.end())
+		{
+			return it->second;
+		}
+
+		RequestedThumbnails.push_back(ThumbnailPath);
+		return nullptr;
+	}
+
+	void ThumbnailManager::Flush()
+	{
+		ThumbnailPool.clear();
+		RequestedThumbnails.clear();
+	}
+
+        }
 
 #endif

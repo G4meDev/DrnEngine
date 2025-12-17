@@ -7,6 +7,8 @@
 #include "Runtime/Core/Application.h"
 #include <thread>
 
+#include "Editor/Thumbnail/ThumbnailManager.h"
+
 LOG_DEFINE_CATEGORY( LogRenderer, "Renderer" );
 
 using namespace DirectX;
@@ -47,6 +49,10 @@ namespace Drn
 		SimpleRenderResource::FlushPendingDeletes(true);
 		m_Device->GetDeferredDeletionQueue().ReleaseResources();
 #else
+
+#if WITH_EDITOR
+		ThumbnailManager::Get()->Flush();
+#endif
 
 		for (int32 i = 0; i < NUM_BACKBUFFERS + 2; i++)
 		{
@@ -438,6 +444,10 @@ namespace Drn
 			m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
 			m_UploadCommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
 		}
+
+#if WITH_EDITOR
+		ThumbnailManager::Get()->ProccessRequestedThumbnails(m_CommandList);
+#endif
 
 		SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 	}
