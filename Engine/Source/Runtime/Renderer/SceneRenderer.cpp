@@ -1045,6 +1045,7 @@ namespace Drn
 		while (ThumbnailCaptureEvents.size() > 0 && ThumbnailManager::Get()->IsCaptureThumbnailAllowed())
 		{
 			ThumbnailCaptureEvent* Event = ThumbnailCaptureEvents.back();
+			Event->bInitalized = true;
 			ThumbnailCaptureEvents.pop_back();
 
 			IntPoint ViewportSize = GetViewportSize();

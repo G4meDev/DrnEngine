@@ -12,12 +12,14 @@ namespace Drn
 			: TargetScene(InTargetScene)
 			, Path(InPath)
 			, FenceValue(0)
+			, bInitalized(false)
 		{}
 
 		TRefCountPtr<class RenderTexture2D> ReadbackBuffer;
 		class SceneRenderer* TargetScene;
 		std::string Path;
 		uint64 FenceValue;
+		bool bInitalized;
 	};
 
 	class ThumbnailManager : public RefCountedObject
