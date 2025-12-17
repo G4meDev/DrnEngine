@@ -37,6 +37,8 @@ namespace Drn
 		bool m_DrawTangents;
 		bool m_DrawBitTangents;
 
+		bool m_DrawBounds;
+
 		World* PreviewWorld;
 		StaticMeshActor* PreviewMesh;
 		class SkyLightActor* m_SkyLight;

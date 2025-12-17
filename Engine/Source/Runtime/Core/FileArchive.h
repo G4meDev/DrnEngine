@@ -45,6 +45,7 @@ namespace Drn
 		virtual FileArchive& operator<<(const std::vector<Vector2>& Value);
 		virtual FileArchive& operator<<(const std::vector<Vector2Half>& Value);
 		virtual FileArchive& operator<<(const std::vector<uint32>& Value);
+		virtual FileArchive& operator<<(const std::vector<uint16>& Value);
 		virtual FileArchive& operator<<(const std::vector<Color>& Value);
 		virtual FileArchive& operator<<(ID3DBlob* Value) override;
 		virtual FileArchive& operator<<(const BufferArchive& Value) override;
@@ -79,6 +80,7 @@ namespace Drn
 		virtual FileArchive& operator>>(std::vector<Vector2>& Value);
 		virtual FileArchive& operator>>(std::vector<Vector2Half>& Value);
 		virtual FileArchive& operator>>(std::vector<uint32>& Value);
+		virtual FileArchive& operator>>(std::vector<uint16>& Value);
 		virtual FileArchive& operator>>(std::vector<Color>& Value);
 		virtual FileArchive& operator>>(ID3DBlob*& Value) override;
 		virtual FileArchive& operator>>(BufferArchive& Value) override;

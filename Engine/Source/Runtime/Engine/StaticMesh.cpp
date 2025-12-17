@@ -43,22 +43,33 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			Ar >> m_SourcePath;
-
-			BufferArchive BuffAr(0);
-			Ar >> BuffAr;
-			BuffAr.Decompress();
-			Data.Serialize(BuffAr);
-
-			BuffAr >> ImportScale;
-			
-			m_BodySetup.Serialize(BuffAr);
+			Ar >> Bounds;
 
 			{
+				BufferArchive BuffAr(0);
+				Ar >> BuffAr;
+				BuffAr.Decompress();
+				Data.Serialize(BuffAr);
+			}
+
+			{
+				BufferArchive BuffAr(0);
+				Ar >> BuffAr;
+				BuffAr.Decompress();
+				m_BodySetup.Serialize(BuffAr);
+			}
+
+			{
+				Ar >> ImportScale;
+
 				Ar >> m_ImportNormals;
 				Ar >> m_ImportTangents;
 				Ar >> m_ImportBitTangents;
 				Ar >> m_ImportColor;
 				Ar >> m_ImportUVs;
+
+				Ar >> PositiveBoundExtention;
+				Ar >> NegativeBoundExtention;
 			}
 		}
 
@@ -66,22 +77,33 @@ namespace Drn
 		else
 		{
 			Ar << m_SourcePath;
-
-			BufferArchive BufArr(10, false);
-			Data.Serialize( BufArr );
-
-			BufArr << ImportScale;
-			m_BodySetup.Serialize(BufArr);
-
-			BufArr.Compress();
-			Ar << BufArr;
+			Ar << Bounds;
 
 			{
+				BufferArchive BufArr(10, false);
+				Data.Serialize( BufArr );
+				BufArr.Compress();
+				Ar << BufArr;
+			}
+
+			{
+				BufferArchive BufArr(10, false);
+				m_BodySetup.Serialize(BufArr);
+				BufArr.Compress();
+				Ar << BufArr;
+			}
+
+			{
+				Ar << ImportScale;
+
 				Ar << m_ImportNormals;
 				Ar << m_ImportTangents;
 				Ar << m_ImportBitTangents;
 				Ar << m_ImportColor;
 				Ar << m_ImportUVs;
+
+				Ar << PositiveBoundExtention;
+				Ar << NegativeBoundExtention;
 			}
 		}
 #endif
@@ -111,11 +133,11 @@ namespace Drn
 
 			Proxy.ReleaseBuffers();
 
-			uint32 IndexCount = Proxy.VertexData.GetIndices().size();
+			StaticMeshVertexData& VData = Proxy.VertexData;
 
 			uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
-			RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, (void*)Proxy.VertexData.GetIndices().data(), ClearValueBinding::Black, "IB" + MeshName);
-			Proxy.m_IndexBuffer = RenderIndexBuffer::Create(Renderer::Get()->GetDevice(), CommandList, sizeof(uint32), IndexCount * sizeof(uint32),
+			RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, VData.GetIndexBufferPtr(), ClearValueBinding::Black, "IB" + MeshName);
+			Proxy.m_IndexBuffer = RenderIndexBuffer::Create(Renderer::Get()->GetDevice(), CommandList, VData.GetIndexBufferStride(), VData.GetIndexBufferByteSize(),
 				IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
 
 			Proxy.m_StaticMeshVertexBuffer = StaticMeshVertexBuffer::Create(CommandList, Proxy.VertexData, MeshName);
@@ -247,7 +269,7 @@ namespace Drn
 	void StaticMeshSlotData::BindAndDraw( D3D12CommandList* CommandList ) const
 	{
 		uint32 VertexCount = VertexData.GetVertexCount();
-		uint32 PrimitiveCount = VertexData.GetIndices().size() == 0 ? 0 : VertexData.GetIndices().size() / 3;
+		uint32 PrimitiveCount = VertexData.GetPrimitiveCount();
 
 		m_StaticMeshVertexBuffer->Bind(CommandList);
 		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);

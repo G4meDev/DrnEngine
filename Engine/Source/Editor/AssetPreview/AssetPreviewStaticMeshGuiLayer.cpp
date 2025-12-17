@@ -24,6 +24,7 @@ namespace Drn
 		, m_DrawNormals(false)
 		, m_DrawTangents(false)
 		, m_DrawBitTangents(false)
+		, m_DrawBounds(false)
 	{
 		LOG(LogStaticMeshPreview, Info, "opening %s", InOwningAsset->m_Path.c_str());
 
@@ -253,6 +254,22 @@ namespace Drn
 		ImGui::Checkbox( "Draw Tangent", &m_DrawTangents);
 		ImGui::Checkbox( "Draw BitTangents", &m_DrawBitTangents);
 		ImGui::DragFloat( "Line Size", &m_DebugLinesSize, 0.001, 10);
+// ------------------------------------------------------------------------------------------------------
+
+		ImGui::Separator();
+		ImGui::Checkbox( "Draw Bounds", &m_DrawBounds);
+
+		float PosBound[3] = {m_OwningAsset->PositiveBoundExtention.GetX(), m_OwningAsset->PositiveBoundExtention.GetY(), m_OwningAsset->PositiveBoundExtention.GetZ()};
+		if (ImGui::InputFloat3("Positive Bound Extension", PosBound))
+		{
+			m_OwningAsset->PositiveBoundExtention = Vector(PosBound[0], PosBound[1], PosBound[2]);
+		}
+
+		float NegBound[3] = {m_OwningAsset->NegativeBoundExtention.GetX(), m_OwningAsset->NegativeBoundExtention.GetY(), m_OwningAsset->NegativeBoundExtention.GetZ()};
+		if (ImGui::InputFloat3("Negative Bound Extension", NegBound))
+		{
+			m_OwningAsset->NegativeBoundExtention = Vector(NegBound[0], NegBound[1], NegBound[2]);
+		}
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::ShowSourceFileSelection()
@@ -297,6 +314,14 @@ namespace Drn
 					}
 				}
 			}
+		}
+
+		if (m_DrawBounds)
+		{
+			const BoxSphereBounds& Bounds = m_OwningAsset->GetBounds();
+
+			PreviewWorld->DrawDebugSphere(Bounds.Origin, Quat::Identity, Color::Yellow, Bounds.SphereRadius, 32, 0, 0);
+			PreviewWorld->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::Blue, 0, 0);
 		}
 	}
 

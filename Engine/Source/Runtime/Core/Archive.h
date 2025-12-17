@@ -9,6 +9,7 @@
 #include "Runtime/Math/Rotator.h"
 #include "Runtime/Math/Matrix.h"
 #include "Runtime/Math/Transform.h"
+#include "Runtime/Math/BoxSphereBounds.h"
 
 #include "Runtime/Core/Guid.h"
 #include "Runtime/Physic/BodySetup.h"
@@ -56,6 +57,7 @@ namespace Drn
 		virtual Archive& operator<<(const std::vector<Vector2>& Value) = 0;
 		virtual Archive& operator<<(const std::vector<Vector2Half>& Value) = 0;
 		virtual Archive& operator<<(const std::vector<uint32>& Value) = 0;
+		virtual Archive& operator<<(const std::vector<uint16>& Value) = 0;
 		virtual Archive& operator<<(const std::vector<Color>& Value) = 0;
 		virtual Archive& operator<<(ID3DBlob* Value) = 0;
 		virtual Archive& operator<<(const BufferArchive& Value) = 0;
@@ -86,9 +88,15 @@ namespace Drn
 		virtual Archive& operator>>(std::vector<Vector2>& Value) = 0;
 		virtual Archive& operator>>(std::vector<Vector2Half>& Value) = 0;
 		virtual Archive& operator>>(std::vector<uint32>& Value) = 0;
+		virtual Archive& operator>>(std::vector<uint16>& Value) = 0;
 		virtual Archive& operator>>(std::vector<Color>& Value) = 0;
 		virtual Archive& operator>>(ID3DBlob*& Value) = 0;
 		virtual Archive& operator>>(BufferArchive& Value) = 0;
+
+// ---------------------------------------------------------------------------
+
+		Archive& operator<<(const BoxSphereBounds& Value);
+		Archive& operator>>(BoxSphereBounds& Value);
 
 	protected:
 		bool m_IsLoading;

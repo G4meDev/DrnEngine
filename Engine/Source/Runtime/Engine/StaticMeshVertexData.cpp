@@ -7,9 +7,17 @@ namespace Drn
 	{
 		if (Ar.IsLoading())
 		{
+			Ar >> bUse4BitIndices;
+			if (bUse4BitIndices)
+			{
+				Ar >> Indices_32;
+			}
+			else
+			{
+				Ar >> Indices_16;
+			}
+
 			Ar >> Positions;
-			Ar >> Indices;
-			
 			Ar >> Normals;
 			Ar >> Tangents;
 			Ar >> BitTangents;
@@ -21,13 +29,22 @@ namespace Drn
 			Ar >> UV_4;
 
 			VertexCount = Positions.size();
+			IndexCount = Use4BitIndices() ? Indices_32.size() : Indices_16.size();
 		}
 
 		else
 		{
+			Ar << bUse4BitIndices;
+			if (bUse4BitIndices)
+			{
+				Ar << Indices_32;
+			}
+			else
+			{
+				Ar << Indices_16;
+			}
+
 			Ar << Positions;
-			Ar << Indices;
-			
 			Ar << Normals;
 			Ar << Tangents;
 			Ar << BitTangents;

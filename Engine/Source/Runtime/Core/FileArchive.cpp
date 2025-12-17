@@ -155,6 +155,11 @@ namespace Drn
 		return WriteVector(Value);
 	}
 
+	FileArchive& FileArchive::operator<<( const std::vector<uint16>& Value )
+	{
+		return WriteVector(Value);
+	}
+
 	FileArchive& FileArchive::operator<<( const std::vector<Color>& Value )
 	{
 		return WriteVector(Value);
@@ -367,6 +372,11 @@ namespace Drn
 	}
 
 	FileArchive& FileArchive::operator>>( std::vector<uint32>& Value )
+	{
+		return ReadVector(Value);
+	}
+
+	FileArchive& FileArchive::operator>>( std::vector<uint16>& Value )
 	{
 		return ReadVector(Value);
 	}

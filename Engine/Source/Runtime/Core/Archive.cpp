@@ -14,5 +14,16 @@ namespace Drn
 	{}
 
 
+	Archive& Archive::operator<<( const BoxSphereBounds& Value )
+	{
+		*this << Value.Origin << Value.BoxExtent << Value.SphereRadius;
+		return *this;
+	}
 
-}
+	Archive& Archive::operator>>( BoxSphereBounds& Value )
+	{
+		*this >> Value.Origin >> Value.BoxExtent >> Value.SphereRadius;
+		return *this;
+	}
+
+        }  // namespace Drn

@@ -64,6 +64,7 @@ namespace Drn
 		void UploadResources( class D3D12CommandList* CommandList );
 
 		inline BodySetup* GetBodySetup() { return &m_BodySetup; }
+		inline const BoxSphereBounds& GetBounds() const { return Bounds; }
 
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
@@ -90,15 +91,20 @@ namespace Drn
 
 		std::string m_SourcePath;
 
-		float ImportScale = 1.0f;
 
 		BodySetup m_BodySetup;
+		BoxSphereBounds Bounds;
+
+		float ImportScale = 1.0f;
 
 		bool m_ImportNormals = true;
 		bool m_ImportTangents = true;
 		bool m_ImportBitTangents = true;
 		bool m_ImportColor = false;
 		uint8 m_ImportUVs = 1;
+
+		Vector PositiveBoundExtention = Vector::ZeroVector;
+		Vector NegativeBoundExtention = Vector::ZeroVector;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

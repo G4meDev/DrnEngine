@@ -42,6 +42,8 @@ private:
 #include "Runtime/Math/Transform.h"
 #include "Runtime/Math/Matrix.h"
 #include "Runtime/Math/Color.h"
+#include "Runtime/Math/BoxSphereBounds.h"
+
 
 #include "Runtime/Core/Delegate.h"
 #include "Runtime/Engine/CameraTypes.h"

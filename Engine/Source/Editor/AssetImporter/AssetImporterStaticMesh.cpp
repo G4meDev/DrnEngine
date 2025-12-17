@@ -9,6 +9,9 @@
 
 LOG_DEFINE_CATEGORY( LogStaticMeshImporter, "StaticMeshImporter" );
 
+#define MIN_SPHERE_BOUNDS 0.05f
+#define MIN_BOX_BOUNDS 0.01f
+
 namespace Drn
 {
 	void AssetImporterStaticMesh::Import( StaticMesh* MeshAsset, const std::string& Path )
@@ -71,7 +74,6 @@ namespace Drn
 		ImportedStaticMeshSlotData MeshData;
 
 		std::vector<InputLayout_StaticMesh> VertexData;
-		std::vector<uint32> indices;
 
 		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
 		{
@@ -118,11 +120,12 @@ namespace Drn
 		for ( uint32 i = 0; i < mesh->mNumFaces; i++ )
 		{
 			aiFace face = mesh->mFaces[i];
-			for ( uint32 j = 0; j < face.mNumIndices; j++ )
-				indices.push_back( face.mIndices[j] );
+			for (uint32 j = 0; j < face.mNumIndices; j++)
+			{
+				MeshData.Indices.push_back(face.mIndices[j]);
+				MeshData.MaxIndex = std::max(MeshData.MaxIndex, MeshData.Indices.back());
+			}
 		}
-
-		MeshData.Indices = indices;
 
 		if ( mesh->mMaterialIndex >= 0 )
 		{
@@ -193,13 +196,35 @@ namespace Drn
 		MeshAsset->Data.Materials.clear();
 
 		MeshAsset->Data.MeshesData.resize(BuildingData.MeshesData.size());
+
+		float MaxX = -FLT_MAX, MaxY = -FLT_MAX, MaxZ = -FLT_MAX;
+		float MinX = FLT_MAX, MinY = FLT_MAX, MinZ = FLT_MAX;
+
 		for (int i = 0; i < BuildingData.MeshesData.size(); i++)
 		{
 			ImportedStaticMeshSlotData& IMD = BuildingData.MeshesData[i];
 			StaticMeshSlotData& Data = MeshAsset->Data.MeshesData[i];
 
-			Data.VertexData.Indices = IMD.Indices;
 			Data.MaterialIndex = IMD.MaterialIndex;
+
+			{
+				const bool ShouldUse4BitIndices = IMD.MaxIndex > UINT16_MAX;
+				Data.VertexData.bUse4BitIndices = ShouldUse4BitIndices;
+
+				if (ShouldUse4BitIndices)
+				{
+					Data.VertexData.Indices_32 = IMD.Indices;
+				}
+
+				else
+				{
+					Data.VertexData.Indices_16.clear();
+					for (int32 i = 0; i < IMD.Indices.size(); i++)
+					{
+						Data.VertexData.Indices_16.push_back(IMD.Indices[i]);
+					}
+				}
+			}
 
 			{
 				const uint64 VertexCount = IMD.Vertices.size();
@@ -243,33 +268,72 @@ namespace Drn
 
 					if (MeshAsset->m_ImportUVs >= 4)
 						Data.VertexData.UV_4[i] = Vector2Half(IMD.Vertices[i].U4, IMD.Vertices[i].V4);
-				}
 
-				Data.VertexData.Indices = IMD.Indices;
+					MaxX = std::max(MaxX, Data.VertexData.Positions[i].GetX());
+					MaxY = std::max(MaxY, Data.VertexData.Positions[i].GetY());
+					MaxZ = std::max(MaxZ, Data.VertexData.Positions[i].GetZ());
+
+					MinX = std::min(MinX, Data.VertexData.Positions[i].GetX());
+					MinY = std::min(MinY, Data.VertexData.Positions[i].GetY());
+					MinZ = std::min(MinZ, Data.VertexData.Positions[i].GetZ());
+				}
 			}
 		}
 
-		MeshAsset->Data.Materials.resize(BuildingData.MaterialsData.size());
-		for (int i = 0; i < BuildingData.MaterialsData.size(); i++)
 		{
-			const std::string& MatName = BuildingData.MaterialsData[i];
+			MaxX = MaxX + MeshAsset->PositiveBoundExtention.GetX();
+			MaxY = MaxY + MeshAsset->PositiveBoundExtention.GetY();
+			MaxZ = MaxZ + MeshAsset->PositiveBoundExtention.GetZ();
 
-			MaterialData& M = MeshAsset->Data.Materials[i]; 
-			M.m_Name = MatName;
-			
-			std::string MaterialPath = "";
-			
-			for (MaterialData& OldMaterial : OldMaterials)
+			MinX = MinX - MeshAsset->NegativeBoundExtention.GetX();
+			MinY = MinY - MeshAsset->NegativeBoundExtention.GetY();
+			MinZ = MinZ - MeshAsset->NegativeBoundExtention.GetZ();
+
+			bool ClippingX = MinX > MaxX;
+			bool ClippingY = MinY > MaxY;
+			bool ClippingZ = MinZ > MaxZ;
+
+			MaxX = ClippingX ? 1 : MaxX;
+			MaxY = ClippingY ? 1 : MaxY;
+			MaxZ = ClippingZ ? 1 : MaxZ;
+
+			MinX = ClippingX ? -1 : MinX;
+			MinY = ClippingY ? -1 : MinY;
+			MinZ = ClippingZ ? -1 : MinZ;
+
+			Vector Center = Vector((MinX + MaxX) / 2, (MinY + MaxY) / 2, (MinZ + MaxZ) / 2);
+			Vector Extent = Vector(MaxX, MaxY, MaxZ) - Center;
+			float Radius = std::max(std::max(Extent.GetX(), Extent.GetY()), Extent.GetZ());
+
+			Extent = Vector(std::max(Extent.GetX(), MIN_BOX_BOUNDS), std::max(Extent.GetY(), MIN_BOX_BOUNDS), std::max(Extent.GetZ(), MIN_BOX_BOUNDS));
+			Radius = std::max(Radius, MIN_SPHERE_BOUNDS);
+
+			MeshAsset->Bounds = BoxSphereBounds(Center, Extent, Radius);
+		}
+
+		{
+			MeshAsset->Data.Materials.resize(BuildingData.MaterialsData.size());
+			for (int i = 0; i < BuildingData.MaterialsData.size(); i++)
 			{
-				if (OldMaterial.m_Name == MatName)
-				{
-					MaterialPath = OldMaterial.m_Material.GetPath();
-				}
-			}
+				const std::string& MatName = BuildingData.MaterialsData[i];
+
+				MaterialData& M = MeshAsset->Data.Materials[i]; 
+				M.m_Name = MatName;
 			
-			MaterialPath = MaterialPath != "" ? MaterialPath : DEFAULT_MATERIAL_PATH;
-			M.m_Material = AssetHandle<Material>(MaterialPath);
-			M.m_Material.Load();
+				std::string MaterialPath = "";
+			
+				for (MaterialData& OldMaterial : OldMaterials)
+				{
+					if (OldMaterial.m_Name == MatName)
+					{
+						MaterialPath = OldMaterial.m_Material.GetPath();
+					}
+				}
+			
+				MaterialPath = MaterialPath != "" ? MaterialPath : DEFAULT_MATERIAL_PATH;
+				M.m_Material = AssetHandle<Material>(MaterialPath);
+				M.m_Material.Load();
+			}
 		}
 	}
 

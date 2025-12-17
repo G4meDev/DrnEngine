@@ -23,6 +23,8 @@ namespace Drn
 
 		std::vector<uint32> Indices;
 		uint8 MaterialIndex;
+
+		uint32 MaxIndex = 0;
 	};
 
 	struct ImportedStaticMeshData
