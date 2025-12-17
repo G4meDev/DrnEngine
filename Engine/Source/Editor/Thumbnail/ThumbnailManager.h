@@ -4,6 +4,8 @@
 
 #include "ForwardTypes.h"
 
+#include "Runtime/Engine/PreviewWorld.h"
+
 namespace Drn
 {
 	struct ThumbnailCaptureEvent : RefCountedObject
@@ -20,6 +22,8 @@ namespace Drn
 		std::string Path;
 		uint64 FenceValue;
 		bool bInitalized;
+
+		TRefCountPtr<class PreviewWorld> m_PreviewWorld;
 	};
 
 	class ThumbnailManager : public RefCountedObject
@@ -34,7 +38,7 @@ namespace Drn
 
 		static ThumbnailManager* Get();
 
-		void CaptureSceneThumbnail(class SceneRenderer* TargetScene, const std::string& Path);
+		ThumbnailCaptureEvent* CaptureSceneThumbnail(class SceneRenderer* TargetScene, const std::string& Path);
 		inline bool IsCaptureThumbnailAllowed()
 		{
 			if (RemainingAllowedCaptureForFrame > 0)
@@ -55,8 +59,13 @@ namespace Drn
 	private:
 		static TRefCountPtr<ThumbnailManager> SingletonInstance;
 
+		std::string AssetPathToThumbnailPath(const std::string& AssetPath);
+
 		void ProccessCaptureQueue();
 		void WriteCaptureToDisk(const ThumbnailCaptureEvent& Event);
+
+		void GenerateThumbnailForAssetPath(const std::string& AssetPath);
+
 
 		std::vector<TRefCountPtr<ThumbnailCaptureEvent>> CaptureQueue;
 

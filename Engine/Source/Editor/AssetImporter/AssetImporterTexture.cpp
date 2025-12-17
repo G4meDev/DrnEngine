@@ -193,21 +193,6 @@ namespace Drn
 
 	void AssetImporterTexture::ImportTextureCubeFromTexture2D( TextureCube* TextureAsset, TexMetadata& MetaData, ScratchImage& Image )
 	{
-		//CaptureParams.GpuCaptureParameters.FileName = L"C:\\Users\\Abolfazl\\Desktop\\Texture2DToTextureCube.wpix";
-
-		RENDERDOC_API_1_1_2* rdoc_api = NULL;
-		if(HMODULE mod = GetModuleHandleA("renderdoc.dll"))
-		{
-			pRENDERDOC_GetAPI RENDERDOC_GetAPI =
-				(pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
-			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&rdoc_api);
-			assert(ret == 1);
-		}
-
-		if(rdoc_api) rdoc_api->StartFrameCapture(NULL, NULL);
-
-// -----------------------------------------------------------------------------------------------------------------------------------------
-
 		const DirectX::Image* BaseImage = Image.GetImage(0, 0, 0);
 		const uint32 ImageBufferSize = BaseImage->slicePitch;
 
@@ -610,11 +595,13 @@ namespace Drn
 
 		CommandList->GetD3D12CommandList()->Close();
 
+		Renderer::Get()->StartGpuFrameCapture();
+
 		ID3D12CommandList* const Lists[] = { CommandList->GetD3D12CommandList() };
 		Renderer::Get()->GetCommandQueue()->ExecuteCommandLists( 1, Lists);
 		Renderer::Get()->Flush();
 
-		if(rdoc_api) rdoc_api->EndFrameCapture(NULL, NULL);
+		Renderer::Get()->EndGpuFrameCapture();
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 

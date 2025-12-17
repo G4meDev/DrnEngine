@@ -840,9 +840,12 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
+
 		m_CommandList->SetAllocatorAndReset(Renderer::Get()->m_SwapChain->GetBackBufferIndex());
 		Renderer::Get()->SetBindlessHeaps( m_CommandList->GetD3D12CommandList() );
 		m_CommandList->ClearState();
+
+		//PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Scene" );
 
 		ResizeViewConditional();
 
@@ -861,6 +864,7 @@ namespace Drn
 		RecalculateView();
 
 		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
+
 
 #if WITH_EDITOR
 		RenderHitProxyPass();
@@ -891,6 +895,8 @@ namespace Drn
 #endif
 
 		m_CommandList->Close();
+
+		//PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
 	ID3D12Resource* SceneRenderer::GetViewResource()
@@ -1044,6 +1050,8 @@ namespace Drn
 	{
 		while (ThumbnailCaptureEvents.size() > 0 && ThumbnailManager::Get()->IsCaptureThumbnailAllowed())
 		{
+			//Renderer::Get()->MarkFrameForCapture();
+
 			ThumbnailCaptureEvent* Event = ThumbnailCaptureEvents.back();
 			Event->bInitalized = true;
 			ThumbnailCaptureEvents.pop_back();

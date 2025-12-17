@@ -356,6 +356,39 @@ namespace Drn
 
 	}
 
+#if WITH_EDITOR
+#include <renderdoc_app.h>
+	void Renderer::StartGpuFrameCapture()
+	{
+		if(HMODULE mod = GetModuleHandleA("renderdoc.dll"))
+		{
+			pRENDERDOC_GetAPI RENDERDOC_GetAPI =
+				(pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
+			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_6_0, (void **)&rdoc_api);
+			assert(ret == 1);
+		}
+
+		if(rdoc_api)
+		{
+			rdoc_api->StartFrameCapture(NULL, NULL);
+		}
+	}
+
+	void Renderer::EndGpuFrameCapture()
+	{
+		if(rdoc_api)
+		{
+			rdoc_api->EndFrameCapture(NULL, NULL);
+		}
+	}
+
+	void Renderer::MarkFrameForCapture()
+	{
+		bCapturingFrame = true;
+	}
+
+#endif
+
 	uint32 Renderer::GetBindlessSrvIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
 	{
 		return (Handle.ptr - m_BindlessSrvHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SrvIncrementSize;
@@ -530,6 +563,11 @@ namespace Drn
 		m_CommandList->Close();
 		m_UploadCommandList->Close();
 
+		if (bCapturingFrame)
+		{
+			StartGpuFrameCapture();
+		}
+
 		{
 			SCOPE_STAT( "E1" );
 			CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
@@ -564,7 +602,14 @@ namespace Drn
 			CommandLists.push_back(m_CommandList->GetD3D12CommandList());
 			m_CommandQueue->ExecuteCommandLists(1, CommandLists.data());
 		}
-		
+
+		if (bCapturingFrame)
+		{
+			EndGpuFrameCapture();
+		}
+
+		bCapturingFrame = false;
+
 		//m_CommandQueue->ExecuteCommandLists(NumCommandLists, CommandLists.data());
 	}
 

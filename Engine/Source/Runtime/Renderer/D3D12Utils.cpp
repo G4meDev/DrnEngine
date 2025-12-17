@@ -1,6 +1,9 @@
 #include "DrnPCH.h"
 #include "D3D12Utils.h"
 
+//RENDERDOC_API_1_1_2* rdoc_api = NULL;
+//bool bCapturingFrame = false;
+
 //void VerifyD3D12Result(HRESULT Result, const char* Code, const char* Filename, UINT Line)
 //{
 //	std::cout << std::sprintf("d3d12 failed at %s %s %s", Filename, Line, Code);
@@ -13,6 +16,7 @@ static std::string GetUniqueName()
 	const std::string UniqueName = std::string("D3D12Resource_") + std::to_string(UniqueID);
 	return UniqueName;
 }
+
 
 void SetName(ID3D12Object* const Object, const std::string& Name)
 {

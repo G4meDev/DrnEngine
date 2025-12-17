@@ -22,6 +22,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/EngineTypes.h
 	Source/Runtime/Engine/WorldManager.h
 	Source/Runtime/Engine/World.h
+	Source/Runtime/Engine/PreviewWorld.h
 	Source/Runtime/Engine/Level.h
 	Source/Runtime/Engine/Scene.h
 	Source/Runtime/Engine/PrimitiveComponent.h
@@ -227,6 +228,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/EngineTypes.cpp
 	Source/Runtime/Engine/WorldManager.cpp
 	Source/Runtime/Engine/World.cpp
+	Source/Runtime/Engine/PreviewWorld.cpp
 	Source/Runtime/Engine/Level.cpp
 	Source/Runtime/Engine/Scene.cpp
 	Source/Runtime/Engine/PrimitiveComponent.cpp

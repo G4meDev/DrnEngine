@@ -199,5 +199,20 @@ namespace Drn
 		void Init_Internal();
 
 		TRefCountPtr<class GpuFence> m_Fence;
+
+
+
+#if WITH_EDITOR
+
+	public:
+		void StartGpuFrameCapture();
+		void EndGpuFrameCapture();
+
+		void MarkFrameForCapture();
+
+	private:
+		struct RENDERDOC_API_1_6_0* rdoc_api = NULL;
+		bool bCapturingFrame = false;
+#endif
 	};
 }

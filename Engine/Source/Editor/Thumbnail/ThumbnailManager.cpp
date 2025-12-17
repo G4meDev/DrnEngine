@@ -41,13 +41,20 @@ namespace Drn
 		return SingletonInstance;
 	}
 
-	void ThumbnailManager::CaptureSceneThumbnail( class SceneRenderer* TargetScene, const std::string& Path )
+	std::string ThumbnailManager::AssetPathToThumbnailPath( const std::string& AssetPath )
 	{
-		const std::string ThumbnailPath = Path::GetThumbnailPath() + Path::RemoveFileExtension(Path) + ".tga";
+		return Path::GetThumbnailPath() + Path::RemoveFileExtension(AssetPath) + ".tga";
+	}
+
+	ThumbnailCaptureEvent* ThumbnailManager::CaptureSceneThumbnail( class SceneRenderer* TargetScene, const std::string& Path )
+	{
+		const std::string ThumbnailPath = AssetPathToThumbnailPath(Path);
 		drn_check( TargetScene && ThumbnailPath != NAME_NULL );
 
 		CaptureQueue.emplace_back(new ThumbnailCaptureEvent(TargetScene, ThumbnailPath));
 		TargetScene->ThumbnailCaptureEvents.push_back(CaptureQueue.back());
+
+		return CaptureQueue.back();
 	}
 
 	void ThumbnailManager::ProccessCaptureQueue()
@@ -119,6 +126,41 @@ namespace Drn
 		CoUninitialize();
 	}
 
+	void ThumbnailManager::GenerateThumbnailForAssetPath( const std::string& AssetPath )
+	{
+		AssetHandle<Asset> ThumbnailAsset(AssetPath);
+		EAssetType AssetType = ThumbnailAsset.LoadGeneric();
+
+		if (AssetType == EAssetType::StaticMesh)
+		{
+			AssetHandle<StaticMesh> StaticMeshAsset(AssetPath);
+			StaticMeshAsset.Load();
+
+			if (StaticMeshAsset.IsValid())
+			{
+				PreviewWorld* TargetWorld = new PreviewWorld;
+				StaticMeshActor* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<StaticMeshActor>();
+				SpawnedActor->GetMeshComponent()->SetMesh(StaticMeshAsset);
+
+				XMVECTOR CameraRotation = XMQuaternionRotationRollPitchYaw(Math::PI / 4, Math::PI * 5 / 4, 0);
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
+
+				//TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation(Vector::UpVector * 100);
+
+				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
+
+				ThumbnailCaptureEvent* Event = CaptureSceneThumbnail(TargetWorld->GetSceneRenderer(), AssetPath);
+				Event->m_PreviewWorld = TargetWorld;
+			}
+		}
+
+		else if (AssetType == EAssetType::Material)
+		{
+			
+		}
+
+	}
+
 	void ThumbnailManager::ProccessRequestedThumbnails( D3D12CommandList* CmdList )
 	{
 		CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -151,10 +193,24 @@ namespace Drn
 
 	RenderTexture2D* ThumbnailManager::GetThumbnailWithPath( const std::string& Path )
 	{
-		const std::string ThumbnailPath = Path::GetThumbnailPath() + Path::RemoveFileExtension(Path) + ".tga";
+		const std::string ThumbnailPath = AssetPathToThumbnailPath(Path);
 
 		if (!FileSystem::FileExists(ThumbnailPath))
 		{
+			bool AutoGenerateThumbnails = true;
+			if (AutoGenerateThumbnails)
+			{
+				auto it = std::find_if(CaptureQueue.begin(), CaptureQueue.end(), [&ThumbnailPath](ThumbnailCaptureEvent* Event)
+				{
+					return Event->Path == ThumbnailPath;
+				});
+
+				if (it == CaptureQueue.end())
+				{
+					GenerateThumbnailForAssetPath(Path);
+				}
+			}
+
 			return nullptr;
 		}
 
