@@ -21,6 +21,8 @@ namespace Drn
 		{
 			m_Selectable = Selectable;
 		}
+
+		inline bool IsEditorPrimitive() const { return m_EditorPrimitive; }
 #endif
 
 		inline void SetLocalToWorld( const Matrix& InMatrix ) { m_LocalToWorld = InMatrix; }
@@ -36,7 +38,6 @@ namespace Drn
 		virtual void UpdateResources(class D3D12CommandList* CommandList) = 0;
 		virtual PrimitiveComponent*  GetPrimitive() = 0;
 
-		bool m_EditorPrimitive;
 		Matrix m_LocalToWorld;
 
 #if WITH_EDITOR
@@ -45,6 +46,8 @@ namespace Drn
 		virtual void RenderEditorPrimitivePass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 		bool m_SelectedInEditor = false;
 		bool m_Selectable = false;
+
+		bool m_EditorPrimitive;
 #endif
 
 #if D3D12_Debug_INFO

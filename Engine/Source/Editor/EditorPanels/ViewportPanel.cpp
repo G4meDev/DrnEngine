@@ -185,6 +185,26 @@ namespace Drn
 		ImGui::SameLine(0, 32);
 
 		m_GizmoState.Draw();
+
+// -----------------------------------------------------------------------------------------------------
+
+		const bool IsGameMode = m_World->IsInGameMode();
+		if (IsGameMode)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0, 1));
+		}
+
+		ImGui::SameLine(0, 32);
+		if (ImGui::Button("Game Mode"))
+		{
+			m_World->ToggleGameMode();
+		}
+
+		if (IsGameMode)
+		{
+			ImGui::PopStyleColor();
+		}
+
 	}
 
 	void ViewportPanel::HandleInputs()

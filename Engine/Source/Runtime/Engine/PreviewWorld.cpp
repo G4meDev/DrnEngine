@@ -13,6 +13,7 @@ namespace Drn
 
 		DirectionalLight = m_World->SpawnActor<DirectionalLightActor>();
 		SkyLight = m_World->SpawnActor<SkyLightActor>();
+		PostProccessVolume = m_World->SpawnActor<PostProcessVolume>();
 
 		m_SceneRenderer = GetScene()->AllocateSceneRenderer();
 	}

@@ -1,6 +1,7 @@
 //#include "../../../Engine/Content/Materials/Common.hlsl"
 
-// SUPPORT_EDITOR_PRIMITIVE_PASS
+// SUPPORT_MAIN_PASS
+// SUPPORT_PRE_PASS
 
 struct Resources
 {
@@ -114,13 +115,21 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     PixelShaderOutput OUT;
     float4 Sample = Texture.SampleLevel(LinearSampler, IN.UV, Scalars.MipLevel);
     
+    //OUT.ColorDeferred = float4(BaseColor, 1);
+    //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);
+    OUT.BaseColor = 0;
+    OUT.WorldNormal = 0;
+    OUT.Masks = 0;
+    //OUT.Masks.a = 1.0f/255;
+    OUT.Masks.a = 0;
+    
     if(Vectors.ShowColor.a > 0)
     {
-        OUT.Color = float4(Sample.aaa, 1);
+        OUT.ColorDeferred = float4(Sample.aaa, 1);
     }
     else
     {
-        OUT.Color = float4(Sample.rgb, 1);
+        OUT.ColorDeferred = float4(Sample.rgb, 1);
     }
     
     return OUT;

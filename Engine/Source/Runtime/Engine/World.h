@@ -126,6 +126,10 @@ namespace Drn
 
 		inline EBufferVisualization GetBufferVisualization() const { return m_BufferVisualization; }
 		inline void SetBufferVisualization(EBufferVisualization BufferVisualization) { m_BufferVisualization = BufferVisualization; }
+
+		inline bool IsInGameMode() { return bGameMode; }
+		inline void SetGameMode(bool InGameMode) { bGameMode = InGameMode; }
+		inline void ToggleGameMode() { SetGameMode(!bGameMode); }
 #endif
 
 	protected:
@@ -177,6 +181,8 @@ namespace Drn
 		bool m_EverEjected = false;
 		class CameraActor* m_ViewportCamera = nullptr;
 		EBufferVisualization m_BufferVisualization = EBufferVisualization::FinalImage;
+
+		bool bGameMode = false;
 #endif
 
 		friend Scene;

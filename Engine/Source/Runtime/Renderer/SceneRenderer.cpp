@@ -235,9 +235,14 @@ namespace Drn
 		m_HitProxyRenderBuffer->Clear( m_CommandList);
 		m_HitProxyRenderBuffer->Bind(m_CommandList);
 
+		const bool IsGameMode = GetScene()->GetWorld()->IsInGameMode();
+
 		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 		{
-			Proxy->RenderHitProxyPass(m_CommandList, this);
+			if (!IsGameMode || (IsGameMode && !Proxy->IsEditorPrimitive()))
+			{
+				Proxy->RenderHitProxyPass(m_CommandList, this);
+			}
 		}
 
 		PIXEndEvent(m_CommandList->GetD3D12CommandList());
@@ -706,9 +711,12 @@ namespace Drn
 		m_EditorPrimitiveBuffer->Clear(m_CommandList);
 		m_EditorPrimitiveBuffer->Bind(m_CommandList);
 
-		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
+		if (!GetScene()->GetWorld()->IsInGameMode())
 		{
-			Proxy->RenderEditorPrimitivePass(m_CommandList, this);
+			for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
+			{
+				Proxy->RenderEditorPrimitivePass(m_CommandList, this);
+			}
 		}
 
 // ------------------------------------------------------------------------------------------
@@ -746,9 +754,14 @@ namespace Drn
 		m_EditorSelectionBuffer->Clear(m_CommandList);
 		m_EditorSelectionBuffer->Bind(m_CommandList);
 
+		const bool IsGameMode = GetScene()->GetWorld()->IsInGameMode();
+
 		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
 		{
-			Proxy->RenderSelectionPass( m_CommandList, this);
+			if (!IsGameMode || (IsGameMode && !Proxy->IsEditorPrimitive()) )
+			{
+				Proxy->RenderSelectionPass( m_CommandList, this);
+			}
 		}
 
 		m_CommandList->TransitionResourceWithTracking(m_EditorSelectionBuffer->m_DepthStencilTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);

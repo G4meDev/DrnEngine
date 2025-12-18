@@ -12,6 +12,7 @@ namespace Drn
 
 		class DirectionalLightActor* DirectionalLight;
 		class SkyLightActor* SkyLight;
+		class PostProcessVolume* PostProccessVolume;
 
 		class Scene* GetScene();
 		class SceneRenderer* GetSceneRenderer();

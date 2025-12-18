@@ -31,8 +31,7 @@ namespace Drn
 		m_PreviewMaterial->SetNamedTexture2D("Texture", m_OwningAsset);
 
 		m_PreviewMeshPlane = m_PreviewWorld->SpawnActor<StaticMeshActor>();
-		m_PreviewMeshPlane->GetMeshComponent()->SetSelectable( false );
-		m_PreviewMeshPlane->GetMeshComponent()->SetEditorPrimitive( true);
+		m_PreviewMeshPlane->GetMeshComponent()->SetSelectable(false);
 		m_PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
 		m_PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, m_PreviewMaterial);
 		m_PreviewMeshPlane->SetActorLocation(Vector(0, 4, 0));

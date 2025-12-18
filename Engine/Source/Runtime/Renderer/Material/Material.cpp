@@ -148,6 +148,8 @@ namespace Drn
 			Ar >> m_SupportPrePass;
 			Ar >> m_HasCustomPrePass;
 			m_PrePassShaderBlob.Serialize(Ar);
+
+			InitalizeParameterMap();
 		}
 
 		else
@@ -295,7 +297,7 @@ namespace Drn
 		{
 			SCOPE_STAT();
 
-			InitalizeParameterMap();
+			//InitalizeParameterMap();
 
 			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 

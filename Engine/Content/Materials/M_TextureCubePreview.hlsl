@@ -1,6 +1,7 @@
 #include "Common.hlsl"
 
-// SUPPORT_EDITOR_PRIMITIVE_PASS
+// SUPPORT_MAIN_PASS
+// SUPPORT_PRE_PASS
 
 struct Resources
 {
@@ -102,8 +103,15 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float s = sin(Angles.y);
     float3 uvw = float3(s * sin(Angles.x), cos(Angles.y), -s * cos(Angles.x));
     
-    OUT.Color = Texture.SampleLevel(LinearSampler, uvw, Scalars.MipLevel);
-    OUT.Color.a = 1;
+    float3 Sample = Texture.SampleLevel(LinearSampler, uvw, Scalars.MipLevel).rgb;
+    
+    OUT.ColorDeferred = float4(Sample, 1);
+    //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);
+    OUT.BaseColor = 0;
+    OUT.WorldNormal = 0;
+    OUT.Masks = 0;
+    //OUT.Masks.a = 1.0f/255;
+    OUT.Masks.a = 0;
     
     return OUT;
 }

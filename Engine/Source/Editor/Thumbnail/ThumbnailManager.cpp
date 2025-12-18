@@ -139,6 +139,13 @@ namespace Drn
 			if (StaticMeshAsset.IsValid())
 			{
 				PreviewWorld* TargetWorld = new PreviewWorld;
+				TargetWorld->GetWorld()->SetGameMode(true);
+
+				TargetWorld->SkyLight->SetIntensity(0.4f);
+
+				TargetWorld->DirectionalLight->SetIntensity(1);
+				TargetWorld->DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
+
 				StaticMeshActor* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<StaticMeshActor>();
 				SpawnedActor->GetMeshComponent()->SetMesh(StaticMeshAsset);
 
@@ -155,9 +162,91 @@ namespace Drn
 			}
 		}
 
-		else if (AssetType == EAssetType::Material)
+		else if (AssetType == EAssetType::Texture2D)
 		{
-			
+			AssetHandle<Texture2D> Texture2DAsset(AssetPath);
+			Texture2DAsset.Load();
+
+			if ( Texture2DAsset.IsValid() )
+			{
+				PreviewWorld* TargetWorld = new PreviewWorld;
+				TargetWorld->GetWorld()->SetGameMode(true);
+				TargetWorld->PostProccessVolume->m_PostProcessVolumeComponent->m_PostProcessSettings.m_BloomSettings.m_Brightness = 0.0f;
+				TargetWorld->PostProccessVolume->m_PostProcessVolumeComponent->m_PostProcessSettings.m_TAASettings.m_JitterOffsetScale = 0.0f;
+
+				AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
+				PlaneMesh.Load();
+		
+				AssetHandle<Material> PreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_Texture2DPreview.drn" );
+				PreviewMaterial.Load();
+				PreviewMaterial->SetNamedTexture2D("Texture", Texture2DAsset);
+
+				StaticMeshActor* PreviewMeshPlane = TargetWorld->GetWorld()->SpawnActor<StaticMeshActor>();
+				PreviewMeshPlane->GetMeshComponent()->SetSelectable(false);
+				PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
+				PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, PreviewMaterial);
+
+				Vector Scale;
+				if (Texture2DAsset->GetSizeX() > Texture2DAsset->GetSizeY())
+				{
+					Scale = Vector(1.0f, (float)Texture2DAsset->GetSizeY() / Texture2DAsset->GetSizeX(), 1.0f);
+				}
+				else
+				{
+					Scale = Vector((float)Texture2DAsset->GetSizeX() / Texture2DAsset->GetSizeY(), 1.0f, 1.0f);
+				}
+
+				PreviewMeshPlane->SetActorScale(Scale);
+
+				Quat CameraRotation( 0, 0, Math::PI);
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
+
+				Vector CameraPosition = PlaneMesh->GetBounds().Origin + CameraRotation.GetAxisZ() * PlaneMesh->GetBounds().SphereRadius * -2.45;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
+
+				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
+
+				ThumbnailCaptureEvent* Event = CaptureSceneThumbnail(TargetWorld->GetSceneRenderer(), AssetPath);
+				Event->m_PreviewWorld = TargetWorld;
+			}
+		}
+
+		else if (AssetType == EAssetType::TextureCube)
+		{
+			AssetHandle<TextureCube> TextureCubeAsset(AssetPath);
+			TextureCubeAsset.Load();
+
+			if ( TextureCubeAsset.IsValid() )
+			{
+				PreviewWorld* TargetWorld = new PreviewWorld;
+				TargetWorld->GetWorld()->SetGameMode(true);
+				TargetWorld->PostProccessVolume->m_PostProcessVolumeComponent->m_PostProcessSettings.m_BloomSettings.m_Brightness = 0.0f;
+				TargetWorld->PostProccessVolume->m_PostProcessVolumeComponent->m_PostProcessSettings.m_TAASettings.m_JitterOffsetScale = 0.0f;
+
+				AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
+				PlaneMesh.Load();
+
+				AssetHandle<Material> PreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_TextureCubePreview.drn" );
+				PreviewMaterial.Load();
+				PreviewMaterial->SetNamedTextureCube("Texture", TextureCubeAsset);
+
+				StaticMeshActor* PreviewMeshPlane = TargetWorld->GetWorld()->SpawnActor<StaticMeshActor>();
+				PreviewMeshPlane->GetMeshComponent()->SetSelectable(false);
+				PreviewMeshPlane->GetMeshComponent()->SetMesh( PlaneMesh );
+				PreviewMeshPlane->GetMeshComponent()->SetMaterial(0, PreviewMaterial);
+				PreviewMeshPlane->SetActorScale(Vector(1.0f, 0.5f, 1.0f));
+
+				Quat CameraRotation( 0, 0, Math::PI);
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
+
+				Vector CameraPosition = PlaneMesh->GetBounds().Origin + CameraRotation.GetAxisZ() * PlaneMesh->GetBounds().SphereRadius * -2.45;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
+
+				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
+
+				ThumbnailCaptureEvent* Event = CaptureSceneThumbnail(TargetWorld->GetSceneRenderer(), AssetPath);
+				Event->m_PreviewWorld = TargetWorld;
+			}
 		}
 
 	}
