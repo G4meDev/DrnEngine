@@ -323,7 +323,7 @@ namespace Drn
 
 		if (ShowTypeOverlay)
 		{
-			draw_list->AddRectFilled(ImVec2(box_min.x, box_max.y), ImVec2(box_max.x, box_max.y - icon_type_overlay_size.y), EditorConfig::GetAssetTypeColor(item_data.AssetType).DWColor());
+			draw_list->AddRectFilled(ImVec2(box_min.x, box_max.y), ImVec2(box_max.x, box_max.y - icon_type_overlay_size), EditorConfig::GetAssetTypeColor(item_data.AssetType).DWColor());
 		}
 
 		const bool   display_label              = ( LayoutItemSize.x >= ImGui::CalcTextSize( "999" ).x );
@@ -332,8 +332,8 @@ namespace Drn
 		{
 			ImU32 label_col = ImGui::GetColorU32(item_is_selected ? ImGuiCol_Text : ImGuiCol_TextDisabled);
 
-			ImVec4 ClipRect(box_min.x, box_max.y - ImGui::GetFontSize() - 2 * icon_type_overlay_size.y, box_max.x, box_max.y);
-			draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(box_min.x, box_max.y - ImGui::GetFontSize() - 2 * icon_type_overlay_size.y), label_col, item_data.Label.c_str(), NULL, 0.0f, &ClipRect);
+			ImVec4 ClipRect(box_min.x, box_max.y - ImGui::GetFontSize() - 2 * icon_type_overlay_size, box_max.x, box_max.y);
+			draw_list->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(box_min.x, box_max.y - ImGui::GetFontSize() - 2 * icon_type_overlay_size), label_col, item_data.Label.c_str(), NULL, 0.0f, &ClipRect);
 		}
 	}
 
@@ -344,6 +344,9 @@ namespace Drn
 			avail_width += floorf(LayoutItemSpacing * 0.5f);
 		
 		LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize));
+
+		LayoutItemSize.y += icon_type_overlay_size + ImGui::GetFontSize() * 2;
+
 		LayoutColumnCount = std::max((int)(avail_width / (LayoutItemSize.x + LayoutItemSpacing)), 1);
 		LayoutLineCount = (Assets.size() + LayoutColumnCount - 1) / LayoutColumnCount;
 		

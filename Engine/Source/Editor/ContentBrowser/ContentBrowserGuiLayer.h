@@ -83,7 +83,7 @@ namespace Drn
 		int LayoutLineCount = 0;
 
 		const ImU32 icon_bg_color               = ImGui::GetColorU32( IM_COL32( 35, 35, 35, 220 ) );
-		const ImVec2 icon_type_overlay_size     = ImVec2( 4.0f, 4.0f );
+		const float icon_type_overlay_size     = 4.0f;
 	};
 }
 

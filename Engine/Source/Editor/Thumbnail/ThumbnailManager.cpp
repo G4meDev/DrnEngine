@@ -142,10 +142,11 @@ namespace Drn
 				StaticMeshActor* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<StaticMeshActor>();
 				SpawnedActor->GetMeshComponent()->SetMesh(StaticMeshAsset);
 
-				XMVECTOR CameraRotation = XMQuaternionRotationRollPitchYaw(Math::PI / 4, Math::PI * 5 / 4, 0);
+				Quat CameraRotation(0, Math::PI / 4, Math::PI * 5 / 4);
 				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
 
-				//TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation(Vector::UpVector * 100);
+				Vector CameraPosition = StaticMeshAsset->GetBounds().Origin + CameraRotation.GetAxisZ() * StaticMeshAsset->GetBounds().SphereRadius * -7;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
 
 				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
 
