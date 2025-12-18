@@ -228,6 +228,8 @@ namespace Drn
 
 						else
 						{
+							// TODO: make a temporary scene renderer with correct aspect ratio
+
 							ThumbnailManager::Get()->CaptureSceneThumbnail(TargetSceneRenderer, TargetWorld->GetLevelPath());
 						}
 					}

@@ -28,7 +28,11 @@ namespace Drn
 		RenderBuffer::Resize(Size);
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		RenderResourceCreateInfo ColorDeferredCreateInfo( nullptr, nullptr, ClearValueBinding(Vector4(0.04f, 0.07f, 0.2f, 1.0f)), "Gbuffer_DeferredColor" );
+		//const Vector4 ClearColor = Vector4( 0.04f, 0.07f, 0.2f, 1.0f );
+		const float ClearValue = 0.001f;
+		const Vector4 ClearColor = Vector4( ClearValue, ClearValue, ClearValue, 1.0f );
+
+		RenderResourceCreateInfo ColorDeferredCreateInfo( nullptr, nullptr, ClearValueBinding(ClearColor), "Gbuffer_DeferredColor" );
 		m_ColorDeferredTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), ColorDeferredCreateInfo);
 

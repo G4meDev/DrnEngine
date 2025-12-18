@@ -249,6 +249,41 @@ namespace Drn
 			}
 		}
 
+		else if (AssetType == EAssetType::Material)
+		{
+			AssetHandle<Material> MaterialAsset(AssetPath);
+			MaterialAsset.Load();
+
+			if ( MaterialAsset.IsValid() )
+			{
+				PreviewWorld* TargetWorld = new PreviewWorld;
+				TargetWorld->GetWorld()->SetGameMode(true);
+
+				AssetHandle<StaticMesh> SphereMesh( "Engine\\Content\\BasicShapes\\SM_Sphere.drn" );
+				SphereMesh.Load();
+
+				TargetWorld->SkyLight->SetIntensity(0.4f);
+
+				TargetWorld->DirectionalLight->SetIntensity(1);
+				TargetWorld->DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
+
+				StaticMeshActor* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<StaticMeshActor>();
+				SpawnedActor->GetMeshComponent()->SetMesh(SphereMesh);
+				SpawnedActor->GetMeshComponent()->SetMaterial(0, MaterialAsset);
+
+				Quat CameraRotation(0, Math::PI / 4, Math::PI * 5 / 4);
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
+
+				Vector CameraPosition = SphereMesh->GetBounds().Origin + CameraRotation.GetAxisZ() * SphereMesh->GetBounds().SphereRadius * -5;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
+
+				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
+
+				ThumbnailCaptureEvent* Event = CaptureSceneThumbnail(TargetWorld->GetSceneRenderer(), AssetPath);
+				Event->m_PreviewWorld = TargetWorld;
+			}
+		}
+
 	}
 
 	void ThumbnailManager::ProccessRequestedThumbnails( D3D12CommandList* CmdList )
