@@ -118,7 +118,17 @@ namespace Drn
 	enum class EPrimitiveType : uint8
 	{
 		TriangleList,
-		LineList
+		TriangleStrip,
+		LineList,
+		PointList
+	};
+
+	enum class EPrimitiveTopologyType : uint8
+	{
+		Triangle,
+		Patch,
+		Line,
+		Point,
 	};
 
 	enum class EBufferUsageFlags : uint32

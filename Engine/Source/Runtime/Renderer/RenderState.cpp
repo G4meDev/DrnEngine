@@ -231,7 +231,8 @@ namespace Drn
 	{
 		DepthStencilState* OutDepthStencilState = new DepthStencilState;
 
-		D3D12_DEPTH_STENCIL_DESC1 &DepthStencilDesc = OutDepthStencilState->Desc;
+		//D3D12_DEPTH_STENCIL_DESC1 &DepthStencilDesc = OutDepthStencilState->Desc;
+		D3D12_DEPTH_STENCIL_DESC &DepthStencilDesc = OutDepthStencilState->Desc;
 		memset(&DepthStencilDesc, 0, sizeof(D3D12_DEPTH_STENCIL_DESC1));
 
 		DepthStencilDesc.DepthEnable = Initializer.DepthTest != ECompareFunction::Always || Initializer.bEnableDepthWrite;
@@ -257,7 +258,7 @@ namespace Drn
 			DepthStencilDesc.BackFace = DepthStencilDesc.FrontFace;
 		}
 
-		DepthStencilDesc.DepthBoundsTestEnable = false;
+		//DepthStencilDesc.DepthBoundsTestEnable = false;
 
 		const bool bStencilOpIsKeep =
 			Initializer.FrontFaceStencilFailStencilOp == EStencilOp::Keep

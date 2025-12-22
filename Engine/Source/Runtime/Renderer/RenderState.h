@@ -211,7 +211,8 @@ namespace Drn
 	{
 	public:
 
-		D3D12_DEPTH_STENCIL_DESC1 Desc;
+		//D3D12_DEPTH_STENCIL_DESC1 Desc;
+		D3D12_DEPTH_STENCIL_DESC Desc;
 		EDepthStencilViewType AccessType;
 
 		static TRefCountPtr<DepthStencilState> Create(const DepthStencilStateInitializer& Initializer);

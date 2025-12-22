@@ -98,6 +98,8 @@ namespace Drn
 		void SetIndexBuffer(const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset);
 		void SetStreamSource(uint32 StreamIndex, class RenderVertexBuffer* VertexBuffer, uint32 Offset);
 
+		void SetGraphicPipelineState(class GraphicsPipelineState* InState);
+
 		// TODO: remove. this should happen when a new pipeline state is set
 		void SetStreamStrides(const uint16* Strides);
 		void SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY Topology);

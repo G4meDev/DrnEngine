@@ -32,6 +32,10 @@ namespace Drn
 		PipelineState.Graphics.CurrentNumberOfViewports = 0;
 
 		PipelineState.Graphics.CurrentNumberOfScissorRects = 0;
+
+		PipelineState.Graphics.CurrentPipelineStateObject = nullptr;
+		//PipelineState.Compute.CurrentPipelineStateObject = nullptr;
+		PipelineState.Common.CurrentPipelineStateObject = nullptr;
 	}
 
 	void RenderStateCache::InheritState( const RenderStateCache& AncestralCache )
@@ -239,8 +243,23 @@ namespace Drn
 		return InTopology == D3D_PRIMITIVE_TOPOLOGY_LINELIST ? &PipelineState.Graphics.NumLines : &PipelineState.Graphics.NumTriangles;
 	}
 
+	ID3D12RootSignature* RenderStateCache::GetGraphicsRootSignature() const 
+	{
+		return PipelineState.Graphics.CurrentPipelineStateObject ? PipelineState.Graphics.CurrentPipelineStateObject->RootSignature : nullptr;
+	}
+
 	void RenderStateCache::ApplyState()
 	{
+		ID3D12RootSignature* pRootSignature = GetGraphicsRootSignature();
+
+		if (PipelineState.Graphics.bNeedSetRootSignature)
+		{
+			CmdList->GetD3D12CommandList()->SetGraphicsRootSignature(pRootSignature);
+			PipelineState.Graphics.bNeedSetRootSignature = false;
+		}
+
+		//InternalSetGraphicPipelineState();
+
 		if (bNeedSetVB)
 		{
 			VertexBufferCache& Cache = PipelineState.Graphics.VBCache;
@@ -250,26 +269,81 @@ namespace Drn
 			{
 				CmdList->GetD3D12CommandList()->IASetVertexBuffers(0, Count, Cache.CurrentVertexBufferViews);
 			}
-			if (bNeedSetViewports)
-			{
-				bNeedSetViewports = false;
-				CmdList->GetD3D12CommandList()->RSSetViewports(PipelineState.Graphics.CurrentNumberOfViewports, PipelineState.Graphics.CurrentViewport);
-			}
-			if (bNeedSetScissorRects)
-			{
-				bNeedSetScissorRects = false;
-				CmdList->GetD3D12CommandList()->RSSetScissorRects(PipelineState.Graphics.CurrentNumberOfScissorRects, PipelineState.Graphics.CurrentScissorRects);
-			}
-			if (bNeedSetPrimitiveTopology)
-			{
-				bNeedSetPrimitiveTopology = false;
-				CmdList->GetD3D12CommandList()->IASetPrimitiveTopology(PipelineState.Graphics.CurrentPrimitiveTopology);
-			}
+		}
+
+		if (bNeedSetViewports)
+		{
+			bNeedSetViewports = false;
+			CmdList->GetD3D12CommandList()->RSSetViewports(PipelineState.Graphics.CurrentNumberOfViewports, PipelineState.Graphics.CurrentViewport);
+		}
+		if (bNeedSetScissorRects)
+		{
+			bNeedSetScissorRects = false;
+			CmdList->GetD3D12CommandList()->RSSetScissorRects(PipelineState.Graphics.CurrentNumberOfScissorRects, PipelineState.Graphics.CurrentScissorRects);
+		}
+		if (bNeedSetPrimitiveTopology)
+		{
+			bNeedSetPrimitiveTopology = false;
+			CmdList->GetD3D12CommandList()->IASetPrimitiveTopology(PipelineState.Graphics.CurrentPrimitiveTopology);
 		}
 
 		CmdList->FlushBarriers();
 	}
 
+	void RenderStateCache::InternalSetGraphicPipelineState()
+	{
+		bool bNeedSetPSO = PipelineState.Common.bNeedSetPSO;
+		if (PipelineState.Common.CurrentPipelineStateObject != PipelineState.Graphics.CurrentPipelineStateObject->PipelineState)
+		{
+			PipelineState.Common.CurrentPipelineStateObject = PipelineState.Graphics.CurrentPipelineStateObject->PipelineState;
+			bNeedSetPSO = true;
+		}
 
+		if (bNeedSetPSO)
+		{
+			drn_check(PipelineState.Common.CurrentPipelineStateObject);
+			CmdList->GetD3D12CommandList()->SetPipelineState(PipelineState.Common.CurrentPipelineStateObject);
+			PipelineState.Common.bNeedSetPSO = false;
+		}
+	}
+
+	void RenderStateCache::SetGraphicPipelineState( GraphicsPipelineState* InState )
+	{
+		drn_check(InState);
+
+		//if (PipelineState.Graphics.CurrentPipelineStateObject != InState)
+		if (true) // TODO: remove
+		{
+			SetStreamStrides(InState->StreamStrides);
+			//SetShader(InState->GetVertexShader());
+			//SetShader(InState->GetPixelShader());
+			//SetShader(InState->GetDomainShader());
+			//SetShader(InState->GetHullShader());
+			//SetShader(InState->GetGeometryShader());
+
+			if ( GetGraphicsRootSignature() != InState->RootSignature)
+			{
+				PipelineState.Graphics.bNeedSetRootSignature = true;
+			}
+
+			PipelineState.Common.bNeedSetPSO = true;
+			PipelineState.Graphics.CurrentPipelineStateObject = InState;
+
+			EPrimitiveType PrimitiveType = InState->PipelineStateInitializer.PrimitiveType;
+			if (PipelineState.Graphics.CurrentPrimitiveType != PrimitiveType)
+			{
+				const bool bUsingTessellation = InState->GetHullShader() && InState->GetDomainShader();
+				PipelineState.Graphics.CurrentPrimitiveType = PrimitiveType;
+				PipelineState.Graphics.CurrentPrimitiveTopology = GetD3D12PrimitiveType(PrimitiveType, bUsingTessellation);
+				bNeedSetPrimitiveTopology = true;
+
+				PipelineState.Graphics.PrimitiveTypeFactor = (PrimitiveType == EPrimitiveType::TriangleList) ? 3 : (PrimitiveType == EPrimitiveType::LineList) ? 2 : 1;
+				PipelineState.Graphics.PrimitiveTypeOffset = (PrimitiveType == EPrimitiveType::TriangleStrip) ? 2 : 0;
+				PipelineState.Graphics.CurrentPrimitiveStat = (PrimitiveType == EPrimitiveType::LineList) ? &PipelineState.Graphics.NumLines : &PipelineState.Graphics.NumTriangles;
+			}
+
+			InternalSetGraphicPipelineState();
+		}
+	}
 
         }  // namespace Drn

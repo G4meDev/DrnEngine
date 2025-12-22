@@ -381,6 +381,11 @@ namespace Drn
 		StateCache.SetStreamSource(VertexBuffer ? &VertexBuffer->m_ResourceLocation : nullptr, StreamIndex, Offset);
 	}
 
+	void D3D12CommandList::SetGraphicPipelineState( GraphicsPipelineState* InState )
+	{
+		StateCache.SetGraphicPipelineState(InState);
+	}
+
 	void D3D12CommandList::SetStreamStrides( const uint16* Strides )
 	{
 		StateCache.SetStreamStrides(Strides);

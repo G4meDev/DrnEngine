@@ -409,7 +409,7 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------------------
 
-	GraphicsPipelineState::GraphicsPipelineState(const GraphicsPipelineStateInitializer& Initializer, const ID3D12RootSignature* InRootSignature)
+	GraphicsPipelineState::GraphicsPipelineState(const GraphicsPipelineStateInitializer& Initializer, ID3D12RootSignature* InRootSignature)
 		: PipelineStateInitializer(Initializer)
 		, RootSignature(InRootSignature)
 	{
@@ -426,11 +426,56 @@ namespace Drn
 		PipelineStateInitializer.BoundShaderState.ReleaseResources();
 	}
 
-
-
-	TRefCountPtr<GraphicsPipelineState> GraphicsPipelineState::Create( const GraphicsPipelineStateInitializer& Initializer, const ID3D12RootSignature* InRootSignature )
+	TRefCountPtr<GraphicsPipelineState> GraphicsPipelineState::Create( Device* InDevice, const GraphicsPipelineStateInitializer& Initializer, ID3D12RootSignature* InRootSignature )
 	{
-		return new GraphicsPipelineState(Initializer, InRootSignature);
+		GraphicsPipelineState* OutPipelineState = new GraphicsPipelineState(Initializer, InRootSignature);
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+		if (VertexDeclaration* InputLayout = Initializer.BoundShaderState.m_VertexDeclaration)
+		{
+			PipelineDesc.InputLayout = {InputLayout->VertexElements.data(), (uint32)InputLayout->VertexElements.size()};
+		}
+
+		if (Initializer.BoundShaderState.m_HullShader && Initializer.BoundShaderState.m_DomainShader)
+		{
+			PipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+		}
+		else
+		{
+			PipelineDesc.PrimitiveTopologyType = D3D12PrimitiveTypeToTopologyType(TranslatePrimitiveType(Initializer.PrimitiveType));
+		}
+
+		PipelineDesc.pRootSignature						= InRootSignature;
+		PipelineDesc.RasterizerState					= Initializer.RasterizerState ? Initializer.RasterizerState->Desc : CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+		PipelineDesc.BlendState							= Initializer.BlendState ? Initializer.BlendState->Desc : CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		PipelineDesc.DepthStencilState					= Initializer.DepthStencilState ? Initializer.DepthStencilState->Desc : CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		PipelineDesc.SampleMask							= UINT_MAX;
+		PipelineDesc.DSVFormat							= Initializer.DepthStencilTargetFormat;
+		PipelineDesc.NumRenderTargets					= Initializer.RenderTargetsEnabled;
+		PipelineDesc.SampleDesc.Count					= Initializer.NumSamples;
+		for (int32 i = 0; i < Initializer.RenderTargetsEnabled; i++)
+		{
+			PipelineDesc.RTVFormats[i] = Initializer.RenderTargetFormats[i];
+		}
+
+		if (VertexShader* VShader = Initializer.BoundShaderState.m_VertexShader)
+			PipelineDesc.VS = VShader->ByteCode;
+
+		if (HullShader* HShader = Initializer.BoundShaderState.m_HullShader)
+			PipelineDesc.HS = HShader->ByteCode;
+
+		if (DomainShader* DShader = Initializer.BoundShaderState.m_DomainShader)
+			PipelineDesc.DS = DShader->ByteCode;
+
+		if (GeometryShader* GShader = Initializer.BoundShaderState.m_GeometryShader)
+			PipelineDesc.GS = GShader->ByteCode;
+
+		if (PixelShader* PShader = Initializer.BoundShaderState.m_PixelShader)
+			PipelineDesc.PS = PShader->ByteCode;
+
+		InDevice->GetD3D12Device()->CreateGraphicsPipelineState(&PipelineDesc, IID_PPV_ARGS(OutPipelineState->PipelineState.GetInitReference()));
+
+		return OutPipelineState;
 	}
 
         }  // namespace Drn

@@ -98,17 +98,51 @@ namespace Drn
 			return PipelineState.Graphics.CurrentPrimitiveTopology;
 		}
 
+		void SetGraphicPipelineState(class GraphicsPipelineState* InState);
+
 	private:
 
+		void InternalSetGraphicPipelineState();
 		void InternalSetStreamSource(ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset);
 		uint32 GetPrimitiveTopologyFactor(D3D_PRIMITIVE_TOPOLOGY InTopology);
 		uint32 GetPrimitiveTopologyOffset(D3D_PRIMITIVE_TOPOLOGY InTopology);
 		uint32* GetPrimitiveTopologyStat(D3D_PRIMITIVE_TOPOLOGY InTopology);
 
+		class ID3D12RootSignature* GetGraphicsRootSignature() const;
+
+		static inline D3D_PRIMITIVE_TOPOLOGY GetD3D12PrimitiveType(EPrimitiveType PrimitiveType, bool bUsingTessellation)
+		{
+			static const uint8 D3D12PrimitiveType[] =
+			{
+				D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+				D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+				D3D_PRIMITIVE_TOPOLOGY_LINELIST,
+				D3D_PRIMITIVE_TOPOLOGY_POINTLIST,
+			};
+
+			if (bUsingTessellation)
+			{
+				if (PrimitiveType == EPrimitiveType::TriangleList)
+				{
+					return D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST;
+				}
+				else
+				{
+					drn_check(false);
+					return D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST;
+				}
+			}
+
+			D3D_PRIMITIVE_TOPOLOGY D3DType = (D3D_PRIMITIVE_TOPOLOGY) D3D12PrimitiveType[(uint8)PrimitiveType];
+			return D3DType;
+		}
+
 		struct
 		{
 			struct
 			{
+				bool bNeedSetRootSignature;
+
 				uint32	CurrentNumberOfViewports;
 				D3D12_VIEWPORT CurrentViewport[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
 
@@ -118,6 +152,7 @@ namespace Drn
 				IndexBufferCache IBCache;
 				VertexBufferCache VBCache;
 
+				EPrimitiveType CurrentPrimitiveType;
 				D3D_PRIMITIVE_TOPOLOGY CurrentPrimitiveTopology;
 				uint32 PrimitiveTypeFactor;
 				uint32 PrimitiveTypeOffset;
@@ -125,6 +160,7 @@ namespace Drn
 				uint32 NumTriangles;
 				uint32 NumLines;
 
+				TRefCountPtr<class GraphicsPipelineState> CurrentPipelineStateObject;
 				uint16 StreamStrides[MAX_VERTEX_ELEMENT_COUT];
 			} Graphics;
 
@@ -134,6 +170,8 @@ namespace Drn
 
 			struct
 			{
+				bool bNeedSetPSO;
+				ID3D12PipelineState* CurrentPipelineStateObject;
 			} Common;
 		} PipelineState;
 

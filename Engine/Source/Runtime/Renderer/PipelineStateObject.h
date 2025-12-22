@@ -137,14 +137,14 @@ namespace Drn
 	class GraphicsPipelineState : public SimpleRenderResource
 	{
 	private:
-		GraphicsPipelineState(const GraphicsPipelineStateInitializer& Initializer, const ID3D12RootSignature* InRootSignature);
+		GraphicsPipelineState(const GraphicsPipelineStateInitializer& Initializer, ID3D12RootSignature* InRootSignature);
 		virtual ~GraphicsPipelineState();
 
 	public:	
-		static TRefCountPtr <GraphicsPipelineState> Create(const GraphicsPipelineStateInitializer& Initializer, const ID3D12RootSignature* InRootSignature);
+		static TRefCountPtr <GraphicsPipelineState> Create(class Device* InDevice, const GraphicsPipelineStateInitializer& Initializer, ID3D12RootSignature* InRootSignature);
 
 		GraphicsPipelineStateInitializer PipelineStateInitializer;
-		const ID3D12RootSignature* RootSignature;
+		ID3D12RootSignature* RootSignature;
 		uint16 StreamStrides[MAX_VERTEX_ELEMENT_COUT];
 
 		TRefCountPtr<ID3D12PipelineState> PipelineState;

@@ -222,3 +222,59 @@ inline DXGI_FORMAT FindDepthStencilSRVFormat(DXGI_FORMAT InFormat, bool StencilV
 	};
 	return InFormat;
 }
+
+inline D3D12_PRIMITIVE_TOPOLOGY_TYPE TranslatePrimitiveTopologyType(Drn::EPrimitiveTopologyType TopologyType)
+{
+	switch (TopologyType)
+	{
+	case Drn::EPrimitiveTopologyType::Triangle:	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	case Drn::EPrimitiveTopologyType::Patch:		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+	case Drn::EPrimitiveTopologyType::Line:		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+	case Drn::EPrimitiveTopologyType::Point:		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+	default:
+		drn_check(false);
+		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+	}
+}
+
+inline D3D_PRIMITIVE_TOPOLOGY TranslatePrimitiveType(Drn::EPrimitiveType PrimitiveType)
+{
+	switch (PrimitiveType)
+	{
+	case Drn::EPrimitiveType::TriangleList:				return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	case Drn::EPrimitiveType::TriangleStrip:				return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+	case Drn::EPrimitiveType::LineList:					return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+	case Drn::EPrimitiveType::PointList:					return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+
+	default:
+		drn_check(false);
+		return D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	}
+}
+
+inline D3D12_PRIMITIVE_TOPOLOGY_TYPE D3D12PrimitiveTypeToTopologyType(D3D_PRIMITIVE_TOPOLOGY PrimitiveType)
+{
+	switch (PrimitiveType)
+	{
+	case D3D_PRIMITIVE_TOPOLOGY_POINTLIST:
+		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+
+	case D3D_PRIMITIVE_TOPOLOGY_LINELIST:
+	case D3D_PRIMITIVE_TOPOLOGY_LINESTRIP:
+	case D3D_PRIMITIVE_TOPOLOGY_LINELIST_ADJ:
+	case D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ:
+		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+
+	case D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST:
+	case D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+	case D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ:
+	case D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ:
+		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+	case D3D_PRIMITIVE_TOPOLOGY_UNDEFINED:
+		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+
+	default:
+		return D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+	}
+}
