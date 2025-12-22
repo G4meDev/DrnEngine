@@ -6,15 +6,6 @@
 
 namespace Drn
 {
-	enum class EDepthStencilViewType : uint8
-	{
-		DepthStencilRead		= 0,
-		DepthWrite				= 1,
-		StencilWrite			= 2,
-		DepthStencilWrite		= 3,
-		Max						= 4
-	};
-
 	class RenderTextureBase : public BaseShaderResource, public SimpleRenderResource
 	{
 	public:

@@ -2,8 +2,125 @@
 
 #include "ForwardTypes.h"
 
+#define MAX_VERTEX_ELEMENT_COUT 16
+
 namespace Drn
 {
+	enum EShaderType : uint8
+	{
+		Vertex			= 0,
+		Hull			= 1,
+		Domain			= 2,
+		Pixel			= 3,
+		Geometry		= 4,
+		Compute			= 5,
+		RayGen			= 6,
+		RayMiss			= 7,
+		RayHitGroup		= 8,
+		RayCallable		= 9,
+		Max				= 10
+	};
+
+	enum class EBlendOperation : uint8
+	{
+		Add,
+		Subtract,
+		Min,
+		Max,
+		ReverseSubtract,
+	};
+
+	enum class EBlendFactor : uint8
+	{
+		Zero,
+		One,
+		SourceColor,
+		InverseSourceColor,
+		SourceAlpha,
+		InverseSourceAlpha,
+		DestAlpha,
+		InverseDestAlpha,
+		DestColor,
+		InverseDestColor,
+		ConstantBlendFactor,
+		InverseConstantBlendFactor,
+		Source1Color,
+		InverseSource1Color,
+		Source1Alpha,
+		InverseSource1Alpha,
+	};
+
+	enum class ERasterizerFillMode : uint8
+	{
+		Wireframe,
+		Solid,
+	};
+
+	enum class ERasterizerCullMode : uint8
+	{
+		None,
+		Front,
+		Back,
+	};
+
+	enum class EColorWriteMask : uint8
+	{
+		RED   = 0x01,
+		GREEN = 0x02,
+		BLUE  = 0x04,
+		ALPHA = 0x08,
+
+		NONE  = 0,
+		RGB   = RED | GREEN | BLUE,
+		RGBA  = RED | GREEN | BLUE | ALPHA,
+		RG    = RED | GREEN,
+		BA    = BLUE | ALPHA,
+	};
+
+	enum class ECompareFunction : uint8
+	{
+		Less,
+		LessEqual,
+		Greater,
+		GreaterEqual,
+		Equal,
+		NotEqual,
+		Never,
+		Always,
+	};
+
+	enum class EStencilMask : uint8
+	{
+		Bit_Default,
+		Bit_255,
+		Bit_1,
+		Bit_2,
+		Bit_4,
+		Bit_8,
+		Bit_16,
+		Bit_32,
+		Bit_64,
+		Bit_128,
+	};
+
+	enum class EStencilOp : uint8
+	{
+		Keep,
+		Zero,
+		Replace,
+		SaturatedIncrement,
+		SaturatedDecrement,
+		Invert,
+		Increment,
+		Decrement,
+	};
+
+	enum class EPrimitiveType : uint8
+	{
+		TriangleList,
+		LineList
+	};
+
 	enum class EBufferUsageFlags : uint32
 	{
 		None					= 0,
@@ -74,6 +191,15 @@ namespace Drn
 		NoFastClear						= 1<<11,
 		DepthStencilResolveTarget		= 1<<12,
 		Transient						= 1<<13,
+	};
+
+	enum class EDepthStencilViewType : uint8
+	{
+		DepthStencilRead		= 0,
+		DepthWrite				= 1,
+		StencilWrite			= 2,
+		DepthStencilWrite		= 3,
+		Max						= 4
 	};
 
 	struct CopyTextureInfo

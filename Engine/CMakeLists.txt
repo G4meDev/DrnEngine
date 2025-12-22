@@ -107,6 +107,10 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderTypes.h
 	Source/Runtime/Renderer/RenderAllocation.h
 	Source/Runtime/Renderer/RenderStateCache.h
+	Source/Runtime/Renderer/ShaderCompiler.h
+	Source/Runtime/Renderer/Shader.h
+	Source/Runtime/Renderer/VertexDeclaration.h
+	Source/Runtime/Renderer/RenderState.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -315,6 +319,10 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderTypes.cpp
 	Source/Runtime/Renderer/RenderAllocation.cpp
 	Source/Runtime/Renderer/RenderStateCache.cpp
+	Source/Runtime/Renderer/ShaderCompiler.cpp
+	Source/Runtime/Renderer/Shader.cpp
+	Source/Runtime/Renderer/VertexDeclaration.cpp
+	Source/Runtime/Renderer/RenderState.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

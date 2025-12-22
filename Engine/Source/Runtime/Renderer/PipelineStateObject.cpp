@@ -407,4 +407,30 @@ namespace Drn
 	}
 #endif
 
-}
+// --------------------------------------------------------------------------------------------------------------
+
+	GraphicsPipelineState::GraphicsPipelineState(const GraphicsPipelineStateInitializer& Initializer, const ID3D12RootSignature* InRootSignature)
+		: PipelineStateInitializer(Initializer)
+		, RootSignature(InRootSignature)
+	{
+		PipelineStateInitializer.BoundShaderState.AddRefResources();
+
+		if (Initializer.BoundShaderState.m_VertexDeclaration)
+			memcpy(StreamStrides, Initializer.BoundShaderState.m_VertexDeclaration->StreamStrides, sizeof(StreamStrides));
+		else
+			memset(StreamStrides, 0, sizeof(StreamStrides));
+	}
+
+	GraphicsPipelineState::~GraphicsPipelineState()
+	{
+		PipelineStateInitializer.BoundShaderState.ReleaseResources();
+	}
+
+
+
+	TRefCountPtr<GraphicsPipelineState> GraphicsPipelineState::Create( const GraphicsPipelineStateInitializer& Initializer, const ID3D12RootSignature* InRootSignature )
+	{
+		return new GraphicsPipelineState(Initializer, InRootSignature);
+	}
+
+        }  // namespace Drn

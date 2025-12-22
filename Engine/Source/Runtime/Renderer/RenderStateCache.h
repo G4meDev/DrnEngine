@@ -3,7 +3,6 @@
 #include "ForwardTypes.h"
 
 #define MAX_VBS D3D12_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT
-#define MAX_VERTEX_ELEMENT_COUT 16
 
 namespace Drn
 {
