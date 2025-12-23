@@ -836,7 +836,7 @@ namespace Drn
 			uint32 InputTextureIndex;
 
 			GetResourcesForBufferVisualization(BufferVisulization, VisualizationResource, InputTextureIndex);
-			ID3D12PipelineState* PSO = CommonResources::Get()->m_BufferVisualizerPSO->GetPSOForBufferVisualizer(BufferVisulization);
+			TRefCountPtr<GraphicsPipelineState> PSO = CommonResources::Get()->m_BufferVisualizerPSO->GetPSOForBufferVisualizer(BufferVisulization);
 
 			if (VisualizationResource && PSO)
 			{
@@ -846,7 +846,8 @@ namespace Drn
 				m_TonemapBuffer->Bind( m_CommandList );
 
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-				m_CommandList->GetD3D12CommandList()->SetPipelineState(PSO);
+				//m_CommandList->GetD3D12CommandList()->SetPipelineState(PSO);
+				m_CommandList->SetGraphicPipelineState(PSO);
 
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, InputTextureIndex, 1);

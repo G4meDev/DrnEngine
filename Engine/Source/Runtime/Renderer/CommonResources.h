@@ -246,28 +246,26 @@ namespace Drn
 		ID3D12PipelineState* m_MipPSO;
 	};
 
-	class BufferVisualizerPSO
+	class BufferVisualizerPSO : public RefCountedObject
 	{
 	public:
 
-		BufferVisualizerPSO( ID3D12GraphicsCommandList2* CommandList);
-		~BufferVisualizerPSO();
+		BufferVisualizerPSO(D3D12CommandList* CommandList, CommonResources* CR);
+		TRefCountPtr<GraphicsPipelineState> GetPSOForBufferVisualizer(EBufferVisualization BufferVialization);
 		
-		ID3D12PipelineState* GetPSOForBufferVisualizer(EBufferVisualization BufferVialization);
-		
-		ID3D12PipelineState* m_BaseColorPSO;
-		ID3D12PipelineState* m_MetallicPSO;
-		ID3D12PipelineState* m_RoughnessPSO;
-		ID3D12PipelineState* m_MaterialAoPSO;
-		ID3D12PipelineState* m_ShadingModelPSO;
-		ID3D12PipelineState* m_WorldNormalPSO;
-		ID3D12PipelineState* m_SubsurfaceColorPSO;
-		ID3D12PipelineState* m_DepthPSO;
-		ID3D12PipelineState* m_LinearDepthPSO;
-		ID3D12PipelineState* m_PreTonemapPSO;
-		ID3D12PipelineState* m_ScreenSpaceAOPSO;
-		ID3D12PipelineState* m_Bloom;
-		ID3D12PipelineState* m_ScreenSpaceReflection;
+		TRefCountPtr<GraphicsPipelineState> m_BaseColorPSO;
+		TRefCountPtr<GraphicsPipelineState> m_MetallicPSO;
+		TRefCountPtr<GraphicsPipelineState> m_RoughnessPSO;
+		TRefCountPtr<GraphicsPipelineState> m_MaterialAoPSO;
+		TRefCountPtr<GraphicsPipelineState> m_ShadingModelPSO;
+		TRefCountPtr<GraphicsPipelineState> m_WorldNormalPSO;
+		TRefCountPtr<GraphicsPipelineState> m_SubsurfaceColorPSO;
+		TRefCountPtr<GraphicsPipelineState> m_DepthPSO;
+		TRefCountPtr<GraphicsPipelineState> m_LinearDepthPSO;
+		TRefCountPtr<GraphicsPipelineState> m_PreTonemapPSO;
+		TRefCountPtr<GraphicsPipelineState> m_ScreenSpaceAOPSO;
+		TRefCountPtr<GraphicsPipelineState> m_Bloom;
+		TRefCountPtr<GraphicsPipelineState> m_ScreenSpaceReflection;
 	};
 #endif
 
@@ -332,7 +330,7 @@ namespace Drn
 		AssetHandle<Texture2D> m_PreintegratedGF;
 
 #if WITH_EDITOR
-		BufferVisualizerPSO* m_BufferVisualizerPSO;
+		TRefCountPtr<BufferVisualizerPSO> m_BufferVisualizerPSO;
 		AssetHandle<Texture2D> m_AssetIcon_Default;
 		AssetHandle<Texture2D> m_AssetIcon_Level;
 		AssetHandle<Texture2D> m_AssetIcon_StaticMesh;
