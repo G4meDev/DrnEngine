@@ -6,41 +6,48 @@ LOG_DECLARE_CATEGORY(LogCommonResources);
 
 namespace Drn
 {
+	//struct ID3D12GraphicsCommandList2;
+	class D3D12CommandList;
+	class GraphicsPipelineState;
+	class CommonResources;
+	class RenderVertexBuffer;
+	class RenderIndexBuffer;
+
 	class ScreenTriangle
 	{
 	public:
 
-		ScreenTriangle( class D3D12CommandList* CommandList );
+		ScreenTriangle( D3D12CommandList* CommandList );
 		~ScreenTriangle();
 
-		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
+		TRefCountPtr<RenderVertexBuffer> m_VertexBuffer;
 
-		void BindAndDraw( class D3D12CommandList* CommandList );
+		void BindAndDraw( D3D12CommandList* CommandList );
 	};
 
 	class BackfaceScreenTriangle
 	{
 	public:
 
-		BackfaceScreenTriangle( class D3D12CommandList* CommandList );
+		BackfaceScreenTriangle( D3D12CommandList* CommandList );
 		~BackfaceScreenTriangle();
 
-		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
+		TRefCountPtr<RenderVertexBuffer> m_VertexBuffer;
 
-		void BindAndDraw( class D3D12CommandList* CommandList );
+		void BindAndDraw( D3D12CommandList* CommandList );
 	};
 
 	class UniformQuad
 	{
 	public:
 
-		UniformQuad( class D3D12CommandList* CommandList );
+		UniformQuad( D3D12CommandList* CommandList );
 		~UniformQuad();
 
-		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
-		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
+		TRefCountPtr<RenderVertexBuffer> m_VertexBuffer;
+		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( class D3D12CommandList* CommandList );
+		void BindAndDraw( D3D12CommandList* CommandList );
 
 		uint32 VertexCount;
 		uint32 PrimitiveCount;
@@ -50,11 +57,11 @@ namespace Drn
 	{
 	public:
 
-		UniformCube( class D3D12CommandList* CommandList );
+		UniformCube( D3D12CommandList* CommandList );
 		~UniformCube();
 
-		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
-		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
+		TRefCountPtr<RenderVertexBuffer> m_VertexBuffer;
+		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
 
 		void BindAndDraw( D3D12CommandList* CommandList );
 
@@ -66,13 +73,13 @@ namespace Drn
 	{
 	public:
 
-		UniformCubePositionOnly( class D3D12CommandList* CommandList );
+		UniformCubePositionOnly( D3D12CommandList* CommandList );
 		~UniformCubePositionOnly();
 
-		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
-		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
+		TRefCountPtr<RenderVertexBuffer> m_VertexBuffer;
+		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( class D3D12CommandList* CommandList );
+		void BindAndDraw( D3D12CommandList* CommandList );
 
 		uint32 VertexCount;
 		uint32 PrimitiveCount;
@@ -82,13 +89,13 @@ namespace Drn
 	{
 	public:
 
-		PointLightSphere( class D3D12CommandList* CommandList );
+		PointLightSphere( D3D12CommandList* CommandList );
 		~PointLightSphere();
 
-		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
-		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
+		TRefCountPtr<RenderVertexBuffer> m_VertexBuffer;
+		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( class D3D12CommandList* CommandList );
+		void BindAndDraw( D3D12CommandList* CommandList );
 
 		uint32 VertexCount;
 		uint32 PrimitiveCount;
@@ -98,13 +105,13 @@ namespace Drn
 	{
 	public:
 
-		SpotLightCone( class D3D12CommandList* CommandList );
+		SpotLightCone( D3D12CommandList* CommandList );
 		~SpotLightCone();
 
-		TRefCountPtr<class RenderVertexBuffer> m_VertexBuffer;
-		TRefCountPtr<class RenderIndexBuffer> m_IndexBuffer;
+		TRefCountPtr<RenderVertexBuffer> m_VertexBuffer;
+		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
 
-		void BindAndDraw( class D3D12CommandList* CommandList );
+		void BindAndDraw( D3D12CommandList* CommandList );
 
 		uint32 VertexCount;
 		uint32 PrimitiveCount;
@@ -114,32 +121,25 @@ namespace Drn
 	{
 	public:
 
-		ResolveAlphaBlendedPSO( class D3D12CommandList* CommandList, class CommonResources* CR );
-
-		TRefCountPtr<class GraphicsPipelineState> m_PSO;
-		//ID3D12PipelineState* m_PSO;
+		ResolveAlphaBlendedPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class TonemapPSO
+	class TonemapPSO : public RefCountedObject
 	{
 	public:
-
-		TonemapPSO( ID3D12GraphicsCommandList2* CommandList );
-		~TonemapPSO();
-		
-		ID3D12PipelineState* m_PSO;
+		TonemapPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class AmbientOcclusionPSO
+	class AmbientOcclusionPSO : public RefCountedObject
 	{
 	public:
-
-		AmbientOcclusionPSO( ID3D12GraphicsCommandList2* CommandList );
-		~AmbientOcclusionPSO();
+		AmbientOcclusionPSO( D3D12CommandList* CommandList, CommonResources* CR );
 		
-		ID3D12PipelineState* m_SetupPSO;
-		ID3D12PipelineState* m_HalfPSO;
-		ID3D12PipelineState* m_MainPSO;
+		TRefCountPtr<GraphicsPipelineState> m_SetupPSO;
+		TRefCountPtr<GraphicsPipelineState> m_HalfPSO;
+		TRefCountPtr<GraphicsPipelineState> m_MainPSO;
 	};
 
 	class ScreenSpaceReflectionPSO
@@ -205,14 +205,11 @@ namespace Drn
 		ID3D12PipelineState* m_CullBackPSO;
 	};
 
-	class ResolveEditorSelectionPSO
+	class ResolveEditorSelectionPSO : public RefCountedObject
 	{
 	public:
-
-		ResolveEditorSelectionPSO( ID3D12GraphicsCommandList2* CommandList );
-		~ResolveEditorSelectionPSO();
-		
-		ID3D12PipelineState* m_PSO;
+		ResolveEditorSelectionPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
 	class SpriteEditorPrimitivePSO
@@ -235,14 +232,11 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
-	class LightPassPSO
+	class LightPassPSO : public RefCountedObject
 	{
 	public:
-
-		LightPassPSO( ID3D12GraphicsCommandList2* CommandList );
-		~LightPassPSO();
-
-		ID3D12PipelineState* m_PSO;
+		LightPassPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
 	class DebugLineThicknessPSO
@@ -319,14 +313,15 @@ namespace Drn
 	{
 	public:
 
-		CommonResources( class D3D12CommandList* CommandList );
+		CommonResources( D3D12CommandList* CommandList );
 		~CommonResources();
 
-		static void Init( class D3D12CommandList* CommandList );
+		static void Init( D3D12CommandList* CommandList );
 		static void Shutdown();
 
 		inline static CommonResources* Get() { return m_SingletonInstance; }
 
+		TRefCountPtr<class VertexDeclaration> VertexDeclaration_Pos;
 		TRefCountPtr<class VertexDeclaration> VertexDeclaration_PosUV;
 
 		ScreenTriangle* m_ScreenTriangle;
@@ -337,12 +332,11 @@ namespace Drn
 		PointLightSphere* m_PointLightSphere;
 		SpotLightCone* m_SpotLightCone;
 
-		//ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
 		TRefCountPtr<ResolveAlphaBlendedPSO> m_ResolveAlphaBlendedPSO;
-		ResolveEditorSelectionPSO* m_ResolveEditorSelectionPSO;
-		TonemapPSO* m_TonemapPSO;
-		AmbientOcclusionPSO* m_AmbientOcclusionPSO;
-		LightPassPSO* m_LightPassPSO;
+		TRefCountPtr<ResolveEditorSelectionPSO> m_ResolveEditorSelectionPSO;
+		TRefCountPtr<TonemapPSO> m_TonemapPSO;
+		TRefCountPtr<AmbientOcclusionPSO> m_AmbientOcclusionPSO;
+		TRefCountPtr<LightPassPSO> m_LightPassPSO;
 		ScreenSpaceReflectionPSO* m_ScreenSpaceReflectionPSO;
 		ReflectionEnvironemntPSO* m_ReflectionEnvironmentPSO;
 		TAAPSO* m_TAAPSO;

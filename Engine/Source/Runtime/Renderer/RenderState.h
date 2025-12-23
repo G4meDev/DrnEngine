@@ -98,6 +98,18 @@ namespace Drn
 
 	struct RasterizerStateInitializer
 	{
+		
+
+		RasterizerStateInitializer(ERasterizerFillMode InFillMode = ERasterizerFillMode::Solid, ERasterizerCullMode InCullMode = ERasterizerCullMode::Back,
+			float InDepthBias = D3D12_DEFAULT_DEPTH_BIAS, float InSlopeScaleDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, bool bInAllowMSAA = false, bool bInEnableLineAA = false)
+			: FillMode(InFillMode)
+			, CullMode(InCullMode)
+			, DepthBias(InDepthBias)
+			, SlopeScaleDepthBias(InSlopeScaleDepthBias)
+			, bAllowMSAA(bInAllowMSAA)
+			, bEnableLineAA(bInEnableLineAA)
+		{}
+
 		ERasterizerFillMode FillMode;
 		ERasterizerCullMode CullMode;
 		float DepthBias;
