@@ -112,6 +112,8 @@ namespace Drn
 
 		void ClearState();
 
+		void EndFrame();
+
 	protected:
 
 	private:

@@ -17,7 +17,7 @@ namespace Drn
 			D3DElement.InputSlot = Element.StreamIndex;
 			D3DElement.AlignedByteOffset = Element.Offset;
 			D3DElement.Format = Element.Format;
-			D3DElement.SemanticName = Element.SemanticName.c_str();
+			D3DElement.SemanticName = Element.SemanticName;
 
 			D3DElement.SemanticIndex = Element.AttributeIndex;
 			D3DElement.InputSlotClass = Element.bUseInstanceIndex ? D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA : D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;

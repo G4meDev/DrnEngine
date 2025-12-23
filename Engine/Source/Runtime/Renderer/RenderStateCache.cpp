@@ -252,11 +252,11 @@ namespace Drn
 	{
 		ID3D12RootSignature* pRootSignature = GetGraphicsRootSignature();
 
-		if (PipelineState.Graphics.bNeedSetRootSignature)
-		{
-			CmdList->GetD3D12CommandList()->SetGraphicsRootSignature(pRootSignature);
-			PipelineState.Graphics.bNeedSetRootSignature = false;
-		}
+		//if (PipelineState.Graphics.bNeedSetRootSignature)
+		//{
+		//	CmdList->GetD3D12CommandList()->SetGraphicsRootSignature(pRootSignature);
+		//	PipelineState.Graphics.bNeedSetRootSignature = false;
+		//}
 
 		//InternalSetGraphicPipelineState();
 

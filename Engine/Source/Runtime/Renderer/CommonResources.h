@@ -110,14 +110,14 @@ namespace Drn
 		uint32 PrimitiveCount;
 	};
 
-	class ResolveAlphaBlendedPSO
+	class ResolveAlphaBlendedPSO : public RefCountedObject
 	{
 	public:
 
-		ResolveAlphaBlendedPSO( ID3D12GraphicsCommandList2* CommandList );
-		~ResolveAlphaBlendedPSO();
-		
-		ID3D12PipelineState* m_PSO;
+		ResolveAlphaBlendedPSO( class D3D12CommandList* CommandList, class CommonResources* CR );
+
+		TRefCountPtr<class GraphicsPipelineState> m_PSO;
+		//ID3D12PipelineState* m_PSO;
 	};
 
 	class TonemapPSO
@@ -327,6 +327,8 @@ namespace Drn
 
 		inline static CommonResources* Get() { return m_SingletonInstance; }
 
+		TRefCountPtr<class VertexDeclaration> VertexDeclaration_PosUV;
+
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
 		UniformQuad* m_UniformQuad;
@@ -335,7 +337,8 @@ namespace Drn
 		PointLightSphere* m_PointLightSphere;
 		SpotLightCone* m_SpotLightCone;
 
-		ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
+		//ResolveAlphaBlendedPSO* m_ResolveAlphaBlendedPSO;
+		TRefCountPtr<ResolveAlphaBlendedPSO> m_ResolveAlphaBlendedPSO;
 		ResolveEditorSelectionPSO* m_ResolveEditorSelectionPSO;
 		TonemapPSO* m_TonemapPSO;
 		AmbientOcclusionPSO* m_AmbientOcclusionPSO;

@@ -95,6 +95,8 @@ namespace Drn
 
 	D3D12CommandList::~D3D12CommandList()
 	{
+		ClearState();
+
 		//m_ResourceBarrierBatcher.Flush(th)
 	}
 
@@ -467,6 +469,11 @@ namespace Drn
 	void D3D12CommandList::ClearState()
 	{
 		StateCache.ClearState();
+	}
+
+	void D3D12CommandList::EndFrame()
+	{
+		ClearState(); // release resources ref. e.g. pipeline states, ...
 	}
 
 	void D3D12CommandList::FlushBarriers()

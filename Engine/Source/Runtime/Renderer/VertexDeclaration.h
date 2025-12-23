@@ -11,12 +11,12 @@ namespace Drn
 		DXGI_FORMAT Format;
 		uint8 AttributeIndex;
 		uint16 Stride;
-		std::string SemanticName;
+		const char* SemanticName;
 
 		uint16 bUseInstanceIndex;
 
 		VertexElement() {}
-		VertexElement(uint8 InStreamIndex,uint8 InOffset,DXGI_FORMAT InForamt, const std::string& InSemanticName,uint8 InAttributeIndex,uint16 InStride,bool bInUseInstanceIndex = false):
+		VertexElement(uint8 InStreamIndex,uint8 InOffset,DXGI_FORMAT InForamt, const char* InSemanticName,uint8 InAttributeIndex,uint16 InStride,bool bInUseInstanceIndex = false):
 			StreamIndex(InStreamIndex),
 			Offset(InOffset),
 			Format(InForamt),

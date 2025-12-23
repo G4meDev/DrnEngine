@@ -730,7 +730,8 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TonemapHandle, true, NULL);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get());
-		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
+		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
+		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_EditorPrimitiveBuffer->m_ColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 1);
@@ -908,6 +909,7 @@ namespace Drn
 #endif
 
 		m_CommandList->Close();
+		m_CommandList->EndFrame();
 
 		//PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}

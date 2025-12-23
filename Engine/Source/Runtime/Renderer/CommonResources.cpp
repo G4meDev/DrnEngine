@@ -79,6 +79,12 @@ namespace Drn
 
 	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
+		VertexDeclaration_PosUV = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 20, false),
+			VertexElement(0, 12, DXGI_FORMAT_R32G32_FLOAT, "TEXCOORD", 0, 20, false),
+		});
+
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
 		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList );
 		m_UniformQuad = new UniformQuad( CommandList );
@@ -86,7 +92,7 @@ namespace Drn
 		m_UniformCubePositionOnly = new UniformCubePositionOnly( CommandList );
 		m_PointLightSphere = new PointLightSphere( CommandList );
 		m_SpotLightCone = new SpotLightCone(CommandList);
-		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList->GetD3D12CommandList());
+		m_ResolveAlphaBlendedPSO = new ResolveAlphaBlendedPSO(CommandList, this);
 		m_ResolveEditorSelectionPSO = new ResolveEditorSelectionPSO(CommandList->GetD3D12CommandList());
 		m_TonemapPSO = new TonemapPSO(CommandList->GetD3D12CommandList());
 		m_AmbientOcclusionPSO = new AmbientOcclusionPSO(CommandList->GetD3D12CommandList());
@@ -129,6 +135,7 @@ namespace Drn
 
 #undef LOAD_TEXTURE
 #endif
+
 	}
 
 	CommonResources::~CommonResources()
@@ -140,7 +147,7 @@ namespace Drn
 		delete m_UniformCubePositionOnly;
 		delete m_PointLightSphere;
 		delete m_SpotLightCone;
-		delete m_ResolveAlphaBlendedPSO;
+		//delete m_ResolveAlphaBlendedPSO;
 		delete m_ResolveEditorSelectionPSO;
 		delete m_TonemapPSO;
 		delete m_AmbientOcclusionPSO;
@@ -446,55 +453,99 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	ResolveAlphaBlendedPSO::ResolveAlphaBlendedPSO( ID3D12GraphicsCommandList2* CommandList )
+	ResolveAlphaBlendedPSO::ResolveAlphaBlendedPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws(Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveAlphaBlended.hlsl" ));
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
-
+		
 		std::vector<const wchar_t*> Macros = {};
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros , &VertexShaderBlob);
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros , &PixelShaderBlob);
 
-		CD3DX12_BLEND_DESC BlendDesc = {};
-		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
-		BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-		BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= VertexLayout_PosUV;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-		PipelineDesc.BlendState							= BlendDesc;
-		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.DSVFormat							= DXGI_FORMAT_R32_FLOAT;
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R8G8B8A8_UNORM;
-		PipelineDesc.SampleDesc.Count					= 1;
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
 
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_ResolveAlphaBlended");
-#endif
-	}
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
 
-	ResolveAlphaBlendedPSO::~ResolveAlphaBlendedPSO()
-	{
-		m_PSO->Release();
+		BlendStateInitializer BInit = {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::One)};
+		TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+		//RasterizerStateInitializer RInit;
+		//RInit.bAllowMSAA = false;
+		//RInit.bEnableLineAA = false;
+		//RInit.CullMode = ERasterizerCullMode::Back;
+		//RInit.FillMode = ERasterizerFillMode::Solid;
+		//RInit.DepthBias = ;
+		//RInit.SlopeScaleDepthBias = ;
+		//TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+		TRefCountPtr<RasterizerState> RState = nullptr;
+
+		DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+
+		//TRefCountPtr<DepthStencilState> DState = nullptr;
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DISPLAY_OUTPUT_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+		//	1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+			1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+
+		SetName(m_PSO->PipelineState, "PSO_ResolveAlphaBlended");
+
+//		m_PSO = nullptr;
+//
+//		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+//
+//		std::wstring ShaderPath = StringHelper::s2ws(Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ResolveAlphaBlended.hlsl" ));
+//		ID3DBlob* VertexShaderBlob;
+//		ID3DBlob* PixelShaderBlob;
+//
+//		std::vector<const wchar_t*> Macros = {};
+//		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros , &VertexShaderBlob);
+//		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros , &PixelShaderBlob);
+//
+//		CD3DX12_BLEND_DESC BlendDesc = {};
+//		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+//		BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+//		BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+//		BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+//		BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+//		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
+//		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+//		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+//
+//		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
+//		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
+//		PipelineDesc.InputLayout						= VertexLayout_PosUV;
+//		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+//		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
+//		PipelineDesc.BlendState							= BlendDesc;
+//		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
+//		PipelineDesc.SampleMask							= UINT_MAX;
+//		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
+//		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
+//		PipelineDesc.DSVFormat							= DXGI_FORMAT_R32_FLOAT;
+//		PipelineDesc.NumRenderTargets					= 1;
+//		PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R8G8B8A8_UNORM;
+//		PipelineDesc.SampleDesc.Count					= 1;
+//
+//		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+//
+//#if D3D12_Debug_INFO
+//		m_PSO->SetName(L"PSO_ResolveAlphaBlended");
+//#endif
 	}
 
 // --------------------------------------------------------------------------------------

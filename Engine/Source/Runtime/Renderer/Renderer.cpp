@@ -54,6 +54,7 @@ namespace Drn
 		ThumbnailManager::Get()->Flush();
 #endif
 
+		//SimpleRenderResource::FlushPendingDeletes(true);
 		for (int32 i = 0; i < NUM_BACKBUFFERS + 2; i++)
 		{
 			SimpleRenderResource::FlushPendingDeletes();

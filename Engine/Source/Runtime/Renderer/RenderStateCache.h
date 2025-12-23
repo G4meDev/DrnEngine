@@ -161,6 +161,7 @@ namespace Drn
 				uint32 NumLines;
 
 				TRefCountPtr<class GraphicsPipelineState> CurrentPipelineStateObject;
+				//class GraphicsPipelineState* CurrentPipelineStateObject;
 				uint16 StreamStrides[MAX_VERTEX_ELEMENT_COUT];
 			} Graphics;
 
