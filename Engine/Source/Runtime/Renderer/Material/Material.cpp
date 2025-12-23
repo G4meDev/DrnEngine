@@ -522,8 +522,8 @@ namespace Drn
 		else
 		{
 			PSO = m_TwoSided 
-				? CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO 
-				: CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO;
+				? CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO->PipelineState 
+				: CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO->PipelineState;
 		}
 
 		if (!PSO)

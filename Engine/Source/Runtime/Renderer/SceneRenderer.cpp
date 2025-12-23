@@ -475,7 +475,8 @@ namespace Drn
 		m_ScreenSpaceReflectionBuffer->Clear(m_CommandList);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ScreenSpaceReflectionPSO->m_PSO );
+		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ScreenSpaceReflectionPSO->m_PSO );
+		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ScreenSpaceReflectionPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_ScreenSpaceReflectionBuffer->Buffer->GetViewIndex(), 1);
@@ -509,7 +510,8 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &DeferredColorHandle, true, NULL);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ReflectionEnvironmentPSO->m_PSO );
+		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ReflectionEnvironmentPSO->m_PSO );
+		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ReflectionEnvironmentPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_ReflectionEnvironmentBuffer->Buffer->GetViewIndex(), 1);
@@ -578,7 +580,8 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &MainHandle, true, NULL);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
+		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
+		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_SceneDownSampleBuffer->Buffer[0]->GetViewIndex(), 1);
@@ -628,7 +631,8 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &Handle, true, NULL);
 
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-				m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
+				//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
+				m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
 
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->Buffer[i * 2]->GetViewIndex(), 1);
@@ -653,7 +657,8 @@ namespace Drn
 				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &Handle, true, NULL);
 
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-				m_CommandList->GetD3D12CommandList()->SetPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
+				//m_CommandList->GetD3D12CommandList()->SetPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
+				m_CommandList->SetGraphicPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
 
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->Buffer[i * 2 + 1]->GetViewIndex(), 1);

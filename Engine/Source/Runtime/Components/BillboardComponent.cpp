@@ -90,7 +90,8 @@ namespace Drn
 	{
 		CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
+		//CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
+		CommandList->SetGraphicPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
 		
 		SetConstantAndSrv(CommandList, Renderer);
 		
@@ -106,7 +107,8 @@ namespace Drn
 	{
 		CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
+		//CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
+		CommandList->SetGraphicPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
 		
 		SetConstantAndSrv(CommandList, Renderer);
 		

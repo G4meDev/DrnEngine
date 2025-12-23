@@ -142,24 +142,18 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_MainPSO;
 	};
 
-	class ScreenSpaceReflectionPSO
+	class ScreenSpaceReflectionPSO : public RefCountedObject
 	{
 	public:
-
-		ScreenSpaceReflectionPSO( ID3D12GraphicsCommandList2* CommandList );
-		~ScreenSpaceReflectionPSO();
-		
-		ID3D12PipelineState* m_PSO;
+		ScreenSpaceReflectionPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class ReflectionEnvironemntPSO
+	class ReflectionEnvironemntPSO : public RefCountedObject
 	{
 	public:
-
-		ReflectionEnvironemntPSO( ID3D12GraphicsCommandList2* CommandList );
-		~ReflectionEnvironemntPSO();
-		
-		ID3D12PipelineState* m_PSO;
+		ReflectionEnvironemntPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
 	class TAAPSO
@@ -172,37 +166,30 @@ namespace Drn
 		ID3D12PipelineState* m_PSO;
 	};
 
-	class SceneDownSamplePSO
+	class SceneDownSamplePSO : public RefCountedObject
 	{
 	public:
-
-		SceneDownSamplePSO( ID3D12GraphicsCommandList2* CommandList );
-		~SceneDownSamplePSO();
-		
-		ID3D12PipelineState* m_PSO;
+		SceneDownSamplePSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class BloomPSO
+	class BloomPSO : public RefCountedObject
 	{
 	public:
-
-		BloomPSO( ID3D12GraphicsCommandList2* CommandList );
-		~BloomPSO();
+		BloomPSO( D3D12CommandList* CommandList, CommonResources* CR );
 		
-		ID3D12PipelineState* m_BloomYPSO;
-		ID3D12PipelineState* m_BloomXPSO;
-		ID3D12PipelineState* m_BloomXAddtivePSO;
+		TRefCountPtr<GraphicsPipelineState> m_BloomYPSO;
+		TRefCountPtr<GraphicsPipelineState> m_BloomXPSO;
+		TRefCountPtr<GraphicsPipelineState> m_BloomXAddtivePSO;
 	};
 
-	class PositionOnlyDepthPSO
+	class PositionOnlyDepthPSO : public RefCountedObject
 	{
 	public:
-
-		PositionOnlyDepthPSO( ID3D12GraphicsCommandList2* CommandList );
-		~PositionOnlyDepthPSO();
+		PositionOnlyDepthPSO( D3D12CommandList* CommandList, CommonResources* CR );
 		
-		ID3D12PipelineState* m_CullNonePSO;
-		ID3D12PipelineState* m_CullBackPSO;
+		TRefCountPtr<GraphicsPipelineState> m_CullNonePSO;
+		TRefCountPtr<GraphicsPipelineState> m_CullBackPSO;
 	};
 
 	class ResolveEditorSelectionPSO : public RefCountedObject
@@ -212,24 +199,18 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class SpriteEditorPrimitivePSO
+	class SpriteEditorPrimitivePSO : public RefCountedObject
 	{
 	public:
-
-		SpriteEditorPrimitivePSO( ID3D12GraphicsCommandList2* CommandList );
-		~SpriteEditorPrimitivePSO();
-		
-		ID3D12PipelineState* m_PSO;
+		SpriteEditorPrimitivePSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class SpriteHitProxyPSO
+	class SpriteHitProxyPSO : public RefCountedObject
 	{
 	public:
-
-		SpriteHitProxyPSO( ID3D12GraphicsCommandList2* CommandList );
-		~SpriteHitProxyPSO();
-		
-		ID3D12PipelineState* m_PSO;
+		SpriteHitProxyPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
 	class LightPassPSO : public RefCountedObject
@@ -239,24 +220,18 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class DebugLineThicknessPSO
+	class DebugLineThicknessPSO : public RefCountedObject
 	{
 	public:
-
-		DebugLineThicknessPSO( ID3D12GraphicsCommandList2* CommandList );
-		~DebugLineThicknessPSO();
-		
-		ID3D12PipelineState* m_PSO;
+		DebugLineThicknessPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class DebugLinePSO
+	class DebugLinePSO : public RefCountedObject
 	{
 	public:
-
-		DebugLinePSO( ID3D12GraphicsCommandList2* CommandList);
-		~DebugLinePSO();
-		
-		ID3D12PipelineState* m_PSO;
+		DebugLinePSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
 #if WITH_EDITOR
@@ -323,6 +298,7 @@ namespace Drn
 
 		TRefCountPtr<class VertexDeclaration> VertexDeclaration_Pos;
 		TRefCountPtr<class VertexDeclaration> VertexDeclaration_PosUV;
+		TRefCountPtr<class VertexDeclaration> VertexDeclaration_LineColorThickness;
 
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
@@ -337,18 +313,18 @@ namespace Drn
 		TRefCountPtr<TonemapPSO> m_TonemapPSO;
 		TRefCountPtr<AmbientOcclusionPSO> m_AmbientOcclusionPSO;
 		TRefCountPtr<LightPassPSO> m_LightPassPSO;
-		ScreenSpaceReflectionPSO* m_ScreenSpaceReflectionPSO;
-		ReflectionEnvironemntPSO* m_ReflectionEnvironmentPSO;
+		TRefCountPtr<ScreenSpaceReflectionPSO> m_ScreenSpaceReflectionPSO;
+		TRefCountPtr<ReflectionEnvironemntPSO> m_ReflectionEnvironmentPSO;
 		TAAPSO* m_TAAPSO;
-		SceneDownSamplePSO* m_SceneDownSamplePSO;
-		BloomPSO* m_BloomPSO;
-		PositionOnlyDepthPSO* m_PositionOnlyDepthPSO;
+		TRefCountPtr<SceneDownSamplePSO> m_SceneDownSamplePSO;
+		TRefCountPtr<BloomPSO> m_BloomPSO;
+		TRefCountPtr<PositionOnlyDepthPSO> m_PositionOnlyDepthPSO;
 
-		SpriteEditorPrimitivePSO* m_SpriteEditorPrimitivePSO;
-		SpriteHitProxyPSO* m_SpriteHitProxyPSO;
+		TRefCountPtr<SpriteEditorPrimitivePSO> m_SpriteEditorPrimitivePSO;
+		TRefCountPtr<SpriteHitProxyPSO> m_SpriteHitProxyPSO;
 
-		DebugLineThicknessPSO* m_DebugLineThicknessPSO;
-		DebugLinePSO* m_DebugLinePSO;
+		TRefCountPtr<DebugLineThicknessPSO> m_DebugLineThicknessPSO;
+		TRefCountPtr<DebugLinePSO> m_DebugLinePSO;
 
 		HZBPSO* m_HZBPSO;
 

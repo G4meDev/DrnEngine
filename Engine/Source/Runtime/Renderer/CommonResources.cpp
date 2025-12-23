@@ -90,6 +90,13 @@ namespace Drn
 			VertexElement(0, 12, DXGI_FORMAT_R32G32_FLOAT, "TEXCOORD", 0, 20, false),
 		});
 
+		VertexDeclaration_LineColorThickness = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 20, false),
+			VertexElement(0, 12, DXGI_FORMAT_R8G8B8A8_UNORM, "COLOR", 0, 20, false),
+			VertexElement(0, 16, DXGI_FORMAT_R32_FLOAT, "THICKNESS", 0, 20, false),
+		});
+
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
 		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList );
 		m_UniformQuad = new UniformQuad( CommandList );
@@ -101,17 +108,17 @@ namespace Drn
 		m_ResolveEditorSelectionPSO = new ResolveEditorSelectionPSO(CommandList, this);
 		m_TonemapPSO = new TonemapPSO(CommandList, this);
 		m_AmbientOcclusionPSO = new AmbientOcclusionPSO(CommandList, this);
-		m_ScreenSpaceReflectionPSO = new ScreenSpaceReflectionPSO(CommandList->GetD3D12CommandList());
-		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList->GetD3D12CommandList());
+		m_ScreenSpaceReflectionPSO = new ScreenSpaceReflectionPSO(CommandList, this);
+		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList, this);
 		m_TAAPSO = new TAAPSO(CommandList->GetD3D12CommandList());
-		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList->GetD3D12CommandList());
-		m_BloomPSO = new BloomPSO(CommandList->GetD3D12CommandList());
-		m_PositionOnlyDepthPSO = new PositionOnlyDepthPSO(CommandList->GetD3D12CommandList());
-		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList->GetD3D12CommandList());
-		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList->GetD3D12CommandList());
+		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList, this);
+		m_BloomPSO = new BloomPSO(CommandList, this);
+		m_PositionOnlyDepthPSO = new PositionOnlyDepthPSO(CommandList, this);
+		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList, this);
+		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList, this);
 		m_LightPassPSO = new LightPassPSO(CommandList, this);
-		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList->GetD3D12CommandList());
-		m_DebugLinePSO = new DebugLinePSO(CommandList->GetD3D12CommandList());
+		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList, this);
+		m_DebugLinePSO = new DebugLinePSO(CommandList, this);
 		m_HZBPSO = new HZBPSO(CommandList->GetD3D12CommandList());
 
 		m_SSAO_Random = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\SSAO_Jitter.drn" );
@@ -152,16 +159,7 @@ namespace Drn
 		delete m_UniformCubePositionOnly;
 		delete m_PointLightSphere;
 		delete m_SpotLightCone;
-		delete m_ScreenSpaceReflectionPSO;
-		delete m_ReflectionEnvironmentPSO;
 		delete m_TAAPSO;
-		delete m_SceneDownSamplePSO;
-		delete m_BloomPSO;
-		delete m_PositionOnlyDepthPSO;
-		delete m_SpriteEditorPrimitivePSO;
-		delete m_SpriteHitProxyPSO;
-		delete m_DebugLineThicknessPSO;
-		delete m_DebugLinePSO;
 		delete m_HZBPSO;
 
 #if WITH_EDITOR
@@ -613,23 +611,6 @@ namespace Drn
 
 			m_SetupPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_SetupPSO->PipelineState, "PSO_SetupAO");
-
-//			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-//			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-//			PipelineDesc.InputLayout						= VertexLayout_PosUV;
-//			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-//			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-//			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-//			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-//			PipelineDesc.SampleMask							= UINT_MAX;
-//			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-//			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-//			PipelineDesc.DSVFormat							= DXGI_FORMAT_R32_FLOAT;
-//			PipelineDesc.NumRenderTargets					= 1;
-//			PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R16G16B16A16_FLOAT;
-//			PipelineDesc.SampleDesc.Count					= 1;
-//
-//			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_SetupPSO ) );
 		}
 
 		{
@@ -667,23 +648,6 @@ namespace Drn
 
 			m_HalfPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_HalfPSO->PipelineState, "HalfPSO_AO");
-
-//			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-//			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-//			PipelineDesc.InputLayout						= VertexLayout_PosUV;
-//			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-//			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-//			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-//			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-//			PipelineDesc.SampleMask							= UINT_MAX;
-//			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-//			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-//			PipelineDesc.DSVFormat							= DXGI_FORMAT_R32_FLOAT;
-//			PipelineDesc.NumRenderTargets					= 1;
-//			PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R8_UNORM;
-//			PipelineDesc.SampleDesc.Count					= 1;
-//
-//			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_HalfPSO ) );
 		}
 
 		{
@@ -721,34 +685,13 @@ namespace Drn
 
 			m_MainPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_MainPSO->PipelineState, "PSO_AO");
-
-//			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-//			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-//			PipelineDesc.InputLayout						= VertexLayout_PosUV;
-//			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-//			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-//			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-//			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-//			PipelineDesc.SampleMask							= UINT_MAX;
-//			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-//			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-//			PipelineDesc.DSVFormat							= DXGI_FORMAT_R32_FLOAT;
-//			PipelineDesc.NumRenderTargets					= 1;
-//			PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R8_UNORM;
-//			PipelineDesc.SampleDesc.Count					= 1;
-//
-//			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_MainPSO ) );
 		}
 	}
 
 // --------------------------------------------------------------------------------------
 
-	ScreenSpaceReflectionPSO::ScreenSpaceReflectionPSO( ID3D12GraphicsCommandList2* CommandList )
+	ScreenSpaceReflectionPSO::ScreenSpaceReflectionPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ScreenSpaceReflection.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
@@ -758,40 +701,37 @@ namespace Drn
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= VertexLayout_PosUV;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R16G16B16A16_FLOAT;
-		PipelineDesc.SampleDesc.Count					= 1;
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_ScreenSpaceReflection");
-#endif
-	}
 
-	ScreenSpaceReflectionPSO::~ScreenSpaceReflectionPSO()
-	{
-		m_PSO->Release();
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
+
+		TRefCountPtr<BlendState> BState = nullptr;
+		TRefCountPtr<RasterizerState> RState = nullptr;
+
+		DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+			1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_ScreenSpaceReflection");
 	}
 
 // --------------------------------------------------------------------------------------
 
-	ReflectionEnvironemntPSO::ReflectionEnvironemntPSO( ID3D12GraphicsCommandList2* CommandList )
+	ReflectionEnvironemntPSO::ReflectionEnvironemntPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ReflectionEnvironment.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
@@ -801,40 +741,33 @@ namespace Drn
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-		CD3DX12_BLEND_DESC BlendDesc = {};
-		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
-		BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
-		BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-		BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
-		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= VertexLayout_PosUV;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-		PipelineDesc.BlendState							= BlendDesc;
-		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R16G16B16A16_FLOAT;
-		PipelineDesc.SampleDesc.Count					= 1;
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
 
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_ReflectionEnvironemnt");
-#endif
-	}
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
 
-	ReflectionEnvironemntPSO::~ReflectionEnvironemntPSO()
-	{
-		m_PSO->Release();
+		BlendStateInitializer BInit = {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::One, EBlendFactor::One, EBlendOperation::Add, EBlendFactor::One, EBlendFactor::One)};
+		TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+		TRefCountPtr<RasterizerState> RState = nullptr;
+
+		DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+			1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_ReflectionEnvironemnt");
 	}
 
 // --------------------------------------------------------------------------------------
@@ -868,12 +801,8 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	SceneDownSamplePSO::SceneDownSamplePSO( ID3D12GraphicsCommandList2* CommandList )
+	SceneDownSamplePSO::SceneDownSamplePSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\SceneDownSample.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
@@ -883,42 +812,37 @@ namespace Drn
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= VertexLayout_PosUV;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-		PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= SCENE_DOWN_SAMPLE_FORMAT;
-		PipelineDesc.SampleDesc.Count					= 1;
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_SceneDownSample");
-#endif
-	}
 
-	SceneDownSamplePSO::~SceneDownSamplePSO()
-	{
-		m_PSO->Release();
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
+
+		TRefCountPtr<BlendState> BState = nullptr;
+		TRefCountPtr<RasterizerState> RState = nullptr;
+
+		DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { SCENE_DOWN_SAMPLE_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+			1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_SceneDownSample");
 	}
 
 // --------------------------------------------------------------------------------------
 
-	BloomPSO::BloomPSO( ID3D12GraphicsCommandList2* CommandList )
+	BloomPSO::BloomPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_BloomYPSO = nullptr;
-		m_BloomXPSO = nullptr;
-		m_BloomXAddtivePSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\GaussianBloom.hlsl" ) );
 
 		const std::wstring StaticSampleMacro = std::wstring(L"STATIC_SAMPLE_COUNT=") + std::to_wstring(BLOOM_STATIC_SAMPLE_COUNT);
@@ -931,25 +855,30 @@ namespace Drn
 			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-			PipelineDesc.InputLayout						= VertexLayout_PosUV;
-			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-			PipelineDesc.SampleMask							= UINT_MAX;
-			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-			PipelineDesc.NumRenderTargets					= 1;
-			PipelineDesc.RTVFormats[0]						= BLOOM_FORMAT;
-			PipelineDesc.SampleDesc.Count					= 1;
+			VertexShader* VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_BloomYPSO ) );
+			PixelShader* PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-#if D3D12_Debug_INFO
-			m_BloomYPSO->SetName(L"PSO_BloomY");
-#endif
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
+
+			TRefCountPtr<BlendState> BState = nullptr;
+			TRefCountPtr<RasterizerState> RState = nullptr;
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { BLOOM_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			m_BloomYPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_BloomYPSO->PipelineState, "PSO_BloomY");
 		}
 
 		{
@@ -960,25 +889,30 @@ namespace Drn
 			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-			PipelineDesc.InputLayout						= VertexLayout_PosUV;
-			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-			PipelineDesc.SampleMask							= UINT_MAX;
-			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-			PipelineDesc.NumRenderTargets					= 1;
-			PipelineDesc.RTVFormats[0]						= BLOOM_FORMAT;
-			PipelineDesc.SampleDesc.Count					= 1;
+			VertexShader* VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_BloomXPSO ) );
+			PixelShader* PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-#if D3D12_Debug_INFO
-			m_BloomXPSO->SetName(L"PSO_BloomX");
-#endif
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
+
+			TRefCountPtr<BlendState> BState = nullptr;
+			TRefCountPtr<RasterizerState> RState = nullptr;
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { BLOOM_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			m_BloomXPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_BloomXPSO->PipelineState, "PSO_BloomX");
 		}
 
 		{
@@ -989,44 +923,37 @@ namespace Drn
 			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-			PipelineDesc.InputLayout						= VertexLayout_PosUV;
-			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-			PipelineDesc.SampleMask							= UINT_MAX;
-			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-			PipelineDesc.NumRenderTargets					= 1;
-			PipelineDesc.RTVFormats[0]						= BLOOM_FORMAT;
-			PipelineDesc.SampleDesc.Count					= 1;
+			VertexShader* VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_BloomXAddtivePSO ) );
+			PixelShader* PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-#if D3D12_Debug_INFO
-			m_BloomXAddtivePSO->SetName(L"PSO_BloomXAddtive");
-#endif
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
+
+			TRefCountPtr<BlendState> BState = nullptr;
+			TRefCountPtr<RasterizerState> RState = nullptr;
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { BLOOM_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			m_BloomXAddtivePSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_BloomXAddtivePSO->PipelineState, "PSO_BloomXAddtive");
 		}
-	}
-
-	BloomPSO::~BloomPSO()
-	{
-		m_BloomYPSO->Release();
-		m_BloomXPSO->Release();
-		m_BloomXAddtivePSO->Release();
 	}
 
 // --------------------------------------------------------------------------------------
 
-	PositionOnlyDepthPSO::PositionOnlyDepthPSO( ID3D12GraphicsCommandList2* CommandList )
+	PositionOnlyDepthPSO::PositionOnlyDepthPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_CullNonePSO = nullptr;
-		m_CullBackPSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\PositionOnlyDepthVertexShader.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
@@ -1034,57 +961,57 @@ namespace Drn
 		const std::vector<const wchar_t*> Macros = {};
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 
-		D3D12_RASTERIZER_DESC RasterizerDesc = CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
-
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= InputLayout::GetLayoutDescriptionForType(EInputLayoutType::Position);
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= RasterizerDesc;
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC ( D3D12_DEFAULT );
-		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
-		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.NumRenderTargets					= 0;
-		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
-		PipelineDesc.SampleDesc.Count					= 1;
-
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_CullNonePSO ) );
-
-#if D3D12_Debug_INFO
-		m_CullNonePSO->SetName(L"PSO_PositionOnlyDepth_CullNone");
-#endif
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
 		{
-			RasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-			PipelineDesc.RasterizerState = RasterizerDesc;
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, nullptr, nullptr);
 
-			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_CullBackPSO ) );
+			TRefCountPtr<BlendState> BState = nullptr;
 
-#if D3D12_Debug_INFO
-			m_CullBackPSO->SetName(L"PSO_PositionOnlyDepth_CullBack");
-#endif
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::None);
+			TRefCountPtr<RasterizerState> RState = nullptr;
+
+			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			m_CullNonePSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_CullNonePSO->PipelineState, "PSO_PositionOnlyDepth_CullNone");
 		}
-	}
 
-	PositionOnlyDepthPSO::~PositionOnlyDepthPSO()
-	{
-		m_CullNonePSO->Release();
-		m_CullBackPSO->Release();
+		{
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, nullptr, nullptr);
+
+			TRefCountPtr<BlendState> BState = nullptr;
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = nullptr;
+
+			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			m_CullBackPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_CullBackPSO->PipelineState, "PSO_PositionOnlyDepth_CullBack");
+		}
 	}
 
 // --------------------------------------------------------------------------------------
 
-	SpriteEditorPrimitivePSO::SpriteEditorPrimitivePSO( ID3D12GraphicsCommandList2* CommandList )
+	SpriteEditorPrimitivePSO::SpriteEditorPrimitivePSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		ID3DBlob* VertexShaderBlob;
 		ID3DBlob* PixelShaderBlob;
 
@@ -1093,55 +1020,39 @@ namespace Drn
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-		CD3DX12_BLEND_DESC BlendDesc = {};
-		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
-		BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-		BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= VertexLayout_PosUV;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-		//PipelineDesc.BlendState							= BlendDesc;
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
-		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
-		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
-		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= DXGI_FORMAT_R8G8B8A8_UNORM;
-		PipelineDesc.SampleDesc.Count					= 1;
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
 
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_SpriteEditorPrimitive");
-#endif
-	}
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
 
-	SpriteEditorPrimitivePSO::~SpriteEditorPrimitivePSO()
-	{
-		m_PSO->Release();
+		BlendStateInitializer BInit = {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::One, EBlendFactor::One)};
+		TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+		TRefCountPtr<RasterizerState> RState = nullptr;
+
+		DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DISPLAY_OUTPUT_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+			1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_SpriteEditorPrimitive");
 	}
 
 // --------------------------------------------------------------------------------------
 
-	SpriteHitProxyPSO::SpriteHitProxyPSO( ID3D12GraphicsCommandList2* CommandList )
+	SpriteHitProxyPSO::SpriteHitProxyPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Sprite.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
@@ -1152,45 +1063,31 @@ namespace Drn
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-		CD3DX12_BLEND_DESC BlendDesc = {};
-		BlendDesc.RenderTarget[0].BlendEnable = TRUE;
-		BlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		BlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		BlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-		BlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
-		BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
-		BlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
-		BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= VertexLayout_PosUV;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		PipelineDesc.RasterizerState					= CD3DX12_RASTERIZER_DESC( D3D12_DEFAULT );
-		//PipelineDesc.BlendState							= BlendDesc;
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC( D3D12_DEFAULT );
-		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
-		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
-		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= GBUFFER_GUID_FORMAT;
-		PipelineDesc.SampleDesc.Count					= 1;
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
 
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_SpriteHitProxy");
-#endif
-	}
 
-	SpriteHitProxyPSO::~SpriteHitProxyPSO()
-	{
-		m_PSO->Release();
+		TRefCountPtr<BlendState> BState = nullptr;
+		TRefCountPtr<RasterizerState> RState = nullptr;
+
+		DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_GUID_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+			1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_SpriteEditorPrimitive");
 	}
 
 // --------------------------------------------------------------------------------------
@@ -1241,12 +1138,8 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	DebugLineThicknessPSO::DebugLineThicknessPSO( ID3D12GraphicsCommandList2* CommandList )
+	DebugLineThicknessPSO::DebugLineThicknessPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\DebugLineThicknessShader.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
@@ -1258,48 +1151,43 @@ namespace Drn
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 		CompileShader( ShaderPath, L"Main_GS", L"gs_6_6", Macros, &GeometeryShaderBlob);
 
-		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
-		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= VertexLayout_LineColorThickness;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-		PipelineDesc.RasterizerState					= RasterizerDesc;
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
-		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
-		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
-		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= DISPLAY_OUTPUT_FORMAT;
-		PipelineDesc.SampleDesc.Count					= 1;
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+		GeometryShader* GShader = new GeometryShader();
+		GShader->ByteCode.pShaderBytecode = GeometeryShaderBlob->GetBufferPointer();
+		GShader->ByteCode.BytecodeLength = GeometeryShaderBlob->GetBufferSize();
 
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_DebugLineThickness");
-#endif
-	}
 
-	DebugLineThicknessPSO::~DebugLineThicknessPSO()
-	{
-		m_PSO->Release();
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_LineColorThickness, VShader, nullptr, nullptr, PShader, GShader);
+
+		TRefCountPtr<BlendState> BState = nullptr;
+
+		RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::None);
+		TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+		DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DISPLAY_OUTPUT_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::LineList,
+			1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_DebugLineThickness");
 	}
 
 // --------------------------------------------------------------------------------------
 
-	DebugLinePSO::DebugLinePSO( ID3D12GraphicsCommandList2* CommandList )
+	DebugLinePSO::DebugLinePSO(D3D12CommandList* CommandList, CommonResources* CR)
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\DebugLineShader.hlsl" ) );
 
 		ID3DBlob* VertexShaderBlob;
@@ -1309,37 +1197,32 @@ namespace Drn
 		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-		CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
-		RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.InputLayout						= VertexLayout_LineColorThickness;
-		PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
-		PipelineDesc.RasterizerState					= RasterizerDesc;
-		PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		PipelineDesc.DepthStencilState.DepthEnable		= TRUE;
-		PipelineDesc.DepthStencilState.DepthWriteMask	= D3D12_DEPTH_WRITE_MASK_ALL;
-		PipelineDesc.DepthStencilState.DepthFunc		= D3D12_COMPARISON_FUNC_GREATER;
-		PipelineDesc.DepthStencilState.StencilEnable	= FALSE;
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-		PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-		PipelineDesc.DSVFormat							= DEPTH_FORMAT;
-		PipelineDesc.NumRenderTargets					= 1;
-		PipelineDesc.RTVFormats[0]						= DISPLAY_OUTPUT_FORMAT;
-		PipelineDesc.SampleDesc.Count					= 1;
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-		Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_LineColorThickness, VShader, nullptr, nullptr, PShader, nullptr);
 
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_DebugLine");
-#endif
-	}
+		TRefCountPtr<BlendState> BState = nullptr;
 
-	DebugLinePSO::~DebugLinePSO()
-	{
-		m_PSO->Release();
+		RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::None);
+		TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+		DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DISPLAY_OUTPUT_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::LineList,
+			1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_DebugLine");
 	}
 
 // --------------------------------------------------------------------------------------
