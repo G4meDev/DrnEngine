@@ -235,15 +235,14 @@ namespace Drn
 	};
 
 #if WITH_EDITOR
-	class Texture2DToTextureCubePSO
+
+	class Texture2DToTextureCubePSO : public RefCountedObject
 	{
 	public:
-
-		Texture2DToTextureCubePSO( ID3D12GraphicsCommandList2* CommandList, ID3D12RootSignature* RS, DXGI_FORMAT Format);
-		~Texture2DToTextureCubePSO();
+		Texture2DToTextureCubePSO( D3D12CommandList* CommandList, ID3D12RootSignature* RS, DXGI_FORMAT Format, CommonResources* CR);
 		
-		ID3D12PipelineState* m_PSO;
-		ID3D12PipelineState* m_MipPSO;
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
+		TRefCountPtr<GraphicsPipelineState> m_MipPSO;
 	};
 
 	class BufferVisualizerPSO : public RefCountedObject

@@ -494,11 +494,7 @@ namespace Drn
 			if (m_SupportEditorSelectionPass)
 			{
 				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_MainShaderBlob);
-				if (BoundShaderState.m_PixelShader)
-				{
-					BoundShaderState.m_PixelShader->Release();
-					BoundShaderState.m_PixelShader = nullptr;
-				}
+				BoundShaderState.m_PixelShader = nullptr;
 				
 				TRefCountPtr<BlendState> BState = nullptr;
 

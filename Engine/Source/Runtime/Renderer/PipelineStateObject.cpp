@@ -3,31 +3,11 @@
 
 namespace Drn
 {
-	PipelineStateObject::PipelineStateObject()
-		: SimpleRenderResource()
-		, m_PipelineState(nullptr)
-	{}
-
-	PipelineStateObject::~PipelineStateObject()
-	{}
-
-#if D3D12_Debug_INFO
-	void PipelineStateObject::SetName( const std::string& Name )
-	{
-		if (m_PipelineState)
-		{
-			m_PipelineState->SetName(StringHelper::s2ws(Name).c_str());
-		}
-	}
-#endif
-
-// --------------------------------------------------------------------------------------------------------------
-
 	GraphicsPipelineState::GraphicsPipelineState(const GraphicsPipelineStateInitializer& Initializer, ID3D12RootSignature* InRootSignature)
 		: PipelineStateInitializer(Initializer)
 		, RootSignature(InRootSignature)
 	{
-		PipelineStateInitializer.BoundShaderState.AddRefResources();
+		//PipelineStateInitializer.BoundShaderState.AddRefResources();
 
 		if (Initializer.BoundShaderState.m_VertexDeclaration)
 			memcpy(StreamStrides, Initializer.BoundShaderState.m_VertexDeclaration->StreamStrides, sizeof(StreamStrides));
@@ -37,7 +17,7 @@ namespace Drn
 
 	GraphicsPipelineState::~GraphicsPipelineState()
 	{
-		PipelineStateInitializer.BoundShaderState.ReleaseResources();
+		//PipelineStateInitializer.BoundShaderState.ReleaseResources();
 	}
 
 	TRefCountPtr<GraphicsPipelineState> GraphicsPipelineState::Create( Device* InDevice, const GraphicsPipelineStateInitializer& Initializer, ID3D12RootSignature* InRootSignature )

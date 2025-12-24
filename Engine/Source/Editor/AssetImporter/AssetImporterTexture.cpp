@@ -478,8 +478,7 @@ namespace Drn
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
-		UniformCube* RenderCube = new UniformCube(CommandList);
-		Texture2DToTextureCubePSO* SlicePso = new Texture2DToTextureCubePSO(CommandList->GetD3D12CommandList(), IntermediateRootSinature.Get(), MetaData.format);
+		TRefCountPtr<Texture2DToTextureCubePSO> SlicePso = new Texture2DToTextureCubePSO(CommandList, IntermediateRootSinature.Get(), MetaData.format, CommonResources::Get());
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -487,8 +486,8 @@ namespace Drn
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandles[0], true, NULL);
 
 		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-		CommandList->GetD3D12CommandList()->SetPipelineState(SlicePso->m_PSO);
-		RenderCube->BindAndDraw(CommandList);
+		CommandList->SetGraphicPipelineState(SlicePso->m_PSO);
+		CommonResources::Get()->m_UniformCube->BindAndDraw(CommandList);
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -538,8 +537,8 @@ namespace Drn
 			CommandList->GetD3D12CommandList()->RSSetViewports(1, &MipViewport);
 			CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandles[i], true, NULL);
 
-			CommandList->GetD3D12CommandList()->SetPipelineState(SlicePso->m_MipPSO);
-			RenderCube->BindAndDraw(CommandList);
+			CommandList->SetGraphicPipelineState(SlicePso->m_MipPSO);
+			CommonResources::Get()->m_UniformCube->BindAndDraw(CommandList);
 		}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -735,11 +734,6 @@ namespace Drn
 		TextureAsset->m_Format = TextureAsset->IsSRGB() ? MakeSRGB(MetaData.format) : MetaData.format;
 		TextureAsset->m_MipLevels = MipCount;
 		TextureAsset->MarkRenderStateDirty();
-
-// -----------------------------------------------------------------------------------------------------------------------------------------
-
-		delete SlicePso;
-		delete RenderCube;
 	}
 
 }

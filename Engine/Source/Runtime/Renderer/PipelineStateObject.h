@@ -7,29 +7,6 @@
 
 namespace Drn
 {
-	class PipelineStateObject : public SimpleRenderResource
-	{
-	public:
-		virtual uint32 AddRef() const { return SimpleRenderResource::AddRef(); }
-		virtual uint32 Release() const { return SimpleRenderResource::Release(); }
-		virtual uint32 GetRefCount() const { return SimpleRenderResource::GetRefCount(); }
-
-		inline ID3D12PipelineState* GetD3D12PSO() { return m_PipelineState.Get(); }
-
-#if D3D12_Debug_INFO
-		void SetName(const std::string& Name);
-#endif
-
-	private:
-		PipelineStateObject();
-		virtual ~PipelineStateObject();
-		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_PipelineState;
-	};
-
-// ---------------------------------------------------------------------------------------------------------------------
-
-
-
 	class GraphicsPipelineStateInitializer
 	{
 	public:

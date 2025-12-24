@@ -1237,13 +1237,8 @@ namespace Drn
 // --------------------------------------------------------------------------------------
 
 #if WITH_EDITOR
-	Texture2DToTextureCubePSO::Texture2DToTextureCubePSO( ID3D12GraphicsCommandList2* CommandList, ID3D12RootSignature* RS, DXGI_FORMAT Format)
+	Texture2DToTextureCubePSO::Texture2DToTextureCubePSO( D3D12CommandList* CommandList, ID3D12RootSignature* RS, DXGI_FORMAT Format, CommonResources* CR)
 	{
-		m_PSO = nullptr;
-		m_MipPSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		{
 			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Texture2DToTextureCube.hlsl" ) );
 
@@ -1256,29 +1251,36 @@ namespace Drn
 			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 			CompileShader( ShaderPath, L"Main_GS", L"gs_6_6", Macros, &GeometeryShaderBlob);
 
-			CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
-			RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+			VertexShader* VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= RS;
-			PipelineDesc.InputLayout						= VertexLayout_PosUV;
-			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			PipelineDesc.RasterizerState					= RasterizerDesc;
-			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-			PipelineDesc.SampleMask							= UINT_MAX;
-			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-			PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
-			PipelineDesc.NumRenderTargets					= 1;
-			PipelineDesc.RTVFormats[0]						= Format;
-			PipelineDesc.SampleDesc.Count					= 1;
+			PixelShader* PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
+			GeometryShader* GShader = new GeometryShader();
+			GShader->ByteCode.pShaderBytecode = GeometeryShaderBlob->GetBufferPointer();
+			GShader->ByteCode.BytecodeLength = GeometeryShaderBlob->GetBufferSize();
 
-#if D3D12_Debug_INFO
-			m_PSO->SetName(L"PSO_Texture2DToTextureCube");
-#endif
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, GShader);
+
+			TRefCountPtr<BlendState> BState = nullptr;
+	
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::None);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { Format };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, RS);
+			SetName(m_PSO->PipelineState, "PSO_Texture2DToTextureCube");
 		}
 
 // -----------------------------------------------------------------------------------------------------------------------
@@ -1295,36 +1297,37 @@ namespace Drn
 			CompileShader( ShaderPath, L"Mip_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 			CompileShader( ShaderPath, L"Main_GS", L"gs_6_6", Macros, &GeometeryShaderBlob);
 
-			CD3DX12_RASTERIZER_DESC RasterizerDesc(D3D12_DEFAULT);
-			RasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+			VertexShader* VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-			D3D12_GRAPHICS_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= RS;
-			PipelineDesc.InputLayout						= VertexLayout_PosUV;
-			PipelineDesc.PrimitiveTopologyType				= D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-			PipelineDesc.RasterizerState					= RasterizerDesc;
-			PipelineDesc.BlendState							= CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-			PipelineDesc.DepthStencilState.DepthEnable		= FALSE;
-			PipelineDesc.SampleMask							= UINT_MAX;
-			PipelineDesc.VS									= CD3DX12_SHADER_BYTECODE(VertexShaderBlob);
-			PipelineDesc.PS									= CD3DX12_SHADER_BYTECODE(PixelShaderBlob);
-			PipelineDesc.GS									= CD3DX12_SHADER_BYTECODE(GeometeryShaderBlob);
-			PipelineDesc.NumRenderTargets					= 1;
-			PipelineDesc.RTVFormats[0]						= Format;
-			PipelineDesc.SampleDesc.Count					= 1;
+			PixelShader* PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
-			Device->CreateGraphicsPipelineState( &PipelineDesc, IID_PPV_ARGS( &m_MipPSO ) );
+			GeometryShader* GShader = new GeometryShader();
+			GShader->ByteCode.pShaderBytecode = GeometeryShaderBlob->GetBufferPointer();
+			GShader->ByteCode.BytecodeLength = GeometeryShaderBlob->GetBufferSize();
 
-#if D3D12_Debug_INFO
-			m_MipPSO->SetName(L"PSO_Texture2DToTextureCubeMip");
-#endif
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, GShader);
+
+			TRefCountPtr<BlendState> BState = nullptr;
+	
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::None);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { Format };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			m_MipPSO = GraphicsPipelineState::Create( CommandList->GetParentDevice(), Init, RS );
+			SetName(m_MipPSO->PipelineState, "PSO_Texture2DToTextureCubeMip");
 		}
-	}
-
-	Texture2DToTextureCubePSO::~Texture2DToTextureCubePSO()
-	{
-		m_PSO->Release();
-		m_MipPSO->Release();
 	}
 
 // --------------------------------------------------------------------------------------

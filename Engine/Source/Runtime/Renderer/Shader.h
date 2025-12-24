@@ -75,70 +75,70 @@ namespace Drn
 			, m_GeometryShader(InGeometryShader)
 		{}
 
-		void AddRefResources()
-		{
-			drn_check(m_VertexDeclaration);
-			m_VertexDeclaration->AddRef();
+		//void AddRefResources()
+		//{
+		//	drn_check(m_VertexDeclaration);
+		//	m_VertexDeclaration->AddRef();
+		//
+		//	drn_check(m_VertexShader);
+		//	m_VertexShader->AddRef();
+		//
+		//	if (m_HullShader)
+		//	{
+		//		m_HullShader->AddRef();
+		//	}
+		//
+		//	if (m_DomainShader)
+		//	{
+		//		m_DomainShader->AddRef();
+		//	}
+		//
+		//	if (m_PixelShader)
+		//	{
+		//		m_PixelShader->AddRef();
+		//	}
+		//
+		//	if (m_GeometryShader)
+		//	{
+		//		m_GeometryShader->AddRef();
+		//	}
+		//}
 
-			drn_check(m_VertexShader);
-			m_VertexShader->AddRef();
+		//void ReleaseResources()
+		//{
+		//	drn_check(m_VertexDeclaration);
+		//	m_VertexDeclaration->Release();
+		//
+		//	drn_check(m_VertexShader);
+		//	m_VertexShader->Release();
+		//
+		//	if (m_HullShader)
+		//	{
+		//		m_HullShader->Release();
+		//	}
+		//
+		//	if (m_DomainShader)
+		//	{
+		//		m_DomainShader->Release();
+		//	}
+		//
+		//	if (m_PixelShader)
+		//	{
+		//		m_PixelShader->Release();
+		//	}
+		//
+		//	if (m_GeometryShader)
+		//	{
+		//		m_GeometryShader->Release();
+		//	}
+		//}
 
-			if (m_HullShader)
-			{
-				m_HullShader->AddRef();
-			}
-
-			if (m_DomainShader)
-			{
-				m_DomainShader->AddRef();
-			}
-
-			if (m_PixelShader)
-			{
-				m_PixelShader->AddRef();
-			}
-
-			if (m_GeometryShader)
-			{
-				m_GeometryShader->AddRef();
-			}
-		}
-
-		void ReleaseResources()
-		{
-			drn_check(m_VertexDeclaration);
-			m_VertexDeclaration->Release();
-
-			drn_check(m_VertexShader);
-			m_VertexShader->Release();
-
-			if (m_HullShader)
-			{
-				m_HullShader->Release();
-			}
-
-			if (m_DomainShader)
-			{
-				m_DomainShader->Release();
-			}
-
-			if (m_PixelShader)
-			{
-				m_PixelShader->Release();
-			}
-
-			if (m_GeometryShader)
-			{
-				m_GeometryShader->Release();
-			}
-		}
-
-		VertexDeclaration* m_VertexDeclaration = nullptr;
-		VertexShader* m_VertexShader = nullptr;
-		HullShader* m_HullShader = nullptr;
-		DomainShader* m_DomainShader = nullptr;
-		PixelShader* m_PixelShader = nullptr;
-		GeometryShader* m_GeometryShader = nullptr;
+		TRefCountPtr<VertexDeclaration> m_VertexDeclaration;
+		TRefCountPtr<VertexShader> m_VertexShader;
+		TRefCountPtr<HullShader> m_HullShader;
+		TRefCountPtr<DomainShader> m_DomainShader;
+		TRefCountPtr<PixelShader> m_PixelShader;
+		TRefCountPtr<GeometryShader> m_GeometryShader;
 	};
 
 
