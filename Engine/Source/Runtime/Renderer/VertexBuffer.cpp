@@ -57,8 +57,6 @@ namespace Drn
 
 	void StaticMeshVertexBuffer::Bind( D3D12CommandList* CommandList )
 	{
-		uint16 const Strides[] = { sizeof(Vector), sizeof(Color), sizeof(uint32), sizeof(uint32),  sizeof(uint32), sizeof(Vector2Half), sizeof(Vector2Half), sizeof(Vector2Half), sizeof(Vector2Half)};
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_PositionBuffer, 0);
 		CommandList->SetStreamSource(1, m_ColorBuffer, 0);
 		CommandList->SetStreamSource(2, m_NormalBuffer, 0);

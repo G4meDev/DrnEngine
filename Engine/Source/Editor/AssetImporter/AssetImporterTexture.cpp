@@ -485,7 +485,6 @@ namespace Drn
 		CommandList->SetViewport(0, 0, 0, FaceSize, FaceSize, 1);
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandles[0], true, NULL);
 
-		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommandList->SetGraphicPipelineState(SlicePso->m_PSO);
 		CommonResources::Get()->m_UniformCube->BindAndDraw(CommandList);
 

@@ -23,10 +23,8 @@ namespace Drn
 		PipelineState.Graphics.IBCache.Clear();
 		PipelineState.Graphics.VBCache.Clear();
 
+		PipelineState.Graphics.CurrentPrimitiveType = EPrimitiveType::Max;
 		PipelineState.Graphics.CurrentPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
-		PipelineState.Graphics.CurrentPrimitiveStat = nullptr;
-		PipelineState.Graphics.PrimitiveTypeFactor = 3;
-		PipelineState.Graphics.PrimitiveTypeOffset = 0;
 
 		memset(PipelineState.Graphics.CurrentViewport, 0, sizeof(PipelineState.Graphics.CurrentViewport));
 		PipelineState.Graphics.CurrentNumberOfViewports = 0;
@@ -146,18 +144,6 @@ namespace Drn
 			memcpy(&PipelineState.Graphics.CurrentViewport[0], Viewports, sizeof(D3D12_VIEWPORT) * Count);
 			PipelineState.Graphics.CurrentNumberOfViewports = Count;
 			bNeedSetViewports = true;
-		}
-	}
-
-	void RenderStateCache::SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY InTopology )
-	{
-		if (PipelineState.Graphics.CurrentPrimitiveTopology != InTopology)
-		{
-			PipelineState.Graphics.CurrentPrimitiveTopology = InTopology;
-			bNeedSetPrimitiveTopology = true;
-			PipelineState.Graphics.PrimitiveTypeFactor = GetPrimitiveTopologyFactor(InTopology);
-			PipelineState.Graphics.PrimitiveTypeOffset = GetPrimitiveTopologyOffset(InTopology);
-			PipelineState.Graphics.CurrentPrimitiveStat = GetPrimitiveTopologyStat(InTopology);
 		}
 	}
 
@@ -312,7 +298,7 @@ namespace Drn
 		drn_check(InState);
 
 		//if (PipelineState.Graphics.CurrentPipelineStateObject != InState)
-		if (true) // TODO: remove
+		if (true)
 		{
 			SetStreamStrides(InState->StreamStrides);
 			//SetShader(InState->GetVertexShader());

@@ -239,22 +239,18 @@ namespace Drn
 		}
 		
 		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_LINELIST );
 		if (m_Thickness)
 		{
-			//CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
 			CommandList->SetGraphicPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);
 		}
 		else
 		{
-			//CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
 			CommandList->SetGraphicPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
 		}
 		
 		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant( 0, Renderer->ViewBuffer->GetViewIndex(), 0 );
 
 		uint16 const Strides[] = { sizeof(InputLayout_LineColorThickness) };
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawPrimitive(0, m_VertexCount / 2, 1);
 	}

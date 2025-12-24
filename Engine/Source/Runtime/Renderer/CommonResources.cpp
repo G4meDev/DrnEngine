@@ -51,32 +51,6 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------------------------------------------------
 
-	D3D12_INPUT_ELEMENT_DESC InputElement_PosUV[2] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-	};
-
-	D3D12_INPUT_LAYOUT_DESC VertexLayout_PosUV = { InputElement_PosUV, _countof( InputElement_PosUV ) };
-
-// --------------------------------------------------------------------------------------------------------------------------------------------
-
-	D3D12_INPUT_ELEMENT_DESC InputElement_Pos[1] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }};
-
-	D3D12_INPUT_LAYOUT_DESC VertexLayout_Pos = { InputElement_Pos, _countof( InputElement_Pos ) };
-
-// --------------------------------------------------------------------------------------------------------------------------------------------
-
-	D3D12_INPUT_ELEMENT_DESC InputElement_LineColorThickness[3] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "THICKNESS", 0, DXGI_FORMAT_R32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-	};
-
-	D3D12_INPUT_LAYOUT_DESC VertexLayout_LineColorThickness = { InputElement_LineColorThickness, _countof( InputElement_LineColorThickness ) };
-
-// --------------------------------------------------------------------------------------------------------------------------------------------
-
 	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
 		VertexDeclaration_Pos = VertexDeclaration::Create(
@@ -213,7 +187,6 @@ namespace Drn
 	void ScreenTriangle::BindAndDraw( D3D12CommandList* CommandList )
 	{
 		uint16 const Strides[] = { sizeof(PositionUV) };
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawPrimitive(0, 1, 1);
 	}
@@ -240,7 +213,6 @@ namespace Drn
 	void BackfaceScreenTriangle::BindAndDraw( D3D12CommandList* CommandList )
 	{
 		uint16 const Strides[] = { sizeof(Vector) };
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawPrimitive(0, 1, 1);
 	}
@@ -281,7 +253,6 @@ namespace Drn
 	void UniformQuad::BindAndDraw( D3D12CommandList* CommandList )
 	{
 		uint16 const Strides[] = { sizeof(PositionUV) };
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
@@ -341,7 +312,6 @@ namespace Drn
 	void UniformCube::BindAndDraw( D3D12CommandList* CommandList )
 	{
 		uint16 const Strides[] = { sizeof(PositionUV) };
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
@@ -401,7 +371,6 @@ namespace Drn
 	void UniformCubePositionOnly::BindAndDraw( D3D12CommandList* CommandList )
 	{
 		uint16 const Strides[] = { sizeof(Vector) };
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
@@ -435,7 +404,6 @@ namespace Drn
 	void PointLightSphere::BindAndDraw( D3D12CommandList* CommandList )
 	{
 		uint16 const Strides[] = { sizeof(Vector) };
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
@@ -453,7 +421,6 @@ namespace Drn
 	void SpotLightCone::BindAndDraw( D3D12CommandList* CommandList )
 	{
 		uint16 const Strides[] = { sizeof(Vector) };
-		CommandList->SetStreamStrides(Strides);
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
 	}
@@ -975,7 +942,7 @@ namespace Drn
 		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
 		{
-			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, nullptr, nullptr);
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, nullptr, nullptr);
 
 			TRefCountPtr<BlendState> BState = nullptr;
 
@@ -996,7 +963,7 @@ namespace Drn
 		}
 
 		{
-			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, nullptr, nullptr);
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, nullptr, nullptr);
 
 			TRefCountPtr<BlendState> BState = nullptr;
 

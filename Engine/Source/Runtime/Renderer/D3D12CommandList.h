@@ -100,10 +100,6 @@ namespace Drn
 
 		void SetGraphicPipelineState(class GraphicsPipelineState* InState);
 
-		// TODO: remove. this should happen when a new pipeline state is set
-		void SetStreamStrides(const uint16* Strides);
-		void SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY Topology);
-
 		void SetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ);
 		void SetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY);
 
@@ -160,7 +156,7 @@ namespace Drn
 			Max
 		};
 
-		static void UpdateStats(uint64 Count, D3D_PRIMITIVE_TOPOLOGY Topology);
+		static void UpdateStats(uint64 Count, EPrimitiveType Topology);
 		static void UpdateStats(uint64 Count, EPrimitiveStatGroups Group);
 		static void ClearStats();
 

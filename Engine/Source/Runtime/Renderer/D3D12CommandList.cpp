@@ -388,16 +388,6 @@ namespace Drn
 		StateCache.SetGraphicPipelineState(InState);
 	}
 
-	void D3D12CommandList::SetStreamStrides( const uint16* Strides )
-	{
-		StateCache.SetStreamStrides(Strides);
-	}
-
-	void D3D12CommandList::SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY Topology )
-	{
-		StateCache.SetPrimitiveTopology(Topology);
-	}
-
 	void D3D12CommandList::SetViewport( float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ )
 	{
 		drn_check(MinX <= (uint32)D3D12_VIEWPORT_BOUNDS_MAX);
@@ -568,14 +558,14 @@ namespace Drn
 
 	std::atomic<uint64> PrimitiveStats::Stats[(uint8)EPrimitiveStatGroups::Max];
 
-	void PrimitiveStats::UpdateStats( uint64 Count, D3D_PRIMITIVE_TOPOLOGY Topology )
+	void PrimitiveStats::UpdateStats( uint64 Count, EPrimitiveType Topology )
 	{
 #if RENDER_STATS
 		int32 Index = -1;
 		switch ( Topology )
 		{
-		case(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST):	Index = (uint8)EPrimitiveStatGroups::Triangle; break;
-		case(D3D_PRIMITIVE_TOPOLOGY_LINELIST):		Index = (uint8)EPrimitiveStatGroups::Line; break;
+		case(EPrimitiveType::TriangleList):	Index = (uint8)EPrimitiveStatGroups::Triangle; break;
+		case(EPrimitiveType::LineList):		Index = (uint8)EPrimitiveStatGroups::Line; break;
 
 		default: drn_check(false)
 		}

@@ -120,7 +120,8 @@ namespace Drn
 		TriangleList,
 		TriangleStrip,
 		LineList,
-		PointList
+		PointList,
+		Max
 	};
 
 	enum class EPrimitiveTopologyType : uint8

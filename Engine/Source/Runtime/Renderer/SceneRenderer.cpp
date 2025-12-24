@@ -376,7 +376,6 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-			m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
 
@@ -395,7 +394,6 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-			m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
 
@@ -406,14 +404,12 @@ namespace Drn
 			m_AOBuffer->BindMain(m_CommandList);
 
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-			//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_MainPSO );
 			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_MainPSO );
 
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-			m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
 
@@ -429,9 +425,7 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->FlushBarriers();
 
-		m_CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//m_CommandList->GetD3D12CommandList()->SetPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
 		m_CommandList->SetGraphicPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
 
 		m_GBuffer->BindLightPass(m_CommandList);
@@ -475,14 +469,12 @@ namespace Drn
 		m_ScreenSpaceReflectionBuffer->Clear(m_CommandList);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ScreenSpaceReflectionPSO->m_PSO );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ScreenSpaceReflectionPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_ScreenSpaceReflectionBuffer->Buffer->GetViewIndex(), 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -510,14 +502,12 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &DeferredColorHandle, true, NULL);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ReflectionEnvironmentPSO->m_PSO );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ReflectionEnvironmentPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_ReflectionEnvironmentBuffer->Buffer->GetViewIndex(), 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -684,7 +674,6 @@ namespace Drn
 		m_CommandList->FlushBarriers();
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
@@ -692,7 +681,6 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->m_BloomTargets[1]->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
 
-		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -740,14 +728,12 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TonemapHandle, true, NULL);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get());
-		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_EditorPrimitiveBuffer->m_ColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
@@ -783,14 +769,12 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TonemapHandle, true, NULL);
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_EditorSelectionBuffer->m_StencilView->GetDescriptorHeapIndex(), 1);
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
-		m_CommandList->SetPrimitiveTopology( D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );

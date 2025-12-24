@@ -75,8 +75,6 @@ namespace Drn
 		void SetViewport(const D3D12_VIEWPORT& Viewport);
 		void SetViewports(uint32 Count, const D3D12_VIEWPORT* const Viewports);
 
-		void SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY InTopology);
-
 		void ApplyState();
 
 		inline uint32 GetVertexCountAndIncrementStat(uint32 NumPrimitives)
@@ -93,9 +91,9 @@ namespace Drn
 			return PipelineState.Graphics.CurrentViewport[Index];
 		}
 
-		inline D3D_PRIMITIVE_TOPOLOGY GetGraphicsPipelinePrimitiveTopology() const
+		inline EPrimitiveType GetGraphicsPipelinePrimitiveTopology() const
 		{
-			return PipelineState.Graphics.CurrentPrimitiveTopology;
+			return PipelineState.Graphics.CurrentPrimitiveType;
 		}
 
 		void SetGraphicPipelineState(class GraphicsPipelineState* InState);
