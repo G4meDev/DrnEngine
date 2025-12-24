@@ -41,7 +41,7 @@ namespace Drn
 
 		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, DecalBuffer->GetViewIndex(), 1);
 
-		m_Material->BindDeferredDecalPass(CommandList->GetD3D12CommandList());
+		m_Material->BindDeferredDecalPass(CommandList);
 
 		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList);
 	}

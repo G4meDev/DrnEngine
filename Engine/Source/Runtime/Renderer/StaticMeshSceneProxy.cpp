@@ -93,7 +93,7 @@ namespace Drn
 					continue;
 				}
 
-				Mat->BindMainPass(CommandList->GetD3D12CommandList());
+				Mat->BindMainPass(CommandList);
 
 				CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -127,7 +127,7 @@ namespace Drn
 					continue;
 				}
 		
-				Mat->BindPrePass(CommandList->GetD3D12CommandList());
+				Mat->BindPrePass(CommandList);
 
 				CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
@@ -162,15 +162,15 @@ namespace Drn
 
 				if ( LightProxy->GetLightType() == ELightType::PointLight )
 				{
-					Mat->BindPointLightShadowDepthPass(CommandList->GetD3D12CommandList());
+					Mat->BindPointLightShadowDepthPass(CommandList);
 				}
 				else if ( LightProxy->GetLightType() == ELightType::SpotLight)
 				{
-					Mat->BindSpotLightShadowDepthPass(CommandList->GetD3D12CommandList());
+					Mat->BindSpotLightShadowDepthPass(CommandList);
 				}
 				else if ( LightProxy->GetLightType() == ELightType::DirectionalLight)
 				{
-					Mat->BindSpotLightShadowDepthPass(CommandList->GetD3D12CommandList());
+					Mat->BindSpotLightShadowDepthPass(CommandList);
 				}
 
 				CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -204,7 +204,7 @@ namespace Drn
 					continue;
 				}
 
-				Mat->BindStaticMeshDecalPass(CommandList->GetD3D12CommandList());
+				Mat->BindStaticMeshDecalPass(CommandList);
 
 				CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

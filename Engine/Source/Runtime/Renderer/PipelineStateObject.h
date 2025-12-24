@@ -14,21 +14,6 @@ namespace Drn
 		virtual uint32 Release() const { return SimpleRenderResource::Release(); }
 		virtual uint32 GetRefCount() const { return SimpleRenderResource::GetRefCount(); }
 
-		static PipelineStateObject* CreateMainPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
-
-		static PipelineStateObject* CreatePrePassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType, const ShaderBlob& Shaders);
-
-		static PipelineStateObject* CreateDecalPassPSO( const ShaderBlob& Shaders);
-
-		static PipelineStateObject* CreateMeshDecalPassPSO(D3D12_CULL_MODE CullMode, const ShaderBlob& Shaders);
-
-		static PipelineStateObject* CreatePointLightShadowDepthPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
-
-		static PipelineStateObject* CreateSpotLightShadowDepthPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
-
 		static PipelineStateObject* CreateSelectionPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
 			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
 

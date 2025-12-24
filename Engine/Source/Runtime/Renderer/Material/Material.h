@@ -11,6 +11,8 @@ LOG_DECLARE_CATEGORY(LogMaterial);
 namespace Drn
 {
 	class AssetPreviewMaterialGuiLayer;
+	class D3D12CommandList;
+	class GraphicsPipelineState;
 
 	enum class EMaterialDomain : uint8
 	{
@@ -29,15 +31,15 @@ namespace Drn
 #endif
 
 		void UploadResources( class D3D12CommandList* CommandList );
-		void BindMainPass( ID3D12GraphicsCommandList2* CommandList );
-		void BindPrePass( ID3D12GraphicsCommandList2* CommandList );
-		void BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
-		void BindSpotLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindMainPass( D3D12CommandList* CommandList );
+		void BindPrePass( D3D12CommandList* CommandList );
+		void BindPointLightShadowDepthPass( D3D12CommandList* CommandList );
+		void BindSpotLightShadowDepthPass( D3D12CommandList* CommandList );
 		void BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList );
 		void BindSelectionPass( ID3D12GraphicsCommandList2* CommandList );
 		void BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList );
-		void BindDeferredDecalPass( ID3D12GraphicsCommandList2* CommandList );
-		void BindStaticMeshDecalPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindDeferredDecalPass( D3D12CommandList* CommandList );
+		void BindStaticMeshDecalPass( D3D12CommandList* CommandList );
 
 		void BindResources( ID3D12GraphicsCommandList2* CommandList );
 
@@ -113,12 +115,12 @@ namespace Drn
 		std::vector<float> m_ScalarValues;
 		std::vector<Vector4> m_VectorValues;
 
-		TRefCountPtr<PipelineStateObject> m_MainPassPSO;
-		TRefCountPtr<PipelineStateObject> m_PrePassPSO;
-		TRefCountPtr<PipelineStateObject> m_PointLightShadowDepthPassPSO;
-		TRefCountPtr<PipelineStateObject> m_SpotLightShadowDepthPassPSO;
-		TRefCountPtr<PipelineStateObject> m_DeferredDecalPassPSO;
-		TRefCountPtr<PipelineStateObject> m_StaticMeshDecalPassPSO;
+		TRefCountPtr<GraphicsPipelineState> m_MainPassPSO;
+		TRefCountPtr<GraphicsPipelineState> m_PrePassPSO;
+		TRefCountPtr<GraphicsPipelineState> m_PointLightShadowDepthPassPSO;
+		TRefCountPtr<GraphicsPipelineState> m_SpotLightShadowDepthPassPSO;
+		TRefCountPtr<GraphicsPipelineState> m_DeferredDecalPassPSO;
+		TRefCountPtr<GraphicsPipelineState> m_StaticMeshDecalPassPSO;
 
 #if WITH_EDITOR
 		TRefCountPtr<PipelineStateObject> m_SelectionPassPSO = nullptr;

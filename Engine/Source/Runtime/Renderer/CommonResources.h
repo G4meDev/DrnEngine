@@ -297,6 +297,7 @@ namespace Drn
 		TRefCountPtr<class VertexDeclaration> VertexDeclaration_Pos;
 		TRefCountPtr<class VertexDeclaration> VertexDeclaration_PosUV;
 		TRefCountPtr<class VertexDeclaration> VertexDeclaration_LineColorThickness;
+		TRefCountPtr<class VertexDeclaration> VertexDeclaration_StaticMesh;
 
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;

@@ -233,7 +233,6 @@ namespace Drn
 		m_DeferredDecalPassPSO = nullptr;
 		m_StaticMeshDecalPassPSO = nullptr;
 
-
 #if WITH_EDITOR
 		m_SelectionPassPSO = nullptr;
 		m_HitProxyPassPSO = nullptr;
@@ -291,6 +290,52 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------------------------------
 
+	static BoundShaderStateInput GetShaderStateInput(VertexDeclaration* VDeclaration, ShaderBlob& Blob)
+	{
+		VertexShader* VShader = nullptr;
+		HullShader* HShader = nullptr;
+		DomainShader* DShader = nullptr;
+		PixelShader* PShader = nullptr;
+		GeometryShader* GShader = nullptr;
+
+		if (Blob.m_VS)
+		{
+			VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = Blob.m_VS->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = Blob.m_VS->GetBufferSize();
+		}
+
+		if (Blob.m_HS)
+		{
+			HShader = new HullShader();
+			HShader->ByteCode.pShaderBytecode = Blob.m_HS->GetBufferPointer();
+			HShader->ByteCode.BytecodeLength = Blob.m_HS->GetBufferSize();
+		}
+
+		if (Blob.m_DS)
+		{
+			DShader = new DomainShader();
+			DShader->ByteCode.pShaderBytecode = Blob.m_DS->GetBufferPointer();
+			DShader->ByteCode.BytecodeLength = Blob.m_DS->GetBufferSize();
+		}
+
+		if (Blob.m_PS)
+		{
+			PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = Blob.m_PS->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = Blob.m_PS->GetBufferSize();
+		}
+
+		if (Blob.m_GS)
+		{
+			GShader = new GeometryShader();
+			GShader->ByteCode.pShaderBytecode = Blob.m_GS->GetBufferPointer();
+			GShader->ByteCode.BytecodeLength = Blob.m_GS->GetBufferSize();
+		}
+
+		return BoundShaderStateInput(VDeclaration, VShader, HShader, DShader, PShader, GShader);
+	}
+
 	void Material::UploadResources( D3D12CommandList* CommandList )
 	{
 		if (IsRenderStateDirty())
@@ -328,55 +373,135 @@ namespace Drn
 
 			if (m_SupportMainPass)
 			{
-				m_MainPassPSO = PipelineStateObject::CreateMainPassPSO(CullMode, EInputLayoutType::StandardMesh,
-					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_MainShaderBlob);
+				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_MainShaderBlob);
+				TRefCountPtr<BlendState> BState = nullptr;
 
-#if D3D12_Debug_INFO
-				m_MainPassPSO->SetName( "PSO_MainPass_" + name );
-#endif
+				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+				TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+				DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
+				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+				DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT, GBUFFER_BASE_COLOR_FORMAT, GBUFFER_WORLD_NORMAL_FORMAT, GBUFFER_MASKS_FORMAT, GBUFFER_MASKS_FORMAT, GBUFFER_VELOCITY_FORMAT };
+				ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+				GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+					6, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+				m_MainPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+				SetName(m_MainPassPSO->PipelineState, "PSO_MainPass_" + name);
 			}
 
 			if (m_SupportPrePass && m_HasCustomPrePass)
 			{
-				m_PrePassPSO = PipelineStateObject::CreatePrePassPSO(CullMode, EInputLayoutType::StandardMesh, m_PrePassShaderBlob);
+				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_PrePassShaderBlob);
+				TRefCountPtr<BlendState> BState = nullptr;
 
-#if D3D12_Debug_INFO
-				m_PrePassPSO->SetName( "PSO_PrePass_" + name );
-#endif
+				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+				TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+				DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+				DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+				ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+				GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+					0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+				m_PrePassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+				SetName(m_PrePassPSO->PipelineState, "PSO_PrePass_" + name);
 			}
 
 			if (m_SupportDeferredDecalPass)
 			{
-				m_DeferredDecalPassPSO = PipelineStateObject::CreateDecalPassPSO(m_DeferredDecalShaderBlob);
+				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_Pos, m_DeferredDecalShaderBlob);
 
-#if D3D12_Debug_INFO
-				m_DeferredDecalPassPSO->SetName( "PSO_DecalPass_" + name );
-#endif
+				BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
+				BInit.bUseIndependentRenderTargetBlendStates = false;
+				TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Front);
+				TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+				DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+				DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DECAL_BASE_COLOR_FORMAT, DECAL_NORMAL_FORMAT, DECAL_MASKS_FORMAT };
+				ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+				GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+					3, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+				m_DeferredDecalPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+				SetName(m_DeferredDecalPassPSO->PipelineState, "PSO_DecalPass_" + name);
 			}
 
 			if (m_SupportStaticMeshDecalPass)
 			{
-				m_StaticMeshDecalPassPSO = PipelineStateObject::CreateMeshDecalPassPSO( GetCullMode(), m_StaticMeshDecalShaderBlob);
+				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_StaticMeshDecalShaderBlob);
 
-#if D3D12_Debug_INFO
-				m_StaticMeshDecalPassPSO->SetName( "PSO_StaticMeshDecalPass_" + name );
-#endif
+				BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
+				BInit.bUseIndependentRenderTargetBlendStates = false;
+				TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+				TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+				DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
+				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+				DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DECAL_BASE_COLOR_FORMAT, DECAL_NORMAL_FORMAT, DECAL_MASKS_FORMAT };
+				ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+				GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+					3, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+				m_StaticMeshDecalPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+				SetName(m_StaticMeshDecalPassPSO->PipelineState, "PSO_StaticMeshDecalPass_" + name);
 			}
 
 			if (m_SupportShadowPass)
 			{
-				m_PointLightShadowDepthPassPSO = PipelineStateObject::CreatePointLightShadowDepthPassPSO(
-					CullMode, EInputLayoutType::StandardMesh,
-					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_PointlightShadowDepthShaderBlob);
+				{
+					BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_PointlightShadowDepthShaderBlob);
+					TRefCountPtr<BlendState> BState = nullptr;
 
-				m_SpotLightShadowDepthPassPSO = PipelineStateObject::CreateSpotLightShadowDepthPassPSO(
-					CullMode, EInputLayoutType::StandardMesh,
-					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_SpotlightShadowDepthShaderBlob);
+					RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+					TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
 
-#if D3D12_Debug_INFO
-				m_PointLightShadowDepthPassPSO->SetName( "PSO_PointLightShadowDepthPass_" + name );
-				m_SpotLightShadowDepthPassPSO->SetName( "PSO_SpotLightShadowDepthPass_" + name );
-#endif
+					DepthStencilStateInitializer DInit(true, ECompareFunction::LessEqual);
+					TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+					DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+					ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+					GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+						0, TargetFormats, TargetFlags, DXGI_FORMAT_D16_UNORM, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+					m_PointLightShadowDepthPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+					SetName(m_PointLightShadowDepthPassPSO->PipelineState, "PSO_PointLightShadowDepthPass_" + name);
+				}
+
+				{
+					BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_SpotlightShadowDepthShaderBlob);
+					TRefCountPtr<BlendState> BState = nullptr;
+
+					RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+					TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+					DepthStencilStateInitializer DInit(true, ECompareFunction::LessEqual);
+					TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+					DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+					ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+					GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+						0, TargetFormats, TargetFlags, DXGI_FORMAT_D16_UNORM, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+					m_SpotLightShadowDepthPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+					SetName(m_SpotLightShadowDepthPassPSO->PipelineState, "PSO_SpotLightShadowDepthPass_" + name);
+				}
 			}
 
 #if WITH_EDITOR
@@ -503,27 +628,28 @@ namespace Drn
 		}
 	}
 
-	void Material::BindMainPass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindMainPass( D3D12CommandList* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
+		CommandList->SetGraphicPipelineState(m_MainPassPSO);
 
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
-	void Material::BindPrePass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindPrePass( D3D12CommandList* CommandList )
 	{
-		ID3D12PipelineState* PSO;
+		TRefCountPtr<GraphicsPipelineState> PSO;
 		if (m_HasCustomPrePass)
 		{
-			PSO = m_PrePassPSO->GetD3D12PSO();
+			PSO = m_PrePassPSO;
 		}
 		
 		else
 		{
 			PSO = m_TwoSided 
-				? CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO->PipelineState 
-				: CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO->PipelineState;
+				? CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO
+				: CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO;
 		}
 
 		if (!PSO)
@@ -531,44 +657,49 @@ namespace Drn
 			return;
 		}
 
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(PSO);
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(PSO);
+		CommandList->SetGraphicPipelineState(PSO);
 
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
-	void Material::BindPointLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindPointLightShadowDepthPass( D3D12CommandList* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_PointLightShadowDepthPassPSO->GetD3D12PSO());
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(m_PointLightShadowDepthPassPSO->GetD3D12PSO());
+		CommandList->SetGraphicPipelineState(m_PointLightShadowDepthPassPSO);
 		
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
-	void Material::BindSpotLightShadowDepthPass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindSpotLightShadowDepthPass( D3D12CommandList* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_SpotLightShadowDepthPassPSO->GetD3D12PSO());
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(m_SpotLightShadowDepthPassPSO->GetD3D12PSO());
+		CommandList->SetGraphicPipelineState(m_SpotLightShadowDepthPassPSO);
 		
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
-	void Material::BindDeferredDecalPass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindDeferredDecalPass( D3D12CommandList* CommandList )
 	{
 		SCOPE_STAT();
 
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_DeferredDecalPassPSO->GetD3D12PSO());
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(m_DeferredDecalPassPSO->GetD3D12PSO());
+		CommandList->SetGraphicPipelineState(m_DeferredDecalPassPSO);
 
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
-	void Material::BindStaticMeshDecalPass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindStaticMeshDecalPass( D3D12CommandList* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_StaticMeshDecalPassPSO->GetD3D12PSO());
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(m_StaticMeshDecalPassPSO->GetD3D12PSO());
+		CommandList->SetGraphicPipelineState(m_StaticMeshDecalPassPSO);
 
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
 #if WITH_EDITOR

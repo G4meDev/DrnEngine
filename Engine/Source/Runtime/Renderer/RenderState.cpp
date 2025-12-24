@@ -235,7 +235,7 @@ namespace Drn
 		D3D12_DEPTH_STENCIL_DESC &DepthStencilDesc = OutDepthStencilState->Desc;
 		memset(&DepthStencilDesc, 0, sizeof(D3D12_DEPTH_STENCIL_DESC1));
 
-		DepthStencilDesc.DepthEnable = Initializer.DepthTest != ECompareFunction::Always || Initializer.bEnableDepthWrite;
+		DepthStencilDesc.DepthEnable = (Initializer.DepthTest != ECompareFunction::Always) || Initializer.bEnableDepthWrite;
 		DepthStencilDesc.DepthWriteMask = Initializer.bEnableDepthWrite ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
 		DepthStencilDesc.DepthFunc = TranslateCompareFunction(Initializer.DepthTest);
 

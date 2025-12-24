@@ -81,20 +81,33 @@ namespace Drn
 	{
 		VertexDeclaration_Pos = VertexDeclaration::Create(
 		{
-			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 12, false)
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 12)
 		});
 
 		VertexDeclaration_PosUV = VertexDeclaration::Create(
 		{
-			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 20, false),
-			VertexElement(0, 12, DXGI_FORMAT_R32G32_FLOAT, "TEXCOORD", 0, 20, false),
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 20),
+			VertexElement(0, 12, DXGI_FORMAT_R32G32_FLOAT, "TEXCOORD", 0, 20),
 		});
 
 		VertexDeclaration_LineColorThickness = VertexDeclaration::Create(
 		{
-			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 20, false),
-			VertexElement(0, 12, DXGI_FORMAT_R8G8B8A8_UNORM, "COLOR", 0, 20, false),
-			VertexElement(0, 16, DXGI_FORMAT_R32_FLOAT, "THICKNESS", 0, 20, false),
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 20),
+			VertexElement(0, 12, DXGI_FORMAT_R8G8B8A8_UNORM, "COLOR", 0, 20),
+			VertexElement(0, 16, DXGI_FORMAT_R32_FLOAT, "THICKNESS", 0, 20),
+		});
+
+		VertexDeclaration_StaticMesh = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 12),
+			VertexElement(1, 0, DXGI_FORMAT_R8G8B8A8_UNORM, "COLOR", 0, 4),
+			VertexElement(2, 0, DXGI_FORMAT_R8G8B8A8_SNORM, "NORMAL", 0, 4),
+			VertexElement(3, 0, DXGI_FORMAT_R8G8B8A8_SNORM, "TANGENT", 0, 4),
+			VertexElement(4, 0, DXGI_FORMAT_R8G8B8A8_SNORM, "BINORMAL", 0, 4),
+			VertexElement(5, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 0, 4),
+			VertexElement(6, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 1, 4),
+			VertexElement(7, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 2, 4),
+			VertexElement(8, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 3, 4),
 		});
 
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
