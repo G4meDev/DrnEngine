@@ -246,7 +246,7 @@ namespace Drn
 			{
 				SCOPE_STAT("Bind");
 
-				Mat->BindHitProxyPass(CommandList->GetD3D12CommandList());
+				Mat->BindHitProxyPass(CommandList);
 				CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			}
 
@@ -283,7 +283,7 @@ namespace Drn
 				continue;
 			}
 		
-			Mat->BindSelectionPass(CommandList->GetD3D12CommandList());
+			Mat->BindSelectionPass(CommandList);
 			CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
@@ -319,7 +319,7 @@ namespace Drn
 					continue;
 				}
 		
-				Mat->BindEditorPrimitivePass(CommandList->GetD3D12CommandList());
+				Mat->BindEditorPrimitivePass(CommandList);
 				CommandList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();

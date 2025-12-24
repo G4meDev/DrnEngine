@@ -14,15 +14,6 @@ namespace Drn
 		virtual uint32 Release() const { return SimpleRenderResource::Release(); }
 		virtual uint32 GetRefCount() const { return SimpleRenderResource::GetRefCount(); }
 
-		static PipelineStateObject* CreateSelectionPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
-
-		static PipelineStateObject* CreateHitProxyPassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
-
-		static PipelineStateObject* CreateEditorPrimitivePassPSO(D3D12_CULL_MODE CullMode, EInputLayoutType InputLayoutType,
-			D3D12_PRIMITIVE_TOPOLOGY_TYPE PrimitiveType, const ShaderBlob& Shaders);
-
 		inline ID3D12PipelineState* GetD3D12PSO() { return m_PipelineState.Get(); }
 
 #if D3D12_Debug_INFO

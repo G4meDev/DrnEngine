@@ -35,9 +35,9 @@ namespace Drn
 		void BindPrePass( D3D12CommandList* CommandList );
 		void BindPointLightShadowDepthPass( D3D12CommandList* CommandList );
 		void BindSpotLightShadowDepthPass( D3D12CommandList* CommandList );
-		void BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList );
-		void BindSelectionPass( ID3D12GraphicsCommandList2* CommandList );
-		void BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList );
+		void BindEditorPrimitivePass( D3D12CommandList* CommandList );
+		void BindSelectionPass( D3D12CommandList* CommandList );
+		void BindHitProxyPass( D3D12CommandList* CommandList );
 		void BindDeferredDecalPass( D3D12CommandList* CommandList );
 		void BindStaticMeshDecalPass( D3D12CommandList* CommandList );
 
@@ -123,9 +123,9 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_StaticMeshDecalPassPSO;
 
 #if WITH_EDITOR
-		TRefCountPtr<PipelineStateObject> m_SelectionPassPSO = nullptr;
-		TRefCountPtr<PipelineStateObject> m_HitProxyPassPSO = nullptr;
-		TRefCountPtr<PipelineStateObject> m_EditorProxyPSO = nullptr;
+		TRefCountPtr<GraphicsPipelineState> m_SelectionPassPSO;
+		TRefCountPtr<GraphicsPipelineState> m_HitProxyPassPSO;
+		TRefCountPtr<GraphicsPipelineState> m_EditorProxyPSO;
 #endif
 
 		std::unordered_map<std::string, MaterialIndexedFloatParameter*> m_ScalarMap;

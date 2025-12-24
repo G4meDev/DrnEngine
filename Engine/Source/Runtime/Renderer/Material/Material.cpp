@@ -9,12 +9,6 @@ namespace Drn
 {
 	Material::Material( const std::string& InPath )
 		: Asset(InPath)
-		, m_MainPassPSO(nullptr)
-		, m_PrePassPSO(nullptr)
-		, m_PointLightShadowDepthPassPSO(nullptr)
-		, m_SpotLightShadowDepthPassPSO(nullptr)
-		, m_DeferredDecalPassPSO(nullptr)
-		, m_StaticMeshDecalPassPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_SupportMainPass(true)
 		, m_SupportPrePass(true)
@@ -35,15 +29,6 @@ namespace Drn
 #if WITH_EDITOR
 	Material::Material( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath)
-		, m_MainPassPSO(nullptr)
-		, m_PrePassPSO(nullptr)
-		, m_PointLightShadowDepthPassPSO(nullptr)
-		, m_SpotLightShadowDepthPassPSO(nullptr)
-		, m_SelectionPassPSO(nullptr)
-		, m_HitProxyPassPSO(nullptr)
-		, m_EditorProxyPSO(nullptr)
-		, m_DeferredDecalPassPSO(nullptr)
-		, m_StaticMeshDecalPassPSO(nullptr)
 		, m_RenderStateDirty(true)
 		, m_SupportMainPass(true)
 		, m_SupportPrePass(true)
@@ -508,30 +493,73 @@ namespace Drn
 
 			if (m_SupportEditorSelectionPass)
 			{
-				m_SelectionPassPSO = PipelineStateObject::CreateSelectionPassPSO(CullMode, EInputLayoutType::StandardMesh,
-					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_MainShaderBlob);
-#if D3D12_Debug_INFO
-				m_SelectionPassPSO->SetName( "PSO_SelectionPass_" + name );
-#endif
+				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_MainShaderBlob);
+				if (BoundShaderState.m_PixelShader)
+				{
+					BoundShaderState.m_PixelShader->Release();
+					BoundShaderState.m_PixelShader = nullptr;
+				}
+				
+				TRefCountPtr<BlendState> BState = nullptr;
+
+				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+				TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+				DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual,
+					true, ECompareFunction::Always, EStencilOp::Replace, EStencilOp::Replace, EStencilOp::Replace,
+					true, ECompareFunction::Always, EStencilOp::Replace, EStencilOp::Replace, EStencilOp::Replace);
+				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+				DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+				ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+				GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+					0, TargetFormats, TargetFlags, DEPTH_STENCIL_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+				m_SelectionPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+				SetName(m_SelectionPassPSO->PipelineState, "PSO_SelectionPass_" + name);
 			}
 
 			if (IsSupportingHitProxyPass())
 			{
-				m_HitProxyPassPSO = PipelineStateObject::CreateHitProxyPassPSO(CullMode, EInputLayoutType::StandardMesh,
-					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_HitProxyShaderBlob);
+				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_HitProxyShaderBlob);
+				TRefCountPtr<BlendState> BState = nullptr;
 
-#if D3D12_Debug_INFO
-				m_HitProxyPassPSO->SetName( "PSO_HitProxyPass_" + name );
-#endif
+				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+				TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+				DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+				DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_GUID_FORMAT };
+				ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+				GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+					1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+				m_HitProxyPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+				SetName(m_HitProxyPassPSO->PipelineState, "PSO_HitProxyPass_" + name);
 			}
 
 			if (m_SupportEditorPrimitivePass)
 			{
-				m_EditorProxyPSO = PipelineStateObject::CreateEditorPrimitivePassPSO(CullMode, EInputLayoutType::StandardMesh,
-					D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE, m_EditorPrimitiveShaderBlob);
-#if D3D12_Debug_INFO
-				m_EditorProxyPSO->SetName( "PSO_EditorPrimitive_" + name );
-#endif
+				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, m_EditorPrimitiveShaderBlob);
+				TRefCountPtr<BlendState> BState = nullptr;
+
+				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+				TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+				DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+				DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DISPLAY_OUTPUT_FORMAT };
+				ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+				GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+					1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+				m_EditorProxyPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+				SetName(m_EditorProxyPSO->PipelineState, "PSO_EditorPrimitive_" + name);
 			}
 
 #endif
@@ -703,31 +731,34 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
-	void Material::BindEditorPrimitivePass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindEditorPrimitivePass( D3D12CommandList* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_EditorProxyPSO->GetD3D12PSO());
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(m_EditorProxyPSO->GetD3D12PSO());
+		CommandList->SetGraphicPipelineState(m_EditorProxyPSO);
 
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
-	void Material::BindSelectionPass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindSelectionPass( D3D12CommandList* CommandList )
 	{
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_SelectionPassPSO->GetD3D12PSO());
-		CommandList->OMSetStencilRef( 255 );
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(m_SelectionPassPSO->GetD3D12PSO());
+		CommandList->SetGraphicPipelineState(m_SelectionPassPSO);
+		CommandList->GetD3D12CommandList()->OMSetStencilRef( 255 );
 
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
-	void Material::BindHitProxyPass( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindHitProxyPass( D3D12CommandList* CommandList )
 	{
 		SCOPE_STAT();
 
-		CommandList->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		CommandList->SetPipelineState(m_HitProxyPassPSO->GetD3D12PSO());
+		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
+		//CommandList->SetPipelineState(m_HitProxyPassPSO->GetD3D12PSO());
+		CommandList->SetGraphicPipelineState(m_HitProxyPassPSO);
 
-		BindResources(CommandList);
+		BindResources(CommandList->GetD3D12CommandList());
 	}
 
 #endif
