@@ -248,7 +248,7 @@ namespace Drn
 			CommandList->SetGraphicPipelineState( CommonResources::Get()->m_DebugLinePSO->m_PSO);
 		}
 		
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant( 0, Renderer->ViewBuffer->GetViewIndex(), 0 );
+		CommandList->SetGraphicRootConstant( Renderer->ViewBuffer->GetViewIndex(), 0 );
 
 		uint16 const Strides[] = { sizeof(InputLayout_LineColorThickness) };
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);

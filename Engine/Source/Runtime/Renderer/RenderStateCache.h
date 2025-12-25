@@ -42,6 +42,25 @@ namespace Drn
 		uint32 BoundVBMask;
 	};
 
+	struct RootConstantsCache
+	{
+		RootConstantsCache()
+		{
+			Clear();
+		};
+
+		inline void Clear()
+		{
+			memset(RootConstants, UINT32_MAX, sizeof(RootConstants));
+			MaxBoundConstant = -1;
+			BoundConstantsMask = 0;
+		}
+
+		uint32 RootConstants[NUM_ROOT_CONSTANTS];
+		int32 MaxBoundConstant;
+		uint32 BoundConstantsMask;
+	};
+
 	class RenderStateCache : public DeviceChild
 	{
 	public:
@@ -60,6 +79,8 @@ namespace Drn
 		virtual void ClearState();
 		void InheritState(const RenderStateCache& AncestralCache);
 		void DirtyState();
+
+		void SetGraphicRootConstant(uint32 Value, int32 Index);
 
 		void SetIndexBuffer(const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset);
 		void SetStreamSource(ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset);
@@ -140,6 +161,7 @@ namespace Drn
 			struct
 			{
 				bool bNeedSetRootSignature;
+				RootConstantsCache RCCache;
 
 				uint32	CurrentNumberOfViewports;
 				D3D12_VIEWPORT CurrentViewport[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
@@ -159,7 +181,6 @@ namespace Drn
 				uint32 NumLines;
 
 				TRefCountPtr<class GraphicsPipelineState> CurrentPipelineStateObject;
-				//class GraphicsPipelineState* CurrentPipelineStateObject;
 				uint16 StreamStrides[MAX_VERTEX_ELEMENT_COUT];
 			} Graphics;
 

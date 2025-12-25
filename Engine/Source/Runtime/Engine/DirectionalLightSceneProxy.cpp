@@ -35,11 +35,11 @@ namespace Drn
 		
 		TRefCountPtr<RenderUniformBuffer> LightBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(DirectionalLightData), EUniformBufferUsage::SingleFrame, &m_LightData);
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightBuffer->GetViewIndex(), 1);
+		CommandList->SetGraphicRootConstant(LightBuffer->GetViewIndex(), 1);
 		
 		// TODO: make light flags enum. e. g. 1: Point light. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 4;
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
+		CommandList->SetGraphicRootConstant(LightFlags, 7);
 		
 		if (m_CastShadow)
 		{
@@ -100,7 +100,7 @@ namespace Drn
 				TRefCountPtr<RenderUniformBuffer> CsWorldToProjectionMatricesBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(Matrix), EUniformBufferUsage::SingleFrame, &m_ShadowData.CsWorldToProjectionMatrices[i]);
 
 				CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, CsWorldToProjectionMatricesBuffer->GetViewIndex(), 6);
+				CommandList->SetGraphicRootConstant(CsWorldToProjectionMatricesBuffer->GetViewIndex(), 6);
 				
 				for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 				{

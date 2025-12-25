@@ -102,9 +102,9 @@ namespace Drn
 				// TODO: cache in different draws
 				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 				RenderProxy.BindAndDraw(CommandList);
 			}
@@ -133,9 +133,9 @@ namespace Drn
 		
 				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 		
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 		
 				RenderProxy.BindAndDraw(CommandList);
 			}
@@ -175,9 +175,9 @@ namespace Drn
 
 				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 		
 				RenderProxy.BindAndDraw(CommandList);
 			}
@@ -205,9 +205,9 @@ namespace Drn
 
 				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 				RenderProxy.BindAndDraw(CommandList);
 			}
@@ -251,9 +251,9 @@ namespace Drn
 
 			TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer->ViewBuffer->GetViewIndex(), 0);
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+			CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 			RenderProxy.BindAndDraw(CommandList);
 		}
@@ -282,9 +282,9 @@ namespace Drn
 
 			TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer->ViewBuffer->GetViewIndex(), 0);
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+			CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 		
 			RenderProxy.BindAndDraw(CommandList);
 		}
@@ -317,9 +317,9 @@ namespace Drn
 
 				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, MeshBuffer->GetViewIndex(), 1);
-				CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 		
 				RenderProxy.BindAndDraw( CommandList );
 			}

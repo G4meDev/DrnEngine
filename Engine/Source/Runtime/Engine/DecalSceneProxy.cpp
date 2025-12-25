@@ -39,7 +39,7 @@ namespace Drn
 
 		TRefCountPtr<RenderUniformBuffer> DecalBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(DecalData), EUniformBufferUsage::SingleFrame, &m_DecalData);
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, DecalBuffer->GetViewIndex(), 1);
+		CommandList->SetGraphicRootConstant(DecalBuffer->GetViewIndex(), 1);
 
 		m_Material->BindDeferredDecalPass(CommandList);
 

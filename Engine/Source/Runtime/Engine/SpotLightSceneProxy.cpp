@@ -34,11 +34,11 @@ namespace Drn
 
 		TRefCountPtr<RenderUniformBuffer> LightBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(SpotLightData), EUniformBufferUsage::SingleFrame, &m_SpotLightData);
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightBuffer->GetViewIndex(), 1);
+		CommandList->SetGraphicRootConstant(LightBuffer->GetViewIndex(), 1);
 
 		// TODO: make light flags enum. e. g. 1: Point light. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 2;
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
+		CommandList->SetGraphicRootConstant(LightFlags, 7);
 
 		if (m_CastShadow)
 		{
@@ -84,7 +84,7 @@ namespace Drn
 			ShadowDepthBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(SpotLightShadowData), EUniformBufferUsage::SingleFrame, &m_ShadowDepthData);
 
 			CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ShadowDepthBuffer->GetViewIndex(), 6);
+			CommandList->SetGraphicRootConstant(ShadowDepthBuffer->GetViewIndex(), 6);
 
 			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 			{

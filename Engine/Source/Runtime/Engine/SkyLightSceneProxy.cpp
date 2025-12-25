@@ -24,11 +24,11 @@ namespace Drn
 
 		TRefCountPtr<RenderUniformBuffer> LightBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(SkyLightData), EUniformBufferUsage::SingleFrame, &m_SkyLightData);
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightBuffer->GetViewIndex(), 1);
+		CommandList->SetGraphicRootConstant(LightBuffer->GetViewIndex(), 1);
 
 		// TODO: make light flags enum. e. g. 1: Pointlight. 2: Spotlight. 3: RectLight. 4: Dynamic. ...
 		uint32 LightFlags = 8;
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, LightFlags, 7);
+		CommandList->SetGraphicRootConstant(LightFlags, 7);
 
 		CommonResources::Get()->m_BackfaceScreenTriangle->BindAndDraw(CommandList);
 	}

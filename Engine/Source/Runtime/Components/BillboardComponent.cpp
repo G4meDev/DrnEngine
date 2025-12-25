@@ -153,9 +153,9 @@ namespace Drn
 
 		TRefCountPtr<RenderUniformBuffer> BillboardBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(BillboardData), EUniformBufferUsage::SingleFrame, &m_BillboardData);
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer->ViewBuffer->GetViewIndex(), 0);
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, BillboardBuffer->GetViewIndex(), 1);
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+		CommandList->SetGraphicRootConstant(BillboardBuffer->GetViewIndex(), 1);
+		CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 	}
 
 	PrimitiveComponent* BillboardSceneProxy::GetPrimitive()

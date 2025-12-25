@@ -474,7 +474,7 @@ namespace Drn
 			SliceBuffer->Unmap(0, nullptr);
 		}
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, SliceBufferSrvIndex, 0);
+		CommandList->SetGraphicRootConstant(SliceBufferSrvIndex, 0);
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -522,7 +522,7 @@ namespace Drn
 				MipBuffers[i - 1]->Unmap(0, nullptr);
 			}
 
-			CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, BufferIndex, 0);
+			CommandList->SetGraphicRootConstant(BufferIndex, 0);
 
 			for (int32 j = 0; j < 6; j++)
 			{

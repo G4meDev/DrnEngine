@@ -658,7 +658,7 @@ namespace Drn
 		//CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_MainPassPSO);
 
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 	void Material::BindPrePass( D3D12CommandList* CommandList )
@@ -685,7 +685,7 @@ namespace Drn
 		//CommandList->SetPipelineState(PSO);
 		CommandList->SetGraphicPipelineState(PSO);
 
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 	void Material::BindPointLightShadowDepthPass( D3D12CommandList* CommandList )
@@ -694,7 +694,7 @@ namespace Drn
 		//CommandList->SetPipelineState(m_PointLightShadowDepthPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_PointLightShadowDepthPassPSO);
 		
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 	void Material::BindSpotLightShadowDepthPass( D3D12CommandList* CommandList )
@@ -703,7 +703,7 @@ namespace Drn
 		//CommandList->SetPipelineState(m_SpotLightShadowDepthPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_SpotLightShadowDepthPassPSO);
 		
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 	void Material::BindDeferredDecalPass( D3D12CommandList* CommandList )
@@ -714,7 +714,7 @@ namespace Drn
 		//CommandList->SetPipelineState(m_DeferredDecalPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_DeferredDecalPassPSO);
 
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 	void Material::BindStaticMeshDecalPass( D3D12CommandList* CommandList )
@@ -723,7 +723,7 @@ namespace Drn
 		//CommandList->SetPipelineState(m_StaticMeshDecalPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_StaticMeshDecalPassPSO);
 
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 #if WITH_EDITOR
@@ -733,7 +733,7 @@ namespace Drn
 		//CommandList->SetPipelineState(m_EditorProxyPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_EditorProxyPSO);
 
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 	void Material::BindSelectionPass( D3D12CommandList* CommandList )
@@ -743,7 +743,7 @@ namespace Drn
 		CommandList->SetGraphicPipelineState(m_SelectionPassPSO);
 		CommandList->GetD3D12CommandList()->OMSetStencilRef( 255 );
 
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 	void Material::BindHitProxyPass( D3D12CommandList* CommandList )
@@ -754,18 +754,18 @@ namespace Drn
 		//CommandList->SetPipelineState(m_HitProxyPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_HitProxyPassPSO);
 
-		BindResources(CommandList->GetD3D12CommandList());
+		BindResources(CommandList);
 	}
 
 #endif
 
-	void Material::BindResources( ID3D12GraphicsCommandList2* CommandList )
+	void Material::BindResources( D3D12CommandList* CommandList )
 	{
 		SCOPE_STAT();
 
-		CommandList->SetGraphicsRoot32BitConstant(0, TextureIndexBuffer ? TextureIndexBuffer->GetViewIndex() : 0, 3);
-		CommandList->SetGraphicsRoot32BitConstant(0, ScalarBuffer ? ScalarBuffer->GetViewIndex() : 0, 4);
-		CommandList->SetGraphicsRoot32BitConstant(0, VectorBuffer ? VectorBuffer->GetViewIndex() : 0, 5);
+		CommandList->SetGraphicRootConstant(TextureIndexBuffer ? TextureIndexBuffer->GetViewIndex() : 0, 3);
+		CommandList->SetGraphicRootConstant(ScalarBuffer ? ScalarBuffer->GetViewIndex() : 0, 4);
+		CommandList->SetGraphicRootConstant(VectorBuffer ? VectorBuffer->GetViewIndex() : 0, 5);
 	}
 
 	void Material::SetNamedTexture2D( const std::string& Name, AssetHandle<Texture2D> TextureAsset )

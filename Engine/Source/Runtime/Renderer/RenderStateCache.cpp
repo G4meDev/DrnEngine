@@ -20,6 +20,8 @@ namespace Drn
 
 	void RenderStateCache::ClearState()
 	{
+		PipelineState.Graphics.RCCache.Clear();
+
 		PipelineState.Graphics.IBCache.Clear();
 		PipelineState.Graphics.VBCache.Clear();
 
@@ -48,6 +50,20 @@ namespace Drn
 		bNeedSetViewports = true;
 		bNeedSetScissorRects = true;
 		bNeedSetPrimitiveTopology = true;
+	}
+
+	void RenderStateCache::SetGraphicRootConstant(uint32 Value, int32 Index)
+	{
+		drn_check(Index < NUM_ROOT_CONSTANTS);
+
+		CmdList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Value, Index);
+
+		//if (PipelineState.Graphics.RCCache.RootConstants[Index] != Value)
+		//{
+		//	PipelineState.Graphics.RCCache.RootConstants[Index] = Value;
+		//	PipelineState.Graphics.RCCache.BoundConstantsMask |= ((uint32)1 << Index);
+		//	PipelineState.Graphics.RCCache.MaxBoundConstant = std::_Floor_of_log_2(PipelineState.Graphics.RCCache.BoundConstantsMask);
+		//}
 	}
 
 	void RenderStateCache::SetIndexBuffer( const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset )
@@ -238,16 +254,30 @@ namespace Drn
 	{
 		ID3D12RootSignature* pRootSignature = GetGraphicsRootSignature();
 
-		//if (PipelineState.Graphics.bNeedSetRootSignature)
-		//{
-		//	CmdList->GetD3D12CommandList()->SetGraphicsRootSignature(pRootSignature);
-		//	PipelineState.Graphics.bNeedSetRootSignature = false;
-		//}
+		if (PipelineState.Graphics.bNeedSetRootSignature)
+		{
+			CmdList->GetD3D12CommandList()->SetGraphicsRootSignature(pRootSignature);
+			PipelineState.Graphics.bNeedSetRootSignature = false;
+		}
 
-		//InternalSetGraphicPipelineState();
+		InternalSetGraphicPipelineState();
+
+		{
+			for (int32 i = 0; i < PipelineState.Graphics.RCCache.MaxBoundConstant; i++)
+			{
+				if (PipelineState.Graphics.RCCache.BoundConstantsMask & ((uint32)1 << i))
+				{
+					CmdList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, PipelineState.Graphics.RCCache.RootConstants[i], i);
+				}
+			}
+
+			PipelineState.Graphics.RCCache.BoundConstantsMask = 0;
+			PipelineState.Graphics.RCCache.MaxBoundConstant = -1;
+		}
 
 		if (bNeedSetVB)
 		{
+			bNeedSetVB = false;
 			VertexBufferCache& Cache = PipelineState.Graphics.VBCache;
 
 			const uint32 Count = Cache.MaxBoundVertexBufferIndex + 1;
@@ -297,8 +327,7 @@ namespace Drn
 	{
 		drn_check(InState);
 
-		//if (PipelineState.Graphics.CurrentPipelineStateObject != InState)
-		if (true)
+		if (PipelineState.Graphics.CurrentPipelineStateObject != InState)
 		{
 			SetStreamStrides(InState->StreamStrides);
 			//SetShader(InState->GetVertexShader());
@@ -310,6 +339,7 @@ namespace Drn
 			if ( GetGraphicsRootSignature() != InState->RootSignature)
 			{
 				PipelineState.Graphics.bNeedSetRootSignature = true;
+				PipelineState.Graphics.RCCache.Clear();
 			}
 
 			PipelineState.Common.bNeedSetPSO = true;

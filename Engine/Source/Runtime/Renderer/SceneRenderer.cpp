@@ -187,9 +187,9 @@ namespace Drn
 
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get()); // TODO: remove and set at start of render
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 6);
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 6);
 
 		for ( DecalSceneProxy* Proxy : m_Scene->m_DecalProxies )
 		{
@@ -273,9 +273,9 @@ namespace Drn
 
 		if (m_DecalBuffer)
 		{
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_DecalBuffer->m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 7);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_DecalBuffer->m_NormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_DecalBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
+			m_CommandList->SetGraphicRootConstant(m_DecalBuffer->m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 7);
+			m_CommandList->SetGraphicRootConstant(m_DecalBuffer->m_NormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
+			m_CommandList->SetGraphicRootConstant(m_DecalBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
 		}
 
 
@@ -372,9 +372,9 @@ namespace Drn
 			//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_SetupPSO );
 			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_SetupPSO );
 
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+			m_CommandList->SetGraphicRootConstant(m_AOBuffer->AoBuffer->GetViewIndex(), 1);
+			m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
@@ -390,9 +390,9 @@ namespace Drn
 			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_HalfPSO );
 
 
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+			m_CommandList->SetGraphicRootConstant(m_AOBuffer->AoBuffer->GetViewIndex(), 1);
+			m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
@@ -406,9 +406,9 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_MainPSO );
 
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->AoBuffer->GetViewIndex(), 1);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+			m_CommandList->SetGraphicRootConstant(m_AOBuffer->AoBuffer->GetViewIndex(), 1);
+			m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 		}
@@ -430,15 +430,15 @@ namespace Drn
 
 		m_GBuffer->BindLightPass(m_CommandList);
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
 		// 1 is light buffer
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_GBuffer->m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 4);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 5);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 6);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_AOBuffer->m_AOTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_GBuffer->m_MasksBTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
+		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 4);
+		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 5);
+		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 6);
+		m_CommandList->SetGraphicRootConstant(m_AOBuffer->m_AOTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
+		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_MasksBTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
 
 		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
 		{
@@ -471,9 +471,9 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ScreenSpaceReflectionPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_ScreenSpaceReflectionBuffer->Buffer->GetViewIndex(), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(m_ScreenSpaceReflectionBuffer->Buffer->GetViewIndex(), 1);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
@@ -504,9 +504,9 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ReflectionEnvironmentPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_ReflectionEnvironmentBuffer->Buffer->GetViewIndex(), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(m_ReflectionEnvironmentBuffer->Buffer->GetViewIndex(), 1);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
@@ -573,9 +573,9 @@ namespace Drn
 		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_SceneDownSampleBuffer->Buffer[0]->GetViewIndex(), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(m_SceneDownSampleBuffer->Buffer[0]->GetViewIndex(), 1);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 		m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[0].X, m_SceneDownSampleBuffer->m_Viewports[0].Y, 1);
 
@@ -593,9 +593,9 @@ namespace Drn
 			//m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 			//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
 
-			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_SceneDownSampleBuffer->Buffer[i]->GetViewIndex(), 1);
-			//m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			//m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+			m_CommandList->SetGraphicRootConstant(m_SceneDownSampleBuffer->Buffer[i]->GetViewIndex(), 1);
+			//m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 			m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
 			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
@@ -624,9 +624,9 @@ namespace Drn
 				//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
 				m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
 
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->Buffer[i * 2]->GetViewIndex(), 1);
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+				m_CommandList->SetGraphicRootConstant(m_BloomBuffer->Buffer[i * 2]->GetViewIndex(), 1);
+				m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 				m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
 				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
@@ -650,9 +650,9 @@ namespace Drn
 				//m_CommandList->GetD3D12CommandList()->SetPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
 				m_CommandList->SetGraphicPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
 
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->Buffer[i * 2 + 1]->GetViewIndex(), 1);
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+				m_CommandList->SetGraphicRootConstant(m_BloomBuffer->Buffer[i * 2 + 1]->GetViewIndex(), 1);
+				m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 				m_CommandList->SetViewport(0 ,0, 0, m_SceneDownSampleBuffer->m_Viewports[i].X, m_SceneDownSampleBuffer->m_Viewports[i].Y, 1);
 				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
@@ -676,10 +676,10 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetShaderResourceView()->GetDescriptorHeapIndex(), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_BloomBuffer->m_BloomTargets[1]->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetShaderResourceView()->GetDescriptorHeapIndex(), 1);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(m_BloomBuffer->m_BloomTargets[1]->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
 
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
@@ -730,9 +730,9 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get());
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_EditorPrimitiveBuffer->m_ColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(m_EditorPrimitiveBuffer->m_ColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 1);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
@@ -771,9 +771,9 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, m_EditorSelectionBuffer->m_StencilView->GetDescriptorHeapIndex(), 1);
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(m_EditorSelectionBuffer->m_StencilView->GetDescriptorHeapIndex(), 1);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
@@ -833,9 +833,9 @@ namespace Drn
 				//m_CommandList->GetD3D12CommandList()->SetPipelineState(PSO);
 				m_CommandList->SetGraphicPipelineState(PSO);
 
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, InputTextureIndex, 1);
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+				m_CommandList->SetGraphicRootConstant(InputTextureIndex, 1);
+				m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 				CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 			}

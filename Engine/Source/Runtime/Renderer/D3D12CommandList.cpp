@@ -456,6 +456,11 @@ namespace Drn
 		m_CommandList->DrawIndexedInstanced(IndexCount, NumInstances, StartIndex, BaseVertexIndex, FirstInstance);
 	}
 
+	void D3D12CommandList::SetGraphicRootConstant(uint32 Value, int32 Index)
+	{
+		StateCache.SetGraphicRootConstant(Value, Index);
+	}
+
 	void D3D12CommandList::ClearState()
 	{
 		StateCache.ClearState();

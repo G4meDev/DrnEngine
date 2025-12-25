@@ -41,7 +41,7 @@ namespace Drn
 		void BindDeferredDecalPass( D3D12CommandList* CommandList );
 		void BindStaticMeshDecalPass( D3D12CommandList* CommandList );
 
-		void BindResources( ID3D12GraphicsCommandList2* CommandList );
+		void BindResources( D3D12CommandList* CommandList );
 
 		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
 		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
