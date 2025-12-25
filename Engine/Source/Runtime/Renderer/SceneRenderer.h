@@ -76,7 +76,7 @@ namespace Drn
 
 		void Render();
 
-		ID3D12Resource* GetViewResource();
+		class RenderTexture2D* GetViewRenderTexture();
 
 		void ResizeView( const IntPoint& InSize );
 		void ResizeViewDeferred( const IntPoint& InSize );
@@ -204,11 +204,13 @@ namespace Drn
 		TRefCountPtr<D3D12CommandList> m_CommandList;
 	};
 
+#if WITH_EDITOR
 	template<class UserClass, class Func>
 	void SceneRenderer::QueueScreenReprojection( const IntPoint& ScreenPosition, UserClass* UClass, Func&& F, void* Payload )
 	{
 		m_ScreenReprojectionQueue.emplace_back(ScreenPosition, Payload);
 		m_ScreenReprojectionQueue.back().OnScreenReprojection.Bind(UClass, F);
 	}
+#endif
 
 }

@@ -518,11 +518,9 @@ namespace Drn
 		ID3D12Resource* backBuffer = m_SwapChain->GetBackBuffer();
 		D3D12_CPU_DESCRIPTOR_HANDLE rtv = m_SwapChain->GetBackBufferHandle();
 
-		//ResourceStateTracker::Get()->TransiationResource( backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
-		//ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
 		
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &rtv, false, NULL);
 		ImGuiRenderer::Get()->Tick( Time::GetApplicationDeltaTime(), rtv, m_CommandList->GetD3D12CommandList() );
@@ -539,18 +537,16 @@ namespace Drn
 		SCOPE_STAT( "ResolveDisplayBuffer" );
 
 #ifndef WITH_EDITOR
-
 		ID3D12Resource* backBuffer = m_SwapChain->GetBackBuffer();
 		CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_COPY_DEST );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 
-		ResourceStateTracker::Get()->TransiationResource(m_MainSceneRenderer->GetViewResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
-		ResourceStateTracker::Get()->FlushResourceBarriers(m_CommandList->GetD3D12CommandList());
-		m_CommandList->GetD3D12CommandList()->CopyResource(backBuffer, m_MainSceneRenderer->GetViewResource());
+		m_CommandList->TransitionResourceWithTracking(m_MainSceneRenderer->GetViewRenderTexture()->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+		m_CommandList->FlushBarriers();
+		m_CommandList->GetD3D12CommandList()->CopyResource(backBuffer, m_MainSceneRenderer->GetViewRenderTexture()->GetResource()->GetResource());
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition( backBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PRESENT );
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
-
 #endif
 	}
 
@@ -564,10 +560,12 @@ namespace Drn
 		m_CommandList->Close();
 		m_UploadCommandList->Close();
 
+#if WITH_EDITOR
 		if (bCapturingFrame)
 		{
 			StartGpuFrameCapture();
 		}
+#endif
 
 		{
 			SCOPE_STAT( "E1" );
@@ -604,12 +602,14 @@ namespace Drn
 			m_CommandQueue->ExecuteCommandLists(1, CommandLists.data());
 		}
 
+#if WITH_EDITOR
 		if (bCapturingFrame)
 		{
 			EndGpuFrameCapture();
 		}
 
 		bCapturingFrame = false;
+#endif
 
 		//m_CommandQueue->ExecuteCommandLists(NumCommandLists, CommandLists.data());
 	}

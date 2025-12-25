@@ -4,8 +4,10 @@
 namespace Drn
 {
 	PrimitiveSceneProxy::PrimitiveSceneProxy( const PrimitiveComponent* InComponent )
-		: m_EditorPrimitive( InComponent->IsEditorPrimitive() )
-		, m_LocalToWorld( Matrix(InComponent->GetWorldTransform()) )
+		: m_LocalToWorld( Matrix(InComponent->GetWorldTransform()) )
+#if WITH_EDITOR
+		, m_EditorPrimitive( InComponent->IsEditorPrimitive() )
+#endif
 #if D3D12_Debug_INFO
 		, m_Name( InComponent ? InComponent->GetComponentLabel() : "InvalidSceneProxy" )
 #endif

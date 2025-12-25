@@ -883,9 +883,9 @@ namespace Drn
 		//PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
-	ID3D12Resource* SceneRenderer::GetViewResource()
+	RenderTexture2D* SceneRenderer::GetViewRenderTexture()
 	{
-		return m_TonemapBuffer->m_TonemapTarget->GetResource()->GetResource();
+		return m_TonemapBuffer->m_TonemapTarget;
 	}
 
 	void SceneRenderer::ResizeView( const IntPoint& InSize )

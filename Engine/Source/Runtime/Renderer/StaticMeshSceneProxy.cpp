@@ -10,8 +10,8 @@ namespace Drn
 		, m_OwningStaticMeshComponent( InStaticMeshComponent )
 		, m_Guid(InStaticMeshComponent->GetGuid())
 	{
-		m_EditorPrimitive = InStaticMeshComponent->IsEditorPrimitive();
 #if WITH_EDITOR
+		m_EditorPrimitive = InStaticMeshComponent->IsEditorPrimitive();
 		m_Selectable = InStaticMeshComponent->m_Selectable;
 #endif
 	}
