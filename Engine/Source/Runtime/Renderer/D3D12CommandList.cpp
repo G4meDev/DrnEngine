@@ -388,6 +388,11 @@ namespace Drn
 		StateCache.SetGraphicPipelineState(InState);
 	}
 
+	void D3D12CommandList::SetComputePipelineState( ComputePipelineState* InState )
+	{
+		StateCache.SetComputePipelineState(InState);
+	}
+
 	void D3D12CommandList::SetViewport( float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ )
 	{
 		drn_check(MinX <= (uint32)D3D12_VIEWPORT_BOUNDS_MAX);
@@ -459,6 +464,21 @@ namespace Drn
 	void D3D12CommandList::SetGraphicRootConstant(uint32 Value, int32 Index)
 	{
 		StateCache.SetGraphicRootConstant(Value, Index);
+	}
+
+	void D3D12CommandList::SetComputeRootConstant( uint32 Value, int32 Index )
+	{
+		StateCache.SetComputeRootConstant(Value, Index);
+	}
+
+	void D3D12CommandList::SetComputeRootConstants( int32 Num, const void* Value, int32 Index )
+	{
+		uint32* BytePtr = (uint32*)Value;
+
+		for (int32 i = 0; i < Num; i++)
+		{
+			StateCache.SetComputeRootConstant(*(BytePtr++), Index++);
+		}
 	}
 
 	void D3D12CommandList::ClearState()

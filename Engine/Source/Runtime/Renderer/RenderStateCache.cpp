@@ -56,14 +56,17 @@ namespace Drn
 	{
 		drn_check(Index < NUM_ROOT_CONSTANTS);
 
-		//CmdList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Value, Index);
-
 		if (PipelineState.Graphics.RCCache.RootConstants[Index] != Value)
 		{
 			PipelineState.Graphics.RCCache.RootConstants[Index] = Value;
 			PipelineState.Graphics.RCCache.BoundConstantsMask |= ((uint32)1 << Index);
 			PipelineState.Graphics.RCCache.MaxBoundConstant = std::_Floor_of_log_2(PipelineState.Graphics.RCCache.BoundConstantsMask);
 		}
+	}
+
+	void RenderStateCache::SetComputeRootConstant( uint32 Value, int32 Index )
+	{
+		CmdList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Value, Index);
 	}
 
 	void RenderStateCache::SetIndexBuffer( const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset )
@@ -364,4 +367,9 @@ namespace Drn
 		}
 	}
 
-        }  // namespace Drn
+	void RenderStateCache::SetComputePipelineState( ComputePipelineState* InState )
+	{
+		CmdList->GetD3D12CommandList()->SetPipelineState(InState->PipelineState);
+	}
+
+}  // namespace Drn

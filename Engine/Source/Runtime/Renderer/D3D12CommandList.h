@@ -99,6 +99,7 @@ namespace Drn
 		void SetStreamSource(uint32 StreamIndex, class RenderVertexBuffer* VertexBuffer, uint32 Offset);
 
 		void SetGraphicPipelineState(class GraphicsPipelineState* InState);
+		void SetComputePipelineState(class ComputePipelineState* InState);
 
 		void SetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ);
 		void SetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY);
@@ -107,6 +108,8 @@ namespace Drn
 		void DrawIndexedPrimitive(class RenderIndexBuffer* IndexBuffer, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances);
 
 		void SetGraphicRootConstant(uint32 Value, int32 Index);
+		void SetComputeRootConstant(uint32 Value, int32 Index);
+		void SetComputeRootConstants(int32 Num, const void* Value, int32 Index);
 
 		void ClearState();
 

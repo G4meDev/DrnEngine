@@ -81,6 +81,7 @@ namespace Drn
 		void DirtyState();
 
 		void SetGraphicRootConstant(uint32 Value, int32 Index);
+		void SetComputeRootConstant(uint32 Value, int32 Index);
 
 		void SetIndexBuffer(const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset);
 		void SetStreamSource(ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset);
@@ -118,6 +119,8 @@ namespace Drn
 		}
 
 		void SetGraphicPipelineState(class GraphicsPipelineState* InState);
+
+		void SetComputePipelineState(class ComputePipelineState* InState);
 
 	private:
 

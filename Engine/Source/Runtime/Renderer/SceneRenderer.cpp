@@ -325,21 +325,21 @@ namespace Drn
 			else 								{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_1Mip_PSO; }
 
 			m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-			m_CommandList->GetD3D12CommandList()->SetPipelineState(DispatchPSO->PipelineState);
+			m_CommandList->SetComputePipelineState(DispatchPSO);
 
-			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, ParentViewIndex, 1);
-			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			m_CommandList->SetComputeRootConstant(ParentViewIndex, 1);
+			m_CommandList->SetComputeRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 			Vector4 DispatchIDToUV;
-			Vector InvSize = Vector(1.0f / MipSize.X, 1.0f / MipSize.Y, 0);
+			Vector2 InvSize = Vector2(1.0f / MipSize.X, 1.0f / MipSize.Y);
 
-			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstants(0, 4, &DispatchIDToUV, 8);
-			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstants(0, 3, &InvSize, 12);
+			m_CommandList->SetComputeRootConstants(4, &DispatchIDToUV, 8);
+			m_CommandList->SetComputeRootConstants(2, &InvSize, 12);
 
 			for (int32 i = 0; i < DispatchMipCount; i++)
 			{
 				const int32 MipIndex = DispatchStartMipIndex + i;
-				m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, m_HZBBuffer->m_UAVHandles[MipIndex]->GetDescriptorHeapIndex(), OutputIndexStart + i);
+				m_CommandList->SetComputeRootConstant(m_HZBBuffer->m_UAVHandles[MipIndex]->GetDescriptorHeapIndex(), OutputIndexStart + i);
 			}
 
 			m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSize.X, DispatchSize.Y, 1);
@@ -532,11 +532,11 @@ namespace Drn
 		m_TAABuffer->Bind(m_CommandList);
 
 		m_CommandList->GetD3D12CommandList()->SetComputeRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TAAPSO->m_PSO->PipelineState );
+		m_CommandList->SetComputePipelineState( CommonResources::Get()->m_TAAPSO->m_PSO );
 
-		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
-		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, m_TAABuffer->Buffer->GetViewIndex(), 1);
-		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetComputeRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetComputeRootConstant(m_TAABuffer->Buffer->GetViewIndex(), 1);
+		m_CommandList->SetComputeRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 
 		int32 DispatchSizeX = m_SceneView.Size.X / 8 + 1;
 		int32 DispatchSizeY = m_SceneView.Size.Y / 8 + 1;
