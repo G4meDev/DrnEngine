@@ -45,7 +45,8 @@ namespace Drn
 		m_Data.MasksTexture = Renderer->m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.DepthTexture = Renderer->m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.SSRTexture = Renderer->m_ScreenSpaceReflectionBuffer->m_Target->GetShaderResourceView()->GetDescriptorHeapIndex();
-		m_Data.PreintegratedGFTexture = CommonResources::Get()->m_PreintegratedGF->GetTextureIndex();
+		//m_Data.PreintegratedGFTexture = CommonResources::Get()->m_PreintegratedGF->GetTextureIndex();
+		m_Data.PreintegratedGFTexture = CommonResources::Get()->m_PreintegratedGF->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.AOTexture = Renderer->m_AOBuffer->m_AOTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 		SkyLightSceneProxy* SkyProxy = Renderer->GetScene()->m_SkyLightProxies.size() > 0 ? *Renderer->GetScene()->m_SkyLightProxies.begin() : nullptr;

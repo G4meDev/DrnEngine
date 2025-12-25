@@ -108,10 +108,6 @@ namespace Drn
 		m_DebugLinePSO = new DebugLinePSO(CommandList, this);
 		m_HZBPSO = new HZBPSO(CommandList);
 
-		m_PreintegratedGF = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\T_IntegeratedGF.drn" );
-		m_PreintegratedGF.Load();
-		m_PreintegratedGF->UploadResources(CommandList);
-
 		CreateSystemTextures(CommandList);
 
 #if WITH_EDITOR
@@ -1481,19 +1477,127 @@ namespace Drn
 				}
 
 				RenderResourceCreateInfo TextureCreateInfo( Bytes, nullptr, ClearValueBinding::Black, "T_SSAO_Random" );
-				m_SSAO_Random = RenderTexture2D::Create(CommandList, 64, 64, Format, 1, 1, false,
+				m_SSAO_Random = RenderTexture2D::Create(CommandList, Width, Height, Format, 1, 1, false,
 					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
-
-
-				// TODO: improve / remove
-				CommandList->AddTransitionBarrier(m_SSAO_Random->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-				CommandList->FlushBarriers();
 
 				delete[] Bytes;
 			}
 		}
 
+		{
+			auto GetGF = [](float& G, float& F, float Roughness, float NoV)
+			{
+				float m = Roughness * Roughness;
+				float m2 = m * m;
 
+				Vector V(std::sqrt(1.0f - NoV * NoV), 0.0f, NoV);
+
+				float A = 0.0f;
+				float B = 0.0f;
+				float C = 0.0f;
+
+				const uint32 NumSamples = 128;
+				for (uint32 i = 0; i < NumSamples; i++)
+				{
+					float E1 = (float)i / NumSamples;
+					float E2 = (double)Math::ReverseBits(i) / (double)0x100000000LL;
+
+					{
+						float Phi = 2.0f * Math::PI * E1;
+						float CosPhi = Math::Cos(Phi);
+						float SinPhi = Math::Sin(Phi);
+						float CosTheta = std::sqrt((1.0f - E2) / (1.0f + (m2 - 1.0f) * E2));
+						float SinTheta = std::sqrt(1.0f - CosTheta * CosTheta);
+
+						Vector H(SinTheta * Math::Cos(Phi), SinTheta * Math::Sin(Phi), CosTheta);
+						Vector L = ( H * 2.0f * (V | H) ) - V;
+
+						float NoL = std::max(L.GetZ(), 0.0f);
+						float NoH = std::max(H.GetZ(), 0.0f);
+						float VoH = std::max(V | H, 0.0f);
+
+						if (NoL > 0.0f)
+						{
+							float Vis_SmithV = NoL * (NoV * (1 - m) + m);
+							float Vis_SmithL = NoV * (NoL * (1 - m) + m);
+							float Vis = 0.5f / (Vis_SmithV + Vis_SmithL);
+
+							float NoL_Vis_PDF = NoL * Vis * (4.0f * VoH / NoH);
+							float Fc = 1.0f - VoH;
+							Fc *= (Fc*Fc*Fc*Fc);
+							A += NoL_Vis_PDF * (1.0f - Fc);
+							B += NoL_Vis_PDF * Fc;
+						}
+					}
+
+					{
+						float Phi = 2.0f * Math::PI * E1;
+						float CosPhi = Math::Cos(Phi);
+						float SinPhi = Math::Sin(Phi);
+						float CosTheta = std::sqrt(E2);
+						float SinTheta = std::sqrt(1.0f - CosTheta * CosTheta);
+
+						Vector L(SinTheta * Math::Cos(Phi), SinTheta * Math::Sin(Phi), CosTheta);
+						Vector H = (V + L).GetSafeNormal();
+
+						float NoL = std::max(L.GetZ(), 0.0f);
+						float NoH = std::max(H.GetZ(), 0.0f);
+						float VoH = std::max(V | H, 0.0f);
+
+						float FD90 = 0.5f + 2.0f * VoH * VoH * Roughness;
+						float FdV = 1.0f + (FD90 - 1.0f) * pow(1.0f - NoV, 5);
+						float FdL = 1.0f + (FD90 - 1.0f) * pow(1.0f - NoL, 5);
+						C += FdV * FdL;// * ( 1.0f - 0.3333f * Roughness );
+					}
+				}
+				A /= NumSamples;
+				B /= NumSamples;
+				C /= NumSamples;
+
+				G = A;
+				F = B;
+			};
+
+			const DXGI_FORMAT Format = DXGI_FORMAT_R16G16_UNORM;
+			const uint32 Width = 128;
+			const uint32 Height = 32;
+			const uint32 RowPitch = Width * 4;
+
+			{
+				uint64 TextureMemorySize = 0;
+				D3D12_PLACED_SUBRESOURCE_FOOTPRINT Layout;
+				uint32 NumRow;
+				uint64 RowSizeInBytes;
+
+				D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, 1, 1);
+				Renderer::Get()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, 1, 0, &Layout, &NumRow, &RowSizeInBytes, &TextureMemorySize );
+
+				uint8* Bytes = new uint8[TextureMemorySize];
+
+				for (int32 y = 0; y < Height; ++y)
+				{
+					float Roughness = (float)(y + 0.5f) / Height;
+
+					for (int32 x = 0; x < Width; ++x)
+					{
+						float NoV = (float)(x + 0.5f) / Width;
+
+						float G, F;
+						GetGF(G, F, Roughness, NoV);
+
+						uint16* Dest = (uint16*)(Bytes + x * 4 + y * Layout.Footprint.RowPitch);
+						Dest[0] = (int32)(std::clamp(G, 0.0f, 1.0f) * 65535.0f + 0.5f);
+						Dest[1] = (int32)(std::clamp(F, 0.0f, 1.0f) * 65535.0f + 0.5f);
+					}
+				}
+
+				RenderResourceCreateInfo TextureCreateInfo( Bytes, nullptr, ClearValueBinding::Black, "T_PreintegratedGF" );
+				m_PreintegratedGF = RenderTexture2D::Create(CommandList, Width, Height, Format, 1, 1, false,
+					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
+
+				delete[] Bytes;
+			}
+		}
 	}
 
 // --------------------------------------------------------------------------------------

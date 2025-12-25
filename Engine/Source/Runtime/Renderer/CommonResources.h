@@ -326,9 +326,8 @@ namespace Drn
 
 		TRefCountPtr<HZBPSO> m_HZBPSO;
 
-		AssetHandle<Texture2D> m_PreintegratedGF;
-
 		TRefCountPtr<RenderTexture2D> m_SSAO_Random;
+		TRefCountPtr<RenderTexture2D> m_PreintegratedGF;
 
 #if WITH_EDITOR
 		TRefCountPtr<BufferVisualizerPSO> m_BufferVisualizerPSO;

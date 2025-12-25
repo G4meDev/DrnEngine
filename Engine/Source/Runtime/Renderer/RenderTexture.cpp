@@ -451,14 +451,16 @@ namespace Drn
 
 		UpdateSubresources(CmdList->GetD3D12CommandList(), GetResource()->GetResource(), SrcResourceLoc.GetResource()->GetResource(), 0, NumSubresources, Size, Footprints, Rows, RowSizeInBytes, SubresourceData);
 
-		//if (Resource->RequiresResourceStateTracking())
-		//{
-		//	CmdList->TransitionResourceWithTracking(Resource, DestinationState);
-		//}
-		//else
-		//{
-		//	CmdList->AddTransitionBarrier(Resource, D3D12_RESOURCE_STATE_COPY_DEST, DestinationState, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-		//}
+		if (GetResource()->RequiresResourceStateTracking())
+		{
+			CmdList->TransitionResourceWithTracking(GetResource(), DestinationState);
+		}
+		else
+		{
+			CmdList->AddTransitionBarrier(GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, DestinationState, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+		}
+
+		CmdList->FlushBarriers();
 
 		if (!bAllocateOnStack)
 		{

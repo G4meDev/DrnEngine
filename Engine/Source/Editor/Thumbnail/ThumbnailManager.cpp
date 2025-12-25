@@ -304,10 +304,6 @@ namespace Drn
 					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), CreateInfo);
 
 				ThumbnailPool[Path] = Result;
-
-				// TODO: improve / remove
-				CmdList->AddTransitionBarrier(Result->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-				CmdList->FlushBarriers();
 			}
 		}
 

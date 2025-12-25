@@ -68,11 +68,7 @@ namespace Drn
 
 			RenderResourceCreateInfo TextureCreateInfo( m_ImageBlob->GetBufferPointer(), nullptr, ClearValueBinding::Black, ResourceName );
 			m_RenderTexture = RenderTexture2D::Create(CommandList, m_SizeX, m_SizeY, m_Format, m_MipLevels, 1, false,
-				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), TextureCreateInfo);
-
-			// TODO: improve / remove
-			CommandList->AddTransitionBarrier(m_RenderTexture->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-			CommandList->FlushBarriers();
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
 
 // -----------------------------------------------------------------------------------------------------------------------------
 
