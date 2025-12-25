@@ -7,6 +7,8 @@
 
 namespace Drn
 {
+	class ComputeShader;
+
 	class GraphicsPipelineStateInitializer
 	{
 	public:
@@ -94,7 +96,7 @@ namespace Drn
 		virtual ~GraphicsPipelineState();
 
 	public:	
-		static TRefCountPtr <GraphicsPipelineState> Create(class Device* InDevice, const GraphicsPipelineStateInitializer& Initializer, ID3D12RootSignature* InRootSignature);
+		static TRefCountPtr<GraphicsPipelineState> Create(class Device* InDevice, const GraphicsPipelineStateInitializer& Initializer, ID3D12RootSignature* InRootSignature);
 
 		GraphicsPipelineStateInitializer PipelineStateInitializer;
 		ID3D12RootSignature* RootSignature;
@@ -107,5 +109,21 @@ namespace Drn
 		inline class HullShader*     GetHullShader() const { return PipelineStateInitializer.BoundShaderState.m_HullShader; }
 		inline class DomainShader*   GetDomainShader() const { return PipelineStateInitializer.BoundShaderState.m_DomainShader; }
 		inline class GeometryShader* GetGeometryShader() const { return PipelineStateInitializer.BoundShaderState.m_GeometryShader; }
+	};
+
+	struct ComputePipelineState : public SimpleRenderResource
+	{
+	private:
+		ComputePipelineState(ComputeShader* InComputeShader)
+			: m_ComputeShader(InComputeShader)
+		{}
+
+		~ComputePipelineState() {};
+
+	public:
+		static TRefCountPtr<ComputePipelineState> Create(class Device* InDevice, ComputeShader* InComputeShader, ID3D12RootSignature* InRootSignature);
+
+		TRefCountPtr<ComputeShader> m_ComputeShader;
+		TRefCountPtr<ID3D12PipelineState> PipelineState;
 	};
 }

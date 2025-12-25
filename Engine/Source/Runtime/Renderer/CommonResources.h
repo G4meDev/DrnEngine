@@ -9,6 +9,7 @@ namespace Drn
 	//struct ID3D12GraphicsCommandList2;
 	class D3D12CommandList;
 	class GraphicsPipelineState;
+	class ComputePipelineState;
 	class CommonResources;
 	class RenderVertexBuffer;
 	class RenderIndexBuffer;
@@ -156,14 +157,12 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
-	class TAAPSO
+	class TAAPSO : public RefCountedObject
 	{
 	public:
-
-		TAAPSO( ID3D12GraphicsCommandList2* CommandList );
-		~TAAPSO();
+		TAAPSO( D3D12CommandList* CommandList );
 		
-		ID3D12PipelineState* m_PSO;
+		TRefCountPtr<ComputePipelineState> m_PSO;
 	};
 
 	class SceneDownSamplePSO : public RefCountedObject
@@ -268,17 +267,15 @@ namespace Drn
 	};
 #endif
 
-	class HZBPSO
+	class HZBPSO : public RefCountedObject
 	{
 	public:
-
-		HZBPSO( ID3D12GraphicsCommandList2* CommandList );
-		~HZBPSO();
+		HZBPSO( D3D12CommandList* CommandList );
 		
-		ID3D12PipelineState* m_1Mip_PSO;
-		ID3D12PipelineState* m_2Mip_PSO;
-		ID3D12PipelineState* m_3Mip_PSO;
-		ID3D12PipelineState* m_4Mip_PSO;
+		TRefCountPtr<ComputePipelineState> m_1Mip_PSO;
+		TRefCountPtr<ComputePipelineState> m_2Mip_PSO;
+		TRefCountPtr<ComputePipelineState> m_3Mip_PSO;
+		TRefCountPtr<ComputePipelineState> m_4Mip_PSO;
 	};
 
 	class CommonResources
@@ -313,7 +310,7 @@ namespace Drn
 		TRefCountPtr<LightPassPSO> m_LightPassPSO;
 		TRefCountPtr<ScreenSpaceReflectionPSO> m_ScreenSpaceReflectionPSO;
 		TRefCountPtr<ReflectionEnvironemntPSO> m_ReflectionEnvironmentPSO;
-		TAAPSO* m_TAAPSO;
+		TRefCountPtr<TAAPSO> m_TAAPSO;
 		TRefCountPtr<SceneDownSamplePSO> m_SceneDownSamplePSO;
 		TRefCountPtr<BloomPSO> m_BloomPSO;
 		TRefCountPtr<PositionOnlyDepthPSO> m_PositionOnlyDepthPSO;
@@ -324,7 +321,7 @@ namespace Drn
 		TRefCountPtr<DebugLineThicknessPSO> m_DebugLineThicknessPSO;
 		TRefCountPtr<DebugLinePSO> m_DebugLinePSO;
 
-		HZBPSO* m_HZBPSO;
+		TRefCountPtr<HZBPSO> m_HZBPSO;
 
 		AssetHandle<Texture2D> m_SSAO_Random;
 		AssetHandle<Texture2D> m_PreintegratedGF;

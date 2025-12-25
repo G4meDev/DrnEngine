@@ -39,14 +39,14 @@ namespace Drn
 			PipelineDesc.PrimitiveTopologyType = D3D12PrimitiveTypeToTopologyType(TranslatePrimitiveType(Initializer.PrimitiveType));
 		}
 
-		PipelineDesc.pRootSignature						= InRootSignature;
-		PipelineDesc.RasterizerState					= Initializer.RasterizerState ? Initializer.RasterizerState->Desc : CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-		PipelineDesc.BlendState							= Initializer.BlendState ? Initializer.BlendState->Desc : CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-		PipelineDesc.DepthStencilState					= Initializer.DepthStencilState ? Initializer.DepthStencilState->Desc : CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-		PipelineDesc.SampleMask							= UINT_MAX;
-		PipelineDesc.DSVFormat							= Initializer.DepthStencilTargetFormat;
-		PipelineDesc.NumRenderTargets					= Initializer.RenderTargetsEnabled;
-		PipelineDesc.SampleDesc.Count					= Initializer.NumSamples;
+		PipelineDesc.pRootSignature		= InRootSignature;
+		PipelineDesc.RasterizerState	= Initializer.RasterizerState ? Initializer.RasterizerState->Desc : CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+		PipelineDesc.BlendState			= Initializer.BlendState ? Initializer.BlendState->Desc : CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+		PipelineDesc.DepthStencilState	= Initializer.DepthStencilState ? Initializer.DepthStencilState->Desc : CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+		PipelineDesc.SampleMask			= UINT_MAX;
+		PipelineDesc.DSVFormat			= Initializer.DepthStencilTargetFormat;
+		PipelineDesc.NumRenderTargets	= Initializer.RenderTargetsEnabled;
+		PipelineDesc.SampleDesc.Count	= Initializer.NumSamples;
 		for (int32 i = 0; i < Initializer.RenderTargetsEnabled; i++)
 		{
 			PipelineDesc.RTVFormats[i] = Initializer.RenderTargetFormats[i];
@@ -72,4 +72,18 @@ namespace Drn
 		return OutPipelineState;
 	}
 
-        }  // namespace Drn
+	TRefCountPtr<ComputePipelineState> ComputePipelineState::Create( Device* InDevice, ComputeShader* InComputeShader, ID3D12RootSignature* InRootSignature )
+	{
+		drn_check(InComputeShader);
+
+		ComputePipelineState* OutPipelineState = new ComputePipelineState(InComputeShader);
+
+		D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
+		PipelineDesc.CS = InComputeShader->ByteCode;
+		PipelineDesc.pRootSignature = InRootSignature;
+		InDevice->GetD3D12Device()->CreateComputePipelineState(&PipelineDesc, IID_PPV_ARGS(OutPipelineState->PipelineState.GetInitReference()));
+
+		return OutPipelineState;
+	}
+
+}

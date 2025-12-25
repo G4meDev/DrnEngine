@@ -97,7 +97,7 @@ namespace Drn
 		m_AmbientOcclusionPSO = new AmbientOcclusionPSO(CommandList, this);
 		m_ScreenSpaceReflectionPSO = new ScreenSpaceReflectionPSO(CommandList, this);
 		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList, this);
-		m_TAAPSO = new TAAPSO(CommandList->GetD3D12CommandList());
+		m_TAAPSO = new TAAPSO(CommandList);
 		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList, this);
 		m_BloomPSO = new BloomPSO(CommandList, this);
 		m_PositionOnlyDepthPSO = new PositionOnlyDepthPSO(CommandList, this);
@@ -106,7 +106,7 @@ namespace Drn
 		m_LightPassPSO = new LightPassPSO(CommandList, this);
 		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList, this);
 		m_DebugLinePSO = new DebugLinePSO(CommandList, this);
-		m_HZBPSO = new HZBPSO(CommandList->GetD3D12CommandList());
+		m_HZBPSO = new HZBPSO(CommandList);
 
 		m_SSAO_Random = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\SSAO_Jitter.drn" );
 		m_SSAO_Random.Load();
@@ -146,8 +146,6 @@ namespace Drn
 		delete m_UniformCubePositionOnly;
 		delete m_PointLightSphere;
 		delete m_SpotLightCone;
-		delete m_TAAPSO;
-		delete m_HZBPSO;
 	}
 
 	void CommonResources::Init( D3D12CommandList* CommandList )
@@ -748,31 +746,19 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	TAAPSO::TAAPSO( ID3D12GraphicsCommandList2* CommandList )
+	TAAPSO::TAAPSO( D3D12CommandList* CommandList )
 	{
-		m_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\TemporalAA.hlsl" ) );
 		ID3DBlob* ComputeShaderBlob;
 		const std::vector<const wchar_t*> Macros = {};
 		CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
 
-		D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
-		PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-		PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+		ComputeShader* CShader = new ComputeShader();
+		CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+		CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
 
-		Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_PSO ) );
-
-#if D3D12_Debug_INFO
-		m_PSO->SetName(L"PSO_TAA");
-#endif
-	}
-
-	TAAPSO::~TAAPSO()
-	{
-		m_PSO->Release();
+		m_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_TAA");
 	}
 
 // --------------------------------------------------------------------------------------
@@ -1385,26 +1371,20 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	HZBPSO::HZBPSO( ID3D12GraphicsCommandList2* CommandList )
+	HZBPSO::HZBPSO( D3D12CommandList* CommandList )
 	{
-		m_1Mip_PSO = nullptr;
-		m_2Mip_PSO = nullptr;
-		m_3Mip_PSO = nullptr;
-		m_4Mip_PSO = nullptr;
-
-		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
-
 		{
 			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\HZB.hlsl" ) );
 			ID3DBlob* ComputeShaderBlob;
 			const std::vector<const wchar_t*> Macros = {L"MIP_LEVEL_COUNT=1"};
 			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
 
-			D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-			PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+			ComputeShader* CShader = new ComputeShader();
+			CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+			CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
 
-			Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_1Mip_PSO ) );
+			m_1Mip_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_1Mip_PSO->PipelineState, "PSO_HZB_1Mip");
 		}
 
 		{
@@ -1413,11 +1393,12 @@ namespace Drn
 			const std::vector<const wchar_t*> Macros = {L"MIP_LEVEL_COUNT=2"};
 			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
 
-			D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-			PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+			ComputeShader* CShader = new ComputeShader();
+			CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+			CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
 
-			Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_2Mip_PSO ) );
+			m_2Mip_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_2Mip_PSO->PipelineState, "PSO_HZB_2Mip");
 		}
 
 		{
@@ -1426,11 +1407,12 @@ namespace Drn
 			const std::vector<const wchar_t*> Macros = {L"MIP_LEVEL_COUNT=3"};
 			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
 
-			D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-			PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+			ComputeShader* CShader = new ComputeShader();
+			CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+			CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
 
-			Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_3Mip_PSO ) );
+			m_3Mip_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_3Mip_PSO->PipelineState, "PSO_HZB_3Mip");
 		}
 
 		{
@@ -1439,27 +1421,13 @@ namespace Drn
 			const std::vector<const wchar_t*> Macros = {L"MIP_LEVEL_COUNT=4"};
 			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
 
-			D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
-			PipelineDesc.pRootSignature						= Renderer::Get()->m_BindlessRootSinature.Get();
-			PipelineDesc.CS									= CD3DX12_SHADER_BYTECODE(ComputeShaderBlob);
+			ComputeShader* CShader = new ComputeShader();
+			CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+			CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
 
-			Device->CreateComputePipelineState( &PipelineDesc, IID_PPV_ARGS( &m_4Mip_PSO ) );
+			m_4Mip_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_4Mip_PSO->PipelineState, "PSO_HZB_4Mip");
 		}
-
-#if D3D12_Debug_INFO
-		m_1Mip_PSO->SetName(L"PSO_HZB_1Mip");
-		m_2Mip_PSO->SetName(L"PSO_HZB_2Mip");
-		m_3Mip_PSO->SetName(L"PSO_HZB_3Mip");
-		m_4Mip_PSO->SetName(L"PSO_HZB_4Mip");
-#endif
-	}
-
-	HZBPSO::~HZBPSO()
-	{
-		m_1Mip_PSO->Release();
-		m_2Mip_PSO->Release();
-		m_3Mip_PSO->Release();
-		m_4Mip_PSO->Release();
 	}
 
 // --------------------------------------------------------------------------------------

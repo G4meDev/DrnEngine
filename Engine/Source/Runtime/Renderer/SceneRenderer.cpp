@@ -317,7 +317,7 @@ namespace Drn
 				m_CommandList->FlushBarriers();
 			}
 
-			ID3D12PipelineState* DispatchPSO = nullptr;
+			ComputePipelineState* DispatchPSO = nullptr;
 
 			if		( DispatchMipCount == 4)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_4Mip_PSO; }
 			else if ( DispatchMipCount == 3)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_3Mip_PSO; }
@@ -325,7 +325,7 @@ namespace Drn
 			else 								{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_1Mip_PSO; }
 
 			m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-			m_CommandList->GetD3D12CommandList()->SetPipelineState(DispatchPSO);
+			m_CommandList->GetD3D12CommandList()->SetPipelineState(DispatchPSO->PipelineState);
 
 			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, ParentViewIndex, 1);
 			m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
@@ -532,7 +532,7 @@ namespace Drn
 		m_TAABuffer->Bind(m_CommandList);
 
 		m_CommandList->GetD3D12CommandList()->SetComputeRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TAAPSO->m_PSO );
+		m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_TAAPSO->m_PSO->PipelineState );
 
 		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, m_TAABuffer->Buffer->GetViewIndex(), 1);
