@@ -71,7 +71,6 @@ namespace Drn
 
 			ShadowDepthBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ShadowDepthData), EUniformBufferUsage::SingleFrame, &m_ShadowDepthData);
 
-			CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 			CommandList->SetGraphicRootConstant(ShadowDepthBuffer->GetViewIndex(), 6);
 
 			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())

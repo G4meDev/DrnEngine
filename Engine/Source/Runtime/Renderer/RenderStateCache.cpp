@@ -56,14 +56,14 @@ namespace Drn
 	{
 		drn_check(Index < NUM_ROOT_CONSTANTS);
 
-		CmdList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Value, Index);
+		//CmdList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, Value, Index);
 
-		//if (PipelineState.Graphics.RCCache.RootConstants[Index] != Value)
-		//{
-		//	PipelineState.Graphics.RCCache.RootConstants[Index] = Value;
-		//	PipelineState.Graphics.RCCache.BoundConstantsMask |= ((uint32)1 << Index);
-		//	PipelineState.Graphics.RCCache.MaxBoundConstant = std::_Floor_of_log_2(PipelineState.Graphics.RCCache.BoundConstantsMask);
-		//}
+		if (PipelineState.Graphics.RCCache.RootConstants[Index] != Value)
+		{
+			PipelineState.Graphics.RCCache.RootConstants[Index] = Value;
+			PipelineState.Graphics.RCCache.BoundConstantsMask |= ((uint32)1 << Index);
+			PipelineState.Graphics.RCCache.MaxBoundConstant = std::_Floor_of_log_2(PipelineState.Graphics.RCCache.BoundConstantsMask);
+		}
 	}
 
 	void RenderStateCache::SetIndexBuffer( const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset )
@@ -263,16 +263,18 @@ namespace Drn
 		InternalSetGraphicPipelineState();
 
 		{
-			for (int32 i = 0; i < PipelineState.Graphics.RCCache.MaxBoundConstant; i++)
+			RootConstantsCache& RCCache = PipelineState.Graphics.RCCache;
+			const uint32 Count = RCCache.MaxBoundConstant + 1;
+			for (int32 i = 0; i < Count; i++)
 			{
-				if (PipelineState.Graphics.RCCache.BoundConstantsMask & ((uint32)1 << i))
+				if (RCCache.BoundConstantsMask & ((uint32)1 << i))
 				{
-					CmdList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, PipelineState.Graphics.RCCache.RootConstants[i], i);
+					CmdList->GetD3D12CommandList()->SetGraphicsRoot32BitConstant(0, RCCache.RootConstants[i], i);
 				}
 			}
 
-			PipelineState.Graphics.RCCache.BoundConstantsMask = 0;
-			PipelineState.Graphics.RCCache.MaxBoundConstant = -1;
+			RCCache.BoundConstantsMask = 0;
+			RCCache.MaxBoundConstant = -1;
 		}
 
 		if (bNeedSetVB)

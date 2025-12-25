@@ -287,7 +287,6 @@ namespace Drn
 
 		ID3D12DescriptorHeap* const Heaps[2] = { SrvHeap.Get(), SamplerHeap.Get() };
 		CommandList->GetD3D12CommandList()->SetDescriptorHeaps(2, Heaps);
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(IntermediateRootSinature.Get());
 
 		D3D12_CPU_DESCRIPTOR_HANDLE LinearSamplerCpuHandle = SamplerHeap->GetCPUDescriptorHandleForHeapStart();
 		D3D12_GPU_DESCRIPTOR_HANDLE LinearSamplerGpuHandle = SamplerHeap->GetGPUDescriptorHandleForHeapStart();
@@ -474,8 +473,6 @@ namespace Drn
 			SliceBuffer->Unmap(0, nullptr);
 		}
 
-		CommandList->SetGraphicRootConstant(SliceBufferSrvIndex, 0);
-
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 		TRefCountPtr<Texture2DToTextureCubePSO> SlicePso = new Texture2DToTextureCubePSO(CommandList, IntermediateRootSinature.Get(), MetaData.format, CommonResources::Get());
@@ -486,6 +483,8 @@ namespace Drn
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TargetHandles[0], true, NULL);
 
 		CommandList->SetGraphicPipelineState(SlicePso->m_PSO);
+		CommandList->SetGraphicRootConstant(SliceBufferSrvIndex, 0);
+
 		CommonResources::Get()->m_UniformCube->BindAndDraw(CommandList);
 
 // -----------------------------------------------------------------------------------------------------------------------------------------

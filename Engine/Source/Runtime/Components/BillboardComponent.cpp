@@ -88,7 +88,6 @@ namespace Drn
 #if WITH_EDITOR
 	void BillboardSceneProxy::RenderHitProxyPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetGraphicPipelineState(CommonResources::Get()->m_SpriteHitProxyPSO->m_PSO);
 		
 		SetConstantAndSrv(CommandList, Renderer);
@@ -103,7 +102,6 @@ namespace Drn
 
 	void BillboardSceneProxy::RenderEditorPrimitivePass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		CommandList->SetGraphicPipelineState(CommonResources::Get()->m_SpriteEditorPrimitivePSO->m_PSO);
 		
 		SetConstantAndSrv(CommandList, Renderer);

@@ -185,8 +185,6 @@ namespace Drn
 		m_DecalBuffer->Clear(m_CommandList);
 		m_DecalBuffer->Bind(m_CommandList);
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get()); // TODO: remove and set at start of render
-
 		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 6);
@@ -368,8 +366,6 @@ namespace Drn
 		{
 			m_AOBuffer->BindSetup(m_CommandList);
 
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-			//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_SetupPSO );
 			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_SetupPSO );
 
 			m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -385,10 +381,7 @@ namespace Drn
 
 			m_AOBuffer->BindHalf(m_CommandList);
 
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-			//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_HalfPSO );
 			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_HalfPSO );
-
 
 			m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
 			m_CommandList->SetGraphicRootConstant(m_AOBuffer->AoBuffer->GetViewIndex(), 1);
@@ -403,7 +396,6 @@ namespace Drn
 
 			m_AOBuffer->BindMain(m_CommandList);
 
-			m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_AmbientOcclusionPSO->m_MainPSO );
 
 			m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -425,7 +417,6 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->FlushBarriers();
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 		m_CommandList->SetGraphicPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
 
 		m_GBuffer->BindLightPass(m_CommandList);
@@ -468,7 +459,6 @@ namespace Drn
 		m_ScreenSpaceReflectionBuffer->Bind(m_CommandList);
 		m_ScreenSpaceReflectionBuffer->Clear(m_CommandList);
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ScreenSpaceReflectionPSO->m_PSO );
 
 		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -501,7 +491,6 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_GBuffer->m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &DeferredColorHandle, true, NULL);
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ReflectionEnvironmentPSO->m_PSO );
 
 		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -569,8 +558,6 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE MainHandle = m_SceneDownSampleBuffer->m_DownSampleTargets[0]->GetRenderTargetView()->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &MainHandle, true, NULL);
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-		//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
 
 		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -589,9 +576,6 @@ namespace Drn
 
 			D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_SceneDownSampleBuffer->m_DownSampleTargets[i]->GetRenderTargetView()->GetView();
 			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &Handle, true, NULL);
-
-			//m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-			//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_SceneDownSamplePSO->m_PSO );
 
 			//m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
 			m_CommandList->SetGraphicRootConstant(m_SceneDownSampleBuffer->Buffer[i]->GetViewIndex(), 1);
@@ -620,8 +604,6 @@ namespace Drn
 				D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_BloomBuffer->m_BloomTargets[i * 2]->GetRenderTargetView()->GetView();
 				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &Handle, true, NULL);
 
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-				//m_CommandList->GetD3D12CommandList()->SetPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
 				m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_BloomPSO->m_BloomYPSO );
 
 				m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -646,8 +628,6 @@ namespace Drn
 				D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_BloomBuffer->m_BloomTargets[i * 2 + 1]->GetRenderTargetView()->GetView();
 				m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &Handle, true, NULL);
 
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
-				//m_CommandList->GetD3D12CommandList()->SetPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
 				m_CommandList->SetGraphicPipelineState( FirstChain ? CommonResources::Get()->m_BloomPSO->m_BloomXPSO : CommonResources::Get()->m_BloomPSO->m_BloomXAddtivePSO );
 
 				m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -673,7 +653,6 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking(m_TonemapBuffer->m_TonemapTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->FlushBarriers();
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_TonemapPSO->m_PSO );
 
 		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -727,7 +706,6 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE TonemapHandle = m_TonemapBuffer->m_TonemapTarget->GetRenderTargetView()->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TonemapHandle, true, NULL);
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get());
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ResolveAlphaBlendedPSO->m_PSO );
 
 		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -768,7 +746,6 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE TonemapHandle = m_TonemapBuffer->m_TonemapTarget->GetRenderTargetView()->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &TonemapHandle, true, NULL);
 
-		m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ResolveEditorSelectionPSO->m_PSO );
 
 		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -829,8 +806,6 @@ namespace Drn
 
 				m_TonemapBuffer->Bind( m_CommandList );
 
-				m_CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-				//m_CommandList->GetD3D12CommandList()->SetPipelineState(PSO);
 				m_CommandList->SetGraphicPipelineState(PSO);
 
 				m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);

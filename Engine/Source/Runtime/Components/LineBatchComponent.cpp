@@ -238,7 +238,6 @@ namespace Drn
 			return;
 		}
 		
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		if (m_Thickness)
 		{
 			CommandList->SetGraphicPipelineState( CommonResources::Get()->m_DebugLineThicknessPSO->m_PSO);

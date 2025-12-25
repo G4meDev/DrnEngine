@@ -654,8 +654,6 @@ namespace Drn
 
 	void Material::BindMainPass( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(m_MainPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_MainPassPSO);
 
 		BindResources(CommandList);
@@ -681,8 +679,6 @@ namespace Drn
 			return;
 		}
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(PSO);
 		CommandList->SetGraphicPipelineState(PSO);
 
 		BindResources(CommandList);
@@ -690,8 +686,6 @@ namespace Drn
 
 	void Material::BindPointLightShadowDepthPass( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(m_PointLightShadowDepthPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_PointLightShadowDepthPassPSO);
 		
 		BindResources(CommandList);
@@ -699,8 +693,6 @@ namespace Drn
 
 	void Material::BindSpotLightShadowDepthPass( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(m_SpotLightShadowDepthPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_SpotLightShadowDepthPassPSO);
 		
 		BindResources(CommandList);
@@ -710,8 +702,6 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(m_DeferredDecalPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_DeferredDecalPassPSO);
 
 		BindResources(CommandList);
@@ -719,8 +709,6 @@ namespace Drn
 
 	void Material::BindStaticMeshDecalPass( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(m_StaticMeshDecalPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_StaticMeshDecalPassPSO);
 
 		BindResources(CommandList);
@@ -729,8 +717,6 @@ namespace Drn
 #if WITH_EDITOR
 	void Material::BindEditorPrimitivePass( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(m_EditorProxyPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_EditorProxyPSO);
 
 		BindResources(CommandList);
@@ -738,8 +724,6 @@ namespace Drn
 
 	void Material::BindSelectionPass( D3D12CommandList* CommandList )
 	{
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(m_SelectionPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_SelectionPassPSO);
 		CommandList->GetD3D12CommandList()->OMSetStencilRef( 255 );
 
@@ -750,8 +734,6 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		CommandList->GetD3D12CommandList()->SetGraphicsRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
-		//CommandList->SetPipelineState(m_HitProxyPassPSO->GetD3D12PSO());
 		CommandList->SetGraphicPipelineState(m_HitProxyPassPSO);
 
 		BindResources(CommandList);
