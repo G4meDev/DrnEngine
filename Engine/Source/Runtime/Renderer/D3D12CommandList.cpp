@@ -433,7 +433,7 @@ namespace Drn
 		uint32 VertexCount = StateCache.GetVertexCountAndIncrementStat(NumPrimitives);
 
 		//StateCache.ApplyState<D3D12PT_Graphics>();
-		StateCache.ApplyState();
+		StateCache.ApplyGraphicState();
 
 		m_CommandList->DrawInstanced(VertexCount, NumInstances, BaseVertexIndex, 0);
 	}
@@ -456,19 +456,25 @@ namespace Drn
 		const DXGI_FORMAT Format = (IndexBuffer->GetStride() == sizeof(uint16) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT);
 		StateCache.SetIndexBuffer(IndexBuffer->m_ResourceLocation, Format, 0);
 		//StateCache.ApplyState<D3D12PT_Graphics>();
-		StateCache.ApplyState();
+		StateCache.ApplyGraphicState();
 
 		m_CommandList->DrawIndexedInstanced(IndexCount, NumInstances, StartIndex, BaseVertexIndex, FirstInstance);
 	}
 
-	void D3D12CommandList::SetGraphicRootConstant(uint32 Value, int32 Index)
+	void D3D12CommandList::DispatchComputeShader( uint32 ThreadGroupCountX, uint32 ThreadGroupCountY, uint32 ThreadGroupCountZ )
 	{
-		StateCache.SetGraphicRootConstant(Value, Index);
+		StateCache.ApplyComputeState();
+		m_CommandList->Dispatch(ThreadGroupCountX, ThreadGroupCountY, ThreadGroupCountZ);
+	}
+
+	void D3D12CommandList::SetGraphicRootConstant( uint32 Value, int32 Index )
+	{
+		StateCache.SetRootConstant(Value, Index);
 	}
 
 	void D3D12CommandList::SetComputeRootConstant( uint32 Value, int32 Index )
 	{
-		StateCache.SetComputeRootConstant(Value, Index);
+		StateCache.SetRootConstant(Value, Index);
 	}
 
 	void D3D12CommandList::SetComputeRootConstants( int32 Num, const void* Value, int32 Index )
@@ -477,7 +483,7 @@ namespace Drn
 
 		for (int32 i = 0; i < Num; i++)
 		{
-			StateCache.SetComputeRootConstant(*(BytePtr++), Index++);
+			StateCache.SetRootConstant(*(BytePtr++), Index++);
 		}
 	}
 

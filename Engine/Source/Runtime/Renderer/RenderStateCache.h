@@ -51,7 +51,7 @@ namespace Drn
 
 		inline void Clear()
 		{
-			memset(RootConstants, UINT32_MAX, sizeof(RootConstants));
+			memset(RootConstants, UINT8_MAX, sizeof(RootConstants));
 			MaxBoundConstant = -1;
 			BoundConstantsMask = 0;
 		}
@@ -80,8 +80,7 @@ namespace Drn
 		void InheritState(const RenderStateCache& AncestralCache);
 		void DirtyState();
 
-		void SetGraphicRootConstant(uint32 Value, int32 Index);
-		void SetComputeRootConstant(uint32 Value, int32 Index);
+		void SetRootConstant(uint32 Value, int32 Index);
 
 		void SetIndexBuffer(const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset);
 		void SetStreamSource(ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset);
@@ -97,7 +96,8 @@ namespace Drn
 		void SetViewport(const D3D12_VIEWPORT& Viewport);
 		void SetViewports(uint32 Count, const D3D12_VIEWPORT* const Viewports);
 
-		void ApplyState();
+		void ApplyGraphicState();
+		void ApplyComputeState();
 
 		inline uint32 GetVertexCountAndIncrementStat(uint32 NumPrimitives)
 		{
@@ -119,12 +119,12 @@ namespace Drn
 		}
 
 		void SetGraphicPipelineState(class GraphicsPipelineState* InState);
-
 		void SetComputePipelineState(class ComputePipelineState* InState);
 
 	private:
 
 		void InternalSetGraphicPipelineState();
+		void InternalSetComputePipelineState();
 		void InternalSetStreamSource(ResourceLocation* VertexBufferLocation, uint32 StreamIndex, uint32 Stride, uint32 Offset);
 		uint32 GetPrimitiveTopologyFactor(D3D_PRIMITIVE_TOPOLOGY InTopology);
 		uint32 GetPrimitiveTopologyOffset(D3D_PRIMITIVE_TOPOLOGY InTopology);
@@ -164,7 +164,6 @@ namespace Drn
 			struct
 			{
 				bool bNeedSetRootSignature;
-				RootConstantsCache RCCache;
 
 				uint32	CurrentNumberOfViewports;
 				D3D12_VIEWPORT CurrentViewport[D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
@@ -189,10 +188,14 @@ namespace Drn
 
 			struct
 			{
+				bool bNeedSetRootSignature;
+				TRefCountPtr<class ComputePipelineState> CurrentPipelineStateObject;
 			} Compute;
 
 			struct
 			{
+				RootConstantsCache RCCache;
+
 				bool bNeedSetPSO;
 				ID3D12PipelineState* CurrentPipelineStateObject;
 			} Common;

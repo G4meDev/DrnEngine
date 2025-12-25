@@ -20,7 +20,7 @@ namespace Drn
 
 	void RenderStateCache::ClearState()
 	{
-		PipelineState.Graphics.RCCache.Clear();
+		PipelineState.Common.RCCache.Clear();
 
 		PipelineState.Graphics.IBCache.Clear();
 		PipelineState.Graphics.VBCache.Clear();
@@ -52,21 +52,16 @@ namespace Drn
 		bNeedSetPrimitiveTopology = true;
 	}
 
-	void RenderStateCache::SetGraphicRootConstant(uint32 Value, int32 Index)
+	void RenderStateCache::SetRootConstant(uint32 Value, int32 Index)
 	{
 		drn_check(Index < NUM_ROOT_CONSTANTS);
 
-		if (PipelineState.Graphics.RCCache.RootConstants[Index] != Value)
+		if (PipelineState.Common.RCCache.RootConstants[Index] != Value)
 		{
-			PipelineState.Graphics.RCCache.RootConstants[Index] = Value;
-			PipelineState.Graphics.RCCache.BoundConstantsMask |= ((uint32)1 << Index);
-			PipelineState.Graphics.RCCache.MaxBoundConstant = std::_Floor_of_log_2(PipelineState.Graphics.RCCache.BoundConstantsMask);
+			PipelineState.Common.RCCache.RootConstants[Index] = Value;
+			PipelineState.Common.RCCache.BoundConstantsMask |= ((uint32)1 << Index);
+			PipelineState.Common.RCCache.MaxBoundConstant = std::_Floor_of_log_2(PipelineState.Common.RCCache.BoundConstantsMask);
 		}
-	}
-
-	void RenderStateCache::SetComputeRootConstant( uint32 Value, int32 Index )
-	{
-		CmdList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, Value, Index);
 	}
 
 	void RenderStateCache::SetIndexBuffer( const ResourceLocation& IndexBufferLocation, DXGI_FORMAT Format, uint32 Offset )
@@ -253,7 +248,7 @@ namespace Drn
 		return PipelineState.Graphics.CurrentPipelineStateObject ? PipelineState.Graphics.CurrentPipelineStateObject->RootSignature : nullptr;
 	}
 
-	void RenderStateCache::ApplyState()
+	void RenderStateCache::ApplyGraphicState()
 	{
 		ID3D12RootSignature* pRootSignature = GetGraphicsRootSignature();
 
@@ -266,7 +261,7 @@ namespace Drn
 		InternalSetGraphicPipelineState();
 
 		{
-			RootConstantsCache& RCCache = PipelineState.Graphics.RCCache;
+			RootConstantsCache& RCCache = PipelineState.Common.RCCache;
 			const uint32 Count = RCCache.MaxBoundConstant + 1;
 			for (int32 i = 0; i < Count; i++)
 			{
@@ -311,6 +306,34 @@ namespace Drn
 		CmdList->FlushBarriers();
 	}
 
+	void RenderStateCache::ApplyComputeState()
+	{
+		ID3D12RootSignature* pRootSignature = PipelineState.Compute.CurrentPipelineStateObject->RootSignature;
+
+		if (PipelineState.Compute.bNeedSetRootSignature)
+		{
+			CmdList->GetD3D12CommandList()->SetComputeRootSignature(pRootSignature);
+			PipelineState.Compute.bNeedSetRootSignature = false;
+		}
+
+		{
+			RootConstantsCache& RCCache = PipelineState.Common.RCCache;
+			const uint32 Count = RCCache.MaxBoundConstant + 1;
+			for (int32 i = 0; i < Count; i++)
+			{
+				if (RCCache.BoundConstantsMask & ((uint32)1 << i))
+				{
+					CmdList->GetD3D12CommandList()->SetComputeRoot32BitConstant(0, RCCache.RootConstants[i], i);
+				}
+			}
+
+			RCCache.BoundConstantsMask = 0;
+			RCCache.MaxBoundConstant = -1;
+		}
+
+		CmdList->FlushBarriers();
+	}
+
 	void RenderStateCache::InternalSetGraphicPipelineState()
 	{
 		bool bNeedSetPSO = PipelineState.Common.bNeedSetPSO;
@@ -328,10 +351,28 @@ namespace Drn
 		}
 	}
 
+	void RenderStateCache::InternalSetComputePipelineState()
+	{
+		bool bNeedSetPSO = PipelineState.Common.bNeedSetPSO;
+		if (PipelineState.Common.CurrentPipelineStateObject != PipelineState.Compute.CurrentPipelineStateObject->PipelineState)
+		{
+			PipelineState.Common.CurrentPipelineStateObject = PipelineState.Compute.CurrentPipelineStateObject->PipelineState;
+			bNeedSetPSO = true;
+		}
+
+		if (bNeedSetPSO)
+		{
+			drn_check(PipelineState.Common.CurrentPipelineStateObject);
+			CmdList->GetD3D12CommandList()->SetPipelineState(PipelineState.Common.CurrentPipelineStateObject);
+			PipelineState.Common.bNeedSetPSO = false;
+		}
+	}
+
 	void RenderStateCache::SetGraphicPipelineState( GraphicsPipelineState* InState )
 	{
 		drn_check(InState);
 
+		PipelineState.Compute.CurrentPipelineStateObject = nullptr;
 		if (PipelineState.Graphics.CurrentPipelineStateObject != InState)
 		{
 			SetStreamStrides(InState->StreamStrides);
@@ -344,7 +385,7 @@ namespace Drn
 			if ( GetGraphicsRootSignature() != InState->RootSignature)
 			{
 				PipelineState.Graphics.bNeedSetRootSignature = true;
-				PipelineState.Graphics.RCCache.Clear();
+				PipelineState.Common.RCCache.Clear();
 			}
 
 			PipelineState.Common.bNeedSetPSO = true;
@@ -369,7 +410,25 @@ namespace Drn
 
 	void RenderStateCache::SetComputePipelineState( ComputePipelineState* InState )
 	{
-		CmdList->GetD3D12CommandList()->SetPipelineState(InState->PipelineState);
+		drn_check(InState);
+
+		PipelineState.Graphics.CurrentPipelineStateObject = nullptr;
+		const ID3D12RootSignature* const pCurrentRootSignature = PipelineState.Compute.CurrentPipelineStateObject ? PipelineState.Compute.CurrentPipelineStateObject->RootSignature : nullptr;
+
+		if (PipelineState.Compute.CurrentPipelineStateObject != InState)
+		{
+			if ( pCurrentRootSignature != InState->RootSignature)
+			//if (true)
+			{
+				PipelineState.Compute.bNeedSetRootSignature = true;
+				PipelineState.Common.RCCache.Clear();
+			}
+
+			PipelineState.Common.bNeedSetPSO = true;
+			PipelineState.Compute.CurrentPipelineStateObject = InState;
+
+			InternalSetComputePipelineState();
+		}
 	}
 
 }  // namespace Drn

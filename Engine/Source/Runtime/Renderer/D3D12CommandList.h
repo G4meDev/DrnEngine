@@ -107,6 +107,8 @@ namespace Drn
 		void DrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances);
 		void DrawIndexedPrimitive(class RenderIndexBuffer* IndexBuffer, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances);
 
+		void DispatchComputeShader(uint32 ThreadGroupCountX, uint32 ThreadGroupCountY, uint32 ThreadGroupCountZ);
+
 		void SetGraphicRootConstant(uint32 Value, int32 Index);
 		void SetComputeRootConstant(uint32 Value, int32 Index);
 		void SetComputeRootConstants(int32 Num, const void* Value, int32 Index);

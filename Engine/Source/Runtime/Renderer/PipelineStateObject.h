@@ -114,8 +114,9 @@ namespace Drn
 	struct ComputePipelineState : public SimpleRenderResource
 	{
 	private:
-		ComputePipelineState(ComputeShader* InComputeShader)
+		ComputePipelineState(ComputeShader* InComputeShader, ID3D12RootSignature* InRoot)
 			: m_ComputeShader(InComputeShader)
+			, RootSignature(InRoot)
 		{}
 
 		~ComputePipelineState() {};
@@ -123,6 +124,7 @@ namespace Drn
 	public:
 		static TRefCountPtr<ComputePipelineState> Create(class Device* InDevice, ComputeShader* InComputeShader, ID3D12RootSignature* InRootSignature);
 
+		ID3D12RootSignature* RootSignature;
 		TRefCountPtr<ComputeShader> m_ComputeShader;
 		TRefCountPtr<ID3D12PipelineState> PipelineState;
 	};

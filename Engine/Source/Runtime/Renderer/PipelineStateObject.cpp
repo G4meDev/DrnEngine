@@ -76,7 +76,7 @@ namespace Drn
 	{
 		drn_check(InComputeShader);
 
-		ComputePipelineState* OutPipelineState = new ComputePipelineState(InComputeShader);
+		ComputePipelineState* OutPipelineState = new ComputePipelineState(InComputeShader, InRootSignature);
 
 		D3D12_COMPUTE_PIPELINE_STATE_DESC PipelineDesc = {};
 		PipelineDesc.CS = InComputeShader->ByteCode;

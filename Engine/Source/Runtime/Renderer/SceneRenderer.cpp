@@ -324,7 +324,6 @@ namespace Drn
 			else if ( DispatchMipCount == 2)	{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_2Mip_PSO; }
 			else 								{ DispatchPSO = CommonResources::Get()->m_HZBPSO->m_1Mip_PSO; }
 
-			m_CommandList->GetD3D12CommandList()->SetComputeRootSignature(Renderer::Get()->m_BindlessRootSinature.Get());
 			m_CommandList->SetComputePipelineState(DispatchPSO);
 
 			m_CommandList->SetComputeRootConstant(ParentViewIndex, 1);
@@ -342,7 +341,7 @@ namespace Drn
 				m_CommandList->SetComputeRootConstant(m_HZBBuffer->m_UAVHandles[MipIndex]->GetDescriptorHeapIndex(), OutputIndexStart + i);
 			}
 
-			m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSize.X, DispatchSize.Y, 1);
+			m_CommandList->DispatchComputeShader(DispatchSize.X, DispatchSize.Y, 1);
  		}
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
@@ -531,7 +530,6 @@ namespace Drn
 
 		m_TAABuffer->Bind(m_CommandList);
 
-		m_CommandList->GetD3D12CommandList()->SetComputeRootSignature( Renderer::Get()->m_BindlessRootSinature.Get() );
 		m_CommandList->SetComputePipelineState( CommonResources::Get()->m_TAAPSO->m_PSO );
 
 		m_CommandList->SetComputeRootConstant(ViewBuffer->GetViewIndex(), 0);
@@ -540,7 +538,7 @@ namespace Drn
 
 		int32 DispatchSizeX = m_SceneView.Size.X / 8 + 1;
 		int32 DispatchSizeY = m_SceneView.Size.Y / 8 + 1;
-		m_CommandList->GetD3D12CommandList()->Dispatch(DispatchSizeX, DispatchSizeY, 1);
+		m_CommandList->DispatchComputeShader(DispatchSizeX, DispatchSizeY, 1);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
