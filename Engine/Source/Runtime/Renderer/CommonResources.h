@@ -13,6 +13,7 @@ namespace Drn
 	class CommonResources;
 	class RenderVertexBuffer;
 	class RenderIndexBuffer;
+	class RenderTexture2D;
 
 	class ScreenTriangle
 	{
@@ -288,6 +289,8 @@ namespace Drn
 		static void Init( D3D12CommandList* CommandList );
 		static void Shutdown();
 
+		void CreateSystemTextures(D3D12CommandList* CommandList);
+
 		inline static CommonResources* Get() { return m_SingletonInstance; }
 
 		TRefCountPtr<class VertexDeclaration> VertexDeclaration_Pos;
@@ -323,8 +326,9 @@ namespace Drn
 
 		TRefCountPtr<HZBPSO> m_HZBPSO;
 
-		AssetHandle<Texture2D> m_SSAO_Random;
 		AssetHandle<Texture2D> m_PreintegratedGF;
+
+		TRefCountPtr<RenderTexture2D> m_SSAO_Random;
 
 #if WITH_EDITOR
 		TRefCountPtr<BufferVisualizerPSO> m_BufferVisualizerPSO;

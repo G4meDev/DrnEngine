@@ -89,8 +89,8 @@ namespace Drn
 		m_AoData.SetupTexture = m_AOSetupTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_AoData.DownSampleTexture = m_AOHalfTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 
-		Texture2D* SSAO_RandomTexture = CommonResources::Get()->m_SSAO_Random.Get();
-		m_AoData.RandomTexture = SSAO_RandomTexture->GetTextureIndex();
+		RenderTexture2D* SSAO_RandomTexture = CommonResources::Get()->m_SSAO_Random;
+		m_AoData.RandomTexture = SSAO_RandomTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 		m_AoData.ToRandomU = (float) m_Size.X / SSAO_RandomTexture->GetSizeX();
 		m_AoData.ToRandomV = (float) m_Size.Y / SSAO_RandomTexture->GetSizeY();

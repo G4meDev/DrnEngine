@@ -108,13 +108,11 @@ namespace Drn
 		m_DebugLinePSO = new DebugLinePSO(CommandList, this);
 		m_HZBPSO = new HZBPSO(CommandList);
 
-		m_SSAO_Random = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\SSAO_Jitter.drn" );
-		m_SSAO_Random.Load();
-		m_SSAO_Random->UploadResources(CommandList);
-
 		m_PreintegratedGF = AssetHandle<Texture2D>( "Engine\\Content\\Textures\\T_IntegeratedGF.drn" );
 		m_PreintegratedGF.Load();
 		m_PreintegratedGF->UploadResources(CommandList);
+
+		CreateSystemTextures(CommandList);
 
 #if WITH_EDITOR
 		m_BufferVisualizerPSO = new BufferVisualizerPSO(CommandList, this);
@@ -1428,6 +1426,74 @@ namespace Drn
 			m_4Mip_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_4Mip_PSO->PipelineState, "PSO_HZB_4Mip");
 		}
+	}
+
+// --------------------------------------------------------------------------------------
+
+	void CommonResources::CreateSystemTextures( D3D12CommandList* CommandList )
+	{
+		{
+			const DXGI_FORMAT Format = DXGI_FORMAT_R8G8_UNORM;
+			const uint32 Width = 64;
+			const uint32 Height = 64;
+			const uint32 RowPitch = Width * 2;
+
+			float g_AngleOff1 = 127;
+			float g_AngleOff2 = 198;
+			float g_AngleOff3 = 23;
+
+			Color Bases[16];
+			for (int32 Pos = 0; Pos < 16; ++Pos)
+			{
+				int32 Reorder[16] = { 0, 11, 7, 3, 10, 4, 15, 12, 6, 8, 1, 14, 13, 2, 9, 5 };
+				int32 w = Reorder[Pos];
+
+				float ww = w / 16.0f * Math::PI;
+
+				float lenm = 1.0f - (Math::Sin(g_AngleOff2 * w * 0.01f) * 0.5f + 0.5f) * g_AngleOff3 * 0.01f;
+				float s = Math::Sin(ww) * lenm;
+				float c = Math::Cos(ww) * lenm;
+
+				Bases[Pos] = Color(Math::Quantize8SignedByte(c), Math::Quantize8SignedByte(s), 0, 0);
+			}
+
+			{
+				uint64 TextureMemorySize = 0;
+				D3D12_PLACED_SUBRESOURCE_FOOTPRINT Layout;
+				uint32 NumRow;
+				uint64 RowSizeInBytes;
+
+				D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, 1, 1);
+				Renderer::Get()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, 1, 0, &Layout, &NumRow, &RowSizeInBytes, &TextureMemorySize );
+
+				uint8* Bytes = new uint8[TextureMemorySize];
+
+				for (int32 y = 0; y < Height; ++y)
+				{
+					for (int32 x = 0; x < Width; ++x)
+					{
+						uint32 Index = (x % 4) + (y % 4) * 4;
+
+						uint8* Dest = (uint8*)(Bytes + x * sizeof(uint16) + y * Layout.Footprint.RowPitch);
+						Dest[0] = Bases[Index].R;
+						Dest[1] = Bases[Index].G;
+					}
+				}
+
+				RenderResourceCreateInfo TextureCreateInfo( Bytes, nullptr, ClearValueBinding::Black, "T_SSAO_Random" );
+				m_SSAO_Random = RenderTexture2D::Create(CommandList, 64, 64, Format, 1, 1, false,
+					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
+
+
+				// TODO: improve / remove
+				CommandList->AddTransitionBarrier(m_SSAO_Random->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+				CommandList->FlushBarriers();
+
+				delete[] Bytes;
+			}
+		}
+
+
 	}
 
 // --------------------------------------------------------------------------------------

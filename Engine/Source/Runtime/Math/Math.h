@@ -150,5 +150,17 @@ namespace Drn
 
 			return Vector(Int8ToNormalizedFloat(R), Int8ToNormalizedFloat(G), Int8ToNormalizedFloat(B));
 		}
+
+		inline static uint8 Quantize8UnsignedByte(float x)
+		{
+			int32 Ret = (int32)(x * 255.999f);
+			return (uint8)Ret;
+		}
+
+		inline static uint8 Quantize8SignedByte(float x)
+		{
+			float y = x * 0.5f + 0.5f;
+			return Quantize8UnsignedByte(y);
+		}
 	};
 }
