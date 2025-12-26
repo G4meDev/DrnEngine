@@ -29,7 +29,7 @@ namespace Drn
 
 		virtual void RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderPrePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
-		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;
+		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy, uint32 ShadowBufferIndex) override;
 		virtual void RenderDecalPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) override;
 
 

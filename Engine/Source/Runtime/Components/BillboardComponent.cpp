@@ -75,7 +75,7 @@ namespace Drn
 		
 	}
 
-	void BillboardSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
+	void BillboardSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy, uint32 ShadowBufferIndex)
 	{
 		
 	}

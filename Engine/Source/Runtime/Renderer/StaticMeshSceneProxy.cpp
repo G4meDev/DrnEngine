@@ -154,7 +154,7 @@ namespace Drn
 		}
 	}
 
-	void StaticMeshSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
+	void StaticMeshSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy, uint32 ShadowBufferIndex )
 	{
 		if (m_Mesh.IsValid())
 		{
@@ -196,7 +196,9 @@ namespace Drn
 				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
 				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
 				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-		
+
+				CommandList->SetGraphicRootConstant(ShadowBufferIndex, 6);
+
 				RenderProxy.BindAndDraw(CommandList);
 			}
 		}

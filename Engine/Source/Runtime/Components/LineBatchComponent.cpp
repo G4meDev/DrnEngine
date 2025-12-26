@@ -208,7 +208,7 @@ namespace Drn
 
 	}
 
-	void LineBatchSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
+	void LineBatchSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy, uint32 ShadowBufferIndex )
 	{
 		
 	}

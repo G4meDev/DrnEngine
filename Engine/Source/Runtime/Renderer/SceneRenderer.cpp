@@ -862,10 +862,10 @@ namespace Drn
 #endif
 
 		RenderPrepass();
+		RenderHZB();
 		RenderShadowDepths();
 		RenderDecals();
 		RenderBasePass();
-		RenderHZB();
 		RenderAO();
 		RenderLights();
 		RenderSSR();
