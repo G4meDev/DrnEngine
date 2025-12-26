@@ -27,7 +27,7 @@ namespace Drn
 		virtual void Tick(float DeltaTime);
 
 		void OnWindowResized( const IntPoint& NewSize );
-		void OnKeyPressed( WPARAM Key );
+		void OnKeyPressed( WPARAM Key , LPARAM lParam);
 
 		Window* m_MainWindow;
 		HINSTANCE m_hInstance;

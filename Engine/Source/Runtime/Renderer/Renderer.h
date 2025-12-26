@@ -93,6 +93,8 @@ namespace Drn
 		static void Shutdown();
 
 		void MainWindowResized(const IntPoint& NewSize);
+		void SetFullScreen( bool bFullScreen);
+		void ToggleFullScreen();
 
 		static Renderer* Get();
 
@@ -118,6 +120,8 @@ namespace Drn
 		inline uint32 GetCurrentBackbufferIndex() const { return m_SwapChain ? m_SwapChain->GetBackBufferIndex() : 0; }
 
 		inline GpuFence* GetFence() { return m_Fence; }
+
+		bool GetSwapchainContainingRect(RECT& OutRect);
 
 		std::unique_ptr<Device> m_Device;
 		std::unique_ptr<SwapChain> m_SwapChain;

@@ -4,6 +4,8 @@
 #include <d3d12.h>
 #include "Runtime/Renderer/RenderResource.h"
 
+#define DISABLE_TEARING_SUPPORT 0
+
 #define NUM_BACKBUFFERS 3
 #define NUM_SCENE_DOWNSAMPLES 6
 #define NUM_BLOOM_TARGETS NUM_SCENE_DOWNSAMPLES * 2

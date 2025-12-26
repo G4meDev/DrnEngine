@@ -12,9 +12,10 @@ namespace Drn
 {
 	Window::Window( HINSTANCE hInstance, const std::wstring& ClassName, const std::wstring& WindowName, const IntPoint& WindowSize )
 		: m_Closing(false)
+		, m_Borderless(false)
 	{
 		RECT WindowRect = { 0, 0, static_cast<LONG>( WindowSize.X ), static_cast<LONG>( WindowSize.Y) };
-		AdjustWindowRect( &WindowRect, WS_OVERLAPPEDWINDOW, FALSE );
+		AdjustWindowRect( &WindowRect, m_windowStyle, FALSE );
 
 		IntPoint AdjustedSize( WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top );
 		// maybe is should use adjusted values?
@@ -37,7 +38,6 @@ namespace Drn
 		SetWindowLongPtr( m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
 		SetWindowTitle(WindowName);
-		SetFullscreen(false);
 	}
 
 	Window::~Window()
@@ -80,14 +80,64 @@ namespace Drn
 		
 	}
 
-	void Window::SetFullscreen( bool FullScreen )
+	bool Window::IsMaximaized() const
 	{
-		
+		WINDOWPLACEMENT Plc;
+		GetWindowPlacement(m_hWnd, &Plc);
+
+		return Plc.showCmd == SW_MAXIMIZE;
 	}
 
-	void Window::ToggleFullScreen()
+	void Window::SetMaximaized( bool bMaximazied )
 	{
-		
+		ShowWindow( m_hWnd, bMaximazied ? SW_MAXIMIZE : SW_NORMAL );
+	}
+
+	void Window::ToggleMaximaized()
+	{
+		SetMaximaized(!IsMaximaized());
+	}
+
+	bool Window::IsBorderlessFullScreen() const
+	{
+		return m_Borderless;
+	}
+
+	void Window::SetBorderlessFullScreen( bool bBorderless )
+	{
+		m_Borderless = bBorderless;
+
+		if (m_Borderless)
+		{
+			SetWindowLong(m_hWnd, GWL_STYLE, m_windowStyle & ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME));
+			RECT FullScreenRect;
+
+			const bool RectFromSwapchainSuccessed = Renderer::Get() && Renderer::Get()->GetSwapchainContainingRect(FullScreenRect);
+
+			if (!RectFromSwapchainSuccessed)
+			{
+				drn_check(false);
+				// TODO: add fall back
+			}
+
+			SetWindowPos( m_hWnd, HWND_TOPMOST, FullScreenRect.left, FullScreenRect.top, FullScreenRect.right, FullScreenRect.bottom, SWP_FRAMECHANGED | SWP_NOACTIVATE);
+
+			// force resize event
+			SetMaximaized(true);
+		}
+
+		else
+		{
+			SetWindowLong(m_hWnd, GWL_STYLE, m_windowStyle);
+			// force resize event
+			SetMaximaized(false);
+		}
+
+	}
+
+	void Window::ToggleBorderlessFullScreen()
+	{
+		SetBorderlessFullScreen(!IsBorderlessFullScreen());
 	}
 
 	void Window::Show()
@@ -100,15 +150,36 @@ namespace Drn
 		ShowWindow( m_hWnd, SW_HIDE );
 	}
 
+	void Window::HandleResizeMessage(WPARAM wParam, LPARAM lParam )
+	{
+		IntPoint Size = IntPoint((int)(short)LOWORD( lParam ), (int)(short)HIWORD( lParam ));
+		SizeChanged(Size);
+
+		WORD resType = (WORD)wParam;
+		//std::cout << resType << " - " << Size.ToString() << "\n";
+
+		//if (resType == SIZE_MAXIMIZED)
+		//{
+		//}
+		//
+		//else if (resType == SIZE_RESTORED)
+		//{
+		//}
+		//
+		//else
+		//{
+		//}
+	}
+
 	void Window::SizeChanged( const IntPoint& NewSize )
 	{
 		m_WindowSize = NewSize;
 		OnWindowResize.Braodcast(NewSize);
 	}
 
-	void Window::KeyPress( WPARAM Key )
+	void Window::KeyPress( WPARAM Key, LPARAM lParam )
 	{
-		OnKeyPress.Braodcast(Key);
+		OnKeyPress.Braodcast(Key, lParam);
 	}
 
 	LRESULT CALLBACK Window::DefaultWndProc( HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam )
@@ -134,12 +205,12 @@ namespace Drn
 			case WM_SYSKEYDOWN:
 			case WM_KEYDOWN:
 				W = (Window*)GetWindowLongPtrA( hwnd, GWLP_USERDATA );
-				W->KeyPress(wParam);
+				W->KeyPress(wParam, lParam);
 				return true;
 
 			case WM_SIZE:
 				W = (Window*)GetWindowLongPtrA( hwnd, GWLP_USERDATA );
-				W->SizeChanged(IntPoint((int)(short)LOWORD( lParam ), (int)(short)HIWORD( lParam )));
+				W->HandleResizeMessage(wParam, lParam);
 				return true;
 
 			case WM_CLOSE:

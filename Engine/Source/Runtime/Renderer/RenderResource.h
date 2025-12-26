@@ -179,7 +179,7 @@ namespace Drn
 		int32 NumMapCalls = 0;
 		std::string DebugName;
 
-#if D3D12_Debug_INFO
+#if RENDER_STATS
 		static std::atomic<int64> TotalResourceCount;
 		static std::atomic<int64> NoStateTrackingResourceCount;
 #endif

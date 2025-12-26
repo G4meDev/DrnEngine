@@ -3,7 +3,7 @@
 
 namespace Drn
 {
-#if D3D12_Debug_INFO
+#if RENDER_STATS
 	std::atomic<int64> RenderResource::TotalResourceCount = 0;
 	std::atomic<int64> RenderResource::NoStateTrackingResourceCount = 0;
 #endif

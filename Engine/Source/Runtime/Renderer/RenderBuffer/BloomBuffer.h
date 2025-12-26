@@ -44,9 +44,7 @@ namespace Drn
 
 		float GaussianDistributionUnscaled(float X, float Sigma);
 
-#if D3D12_Debug_INFO
 		inline std::string GetDownSamplePostfix(int32 Index) const { return "(1/" + std::to_string((int32)std::pow(2, Index + 2)) + ")"; }
-#endif
 
 	};
 }

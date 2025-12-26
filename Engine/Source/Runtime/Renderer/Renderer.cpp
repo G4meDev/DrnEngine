@@ -21,6 +21,7 @@ namespace Drn
 	Renderer::Renderer()
 		: m_CommandList(nullptr)
 		, m_UploadCommandList(nullptr)
+		, m_SwapChain(nullptr)
 	{
 	}
 
@@ -439,6 +440,22 @@ namespace Drn
 #endif
 	}
 
+	void Renderer::SetFullScreen(bool bFullScreen)
+	{
+		if (m_SwapChain)
+		{
+			m_SwapChain->SetFullScreen(bFullScreen);
+		}
+	}
+
+	void Renderer::ToggleFullScreen()
+	{
+		if (m_SwapChain)
+		{
+			m_SwapChain->SetFullScreen(m_SwapChain->m_WindowedMode);
+		}
+	}
+
 	void Renderer::Tick( float DeltaTime )
 	{
 		//SCOPE_STAT();
@@ -638,4 +655,9 @@ namespace Drn
 		CommandList->SetDescriptorHeaps(2, Descs);
 	}
 
-}
+	bool Renderer::GetSwapchainContainingRect( RECT& OutRect )
+	{
+		return m_SwapChain->GetContainingRect(OutRect);
+	}
+
+        }

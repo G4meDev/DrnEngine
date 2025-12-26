@@ -23,6 +23,8 @@ namespace Drn
 		inline void ToggleVSync() { m_Vsync = !m_Vsync; }
 		bool CheckTearingSupport();
 
+		void SetFullScreen(bool bFullScreen);
+
 		inline uint64 GetFenceValue() { return m_FrameFenceValues[m_CurrentBackbufferIndex]; }
 
 		inline D3D12_CPU_DESCRIPTOR_HANDLE GetBackBufferHandle()
@@ -30,6 +32,8 @@ namespace Drn
 			return CD3DX12_CPU_DESCRIPTOR_HANDLE( m_RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 				m_CurrentBackbufferIndex, m_RTVDescriporSize );
 		}
+
+		bool GetContainingRect( RECT& OutRect );
 
 	private:
 
@@ -48,6 +52,7 @@ namespace Drn
 		IntPoint m_Size;
 		bool m_TearingSupported;
 		bool m_Vsync = false;
+		bool m_WindowedMode;
 
 		friend class Renderer;
 	};

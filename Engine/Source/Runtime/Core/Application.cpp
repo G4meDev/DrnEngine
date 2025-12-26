@@ -48,8 +48,17 @@ namespace Drn
 		return 0;
 	}
 
-void Application::OnKeyPressed( WPARAM Key )
+	void Application::OnKeyPressed( WPARAM Key, LPARAM lParam )
 	{
+		if ((Key == VK_RETURN) && (lParam & (1 << 29)))
+		{
+			if (Renderer::Get())
+			{
+				Renderer::Get()->ToggleFullScreen();
+			}
+			return;
+		}
+
 		switch ( Key )
 		{
 #if WITH_EDITOR
@@ -107,7 +116,15 @@ void Application::OnKeyPressed( WPARAM Key )
 			m_MainWindow->SetClosing();
 			break;
 		case VK_F11:
-			m_MainWindow->ToggleFullScreen();
+			if ((lParam & (1 << 29)))
+			{
+				m_MainWindow->ToggleBorderlessFullScreen();
+			}
+
+			else
+			{
+				m_MainWindow->ToggleMaximaized();
+			}
 			break;
 		}
 	}

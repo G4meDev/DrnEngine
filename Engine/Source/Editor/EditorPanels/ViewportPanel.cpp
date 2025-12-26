@@ -251,7 +251,7 @@ namespace Drn
 		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
 		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		
-		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewResource(), &descSRV, ViewCpuHandle );
+		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewRenderTexture()->GetResource()->GetResource(), &descSRV, ViewCpuHandle );
 	}
 
 }

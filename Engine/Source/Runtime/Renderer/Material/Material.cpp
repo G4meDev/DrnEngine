@@ -349,10 +349,8 @@ namespace Drn
 
 			ReleasePSOs();
 
-#if D3D12_Debug_INFO
 			std::string name = Path::ConvertShortPath(m_Path);
 			name = Path::RemoveFileExtension(name);
-#endif
 
 			const D3D12_CULL_MODE CullMode = GetCullMode();
 

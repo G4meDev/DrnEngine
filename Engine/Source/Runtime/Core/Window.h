@@ -8,7 +8,7 @@ LOG_DECLARE_CATEGORY(LogWindow);
 namespace Drn
 {
 	DECLARE_MULTICAST_DELEGATE_OneParam(OnWindowResizeDelegate, const IntPoint&);
-	DECLARE_MULTICAST_DELEGATE_OneParam(OnKeyPressDelegate, WPARAM);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(OnKeyPressDelegate, WPARAM, LPARAM);
 
 	class Window
 	{
@@ -31,9 +31,13 @@ namespace Drn
 		inline const IntPoint& GetWindowSize() const { return m_WindowSize; }
 		void SetWindowSize( const IntPoint& windowTitle );
 
-		inline bool IsFullScreen() const { return m_FullScreen; }
-		void SetFullscreen(bool FullScreen);
-		void ToggleFullScreen();
+		bool IsMaximaized() const;
+		void SetMaximaized(bool bMaximazied);
+		void ToggleMaximaized();
+
+		bool IsBorderlessFullScreen() const;
+		void SetBorderlessFullScreen(bool bBorderless);
+		void ToggleBorderlessFullScreen();
 
 		void Show();
 		void Hide();
@@ -45,16 +49,20 @@ namespace Drn
 
 	private:
 
+		void HandleResizeMessage(WPARAM wParam, LPARAM lParam);
+
 		void SizeChanged(const IntPoint& NewSize);
-		void KeyPress(WPARAM Key);
+		void KeyPress(WPARAM Key, LPARAM lParam);
 
 		HWND m_hWnd;
 
 		std::wstring m_Name;
 		std::wstring m_Title;
 		IntPoint m_WindowSize;
-		bool m_FullScreen;
 
+		bool m_Borderless;
 		bool m_Closing;
+
+		static const UINT m_windowStyle = WS_OVERLAPPEDWINDOW;
 	};
 }
