@@ -83,6 +83,9 @@ namespace Drn
 	{
 		if (m_Mesh.IsValid())
 		{
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
@@ -92,6 +95,9 @@ namespace Drn
 				{
 					continue;
 				}
+
+				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
+				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
 
 				Mat->BindMainPass(CommandList);
 
@@ -115,16 +121,22 @@ namespace Drn
 	{
 		if (m_Mesh.IsValid())
 		{
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
-				
+
 				if (!Mat->IsSupportingPrePass())
 				{
 					continue;
 				}
-		
+
+				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
+				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+
 				Mat->BindPrePass(CommandList);
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
@@ -146,6 +158,9 @@ namespace Drn
 	{
 		if (m_Mesh.IsValid())
 		{
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
@@ -155,6 +170,9 @@ namespace Drn
 				{
 					continue;
 				}
+
+				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
+				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
 
 				if ( LightProxy->GetLightType() == ELightType::PointLight )
 				{
@@ -188,6 +206,9 @@ namespace Drn
 	{
 		if (m_Mesh.IsValid())
 		{
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
@@ -197,6 +218,9 @@ namespace Drn
 				{
 					continue;
 				}
+
+				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
+				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
 
 				Mat->BindStaticMeshDecalPass(CommandList);
 
@@ -230,16 +254,18 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
 
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
 			if (!Mat->IsSupportingHitProxyPass())
 			{
 				continue;
 			}
 
-			{
-				SCOPE_STAT("Bind");
+			const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
+			SCOPE_STAT_DYNAMIC(MaterialName.c_str());
 
-				Mat->BindHitProxyPass(CommandList);
-			}
+			Mat->BindHitProxyPass(CommandList);
 
 			{
 				SCOPE_STAT("Calculate");
@@ -264,6 +290,9 @@ namespace Drn
 		if (!m_SelectedInEditor)
 			return;
 
+		const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+		SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
 		for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 		{
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
@@ -273,7 +302,10 @@ namespace Drn
 			{
 				continue;
 			}
-		
+
+			const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
+			SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+
 			Mat->BindSelectionPass(CommandList);
 		
 			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
@@ -299,6 +331,9 @@ namespace Drn
 
 		if (m_Mesh.IsValid())
 		{
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
@@ -308,7 +343,10 @@ namespace Drn
 				{
 					continue;
 				}
-		
+
+				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
+				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+
 				Mat->BindEditorPrimitivePass(CommandList);
 		
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();

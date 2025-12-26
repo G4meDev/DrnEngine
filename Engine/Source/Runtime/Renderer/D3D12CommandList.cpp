@@ -115,10 +115,19 @@ namespace Drn
 
 	void D3D12CommandList::SetAllocatorAndReset( uint8 AllocatorIndex )
 	{
+		SCOPE_STAT();
+
 		m_CurrentAllocatorIndex = AllocatorIndex;
 		auto commandAllocator = m_CommandAllocators[m_CurrentAllocatorIndex];
-		commandAllocator->Reset();
-		m_CommandList->Reset(commandAllocator.Get(), nullptr);
+		{
+			SCOPE_STAT("CommandAllocatorReset");
+			commandAllocator->Reset();
+		
+		}
+		{
+			SCOPE_STAT("CommandListReset");
+			m_CommandList->Reset(commandAllocator.Get(), nullptr);
+		}
 	}
 
 	void D3D12CommandList::ClearDepthTexture( class DepthStencilView* InView, bool bClearDepth, float Depth, bool bClearStencil, uint8 Stencil )

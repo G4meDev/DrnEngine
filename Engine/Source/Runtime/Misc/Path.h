@@ -17,6 +17,8 @@ namespace Drn
 		static std::string ConvertShortPath(const std::string& FullPath);
 		static std::string GetDirectory(const std::string& FullPath);
 		
+		static std::string GetCleanName(const std::string& FullPath);
+
 		static std::string GetFileExtension(const std::string& Path);
 		static std::string RemoveFileExtension(const std::string& Path);
 		static std::string AddAssetFileExtension(const std::string& Path);

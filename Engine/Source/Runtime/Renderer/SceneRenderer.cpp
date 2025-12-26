@@ -517,6 +517,8 @@ namespace Drn
 
 	void SceneRenderer::PostProcess_TemporalAA()
 	{
+		SCOPE_STAT("TemporalAA");
+
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "TAA" );
 
 		m_TAABuffer->MapBuffer(m_CommandList, this);
@@ -545,6 +547,8 @@ namespace Drn
 
 	void SceneRenderer::PostProcess_SceneDownSample()
 	{
+		SCOPE_STAT("SceneDownSample");
+
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "SceneDownSample" );
 
 		m_SceneDownSampleBuffer->MapBuffer(m_CommandList, this);
@@ -588,6 +592,8 @@ namespace Drn
 
 	void SceneRenderer::PostProcess_Bloom()
 	{
+		SCOPE_STAT("Bloom");
+
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Bloom" );
 
 		m_BloomBuffer->MapBuffer(m_CommandList, this);
@@ -642,6 +648,8 @@ namespace Drn
 
 	void SceneRenderer::PostProcess_Tonemapping()
 	{
+		SCOPE_STAT("Tonemapping");
+
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Tone mapping" );
 
 		m_TonemapBuffer->Bind(m_CommandList);

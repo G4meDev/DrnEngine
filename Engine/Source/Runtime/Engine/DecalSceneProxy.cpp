@@ -33,6 +33,9 @@ namespace Drn
 			return;
 		}
 
+		const std::string MaterialName = Path::GetCleanName(m_Material.GetPath());
+		SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+
 		Matrix LocalToWorldMatrix = Matrix( m_WorldTransform );
 		m_DecalData.LocalToProjection = LocalToWorldMatrix * Matrix(Renderer->GetSceneView().WorldToProjection);
 		m_DecalData.ProjectionToLocal = Matrix(Renderer->GetSceneView().ProjectionToWorld) * LocalToWorldMatrix.Inverse();

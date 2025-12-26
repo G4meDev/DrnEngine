@@ -473,15 +473,19 @@ namespace Drn
 	{
 		PrimitiveStats::ClearStats();
 
-		// TODO: move to default heap and make persistent
-		StaticSamplersBuffer = RenderUniformBuffer::Create(m_Device.get(), sizeof(StaticSamplers), EUniformBufferUsage::SingleFrame, &m_StaticSamplers);
+		{
+			SCOPE_STAT( "CleanupAllocators" );
 
-		// TODO: move to end of frame
-		SimpleRenderResource::FlushPendingDeletes();
-		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
-		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(1);
-		m_Device->GetDefaultFastAllocator().CleanupPages(1);
-		m_Device->GetDynamicHeapAllocator().CleanUpAllocations(2);
+			// TODO: move to default heap and make persistent
+			StaticSamplersBuffer = RenderUniformBuffer::Create(m_Device.get(), sizeof(StaticSamplers), EUniformBufferUsage::SingleFrame, &m_StaticSamplers);
+
+			// TODO: move to end of frame
+			SimpleRenderResource::FlushPendingDeletes();
+			m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+			m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(1);
+			m_Device->GetDefaultFastAllocator().CleanupPages(1);
+			m_Device->GetDynamicHeapAllocator().CleanUpAllocations(2);
+		}
 
 		SCOPE_STAT( "InitRender" );
 

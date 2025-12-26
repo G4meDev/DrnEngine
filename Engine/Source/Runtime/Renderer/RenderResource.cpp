@@ -13,6 +13,8 @@ namespace Drn
 
 	void SimpleRenderResource::FlushPendingDeletes( bool bFlushDeferredDeletes )
 	{
+		SCOPE_STAT();
+
 		//auto Delete = [](std::vector<SimpleRenderResource*>& ToDelete) // TODO: BUG: referenced version deletes whole vector on "delete Ref"
 		auto Delete = [](std::vector<SimpleRenderResource*> ToDelete)
 		{

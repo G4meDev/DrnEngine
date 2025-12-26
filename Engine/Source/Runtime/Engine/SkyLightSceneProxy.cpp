@@ -17,6 +17,8 @@ namespace Drn
 
 	void SkyLightSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		SCOPE_STAT("SkyLight");
+
 		m_SkyLightData.Color = m_LightColor;
 		m_SkyLightData.BlockLowerHemesphere = m_BlockLowerHemesphere;
 		m_SkyLightData.LowerHemesphereColor = m_LowerHemesphereColor;

@@ -382,6 +382,8 @@ namespace Drn
 
 	void DeferredDeletionQueue::ReleaseCompletedResources()
 	{
+		SCOPE_STAT();
+
 		FencedObjectType FencedObject;
 		while (!DeferredReleaseQueue.empty())
 		{

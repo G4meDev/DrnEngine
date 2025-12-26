@@ -657,6 +657,8 @@ namespace Drn
 
 	void DefaultBufferAllocator::CleanupFreeBlocks( uint64 InFrameLag )
 	{
+		SCOPE_STAT();
+
 		for (DefaultBufferPool* DefaultBufferPool : DefaultBufferPools)
 		{
 			if (DefaultBufferPool)
@@ -873,6 +875,8 @@ namespace Drn
 
 	void FastAllocator::CleanupPages( uint64 FrameLag )
 	{
+		SCOPE_STAT();
+
 		ScopeLock Lock(&CS);
 		PagePool.CleanupPages(FrameLag);
 	}
@@ -964,6 +968,8 @@ namespace Drn
 
 	void DynamicHeapAllocator::CleanUpAllocations( uint64 InFrameLag )
 	{
+		SCOPE_STAT();
+
 		Allocator.CleanUpAllocations(InFrameLag);
 	}
 

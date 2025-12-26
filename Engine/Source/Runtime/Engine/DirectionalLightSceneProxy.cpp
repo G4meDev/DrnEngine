@@ -28,6 +28,8 @@ namespace Drn
 
 	void DirectionalLightSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		SCOPE_STAT("DirectionalLight");
+
 		// TODO: remove. should not be aware of component. lazy update
 		m_LightData.Direction = m_DirectionalLightComponent->GetWorldRotation().GetVector();
 		m_LightData.Color = m_DirectionalLightComponent->GetScaledColor();
@@ -64,6 +66,8 @@ namespace Drn
 
 		if (m_CastShadow)
 		{
+			SCOPE_STAT("DirectionalLight");
+
 			PIXBeginEvent( CommandList->GetD3D12CommandList(), 1, "DirectionalLightShadow");
 
 			CalculateSplitDistance();

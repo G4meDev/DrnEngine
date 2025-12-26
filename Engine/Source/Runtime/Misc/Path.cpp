@@ -64,6 +64,11 @@ namespace Drn
 		return NAME_NULL;
 	}
 
+	std::string Path::GetCleanName( const std::string& FullPath )
+	{
+		return RemoveFileExtension(ConvertShortPath(FullPath));
+	}
+
 	std::string Path::GetFileExtension( const std::string& Path )
 	{
 		size_t LastSlash = Path.find_last_of( "." );

@@ -22,6 +22,8 @@ namespace Drn
 
 	void PointLightSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		SCOPE_STAT("PointLight");
+
 		m_Buffer.WorldPosition = m_WorldPosition;
 		m_Buffer.Scale = m_Radius;
 		m_Buffer.Color = m_LightColor;
@@ -49,6 +51,8 @@ namespace Drn
 	{
 		if (m_CastShadow)
 		{
+			SCOPE_STAT("PointLight");
+
 			CommandList->SetViewport(0 ,0, 0, POINTLIGHT_SHADOW_SIZE, POINTLIGHT_SHADOW_SIZE, 1);
 
 			CommandList->TransitionResourceWithTracking(m_ShadowCubemapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);

@@ -53,7 +53,9 @@ namespace Drn
 #if PROFILER_ENABLED
 	#define OPTICK_THREAD_TASK() OPTICK_THREAD(std::to_string(Taskflow::GetWorkerID()).c_str());
 	#define SCOPE_STAT( ... ); OPTICK_EVENT( __VA_ARGS__ );
+	#define SCOPE_STAT_DYNAMIC( ... ); OPTICK_EVENT_DYNAMIC ( __VA_ARGS__ );
 #else
 	#define SCOPE_STAT( ... )
+	#define SCOPE_STAT_DYNAMIC( ... )
 #endif
 }

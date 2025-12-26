@@ -20,6 +20,8 @@ namespace Drn
 
 	void SpotLightSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		SCOPE_STAT("SpotLight");
+
 		m_SpotLightData.LocalToWorld = m_LocalToWorld;
 		m_SpotLightData.WorldPosition = m_WorldPosition;
 		m_SpotLightData.Attenuation = m_Attenuation;
@@ -53,6 +55,8 @@ namespace Drn
 	{
 		if (m_CastShadow)
 		{
+			SCOPE_STAT("SpotLight");
+
 			CommandList->SetViewport( 0, 0, 0, SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, 1 );
 
 			CommandList->TransitionResourceWithTracking(m_ShadowmapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
