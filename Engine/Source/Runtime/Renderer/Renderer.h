@@ -126,6 +126,7 @@ namespace Drn
 		inline uint32 GetCurrentBackbufferIndex() const { return m_SwapChain ? m_SwapChain->GetBackBufferIndex() : 0; }
 
 		inline GpuFence* GetFence() { return m_Fence; }
+		inline GpuFence* GetDeletionFence() { return m_DeletionFence; }
 
 		bool GetSwapchainContainingRect(RECT& OutRect);
 
@@ -209,6 +210,7 @@ namespace Drn
 		void Init_Internal();
 
 		TRefCountPtr<class GpuFence> m_Fence;
+		TRefCountPtr<class GpuFence> m_DeletionFence;
 		uint64 FrameCount = 0;
 
 

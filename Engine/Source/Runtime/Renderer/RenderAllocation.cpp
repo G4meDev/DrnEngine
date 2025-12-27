@@ -58,7 +58,7 @@ namespace Drn
 		drn_check(IsOwner(ResourceLocation));
 		ScopeLock Lock(&CS);
 
-		GpuFence& FrameFence = *Renderer::Get()->GetFence();
+		GpuFence& FrameFence = *Renderer::Get()->GetDeletionFence();
 
 		DeferredDeletionQueue.push_back({});
 		RetiredBlock& Block = DeferredDeletionQueue.back();
@@ -139,7 +139,7 @@ namespace Drn
 	{
 		ScopeLock Lock(&CS);
 
-		GpuFence& FrameFence = *Renderer::Get()->GetFence();
+		GpuFence& FrameFence = *Renderer::Get()->GetDeletionFence();
 
 		uint32 PopCount = 0;
 		for (int32 i = 0; i < DeferredDeletionQueue.size(); i++)
@@ -404,7 +404,7 @@ namespace Drn
 			Allocator->CleanUpAllocations();
 		}
 
-		GpuFence& FrameFence = *Renderer::Get()->GetFence();
+		GpuFence& FrameFence = *Renderer::Get()->GetDeletionFence();
 		const uint64 CompletedFence = FrameFence.UpdateCompletedFence();
 
 		for (int32 i = (Allocators.size() - 1); i >= 0; i--)
@@ -701,7 +701,7 @@ namespace Drn
 
 	void FastAllocatorPage::UpdateFence()
 	{
-		FrameFence = std::max(FrameFence, Renderer::Get()->GetFence()->GetCurrentFence());
+		FrameFence = std::max(FrameFence, Renderer::Get()->GetDeletionFence()->GetCurrentFence());
 	}
 
 	FastAllocatorPagePool::FastAllocatorPagePool( Device* Parent, D3D12_HEAP_TYPE InHeapType, uint32 Size )
@@ -713,7 +713,7 @@ namespace Drn
 	FastAllocatorPage* FastAllocatorPagePool::RequestFastAllocatorPage()
 	{
 		Device* Device = GetParentDevice();
-		GpuFence& Fence = *Renderer::Get()->GetFence();
+		GpuFence& Fence = *Renderer::Get()->GetDeletionFence();
 
 		const uint64 CompletedFence = Fence.UpdateCompletedFence();
 
@@ -754,7 +754,7 @@ namespace Drn
 			return;
 		}
 
-		GpuFence& FrameFence = *Renderer::Get()->GetFence();
+		GpuFence& FrameFence = *Renderer::Get()->GetDeletionFence();
 
 		const uint64 CompletedFence = FrameFence.UpdateCompletedFence();
 

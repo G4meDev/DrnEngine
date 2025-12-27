@@ -67,7 +67,9 @@ namespace Drn
 			SimpleRenderResource::FlushPendingDeletes();
 		}
 
+		//m_DeletionFence->Signal();
 		Flush();
+
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
 
 		m_Device->GetTransientUniformBufferAllocator().Destroy();
@@ -135,6 +137,7 @@ namespace Drn
 		m_UploadCommandList->Close();
 
 		m_Fence = new GpuFence( GetDevice(), 0, "RendererFence" );
+		m_DeletionFence = new GpuFence( GetDevice(), 0, "DeletionFence" );
 
 #if D3D12_Debug_INFO
 		m_CommandQueue->SetName(L"MainCommandQueue");
@@ -414,6 +417,7 @@ namespace Drn
 
 	void Renderer::Flush()
 	{
+		m_DeletionFence->Signal();
 		m_Fence->Signal();
 		m_Fence->WaitForFence(m_Fence->GetLastSignaledFence());
 	}
@@ -485,13 +489,6 @@ namespace Drn
 
 			// TODO: move to default heap and make persistent
 			StaticSamplersBuffer = RenderUniformBuffer::Create(m_Device.get(), sizeof(StaticSamplers), EUniformBufferUsage::SingleFrame, &m_StaticSamplers);
-
-			// TODO: move to end of frame
-			SimpleRenderResource::FlushPendingDeletes();
-			m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
-			m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(1);
-			m_Device->GetDefaultFastAllocator().CleanupPages(1);
-			m_Device->GetDynamicHeapAllocator().CleanUpAllocations(2);
 		}
 
 		SCOPE_STAT( "InitRender" );
@@ -652,6 +649,13 @@ namespace Drn
 #endif
 
 		//m_CommandQueue->ExecuteCommandLists(NumCommandLists, CommandLists.data());
+
+		m_DeletionFence->Signal();
+		SimpleRenderResource::FlushPendingDeletes();
+		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(1);
+		m_Device->GetDefaultFastAllocator().CleanupPages(1);
+		m_Device->GetDynamicHeapAllocator().CleanUpAllocations(2);
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )

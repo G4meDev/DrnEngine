@@ -174,7 +174,7 @@ namespace Drn
 
 	void RenderResource::DeferDelete()
 	{
-		GetParentDevice()->GetDeferredDeletionQueue().EnqueueResource(this, Renderer::Get()->GetFence());
+		GetParentDevice()->GetDeferredDeletionQueue().EnqueueResource(this, Renderer::Get()->GetDeletionFence());
 	}
 
 	void RenderResource::ReleaseResource()

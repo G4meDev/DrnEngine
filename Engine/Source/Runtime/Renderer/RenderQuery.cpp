@@ -226,6 +226,7 @@ namespace Drn
 
 	void RenderQuery::MarkResolved( D3D12CommandList* CommandList, RenderResource* InResultBuffer )
 	{
+		// TODO: add sync mechanism
 		//CLSyncPoint = CommandList;
 		//SumbmittedFence = Renderer::Get()->GetFence()->Signal();
 
