@@ -105,7 +105,7 @@ namespace Drn
 		, GPUVirtualAddress(0)
 		, ResourceBaseAddress(nullptr)
 	{
-#if D3D12_Debug_INFO
+#if RENDER_STATS
 		TotalResourceCount.fetch_add(1);
 #endif
 
@@ -128,7 +128,7 @@ namespace Drn
 
 	RenderResource::~RenderResource()
 	{
-#if D3D12_Debug_INFO
+#if RENDER_STATS
 		TotalResourceCount.fetch_add(-1);
 #endif
 	}

@@ -4,6 +4,8 @@
 
 namespace Drn
 {
+#if RENDER_STATS
+
 	class D3D12CommandList;
 	class RenderQueryPool;
 
@@ -26,6 +28,8 @@ namespace Drn
 	public:
 		static GpuProfiler* Get();
 		static void SafeRelease();
+
+		double GetTotalTime();
 
 		const std::unordered_map<std::string, double>& GetTimings() { return Timings; }
 
@@ -66,6 +70,12 @@ namespace Drn
 		};
 	};
 
+#endif
+
 #define CAT(a, b) a ## b
-#define SCOPED_GPU_STAT( CmdList , Name ) GpuProfilerScopedStat CAT(GPUStatEvent_##StatName, __LINE__)( CmdList , Name );
+#if RENDER_STATS
+	#define SCOPED_GPU_STAT( CmdList , Name ) GpuProfilerScopedStat CAT(GPUStatEvent_##StatName, __LINE__)( CmdList , Name );
+#else
+	#define SCOPED_GPU_STAT( CmdList , Name );
+#endif
 }

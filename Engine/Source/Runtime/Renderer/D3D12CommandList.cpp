@@ -637,7 +637,9 @@ namespace Drn
 
 // -----------------------------------------------------------------------------------------
 
+#if RENDER_STATS
 	std::atomic<uint64> PrimitiveStats::Stats[(uint8)EPrimitiveStatGroups::Max];
+#endif
 
 	void PrimitiveStats::UpdateStats( uint64 Count, EPrimitiveType Topology )
 	{
@@ -685,7 +687,11 @@ namespace Drn
 
 	int32 PrimitiveStats::GetStatSize( EPrimitiveStatGroups Group )
 	{
+#if RENDER_STATS
 		return Stats[(uint8)Group].load();
+#else
+		return 0;
+#endif
 	}
 
 }  // namespace Drn

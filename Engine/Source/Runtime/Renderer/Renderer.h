@@ -66,6 +66,11 @@ namespace Drn
 		void Alloc( D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_desc_handle,
 					D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_desc_handle )
 		{
+			if (FreeIndices.empty())
+			{
+				__debugbreak();
+			}
+
 			int idx = FreeIndices.back();
 			FreeIndices.pop_back();
 			out_cpu_desc_handle->ptr = HeapStartCpu.ptr + ( idx * HeapHandleIncrement );

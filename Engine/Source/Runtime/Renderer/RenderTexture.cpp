@@ -552,7 +552,12 @@ namespace Drn
 
 	int32 TextureStats::GetTextureStatSize( ETextureMemoryStatGroups Group )
 	{
+#if RENDER_STATS
 		return TextureMemoryStats[(uint8)Group].load();
+
+#else
+		return 0;
+#endif
 	}
 
 	void TextureStats::UpdateTextureMemoryStats( const D3D12_RESOURCE_DESC& Desc, int64 TextureSize, bool b3D, bool bCubeMap )
@@ -577,6 +582,7 @@ namespace Drn
 
 	void TextureStats::TextureAllocated( RenderTextureBase& Texture, const D3D12_RESOURCE_DESC* Desc )
 	{
+#if RENDER_STATS
 		RenderResource* Resource = Texture.GetResource();
 		if (Resource)
 		{
@@ -591,10 +597,12 @@ namespace Drn
 			Texture.SetMemorySize(TextureSize);
 			UpdateTextureMemoryStats(*Desc, TextureSize, Texture.Is3D(), Texture.IsCubemap());
 		}
+#endif
 	}
 
 	void TextureStats::TextureDeleted( RenderTextureBase& Texture )
 	{
+#if RENDER_STATS
 		RenderResource* Resource = Texture.GetResource();
 		if (Resource)
 		{
@@ -604,6 +612,7 @@ namespace Drn
 
 			UpdateTextureMemoryStats(Desc, -TextureSize, Texture.Is3D(), Texture.IsCubemap());
 		}
+#endif
 	}
 
 

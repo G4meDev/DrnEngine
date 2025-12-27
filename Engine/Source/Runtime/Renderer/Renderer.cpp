@@ -56,7 +56,9 @@ namespace Drn
 		ThumbnailManager::Get()->Flush();
 #endif
 
+#if RENDER_STATS
 		GpuProfiler::Get()->SafeRelease();
+#endif
 		m_Device->GetTimestampQueryHeap()->Destroy();
 
 		//SimpleRenderResource::FlushPendingDeletes(true);
@@ -503,6 +505,10 @@ namespace Drn
 			SCOPE_STAT( "CommandlistReset" );
 			m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
 			m_UploadCommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
+
+#if RENDER_STATS
+			GpuProfiler::Get()->PushStat( m_UploadCommandList, "Total" );
+#endif
 		}
 
 #if WITH_EDITOR
@@ -514,6 +520,7 @@ namespace Drn
 
 	void Renderer::UpdateSceneProxyAndResources()
 	{
+		SCOPED_GPU_STAT(m_UploadCommandList, "UpdateResources");
 		SCOPE_STAT( "UpdateSceneProxyAndResources" );
 
 		for (Scene* S : m_AllocatedScenes)
@@ -537,6 +544,7 @@ namespace Drn
 
 	void Renderer::RenderImgui()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "Imgui");
 		SCOPE_STAT( "RenderImgui" );
 
 #if WITH_EDITOR
@@ -549,7 +557,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->ResourceBarrier( 1, &barrier );
 		
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &rtv, false, NULL);
-		ImGuiRenderer::Get()->Tick( Time::GetApplicationDeltaTime(), rtv, m_CommandList->GetD3D12CommandList() );
+		ImGuiRenderer::Get()->Tick( Time::GetApplicationDeltaTime(), rtv, m_CommandList );
 
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(
 			backBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT );
@@ -583,7 +591,13 @@ namespace Drn
 		uint32 NumCommandLists = 2;
 		std::vector<ID3D12CommandList*> CommandLists;
 
+#if RENDER_STATS
+		GpuProfiler::Get()->PopStat( m_CommandList ); // pop first command from upload list
+#endif
+		m_CommandList->EndFrame();
 		m_CommandList->Close();
+
+		m_UploadCommandList->EndFrame();
 		m_UploadCommandList->Close();
 
 #if WITH_EDITOR

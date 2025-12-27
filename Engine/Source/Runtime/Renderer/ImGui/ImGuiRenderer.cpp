@@ -66,11 +66,11 @@ namespace Drn
 		ImGui_ImplDX12_Init( &init_info );
 	}
 
-	void ImGuiRenderer::Tick( float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL)
+	void ImGuiRenderer::Tick( float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, D3D12CommandList* CL)
 	{
 		SCOPE_STAT();
 
-		PIXBeginEvent( CL, 1, "Imgui" );
+		PIXBeginEvent( CL->GetD3D12CommandList(), 1, "Imgui" );
 
 		m_CommandList = CL;
 
@@ -78,7 +78,7 @@ namespace Drn
 		Draw(DeltaTime);
 		EndDraw( SwapChainCpuhandle, CL);
 
-		PIXEndEvent( CL );
+		PIXEndEvent( CL->GetD3D12CommandList() );
 	}
 
 	void ImGuiRenderer::Shutdown()
@@ -150,14 +150,14 @@ namespace Drn
 		}
 	}
 
-	void ImGuiRenderer::EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL )
+	void ImGuiRenderer::EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, D3D12CommandList* CL )
 	{
 		SCOPE_STAT();
 
 		ImGui::Render();
-		Renderer::Get()->SetBindlessHeaps(CL);
+		Renderer::Get()->SetBindlessHeaps(CL->GetD3D12CommandList());
 
-		ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), CL );
+		ImGui_ImplDX12_RenderDrawData( ImGui::GetDrawData(), CL->GetD3D12CommandList() );
 	}
 
 	void ImGuiRenderer::PostExecuteCommands()

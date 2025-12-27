@@ -283,11 +283,15 @@ namespace Drn
 			auto fps   = frameCount / totalTime;
 			frameCount = 0;
 			totalTime -= 1.0;
-		
+
 			LOG( LogApplication, Info, "FPS: %i", (int)fps);
 		
 			wchar_t buffer[256];
-			::swprintf_s( buffer, L"[FPS: %f]", fps );
+#if RENDER_STATS
+			::swprintf_s( buffer, L"[FPS: %i Gpu: %.2f]", (int)fps, GpuProfiler::Get()->GetTotalTime() * 1000.0f );
+#else
+			::swprintf_s( buffer, L"[FPS: %i]", (int)fps);
+#endif
 			m_MainWindow->SetWindowTitle( buffer );
 		}
 	}

@@ -14,6 +14,7 @@ namespace Drn
 {
 	class ImGuiLayer;
 	class Window;
+	class D3D12CommandList;
 
 	class ImGuiRenderer
 	{
@@ -22,7 +23,7 @@ namespace Drn
 		virtual ~ImGuiRenderer();
 
 		virtual void Init(Window* MainWindow);
-		virtual void Tick(float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL);
+		virtual void Tick(float DeltaTime, D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, D3D12CommandList* CL);
 		virtual void Shutdown();
 
 		void AttachLayer(ImGuiLayer* InLayer);
@@ -31,19 +32,19 @@ namespace Drn
 		static ImGuiRenderer* Get();
 		virtual void PostExecuteCommands();
 
-		inline ID3D12GraphicsCommandList* GetCommandList() const { return m_CommandList; }
+		inline D3D12CommandList* GetCommandList() const { return m_CommandList; }
 
 	protected:
 		virtual void BeginDraw();
 		virtual void Draw(float DeltaTime);
-		virtual void EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, ID3D12GraphicsCommandList* CL );
+		virtual void EndDraw( D3D12_CPU_DESCRIPTOR_HANDLE SwapChainCpuhandle, D3D12CommandList* CL );
 
 		friend class Renderer;
 
 	private:
 		static std::unique_ptr<ImGuiRenderer> SingletonInstance;
 
-		ID3D12GraphicsCommandList* m_CommandList;
+		D3D12CommandList* m_CommandList;
 
 		std::set<ImGuiLayer*> Layers;
 		//LinkedList<ImGuiLayer> Layers;

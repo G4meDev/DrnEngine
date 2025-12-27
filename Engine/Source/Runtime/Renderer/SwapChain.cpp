@@ -83,7 +83,8 @@ namespace Drn
 		m_FrameFenceValues[m_CurrentBackbufferIndex] = Renderer::Get()->GetFence()->Signal();
 		
 		UINT syncInterval = m_Vsync ? 1 : 0;
-		UINT presentFlags = m_TearingSupported && m_WindowedMode && !m_Vsync ? DXGI_PRESENT_ALLOW_TEARING : 0;
+		UINT presentFlags = (m_TearingSupported && m_WindowedMode && !m_Vsync) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+		//presentFlags |= DXGI_PRESENT_DO_NOT_WAIT;
 
 		//OPTICK_GPU_FLIP( m_SwapChain.Get() );
 		m_SwapChain->Present( syncInterval, presentFlags);
@@ -162,6 +163,7 @@ namespace Drn
 			D.Format = DISPLAY_OUTPUT_FORMAT;
 			D.Scaling = DXGI_MODE_SCALING_STRETCHED;
 			D.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+			//D.RefreshRate = {240, 0};
 			m_SwapChain->ResizeTarget(&D);
 
 			m_SwapChain->SetFullscreenState(bFullScreen, NULL);

@@ -172,7 +172,6 @@ namespace Drn
 	void BufferStats::UpdateBufferStats( ResourceLocation* Location, bool bAllocating, EBufferMemoryStatGroups Group )
 	{
 #if RENDER_STATS
-
 		drn_check(Group != EBufferMemoryStatGroups::Total);
 
 		const int32 Size = bAllocating ? Location->GetSize() : -Location->GetSize();
@@ -196,7 +195,11 @@ namespace Drn
 
 	int32 BufferStats::GetBufferStatSize( EBufferMemoryStatGroups Group )
 	{
+#if RENDER_STATS
 		return BufferMemoryStats[(uint8)Group].load();
+#else
+		return 0;
+#endif
 	}
 
 

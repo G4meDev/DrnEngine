@@ -29,6 +29,8 @@ namespace Drn
 			return;
 		}
 
+#if RENDER_STATS
+
 		typedef std::pair<std::string, double> TimingPair;
 		std::vector<TimingPair> Timings;
 		Timings.reserve(GpuProfiler::Get()->GetTimings().size());
@@ -84,6 +86,8 @@ namespace Drn
 
 			ImGui::Text( msg.c_str() );
 		}
+
+#endif
 
 		ImGui::End();
 	}

@@ -227,9 +227,14 @@ namespace Drn
 
 		void ReleaseResource();
 
+		static int64 GetTotalResourceCount()
+		{
 #if RENDER_STATS
-		static int64 GetTotalResourceCount() { return TotalResourceCount.load(); }
+			return TotalResourceCount.load();
+#else
+			return 0;
 #endif
+		}
 	};
 
 	class ResourceLocation : public DeviceChild, public Noncopyable

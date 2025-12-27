@@ -166,6 +166,10 @@ namespace Drn
 			//	(*ppOutResource)->StartTrackingForResidency();
 			//}
 		}
+		else
+		{
+			drn_check(false);
+		}
 	}
 
 	void Device::CreateBuffer( D3D12_HEAP_TYPE HeapType, uint64 Size, D3D12_RESOURCE_STATES InInitialState,

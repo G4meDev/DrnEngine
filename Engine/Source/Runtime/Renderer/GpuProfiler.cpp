@@ -5,6 +5,8 @@
 
 namespace Drn
 {
+#if RENDER_STATS
+
 	GpuProfiler* GpuProfiler::Instance = nullptr;
 
 	GpuProfiler::GpuProfiler()
@@ -42,6 +44,17 @@ namespace Drn
 		}
 	}
 
+	double GpuProfiler::GetTotalTime()
+	{
+		auto It = Timings.find("Total");
+		if (It != Timings.end())
+		{
+			return It->second;
+		}
+
+		return 0.0f;
+	}
+
 	void GpuProfiler::PushStat( D3D12CommandList* CmdList, const std::string& Name )
 	{
 		if (Renderer::Get()->GetFrameCount() > CurrentFrameIndex)
@@ -49,9 +62,6 @@ namespace Drn
 			CurrentFrameIndex = Renderer::Get()->GetFrameCount();
 			TryResolve();
 		}
-
-		PooledRenderQuery A = QueryPool->AllocateQuery();
-		PooledRenderQuery B = QueryPool->AllocateQuery();
 
 		GetCurrentFrame()->ScopeStack.push_back({Name, QueryPool->AllocateQuery(), QueryPool->AllocateQuery()});
 		CmdList->EndRenderQuery(GetCurrentFrame()->ScopeStack.back().StartQuery.GetQuery());
@@ -106,5 +116,7 @@ namespace Drn
 
 		QueryPool.SafeRelease();
 	}
+
+#endif
 
 }  // namespace Drn
