@@ -31,7 +31,7 @@ namespace Drn
 
 		virtual void RenderMainPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 		virtual void RenderPrePass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
-		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy, uint32 ShadowBufferIndex) = 0;
+		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) = 0;
 		virtual void RenderDecalPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 
 		virtual void InitResources(class D3D12CommandList* CommandList) = 0;

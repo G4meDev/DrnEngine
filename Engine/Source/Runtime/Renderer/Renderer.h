@@ -88,9 +88,10 @@ namespace Drn
 		Renderer();
 		virtual ~Renderer();
 
-
 		static void Init(HINSTANCE inhInstance, Window* InMainWindow);
 		static void Shutdown();
+
+		inline uint64 GetFrameCount() const { return FrameCount; }
 
 		void MainWindowResized(const IntPoint& NewSize);
 		void SetFullScreen( bool bFullScreen);
@@ -203,7 +204,7 @@ namespace Drn
 		void Init_Internal();
 
 		TRefCountPtr<class GpuFence> m_Fence;
-
+		uint64 FrameCount = 0;
 
 
 #if WITH_EDITOR

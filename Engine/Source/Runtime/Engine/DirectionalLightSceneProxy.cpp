@@ -103,11 +103,11 @@ namespace Drn
 
 				TRefCountPtr<RenderUniformBuffer> CsWorldToProjectionMatricesBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(Matrix), EUniformBufferUsage::SingleFrame, &m_ShadowData.CsWorldToProjectionMatrices[i]);
 
-				//CommandList->SetGraphicRootConstant(CsWorldToProjectionMatricesBuffer->GetViewIndex(), 6);
+				CommandList->SetGraphicRootConstant(CsWorldToProjectionMatricesBuffer->GetViewIndex(), 6);
 				
 				for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 				{
-					Proxy->RenderShadowPass(CommandList, Renderer, this, CsWorldToProjectionMatricesBuffer->GetViewIndex());
+					Proxy->RenderShadowPass(CommandList, Renderer, this);
 				}
 			}
 

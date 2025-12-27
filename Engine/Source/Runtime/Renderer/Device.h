@@ -3,6 +3,7 @@
 #include "ForwardTypes.h"
 #include <dxgi1_6.h>
 #include "Runtime/Renderer/RenderAllocation.h"
+#include "Runtime/Renderer/RenderQuery.h"
 
 LOG_DECLARE_CATEGORY(LogDevice);
 
@@ -57,6 +58,9 @@ namespace Drn
 		~Device();
 
 		inline ID3D12Device* GetD3D12Device() const { return m_Device.Get(); }
+
+		inline RenderQueryHeap* GetTimestampQueryHeap() { return &TimeStampQueryHeap; };
+
 		inline DeferredDeletionQueue& GetDeferredDeletionQueue() { return m_DeferredDeletionQueue; }
 
 		inline DefaultBufferAllocator& GetDefaultBufferAllocator() { return DefaultBufferAllocator; }
@@ -83,6 +87,8 @@ namespace Drn
 
 		Microsoft::WRL::ComPtr<ID3D12Device2> m_Device;
 		DXGI_ADAPTER_DESC3 m_Description;
+
+		RenderQueryHeap TimeStampQueryHeap;
 
 		DeferredDeletionQueue m_DeferredDeletionQueue;
 		DefaultBufferAllocator DefaultBufferAllocator;

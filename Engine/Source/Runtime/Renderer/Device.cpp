@@ -18,6 +18,7 @@ namespace Drn
 		, DefaultFastAllocator(this, D3D12_HEAP_TYPE_UPLOAD, 1024 * 1024 * 4)
 		, DynamicHeapAllocator(this, "Upload Buffer Allocator", RenderBuddyAllocator::EAllocationStrategy::kManualSubAllocation, DEFAULT_CONTEXT_UPLOAD_POOL_MAX_ALLOC_SIZE, DEFAULT_CONTEXT_UPLOAD_POOL_SIZE, DEFAULT_CONTEXT_UPLOAD_POOL_ALIGNMENT)
 		, FastConstantAllocator(this)
+		, TimeStampQueryHeap(this, D3D12_QUERY_TYPE_TIMESTAMP, 8192, 4 * 5)
 	{
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = 0;
@@ -127,6 +128,8 @@ namespace Drn
 
 		dxgiAdapter4->GetDesc3(&m_Description);
 		LOG( LogDevice, Info, "successfully created device %ws", m_Description.Description );
+
+		TimeStampQueryHeap.Init();
 	}
 
 	Device::~Device()

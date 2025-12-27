@@ -229,6 +229,13 @@ namespace Drn
 		uint32 NumMips = 1;
 	};
 
+	enum class ERenderQueryType : uint8
+	{
+		Undefined,
+		Occlusion,
+		AbsoluteTime,
+	};
+
 	enum class EClearBinding
 	{
 		ENoneBound,

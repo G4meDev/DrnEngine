@@ -1,6 +1,7 @@
 #include "DrnPCH.h"
 #include "D3D12CommandList.h"
 #include "Runtime/Renderer/RenderTexture.h"
+#include "Runtime/Renderer/RenderQuery.h"
 
 namespace Drn
 {
@@ -504,6 +505,46 @@ namespace Drn
 	void D3D12CommandList::EndFrame()
 	{
 		ClearState(); // release resources ref. e.g. pipeline states, ...
+
+		GetParentDevice()->GetTimestampQueryHeap()->EndQueryBatchAndResolveQueryData(this);
+	}
+
+	void D3D12CommandList::BeginRenderQuery( RenderQuery* Query )
+	{
+		drn_check(Query->Type == ERenderQueryType::Occlusion);
+		
+		//GetParentDevice()->GetOcclusionQueryHeap()->BeginQuery(*this, Query);
+		//bIsDoingQuery = true;
+	}
+
+	void D3D12CommandList::EndRenderQuery( RenderQuery* Query )
+	{
+		drn_check(Query->Type == ERenderQueryType::AbsoluteTime);
+
+		RenderQueryHeap* QueryHeap = nullptr;
+		QueryHeap = GetParentDevice()->GetTimestampQueryHeap();
+
+		//switch (Query->Type)
+		//{
+		//case RQT_Occlusion:
+		//	QueryHeap = GetParentDevice()->GetOcclusionQueryHeap();
+		//	break;
+		//
+		//case RQT_AbsoluteTime:
+		//	QueryHeap = GetParentDevice()->GetTimestampQueryHeap();
+		//	break;
+		//
+		//default:
+		//	ensure(false);
+		//}
+
+		QueryHeap->EndQuery(this, Query);
+		// Multi-GPU support : by setting a timestamp, we can filter only the relevant GPUs when getting the query results.
+		//Query->Timestamp = GFrameNumberRenderThread;
+
+		drn_check(Query->bResultIsCached == false && Query->bResolved == false);
+
+		//bIsDoingQuery = false;
 	}
 
 	void D3D12CommandList::FlushBarriers()

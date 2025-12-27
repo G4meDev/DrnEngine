@@ -3,6 +3,7 @@
 
 #include "Runtime/Core/Window.h"
 #include "Runtime/Renderer/ImGui/ImGuiRenderer.h"
+#include "Runtime/Renderer/RenderQuery.h"
 
 #include "Runtime/Core/Application.h"
 #include <thread>
@@ -62,6 +63,7 @@ namespace Drn
 		}
 
 		Flush();
+		m_Device->GetTimestampQueryHeap()->Destroy();
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
 
 		m_Device->GetTransientUniformBufferAllocator().Destroy();
@@ -471,6 +473,7 @@ namespace Drn
 
 	void Renderer::InitRender(float DeltaTime)
 	{
+		FrameCount++;
 		PrimitiveStats::ClearStats();
 
 		{

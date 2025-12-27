@@ -362,7 +362,7 @@ namespace Drn
 
 		if (bNeedSetPSO)
 		{
-			drn_check(PipelineState.Common.CurrentPipelineStateObject);
+			//drn_check(PipelineState.Common.CurrentPipelineStateObject);
 			CmdList->GetD3D12CommandList()->SetPipelineState(PipelineState.Common.CurrentPipelineStateObject);
 			PipelineState.Common.bNeedSetPSO = false;
 		}
@@ -418,7 +418,6 @@ namespace Drn
 		if (PipelineState.Compute.CurrentPipelineStateObject != InState)
 		{
 			if ( pCurrentRootSignature != InState->RootSignature)
-			//if (true)
 			{
 				PipelineState.Compute.bNeedSetRootSignature = true;
 				PipelineState.Common.RCCache.Clear();

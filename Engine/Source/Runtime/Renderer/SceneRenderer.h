@@ -202,6 +202,15 @@ namespace Drn
 #endif
 
 		TRefCountPtr<D3D12CommandList> m_CommandList;
+
+		struct QueryScope
+		{
+			TRefCountPtr<class RenderQuery> StartQuery;
+			TRefCountPtr<class RenderQuery> EndQuery;
+		};
+
+
+		std::vector<QueryScope> Queries;
 	};
 
 #if WITH_EDITOR

@@ -111,6 +111,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Shader.h
 	Source/Runtime/Renderer/VertexDeclaration.h
 	Source/Runtime/Renderer/RenderState.h
+	Source/Runtime/Renderer/RenderQuery.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -323,6 +324,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Shader.cpp
 	Source/Runtime/Renderer/VertexDeclaration.cpp
 	Source/Runtime/Renderer/RenderState.cpp
+	Source/Runtime/Renderer/RenderQuery.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

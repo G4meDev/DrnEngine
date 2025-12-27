@@ -831,10 +831,46 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-
 		m_CommandList->SetAllocatorAndReset(Renderer::Get()->m_SwapChain->GetBackBufferIndex());
 		Renderer::Get()->SetBindlessHeaps( m_CommandList->GetD3D12CommandList() );
 		m_CommandList->ClearState();
+
+
+		int32 MaxResolved = 0;
+		while (MaxResolved < Queries.size())
+		{
+			QueryScope& S = Queries[MaxResolved];
+
+			const bool Resolved = Renderer::Get()->GetFence()->IsFenceComplete(S.StartQuery->SumbmittedFence) && Renderer::Get()->GetFence()->IsFenceComplete(S.EndQuery->SumbmittedFence);
+			if (!Resolved)
+			{
+				break;
+			}
+			MaxResolved++;
+
+			void* SPtr;
+			S.StartQuery->ResultBuffer->GetResource()->Map(0, nullptr, &SPtr);
+			void* EPtr;
+			S.EndQuery->ResultBuffer->GetResource()->Map(0, nullptr, &EPtr);
+			uint64 StartTime = ((uint64*)SPtr)[S.StartQuery->HeapIndex];
+			uint64 EndTime = ((uint64*)EPtr)[S.EndQuery->HeapIndex];
+
+			uint64 Freq;
+			Renderer::Get()->GetCommandQueue()->GetTimestampFrequency(&Freq);
+			double Duration = (double)(EndTime - StartTime) / Freq;
+
+			std::cout << Duration * 1000.0f << "\n";
+		}
+
+		if (MaxResolved)
+		{
+			Queries.erase(Queries.begin(), Queries.begin() + MaxResolved - 1);
+		}
+
+		Queries.push_back({});
+
+		Queries.back().StartQuery = new RenderQuery(m_CommandList->GetParentDevice(), ERenderQueryType::AbsoluteTime);
+		m_CommandList->EndRenderQuery(Queries.back().StartQuery);
 
 		//PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Scene" );
 
@@ -863,6 +899,10 @@ namespace Drn
 
 		RenderPrepass();
 		RenderHZB();
+
+		// TODO: remove. just to force early root change. otherwise all call to change root constant before setting pipeline state will miss
+		m_CommandList->SetGraphicPipelineState(CommonResources::Get()->m_AmbientOcclusionPSO->m_SetupPSO);
+
 		RenderShadowDepths();
 		RenderDecals();
 		RenderBasePass();
@@ -885,8 +925,11 @@ namespace Drn
 		}
 #endif
 
+		Queries.back().EndQuery = new RenderQuery(m_CommandList->GetParentDevice(), ERenderQueryType::AbsoluteTime);
+		m_CommandList->EndRenderQuery(Queries.back().EndQuery);
+
+		m_CommandList->EndFrame(); 
 		m_CommandList->Close();
-		m_CommandList->EndFrame();
 
 		//PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}

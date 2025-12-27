@@ -8,6 +8,8 @@
 
 namespace Drn
 {
+	class RenderQuery;
+
 	static bool IsTransitionNeeded(D3D12_RESOURCE_STATES Before, D3D12_RESOURCE_STATES& After);
 
 	class ResourceBarrierBatcher : public Noncopyable
@@ -114,8 +116,10 @@ namespace Drn
 		void SetComputeRootConstants(int32 Num, const void* Value, int32 Index);
 
 		void ClearState();
-
 		void EndFrame();
+
+		void BeginRenderQuery(RenderQuery* Query);
+		void EndRenderQuery(RenderQuery* Query);
 
 	protected:
 
