@@ -118,4 +118,51 @@ namespace Drn
 
 		static const uint32 ResultSize = 8;
 	};
+
+	class RenderQueryPool;
+
+	class PooledRenderQuery
+	{
+		TRefCountPtr<RenderQuery> Query;
+		RenderQueryPool* QueryPool = nullptr;
+	
+	public:
+		PooledRenderQuery() = default;
+		PooledRenderQuery(RenderQueryPool* InQueryPool, TRefCountPtr<RenderQuery>&& InQuery);
+		~PooledRenderQuery();
+	
+		PooledRenderQuery(const PooledRenderQuery&) = delete;
+		PooledRenderQuery& operator=(const PooledRenderQuery&) = delete;
+		PooledRenderQuery(PooledRenderQuery&&) = default;
+		PooledRenderQuery& operator=(PooledRenderQuery&&) = default;
+	
+		bool IsValid() const
+		{
+			return Query.IsValid();
+		}
+	
+		RenderQuery* GetQuery() const
+		{
+			return Query;
+		}
+	
+		void ReleaseQuery();
+	};
+
+	class RenderQueryPool : public SimpleRenderResource, public DeviceChild
+	{
+	public:
+		RenderQueryPool(Device* InParent, ERenderQueryType InQueryType, uint32 InNumQueries);
+		virtual ~RenderQueryPool();
+		PooledRenderQuery AllocateQuery();
+
+	private:
+		friend class PooledRenderQuery;
+		void ReleaseQuery(TRefCountPtr<RenderQuery>&& Query);
+
+		ERenderQueryType QueryType;
+			uint32 NumQueries = 0;
+		uint32 AllocatedQueries = 0;
+		std::vector<TRefCountPtr<RenderQuery>> Queries;
+	};
 }

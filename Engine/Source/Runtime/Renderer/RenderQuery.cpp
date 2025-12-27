@@ -233,4 +233,68 @@ namespace Drn
 		bResolved = true;
 	}
 
-        }  // namespace Drn
+	PooledRenderQuery::PooledRenderQuery( RenderQueryPool* InQueryPool, TRefCountPtr<RenderQuery>&& InQuery )
+		: Query(std::move(InQuery))
+		, QueryPool(InQueryPool)
+	{}
+
+	void PooledRenderQuery::ReleaseQuery()
+	{
+		if (QueryPool && Query.IsValid())
+		{
+			QueryPool->ReleaseQuery(std::move(Query));
+			QueryPool = nullptr;
+		}
+		drn_check(!Query.IsValid());
+	}
+
+	PooledRenderQuery::~PooledRenderQuery()
+	{
+		ReleaseQuery();
+	}
+
+	RenderQueryPool::RenderQueryPool( Device* InParent, ERenderQueryType InQueryType, uint32 InNumQueries )
+		: DeviceChild(InParent)
+		, QueryType(InQueryType)
+		, NumQueries(InNumQueries)
+	{
+		Queries.reserve(InNumQueries);
+		for (uint32 i = 0; i < NumQueries; i++)
+		{
+			Queries.push_back(new RenderQuery(GetParentDevice(), InQueryType));
+			++AllocatedQueries;
+		}
+	}
+
+	RenderQueryPool::~RenderQueryPool()
+	{}
+
+	PooledRenderQuery RenderQueryPool::AllocateQuery()
+	{
+		if (Queries.size() > 0)
+		{
+			PooledRenderQuery Result(this, std::move(Queries.back()));
+			Queries.pop_back();
+
+			return Result;
+		}
+		else
+		{
+			PooledRenderQuery Query = PooledRenderQuery(this, new RenderQuery(GetParentDevice(), QueryType));
+			if (Query.IsValid())
+			{
+				++AllocatedQueries;
+			}
+			drn_check(AllocatedQueries <= NumQueries);
+			return Query;
+		}
+	}
+
+	void RenderQueryPool::ReleaseQuery( TRefCountPtr<RenderQuery>&& Query )
+	{
+		Queries.push_back(std::move(Query));
+		Queries.back()->Reset();
+		drn_check(!Query.IsValid());
+	}
+
+}  // namespace Drn

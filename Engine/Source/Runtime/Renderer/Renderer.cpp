@@ -56,6 +56,9 @@ namespace Drn
 		ThumbnailManager::Get()->Flush();
 #endif
 
+		GpuProfiler::Get()->SafeRelease();
+		m_Device->GetTimestampQueryHeap()->Destroy();
+
 		//SimpleRenderResource::FlushPendingDeletes(true);
 		for (int32 i = 0; i < NUM_BACKBUFFERS + 2; i++)
 		{
@@ -63,7 +66,6 @@ namespace Drn
 		}
 
 		Flush();
-		m_Device->GetTimestampQueryHeap()->Destroy();
 		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
 
 		m_Device->GetTransientUniformBufferAllocator().Destroy();

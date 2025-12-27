@@ -5,6 +5,7 @@
 #include "Runtime/Renderer/D3D12CommandList.h"
 #include "Runtime/Renderer/RenderTexture.h"
 #include "Runtime/Renderer/RenderBuffer.h"
+#include "Runtime/Renderer/GpuProfiler.h"
 
 namespace Drn
 {
@@ -27,6 +28,25 @@ namespace Drn
 			ImGui::End();
 			return;
 		}
+
+		typedef std::pair<std::string, double> TimingPair;
+		std::vector<TimingPair> Timings;
+		Timings.reserve(GpuProfiler::Get()->GetTimings().size());
+
+		for ( const TimingPair& Pair : GpuProfiler::Get()->GetTimings() )
+		{
+			Timings.push_back(Pair);
+		}
+
+		std::sort( Timings.begin(), Timings.end(), []( const TimingPair& A, const TimingPair& B ) { return A.second > B.second; } );
+
+		for ( const TimingPair& Pair : Timings )
+		{
+			std::string msg = std::format("{}: {:.2f}", Pair.first, Pair.second * 1000);
+			ImGui::Text( msg.c_str() );
+		}
+
+		ImGui::Separator();
 
 		ImGui::Text( std::format( "Total render resource count {}", RenderResource::GetTotalResourceCount() ).c_str() );
 

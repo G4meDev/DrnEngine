@@ -139,6 +139,7 @@ namespace Drn
 
 	void SceneRenderer::RenderPrepass()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderPrePass");
 		SCOPE_STAT();
 
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "Prepass");
@@ -159,6 +160,7 @@ namespace Drn
 
 	void SceneRenderer::RenderShadowDepths()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderShadowDepths");
 		SCOPE_STAT();
 
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "ShadowDepths");
@@ -173,6 +175,7 @@ namespace Drn
 
 	void SceneRenderer::RenderDecals()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderDecals");
 		SCOPE_STAT();
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "Deferred Decals");
 
@@ -222,6 +225,7 @@ namespace Drn
 #if WITH_EDITOR
 	void SceneRenderer::RenderHitProxyPass()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderHitProxyPass");
 		SCOPE_STAT();
 
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "HitProxy");
@@ -249,6 +253,7 @@ namespace Drn
 
 	void SceneRenderer::RenderBasePass()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderBasePass");
 		SCOPE_STAT();
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "BasePass" );
@@ -287,6 +292,7 @@ namespace Drn
 
 	void SceneRenderer::RenderHZB()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderHZB");
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "HZB" );
 
@@ -349,6 +355,7 @@ namespace Drn
 
 	void SceneRenderer::RenderAO()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderAO");
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "AO" );
 
@@ -409,6 +416,7 @@ namespace Drn
 
 	void SceneRenderer::RenderLights()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderLights");
 		SCOPE_STAT();
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "LightPass" );
@@ -440,6 +448,7 @@ namespace Drn
 
 	void SceneRenderer::RenderSSR()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderSSR");
 		SCOPE_STAT();
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Screen Space Reflection" );
@@ -471,6 +480,7 @@ namespace Drn
 
 	void SceneRenderer::RenderReflection()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderReflection");
 		SCOPE_STAT();
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Reflection Environment" );
@@ -503,6 +513,7 @@ namespace Drn
 
 	void SceneRenderer::RenderPostProcess()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderPostProcess");
 		SCOPE_STAT();
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Post Process" );
@@ -674,6 +685,7 @@ namespace Drn
 #if WITH_EDITOR
 	void SceneRenderer::RenderEditorPrimitives()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderEditorPrimitives");
 		SCOPE_STAT();
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Editor Primitives" );
@@ -725,6 +737,7 @@ namespace Drn
 
 	void SceneRenderer::RenderEditorSelection()
 	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderEditorSelection");
 		SCOPE_STAT();
 		
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Editor Selection" );
@@ -835,43 +848,6 @@ namespace Drn
 		Renderer::Get()->SetBindlessHeaps( m_CommandList->GetD3D12CommandList() );
 		m_CommandList->ClearState();
 
-
-		int32 MaxResolved = 0;
-		while (MaxResolved < Queries.size())
-		{
-			QueryScope& S = Queries[MaxResolved];
-
-			const bool Resolved = Renderer::Get()->GetFence()->IsFenceComplete(S.StartQuery->SumbmittedFence) && Renderer::Get()->GetFence()->IsFenceComplete(S.EndQuery->SumbmittedFence);
-			if (!Resolved)
-			{
-				break;
-			}
-			MaxResolved++;
-
-			void* SPtr;
-			S.StartQuery->ResultBuffer->GetResource()->Map(0, nullptr, &SPtr);
-			void* EPtr;
-			S.EndQuery->ResultBuffer->GetResource()->Map(0, nullptr, &EPtr);
-			uint64 StartTime = ((uint64*)SPtr)[S.StartQuery->HeapIndex];
-			uint64 EndTime = ((uint64*)EPtr)[S.EndQuery->HeapIndex];
-
-			uint64 Freq;
-			Renderer::Get()->GetCommandQueue()->GetTimestampFrequency(&Freq);
-			double Duration = (double)(EndTime - StartTime) / Freq;
-
-			std::cout << Duration * 1000.0f << "\n";
-		}
-
-		if (MaxResolved)
-		{
-			Queries.erase(Queries.begin(), Queries.begin() + MaxResolved - 1);
-		}
-
-		Queries.push_back({});
-
-		Queries.back().StartQuery = new RenderQuery(m_CommandList->GetParentDevice(), ERenderQueryType::AbsoluteTime);
-		m_CommandList->EndRenderQuery(Queries.back().StartQuery);
-
 		//PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Scene" );
 
 		ResizeViewConditional();
@@ -924,9 +900,6 @@ namespace Drn
 			m_CommandList->FlushBarriers();
 		}
 #endif
-
-		Queries.back().EndQuery = new RenderQuery(m_CommandList->GetParentDevice(), ERenderQueryType::AbsoluteTime);
-		m_CommandList->EndRenderQuery(Queries.back().EndQuery);
 
 		m_CommandList->EndFrame(); 
 		m_CommandList->Close();

@@ -58,6 +58,7 @@
 #include "Runtime/Renderer/RenderResource.h"
 #include "Runtime/Renderer/ResourceView.h"
 #include "Runtime/Renderer/GpuFence.h"
+#include "Runtime/Renderer/GpuProfiler.h"
 
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/Box.h"
