@@ -317,8 +317,6 @@ float ComputeUpsampleContribution(float SceneDepth, float2 InUV, float3 CenterWo
     return Ret;
 }
 
-float Square(float x) { return x * x; }
-
 float Main_PS(PixelShaderInput IN) : SV_Target
 {
     //return 1;

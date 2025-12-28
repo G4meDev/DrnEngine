@@ -90,8 +90,6 @@ struct PixelShaderInput
     float4 Position : SV_Position;
 };
 
-float Square(float x) { return x * x; }
-
 float3 ComputeF0(float3 BaseColor, float Metallic)
 {
     //float3 F0 = float3(0.04, 0.04, 0.04);

@@ -485,6 +485,8 @@ namespace Drn
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Reflection Environment" );
 
+		m_ReflectionEnvironmentBuffer->GenerateSkycubemap(m_CommandList, this);
+
 		m_ReflectionEnvironmentBuffer->MapBuffer(m_CommandList, this);
 		
 		m_CommandList->TransitionResourceWithTracking( m_HZBBuffer->M_HZBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );

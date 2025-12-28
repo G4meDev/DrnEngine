@@ -5,6 +5,8 @@
 
 namespace Drn
 {
+	class RenderTextureCube;
+
 	struct SkyLightData
 	{
 	public:

@@ -37,9 +37,16 @@ namespace Drn
 		virtual void Clear( ID3D12GraphicsCommandList2* CommandList ) override;
 		virtual void Bind( ID3D12GraphicsCommandList2* CommandList ) override;
 
-		void MapBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer);
+		void GenerateSkycubemap(class D3D12CommandList* CommandList, SceneRenderer* Renderer);
+
+		void MapBuffer(class D3D12CommandList* CommandList, SceneRenderer* Renderer);
 
 		TRefCountPtr<class RenderUniformBuffer> Buffer;
 		ReflectionEnvironmentData m_Data;
+
+		TRefCountPtr<RenderTextureCube> GeneratedCubemap;
+
+		// TODO: better dirty condition
+		std::string LastUsedCubemap;
 	};
 }

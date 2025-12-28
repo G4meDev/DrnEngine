@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "ResourceView.h"
+#include "Runtime/Renderer/RenderTexture.h"
 
 namespace Drn
 {
@@ -442,5 +443,33 @@ namespace Drn
 		return NewPair;
 	}
 
+
+	TRefCountPtr<ShaderResourceView> ShaderResourceView::CreateForMipLevel( RenderTextureBase* InTexture, int32 MipIndex )
+	{
+		drn_check(InTexture);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC Desc = InTexture->GetShaderResourceView()->GetDesc();
+		if (Desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2D)
+		{
+			Desc.Texture2D.MipLevels = 1;
+			Desc.Texture2D.MostDetailedMip = 0;
+		}
+		else if (Desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURE2DARRAY)
+		{
+			Desc.Texture2DArray.MipLevels = 1;
+			Desc.Texture2DArray.MostDetailedMip = 0;
+		}
+		else if (Desc.ViewDimension == D3D12_SRV_DIMENSION_TEXTURECUBE)
+		{
+			Desc.TextureCube.MipLevels = 1;
+			Desc.TextureCube.MostDetailedMip = 0;
+		}
+		else
+		{
+			drn_check(false);
+		}
+
+		return new ShaderResourceView(InTexture->GetParentDevice(), Desc, InTexture->m_ResourceLocation);
+	}
 
         }  // namespace Drn

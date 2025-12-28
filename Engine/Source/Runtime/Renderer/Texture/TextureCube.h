@@ -25,6 +25,8 @@ namespace Drn
 	
 		virtual uint32 GetTextureIndex() const override;
 
+		const TRefCountPtr<RenderTextureCube>& GetRenderTexture() const { return m_RenderTexture; }
+
 	protected:
 
 		bool m_Initialized = false;

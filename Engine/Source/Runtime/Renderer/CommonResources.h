@@ -279,6 +279,38 @@ namespace Drn
 		TRefCountPtr<ComputePipelineState> m_4Mip_PSO;
 	};
 
+	class CubemapDownsamplePSO : public RefCountedObject
+	{
+	public:
+		CubemapDownsamplePSO( D3D12CommandList* CommandList );
+		
+		TRefCountPtr<ComputePipelineState> m_PSO;
+	};
+
+	class ResizeSkycubemapPSO : public RefCountedObject
+	{
+	public:
+		ResizeSkycubemapPSO( D3D12CommandList* CommandList);
+
+		TRefCountPtr<ComputePipelineState> m_PSO;
+	};
+
+	class ApplyLowerHemisphereColorPSO : public RefCountedObject
+	{
+	public:
+		ApplyLowerHemisphereColorPSO( D3D12CommandList* CommandList);
+		
+		TRefCountPtr<ComputePipelineState> m_PSO;
+	};
+
+	//class SpecularConvolutionPSO : public RefCountedObject
+	//{
+	//public:
+	//	SpecularConvolutionPSO( D3D12CommandList* CommandList);
+	//	
+	//	TRefCountPtr<ComputePipelineState> m_PSO;
+	//};
+
 	class CommonResources
 	{
 	public:
@@ -325,6 +357,11 @@ namespace Drn
 		TRefCountPtr<DebugLinePSO> m_DebugLinePSO;
 
 		TRefCountPtr<HZBPSO> m_HZBPSO;
+		TRefCountPtr<CubemapDownsamplePSO> m_CubemapDownsamplePSO;
+
+		TRefCountPtr<ResizeSkycubemapPSO> m_ResizeSkycubemapPSO;
+		TRefCountPtr<ApplyLowerHemisphereColorPSO> m_ApplyLowerHemisphereColorPSO;
+		//TRefCountPtr<SpecularConvolutionPSO> m_SpecularConvolutionPSO;
 
 		TRefCountPtr<RenderTexture2D> m_SSAO_Random;
 		TRefCountPtr<RenderTexture2D> m_PreintegratedGF;

@@ -179,6 +179,20 @@ float3 ReconstructNormal(float2 In)
     return float3(In, sqrt(1 - dot(In, In)));
 }
 
+float Square(float x) { return x * x; }
+
+float3x3 GetTangentBasis(float3 TangentY)
+{
+    const float Sign = TangentY.y >= 0 ? 1 : -1;
+    const float a = -rcp(Sign + TangentY.y);
+    const float b = TangentY.x * TangentY.z * a;
+
+    float3 TangentX = { 1 + Sign * a * Square(TangentY.x), -Sign * TangentY.x, Sign * b };
+    float3 TangentZ = { b, -TangentY.z, Sign + a * Square(TangentY.z) };
+    
+    return float3x3(TangentX, TangentY, TangentZ);
+}
+
 //float DistributionGGX(float3 N, float3 H, float roughness)
 //{
 //    float a = roughness * roughness;

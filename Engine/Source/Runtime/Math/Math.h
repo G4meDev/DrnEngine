@@ -172,5 +172,11 @@ namespace Drn
 			Bits = ( (Bits & 0x55555555) << 1 ) | ( (Bits & 0xaaaaaaaa) >> 1 );
 			return Bits;
 		}
+
+		template <class T>
+		inline static T DivideAndRoundUp(T Dividend, T Divisor)
+		{
+			return (Dividend + Divisor - 1) / Divisor;
+		}
 	};
 }

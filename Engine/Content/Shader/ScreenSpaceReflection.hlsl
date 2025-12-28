@@ -118,33 +118,33 @@ float GetRoughnessFade(float Roughness, float Fade)
     //return 1 - saturate(Roughness * 1.6f);
 }
 
-float Square(float x) { return x * x; }
-
-//float3x3 GetTangentBasis(float3 TangentZ)
-float3x3 GetTangentBasis(float3 TangentY)
-{
-    //const float Sign = TangentZ.z >= 0 ? 1 : -1;
-    //const float a = -rcp(Sign + TangentZ.z);
-    //const float b = TangentZ.x * TangentZ.y * a;
-	//
-    //float3 TangentX = { 1 + Sign * a * Square(TangentZ.x), Sign * b, -Sign * TangentZ.x };
-    //float3 TangentY = { b, Sign + a * Square(TangentZ.y), -TangentZ.y };
-    //
-    //return float3x3(TangentX, TangentY, TangentZ);
-    
-    const float Sign = TangentY.y >= 0 ? 1 : -1;
-    const float a = -rcp(Sign + TangentY.y);
-    const float b = TangentY.x * TangentY.z * a;
-	
-    //float3 TangentX = { 1 + Sign * a * Square(TangentY.x), Sign * b, -Sign * TangentY.x };
-    //float3 TangentZ = { b, Sign + a * Square(TangentY.z), -TangentY.z };
-
-    float3 TangentX = { 1 + Sign * a * Square(TangentY.x), -Sign * TangentY.x, Sign * b };
-    float3 TangentZ = { b, -TangentY.z, Sign + a * Square(TangentY.z) };
-    
-    //return float3x3(TangentX, TangentY, TangentZ);
-    return float3x3(TangentX, TangentY, TangentZ);
-}
+//float Square(float x) { return x * x; }
+//
+////float3x3 GetTangentBasis(float3 TangentZ)
+//float3x3 GetTangentBasis(float3 TangentY)
+//{
+//    //const float Sign = TangentZ.z >= 0 ? 1 : -1;
+//    //const float a = -rcp(Sign + TangentZ.z);
+//    //const float b = TangentZ.x * TangentZ.y * a;
+//	//
+//    //float3 TangentX = { 1 + Sign * a * Square(TangentZ.x), Sign * b, -Sign * TangentZ.x };
+//    //float3 TangentY = { b, Sign + a * Square(TangentZ.y), -TangentZ.y };
+//    //
+//    //return float3x3(TangentX, TangentY, TangentZ);
+//    
+//    const float Sign = TangentY.y >= 0 ? 1 : -1;
+//    const float a = -rcp(Sign + TangentY.y);
+//    const float b = TangentY.x * TangentY.z * a;
+//	
+//    //float3 TangentX = { 1 + Sign * a * Square(TangentY.x), Sign * b, -Sign * TangentY.x };
+//    //float3 TangentZ = { b, Sign + a * Square(TangentY.z), -TangentY.z };
+//
+//    float3 TangentX = { 1 + Sign * a * Square(TangentY.x), -Sign * TangentY.x, Sign * b };
+//    float3 TangentZ = { b, -TangentY.z, Sign + a * Square(TangentY.z) };
+//    
+//    //return float3x3(TangentX, TangentY, TangentZ);
+//    return float3x3(TangentX, TangentY, TangentZ);
+//}
 
 uint3 Rand3DPCG16(int3 p)
 {

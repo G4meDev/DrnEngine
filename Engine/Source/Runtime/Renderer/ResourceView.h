@@ -6,6 +6,8 @@
 
 namespace Drn
 {
+	class RenderTextureBase;
+
 	enum ViewSubresourceSubsetFlags
 	{
 		ViewSubresourceSubsetFlags_None = 0x0,
@@ -497,6 +499,8 @@ namespace Drn
 		inline bool IsStencilPlaneResource()		const { return bContainsStencilPlane; }
 		inline bool GetSkipFastClearFinalize()		const { return bSkipFastClearFinalize; }
 		inline bool RequiresResourceStateTracking() const { return bRequiresResourceStateTracking; }
+
+		static TRefCountPtr<ShaderResourceView> CreateForMipLevel(RenderTextureBase* InTexture, int32 MipIndex);
 	};
 
 	class UnorderedAccessView : public SimpleRenderResource, public ResourceView<D3D12_UNORDERED_ACCESS_VIEW_DESC>
