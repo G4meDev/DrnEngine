@@ -77,7 +77,8 @@ float3 GetCubemapVector(float2 ScaledUVs, int InCubeFace)
 void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 {
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
-    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointClampIndex];
+    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
+    //SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
     TextureCube SourceCubemapTexture = ResourceDescriptorHeap[BindlessResources.SourceCubemapTexture];
     RWTexture2DArray<float4> OutTexture = ResourceDescriptorHeap[BindlessResources.OutTextureMip];
@@ -130,5 +131,8 @@ void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 	//
 	//OutColor *= rcp( 1.0 + 1.0 + 2.0 );
 
+	// TODO: hot spots appear as dots. temp fix
+    OutColor = clamp(OutColor, 0, 2000);
+	
 	OutTexture[uint3(FaceCoord, SelectedCubeFace)] = OutColor;
 }

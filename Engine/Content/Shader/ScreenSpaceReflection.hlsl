@@ -161,16 +161,6 @@ uint3 Rand3DPCG16(int3 p)
     return v >> 16u;
 }
 
-uint ReverseBits32(uint bits)
-{
-    bits = (bits << 16) | (bits >> 16);
-    bits = ((bits & 0x00ff00ff) << 8) | ((bits & 0xff00ff00) >> 8);
-    bits = ((bits & 0x0f0f0f0f) << 4) | ((bits & 0xf0f0f0f0) >> 4);
-    bits = ((bits & 0x33333333) << 2) | ((bits & 0xcccccccc) >> 2);
-    bits = ((bits & 0x55555555) << 1) | ((bits & 0xaaaaaaaa) >> 1);
-    return bits;
-}
-
 float2 Hammersley16(uint Index, uint NumSamples, uint2 Random)
 {
     float E1 = frac((float) Index / NumSamples + float(Random.x) * (1.0 / 65536.0));

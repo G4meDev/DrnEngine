@@ -110,7 +110,7 @@ namespace Drn
 		m_CubemapDownsamplePSO = new CubemapDownsamplePSO(CommandList);
 		m_ResizeSkycubemapPSO = new ResizeSkycubemapPSO(CommandList);
 		m_ApplyLowerHemisphereColorPSO = new ApplyLowerHemisphereColorPSO(CommandList);
-		//m_SpecularConvolutionPSO = new SpecularConvolutionPSO(CommandList);
+		m_ConvolveSpecularPSO = new ConvolveSpecularPSO(CommandList);
 
 		CreateSystemTextures(CommandList);
 
@@ -1481,20 +1481,20 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	//SpecularConvolutionPSO::SpecularConvolutionPSO( D3D12CommandList* CommandList )
-	//{
-	//	std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\SpecularConvolutionPSO.hlsl" ) );
-	//	ID3DBlob* ComputeShaderBlob;
-	//	const std::vector<const wchar_t*> Macros = {};
-	//	CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
-	//
-	//	ComputeShader* CShader = new ComputeShader();
-	//	CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
-	//	CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
-	//
-	//	m_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
-	//	SetName(m_PSO->PipelineState, "PSO_SpecularConvolutionPSO");
-	//}
+	ConvolveSpecularPSO::ConvolveSpecularPSO( D3D12CommandList* CommandList )
+	{
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ConvolveSpecular.hlsl" ) );
+		ID3DBlob* ComputeShaderBlob;
+		const std::vector<const wchar_t*> Macros = {};
+		CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+	
+		ComputeShader* CShader = new ComputeShader();
+		CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+		CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
+	
+		m_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_ConvolveSpecular");
+	}
 
 // --------------------------------------------------------------------------------------
 

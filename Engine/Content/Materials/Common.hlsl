@@ -120,6 +120,20 @@ struct BasePassPixelShaderOutput
 #endif
 };
 
+uint ReverseBits32( uint bits )
+{
+#if SM5_PROFILE || COMPILER_METAL
+	return reversebits( bits );
+#else
+	bits = ( bits << 16) | ( bits >> 16);
+	bits = ( (bits & 0x00ff00ff) << 8 ) | ( (bits & 0xff00ff00) >> 8 );
+	bits = ( (bits & 0x0f0f0f0f) << 4 ) | ( (bits & 0xf0f0f0f0) >> 4 );
+	bits = ( (bits & 0x33333333) << 2 ) | ( (bits & 0xcccccccc) >> 2 );
+	bits = ( (bits & 0x55555555) << 1 ) | ( (bits & 0xaaaaaaaa) >> 1 );
+	return bits;
+#endif
+}
+
 float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 {
     return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
@@ -179,6 +193,12 @@ float3 ReconstructNormal(float2 In)
     return float3(In, sqrt(1 - dot(In, In)));
 }
 
+float Pow4( float x )
+{
+	float xx = x*x;
+	return xx * xx;
+}
+
 float Square(float x) { return x * x; }
 
 float3x3 GetTangentBasis(float3 TangentY)
@@ -191,6 +211,59 @@ float3x3 GetTangentBasis(float3 TangentY)
     float3 TangentZ = { b, -TangentY.z, Sign + a * Square(TangentY.z) };
     
     return float3x3(TangentX, TangentY, TangentZ);
+}
+
+float ComputeReflectionCaptureRoughnessFromMip(float Mip, half CubemapMaxMip)
+{
+    float LevelFrom1x1 = CubemapMaxMip - 1 - Mip;
+    return exp2((1 - LevelFrom1x1) / 1.2);
+}
+
+float2 Hammersley( uint Index, uint NumSamples, uint2 Random )
+{
+	float E1 = frac( (float)Index / NumSamples + float( Random.x & 0xffff ) / (1<<16) );
+	float E2 = float( ReverseBits32(Index) ^ Random.y ) * 2.3283064365386963e-10;
+	return float2( E1, E2 );
+}
+
+float4 CosineSampleHemisphere( float2 E )
+{
+	float Phi = 2 * PI * E.x;
+	float CosTheta = sqrt(E.y);
+	float SinTheta = sqrt(1 - CosTheta * CosTheta);
+
+	float3 H;
+	H.x = SinTheta * cos(Phi);
+	H.z = SinTheta * sin(Phi);
+	H.y = CosTheta;
+
+	float PDF = CosTheta * (1.0 / PI);
+
+	return float4(H, PDF);
+}
+
+float4 ImportanceSampleGGX( float2 E, float a2 )
+{
+	float Phi = 2 * PI * E.x;
+	float CosTheta = sqrt( (1 - E.y) / ( 1 + (a2 - 1) * E.y ) );
+	float SinTheta = sqrt( 1 - CosTheta * CosTheta );
+
+	float3 H;
+	H.x = SinTheta * cos( Phi );
+	H.z = SinTheta * sin( Phi );
+	H.y = CosTheta;
+	
+	float d = ( CosTheta * a2 - CosTheta ) * CosTheta + 1;
+	float D = a2 / ( PI*d*d );
+	float PDF = D * CosTheta;
+
+	return float4( H, PDF );
+}
+
+float D_GGX(float a2, float NoH)
+{
+    float d = (NoH * a2 - NoH) * NoH + 1;
+    return a2 / (PI * d * d);
 }
 
 //float DistributionGGX(float3 N, float3 H, float roughness)

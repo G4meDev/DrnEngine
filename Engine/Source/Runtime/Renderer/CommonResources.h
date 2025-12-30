@@ -303,13 +303,13 @@ namespace Drn
 		TRefCountPtr<ComputePipelineState> m_PSO;
 	};
 
-	//class SpecularConvolutionPSO : public RefCountedObject
-	//{
-	//public:
-	//	SpecularConvolutionPSO( D3D12CommandList* CommandList);
-	//	
-	//	TRefCountPtr<ComputePipelineState> m_PSO;
-	//};
+	class ConvolveSpecularPSO : public RefCountedObject
+	{
+	public:
+		ConvolveSpecularPSO( D3D12CommandList* CommandList);
+		
+		TRefCountPtr<ComputePipelineState> m_PSO;
+	};
 
 	class CommonResources
 	{
@@ -361,7 +361,7 @@ namespace Drn
 
 		TRefCountPtr<ResizeSkycubemapPSO> m_ResizeSkycubemapPSO;
 		TRefCountPtr<ApplyLowerHemisphereColorPSO> m_ApplyLowerHemisphereColorPSO;
-		//TRefCountPtr<SpecularConvolutionPSO> m_SpecularConvolutionPSO;
+		TRefCountPtr<ConvolveSpecularPSO> m_ConvolveSpecularPSO;
 
 		TRefCountPtr<RenderTexture2D> m_SSAO_Random;
 		TRefCountPtr<RenderTexture2D> m_PreintegratedGF;

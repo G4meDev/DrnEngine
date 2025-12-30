@@ -87,6 +87,7 @@ void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 	float3 TangentY = cross( TangentZ, TangentX );
 
 	const float SampleOffset = 2.0 * 2 / MipSize;
+	//const float SampleOffset = 1.0f / MipSize;
 
 	float2 Offsets[] =
 	{
@@ -101,20 +102,23 @@ void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 		float2( 0,  1),
 	};
 
+    //OutColor = SampleOffset;
+    //OutColor = 0;
+	
     OutColor = SourceCubemapTexture.SampleLevel(PointSampler, CubeCoordinates, 0);
-
+	
 	[unroll]
 	for( uint i = 0; i < 8; i++ )
 	{
 		float Weight = 0.375;
-
+	
 		float3 SampleDir = CubeCoordinates;
 		SampleDir += TangentX * ( Offsets[i].x * SampleOffset );
 		SampleDir += TangentY * ( Offsets[i].y * SampleOffset );
         OutColor += SourceCubemapTexture.SampleLevel(PointSampler, SampleDir, 0) * Weight;
     }
-
+	
 	OutColor *= rcp( 1.0 + 1.0 + 2.0 );
-
+	
 	OutTexture[uint3(FaceCoord, SelectedCubeFace)] = OutColor;
 }

@@ -56,19 +56,23 @@ namespace Drn
 
 			LastUsedCubemap = SkyCubemap.GetPath();
 			
-			const int32 BaseResolution = 512;
+			const int32 BaseResolution = 128;
 			const int32 NumMips = std::log2(BaseResolution) + 1;
 			
+			RenderResourceCreateInfo RawTextureCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "SkyCubemap_Raw" );
+			TRefCountPtr<RenderTextureCube> RawCubemap = RenderTextureCube::Create(CommandList, BaseResolution, DXGI_FORMAT_R16G16B16A16_FLOAT, NumMips, 1, false,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::UAV | ETextureCreateFlags::NoFastClear), RawTextureCreateInfo);
+
 			RenderResourceCreateInfo TextureCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "SkyCubemap" );
 			GeneratedCubemap = RenderTextureCube::Create(CommandList, BaseResolution, DXGI_FORMAT_R16G16B16A16_FLOAT, NumMips, 1, false,
-				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::TargetArraySlicesIndependently | ETextureCreateFlags::UAV | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::UAV | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
 
 			// copy first mip from source texture
 			{
 				for (int32 i = 0; i < 6; i++)
 				{
 					uint32 SubresourceIndex = D3D12CalcSubresource(0, i, 0, NumMips, 6);
-					CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, SubresourceIndex);
+					CommandList->AddTransitionBarrier(RawCubemap->GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, SubresourceIndex);
 				}
 
 				TRefCountPtr<ShaderResourceView> SourceSrv = ShaderResourceView::CreateForMipLevel(SkyCubemap->GetRenderTexture(), 0);
@@ -78,7 +82,7 @@ namespace Drn
 				Desc.Texture2DArray.ArraySize = 6;
 				Desc.Texture2DArray.MipSlice = 0;
 				Desc.Texture2DArray.FirstArraySlice = 0;
-				TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, GeneratedCubemap->m_ResourceLocation);
+				TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, RawCubemap->m_ResourceLocation);
 			
 				int32 ThreadGroupSize = 8;
 				int32 NumGroups = Math::DivideAndRoundUp(BaseResolution, ThreadGroupSize);
@@ -111,7 +115,7 @@ namespace Drn
 				for (int32 i = 0; i < 6; i++)
 				{
 					uint32 SubresourceIndex = D3D12CalcSubresource(0, i, 0, NumMips, 6);
-					CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
+					CommandList->AddTransitionBarrier(RawCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
 				}
 			}
 
@@ -122,19 +126,19 @@ namespace Drn
 					for (int32 i = 0; i < 6; i++)
 					{
 						uint32 SubresourceIndex = D3D12CalcSubresource(MipIndex, i, 0, NumMips, 6);
-						CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, SubresourceIndex);
+						CommandList->AddTransitionBarrier(RawCubemap->GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, SubresourceIndex);
 					}
 
 					const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
 			
-					TRefCountPtr<ShaderResourceView> SourceSrv = ShaderResourceView::CreateForMipLevel(SkyCubemap->GetRenderTexture(), MipIndex);
+					TRefCountPtr<ShaderResourceView> SourceSrv = ShaderResourceView::CreateForMipLevel(RawCubemap, MipIndex - 1);
 			
 					D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
 					Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
 					Desc.Texture2DArray.ArraySize = 6;
 					Desc.Texture2DArray.MipSlice = MipIndex;
 					Desc.Texture2DArray.FirstArraySlice = 0;
-					TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, GeneratedCubemap->m_ResourceLocation);
+					TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, RawCubemap->m_ResourceLocation);
 			
 					int32 ThreadGroupSize = 8;
 					int32 NumGroups = Math::DivideAndRoundUp(MipResolution, ThreadGroupSize);
@@ -157,9 +161,47 @@ namespace Drn
 					for (int32 i = 0; i < 6; i++)
 					{
 						uint32 SubresourceIndex = D3D12CalcSubresource(MipIndex, i, 0, NumMips, 6);
-						CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
+						CommandList->AddTransitionBarrier(RawCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
 					}
 				}
+			}
+
+			// convolution
+			{
+				CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+				for (int32 MipIndex = 0; MipIndex < NumMips; MipIndex++)
+				{
+				
+					const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
+				
+					D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
+					Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+					Desc.Texture2DArray.ArraySize = 6;
+					Desc.Texture2DArray.MipSlice = MipIndex;
+					Desc.Texture2DArray.FirstArraySlice = 0;
+					TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, GeneratedCubemap->m_ResourceLocation);
+
+					int32 ThreadGroupSize = 8;
+					int32 NumGroups = Math::DivideAndRoundUp(MipResolution, ThreadGroupSize);
+					int32 FaceGroupSize = NumGroups * ThreadGroupSize;
+				
+					IntPoint ValidDisppatchCoord(MipResolution, MipResolution);
+				
+					CommandList->SetComputePipelineState(CommonResources::Get()->m_ConvolveSpecularPSO->m_PSO);
+					CommandList->SetComputeRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+					CommandList->SetComputeRootConstant( Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2 );
+					CommandList->SetComputeRootConstant(NumMips, 3);
+					CommandList->SetComputeRootConstant(MipIndex, 4);
+					CommandList->SetComputeRootConstant(FaceGroupSize, 5);
+					CommandList->SetComputeRootConstants(2, &ValidDisppatchCoord, 6);
+					CommandList->SetComputeRootConstant(RawCubemap->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
+					CommandList->SetComputeRootConstant(DestUav->GetDescriptorHeapIndex(), 9);
+				
+					CommandList->DispatchComputeShader(NumGroups * 6, NumGroups, 1);
+				}
+
+				CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 			}
 		}
 	}
@@ -176,9 +218,8 @@ namespace Drn
 
 		SkyLightSceneProxy* SkyProxy = Renderer->GetScene()->m_SkyLightProxies.size() > 0 ? *Renderer->GetScene()->m_SkyLightProxies.begin() : nullptr;
 		AssetHandle<TextureCube> SkyCubemap = SkyProxy ? SkyProxy->GetCubemap() : AssetHandle<TextureCube>();
-		//m_Data.SkyCubemapTexture = SkyCubemap.IsValid() ? SkyCubemap->GetTextureIndex() : 0;
 		m_Data.SkyCubemapTexture = GeneratedCubemap.IsValid() ? GeneratedCubemap->GetShaderResourceView()->GetDescriptorHeapIndex() : 0;
-		m_Data.SkyLightMipCount = SkyCubemap.IsValid() ? SkyCubemap->GetMipLevels() : 0;
+		m_Data.SkyLightMipCount = GeneratedCubemap.IsValid() ? GeneratedCubemap->GetNumMips(): 0;
 		m_Data.SkyLightColor = SkyProxy ? SkyProxy->GetColor() : Vector::ZeroVector;
 
 		Buffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ReflectionEnvironmentData), EUniformBufferUsage::SingleFrame, &m_Data);

@@ -256,7 +256,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     //float3 BRDF = EnvBRDFApproxNonmetal(Roughness, NoV);
     
     SpecularTerm *= BRDF;
-    //return float4(SpecularTerm, 1);
-    return float4(SpecularTerm + DiffuseTerm * CombinedAO, 1);
+    return float4(SpecularTerm, 1);
+    //return float4(SpecularTerm + DiffuseTerm * CombinedAO, 1);
     //return float4( DiffuseTerm * CombinedAO, 1);
 }

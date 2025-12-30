@@ -328,7 +328,7 @@ namespace Drn
 	{
 	public:
 		RenderTextureCube(Device* InParent,uint32 InSizeX, uint32 InNumMips, uint32 InNumSamples, DXGI_FORMAT InFormat, ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
-			: RenderBaseTexture2D(InParent, InSizeX, InSizeX, 6, InNumSamples, InNumMips, InFormat, InFlags, InClearValue)
+			: RenderBaseTexture2D(InParent, InSizeX, InSizeX, 6, InNumMips, InNumSamples, InFormat, InFlags, InClearValue)
 		{
 		}
 
