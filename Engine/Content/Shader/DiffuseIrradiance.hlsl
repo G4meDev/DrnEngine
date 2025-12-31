@@ -1,10 +1,10 @@
-
+#include "Common.hlsl"
 #define GROUP_TILE_SIZE 8
 
 struct Resources
 {
     uint ViewBufferIndex;
-    uint unused;
+    float SampleOffset;
     uint StaticSamplerBufferIndex;
     int NumMips;
 	
@@ -29,20 +29,6 @@ struct StaticSamplers
 
 float3 GetCubemapVector(float2 ScaledUVs, int InCubeFace)
 {
-	//int CubeFaceIndex = 0;
-    //if (MaxCoordinate == AbsLightVector.x)
-    //{
-    //    CubeFaceIndex = AbsLightVector.x == ToLight.x ? 1 : 0;
-    //}
-    //else if (MaxCoordinate == AbsLightVector.y)
-    //{
-    //    CubeFaceIndex = AbsLightVector.y == ToLight.y ? 3 : 2;
-    //}
-    //else
-    //{
-    //    CubeFaceIndex = AbsLightVector.z == ToLight.z ? 5 : 4;
-    //}
-	
 	float3 CubeCoordinates;
 
 	if (InCubeFace == 0)
@@ -77,13 +63,12 @@ float3 GetCubemapVector(float2 ScaledUVs, int InCubeFace)
 void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 {
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
-    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
-    //SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
+    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointClampIndex];
+    //SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.LinearClampIndex];
     
     TextureCube SourceCubemapTexture = ResourceDescriptorHeap[BindlessResources.SourceCubemapTexture];
     RWTexture2DArray<float4> OutTexture = ResourceDescriptorHeap[BindlessResources.OutTextureMip];
 
-    
     const uint2 FaceCoord = uint2(ThreadId.x % uint(BindlessResources.FaceThreadGroupSize), ThreadId.y);
 	if (any(FaceCoord >= uint2(BindlessResources.ValidDispatchCoord)))
 	{
@@ -94,45 +79,27 @@ void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 	float4 OutColor;
     
     float3 CubeCoordinates = GetCubemapVector(ScaledUVs, SelectedCubeFace);
-
-	uint MipSize = (uint)1 << ( BindlessResources.NumMips - BindlessResources.MipIndex - 1 );
-
-	float3 TangentZ = normalize( CubeCoordinates );
-	float3 TangentX = normalize( cross( GetCubemapVector( ScaledUVs + float2(0,1), SelectedCubeFace), TangentZ ) );
-	float3 TangentY = cross( TangentZ, TangentX );
-
-	const float SampleOffset = 2.0 * 2 / MipSize;
-
-	float2 Offsets[] =
-	{
-		float2(-1, -1) * 0.7,
-		float2( 1, -1) * 0.7,
-		float2(-1,  1) * 0.7,
-		float2( 1,  1) * 0.7,
-		
-		float2( 0, -1),
-		float2(-1,  0),
-		float2( 1,  0),
-		float2( 0,  1),
-	};
-
-    OutColor = SourceCubemapTexture.SampleLevel(PointSampler, CubeCoordinates, 0);
-
-	//[unroll]
-	//for( uint i = 0; i < 8; i++ )
-	//{
-	//	float Weight = 0.375;
-	//
-	//	float3 SampleDir = CubeCoordinates;
-	//	SampleDir += TangentX * ( Offsets[i].x * SampleOffset );
-	//	SampleDir += TangentY * ( Offsets[i].y * SampleOffset );
-    //    OutColor += SourceCubemapTexture.SampleLevel(PointSampler, SampleDir, 0) * Weight;
-    //}
-	//
-	//OutColor *= rcp( 1.0 + 1.0 + 2.0 );
-
-	// TODO: hot spots appear as dots. temp fix
-    OutColor = clamp(OutColor, 0, 400);
 	
+    float3 normal = normalize(CubeCoordinates);
+    float3 up = float3(0.0, 1.0, 0.0);
+    float3 right = normalize(cross(up, normal));
+    up = normalize(cross(normal, right));
+	
+    float3 irradiance = 0;
+    int nrSamples = 0;
+    for (float phi = 0.0; phi < 2.0 * PI; phi += BindlessResources.SampleOffset)
+    {
+        for (float theta = 0.0; theta < 0.5 * PI; theta += BindlessResources.SampleOffset)
+        {
+            float3 tangentSample = float3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+            float3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;
+
+            irradiance += SourceCubemapTexture.SampleLevel(PointSampler, sampleVec, 0).rgb;
+            nrSamples++;
+        }
+    }
+
+    OutColor = float4(PI * irradiance * (1.0f / float(nrSamples)), 1);
+
 	OutTexture[uint3(FaceCoord, SelectedCubeFace)] = OutColor;
 }

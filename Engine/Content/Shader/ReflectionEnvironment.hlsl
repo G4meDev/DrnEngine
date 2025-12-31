@@ -41,6 +41,7 @@ struct SSRData
     uint WorldNormalTexture;
     uint MasksTexture;
     uint DepthTexture;
+    
     uint SSRTexture;
     uint AOTexture;
     uint PreintegratedGF;
@@ -48,6 +49,9 @@ struct SSRData
     
     float3 SkyLightColor;
     uint SkyLightMipCount;
+    
+    uint SkyIradianceCubemapTexture;
+    
 };
 
 struct StaticSamplers
@@ -173,10 +177,12 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D AOImage = ResourceDescriptorHeap[SSRBuffer.AOTexture];
     Texture2D PreintegeratedGFImage = ResourceDescriptorHeap[SSRBuffer.PreintegratedGF];
     TextureCube SkyCubemapImage = ResourceDescriptorHeap[SSRBuffer.SkyCubemapTexture];
+    TextureCube SkyIradianceCubemapTexture = ResourceDescriptorHeap[SSRBuffer.SkyIradianceCubemapTexture];
     
     SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplersBuffer.PointSamplerIndex];
     SamplerState PointClampSampler = ResourceDescriptorHeap[StaticSamplersBuffer.PointClampIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplersBuffer.LinearSamplerIndex];
+    SamplerState LinearClampSampler = ResourceDescriptorHeap[StaticSamplersBuffer.LinearClampIndex];
     
     float2 UV = IN.UVAndScreenPos.xy;
     float2 ScreenPos = IN.UVAndScreenPos.zw;
@@ -231,32 +237,21 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     [branch]
     if(SSRBuffer.SkyCubemapTexture != 0)
     {
-        const float RoughestMip = 1;
-        const float MipScale = 1.2;
-        
-        half Level = RoughestMip - MipScale * log2(max(Roughness, 0.001));
-        half MipLevel = SSRBuffer.SkyLightMipCount - 1 - Level;
-        
+        half MipLevel = ComputeReflectionCaptureMipFromRoughness(Roughness, SSRBuffer.SkyLightMipCount);
         Iraddiance *= SkyCubemapImage.SampleLevel(LinearSampler, ReflectionVector, MipLevel).xyz;
-        {
-            float3 Sample = 0;
-            // TODO: this is hack just make another cubemap at runtime for diffuse lookup
-            Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 1).xyz;
-            Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 2).xyz * 0.5f;
-            Sample += SkyCubemapImage.SampleLevel(LinearSampler, WorldNormal, SSRBuffer.SkyLightMipCount - 3).xyz * 0.2f;
-            LightDiffuse *= Sample;
-        }
+        
+        LightDiffuse *= SkyIradianceCubemapTexture.SampleLevel(LinearSampler, WorldNormal, 0).rgb;
     }
     float3 DiffuseTerm = LightDiffuse * kD * DiffueColor;
 
     Iraddiance *= (1 - SSR.a) * SpecularOcclusion;
     SpecularTerm += Iraddiance;
-    float3 BRDF = EnvBRDF(SpecularColor, Roughness, NoV, PreintegeratedGFImage, PointClampSampler);
+    float3 BRDF = EnvBRDF(SpecularColor, Roughness, NoV, PreintegeratedGFImage, LinearClampSampler);
     //float3 BRDF = EnvBRDFApprox(SpecularColor, Roughness, NoV);
     //float3 BRDF = EnvBRDFApproxNonmetal(Roughness, NoV);
     
     SpecularTerm *= BRDF;
-    return float4(SpecularTerm, 1);
-    //return float4(SpecularTerm + DiffuseTerm * CombinedAO, 1);
+    //return float4(SpecularTerm, 1);
     //return float4( DiffuseTerm * CombinedAO, 1);
+    return float4(SpecularTerm + DiffuseTerm * CombinedAO, 1);
 }

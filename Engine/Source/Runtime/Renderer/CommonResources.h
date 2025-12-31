@@ -311,6 +311,14 @@ namespace Drn
 		TRefCountPtr<ComputePipelineState> m_PSO;
 	};
 
+	class DiffuseIrradiancePSO : public RefCountedObject
+	{
+	public:
+		DiffuseIrradiancePSO( D3D12CommandList* CommandList);
+		
+		TRefCountPtr<ComputePipelineState> m_PSO;
+	};
+
 	class CommonResources
 	{
 	public:
@@ -362,6 +370,7 @@ namespace Drn
 		TRefCountPtr<ResizeSkycubemapPSO> m_ResizeSkycubemapPSO;
 		TRefCountPtr<ApplyLowerHemisphereColorPSO> m_ApplyLowerHemisphereColorPSO;
 		TRefCountPtr<ConvolveSpecularPSO> m_ConvolveSpecularPSO;
+		TRefCountPtr<DiffuseIrradiancePSO> m_DiffuseIrradiancePSO;
 
 		TRefCountPtr<RenderTexture2D> m_SSAO_Random;
 		TRefCountPtr<RenderTexture2D> m_PreintegratedGF;

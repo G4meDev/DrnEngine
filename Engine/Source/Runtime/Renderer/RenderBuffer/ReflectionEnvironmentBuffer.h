@@ -22,6 +22,8 @@ namespace Drn
 
 		Vector SkyLightColor;
 		uint32 SkyLightMipCount;
+
+		uint32 SkyIradianceCubemapTexture;
 	};
 
 	class ReflectionEnvironmentBuffer : public RenderBuffer
@@ -45,6 +47,7 @@ namespace Drn
 		ReflectionEnvironmentData m_Data;
 
 		TRefCountPtr<RenderTextureCube> GeneratedCubemap;
+		TRefCountPtr<RenderTextureCube> GeneratedCubemapIradiance;
 
 		// TODO: better dirty condition
 		std::string LastUsedCubemap;

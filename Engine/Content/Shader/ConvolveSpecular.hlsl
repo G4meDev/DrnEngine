@@ -92,7 +92,10 @@ void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 	if( Roughness < 0.01 )
 	{
 		OutColor = SourceCubemapTexture.SampleLevel(PointSampler, CubeCoordinates, 0 );
+        OutColor = -min(-OutColor, 0);
+		
 		OutTexture[uint3(FaceCoord, SelectedCubeFace)] = OutColor;
+		return;
 	}
 	
     uint CubeSize = (uint)1 << (BindlessResources.NumMips - 1);
@@ -135,7 +138,7 @@ void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 		{
 			float2 E = Hammersley( i, NumSamples, 0 );
 			E.y *= 0.995;
-	
+			
 			float3 H = ImportanceSampleGGX( E, Pow4(Roughness) ).xyz;
 			
 			float3 L = 2 * H.y * H - float3(0,1,0);
@@ -160,5 +163,6 @@ void Main_CS(uint3 ThreadId : SV_DispatchThreadID)
 		OutColor = FilteredColor / Weight;
 	}
 	
+    OutColor = -min(-OutColor, 0);
 	OutTexture[uint3(FaceCoord, SelectedCubeFace)] = OutColor;
 }

@@ -46,6 +46,7 @@ namespace Drn
 		if (GeneratedCubemap.IsValid() && !SkyCubemap.IsValid())
 		{
 			GeneratedCubemap = nullptr;
+			GeneratedCubemapIradiance = nullptr;
 			LastUsedCubemap = NAME_NULL;
 			return;
 		}
@@ -203,6 +204,48 @@ namespace Drn
 
 				CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 			}
+
+			// iradiance
+			{
+				const int32 IradianceTextureSize = 32;
+				RenderResourceCreateInfo IradianceTextureCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "SkyCubemapIradiance" );
+				GeneratedCubemapIradiance = RenderTextureCube::Create(CommandList, IradianceTextureSize, DXGI_FORMAT_R16G16B16A16_FLOAT, 1, 1, false,
+					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::UAV | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
+
+				CommandList->AddTransitionBarrier(GeneratedCubemapIradiance->GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+
+				TRefCountPtr<ShaderResourceView> SourceSrv = ShaderResourceView::CreateForMipLevel(RawCubemap, 0);
+
+				D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
+				Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+				Desc.Texture2DArray.ArraySize = 6;
+				Desc.Texture2DArray.MipSlice = 0;
+				Desc.Texture2DArray.FirstArraySlice = 0;
+				TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, GeneratedCubemapIradiance->m_ResourceLocation);
+
+				int32 ThreadGroupSize = 8;
+				int32 NumGroups = Math::DivideAndRoundUp(IradianceTextureSize, ThreadGroupSize);
+				int32 FaceGroupSize = NumGroups * ThreadGroupSize;
+				IntPoint ValidDisppatchCoord(IradianceTextureSize, IradianceTextureSize);
+
+				const float SampleCount = 1024 * 16;
+				const float UniformSampleSolidAngle = 2.0f * Math::PI / SampleCount;
+
+				CommandList->SetComputePipelineState(CommonResources::Get()->m_ConvolveSpecularPSO->m_PSO);
+				CommandList->SetComputeRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetComputeRootConstant(UniformSampleSolidAngle, 1);
+				CommandList->SetComputeRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+				//CommandList->SetComputeRootConstant(NumMips, 3);
+				//CommandList->SetComputeRootConstant(MipIndex, 4);
+				CommandList->SetComputeRootConstant(FaceGroupSize, 5);
+				CommandList->SetComputeRootConstants(2, &ValidDisppatchCoord, 6);
+				CommandList->SetComputeRootConstant(SourceSrv->GetDescriptorHeapIndex(), 8);
+				CommandList->SetComputeRootConstant(DestUav->GetDescriptorHeapIndex(), 9);
+				
+				CommandList->DispatchComputeShader(NumGroups * 6, NumGroups, 1);
+
+				CommandList->AddTransitionBarrier(GeneratedCubemapIradiance->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+			}
 		}
 	}
 
@@ -221,6 +264,8 @@ namespace Drn
 		m_Data.SkyCubemapTexture = GeneratedCubemap.IsValid() ? GeneratedCubemap->GetShaderResourceView()->GetDescriptorHeapIndex() : 0;
 		m_Data.SkyLightMipCount = GeneratedCubemap.IsValid() ? GeneratedCubemap->GetNumMips(): 0;
 		m_Data.SkyLightColor = SkyProxy ? SkyProxy->GetColor() : Vector::ZeroVector;
+
+		m_Data.SkyIradianceCubemapTexture = GeneratedCubemapIradiance.IsValid() ? GeneratedCubemapIradiance->GetShaderResourceView()->GetDescriptorHeapIndex() : 0;
 
 		Buffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ReflectionEnvironmentData), EUniformBufferUsage::SingleFrame, &m_Data);
 	}

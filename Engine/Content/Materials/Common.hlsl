@@ -215,8 +215,14 @@ float3x3 GetTangentBasis(float3 TangentY)
 
 float ComputeReflectionCaptureRoughnessFromMip(float Mip, half CubemapMaxMip)
 {
-    float LevelFrom1x1 = CubemapMaxMip - 1 - Mip;
-    return exp2((1 - LevelFrom1x1) / 1.2);
+    float LevelFrom1x1 = CubemapMaxMip - 1.0f - Mip;
+    return exp2((1.0f - LevelFrom1x1) / 1.2f);
+}
+
+half ComputeReflectionCaptureMipFromRoughness(half Roughness, half CubemapMaxMip)
+{
+    half LevelFrom1x1 = 1.0f - 1.2 * log2(max(Roughness, 0.001));
+    return CubemapMaxMip - 1 - LevelFrom1x1;
 }
 
 float2 Hammersley( uint Index, uint NumSamples, uint2 Random )
