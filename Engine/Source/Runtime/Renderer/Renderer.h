@@ -21,6 +21,7 @@ namespace Drn
 {
 	class D3D12Scene;
 	class Window;
+	class SamplerState;
 
 	struct StaticSamplers
 	{
@@ -34,56 +35,6 @@ namespace Drn
 
 		uint32 PointClampSampler;
 		Vector Padding;
-	};
-
-	struct TempDescriptorHeapAllocator
-	{
-		ID3D12DescriptorHeap*       Heap     = nullptr;
-		D3D12_DESCRIPTOR_HEAP_TYPE  HeapType = D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
-		D3D12_CPU_DESCRIPTOR_HANDLE HeapStartCpu;
-		D3D12_GPU_DESCRIPTOR_HANDLE HeapStartGpu;
-		UINT                        HeapHandleIncrement;
-		std::vector<uint32> FreeIndices;
-
-		void Create( ID3D12Device* device, ID3D12DescriptorHeap* heap )
-		{
-			Heap                            = heap;
-			D3D12_DESCRIPTOR_HEAP_DESC desc = heap->GetDesc();
-			HeapType                        = desc.Type;
-			HeapStartCpu                    = Heap->GetCPUDescriptorHandleForHeapStart();
-			HeapStartGpu                    = (HeapType == D3D12_DESCRIPTOR_HEAP_TYPE_RTV || HeapType == D3D12_DESCRIPTOR_HEAP_TYPE_DSV) ? D3D12_GPU_DESCRIPTOR_HANDLE() : Heap->GetGPUDescriptorHandleForHeapStart();
-			HeapHandleIncrement             = device->GetDescriptorHandleIncrementSize( HeapType );
-			FreeIndices.reserve( (int)desc.NumDescriptors );
-			for ( int n = 0; n < desc.NumDescriptors; n++ )
-				FreeIndices.push_back(n);
-		}
-
-		void Destroy()
-		{
-			Heap = nullptr;
-			FreeIndices.clear();
-		}
-		void Alloc( D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_desc_handle,
-					D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_desc_handle )
-		{
-			if (FreeIndices.empty())
-			{
-				__debugbreak();
-			}
-
-			int idx = FreeIndices.back();
-			FreeIndices.pop_back();
-			out_cpu_desc_handle->ptr = HeapStartCpu.ptr + ( idx * HeapHandleIncrement );
-			out_gpu_desc_handle->ptr = HeapStartGpu.ptr + ( idx * HeapHandleIncrement );
-		}
-		void Free( D3D12_CPU_DESCRIPTOR_HANDLE out_cpu_desc_handle,
-					D3D12_GPU_DESCRIPTOR_HANDLE out_gpu_desc_handle )
-		{
-			int cpu_idx = (int)( ( out_cpu_desc_handle.ptr - HeapStartCpu.ptr ) / HeapHandleIncrement );
-			int gpu_idx = (int)( ( out_gpu_desc_handle.ptr - HeapStartGpu.ptr ) / HeapHandleIncrement );
-			if (cpu_idx == gpu_idx)
-				FreeIndices.push_back( cpu_idx );
-		}
 	};
 
 	class Renderer
@@ -149,44 +100,28 @@ namespace Drn
 
 		inline void ToggleVSync() const { if(m_SwapChain) m_SwapChain->ToggleVSync(); }
 
-		// TODO: remove
-		//TempDescriptorHeapAllocator m_BindlessSrvHeapAllocator;
-		//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessSrvHeap;
-
-		TempDescriptorHeapAllocator m_BindlessSamplerHeapAllocator;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessSamplerHeap;
-
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> m_BindlessRootSinature;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessLinearSamplerCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessLinearSamplerGpuHandle;
+		TRefCountPtr<SamplerState> LinearSampler;
+		TRefCountPtr<SamplerState> PointSampler;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessPointSamplerCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessPointSamplerGpuHandle;
+		TRefCountPtr<SamplerState> LinearCompLessSampler;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessLinearCompLessSamplerCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessLinearCompLessSamplerGpuHandle;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessLinearClampSamplerCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessLinearClampSamplerGpuHandle;
-
-		D3D12_CPU_DESCRIPTOR_HANDLE m_BindlessPointClampSamplerCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE m_BindlessPointClampSamplerGpuHandle;
+		TRefCountPtr<SamplerState> LinearClampSampler;
+		TRefCountPtr<SamplerState> PointClampSampler;
 
 		StaticSamplers m_StaticSamplers;
 		TRefCountPtr<class RenderUniformBuffer> StaticSamplersBuffer;
 
-		uint32 GetBindlessSamplerIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
-
 		tf::Taskflow m_RendererTickTask;
+
+		inline uint32 ComputeAnisotropy( uint32 InAnisotropy ) { return std::clamp(InAnisotropy > 0 ? InAnisotropy : MaxAnisotropy, 1u, 16u);}
 
 	protected:
 		static Renderer* SingletonInstance;
 
 		Window* m_MainWindow = nullptr;
 		std::set<Scene*> m_AllocatedScenes;
-
-		uint32 m_SamplerIncrementSize;
 
 		friend class ViewportGuiLayer;
 		friend class World;
@@ -198,7 +133,7 @@ namespace Drn
 		TRefCountPtr<class GpuFence> m_Fence;
 		TRefCountPtr<class GpuFence> m_DeletionFence;
 		uint64 FrameCount = 0;
-
+		uint32 MaxAnisotropy = 16;
 
 #if WITH_EDITOR
 

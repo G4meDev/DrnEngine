@@ -233,54 +233,59 @@ namespace Drn
 
 // -------------------------------------------------------------------------------------------------------------------
 
-	//struct SamplerStateInitializer
-	//{
-	//	SamplerStateInitializer() {}
-	//	SamplerStateInitializer(
-	//		ESamplerFilter InFilter,
-	//		ESamplerAddressMode InAddressU = AM_Wrap,
-	//		ESamplerAddressMode InAddressV = AM_Wrap,
-	//		ESamplerAddressMode InAddressW = AM_Wrap,
-	//		float InMipBias = 0,
-	//		int32 InMaxAnisotropy = 0,
-	//		float InMinMipLevel = 0,
-	//		float InMaxMipLevel = FLT_MAX,
-	//		uint32 InBorderColor = 0,
-	//		/** Only supported in D3D11 */
-	//		ESamplerCompareFunction InSamplerComparisonFunction = SCF_Never
-	//		)
-	//	:	Filter(InFilter)
-	//	,	AddressU(InAddressU)
-	//	,	AddressV(InAddressV)
-	//	,	AddressW(InAddressW)
-	//	,	MipBias(InMipBias)
-	//	,	MinMipLevel(InMinMipLevel)
-	//	,	MaxMipLevel(InMaxMipLevel)
-	//	,	MaxAnisotropy(InMaxAnisotropy)
-	//	,	BorderColor(InBorderColor)
-	//	,	SamplerComparisonFunction(InSamplerComparisonFunction)
-	//	{}
-	//	ESamplerFilter Filter = Point;
-	//	ESamplerAddressMode AddressU = Wrap;
-	//	ESamplerAddressMode AddressV = Wrap;
-	//	ESamplerAddressMode AddressW = Wrap;
-	//	float MipBias = 0.0f;
-	//	float MinMipLevel = 0.0f;
-	//	float MaxMipLevel = FLT_MAX;
-	//	int32 MaxAnisotropy = 0;
-	//	uint32 BorderColor = 0;
-	//	ESamplerCompareFunction SamplerComparisonFunction = Never;
-	//};
-	//
-	//class SamplerState : public SimpleRenderResource, public DeviceChild
-	//{
-	//public:
-	//	D3D12_CPU_DESCRIPTOR_HANDLE Descriptor;
-	//	uint32 DescriptorHeapIndex;
-	//
-	//	SamplerState( Device* InParent, const D3D12_SAMPLER_DESC& Desc );
-	//	~SamplerState();
-	//
-	//	static TRefCountPtr<SamplerState> Create(const SamplerStateInitializer& Init);
-	//};
+	struct SamplerStateInitializer
+	{
+		SamplerStateInitializer() {}
+		SamplerStateInitializer(
+			ESamplerFilter InFilter,
+			ESamplerAddressMode InAddressU = ESamplerAddressMode::Wrap,
+			ESamplerAddressMode InAddressV = ESamplerAddressMode::Wrap,
+			ESamplerAddressMode InAddressW = ESamplerAddressMode::Wrap,
+			float InMipBias = 0,
+			int32 InMaxAnisotropy = 0,
+			float InMinMipLevel = 0,
+			float InMaxMipLevel = FLT_MAX,
+			Color InBorderColor = 0,
+			ESamplerCompareFunction InSamplerComparisonFunction = ESamplerCompareFunction::Never
+			)
+		:	Filter(InFilter)
+		,	AddressU(InAddressU)
+		,	AddressV(InAddressV)
+		,	AddressW(InAddressW)
+		,	MipBias(InMipBias)
+		,	MinMipLevel(InMinMipLevel)
+		,	MaxMipLevel(InMaxMipLevel)
+		,	MaxAnisotropy(InMaxAnisotropy)
+		,	BorderColor(InBorderColor)
+		,	SamplerComparisonFunction(InSamplerComparisonFunction)
+		{}
+		ESamplerFilter Filter = ESamplerFilter::Point;
+		ESamplerAddressMode AddressU = ESamplerAddressMode::Wrap;
+		ESamplerAddressMode AddressV = ESamplerAddressMode::Wrap;
+		ESamplerAddressMode AddressW = ESamplerAddressMode::Wrap;
+		float MipBias = 0.0f;
+		float MinMipLevel = 0.0f;
+		float MaxMipLevel = FLT_MAX;
+		int32 MaxAnisotropy = 0;
+		Color BorderColor = 0;
+		ESamplerCompareFunction SamplerComparisonFunction = ESamplerCompareFunction::Never;
+	};
+	
+	class SamplerState : public SimpleRenderResource, public DeviceChild
+	{
+	public:
+	
+		SamplerState( Device* InParent, const D3D12_SAMPLER_DESC& Desc );
+		~SamplerState();
+	
+		static TRefCountPtr<SamplerState> Create( Device* InParent, const SamplerStateInitializer& Initializer );
+
+		inline uint32 GetIndex() const { return Index; }
+
+	private:
+		D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle;
+		uint32 DescriptorHeapIndex;
+		uint32 Index;
+	};
 }

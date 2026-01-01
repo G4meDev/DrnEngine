@@ -22,6 +22,7 @@ namespace Drn
 		, RTVAllocator(this, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1024)
 		, DSVAllocator(this, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1024)
 		, SRVAllocator(this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, 10)
+		, SamplerAllocator(this, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 32, 10)
 	{
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = 0;
@@ -136,6 +137,7 @@ namespace Drn
 		RTVAllocator.Init();
 		DSVAllocator.Init();
 		SRVAllocator.Init();
+		SamplerAllocator.Init();
 	}
 
 	Device::~Device()

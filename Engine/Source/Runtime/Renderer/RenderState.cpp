@@ -3,6 +3,27 @@
 
 namespace Drn
 {
+	static D3D12_TEXTURE_ADDRESS_MODE TranslateAddressMode(ESamplerAddressMode AddressMode)
+	{
+		switch (AddressMode)
+		{
+		case ESamplerAddressMode::Clamp: return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+		case ESamplerAddressMode::Mirror: return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+		case ESamplerAddressMode::Border: return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+		default: return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+		};
+	}
+
+	static D3D12_COMPARISON_FUNC TranslateSamplerCompareFunction(ESamplerCompareFunction SamplerComparisonFunction)
+	{
+		switch (SamplerComparisonFunction)
+		{
+		case ESamplerCompareFunction::Less: return D3D12_COMPARISON_FUNC_LESS;
+		case ESamplerCompareFunction::Never:
+		default: return D3D12_COMPARISON_FUNC_NEVER;
+		};
+	}
+
 	static D3D12_BLEND_OP TranslateBlendOp(EBlendOperation BlendOp)
 	{
 		switch (BlendOp)
@@ -296,21 +317,94 @@ namespace Drn
 		return OutDepthStencilState;
 	}
 
-	//SamplerState::SamplerState( Device* InParent, const D3D12_SAMPLER_DESC& Desc )
-	//	: DeviceChild(InParent)
-	//{
-	//	Descriptor.ptr = 0;
-	//
-	//}
-	//
-	//SamplerState::~SamplerState()
-	//{
-	//	
-	//}
-	//
-	//TRefCountPtr<SamplerState> SamplerState::Create( const SamplerStateInitializer& Init )
-	//{
-	//	
-	//}
+	SamplerState::SamplerState( Device* InParent, const D3D12_SAMPLER_DESC& Desc )
+		: DeviceChild(InParent)
+	{
+		CpuHandle.ptr = 0;
+		CpuHandle = GetParentDevice()->GetSamplerDescriptorAllocator().AllocateHeapSlot(DescriptorHeapIndex, GpuHandle.ptr, Index);
+		GetParentDevice()->GetD3D12Device()->CreateSampler(&Desc, CpuHandle);
+	}
+	
+	SamplerState::~SamplerState()
+	{
+		if (CpuHandle.ptr)
+		{
+			GetParentDevice()->GetSamplerDescriptorAllocator().FreeHeapSlot(CpuHandle, DescriptorHeapIndex);
+		}
+	}
+	
+	TRefCountPtr<SamplerState> SamplerState::Create( Device* InParent, const SamplerStateInitializer& Initializer )
+	{
+		D3D12_SAMPLER_DESC SamplerDesc;
+		memset(&SamplerDesc, 0, sizeof(D3D12_SAMPLER_DESC));
+
+		SamplerDesc.AddressU = TranslateAddressMode(Initializer.AddressU);
+		SamplerDesc.AddressV = TranslateAddressMode(Initializer.AddressV);
+		SamplerDesc.AddressW = TranslateAddressMode(Initializer.AddressW);
+		SamplerDesc.MipLODBias = Initializer.MipBias;
+		SamplerDesc.MaxAnisotropy = Renderer::Get()->ComputeAnisotropy(Initializer.MaxAnisotropy);
+		SamplerDesc.MinLOD = Initializer.MinMipLevel;
+		SamplerDesc.MaxLOD = Initializer.MaxMipLevel;
+
+		const bool bComparisonEnabled = Initializer.SamplerComparisonFunction != ESamplerCompareFunction::Never;
+		switch (Initializer.Filter)
+		{
+		case ESamplerFilter::AnisotropicLinear:
+		case ESamplerFilter::AnisotropicPoint:
+			if (SamplerDesc.MaxAnisotropy == 1)
+			{
+				SamplerDesc.Filter = bComparisonEnabled ? D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			}
+			else
+			{
+				SamplerDesc.Filter = bComparisonEnabled ? D3D12_FILTER_COMPARISON_ANISOTROPIC : D3D12_FILTER_ANISOTROPIC;
+			}
+
+			break;
+		case ESamplerFilter::Trilinear:
+			SamplerDesc.Filter = bComparisonEnabled ? D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR : D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			break;
+		case ESamplerFilter::Bilinear:
+			SamplerDesc.Filter = bComparisonEnabled ? D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT : D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+			break;
+		case ESamplerFilter::Point:
+			SamplerDesc.Filter = bComparisonEnabled ? D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT : D3D12_FILTER_MIN_MAG_MIP_POINT;
+			break;
+		}
+		const Vector4 LinearBorderColor = Initializer.BorderColor.AsLinearVector();
+		SamplerDesc.BorderColor[0] = LinearBorderColor.GetX();
+		SamplerDesc.BorderColor[1] = LinearBorderColor.GetY();
+		SamplerDesc.BorderColor[2] = LinearBorderColor.GetZ();
+		SamplerDesc.BorderColor[3] = LinearBorderColor.GetW();
+		SamplerDesc.ComparisonFunc = TranslateSamplerCompareFunction(Initializer.SamplerComparisonFunction);
+
+		return new SamplerState(InParent, SamplerDesc);
+
+		// TODO: add sampler cache
+		//FScopeLock Lock(&GD3D12SamplerStateCacheLock);
+		//
+		//// Check to see if the sampler has already been created
+		//// This is done to reduce cache misses accessing sampler objects
+		//TRefCountPtr<FD3D12SamplerState>* PreviouslyCreated = SamplerMap.Find(SamplerDesc);
+		//if (PreviouslyCreated)
+		//{
+		//	return PreviouslyCreated->GetReference();
+		//}
+		//else
+		//{
+		//	// 16-bit IDs are used for faster hashing
+		//	check(SamplerID < 0xffff);
+		//
+		//	FD3D12SamplerState* NewSampler = new FD3D12SamplerState(this, SamplerDesc, static_cast<uint16>(SamplerID));
+		//
+		//	SamplerMap.Add(SamplerDesc, NewSampler);
+		//
+		//	SamplerID++;
+		//
+		//	INC_DWORD_STAT(STAT_UniqueSamplers);
+		//
+		//	return NewSampler;
+		//}
+	}
 
  }  // namespace Drn

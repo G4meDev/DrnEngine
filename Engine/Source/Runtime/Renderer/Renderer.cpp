@@ -35,8 +35,6 @@ namespace Drn
 		m_UploadCommandList = nullptr;
 		StaticSamplersBuffer = nullptr;
 
-		m_BindlessSamplerHeapAllocator.Free(m_BindlessLinearSamplerCpuHandle, m_BindlessLinearSamplerGpuHandle);
-
 		//SingletonInstance->Flush();
 
 #if WITH_EDITOR
@@ -122,8 +120,6 @@ namespace Drn
 		D3D12_COMMAND_QUEUE_DESC CommandQueueDesc = { };
 		CommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		m_Device->GetD3D12Device()->CreateCommandQueue(&CommandQueueDesc, IID_PPV_ARGS(m_CommandQueue.GetAddressOf()));
-
-		m_SamplerIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER );
 		
 		m_SwapChain = std::make_unique<SwapChain>(m_Device.get(), m_MainWindow->GetWindowHandle(), m_CommandQueue.Get(), m_MainWindow->GetWindowSize());
 
@@ -141,24 +137,6 @@ namespace Drn
 #endif
 
 		m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
-
-		//{
-		//	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		//	desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		//	desc.NumDescriptors             = 2048;
-		//	desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		//	Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_BindlessSrvHeap.GetAddressOf() ) );
-		//	m_BindlessSrvHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessSrvHeap.Get() );
-		//}
-
-		{
-			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-			desc.NumDescriptors             = 256;
-			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_BindlessSamplerHeap.GetAddressOf() ) );
-			m_BindlessSamplerHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessSamplerHeap.Get() );
-		}
 
 		D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags = 
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -203,85 +181,28 @@ namespace Drn
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_BindlessRootSinature.GetAddressOf()));
 
 #if WITH_EDITOR
-		//m_BindlessSrvHeap->SetName(L"BindlessSrvHeap");
-		m_BindlessSamplerHeap->SetName(L"BindlessSamplerHeap");
-
 		m_BindlessRootSinature->SetName(L"BindlessRootSignature");
 #endif
 
-		{
-			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearSamplerCpuHandle, &m_BindlessLinearSamplerGpuHandle);
-			D3D12_SAMPLER_DESC SamplerDesc = {};
-			//SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
-			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.MinLOD = 0.0f;
-			SamplerDesc.MaxLOD = FLT_MAX;
-			SamplerDesc.MaxAnisotropy = 16;
-			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearSamplerCpuHandle);
+		SamplerStateInitializer LinearInit(ESamplerFilter::Trilinear, ESamplerAddressMode::Wrap, ESamplerAddressMode::Wrap, ESamplerAddressMode::Wrap, 0.0f, 0, 0.0f, FLT_MAX, Color::Black, ESamplerCompareFunction::Never);
+		LinearSampler = SamplerState::Create(m_Device.get(), LinearInit);
+		m_StaticSamplers.LinearSampler = LinearSampler->GetIndex();
 
-			m_StaticSamplers.LinearSampler = GetBindlessSamplerIndex(m_BindlessLinearSamplerGpuHandle);
-		}
+		SamplerStateInitializer PointInit(ESamplerFilter::Point, ESamplerAddressMode::Wrap, ESamplerAddressMode::Wrap, ESamplerAddressMode::Wrap, 0.0f, 0, 0.0f, FLT_MAX, Color::Black, ESamplerCompareFunction::Never);
+		PointSampler = SamplerState::Create(m_Device.get(), PointInit);
+		m_StaticSamplers.PointSampler = PointSampler->GetIndex();
 
-		{
-			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessPointSamplerCpuHandle, &m_BindlessPointSamplerGpuHandle);
-			D3D12_SAMPLER_DESC SamplerDesc = {};
-			//SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-			SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
-			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			SamplerDesc.MinLOD = 0.0f;
-			SamplerDesc.MaxLOD = FLT_MAX;
-			SamplerDesc.MaxAnisotropy = 16;
-			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessPointSamplerCpuHandle);
+		SamplerStateInitializer LinearCmpLessInit(ESamplerFilter::Bilinear, ESamplerAddressMode::Border, ESamplerAddressMode::Border, ESamplerAddressMode::Border, 0.0f, 0, 0.0f, FLT_MAX, Color::White, ESamplerCompareFunction::Less);
+		LinearCompLessSampler = SamplerState::Create(m_Device.get(), LinearCmpLessInit);
+		m_StaticSamplers.LinearCompLessSampler = LinearCompLessSampler->GetIndex();
 
-			m_StaticSamplers.PointSampler = GetBindlessSamplerIndex(m_BindlessPointSamplerGpuHandle);
-		}
+		SamplerStateInitializer LinearClampInit(ESamplerFilter::Bilinear, ESamplerAddressMode::Clamp, ESamplerAddressMode::Clamp, ESamplerAddressMode::Clamp, 0.0f, 0, 0.0f, FLT_MAX, Color::Black, ESamplerCompareFunction::Never);
+		LinearClampSampler = SamplerState::Create(m_Device.get(), LinearClampInit);
+		m_StaticSamplers.LinearClampSampler = LinearClampSampler->GetIndex();
 
-		{
-			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearCompLessSamplerCpuHandle, &m_BindlessLinearCompLessSamplerGpuHandle);
-			D3D12_SAMPLER_DESC SamplerDesc = {};
-			SamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
-			SamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-			SamplerDesc.AddressU = SamplerDesc.AddressV = SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
-			SamplerDesc.BorderColor[0] = SamplerDesc.BorderColor[1] = SamplerDesc.BorderColor[2] = SamplerDesc.BorderColor[3] = 1.0f;
-			SamplerDesc.MinLOD = 0.0f;
-			SamplerDesc.MaxLOD = FLT_MAX;
-			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearCompLessSamplerCpuHandle);
-
-			m_StaticSamplers.LinearCompLessSampler = GetBindlessSamplerIndex(m_BindlessLinearCompLessSamplerGpuHandle);
-		}
-
-		{
-			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessLinearClampSamplerCpuHandle, &m_BindlessLinearClampSamplerGpuHandle);
-			D3D12_SAMPLER_DESC SamplerDesc = {};
-			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			SamplerDesc.MinLOD = 0.0f;
-			SamplerDesc.MaxLOD = FLT_MAX;
-			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessLinearClampSamplerCpuHandle);
-
-			m_StaticSamplers.LinearClampSampler = GetBindlessSamplerIndex(m_BindlessLinearClampSamplerGpuHandle);
-		}
-
-		{
-			m_BindlessSamplerHeapAllocator.Alloc(&m_BindlessPointClampSamplerCpuHandle, &m_BindlessPointClampSamplerGpuHandle);
-			D3D12_SAMPLER_DESC SamplerDesc = {};
-			SamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
-			SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			SamplerDesc.MinLOD = 0.0f;
-			SamplerDesc.MaxLOD = FLT_MAX;
-			GetD3D12Device()->CreateSampler(&SamplerDesc, m_BindlessPointClampSamplerCpuHandle);
-
-			m_StaticSamplers.PointClampSampler = GetBindlessSamplerIndex(m_BindlessPointClampSamplerGpuHandle);
-		}
+		SamplerStateInitializer PointClampInit(ESamplerFilter::Point, ESamplerAddressMode::Clamp, ESamplerAddressMode::Clamp, ESamplerAddressMode::Clamp, 0.0f, 0, 0.0f, FLT_MAX, Color::Black, ESamplerCompareFunction::Never);
+		PointClampSampler = SamplerState::Create(m_Device.get(), PointClampInit);
+		m_StaticSamplers.PointClampSampler = PointClampSampler->GetIndex();
 
 		CommonResources::Init(m_CommandList);
 
@@ -376,11 +297,6 @@ namespace Drn
 	}
 
 #endif
-
-	uint32 Renderer::GetBindlessSamplerIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
-	{
-		return (Handle.ptr - m_BindlessSamplerHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SamplerIncrementSize;
-	}
 
 	ID3D12GraphicsCommandList2* Renderer::GetCommandList()
 	{
@@ -650,7 +566,7 @@ namespace Drn
 	{
 		SCOPE_STAT();
 	
-		ID3D12DescriptorHeap* const Descs[2] = { m_Device->GetSrvDescriptorAllocator().GetHeap(), m_BindlessSamplerHeap.Get() };
+		ID3D12DescriptorHeap* const Descs[2] = { m_Device->GetSrvDescriptorAllocator().GetHeap(), m_Device->GetSamplerDescriptorAllocator().GetHeap() };
 		CommandList->SetDescriptorHeaps(2, Descs);
 	}
 
