@@ -132,6 +132,29 @@ namespace Drn
 		Point,
 	};
 
+	enum class ESamplerFilter : uint8
+	{
+		Point,
+		Bilinear,
+		Trilinear,
+		AnisotropicPoint,
+		AnisotropicLinear,
+	};
+
+	enum class ESamplerAddressMode : uint8
+	{
+		Wrap,
+		Clamp,
+		Mirror,
+		Border,
+	};
+
+	enum class ESamplerCompareFunction : uint8
+	{
+		Never,
+		Less
+	};
+
 	enum class EBufferUsageFlags : uint32
 	{
 		None					= 0,

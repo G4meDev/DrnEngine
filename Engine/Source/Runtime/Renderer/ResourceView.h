@@ -208,7 +208,7 @@ namespace Drn
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
 	template <typename TDesc>
-	class TViewDescriptorHandle
+	class TViewDescriptorHandle : public DeviceChild
 	{
 		template <typename TDesc> struct TCreateViewMap;
 		template<> struct TCreateViewMap<D3D12_SHADER_RESOURCE_VIEW_DESC>	{ static decltype(&ID3D12Device::CreateShaderResourceView)	GetCreate()	{ return &ID3D12Device::CreateShaderResourceView;	} };
@@ -217,6 +217,19 @@ namespace Drn
 		template<> struct TCreateViewMap<D3D12_UNORDERED_ACCESS_VIEW_DESC>	{ static decltype(&ID3D12Device::CreateUnorderedAccessView)	GetCreate()	{ return &ID3D12Device::CreateUnorderedAccessView;	} };
 
 	public:
+
+		TViewDescriptorHandle( Device* InParentDevice )
+			: DeviceChild(InParentDevice)
+		{
+			m_CpuHandle.ptr = 0;
+			m_GpuHandle.ptr = 0;
+			//AllocateDescriptorSlot();
+		}
+
+		~TViewDescriptorHandle()
+		{
+			//FreeDescriptorSlot();
+		}
 
 		void CreateView(const TDesc& Desc, ID3D12Resource* Resource)
 		{
@@ -241,14 +254,12 @@ namespace Drn
 		{
 			if constexpr (std::is_same_v<TDesc, D3D12_RENDER_TARGET_VIEW_DESC>)
 			{
-				Renderer::Get()->m_BindlessRTVHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
-				//m_Index = Renderer::Get()->GetBindlessRTVIndex(m_GpuHandle);
+				m_CpuHandle = GetParentDevice()->GetRtvDescriptorAllocator().AllocateHeapSlot(m_HeapIndex);
 			}
 
 			else if constexpr (std::is_same_v<TDesc, D3D12_DEPTH_STENCIL_VIEW_DESC>)
 			{
-				Renderer::Get()->m_BindlessDSVHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
-				//m_Index = Renderer::Get()->GetBindlessRTVIndex(m_GpuHandle);
+				m_CpuHandle = GetParentDevice()->GetDsvDescriptorAllocator().AllocateHeapSlot(m_HeapIndex); 
 			}
 
 			else
@@ -262,12 +273,12 @@ namespace Drn
 		{
 			if constexpr (std::is_same_v<TDesc, D3D12_RENDER_TARGET_VIEW_DESC>)
 			{
-				Renderer::Get()->m_BindlessRTVHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+				GetParentDevice()->GetRtvDescriptorAllocator().FreeHeapSlot(m_CpuHandle, m_HeapIndex);
 			}
 
 			else if constexpr (std::is_same_v<TDesc, D3D12_DEPTH_STENCIL_VIEW_DESC>)
 			{
-				Renderer::Get()->m_BindlessDSVHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+				GetParentDevice()->GetDsvDescriptorAllocator().FreeHeapSlot(m_CpuHandle, m_HeapIndex);
 			}
 
 			else
@@ -280,6 +291,7 @@ namespace Drn
 		CD3DX12_CPU_DESCRIPTOR_HANDLE m_CpuHandle;
 		CD3DX12_GPU_DESCRIPTOR_HANDLE m_GpuHandle;
 		uint32 m_Index;
+		uint32 m_HeapIndex;
 	};
 
 	typedef TViewDescriptorHandle<D3D12_SHADER_RESOURCE_VIEW_DESC>	DescriptorHandleSRV;
@@ -351,7 +363,7 @@ namespace Drn
 
 		ResourceView(Device* InParent, ViewSubresourceSubsetFlags InFlags)
 			: Flags(InFlags)
-//			, Descriptor(InParent)
+			, Descriptor(InParent)
 		{
 			Descriptor.AllocateDescriptorSlot(); // TODO: move to descriptor constructor
 		}

@@ -4,6 +4,7 @@
 #include <dxgi1_6.h>
 #include "Runtime/Renderer/RenderAllocation.h"
 #include "Runtime/Renderer/RenderQuery.h"
+#include "Runtime/Renderer/Descriptor.h"
 
 LOG_DECLARE_CATEGORY(LogDevice);
 
@@ -68,6 +69,9 @@ namespace Drn
 		inline DynamicHeapAllocator& GetDynamicHeapAllocator() { return DynamicHeapAllocator; }
 		inline FastConstantAllocator& GetTransientUniformBufferAllocator() { return FastConstantAllocator; }
 
+		inline DescriptorManager& GetRtvDescriptorAllocator() { return RTVAllocator; }
+		inline DescriptorManager& GetDsvDescriptorAllocator() { return DSVAllocator; }
+
 		void CreateCommittedResource(const D3D12_RESOURCE_DESC& InDesc, const D3D12_HEAP_PROPERTIES& HeapProps, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking,
 			const D3D12_CLEAR_VALUE* ClearValue, class RenderResource** ppOutResource, const std::string& Name);
 
@@ -95,6 +99,9 @@ namespace Drn
 		FastAllocator DefaultFastAllocator;
 		DynamicHeapAllocator DynamicHeapAllocator;
 		FastConstantAllocator FastConstantAllocator;
+
+		DescriptorManager RTVAllocator;
+		DescriptorManager DSVAllocator;
 
 		template <typename BufferType>
 		static void UpdateBufferStats(ResourceLocation* Location, bool bAllocating);

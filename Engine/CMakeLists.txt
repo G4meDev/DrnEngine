@@ -113,6 +113,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderState.h
 	Source/Runtime/Renderer/RenderQuery.h
 	Source/Runtime/Renderer/GpuProfiler.h
+	Source/Runtime/Renderer/Descriptor.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -327,6 +328,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderState.cpp
 	Source/Runtime/Renderer/RenderQuery.cpp
 	Source/Runtime/Renderer/GpuProfiler.cpp
+	Source/Runtime/Renderer/Descriptor.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

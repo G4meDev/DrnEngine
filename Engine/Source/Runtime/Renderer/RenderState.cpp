@@ -296,4 +296,21 @@ namespace Drn
 		return OutDepthStencilState;
 	}
 
-        }
+	//SamplerState::SamplerState( Device* InParent, const D3D12_SAMPLER_DESC& Desc )
+	//	: DeviceChild(InParent)
+	//{
+	//	Descriptor.ptr = 0;
+	//
+	//}
+	//
+	//SamplerState::~SamplerState()
+	//{
+	//	
+	//}
+	//
+	//TRefCountPtr<SamplerState> SamplerState::Create( const SamplerStateInitializer& Init )
+	//{
+	//	
+	//}
+
+ }  // namespace Drn

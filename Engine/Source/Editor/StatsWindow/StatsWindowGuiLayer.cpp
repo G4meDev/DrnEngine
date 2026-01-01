@@ -87,6 +87,11 @@ namespace Drn
 			ImGui::Text( msg.c_str() );
 		}
 
+		ImGui::Separator();
+
+		Device* Parent = Renderer::Get()->GetDevice();
+		ImGui::Text(std::format("RTV Handles: {}", Parent->GetRtvDescriptorAllocator().GetNumAllocatedHandles()).c_str());
+		ImGui::Text(std::format("DSV Handles: {}", Parent->GetDsvDescriptorAllocator().GetNumAllocatedHandles()).c_str());
 #endif
 
 		ImGui::End();
