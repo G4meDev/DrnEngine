@@ -38,6 +38,8 @@ namespace Drn
 			, NumSamples(InNumSamples)
 			, Format(InFormat)
 			, Flags(InFlags)
+			, bCubemap(false)
+			, b3D(false)
 		{}
 
 		virtual ~RenderTextureBase();
@@ -184,8 +186,8 @@ namespace Drn
 			return SimpleRenderResource::GetRefCount();
 		}
 
-		virtual bool IsCubemap() const	{ return false; }
-		virtual bool Is3D() const		{ return false; }
+		bool IsCubemap() const	{ return bCubemap; }
+		bool Is3D() const		{ return b3D; }
 
 	public:
 	
@@ -250,6 +252,10 @@ namespace Drn
 		DXGI_FORMAT Format;
 		ETextureCreateFlags Flags;
 		std::string TextureName;
+
+	protected:
+		uint8 bCubemap	: 1;
+		uint8 b3D		: 1;
 	};
 
 	class RenderBaseTexture2D : public RenderTextureBase
@@ -330,13 +336,12 @@ namespace Drn
 		RenderTextureCube(Device* InParent,uint32 InSizeX, uint32 InNumMips, uint32 InNumSamples, DXGI_FORMAT InFormat, ETextureCreateFlags InFlags, const ClearValueBinding& InClearValue)
 			: RenderBaseTexture2D(InParent, InSizeX, InSizeX, 6, InNumMips, InNumSamples, InFormat, InFlags, InClearValue)
 		{
+			bCubemap = true;
 		}
 
 		virtual ~RenderTextureCube() {}
 
 		static RenderTextureCube* Create(class D3D12CommandList* CmdList, uint32 SizeX, DXGI_FORMAT Format, uint32 NumMips, uint32 NumSamples, bool bNeedsStateTracking, ETextureCreateFlags Flags, RenderResourceCreateInfo& CreateInfo);
-
-		virtual bool IsCubemap() const override { return true; }
 
 	private:
 

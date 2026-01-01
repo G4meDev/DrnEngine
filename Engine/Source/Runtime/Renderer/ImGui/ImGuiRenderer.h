@@ -50,6 +50,7 @@ namespace Drn
 		//LinkedList<ImGuiLayer> Layers;
 		std::vector<ImGuiLayer*> m_CurrentTickLayers;
 	
+		static std::map<decltype(D3D12_CPU_DESCRIPTOR_HANDLE::ptr), DescriptorHandleSRV*> SRVHandles;
 	};
 }
 #endif

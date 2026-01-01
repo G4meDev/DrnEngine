@@ -1,5 +1,5 @@
-#include "DrnPCH.h"
 #include "PointLightActor.h"
+#include "DrnPCH.h"
 #include "Runtime/Components/PointLightComponent.h"
 
 #include "Editor/Misc/EditorMisc.h"

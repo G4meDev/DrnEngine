@@ -26,14 +26,10 @@ namespace Drn
 
 		XMVECTOR CameraRotation = XMQuaternionRotationRollPitchYaw(Math::PI / 4, Math::PI * 5 / 4, 0);
 		m_World->GetViewportCamera()->SetActorRotation( CameraRotation );
-
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc( &ViewCpuHandle, &ViewGpuHandle );
 	}
 
 	ViewportPanel::~ViewportPanel()
 	{
-		Renderer::Get()->m_BindlessSrvHeapAllocator.Free(ViewCpuHandle, ViewGpuHandle);
-
 		// @TODO: manage renderer allocation and deallocation in unified manner
 		// even though we allocate renderer with this class, some times worlds gets destroyed and deallocates renderer early. ideally this shouldn't happen
 		if (m_SceneRenderer)
@@ -68,8 +64,7 @@ namespace Drn
 		}
 
 		if (ValidViewportSource)
-			ImGui::Image( (ImTextureID)ViewGpuHandle.ptr, ImVec2( CachedSize.X, CachedSize.Y) );
-
+			ImGui::Image( (ImTextureID)m_SceneRenderer->GetViewRenderTexture()->GetShaderResourceView()->GetDescriptor().GetGpuHandle().ptr, ImVec2( CachedSize.X, CachedSize.Y) );
 
 		HandleInputs();
 
@@ -242,16 +237,6 @@ namespace Drn
 	void ViewportPanel::OnSceneRendererResized( const IntPoint& NewSize )
 	{
 		ValidViewportSource = true;
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC descSRV = {};
-		
-		descSRV.Texture2D.MipLevels       = 1;
-		descSRV.Texture2D.MostDetailedMip = 0;
-		descSRV.Format                    = DXGI_FORMAT_R8G8B8A8_UNORM;
-		descSRV.ViewDimension             = D3D12_SRV_DIMENSION_TEXTURE2D;
-		descSRV.Shader4ComponentMapping   = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		
-		Renderer::Get()->GetD3D12Device()->CreateShaderResourceView( m_SceneRenderer->GetViewRenderTexture()->GetResource()->GetResource(), &descSRV, ViewCpuHandle );
 	}
 
 }

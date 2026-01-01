@@ -39,9 +39,6 @@ namespace Drn
 
 		void OnRendererPickedComponent( Component* PickedComponent );
 
-		D3D12_CPU_DESCRIPTOR_HANDLE ViewCpuHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE ViewGpuHandle;
-
 		IntPoint CachedSize = IntPoint( 1920, 1080 );
 
 		StaticMeshActor* m_GridActor;

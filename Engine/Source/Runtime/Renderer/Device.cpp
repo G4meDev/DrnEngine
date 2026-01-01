@@ -21,6 +21,7 @@ namespace Drn
 		, TimeStampQueryHeap(this, D3D12_QUERY_TYPE_TIMESTAMP, 8192, 4 * 5)
 		, RTVAllocator(this, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1024)
 		, DSVAllocator(this, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1024)
+		, SRVAllocator(this, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1024, 10)
 	{
 		Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory;
 		UINT createFactoryFlags = 0;
@@ -134,6 +135,7 @@ namespace Drn
 		TimeStampQueryHeap.Init();
 		RTVAllocator.Init();
 		DSVAllocator.Init();
+		SRVAllocator.Init();
 	}
 
 	Device::~Device()

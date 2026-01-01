@@ -69,8 +69,9 @@ namespace Drn
 		inline DynamicHeapAllocator& GetDynamicHeapAllocator() { return DynamicHeapAllocator; }
 		inline FastConstantAllocator& GetTransientUniformBufferAllocator() { return FastConstantAllocator; }
 
-		inline DescriptorManager& GetRtvDescriptorAllocator() { return RTVAllocator; }
-		inline DescriptorManager& GetDsvDescriptorAllocator() { return DSVAllocator; }
+		inline OfflineDescriptorManager& GetRtvDescriptorAllocator() { return RTVAllocator; }
+		inline OfflineDescriptorManager& GetDsvDescriptorAllocator() { return DSVAllocator; }
+		inline OnlineDescriptorManager& GetSrvDescriptorAllocator() { return SRVAllocator; }
 
 		void CreateCommittedResource(const D3D12_RESOURCE_DESC& InDesc, const D3D12_HEAP_PROPERTIES& HeapProps, D3D12_RESOURCE_STATES InInitialState, bool bNeedsStateTracking,
 			const D3D12_CLEAR_VALUE* ClearValue, class RenderResource** ppOutResource, const std::string& Name);
@@ -100,8 +101,9 @@ namespace Drn
 		DynamicHeapAllocator DynamicHeapAllocator;
 		FastConstantAllocator FastConstantAllocator;
 
-		DescriptorManager RTVAllocator;
-		DescriptorManager DSVAllocator;
+		OfflineDescriptorManager RTVAllocator;
+		OfflineDescriptorManager DSVAllocator;
+		OnlineDescriptorManager SRVAllocator;
 
 		template <typename BufferType>
 		static void UpdateBufferStats(ResourceLocation* Location, bool bAllocating);

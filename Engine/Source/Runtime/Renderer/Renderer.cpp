@@ -123,9 +123,6 @@ namespace Drn
 		CommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		m_Device->GetD3D12Device()->CreateCommandQueue(&CommandQueueDesc, IID_PPV_ARGS(m_CommandQueue.GetAddressOf()));
 
-		m_RtvIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_RTV );
-		m_DsvIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_DSV );
-		m_SrvIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV );
 		m_SamplerIncrementSize = GetD3D12Device()->GetDescriptorHandleIncrementSize( D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER );
 		
 		m_SwapChain = std::make_unique<SwapChain>(m_Device.get(), m_MainWindow->GetWindowHandle(), m_CommandQueue.Get(), m_MainWindow->GetWindowSize());
@@ -145,14 +142,14 @@ namespace Drn
 
 		m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
 
-		{
-			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-			desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-			desc.NumDescriptors             = 2048;
-			desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-			Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_BindlessSrvHeap.GetAddressOf() ) );
-			m_BindlessSrvHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessSrvHeap.Get() );
-		}
+		//{
+		//	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+		//	desc.Type                       = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		//	desc.NumDescriptors             = 2048;
+		//	desc.Flags                      = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+		//	Renderer::Get()->GetD3D12Device()->CreateDescriptorHeap( &desc, IID_PPV_ARGS( m_BindlessSrvHeap.GetAddressOf() ) );
+		//	m_BindlessSrvHeapAllocator.Create( Renderer::Get()->GetD3D12Device(), m_BindlessSrvHeap.Get() );
+		//}
 
 		{
 			D3D12_DESCRIPTOR_HEAP_DESC desc = {};
@@ -206,7 +203,7 @@ namespace Drn
 			pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_BindlessRootSinature.GetAddressOf()));
 
 #if WITH_EDITOR
-		m_BindlessSrvHeap->SetName(L"BindlessSrvHeap");
+		//m_BindlessSrvHeap->SetName(L"BindlessSrvHeap");
 		m_BindlessSamplerHeap->SetName(L"BindlessSamplerHeap");
 
 		m_BindlessRootSinature->SetName(L"BindlessRootSignature");
@@ -379,11 +376,6 @@ namespace Drn
 	}
 
 #endif
-
-	uint32 Renderer::GetBindlessSrvIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
-	{
-		return (Handle.ptr - m_BindlessSrvHeap->GetGPUDescriptorHandleForHeapStart().ptr) / m_SrvIncrementSize;
-	}
 
 	uint32 Renderer::GetBindlessSamplerIndex( D3D12_GPU_DESCRIPTOR_HANDLE Handle )
 	{
@@ -658,7 +650,7 @@ namespace Drn
 	{
 		SCOPE_STAT();
 	
-		ID3D12DescriptorHeap* const Descs[2] = { m_BindlessSrvHeap.Get(), m_BindlessSamplerHeap.Get() };
+		ID3D12DescriptorHeap* const Descs[2] = { m_Device->GetSrvDescriptorAllocator().GetHeap(), m_BindlessSamplerHeap.Get() };
 		CommandList->SetDescriptorHeaps(2, Descs);
 	}
 

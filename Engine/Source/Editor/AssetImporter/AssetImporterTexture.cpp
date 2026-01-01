@@ -300,8 +300,8 @@ namespace Drn
 		uint32 SrvHeapStackPointer = 0;
 		auto AllocateSrv = [&]() { return SrvHeapStackPointer++; };
 
-		auto SrvCpuHandle = [&]( uint32 Index ) { return CD3DX12_CPU_DESCRIPTOR_HANDLE(SrvHeap->GetCPUDescriptorHandleForHeapStart(), Index, Renderer::Get()->GetSrvIncrementSize()); };
-		auto SrvGpuHandle = [&]( uint32 Index ) { return CD3DX12_GPU_DESCRIPTOR_HANDLE(SrvHeap->GetGPUDescriptorHandleForHeapStart(), Index, Renderer::Get()->GetSrvIncrementSize()); };
+		auto SrvCpuHandle = [&]( uint32 Index ) { return CD3DX12_CPU_DESCRIPTOR_HANDLE(SrvHeap->GetCPUDescriptorHandleForHeapStart(), Index, Renderer::Get()->GetDevice()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)); };
+		auto SrvGpuHandle = [&]( uint32 Index ) { return CD3DX12_GPU_DESCRIPTOR_HANDLE(SrvHeap->GetGPUDescriptorHandleForHeapStart(), Index, Renderer::Get()->GetDevice()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)); };
 
 // -----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -392,7 +392,7 @@ namespace Drn
 
 		for (int32 i = 0; i < MipCount; i++)
 		{
-			TargetHandles[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE( RtvHeap->GetCPUDescriptorHandleForHeapStart(), i, Renderer::Get()->GetRtvIncrementSize() );
+			TargetHandles[i] = CD3DX12_CPU_DESCRIPTOR_HANDLE( RtvHeap->GetCPUDescriptorHandleForHeapStart(), i, Renderer::Get()->GetDevice()->GetD3D12Device()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 
 			D3D12_RENDER_TARGET_VIEW_DESC ViewDesc = {};
 			ViewDesc.Format = MetaData.format;

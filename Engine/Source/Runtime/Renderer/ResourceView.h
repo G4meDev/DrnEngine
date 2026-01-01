@@ -223,12 +223,12 @@ namespace Drn
 		{
 			m_CpuHandle.ptr = 0;
 			m_GpuHandle.ptr = 0;
-			//AllocateDescriptorSlot();
+			AllocateDescriptorSlot();
 		}
 
 		~TViewDescriptorHandle()
 		{
-			//FreeDescriptorSlot();
+			FreeDescriptorSlot();
 		}
 
 		void CreateView(const TDesc& Desc, ID3D12Resource* Resource)
@@ -264,8 +264,7 @@ namespace Drn
 
 			else
 			{
-				Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
-				m_Index = Renderer::Get()->GetBindlessSrvIndex(m_GpuHandle);
+				m_CpuHandle = Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().AllocateHeapSlot(m_HeapIndex, m_GpuHandle.ptr, m_Index);
 			}
 		}
 
@@ -283,7 +282,7 @@ namespace Drn
 
 			else
 			{
-				Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+				Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().FreeHeapSlot(m_CpuHandle, m_HeapIndex);
 			}
 		}
 
@@ -327,13 +326,12 @@ namespace Drn
 
 		inline void AllocateDescriptorSlot()
 		{
-			Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(&m_CpuHandle, &m_GpuHandle);
-			m_Index = Renderer::Get()->GetBindlessSrvIndex(m_GpuHandle);
+			m_CpuHandle = Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().AllocateHeapSlot(m_HeapIndex, m_GpuHandle.ptr, m_Index);
 		}
 
 		inline void FreeDescriptorSlot()
 		{
-			Renderer::Get()->m_BindlessSrvHeapAllocator.Free(m_CpuHandle, m_GpuHandle);
+			Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().FreeHeapSlot(m_CpuHandle, m_HeapIndex);
 		}
 
 		inline const D3D12_CONSTANT_BUFFER_VIEW_DESC& GetDesc() const { return m_Desc; }
@@ -343,6 +341,7 @@ namespace Drn
 		CD3DX12_CPU_DESCRIPTOR_HANDLE m_CpuHandle;
 		CD3DX12_GPU_DESCRIPTOR_HANDLE m_GpuHandle;
 		uint32 m_Index;
+		uint32 m_HeapIndex;
 	};
 
 // ---------------------------------------------------------------------------------------------------------
@@ -364,14 +363,10 @@ namespace Drn
 		ResourceView(Device* InParent, ViewSubresourceSubsetFlags InFlags)
 			: Flags(InFlags)
 			, Descriptor(InParent)
-		{
-			Descriptor.AllocateDescriptorSlot(); // TODO: move to descriptor constructor
-		}
+		{}
 
 		virtual ~ResourceView()
-		{
-			Descriptor.FreeDescriptorSlot();
-		}
+		{}
 
 	private:
 		void Initialize(const TDesc& InDesc, ResourceLocation& InResourceLocation)

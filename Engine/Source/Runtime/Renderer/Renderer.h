@@ -149,13 +149,9 @@ namespace Drn
 
 		inline void ToggleVSync() const { if(m_SwapChain) m_SwapChain->ToggleVSync(); }
 
-		inline uint32 GetRtvIncrementSize() const { return m_RtvIncrementSize; }
-		inline uint32 GetDsvIncrementSize() const { return m_DsvIncrementSize; }
-		inline uint32 GetSrvIncrementSize() const { return m_SrvIncrementSize; }
-
 		// TODO: remove
-		TempDescriptorHeapAllocator m_BindlessSrvHeapAllocator;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessSrvHeap;
+		//TempDescriptorHeapAllocator m_BindlessSrvHeapAllocator;
+		//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessSrvHeap;
 
 		TempDescriptorHeapAllocator m_BindlessSamplerHeapAllocator;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_BindlessSamplerHeap;
@@ -180,7 +176,6 @@ namespace Drn
 		StaticSamplers m_StaticSamplers;
 		TRefCountPtr<class RenderUniformBuffer> StaticSamplersBuffer;
 
-		uint32 GetBindlessSrvIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
 		uint32 GetBindlessSamplerIndex(D3D12_GPU_DESCRIPTOR_HANDLE Handle);
 
 		tf::Taskflow m_RendererTickTask;
@@ -191,9 +186,6 @@ namespace Drn
 		Window* m_MainWindow = nullptr;
 		std::set<Scene*> m_AllocatedScenes;
 
-		uint32 m_RtvIncrementSize;
-		uint32 m_DsvIncrementSize;
-		uint32 m_SrvIncrementSize;
 		uint32 m_SamplerIncrementSize;
 
 		friend class ViewportGuiLayer;

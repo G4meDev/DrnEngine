@@ -15,6 +15,8 @@ namespace Drn
 {
 	std::unique_ptr<ImGuiRenderer> ImGuiRenderer::SingletonInstance = nullptr;
 
+	std::map<decltype( D3D12_CPU_DESCRIPTOR_HANDLE::ptr ), DescriptorHandleSRV*> ImGuiRenderer::SRVHandles;
+
 	ImGuiRenderer::ImGuiRenderer()
 	{
 
@@ -57,11 +59,22 @@ namespace Drn
 		init_info.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
 
-		init_info.SrvDescriptorHeap    = Renderer::Get()->m_BindlessSrvHeap.Get();
+		init_info.SrvDescriptorHeap    = Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().GetHeap();
 		init_info.SrvDescriptorAllocFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE*out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle )
-			{ return Renderer::Get()->m_BindlessSrvHeapAllocator.Alloc(out_cpu_handle, out_gpu_handle ); };
+			{
+				DescriptorHandleSRV* SrvHandle = new DescriptorHandleSRV(Renderer::Get()->GetDevice());
+				SRVHandles[SrvHandle->GetCpuHandle().ptr] = SrvHandle;
+				*out_cpu_handle = SrvHandle->GetCpuHandle();
+				*out_gpu_handle = SrvHandle->GetGpuHandle();
+			};
 		 init_info.SrvDescriptorFreeFn = []( ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle )
-			{ 	return Renderer::Get()->m_BindlessSrvHeapAllocator.Free( cpu_handle, gpu_handle ); };
+			{
+				auto it = SRVHandles.find(cpu_handle.ptr);
+				drn_check(it != SRVHandles.end());
+
+				delete it->second;
+				SRVHandles.erase(it);
+			};
 
 		ImGui_ImplDX12_Init( &init_info );
 	}
