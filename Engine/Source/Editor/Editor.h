@@ -41,6 +41,7 @@ namespace Drn
 		void ReimportMaterials();
 		void ReimportStaticMeshes();
 		void ReimportTexture2D();
+		void ReimportTextureCube();
 
 		static IntPoint GetScreenPositionRelative();
 

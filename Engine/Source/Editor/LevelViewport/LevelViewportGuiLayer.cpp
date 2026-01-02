@@ -164,6 +164,11 @@ namespace Drn
 					Editor::Get()->ReimportTexture2D();
 				}
 
+				if ( ImGui::MenuItem( "Reimport TextureCube" ) )
+				{
+					Editor::Get()->ReimportTextureCube();
+				}
+
 				ImGui::EndMenu();
 			}
 

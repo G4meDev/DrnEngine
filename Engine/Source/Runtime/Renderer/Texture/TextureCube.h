@@ -24,7 +24,7 @@ namespace Drn
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::TextureCube; }
 	
 		virtual uint32 GetTextureIndex() const override;
-		virtual uint32 GetSamplerIndex() const override { return 0; };
+		virtual uint32 GetSamplerIndex() const override;
 
 		const TRefCountPtr<RenderTextureCube>& GetRenderTexture() const { return m_RenderTexture; }
 
@@ -32,6 +32,12 @@ namespace Drn
 
 		bool m_Initialized = false;
 		TRefCountPtr<class RenderTextureCube> m_RenderTexture;
+		TRefCountPtr<SamplerState> m_SamplerState;
+
+		EFilteringMethod FilteringMethod;
+		uint8 LODBias;
+
+	public:
 
 #if WITH_EDITOR
 		void Import();

@@ -215,6 +215,11 @@ namespace Drn
 		ReimportAsset<Texture2D>();
 	}
 
+	void Editor::ReimportTextureCube()
+	{
+		ReimportAsset<TextureCube>();
+	}
+
 	IntPoint Editor::GetScreenPositionRelative()
 	{
 		const ImVec2 RectMin = ImGui::GetItemRectMin();

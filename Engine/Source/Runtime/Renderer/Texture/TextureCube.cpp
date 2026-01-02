@@ -8,6 +8,8 @@ namespace Drn
 {
 	TextureCube::TextureCube( const std::string& InPath )
 		: Texture(InPath)
+		, FilteringMethod(EFilteringMethod::Trilinear)
+		, LODBias(0)
 	{
 		Load();
 	}
@@ -15,6 +17,8 @@ namespace Drn
 #if WITH_EDITOR
 	TextureCube::TextureCube( const std::string& InPath, const std::string& InSourcePath )
 		: Texture(InPath)
+		, FilteringMethod(EFilteringMethod::Trilinear)
+		, LODBias(0)
 	{
 		m_SourcePath = InSourcePath;
 
@@ -32,11 +36,18 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			
+			uint8 PackedState = 0;
+			Ar >> PackedState;
+			FilteringMethod = (EFilteringMethod)(PackedState & 0x3); // first 2 bit
+			LODBias = ((PackedState >> 2) & 0xF); // next 4 bit
 		}
 		else
 		{
+			uint8 PackedState = 0;
+			PackedState |= (uint8)FilteringMethod;
+			PackedState |= (uint8)LODBias << 2;
 
+			Ar << PackedState;
 		}
 	}
 
@@ -67,6 +78,9 @@ namespace Drn
 			m_RenderTexture = RenderTextureCube::Create(CommandList, m_SizeX, m_Format, m_MipLevels, 1, false,
 				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
 
+			SamplerStateInitializer SamplerInit((ESamplerFilter)FilteringMethod, ESamplerAddressMode::Wrap, ESamplerAddressMode::Wrap, ESamplerAddressMode::Wrap, LODBias, 0, 0.0f, FLT_MAX, Color::Black, ESamplerCompareFunction::Never);
+			m_SamplerState = SamplerState::Create(CommandList->GetParentDevice(), SamplerInit);
+
 			ClearRenderStateDirty();
 		}
 
@@ -76,6 +90,12 @@ namespace Drn
 	{
 		drn_check(m_RenderTexture);
 		return m_RenderTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
+	}
+
+	uint32 TextureCube::GetSamplerIndex() const
+	{
+		drn_check(m_SamplerState);
+		return m_SamplerState->GetIndex();
 	}
 
 #if WITH_EDITOR
