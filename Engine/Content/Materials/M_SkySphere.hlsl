@@ -1,4 +1,4 @@
-//#include "../../../Engine/Content/Materials/Common.hlsl"
+#include "Common.hlsl"
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_PRE_PASS
@@ -6,19 +6,14 @@
 // SUPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_-_SHADOW_PASS
 
-float3 EncodeNormal(float3 Normal)
-{
-    return Normal * 0.5 + 0.5;
-}
-
 struct Resources
 {
     uint ViewIndex;
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
     uint ShadowDepthBuffer;
 };
 
@@ -41,20 +36,14 @@ struct StaticSamplers
     uint LinearSamplerIndex;
 };
 
-struct TextureBuffers
+struct ParametersBuffers
 {
-    uint BaseColorTexture; // @TEXCUBE BaseColorTexture
-};
+    VECTOR(TintColor, TintColor)
+    
+    SCALAR(Exposure, Exposure)
+    SCALAR(Intensity, Intensity)
 
-struct ScalarBuffer
-{
-    float Exposure; // @SCALAR Exposure
-    float Intensity; // @SCALAR Intensity
-};
-
-struct VectorBuffer
-{
-    float4 TintColor; // @VECTOR TintColor
+    TEXCUBE(BaseColor, BaseColorTexture)
 };
 
 #if SHADOW_PASS_POINTLIGHT
@@ -68,19 +57,6 @@ struct ShadowDepth
     matrix WorldToProjectionMatrix;
 };
 #endif
-
-struct VertexInputStaticMesh
-{
-    float3 Position : POSITION;
-    float3 Color : COLOR;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
-    float2 UV1 : TEXCOORD0;
-    float2 UV2 : TEXCOORD1;
-    float2 UV3 : TEXCOORD2;
-    float2 UV4 : TEXCOORD3;
-};
 
 struct VertexShaderOutput
 {
@@ -141,6 +117,8 @@ struct PixelShaderOutput
 #endif
 };
 
+//#define MAIN_PASS 1
+
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
@@ -150,14 +128,13 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    TextureCube BaseColorTexture = ResourceDescriptorHeap[Textures.BaseColorTexture];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
 
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    TextureCube BaseColorTexture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
+    SamplerState BaseColorSampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
 
-    float3 BaseColor = BaseColorTexture.Sample(LinearSampler, -IN.Normal).xyz;
-    BaseColor = pow(BaseColor, Scalars.Exposure) * Scalars.Intensity;
+    float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, -IN.Normal).xyz;
+    BaseColor = pow(BaseColor, Parameters.Exposure) * Parameters.Intensity;
     
     OUT.ColorDeferred = float4(BaseColor, 1);
     //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);

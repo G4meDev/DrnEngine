@@ -8,9 +8,9 @@ struct Resources
     uint ViewIndex;
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -32,14 +32,10 @@ struct StaticSamplers
     uint LinearSamplerIndex;
 };
 
-struct ScalarBuffer
+struct ParametersBuffers
 {
-    float MipLevel; // @SCALAR MipLevel
-};
-    
-struct TextureBuffers
-{
-    uint BaseColorTexture; // @TEXCUBE Texture
+    SCALAR(MipLevel, MipLevel)
+    TEXCUBE(BaseColor, Texture)
 };
 
 struct VertexShaderOutput
@@ -88,9 +84,10 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    TextureCube Texture = ResourceDescriptorHeap[Textures.BaseColorTexture];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
+
+    TextureCube Texture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
+    SamplerState Sampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
     
     const float CPI = 3.14159265;
     
@@ -103,7 +100,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float s = sin(Angles.y);
     float3 uvw = float3(s * sin(Angles.x), cos(Angles.y), -s * cos(Angles.x));
     
-    float3 Sample = Texture.SampleLevel(LinearSampler, uvw, Scalars.MipLevel).rgb;
+    float3 Sample = Texture.SampleLevel(Sampler, uvw, Parameters.MipLevel).rgb;
     
     OUT.ColorDeferred = float4(Sample, 1);
     //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);

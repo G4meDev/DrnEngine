@@ -1,4 +1,4 @@
-//#include "../../../Engine/Content/Materials/Common.hlsl"
+#include "Common.hlsl"
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_PRE_PASS
@@ -8,9 +8,9 @@ struct Resources
     uint ViewIndex;
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -32,32 +32,11 @@ struct StaticSamplers
     uint LinearSamplerIndex;
 };
 
-struct ScalarBuffer
+struct ParametersBuffers
 {
-    float MipLevel; // @SCALAR MipLevel
-};
-
-struct VectorBuffer
-{
-    float4 ShowColor; // @VECTOR ShowColor
-};
-
-struct TextureBuffers
-{
-    uint BaseColorTexture; // @TEX2D Texture
-};
-
-struct VertexInputStaticMesh
-{
-    float3 Position : POSITION;
-    float3 Color : COLOR;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
-    float2 UV1 : TEXCOORD0;
-    float2 UV2 : TEXCOORD1;
-    float2 UV3 : TEXCOORD2;
-    float2 UV4 : TEXCOORD3;
+    VECTOR(ShowColor, ShowColor)
+    SCALAR(MipLevel, MipLevel)
+    TEX2D(BaseColor, Texture)
 };
 
 struct VertexShaderOutput
@@ -106,14 +85,13 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    Texture2D Texture = ResourceDescriptorHeap[Textures.BaseColorTexture];
-    
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
+
+    Texture2D Texture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
+    SamplerState Sampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
     
     PixelShaderOutput OUT;
-    float4 Sample = Texture.SampleLevel(LinearSampler, IN.UV, Scalars.MipLevel);
+    float4 Sample = Texture.SampleLevel(Sampler, IN.UV, Parameters.MipLevel);
     
     //OUT.ColorDeferred = float4(BaseColor, 1);
     //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);
@@ -123,7 +101,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     //OUT.Masks.a = 1.0f/255;
     OUT.Masks.a = 0;
     
-    if(Vectors.ShowColor.a > 0)
+    if(Parameters.ShowColor.a > 0)
     {
         OUT.ColorDeferred = float4(Sample.aaa, 1);
     }

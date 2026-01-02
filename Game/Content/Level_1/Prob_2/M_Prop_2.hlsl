@@ -11,9 +11,9 @@ struct Resources
     uint ViewIndex;
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
     uint ShadowDepthBuffer;
 };
 
@@ -62,24 +62,19 @@ struct StaticSamplers
     uint LinearSamplerIndex;
 };
 
-struct TextureBuffers
+struct ParametersBuffers
 {
-    uint BaseColorTexture; // @TEX2D BaseColorTexture
-    uint NormalTexture; // @TEX2D NormalTexture
-    uint MasksTexture; // @TEX2D MasksTexture
-    uint EmssiveTexture; // @TEX2D EmssiveTexture
-};
+    VECTOR(TintColor, TintColor)
+    
+    SCALAR(RoughnessIntensity, RoughnessIntensity)
+    SCALAR(NormalIntensity, NormalIntensity)
+    SCALAR(EmssiveIntensity, EmssiveIntensity)
+    SCALAR(TintColorIntensity, TintColorIntensity)
 
-struct ScalarBuffer
-{
-    float RoughnessIntensity; // @SCALAR RoughnessIntensity
-    float NormalIntensity; // @SCALAR NormalIntensity
-    float EmssiveIntensity; // @SCALAR EmssiveIntensity
-};
-
-struct VectorBuffer
-{
-    float4 TintColor; // @VECTOR TintColor
+    TEX2D(BaseColor, BaseColorTexture)
+    TEX2D(Normal, NormalTexture)
+    TEX2D(Masks, MasksTexture)
+    TEX2D(Emssive, EmssiveTexture)
 };
 
 #if SHADOW_PASS_POINTLIGHT
@@ -205,37 +200,39 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
  
 #if MAIN_PASS
 
-    ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
-    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
-    
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    Texture2D BaseColorTexture = ResourceDescriptorHeap[Textures.BaseColorTexture];
-    Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
-    Texture2D MasksTexture = ResourceDescriptorHeap[Textures.MasksTexture];
-    Texture2D EmssiveTexture = ResourceDescriptorHeap[Textures.EmssiveTexture];
-    
-    float3 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV).xyz;
-    float3 Masks = MasksTexture.Sample(LinearSampler, IN.UV).xyz;
-    float3 Emssive = EmssiveTexture.Sample(LinearSampler, IN.UV).xyz;
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
 
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    Texture2D BaseColorTexture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
+    SamplerState BaseColorSampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
+    
+    Texture2D NormalTexture = ResourceDescriptorHeap[Parameters.Normal_Texture];
+    SamplerState NormalSampler = ResourceDescriptorHeap[Parameters.Normal_Sampler];
+    
+    Texture2D MasksTexture = ResourceDescriptorHeap[Parameters.Masks_Texture];
+    SamplerState MasksSampler = ResourceDescriptorHeap[Parameters.Masks_Sampler];
+    
+    Texture2D EmssiveTexture = ResourceDescriptorHeap[Parameters.Emssive_Texture];
+    SamplerState EmssiveSampler = ResourceDescriptorHeap[Parameters.Emssive_Sampler];
+    
+    float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV).xyz;
+    float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV).xyz;
+    float3 Emssive = EmssiveTexture.Sample(EmssiveSampler, IN.UV).xyz;
 
     //float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rbg;
-    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rgb;
-    Masks.g *= Scalars.RoughnessIntensity;
-    //Masks.g = Scalars.RoughnessIntensity;
+    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV).rgb;
+    Masks.g *= Parameters.RoughnessIntensity;
+    //Masks.g = Parameters.RoughnessIntensity;
 
     Normal = ReconstructNormals(Normal.xy);
-    Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Scalars.NormalIntensity );
+    Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Parameters.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
     //Normal = EncodeNormal(Normal);
     float2 N = EncodeNormal(Normal);
     
     
-    OUT.ColorDeferred = float4(Emssive * Scalars.EmssiveIntensity, 1);
+    OUT.ColorDeferred = float4(Emssive * Parameters.EmssiveIntensity, 1);
     OUT.BaseColor = float4(BaseColor, 1);
-    //OUT.BaseColor = lerp(OUT.BaseColor, Vectors.TintColor, Scalars.TintIntensity);
+    OUT.BaseColor = lerp(OUT.BaseColor, Parameters.TintColor, Parameters.TintColorIntensity);
     //OUT.WorldNormal = float4( Normal, 0);
     OUT.WorldNormal = N;
     OUT.Masks = float4(Masks, 1.0f/255);
@@ -285,112 +282,3 @@ void PointLightShadow_GS(triangle VertexShaderOutput input[3], inout TriangleStr
 }
 
 #endif
-
-//ConstantBuffer<ViewBuffer> View : register(b0);
-//
-//Texture2D BaseColorTexture : register(t0);
-//SamplerState BaseColorSampler : register(s0);
-//
-//Texture2D NormalTexture : register(t1);
-//SamplerState NormalSampler : register(s1);
-//
-//Texture2D MasksTexture : register(t2);
-//SamplerState MasksSampler : register(s2);
-//
-//struct VertexShaderOutput
-//{
-//    float4 Color : COLOR;
-//    float3 Normal : NORMAL;
-//    float3x3 TBN : TBN;
-//    float2 UV : TEXCOORD;
-//    float4 Position : SV_Position;
-//};
-//
-//VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
-//{
-//#if SHADOW_PASS
-//    
-//    // TODO: simplify by macro for point light
-//    
-//#endif
-//    VertexShaderOutput OUT;
-//
-//    float3 VertexNormal = normalize(mul((float3x3) View.LocalToWorld, IN.Normal));
-//    float3 VertexTangent = normalize(mul((float3x3) View.LocalToWorld, IN.Tangent));
-//    float3 VertexBiNormal = normalize(mul((float3x3) View.LocalToWorld, IN.Bitangent));
-//    //OUT.TBN = float3x3(VertexTangent, VertexBiNormal, VertexNormal);
-//    OUT.TBN = float3x3(VertexTangent, VertexNormal, VertexBiNormal);
-//    
-//    OUT.Position = mul(View.LocalToProjection, float4(IN.Position, 1.0f));
-//    OUT.Color = float4(IN.Color, 1.0f);
-//    OUT.Normal = VertexNormal;
-//    OUT.UV = IN.UV1;
-//    
-//    return OUT;
-//}
-//
-//// -------------------------------------------------------------------------------------
-//
-//struct PixelShaderInput
-//{
-//    float4 Color : COLOR;
-//    float3 Normal : NORMAL;
-//    float3x3 TBN : TBN;
-//    float2 UV : TEXCOORD;
-//};
-//
-//PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
-//{
-//    PixelShaderOutput OUT;
-//
-//#if MAIN_PASS
-//    float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV).xyz;
-//    float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV).xyz;
-//    
-//    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV).rbg;
-//    Normal.z = 1 - Normal.z;
-//    Normal = Normal * 2 - 1;
-//    Normal = normalize(mul(Normal, IN.TBN));
-//    Normal = EncodeNormal(Normal);
-//    
-//    OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
-//    OUT.BaseColor = float4(BaseColor, 1);
-//    OUT.WorldNormal = float4( Normal, 0);
-//    OUT.Masks = float4(Masks, 1);
-//#elif HitProxyPass
-//    OUT.Guid = View.Guid;
-//#endif
-//    
-//    return OUT;
-//}
-//
-//// -------------------------------------------------------------------------------------
-//
-//struct GeometeryShaderOutput
-//{
-//    float4 Position : SV_Position;
-//    uint TargetIndex : SV_RenderTargetArrayIndex;
-//};
-//
-//[maxvertexcount(18)]
-//void PointLightShadow_GS(triangle VertexShaderOutput input[3], inout TriangleStream<GeometeryShaderOutput> OutputStream)
-//{
-//    GeometeryShaderOutput OUT;
-//    
-//    for (int i = 0; i < 6; i++)
-//    {
-//        OUT.TargetIndex = i;
-//        OUT.Position = input[0].Position;
-//        OutputStream.Append(OUT);
-//        
-//        OUT.Position = input[1].Position;
-//        OutputStream.Append(OUT);
-//
-//        OUT.Position = input[2].Position;
-//        OutputStream.Append(OUT);
-//        
-//        OutputStream.RestartStrip();
-//    }
-//
-//    
-//}

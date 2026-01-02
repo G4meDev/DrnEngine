@@ -14,9 +14,9 @@ struct Resources
     uint ViewIndex;
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
     uint ShadowDepthBuffer;
     uint DecalBaseColor;
     uint DecalNormal;
@@ -73,17 +73,16 @@ struct StaticSamplers
     uint PointSamplerIndex;
 };
 
-struct TextureBuffers
+struct ParametersBuffers
 {
-    uint BaseColorOpacityTexture; // @TEX2D BaseColorTexture
-    uint NormalTexture; // @TEX2D NormalTexture
-};
+    VECTOR(TintColor, TintColor)
+    
+    SCALAR(RoughnessIntensity, RoughnessIntensity)
+    SCALAR(NormalIntensity, NormalIntensity)
+    SCALAR(SubsurfaceColorIntensity, SubsurfaceColorIntensity)
 
-struct ScalarBuffer
-{
-    float Roughness; // @SCALAR RoughnessIntensity
-    float NormalIntensity; // @SCALAR NormalIntensity
-    float SubsurfaceColorIntensity; // @SCALAR SubsurfaceColorIntensity
+    TEX2D(BaseColorOpacity, BaseColorTexture)
+    TEX2D(Normal, NormalTexture)
 };
 
 struct VectorBuffer
@@ -190,24 +189,25 @@ BasePassPixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFro
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    Texture2D BaseColorOpacityTexture = ResourceDescriptorHeap[Textures.BaseColorOpacityTexture];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
+
+    Texture2D BaseColorOpacityTexture = ResourceDescriptorHeap[Parameters.BaseColorOpacity_Texture];
+    SamplerState BaseColorOpacitySampler = ResourceDescriptorHeap[Parameters.BaseColorOpacity_Sampler];
     
-    float4 BaseColorOpacity = BaseColorOpacityTexture.Sample(LinearSampler, IN.UV);
+    float4 BaseColorOpacity = BaseColorOpacityTexture.Sample(BaseColorOpacitySampler, IN.UV);
     clip(BaseColorOpacity.a - 0.33f);
     
 #if MAIN_PASS
 
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    Texture2D NormalTexture = ResourceDescriptorHeap[Parameters.Normal_Texture];
+    SamplerState NormalSampler = ResourceDescriptorHeap[Parameters.Normal_Sampler];
     
-    Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
-    float3 Masks = float3(0, Scalars.Roughness, 1);
+    float3 Masks = float3(0, Parameters.RoughnessIntensity, 1);
     
-    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rgb;
+    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV).rgb;
     Normal = ReconstructNormals(Normal.xy);
 
-    Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Scalars.NormalIntensity );
+    Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Parameters.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
     if(!FrontFace)
     {
@@ -220,7 +220,7 @@ BasePassPixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFro
     OUT.WorldNormal = N;
     OUT.Masks = float4(Masks, Uint8ToFloat(SHADING_MODEL_FOLIAGE));
     
-    OUT.MasksB = float4(BaseColorOpacity.rgb * Scalars.SubsurfaceColorIntensity, 1);
+    OUT.MasksB = float4(BaseColorOpacity.rgb * Parameters.SubsurfaceColorIntensity, 1);
     
     
     //float2 Velocity = IN.ScreenPos.xy / IN.ScreenPos.w - IN.PrevScreenPos.xy / IN.PrevScreenPos.w;

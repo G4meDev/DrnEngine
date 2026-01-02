@@ -149,7 +149,12 @@ namespace Drn
 
 		TRefCountPtr<class RenderUniformBuffer> TextureIndexBuffer;
 
+		TRefCountPtr<class RenderUniformBuffer> ParametersBuffer;
+
 		void InitalizeParameterMap();
+
+		// TODO: delete
+		bool bNew = false;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

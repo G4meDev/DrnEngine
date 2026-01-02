@@ -12,9 +12,9 @@ struct Resources
     uint MeshDecalBufferIndex;
 #endif
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
     uint DepthTexture;
 };
 
@@ -67,23 +67,17 @@ struct StaticSamplers
     uint PointSamplerIndex;
 };
 
-struct TextureBuffers
+struct ParametersBuffers
 {
-    uint BaseColorTexture; // @TEX2D BaseColorTexture
-    uint NormalTexture; // @TEX2D NormalTexture
-    uint MasksTexture; // @TEX2D MasksTexture
-};
+    VECTOR(TintColor, TintColor)
+    
+    SCALAR(TintIntensity, TintIntensity)
+    SCALAR(RoughnessIntensity, RoughnessIntensity)
+    SCALAR(NormalIntensity, NormalIntensity)
 
-struct ScalarBuffer
-{
-    float TintIntensity; // @SCALAR ColorIntensity
-    float RoughnessIntensity; // @SCALAR RoughnessIntensity
-    float NormalIntensity; // @SCALAR NormalIntensity
-};
-
-struct VectorBuffer
-{
-    float4 TintColor; // @VECTOR TintColor
+    TEX2D(BaseColor, BaseColorTexture)
+    TEX2D(Normal, NormalTexture)
+    TEX2D(Masks, MasksTexture)
 };
 
 struct VertexShaderInput
@@ -162,19 +156,22 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     clip(LocalPosition.xyz + 1.0f);
     clip(1.0f - LocalPosition.xyz);
     
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
 
-    Texture2D BaseColorTexture = ResourceDescriptorHeap[Textures.BaseColorTexture];
-    Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
-    Texture2D MasksTexture = ResourceDescriptorHeap[Textures.MasksTexture];
+    Texture2D BaseColorTexture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
+    SamplerState BaseColorSampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
+    
+    Texture2D NormalTexture = ResourceDescriptorHeap[Parameters.Normal_Texture];
+    SamplerState NormalSampler = ResourceDescriptorHeap[Parameters.Normal_Sampler];
+    
+    Texture2D MasksTexture = ResourceDescriptorHeap[Parameters.Masks_Texture];
+    SamplerState MasksSampler = ResourceDescriptorHeap[Parameters.Masks_Sampler];
     
     float2 DecalUVs = LocalPosition.xz * float2(0.5f, -0.5f) + 0.5f;
     
-    float3 BaseColor = BaseColorTexture.Sample(LinearSampler, DecalUVs).xyz;
-    float3 Normal = NormalTexture.Sample(LinearSampler, DecalUVs).xyz;
-    float3 Masks = MasksTexture.Sample(LinearSampler, DecalUVs).xyz;
+    float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, DecalUVs).xyz;
+    float3 Normal = NormalTexture.Sample(NormalSampler, DecalUVs).xyz;
+    float3 Masks = MasksTexture.Sample(MasksSampler, DecalUVs).xyz;
     
     float BlendAlpha = 1.0f;
     BlendAlpha *= 4 * (1 - abs(LocalPosition.y));
@@ -189,17 +186,20 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
 
-    Texture2D BaseColorTexture = ResourceDescriptorHeap[Textures.BaseColorTexture];
-    Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
-    Texture2D MasksTexture = ResourceDescriptorHeap[Textures.MasksTexture];
+    Texture2D BaseColorTexture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
+    SamplerState BaseColorSampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
     
-    float3 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV0).xyz;
-    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV0).xyz;
-    float3 Masks = MasksTexture.Sample(LinearSampler, IN.UV0).xyz;
+    Texture2D NormalTexture = ResourceDescriptorHeap[Parameters.Normal_Texture];
+    SamplerState NormalSampler = ResourceDescriptorHeap[Parameters.Normal_Sampler];
+    
+    Texture2D MasksTexture = ResourceDescriptorHeap[Parameters.Masks_Texture];
+    SamplerState MasksSampler = ResourceDescriptorHeap[Parameters.Masks_Sampler];
+    
+    float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV0).xyz;
+    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV0).xyz;
+    float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV0).xyz;
     
     float BlendAlpha = Masks.r;
     

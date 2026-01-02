@@ -11,9 +11,9 @@ struct Resources
     uint ViewIndex;
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
     uint ShadowDepthBuffer;
     uint DecalBaseColor;
     uint DecalNormal;
@@ -70,23 +70,17 @@ struct StaticSamplers
     uint PointSamplerIndex;
 };
 
-struct TextureBuffers
+struct ParametersBuffers
 {
-    uint BaseColorTexture; // @TEX2D BaseColorTexture
-    uint NormalTexture; // @TEX2D NormalTexture
-    uint MasksTexture; // @TEX2D MasksTexture
-};
-
-struct ScalarBuffer
-{
-    float TintIntensity; // @SCALAR ColorIntensity
-    float RoughnessIntensity; // @SCALAR RoughnessIntensity
-    float NormalIntensity; // @SCALAR NormalIntensity
-};
-
-struct VectorBuffer
-{
-    float4 TintColor; // @VECTOR TintColor
+    VECTOR(TintColor, TintColor)
+    
+    SCALAR(TintIntensity, ColorIntensity)
+    SCALAR(RoughnessIntensity, RoughnessIntensity)
+    SCALAR(NormalIntensity, NormalIntensity)
+    
+    TEX2D(BaseColor, BaseColorTexture)
+    TEX2D(Normal, NormalTexture)
+    TEX2D(Masks, MasksTexture)
 };
 
 #if SHADOW_PASS_POINTLIGHT
@@ -203,13 +197,17 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
     
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    Texture2D BaseColorTexture = ResourceDescriptorHeap[Textures.BaseColorTexture];
-    Texture2D NormalTexture = ResourceDescriptorHeap[Textures.NormalTexture];
-    Texture2D MasksTexture = ResourceDescriptorHeap[Textures.MasksTexture];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
+    
+    Texture2D BaseColorTexture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
+    SamplerState BaseColorSampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
+    
+    Texture2D NormalTexture = ResourceDescriptorHeap[Parameters.Normal_Texture];
+    SamplerState NormalSampler = ResourceDescriptorHeap[Parameters.Normal_Sampler];
+    
+    Texture2D MasksTexture = ResourceDescriptorHeap[Parameters.Masks_Texture];
+    SamplerState MasksSampler = ResourceDescriptorHeap[Parameters.Masks_Sampler];
     
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     Texture2D DecalBaseColorTexture = ResourceDescriptorHeap[BindlessResources.DecalBaseColor];
@@ -221,16 +219,16 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float4 DecalNormal = DecalNormalTexture.Sample(PointSampler, ScreenUV);
     float4 DecalMasks = DecalMasksTexture.Sample(PointSampler, ScreenUV);
     
-    float3 BaseColor = BaseColorTexture.Sample(LinearSampler, IN.UV).xyz;
-    float3 Masks = MasksTexture.Sample(LinearSampler, IN.UV).xyz;
-    Masks.g *= Scalars.RoughnessIntensity;
+    float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV).xyz;
+    float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV).xyz;
+    Masks.g *= Parameters.RoughnessIntensity;
 
-    float3 Normal = NormalTexture.Sample(LinearSampler, IN.UV).rgb;
+    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV).rgb;
     Normal = lerp(DecalNormal.xyz, Normal, DecalNormal.w);
 
     Normal = ReconstructNormals(Normal.xy);
 
-    Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Scalars.NormalIntensity );
+    Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Parameters.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
     float2 N = EncodeNormal(Normal);
     

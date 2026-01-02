@@ -8,7 +8,7 @@ namespace Drn
 {
 	Texture2D::Texture2D( const std::string& InPath )
 		: Texture(InPath)
-		, FilteringMethod(EFilteringMethod::Trilinear)
+		, FilteringMethod(EFilteringMethod::Anisotropic)
 		, TilingMethodX(ETilingMethod::Wrap)
 		, TilingMethodY(ETilingMethod::Wrap)
 		, LODBias(0)
@@ -19,7 +19,7 @@ namespace Drn
 #if WITH_EDITOR
 	Texture2D::Texture2D( const std::string& InPath, const std::string& InSourcePath )
 		: Texture(InPath)
-		, FilteringMethod(EFilteringMethod::Trilinear)
+		, FilteringMethod(EFilteringMethod::Anisotropic)
 		, TilingMethodX(ETilingMethod::Wrap)
 		, TilingMethodY(ETilingMethod::Wrap)
 		, LODBias(0)

@@ -1,4 +1,4 @@
-//#include "../../../Engine/Content/Materials/Common.hlsl"
+#include "Common.hlsl"
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_PRE_PASS
@@ -8,9 +8,9 @@ struct Resources
     uint ViewIndex;
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -32,27 +32,10 @@ struct StaticSamplers
     uint LinearSamplerIndex;
 };
 
-struct ScalarBuffer
+struct ParametersBuffers
 {
-    float MipLevel; // @SCALAR MipLevel
-};
-
-struct TextureBuffers
-{
-    uint BaseColorTexture; // @TEXCUBE Texture
-};
-
-struct VertexInputStaticMesh
-{
-    float3 Position : POSITION;
-    float3 Color : COLOR;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
-    float2 UV1 : TEXCOORD0;
-    float2 UV2 : TEXCOORD1;
-    float2 UV3 : TEXCOORD2;
-    float2 UV4 : TEXCOORD3;
+    SCALAR(MipLevel, MipLevel)
+    TEXCUBE(BaseColor, Texture)
 };
 
 struct VertexShaderOutput
@@ -104,12 +87,13 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    TextureCube Texture = ResourceDescriptorHeap[Textures.BaseColorTexture];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
+
+    TextureCube Texture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
+    SamplerState Sampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
     
     PixelShaderOutput OUT;
-    float3 Sample = Texture.SampleLevel(LinearSampler, IN.Normal, Scalars.MipLevel).rgb;
+    float3 Sample = Texture.SampleLevel(Sampler, IN.Normal, Parameters.MipLevel).rgb;
     
     OUT.ColorDeferred = float4(Sample, 1);
     //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);

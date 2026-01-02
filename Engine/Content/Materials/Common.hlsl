@@ -68,6 +68,22 @@ static const float PI = 3.14159265359;
 //    return UV;
 //}
 
+#define VECTOR( name , displayname)         \
+    float4 name;                            \
+
+#define SCALAR( name , displayname)         \
+    float name;                             \
+
+#define TEX2D( name , displayname)          \
+    uint name##_Texture;                    \
+    uint name##_Sampler;                    \
+
+#define TEXCUBE( name , displayname)        \
+    uint name##_Texture;                    \
+    uint name##_Sampler;                    \
+
+
+
 #define SHADING_MODEL_UNLIT 0
 #define SHADING_MODEL_LIT 1
 #define SHADING_MODEL_FOLIAGE 2

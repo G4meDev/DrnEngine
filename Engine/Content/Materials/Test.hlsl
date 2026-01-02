@@ -1,4 +1,4 @@
-//#include "../../../Engine/Content/Materials/Common.hlsl"
+#include "Common.hlsl"
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_PRE_PASS
@@ -10,9 +10,9 @@ struct Resources
     uint ViewIndex;
     uint PrimitiveIndex;
     uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
 };
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
@@ -34,36 +34,17 @@ struct StaticSamplers
     uint LinearSamplerIndex;
 };
 
-struct TextureBuffers
+struct ParametersBuffers
 {
-    uint TestTexture; // @TEX2D TestTexture
-    uint TestTexture_2; // @TEX2D TestTexture_2
-};
-
-struct ScalarBuffer
-{
-    float Alpha; // @SCALAR Alpha
-    float Rand; // @SCALAR Rand
-    float WERWER; // @SCALAR WERWER
-};
-
-struct VectorBuffer
-{
-    float4 LightDir; // @VECTOR LightDir
-    float4 ExampleVec4; // @VECTOR ExampleVec4
-};
-
-struct VertexInputStaticMesh
-{
-    float3 Position : POSITION;
-    float3 Color : COLOR;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
-    float2 UV1 : TEXCOORD0;
-    float2 UV2 : TEXCOORD1;
-    float2 UV3 : TEXCOORD2;
-    float2 UV4 : TEXCOORD3;
+    VECTOR(LightDir, LightDir)
+    VECTOR(ExampleVec4, ExampleVec4)
+    
+    SCALAR(Alpha, Alpha)
+    SCALAR(Rand, Rand)
+    SCALAR(WERWER, WERWER)
+    
+    TEX2D(TestTexture, TestTexture)
+    TEX2D(TestTexture_2, TestTexture_2)
 };
 
 struct VertexShaderOutput
@@ -120,17 +101,16 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    ConstantBuffer<TextureBuffers> Textures = ResourceDescriptorHeap[BindlessResources.TextureBufferIndex];
-    Texture2D TestTexture = ResourceDescriptorHeap[Textures.TestTexture];
-    
-    ConstantBuffer<ScalarBuffer> Scalars = ResourceDescriptorHeap[BindlessResources.ScalarBufferIndex];
-    ConstantBuffer<VectorBuffer> Vectors = ResourceDescriptorHeap[BindlessResources.VectorBufferIndex];
+    ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
+
+    Texture2D TestTexture = ResourceDescriptorHeap[Parameters.TestTexture_Texture];
+    SamplerState TestSampler = ResourceDescriptorHeap[Parameters.TestTexture_Sampler];
     
     PixelShaderOutput OUT;
 
-    float4 Texture1 = TestTexture.Sample(LinearSampler, IN.UV);
-    float L = max(0, dot(IN.Normal, Vectors.LightDir.xyz));
-    float4 Result = Texture1 * L * Scalars.Alpha;
+    float4 Texture1 = TestTexture.Sample(TestSampler, IN.UV);
+    float L = max(0, dot(IN.Normal, Parameters.LightDir.xyz));
+    float4 Result = Texture1 * L * Parameters.Alpha;
     
 #if MAIN_PASS
     OUT.ColorDeferred = Result;

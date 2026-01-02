@@ -27,6 +27,7 @@ namespace Drn
 		Nearest,
 		Bilinear,
 		Trilinear,
+		Anisotropic
 	};
 
 	class Texture : public Asset

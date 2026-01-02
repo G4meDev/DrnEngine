@@ -9,6 +9,33 @@ LOG_DEFINE_CATEGORY( LogAssetImporterMaterial, "AssetImporterMaterial" );
 
 namespace Drn
 {
+	struct MaterialParamData
+	{
+		MaterialParamData() {}
+
+		std::string Name;
+	};
+
+	struct VectorParamData : public MaterialParamData
+	{
+		VectorParamData() {}
+	};
+
+	struct ScalarParamData : public MaterialParamData
+	{
+		ScalarParamData() {}
+	};
+
+	struct Texture2DParamData : public MaterialParamData
+	{
+		Texture2DParamData() {}
+	};
+
+	struct TextureCubeParamData : public MaterialParamData
+	{
+		TextureCubeParamData() {}
+	};
+
 	void AssetImporterMaterial::Import( Material* MaterialAsset, const std::string& Path )
 	{
 		std::string ShaderString = FileSystem::ReadFileAsString(Path);
@@ -245,132 +272,172 @@ namespace Drn
 		return true;
 	}
 
+	void FindVectorParams(const std::string& ShaderCode, std::vector<VectorParamData>& Params)
+	{
+		std::istringstream iss(ShaderCode);
+		for (std::string line; std::getline(iss, line); )
+		{
+			std::string str = " Mem(100)=120";
+			std::regex regex("^[\\s]*VECTOR[\\s]*\\([\\s]*([_|A-Z|a-z]+[_|A-Z|a-z|0-9]+)[\\s]*,[\\s]*([_|A-Z|a-z]+[_|A-Z|a-z|0-9]+)[\\s]*\\)$");
+			std::smatch m;
+
+			if (std::regex_match(line, m, regex))
+			{
+				Params.push_back({});
+				Params.back().Name = m[2];
+			}
+		}
+	}
+
+	void FindScalarParams(const std::string& ShaderCode, std::vector<ScalarParamData>& Params)
+	{
+		std::istringstream iss(ShaderCode);
+		for (std::string line; std::getline(iss, line); )
+		{
+			std::string str = " Mem(100)=120";
+			std::regex regex("^[\\s]*SCALAR[\\s]*\\([\\s]*([_|A-Z|a-z]+[_|A-Z|a-z|0-9]+)[\\s]*,[\\s]*([_|A-Z|a-z]+[_|A-Z|a-z|0-9]+)[\\s]*\\)$");
+			std::smatch m;
+
+			if (std::regex_match(line, m, regex))
+			{
+				Params.push_back({});
+				Params.back().Name = m[2];
+			}
+		}
+	}
+
+	void FindTexture2DParams(const std::string& ShaderCode, std::vector<Texture2DParamData>& Params)
+	{
+		std::istringstream iss(ShaderCode);
+		for (std::string line; std::getline(iss, line); )
+		{
+			std::string str = " Mem(100)=120";
+			std::regex regex("^[\\s]*TEX2D[\\s]*\\([\\s]*([_|A-Z|a-z]+[_|A-Z|a-z|0-9]+)[\\s]*,[\\s]*([_|A-Z|a-z]+[_|A-Z|a-z|0-9]+)[\\s]*\\)$");
+			std::smatch m;
+
+			if (std::regex_match(line, m, regex))
+			{
+				Params.push_back({});
+				Params.back().Name = m[2];
+			}
+		}
+	}
+
+	void FindTextureCubeParams(const std::string& ShaderCode, std::vector<TextureCubeParamData>& Params)
+	{
+		std::istringstream iss(ShaderCode);
+		for (std::string line; std::getline(iss, line); )
+		{
+			std::string str = " Mem(100)=120";
+			std::regex regex("^[\\s]*TEXCUBE[\\s]*\\([\\s]*([_|A-Z|a-z]+[_|A-Z|a-z|0-9]+)[\\s]*,[\\s]*([_|A-Z|a-z]+[_|A-Z|a-z|0-9]+)[\\s]*\\)$");
+			std::smatch m;
+
+			if (std::regex_match(line, m, regex))
+			{
+				Params.push_back({});
+				Params.back().Name = m[2];
+			}
+		}
+	}
+
 	void AssetImporterMaterial::UpdateMaterialParameterSlots( Material* MaterialAsset, const std::string& ShaderCode )
 	{
-		std::vector<MaterialIndexedTexture2DParameter> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
-		MaterialAsset->m_Texture2DSlots.clear();
+		std::vector<VectorParamData> VectorParams;
+		FindVectorParams(ShaderCode, VectorParams);
 
-		std::vector<std::string> NamedTokens;
-		FindNamedTokens(ShaderCode, "@TEX2D", NamedTokens);
+		std::vector<ScalarParamData> ScalarParams;
+		FindScalarParams(ShaderCode, ScalarParams);
 
-		for (int i = 0; i < NamedTokens.size(); i++)
-		{
-			std::string Path = DEFAULT_TEXTURE_PATH;
-			std::string& name = NamedTokens[i];
+		std::vector<Texture2DParamData> Texture2DParams;
+		FindTexture2DParams(ShaderCode, Texture2DParams);
 
-			for (const MaterialIndexedTexture2DParameter& OldTexture2D : OldTexture2Ds)
-			{
-				if (OldTexture2D.m_Name == name)
-				{
-					Path = OldTexture2D.m_Texture2D.GetPath();
-				}
-			}
-
-			MaterialAsset->m_Texture2DSlots.push_back(MaterialIndexedTexture2DParameter(name, Path, i));
-		}
-
-// ----------------------------------------------------------------------------------------------------------------------------
-
-		std::vector<MaterialIndexedTextureCubeParameter> OldTextureCubes = MaterialAsset->m_TextureCubeSlots;
-		MaterialAsset->m_TextureCubeSlots.clear();
-
-		NamedTokens.clear();
-		FindNamedTokens(ShaderCode, "@TEXCUBE", NamedTokens);
-
-		for (int i = 0; i < NamedTokens.size(); i++)
-		{
-			std::string Path = "NULL";
-			std::string& name = NamedTokens[i];
-
-			for (const MaterialIndexedTextureCubeParameter& OldTextureCube : OldTextureCubes)
-			{
-				if (OldTextureCube.m_Name == name)
-				{
-					Path = OldTextureCube.m_TextureCube.GetPath();
-				}
-			}
-
-			MaterialAsset->m_TextureCubeSlots.push_back(MaterialIndexedTextureCubeParameter(name, Path, i + MaterialAsset->m_Texture2DSlots.size()));
-		}
-
-// ----------------------------------------------------------------------------------------------------------------------------
-
-		std::vector<MaterialIndexedFloatParameter> OldScalars = MaterialAsset->m_FloatSlots;
-		MaterialAsset->m_FloatSlots.clear();
-
-		NamedTokens.clear();
-		FindNamedTokens(ShaderCode, "@SCALAR", NamedTokens);
-
-		for (int i = 0; i < NamedTokens.size(); i++)
-		{
-			const std::string& name = NamedTokens[i];
-			float Value = 0.0f;
-
-			for (const FloatProperty& OldScalar : OldScalars)
-			{
-				if (OldScalar.m_Name == name)
-				{
-					Value = OldScalar.m_Value;
-				}
-			}
-
-			MaterialAsset->m_FloatSlots.push_back(MaterialIndexedFloatParameter(name, Value, i));
-		}
-
-// ----------------------------------------------------------------------------------------------------------------------------
-
-		const uint32 FloatSize = MaterialAsset->m_FloatSlots.size();
+		std::vector<TextureCubeParamData> TextureCubeParams;
+		FindTextureCubeParams(ShaderCode, TextureCubeParams);
 
 		std::vector<MaterialIndexedVector4Parameter> OldVector4s = MaterialAsset->m_Vector4Slots;
 		MaterialAsset->m_Vector4Slots.clear();
 
-		NamedTokens.clear();
-		FindNamedTokens(ShaderCode, "@VECTOR", NamedTokens);
+		std::vector<MaterialIndexedFloatParameter> OldFloats = MaterialAsset->m_FloatSlots;
+		MaterialAsset->m_FloatSlots.clear();
 
-		for (int i = 0; i < NamedTokens.size(); i++)
+		std::vector<MaterialIndexedTexture2DParameter> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
+		MaterialAsset->m_Texture2DSlots.clear();
+
+		std::vector<MaterialIndexedTextureCubeParameter> OldTextureCubes = MaterialAsset->m_TextureCubeSlots;
+		MaterialAsset->m_TextureCubeSlots.clear();
+
+		for (int32 i = 0; i < VectorParams.size(); i++)
 		{
-			const std::string& name = NamedTokens[i];
+			const VectorParamData& Param = VectorParams[i];
 			Vector4 Value = 0.0f;
 
 			for (const Vector4Property& OldVector4 : OldVector4s)
 			{
-				if (OldVector4.m_Name == name)
+				if (OldVector4.m_Name == Param.Name)
 				{
 					Value = OldVector4.m_Value;
 				}
 			}
 
-			MaterialAsset->m_Vector4Slots.push_back(MaterialIndexedVector4Parameter(name, Value, i * 4));
+			MaterialAsset->m_Vector4Slots.push_back(MaterialIndexedVector4Parameter(Param.Name, Value, i));
 		}
 
-
-	}
-
-	void AssetImporterMaterial::FindNamedTokens( const std::string& ShaderCode, const std::string& Token, std::vector<std::string>& Result )
-	{
-		const size_t TokenLength = Token.length();
-
-		size_t pos = ShaderCode.find(Token, 0);
-		while( pos != std::string::npos )
+		for (int32 i = 0; i < ScalarParams.size(); i++)
 		{
-			size_t NameStart = pos + TokenLength + 1;
-			size_t NameEnd = ShaderCode.find_first_of( " ;\n", NameStart);
+			const ScalarParamData& Param = ScalarParams[i];
+			float Value = 0.0f;
 
-			if (NameEnd != std::string::npos)
+			for (const FloatProperty& OldFloat : OldFloats)
 			{
-				std::string name = ShaderCode.substr(NameStart, NameEnd - NameStart);
-				Result.push_back(name);
-
-				pos = ShaderCode.find(Token, NameEnd);
+				if (OldFloat.m_Name == Param.Name)
+				{
+					Value = OldFloat.m_Value;
+				}
 			}
 
-			else
+			MaterialAsset->m_FloatSlots.push_back(MaterialIndexedFloatParameter(Param.Name, Value, i));
+		}
+
+		for (int32 i = 0; i < Texture2DParams.size(); i++)
+		{
+			const Texture2DParamData& Param = Texture2DParams[i];
+			std::string Path = NAME_NULL;
+
+			for (Texture2DProperty& OldTexture2D : OldTexture2Ds)
 			{
-				pos = std::string::npos;
+				if (OldTexture2D.m_Name == Param.Name)
+				{
+					OldTexture2D.m_Texture2D.LoadChecked();
+					if (OldTexture2D.m_Texture2D.IsValid())
+					{
+						Path = OldTexture2D.m_Texture2D.GetPath();
+					}
+				}
 			}
+
+			MaterialAsset->m_Texture2DSlots.push_back(MaterialIndexedTexture2DParameter(Param.Name, Path, i));
+		}
+
+		for (int32 i = 0; i < TextureCubeParams.size(); i++)
+		{
+			const TextureCubeParamData& Param = TextureCubeParams[i];
+			std::string Path = NAME_NULL;
+
+			for (TextureCubeProperty& OldTextureCube : OldTextureCubes)
+			{
+				if (OldTextureCube.m_Name == Param.Name)
+				{
+					OldTextureCube.m_TextureCube.LoadChecked();
+					if (OldTextureCube.m_TextureCube.IsValid())
+					{
+						Path = OldTextureCube.m_TextureCube.GetPath();
+					}
+				}
+			}
+
+			MaterialAsset->m_TextureCubeSlots.push_back(MaterialIndexedTextureCubeParameter(Param.Name, Path, i));
 		}
 	}
-
 }
 
 #endif

@@ -8,7 +8,7 @@ namespace Drn
 {
 	TextureCube::TextureCube( const std::string& InPath )
 		: Texture(InPath)
-		, FilteringMethod(EFilteringMethod::Trilinear)
+		, FilteringMethod(EFilteringMethod::Anisotropic)
 		, LODBias(0)
 	{
 		Load();
@@ -17,7 +17,7 @@ namespace Drn
 #if WITH_EDITOR
 	TextureCube::TextureCube( const std::string& InPath, const std::string& InSourcePath )
 		: Texture(InPath)
-		, FilteringMethod(EFilteringMethod::Trilinear)
+		, FilteringMethod(EFilteringMethod::Anisotropic)
 		, LODBias(0)
 	{
 		m_SourcePath = InSourcePath;

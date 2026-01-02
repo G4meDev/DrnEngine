@@ -139,7 +139,7 @@ namespace Drn
 			m_OwningAsset->m_Compression = static_cast<ETextureCompression>(CurrrentComppression);
 		}
 
-		const char* FilterTypes[] = { "Nearest", "Bilinear", "Trilinear" };
+		const char* FilterTypes[]  = { "Nearest", "Bilinear", "Trilinear", "Anisotropic" };
 		int32 CurrrentFilter = static_cast<int32>(m_OwningAsset->FilteringMethod);
 		if ( ImGui::Combo( "Filter", &CurrrentFilter, FilterTypes, IM_ARRAYSIZE( FilterTypes )))
 		{

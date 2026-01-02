@@ -62,6 +62,8 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
+			bNew = true;
+
 			ReleaseShaderBlobs();
 
 			Ar >> m_SourcePath;
@@ -567,7 +569,11 @@ namespace Drn
 			//{
 			//	m_TextureBufferDirty = true;
 			//}
-			m_Texture2DSlots[i].m_Texture2D->UploadResources(CommandList);
+			
+			if ( m_Texture2DSlots[i].m_Texture2D.IsValid())
+			{
+				m_Texture2DSlots[i].m_Texture2D->UploadResources(CommandList);
+			}
 		}
 
 		for (uint8 i = 0; i < m_TextureCubeSlots.size(); i++)
@@ -582,72 +588,117 @@ namespace Drn
 			}
 		}
 
-		// if (m_TextureBufferDirty)
-		if (true) //TODO: issue with re imported textures. cached keeps texture index of destroyed texture
+		if (!bNew)
 		{
-			m_TextureBufferDirty = false;
-			TextureIndexBuffer = nullptr;
-
-			std::vector<uint32> TextureIndices;
-			TextureIndices.resize(m_Texture2DSlots.size() + m_TextureCubeSlots.size());
-
-			for (auto& TextureSlot : m_Texture2DSlots)
+			// if (m_TextureBufferDirty)
+			if (true) //TODO: issue with re imported textures. cached keeps texture index of destroyed texture
 			{
-				TextureIndices[TextureSlot.m_Index] = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetTextureIndex() : 0;
+				m_TextureBufferDirty = false;
+				TextureIndexBuffer = nullptr;
+
+				std::vector<uint32> TextureIndices;
+				TextureIndices.resize(m_Texture2DSlots.size() + m_TextureCubeSlots.size());
+
+				for (auto& TextureSlot : m_Texture2DSlots)
+				{
+					TextureIndices[TextureSlot.m_Index] = TextureSlot.m_Texture2D.IsValid() ? TextureSlot.m_Texture2D->GetTextureIndex() : 0;
+				}
+
+				for (auto& TextureSlot : m_TextureCubeSlots)
+				{
+					TextureIndices[TextureSlot.m_Index] = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetTextureIndex() : 0;
+				}
+
+				if (TextureIndices.size() > 0)
+				{
+					//uint32 Size = Align(TextureIndices.size() * sizeof(uint32), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+					uint32 Size = TextureIndices.size() * sizeof(uint32);
+					TextureIndexBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, TextureIndices.data());
+				}
 			}
 
-			for (auto& TextureSlot : m_TextureCubeSlots)
+			//if (m_ScalarBufferDirty)
+			if (true)
 			{
-				TextureIndices[TextureSlot.m_Index] = TextureSlot.m_TextureCube.IsValid() ? TextureSlot.m_TextureCube->GetTextureIndex() : 0;
+				m_ScalarBufferDirty = false;
+				ScalarBuffer = nullptr;
+
+				std::vector<float> Values;
+				for (int i = 0; i < m_FloatSlots.size(); i++)
+				{
+					Values.push_back(m_FloatSlots[i].m_Value);
+				}
+
+				if (Values.size() > 0)
+				{
+					//uint32 Size = Align(Values.size() * sizeof(float), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+					uint32 Size = Values.size() * sizeof(float);
+					ScalarBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Values.data());
+				}
 			}
 
-			if (TextureIndices.size() > 0)
+			//if (m_VectorBufferDirty)
+			if (true)
 			{
-				//uint32 Size = Align(TextureIndices.size() * sizeof(uint32), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-				uint32 Size = TextureIndices.size() * sizeof(uint32);
-				TextureIndexBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, TextureIndices.data());
+				m_VectorBufferDirty = false;
+				VectorBuffer = nullptr;
+
+				std::vector<Vector4> Values;
+				for (int i = 0; i < m_Vector4Slots.size(); i++)
+				{
+					Values.push_back(m_Vector4Slots[i].m_Value);
+				}
+
+				if (Values.size() > 0)
+				{
+					//uint32 Size = Align(Values.size() * sizeof(Vector4), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+					uint32 Size = Values.size() * sizeof(Vector4);
+					VectorBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Values.data());
+				}
 			}
 		}
 
-		//if (m_ScalarBufferDirty)
-		if (true)
+		else
 		{
-			m_ScalarBufferDirty = false;
-			ScalarBuffer = nullptr;
+			const int32 Vector4SlotCount = m_Vector4Slots.size() * 4;
+			const int32 ScalarSlotCount = m_FloatSlots.size();
+			const int32 Texture2DSlotCount = m_Texture2DSlots.size() * 2;
+			const int32 TextureCubeSlotCount = m_TextureCubeSlots.size() * 2;
+			const int32 SlotCount = Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount + TextureCubeSlotCount;
 
-			std::vector<float> Values;
-			for (int i = 0; i < m_FloatSlots.size(); i++)
-			{
-				Values.push_back(m_FloatSlots[i].m_Value);
-			}
+			std::vector<uint32> Parameters;
+			Parameters.resize(SlotCount);
 
-			if (Values.size() > 0)
-			{
-				//uint32 Size = Align(Values.size() * sizeof(float), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-				uint32 Size = Values.size() * sizeof(float);
-				ScalarBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Values.data());
-			}
-		}
-
-		//if (m_VectorBufferDirty)
-		if (true)
-		{
-			m_VectorBufferDirty = false;
-			VectorBuffer = nullptr;
-
-			std::vector<Vector4> Values;
 			for (int i = 0; i < m_Vector4Slots.size(); i++)
 			{
-				Values.push_back(m_Vector4Slots[i].m_Value);
+				*(Vector4*)(&Parameters[m_Vector4Slots[i].m_Index * 4]) = m_Vector4Slots[i].m_Value;
 			}
 
-			if (Values.size() > 0)
+			for (int i = 0; i < m_FloatSlots.size(); i++)
 			{
-				//uint32 Size = Align(Values.size() * sizeof(Vector4), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
-				uint32 Size = Values.size() * sizeof(Vector4);
-				VectorBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Values.data());
+				*(float*)(&Parameters[m_FloatSlots[i].m_Index + Vector4SlotCount]) = m_FloatSlots[i].m_Value;
+			}
+
+			for (int i = 0; i < m_Texture2DSlots.size(); i++)
+			{
+				Parameters[m_Texture2DSlots[i].m_Index * 2 + Vector4SlotCount + ScalarSlotCount] = m_Texture2DSlots[i].m_Texture2D.IsValid() ? m_Texture2DSlots[i].m_Texture2D->GetTextureIndex() : 0;
+				Parameters[m_Texture2DSlots[i].m_Index * 2 + 1 + Vector4SlotCount + ScalarSlotCount] = m_Texture2DSlots[i].m_Texture2D.IsValid() ? m_Texture2DSlots[i].m_Texture2D->GetSamplerIndex() : 0;
+			}
+
+			for (int i = 0; i < m_TextureCubeSlots.size(); i++)
+			{
+				Parameters[m_TextureCubeSlots[i].m_Index * 2 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetTextureIndex() : 0;
+				Parameters[m_TextureCubeSlots[i].m_Index * 2 + 1 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetSamplerIndex() : 0;
+			}
+
+			if ( Parameters.size() > 0 )
+			{
+				//uint32 Size = Align(TextureIndices.size() * sizeof(uint32), D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+				uint32 Size = Parameters.size() * sizeof(uint32);
+				ParametersBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), Size, EUniformBufferUsage::SingleFrame, Parameters.data());
 			}
 		}
+
 	}
 
 	void Material::BindMainPass( D3D12CommandList* CommandList )
@@ -743,9 +794,17 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		CommandList->SetGraphicRootConstant(TextureIndexBuffer ? TextureIndexBuffer->GetViewIndex() : 0, 3);
-		CommandList->SetGraphicRootConstant(ScalarBuffer ? ScalarBuffer->GetViewIndex() : 0, 4);
-		CommandList->SetGraphicRootConstant(VectorBuffer ? VectorBuffer->GetViewIndex() : 0, 5);
+		if (bNew)
+		{
+			CommandList->SetGraphicRootConstant(ParametersBuffer ? ParametersBuffer->GetViewIndex() : 0, 3);
+		}
+
+		else
+		{
+			CommandList->SetGraphicRootConstant(TextureIndexBuffer ? TextureIndexBuffer->GetViewIndex() : 0, 3);
+			CommandList->SetGraphicRootConstant(ScalarBuffer ? ScalarBuffer->GetViewIndex() : 0, 4);
+			CommandList->SetGraphicRootConstant(VectorBuffer ? VectorBuffer->GetViewIndex() : 0, 5);
+		}
 	}
 
 	void Material::SetNamedTexture2D( const std::string& Name, AssetHandle<Texture2D> TextureAsset )
