@@ -15,6 +15,20 @@ namespace Drn
 		BC2,
 	};
 
+	enum class ETilingMethod : uint8
+	{
+		Wrap,
+		Clamp,
+		Mirror,
+	};
+
+	enum class EFilteringMethod : uint8
+	{
+		Nearest,
+		Bilinear,
+		Trilinear,
+	};
+
 	class Texture : public Asset
 	{
 	public:
@@ -45,6 +59,7 @@ namespace Drn
 		inline DXGI_FORMAT GetFormat() const	{ return m_Format; }
 
 		virtual uint32 GetTextureIndex() const = 0;
+		virtual uint32 GetSamplerIndex() const = 0;
 
 #if WITH_EDITOR
 		inline ETextureCompression GetCompression() const	{ return m_Compression; }

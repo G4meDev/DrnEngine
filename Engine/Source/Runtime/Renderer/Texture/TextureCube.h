@@ -24,6 +24,7 @@ namespace Drn
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::TextureCube; }
 	
 		virtual uint32 GetTextureIndex() const override;
+		virtual uint32 GetSamplerIndex() const override { return 0; };
 
 		const TRefCountPtr<RenderTextureCube>& GetRenderTexture() const { return m_RenderTexture; }
 

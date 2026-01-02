@@ -210,6 +210,11 @@ namespace Drn
 		ReimportAsset<StaticMesh>();
 	}
 
+	void Editor::ReimportTexture2D()
+	{
+		ReimportAsset<Texture2D>();
+	}
+
 	IntPoint Editor::GetScreenPositionRelative()
 	{
 		const ImVec2 RectMin = ImGui::GetItemRectMin();

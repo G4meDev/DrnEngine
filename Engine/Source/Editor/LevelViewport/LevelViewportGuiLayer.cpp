@@ -159,6 +159,11 @@ namespace Drn
 					Editor::Get()->ReimportStaticMeshes();
 				}
 
+				if ( ImGui::MenuItem( "Reimport Texture2D" ) )
+				{
+					Editor::Get()->ReimportTexture2D();
+				}
+
 				ImGui::EndMenu();
 			}
 

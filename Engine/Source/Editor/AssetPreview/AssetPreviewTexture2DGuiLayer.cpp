@@ -139,6 +139,33 @@ namespace Drn
 			m_OwningAsset->m_Compression = static_cast<ETextureCompression>(CurrrentComppression);
 		}
 
+		const char* FilterTypes[] = { "Nearest", "Bilinear", "Trilinear" };
+		int32 CurrrentFilter = static_cast<int32>(m_OwningAsset->FilteringMethod);
+		if ( ImGui::Combo( "Filter", &CurrrentFilter, FilterTypes, IM_ARRAYSIZE( FilterTypes )))
+		{
+			m_OwningAsset->FilteringMethod = static_cast<EFilteringMethod>(CurrrentFilter);
+		}
+
+		const char* TilingTypes[] = { "Wrap", "Clamp", "Mirror" };
+		int32 CurrrentTilingX = static_cast<int32>(m_OwningAsset->TilingMethodX);
+		if ( ImGui::Combo( "TilingX", &CurrrentTilingX, TilingTypes, IM_ARRAYSIZE( TilingTypes )))
+		{
+			m_OwningAsset->TilingMethodX = static_cast<ETilingMethod>(CurrrentTilingX);
+		}
+		int32 CurrrentTilingY = static_cast<int32>(m_OwningAsset->TilingMethodY);
+		if ( ImGui::Combo( "TilingY", &CurrrentTilingY, TilingTypes, IM_ARRAYSIZE( TilingTypes )))
+		{
+			m_OwningAsset->TilingMethodY = static_cast<ETilingMethod>(CurrrentTilingY);
+		}
+
+		int32 CurrentLODBias = m_OwningAsset->LODBias;
+		const int32 MaxLODBias = m_OwningAsset->GetMipLevels() - 1;
+
+		if (ImGui::DragInt("LOD Bias", &CurrentLODBias, 1, 0, MaxLODBias))
+		{
+			m_OwningAsset->LODBias = std::clamp(CurrentLODBias, 0, MaxLODBias);
+		}
+
 		ImGui::Separator();
 
 		if ( ImGui::DragFloat( "Mip Level", &m_MipLevel, 0.05f, 0, m_OwningAsset->m_MipLevels) )

@@ -8,6 +8,10 @@ namespace Drn
 {
 	Texture2D::Texture2D( const std::string& InPath )
 		: Texture(InPath)
+		, FilteringMethod(EFilteringMethod::Trilinear)
+		, TilingMethodX(ETilingMethod::Wrap)
+		, TilingMethodY(ETilingMethod::Wrap)
+		, LODBias(0)
 	{
 		Load();
 	}
@@ -15,6 +19,10 @@ namespace Drn
 #if WITH_EDITOR
 	Texture2D::Texture2D( const std::string& InPath, const std::string& InSourcePath )
 		: Texture(InPath)
+		, FilteringMethod(EFilteringMethod::Trilinear)
+		, TilingMethodX(ETilingMethod::Wrap)
+		, TilingMethodY(ETilingMethod::Wrap)
+		, LODBias(0)
 	{
 		m_SourcePath = InSourcePath;
 
@@ -34,12 +42,24 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			
+			uint8 PackedState = 0;
+			Ar >> PackedState;
+			FilteringMethod = (EFilteringMethod)(PackedState & 0x3);
+			TilingMethodX = (ETilingMethod)((PackedState >> 2) & 0x3);
+			TilingMethodY = (ETilingMethod)((PackedState >> 4) & 0x3);
+
+			Ar >> LODBias;
 		}
 
 		else
 		{
+			uint8 PackedState = 0;
+			PackedState |= (uint8)FilteringMethod;
+			PackedState |= (uint8)TilingMethodX << 2;
+			PackedState |= (uint8)TilingMethodY << 4;
 
+			Ar << PackedState;
+			Ar << LODBias;
 		}
 	}
 
@@ -70,17 +90,8 @@ namespace Drn
 			m_RenderTexture = RenderTexture2D::Create(CommandList, m_SizeX, m_SizeY, m_Format, m_MipLevels, 1, false,
 				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
 
-// -----------------------------------------------------------------------------------------------------------------------------
-
-			//Renderer::Get()->TempSamplerAllocator.Alloc(&SamplerCpuHandle, &SamplerGpuHandle);
-			//
-			//D3D12_SAMPLER_DESC SamplerDesc = {};
-			//SamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			//SamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			//SamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			//SamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
-			//SamplerDesc.MaxAnisotropy = 16;
-			//Device->CreateSampler(&SamplerDesc, SamplerCpuHandle);
+			SamplerStateInitializer SamplerInit((ESamplerFilter)FilteringMethod, ESamplerAddressMode(TilingMethodX), ESamplerAddressMode(TilingMethodY), ESamplerAddressMode(TilingMethodX), LODBias, 0, 0.0f, FLT_MAX, Color::Black, ESamplerCompareFunction::Never);
+			m_SamplerState = SamplerState::Create(CommandList->GetParentDevice(), SamplerInit);
 
 			ClearRenderStateDirty();
 		}
@@ -94,8 +105,13 @@ namespace Drn
 	uint32 Texture2D::GetTextureIndex() const
 	{
 		drn_check(m_RenderTexture);
-
 		return m_RenderTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
+	}
+
+	uint32 Texture2D::GetSamplerIndex() const
+	{
+		drn_check(m_SamplerState);
+		return m_SamplerState->GetIndex();
 	}
 
 #if WITH_EDITOR

@@ -7,6 +7,8 @@
 namespace Drn
 {
 	class AssetPreviewTexture2DGuiLayer;
+	class RenderTexture2D;
+	class SamplerState;
 
 	class Texture2D : public Texture
 	{
@@ -28,12 +30,20 @@ namespace Drn
 
 		RenderTexture2D* GetRenderTexture();
 		virtual uint32 GetTextureIndex() const override;
+		virtual uint32 GetSamplerIndex() const override;
 
 	protected:
 
 		bool m_Initialized = false;
-		TRefCountPtr<class RenderTexture2D> m_RenderTexture;
+		TRefCountPtr<RenderTexture2D> m_RenderTexture;
+		TRefCountPtr<SamplerState> m_SamplerState;
 
+		EFilteringMethod FilteringMethod;
+		ETilingMethod TilingMethodX;
+		ETilingMethod TilingMethodY;
+		uint8 LODBias;
+
+	public:
 #if WITH_EDITOR
 		void Import();
 
