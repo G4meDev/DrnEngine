@@ -13,6 +13,7 @@ namespace Drn
 	class AssetPreviewMaterialGuiLayer;
 	class D3D12CommandList;
 	class GraphicsPipelineState;
+	struct MaterialPipelines;
 
 	enum class EMaterialDomain : uint8
 	{
@@ -57,7 +58,7 @@ namespace Drn
 
 
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
-		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; m_TextureBufferDirty = true; m_ScalarBufferDirty = true; m_VectorBufferDirty = true; }
+		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
 		inline bool IsSupportingBasePass() const { return m_SupportMainPass; }
@@ -115,21 +116,7 @@ namespace Drn
 		std::vector<float> m_ScalarValues;
 		std::vector<Vector4> m_VectorValues;
 
-		TRefCountPtr<GraphicsPipelineState> m_MainPassPSO;
-		TRefCountPtr<GraphicsPipelineState> m_PrePassPSO;
-		TRefCountPtr<GraphicsPipelineState> m_PointLightShadowDepthPassPSO;
-		TRefCountPtr<GraphicsPipelineState> m_SpotLightShadowDepthPassPSO;
-		TRefCountPtr<GraphicsPipelineState> m_DeferredDecalPassPSO;
-		TRefCountPtr<GraphicsPipelineState> m_StaticMeshDecalPassPSO;
-
-#if WITH_EDITOR
-		TRefCountPtr<GraphicsPipelineState> m_SelectionPassPSO;
-		TRefCountPtr<GraphicsPipelineState> m_HitProxyPassPSO;
-		TRefCountPtr<GraphicsPipelineState> m_EditorProxyPSO;
-#endif
-
-		std::unordered_map<std::string, MaterialIndexedFloatParameter*> m_ScalarMap;
-		std::unordered_map<std::string, MaterialIndexedVector4Parameter*> m_Vector4Map;
+		TRefCountPtr<MaterialPipelines> m_MaterialPipelines;
 
 		bool m_RenderStateDirty;
 
@@ -143,18 +130,9 @@ namespace Drn
 		bool m_SupportDeferredDecalPass;
 		bool m_SupportStaticMeshDecalPass;
 
-		bool m_ScalarBufferDirty;
-		bool m_VectorBufferDirty;
-		bool m_TextureBufferDirty;
-
 		TRefCountPtr<class RenderUniformBuffer> TextureIndexBuffer;
 
 		TRefCountPtr<class RenderUniformBuffer> ParametersBuffer;
-
-		void InitalizeParameterMap();
-
-		// TODO: delete
-		bool bNew = false;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
@@ -168,6 +146,7 @@ namespace Drn
 
 		friend class AssetManager;
 
+		friend class MaterialPipelines;
 		// TODO: remove
 		friend class StaticMeshSceneProxy;
 	};

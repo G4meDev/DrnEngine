@@ -114,6 +114,11 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderQuery.h
 	Source/Runtime/Renderer/GpuProfiler.h
 	Source/Runtime/Renderer/Descriptor.h
+	Source/Runtime/Renderer/MaterialInterface.h
+	Source/Runtime/Renderer/MaterialInstance.h
+	Source/Runtime/Renderer/MaterialInstanceBase.h
+	Source/Runtime/Renderer/MaterialInstanceDynamic.h
+	Source/Runtime/Renderer/MaterialPipelines.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -329,6 +334,11 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderQuery.cpp
 	Source/Runtime/Renderer/GpuProfiler.cpp
 	Source/Runtime/Renderer/Descriptor.cpp
+	Source/Runtime/Renderer/MaterialInterface.cpp
+	Source/Runtime/Renderer/MaterialInstance.cpp
+	Source/Runtime/Renderer/MaterialInstanceBase.cpp
+	Source/Runtime/Renderer/MaterialInstanceDynamic.cpp
+	Source/Runtime/Renderer/MaterialPipelines.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp
