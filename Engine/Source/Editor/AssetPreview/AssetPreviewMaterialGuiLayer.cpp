@@ -153,9 +153,9 @@ namespace Drn
 
 		if (ImGui::CollapsingHeader( "Texture2D", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
 		{
-			for (int i = 0; i < m_OwningAsset->m_Texture2DSlots.size(); i++)
+			for (int i = 0; i < m_OwningAsset->MaterialParameters.m_Texture2DSlots.size(); i++)
 			{
-				AssetHandle<Texture2D> DropedTexture = m_OwningAsset->m_Texture2DSlots[i].Draw();
+				AssetHandle<Texture2D> DropedTexture = m_OwningAsset->MaterialParameters.m_Texture2DSlots[i].Draw();
 
 				if (DropedTexture.IsValid())
 				{
@@ -166,9 +166,9 @@ namespace Drn
 
 		if (ImGui::CollapsingHeader( "TextureCube", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
 		{
-			for (int i = 0; i < m_OwningAsset->m_TextureCubeSlots.size(); i++)
+			for (int i = 0; i < m_OwningAsset->MaterialParameters.m_TextureCubeSlots.size(); i++)
 			{
-				AssetHandle<TextureCube> DropedTexture = m_OwningAsset->m_TextureCubeSlots[i].Draw();
+				AssetHandle<TextureCube> DropedTexture = m_OwningAsset->MaterialParameters.m_TextureCubeSlots[i].Draw();
 
 				if (DropedTexture.IsValid())
 				{
@@ -179,24 +179,24 @@ namespace Drn
 
 		if (ImGui::CollapsingHeader( "Scalar", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
 		{
-			for (int i = 0; i < m_OwningAsset->m_FloatSlots.size(); i++)
+			for (int i = 0; i < m_OwningAsset->MaterialParameters.m_FloatSlots.size(); i++)
 			{
-				if (m_OwningAsset->m_FloatSlots[i].Draw())
+				if (m_OwningAsset->MaterialParameters.m_FloatSlots[i].Draw())
 				{
-					m_OwningAsset->SetNamedScalar(m_OwningAsset->m_FloatSlots[i].m_Name,
-						m_OwningAsset->m_FloatSlots[i].m_Value);
+					m_OwningAsset->SetNamedScalar(m_OwningAsset->MaterialParameters.m_FloatSlots[i].m_Name,
+						m_OwningAsset->MaterialParameters.m_FloatSlots[i].m_Value);
 				}
 			}
 		}
 
 		if (ImGui::CollapsingHeader( "Vector4", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen) )
 		{
-			for (int i = 0; i < m_OwningAsset->m_Vector4Slots.size(); i++)
+			for (int i = 0; i < m_OwningAsset->MaterialParameters.m_Vector4Slots.size(); i++)
 			{
-				if (m_OwningAsset->m_Vector4Slots[i].Draw())
+				if (m_OwningAsset->MaterialParameters.m_Vector4Slots[i].Draw())
 				{
-					m_OwningAsset->SetNamedVector4(m_OwningAsset->m_Vector4Slots[i].m_Name,
-						m_OwningAsset->m_Vector4Slots[i].m_Value);
+					m_OwningAsset->SetNamedVector4(m_OwningAsset->MaterialParameters.m_Vector4Slots[i].m_Name,
+						m_OwningAsset->MaterialParameters.m_Vector4Slots[i].m_Value);
 				}
 			}
 		}

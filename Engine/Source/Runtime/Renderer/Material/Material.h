@@ -5,6 +5,7 @@
 #include "Runtime/Renderer/InputLayout.h"
 #include "Runtime/Engine/NamedProperty.h"
 #include "Runtime/Renderer/ShaderBlob.h"
+#include "Runtime/Renderer/MaterialShared.h"
 
 LOG_DECLARE_CATEGORY(LogMaterial);
 
@@ -105,18 +106,8 @@ namespace Drn
 		EMaterialDomain m_MaterialDomain;
 		bool m_TwoSided;
 
-		std::vector<MaterialIndexedTexture2DParameter> m_Texture2DSlots;
-		std::vector<MaterialIndexedTextureCubeParameter> m_TextureCubeSlots;
-		std::vector<MaterialIndexedFloatParameter> m_FloatSlots;
-		std::vector<MaterialIndexedVector4Parameter> m_Vector4Slots;
-
-		TRefCountPtr<class RenderUniformBuffer> ScalarBuffer;
-		TRefCountPtr<class RenderUniformBuffer> VectorBuffer;
-
-		std::vector<float> m_ScalarValues;
-		std::vector<Vector4> m_VectorValues;
-
 		TRefCountPtr<MaterialPipelines> m_MaterialPipelines;
+		MaterialUniformParameters MaterialParameters;
 
 		bool m_RenderStateDirty;
 
@@ -129,10 +120,6 @@ namespace Drn
 		bool m_SupportEditorSelectionPass;
 		bool m_SupportDeferredDecalPass;
 		bool m_SupportStaticMeshDecalPass;
-
-		TRefCountPtr<class RenderUniformBuffer> TextureIndexBuffer;
-
-		TRefCountPtr<class RenderUniformBuffer> ParametersBuffer;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
@@ -149,5 +136,12 @@ namespace Drn
 		friend class MaterialPipelines;
 		// TODO: remove
 		friend class StaticMeshSceneProxy;
+	};
+
+	class MaterialRenderProxy : public SimpleRenderResource
+	{
+	public:
+		virtual void UpdateResources(D3D12CommandList* CmdList) = 0;
+		virtual void Bind(D3D12CommandList* CmdList) = 0;
 	};
 }

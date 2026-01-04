@@ -140,7 +140,13 @@ namespace Drn
 		//	FD3D12DynamicHeapAllocator& Allocator = GetAdapter().GetUploadHeapAllocator(Device->GetGPUIndex());
 		//	MappedData = Allocator.AllocUploadResource(NumBytesActualData, DEFAULT_CONTEXT_UPLOAD_POOL_ALIGNMENT, NewUniformBuffer->ResourceLocation);
 		//}
-		//else
+
+		if (Usage == EUniformBufferUsage::MultiFrame)
+		{
+			DynamicHeapAllocator& Allocator = InParent->GetDynamicHeapAllocator();
+			MappedData = Allocator.AllocUploadResource(InSize, 256, NewUniformBuffer->ResourceLocation);
+		}
+		else
 		{
 			FastConstantAllocator& Allocator = InParent->GetTransientUniformBufferAllocator();
 

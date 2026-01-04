@@ -354,17 +354,11 @@ namespace Drn
 		std::vector<TextureCubeParamData> TextureCubeParams;
 		FindTextureCubeParams(ShaderCode, TextureCubeParams);
 
-		std::vector<MaterialIndexedVector4Parameter> OldVector4s = MaterialAsset->m_Vector4Slots;
-		MaterialAsset->m_Vector4Slots.clear();
-
-		std::vector<MaterialIndexedFloatParameter> OldFloats = MaterialAsset->m_FloatSlots;
-		MaterialAsset->m_FloatSlots.clear();
-
-		std::vector<MaterialIndexedTexture2DParameter> OldTexture2Ds = MaterialAsset->m_Texture2DSlots;
-		MaterialAsset->m_Texture2DSlots.clear();
-
-		std::vector<MaterialIndexedTextureCubeParameter> OldTextureCubes = MaterialAsset->m_TextureCubeSlots;
-		MaterialAsset->m_TextureCubeSlots.clear();
+		std::vector<MaterialIndexedVector4Parameter> OldVector4s = MaterialAsset->MaterialParameters.m_Vector4Slots;
+		std::vector<MaterialIndexedFloatParameter> OldFloats = MaterialAsset->MaterialParameters.m_FloatSlots;
+		std::vector<MaterialIndexedTexture2DParameter> OldTexture2Ds = MaterialAsset->MaterialParameters.m_Texture2DSlots;
+		std::vector<MaterialIndexedTextureCubeParameter> OldTextureCubes = MaterialAsset->MaterialParameters.m_TextureCubeSlots;
+		MaterialAsset->MaterialParameters.Clear();
 
 		for (int32 i = 0; i < VectorParams.size(); i++)
 		{
@@ -379,7 +373,7 @@ namespace Drn
 				}
 			}
 
-			MaterialAsset->m_Vector4Slots.push_back(MaterialIndexedVector4Parameter(Param.Name, Value, i));
+			MaterialAsset->MaterialParameters.m_Vector4Slots.push_back(MaterialIndexedVector4Parameter(Param.Name, Value, i));
 		}
 
 		for (int32 i = 0; i < ScalarParams.size(); i++)
@@ -395,7 +389,7 @@ namespace Drn
 				}
 			}
 
-			MaterialAsset->m_FloatSlots.push_back(MaterialIndexedFloatParameter(Param.Name, Value, i));
+			MaterialAsset->MaterialParameters.m_FloatSlots.push_back(MaterialIndexedFloatParameter(Param.Name, Value, i));
 		}
 
 		for (int32 i = 0; i < Texture2DParams.size(); i++)
@@ -415,7 +409,7 @@ namespace Drn
 				}
 			}
 
-			MaterialAsset->m_Texture2DSlots.push_back(MaterialIndexedTexture2DParameter(Param.Name, Path, i));
+			MaterialAsset->MaterialParameters.m_Texture2DSlots.push_back(MaterialIndexedTexture2DParameter(Param.Name, Path, i));
 		}
 
 		for (int32 i = 0; i < TextureCubeParams.size(); i++)
@@ -435,7 +429,7 @@ namespace Drn
 				}
 			}
 
-			MaterialAsset->m_TextureCubeSlots.push_back(MaterialIndexedTextureCubeParameter(Param.Name, Path, i));
+			MaterialAsset->MaterialParameters.m_TextureCubeSlots.push_back(MaterialIndexedTextureCubeParameter(Param.Name, Path, i));
 		}
 	}
 }

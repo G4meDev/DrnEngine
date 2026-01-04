@@ -118,6 +118,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/MaterialInstance.h
 	Source/Runtime/Renderer/MaterialInstanceBase.h
 	Source/Runtime/Renderer/MaterialInstanceDynamic.h
+	Source/Runtime/Renderer/MaterialShared.h
 	Source/Runtime/Renderer/MaterialPipelines.h
 
 	Source/Runtime/Components/LineBatchComponent.h
@@ -338,6 +339,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/MaterialInstance.cpp
 	Source/Runtime/Renderer/MaterialInstanceBase.cpp
 	Source/Runtime/Renderer/MaterialInstanceDynamic.cpp
+	Source/Runtime/Renderer/MaterialShared.cpp
 	Source/Runtime/Renderer/MaterialPipelines.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
