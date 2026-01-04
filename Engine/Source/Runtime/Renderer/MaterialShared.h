@@ -33,10 +33,10 @@ namespace Drn
 		void SetNamedScalar(const std::string& Name, float Value);
 		void SetNamedVector4(const std::string& Name, const Vector4& Value);
 
-		std::vector<MaterialIndexedTexture2DParameter> m_Texture2DSlots;
-		std::vector<MaterialIndexedTextureCubeParameter> m_TextureCubeSlots;
-		std::vector<MaterialIndexedFloatParameter> m_FloatSlots;
-		std::vector<MaterialIndexedVector4Parameter> m_Vector4Slots;
+		std::vector<Texture2DProperty> m_Texture2DSlots;
+		std::vector<TextureCubeProperty> m_TextureCubeSlots;
+		std::vector<FloatProperty> m_FloatSlots;
+		std::vector<Vector4Property> m_Vector4Slots;
 
 		TRefCountPtr<RenderUniformBuffer> ParametersBuffer;
 	};

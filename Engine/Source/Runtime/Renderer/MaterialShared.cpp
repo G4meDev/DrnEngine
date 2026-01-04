@@ -14,7 +14,7 @@ namespace Drn
 			m_Texture2DSlots.reserve(Texture2DCount);
 			for (int i = 0; i < Texture2DCount; i++)
 			{
-				m_Texture2DSlots.push_back(MaterialIndexedTexture2DParameter());
+				m_Texture2DSlots.push_back({});
 				m_Texture2DSlots[i].Serialize(Ar);
 			}
 
@@ -23,7 +23,7 @@ namespace Drn
 			m_TextureCubeSlots.reserve(TextureCubeCount);
 			for (int i = 0; i < TextureCubeCount; i++)
 			{
-				m_TextureCubeSlots.push_back(MaterialIndexedTextureCubeParameter());
+				m_TextureCubeSlots.push_back({});
 				m_TextureCubeSlots[i].Serialize(Ar);
 			}
 
@@ -32,7 +32,7 @@ namespace Drn
 			m_FloatSlots.reserve(ScalarCount);
 			for (int i = 0; i < ScalarCount; i++)
 			{
-				m_FloatSlots.push_back(MaterialIndexedFloatParameter());
+				m_FloatSlots.push_back({});
 				m_FloatSlots[i].Serialize(Ar);
 			}
 
@@ -41,7 +41,7 @@ namespace Drn
 			m_Vector4Slots.reserve(Vector4Count);
 			for (int i = 0; i < Vector4Count; i++)
 			{
-				m_Vector4Slots.push_back(MaterialIndexedVector4Parameter());
+				m_Vector4Slots.push_back({});
 				m_Vector4Slots[i].Serialize(Ar);
 			}
 		}
@@ -107,24 +107,24 @@ namespace Drn
 
 		for (int i = 0; i < m_Vector4Slots.size(); i++)
 		{
-			*(Vector4*)(&Parameters[m_Vector4Slots[i].m_Index * 4]) = m_Vector4Slots[i].m_Value;
+			*(Vector4*)(&Parameters[i * 4]) = m_Vector4Slots[i].m_Value;
 		}
 
 		for (int i = 0; i < m_FloatSlots.size(); i++)
 		{
-			*(float*)(&Parameters[m_FloatSlots[i].m_Index + Vector4SlotCount]) = m_FloatSlots[i].m_Value;
+			*(float*)(&Parameters[i + Vector4SlotCount]) = m_FloatSlots[i].m_Value;
 		}
 
 		for (int i = 0; i < m_Texture2DSlots.size(); i++)
 		{
-			Parameters[m_Texture2DSlots[i].m_Index * 2 + Vector4SlotCount + ScalarSlotCount] = m_Texture2DSlots[i].m_Texture2D.IsValid() ? m_Texture2DSlots[i].m_Texture2D->GetTextureIndex() : 0;
-			Parameters[m_Texture2DSlots[i].m_Index * 2 + 1 + Vector4SlotCount + ScalarSlotCount] = m_Texture2DSlots[i].m_Texture2D.IsValid() ? m_Texture2DSlots[i].m_Texture2D->GetSamplerIndex() : 0;
+			Parameters[i * 2 + Vector4SlotCount + ScalarSlotCount] = m_Texture2DSlots[i].m_Texture2D.IsValid() ? m_Texture2DSlots[i].m_Texture2D->GetTextureIndex() : 0;
+			Parameters[i * 2 + 1 + Vector4SlotCount + ScalarSlotCount] = m_Texture2DSlots[i].m_Texture2D.IsValid() ? m_Texture2DSlots[i].m_Texture2D->GetSamplerIndex() : 0;
 		}
 
 		for (int i = 0; i < m_TextureCubeSlots.size(); i++)
 		{
-			Parameters[m_TextureCubeSlots[i].m_Index * 2 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetTextureIndex() : 0;
-			Parameters[m_TextureCubeSlots[i].m_Index * 2 + 1 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetSamplerIndex() : 0;
+			Parameters[i * 2 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetTextureIndex() : 0;
+			Parameters[i * 2 + 1 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetSamplerIndex() : 0;
 		}
 
 		if ( Parameters.size() > 0 )
