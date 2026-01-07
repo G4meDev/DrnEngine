@@ -204,7 +204,7 @@ namespace Drn
 		for (MaterialData& Mat : m_OwningAsset->Data.Materials)
 		{
 			ImGui::Text(Mat.m_Name.c_str());
-			ImGui::Text(Mat.m_Material.GetPath().c_str());
+			ImGui::Text(Mat.m_MaterialSlot.GetMaterialPath().c_str());
 
 			if (ImGui::BeginDragDropTarget())
 			{
@@ -216,7 +216,7 @@ namespace Drn
 					
 					if (Type == EAssetType::Material)
 					{
-						Mat.m_Material = AssetHandle<Material>(AssetPath);
+						Mat.m_MaterialSlot = AssetHandle<Material>(AssetPath);
 						PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
 					}
 				}

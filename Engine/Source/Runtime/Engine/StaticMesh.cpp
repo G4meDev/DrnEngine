@@ -146,16 +146,14 @@ namespace Drn
 		ClearRenderStateDirty();
 	}
 
-	AssetHandle<Material> StaticMesh::GetMaterialAtIndex( uint32 Index )
+	MaterialSlot StaticMesh::GetMaterialAtIndex( uint32 Index )
 	{
 		if (Index >= 0 && Index < Data.Materials.size())
 		{
-			AssetHandle<Material> Result;
-			Result = Data.Materials[Index].m_Material;
-			return Result;
+			return Data.Materials[Index].m_MaterialSlot;
 		}
 
-		return AssetHandle<Material>( "InvalidPath" );
+		return MaterialSlot();
 	}
 
 	EAssetType StaticMesh::GetAssetType()

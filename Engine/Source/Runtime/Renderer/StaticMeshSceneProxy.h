@@ -51,7 +51,7 @@ namespace Drn
 	private:
 
 		StaticMeshComponent* m_OwningStaticMeshComponent;
-		std::vector<AssetHandle<Material>> m_Materials;
+		std::vector<MaterialSlot> m_Materials;
 
 		Guid m_Guid;
 

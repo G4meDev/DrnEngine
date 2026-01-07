@@ -72,7 +72,7 @@ namespace Drn
 			Ar << Mesh.GetPath();
 
 			Ar << uint16(m_OverrideMaterials.size());
-			for (MaterialOverrideData OD : m_OverrideMaterials)
+			for (MaterialOverrideData& OD : m_OverrideMaterials)
 			{
 				OD.Serialize(Ar);
 			}
@@ -119,7 +119,7 @@ namespace Drn
 	{
 		if (MaterialIndex < m_OverrideMaterials.size())
 		{
-			m_OverrideMaterials[MaterialIndex].m_Material = InMaterial;
+			m_OverrideMaterials[MaterialIndex].m_MaterialSlot = InMaterial;
 			m_OverrideMaterials[MaterialIndex].m_Overriden = true;
 			MarkRenderStateDirty();
 		}
@@ -201,7 +201,7 @@ namespace Drn
 	{
 		for (const MaterialOverrideData& MD : m_OverrideMaterials)
 		{
-			if (MD.m_Overriden && MD.m_Material.GetPath() == Mat.GetPath())
+			if (MD.m_Overriden && MD.m_MaterialSlot.GetMaterial() == *Mat)
 			{
 				return true;
 			}
@@ -211,7 +211,7 @@ namespace Drn
 		{
 			for (const MaterialData& MD : Mesh->Data.Materials)
 			{
-				if (MD.m_Material.GetPath() == Mat.GetPath())
+				if (MD.m_MaterialSlot.GetMaterial() == *Mat)
 				{
 					return true;
 				}

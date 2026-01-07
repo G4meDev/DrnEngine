@@ -8,21 +8,68 @@
 
 namespace Drn
 {
+	void MaterialSlot::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			std::string MaterialPath;
+			Ar >> MaterialPath;
+			MaterialHandle = AssetHandle<Material>( MaterialPath );
+			MaterialHandle.LoadChecked();
+		}
+
+		else
+		{
+			Ar << MaterialHandle.GetPath();
+		}
+	}
+
+	Material* MaterialSlot::GetMaterial() const
+	{
+		return *MaterialHandle;
+	}
+
+	MaterialInterface* MaterialSlot::GetMaterialInterface() const
+	{
+		return *MaterialHandle;
+	}
+
+	std::string MaterialSlot::GetMaterialPath() const
+	{
+		return MaterialHandle.GetPath();
+	}
+
+	void MaterialSlot::LoadChecked()
+	{
+		MaterialHandle.LoadChecked();
+	}
+
+	void MaterialSlot::Load()
+	{
+		MaterialHandle.Load();
+	}
+
+	bool MaterialSlot::IsValid() const
+	{
+		return MaterialHandle.IsValid();
+	}
+
+	std::string MaterialSlot::GetMaterialName() const
+	{
+		return Path::GetCleanName(MaterialHandle.GetPath());
+	}
+
 	void MaterialData::Serialize( Archive& Ar )
 	{
 		if ( Ar.IsLoading() )
 		{
 			Ar >> m_Name;
-	
-			std::string MaterialPath;
-			Ar >> MaterialPath;
-			m_Material = AssetHandle<Material>( MaterialPath );
-			m_Material.LoadChecked();
+			m_MaterialSlot.Serialize(Ar);
 		}
 		else
 		{
 			Ar << m_Name;
-			Ar << m_Material.GetPath();
+			m_MaterialSlot.Serialize(Ar);
 		}
 	}
 
@@ -55,7 +102,8 @@ namespace Drn
 
 		if (m_Overriden)
 		{
-			const std::string MaterialPath = m_Material.GetPath() != "" ? m_Material.GetPath().c_str() : "..";
+			//const std::string MaterialPath = m_MaterialSlot.GetMaterialName() GetMaterial()->path() != "" ? m_Material.GetPath().c_str() : "..";
+			const std::string MaterialPath = m_MaterialSlot.GetMaterialName();
 			ImGui::PushID( "MaterialPath" );
 			ImGui::Text(MaterialPath.c_str());
 			ImGui::PopID();
@@ -70,7 +118,7 @@ namespace Drn
 					
 					if (Type == EAssetType::Material)
 					{
-						m_Material = AssetHandle<Material>(AssetPath);
+						m_MaterialSlot = AssetHandle<Material>(AssetPath);
 						MC->MarkRenderStateDirty();
 					}
 				}
@@ -84,8 +132,8 @@ namespace Drn
 			std::string MatPath = "..";
 			if (MC->GetMesh().IsValid())
 			{
-				AssetHandle<Material> Mat = MC->GetMesh()->GetMaterialAtIndex(MaterialIndex);
-				MatPath = Mat.GetPath();
+				MaterialSlot Mat = MC->GetMesh()->GetMaterialAtIndex(MaterialIndex);
+				MatPath = Mat.GetMaterialName();
 			}
 
 			ImGui::PushID("MaterialPath");
@@ -95,4 +143,4 @@ namespace Drn
 	}
 #endif
 
-}
+        }

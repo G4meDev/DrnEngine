@@ -70,7 +70,7 @@ namespace Drn
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
-		AssetHandle<Material> GetMaterialAtIndex(uint32 Index);
+		MaterialSlot GetMaterialAtIndex(uint32 Index);
 
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::StaticMesh; }

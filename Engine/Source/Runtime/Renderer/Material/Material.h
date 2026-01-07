@@ -6,6 +6,7 @@
 #include "Runtime/Engine/NamedProperty.h"
 #include "Runtime/Renderer/ShaderBlob.h"
 #include "Runtime/Renderer/MaterialShared.h"
+#include "Runtime/Renderer/MaterialInterface.h"
 
 LOG_DECLARE_CATEGORY(LogMaterial);
 
@@ -22,7 +23,7 @@ namespace Drn
 		Decal
 	};
 
-	class Material : public Asset
+	class Material : public Asset, public MaterialInterface
 	{
 	public:
 		Material(const std::string& InPath);
@@ -32,7 +33,6 @@ namespace Drn
 		Material(const std::string& InPath, const std::string& InSourcePath);
 #endif
 
-		void UploadResources( class D3D12CommandList* CommandList );
 		void BindMainPass( D3D12CommandList* CommandList );
 		void BindPrePass( D3D12CommandList* CommandList );
 		void BindPointLightShadowDepthPass( D3D12CommandList* CommandList );
@@ -42,21 +42,6 @@ namespace Drn
 		void BindHitProxyPass( D3D12CommandList* CommandList );
 		void BindDeferredDecalPass( D3D12CommandList* CommandList );
 		void BindStaticMeshDecalPass( D3D12CommandList* CommandList );
-
-		void BindResources( D3D12CommandList* CommandList );
-
-		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
-		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);
-
-		void SetNamedTextureCube(const std::string& Name, AssetHandle<TextureCube> TextureAsset);
-		void SetIndexedTextureCube(uint8 Index, AssetHandle<TextureCube> TextureAsset);
-
-		void SetIndexedScalar(uint32 Index, float Value);
-		void SetIndexedVector(uint32 Index, const Vector4& Value);
-		
-		void SetNamedScalar(const std::string& Name, float Value);
-		void SetNamedVector4(const std::string& Name, const Vector4& Value);
-
 
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
@@ -77,6 +62,30 @@ namespace Drn
 		inline D3D12_CULL_MODE GetCullMode() const { return m_TwoSided ? D3D12_CULL_MODE_NONE : D3D12_CULL_MODE_BACK; }
 
 		inline EMaterialDomain GetMaterialDomain() const { return m_MaterialDomain; }
+
+		inline bool IsTwoSided() const { return m_TwoSided; }
+
+// -------------------------------------------------------------------------------------------------------------
+// ---------------------------------------- Material Interface -------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------
+
+		virtual const Material* GetMaterial() const override { return this; };
+		virtual bool IsDependent(MaterialInterface* OtherMaterial) const override { return false; }
+
+		virtual void UploadResources( class D3D12CommandList* CommandList ) override;
+		virtual void BindResources( D3D12CommandList* CommandList ) override;
+
+		virtual void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset) override;
+		virtual void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset) override;
+
+		virtual void SetNamedTextureCube(const std::string& Name, AssetHandle<TextureCube> TextureAsset) override;
+		virtual void SetIndexedTextureCube(uint8 Index, AssetHandle<TextureCube> TextureAsset) override;
+
+		virtual void SetIndexedScalar(uint32 Index, float Value) override;
+		virtual void SetIndexedVector(uint32 Index, const Vector4& Value) override;
+		
+		virtual void SetNamedScalar(const std::string& Name, float Value) override;
+		virtual void SetNamedVector4(const std::string& Name, const Vector4& Value) override;
 
 	protected:
 		virtual void Serialize( Archive& Ar ) override;
@@ -134,14 +143,6 @@ namespace Drn
 		friend class AssetManager;
 
 		friend class MaterialPipelines;
-		// TODO: remove
 		friend class StaticMeshSceneProxy;
-	};
-
-	class MaterialRenderProxy : public SimpleRenderResource
-	{
-	public:
-		virtual void UpdateResources(D3D12CommandList* CmdList) = 0;
-		virtual void Bind(D3D12CommandList* CmdList) = 0;
 	};
 }

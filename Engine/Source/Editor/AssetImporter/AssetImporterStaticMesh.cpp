@@ -183,14 +183,7 @@ namespace Drn
 
 	void AssetImporterStaticMesh::Build( StaticMesh* MeshAsset, ImportedStaticMeshData& BuildingData) 
 	{
-		std::vector<MaterialData> OldMaterials;
-		
-		for (const MaterialData& Mat : MeshAsset->Data.Materials)
-		{
-			OldMaterials.push_back({});
-			OldMaterials[OldMaterials.size() - 1].m_Name = Mat.m_Name;
-			OldMaterials[OldMaterials.size() - 1].m_Material = Mat.m_Material;
-		}
+		std::vector<MaterialData> OldMaterials = MeshAsset->Data.Materials;
 
 		MeshAsset->Data.MeshesData.clear();
 		MeshAsset->Data.Materials.clear();
@@ -326,13 +319,10 @@ namespace Drn
 				{
 					if (OldMaterial.m_Name == MatName)
 					{
-						MaterialPath = OldMaterial.m_Material.GetPath();
+						M.m_MaterialSlot = OldMaterial.m_MaterialSlot;
+						M.m_MaterialSlot.Load();
 					}
 				}
-			
-				MaterialPath = MaterialPath != "" ? MaterialPath : DEFAULT_MATERIAL_PATH;
-				M.m_Material = AssetHandle<Material>(MaterialPath);
-				M.m_Material.Load();
 			}
 		}
 	}

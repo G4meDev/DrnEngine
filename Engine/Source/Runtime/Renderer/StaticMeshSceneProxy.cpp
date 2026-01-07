@@ -51,11 +51,11 @@ namespace Drn
 				{
 					if (i < OverrideMaterialCount && m_OwningStaticMeshComponent->m_OverrideMaterials[i].m_Overriden)
 					{
-						m_Materials[i] = m_OwningStaticMeshComponent->m_OverrideMaterials[i].m_Material;
+						m_Materials[i] = m_OwningStaticMeshComponent->m_OverrideMaterials[i].m_MaterialSlot;
 					}
 					else
 					{
-						m_Materials[i] = m_Mesh->Data.Materials[i].m_Material;
+						m_Materials[i] = m_Mesh->Data.Materials[i].m_MaterialSlot;
 					}
 
 					// TODO: mark this only in with editor builds
@@ -63,6 +63,7 @@ namespace Drn
 					if (!m_Materials[i].IsValid())
 					{
 						LOG(LogStaticMeshSceneProxy, Error, "Material is invalid. Using default material.");
+
 						m_Materials[i] = AssetHandle<Material>(DEFAULT_MATERIAL_PATH);
 						m_Materials[i].Load();
 					}
@@ -71,9 +72,9 @@ namespace Drn
 
 		}
 
-		for (AssetHandle<Material>& Mat : m_Materials)
+		for (MaterialSlot& MatSlot : m_Materials)
 		{
-			Mat->UploadResources(CommandList);
+			MatSlot.GetMaterialInterface()->UploadResources(CommandList);
 		}
 
 		m_OwningStaticMeshComponent->ClearRenderStateDirty();
@@ -89,17 +90,16 @@ namespace Drn
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				if (!Mat->IsSupportingBasePass())
+				if (!Mat.GetMaterial()->IsSupportingBasePass())
 				{
 					continue;
 				}
 
-				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
-				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat->BindMainPass(CommandList);
+				Mat.GetMaterial()->BindMainPass(CommandList);
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -127,17 +127,16 @@ namespace Drn
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat->IsSupportingPrePass())
+				if (!Mat.GetMaterial()->IsSupportingPrePass())
 				{
 					continue;
 				}
 
-				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
-				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat->BindPrePass(CommandList);
+				Mat.GetMaterial()->BindPrePass(CommandList);
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -164,27 +163,26 @@ namespace Drn
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat->IsSupportingShadowPass())
+				if (!Mat.GetMaterial()->IsSupportingShadowPass())
 				{
 					continue;
 				}
 
-				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
-				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
 				if ( LightProxy->GetLightType() == ELightType::PointLight )
 				{
-					Mat->BindPointLightShadowDepthPass(CommandList);
+					Mat.GetMaterial()->BindPointLightShadowDepthPass(CommandList);
 				}
 				else if ( LightProxy->GetLightType() == ELightType::SpotLight)
 				{
-					Mat->BindSpotLightShadowDepthPass(CommandList);
+					Mat.GetMaterial()->BindSpotLightShadowDepthPass(CommandList);
 				}
 				else if ( LightProxy->GetLightType() == ELightType::DirectionalLight)
 				{
-					Mat->BindSpotLightShadowDepthPass(CommandList);
+					Mat.GetMaterial()->BindSpotLightShadowDepthPass(CommandList);
 				}
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
@@ -212,17 +210,16 @@ namespace Drn
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				if (!Mat->IsSupportingStaticMeshDecalPass())
+				if (!Mat.GetMaterial()->IsSupportingStaticMeshDecalPass())
 				{
 					continue;
 				}
 
-				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
-				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat->BindStaticMeshDecalPass(CommandList);
+				Mat.GetMaterial()->BindStaticMeshDecalPass(CommandList);
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -252,20 +249,17 @@ namespace Drn
 		for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 		{
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-			AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
-			SCOPE_STAT_DYNAMIC(MeshName.c_str());
 
-			if (!Mat->IsSupportingHitProxyPass())
+			if (!Mat.GetMaterial()->IsSupportingHitProxyPass())
 			{
 				continue;
 			}
 
-			const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
-			SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+			SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-			Mat->BindHitProxyPass(CommandList);
+			Mat.GetMaterial()->BindHitProxyPass(CommandList);
 
 			{
 				SCOPE_STAT("Calculate");
@@ -296,17 +290,16 @@ namespace Drn
 		for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 		{
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-			AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
+			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 		
-			if (!Mat->IsSupportingEditorSelectionPass())
+			if (!Mat.GetMaterial()->IsSupportingEditorSelectionPass())
 			{
 				continue;
 			}
 
-			const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
-			SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+			SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-			Mat->BindSelectionPass(CommandList);
+			Mat.GetMaterial()->BindSelectionPass(CommandList);
 		
 			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -337,17 +330,16 @@ namespace Drn
 			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-				AssetHandle<Material>& Mat = m_Materials[RenderProxy.MaterialIndex];
-				
-				if (!Mat->IsSupportingEditorPrimitivePass())
+				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
+
+				if (!Mat.GetMaterial()->IsSupportingEditorPrimitivePass())
 				{
 					continue;
 				}
 
-				const std::string MaterialName = Path::GetCleanName(Mat.GetPath());
-				SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat->BindEditorPrimitivePass(CommandList);
+				Mat.GetMaterial()->BindEditorPrimitivePass(CommandList);
 		
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
