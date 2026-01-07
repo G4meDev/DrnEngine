@@ -66,39 +66,23 @@ namespace Drn
 
 	MaterialInterface* MaterialSlot::GetMaterialInterface() const
 	{
-		if (Type == EMaterialType::Material)
+		switch ( Type )
 		{
-			return MaterialHandle.Get();
+		case EMaterialType::Material:					return MaterialHandle.Get();
+		case EMaterialType::MaterialInstance:			return MaterialInstanceHandle.Get();
+		case EMaterialType::MaterialInstanceDynamic:	return MaterialInstanceDynamicHandle;
+		default:										drn_check(false); return nullptr;
 		}
-		else if (Type == EMaterialType::MaterialInstance)
-		{
-			return MaterialInstanceHandle.Get();
-		}
-
-		else
-		{
-			drn_check(false);
-		}
-
-		return nullptr;
 	}
 
 	std::string MaterialSlot::GetMaterialPath() const
 	{
-		if (Type == EMaterialType::Material)
+		switch ( Type )
 		{
-			return MaterialHandle.GetPath();
+		case EMaterialType::Material:					return MaterialHandle.GetPath();
+		case EMaterialType::MaterialInstance:			return MaterialInstanceHandle.GetPath();
+		default:										drn_check(false); return NAME_NULL;
 		}
-		else if (Type == EMaterialType::MaterialInstance)
-		{
-			return MaterialInstanceHandle.GetPath();
-		}
-		else
-		{
-			drn_check(false);
-		}
-
-		return NAME_NULL;
 	}
 
 	void MaterialSlot::SetMaterial( AssetHandle<Material> InMaterial )
@@ -113,73 +97,55 @@ namespace Drn
 		MaterialInstanceHandle = InMaterial;
 	}
 
+	void MaterialSlot::SetMaterial( TRefCountPtr<MaterialInstanceDynamic> InMaterial )
+	{
+		Type = EMaterialType::MaterialInstanceDynamic;
+		MaterialInstanceDynamicHandle = InMaterial;
+	}
+
 	void MaterialSlot::LoadChecked()
 	{
-		if (Type == EMaterialType::Material)
+		switch ( Type )
 		{
-			MaterialHandle.LoadChecked();
+		case EMaterialType::Material:					return MaterialHandle.LoadChecked();
+		case EMaterialType::MaterialInstance:			return MaterialInstanceHandle.LoadChecked();
+		case EMaterialType::MaterialInstanceDynamic:	break;
+		default:										drn_check(false);
 		}
-		else if (Type == EMaterialType::MaterialInstance)
-		{
-			MaterialInstanceHandle.LoadChecked();
-		}
-		else
-		{
-			drn_check(false);
-		}
-
 	}
 
 	void MaterialSlot::Load()
 	{
-		if (Type == EMaterialType::Material)
+		switch ( Type )
 		{
-			MaterialHandle.Load();
-		}
-		else if (Type == EMaterialType::MaterialInstance)
-		{
-			MaterialInstanceHandle.Load();
-		}
-		else
-		{
-			drn_check(false);
+		case EMaterialType::Material:					return MaterialHandle.Load();
+		case EMaterialType::MaterialInstance:			return MaterialInstanceHandle.Load();
+		case EMaterialType::MaterialInstanceDynamic:	break;
+		default:										drn_check(false);
 		}
 	}
 
 	bool MaterialSlot::IsValid() const
 	{
-		if (Type == EMaterialType::Material)
+		switch ( Type )
 		{
-			return MaterialHandle.IsValid();
+		case EMaterialType::Material:					return MaterialHandle.IsValid();
+		case EMaterialType::MaterialInstance:			return MaterialInstanceHandle.IsValid();
+		case EMaterialType::MaterialInstanceDynamic:	return MaterialInstanceDynamicHandle.IsValid();
+		default:										drn_check(false); return true;
 		}
-		else if (Type == EMaterialType::MaterialInstance)
-		{
-			return MaterialInstanceHandle.IsValid();
-		}
-		else
-		{
-			drn_check(false);
-		}
-
-		return false;
 	}
 
 	std::string MaterialSlot::GetMaterialName() const
 	{
-		if (Type == EMaterialType::Material)
+		switch ( Type )
 		{
-			return Path::GetCleanName(MaterialHandle.GetPath());
+		case EMaterialType::Material:					return Path::GetCleanName(MaterialHandle.GetPath());
+		case EMaterialType::MaterialInstance:			return Path::GetCleanName(MaterialInstanceHandle.GetPath());
+		//case EMaterialType::MaterialInstanceDynamic:	return Path::GetCleanName(MaterialInstanceDynamicHandle->get().GetPath());
+		case EMaterialType::MaterialInstanceDynamic:	return "MID";
+		default:										drn_check(false); return NAME_NULL;
 		}
-		else if (Type == EMaterialType::MaterialInstance)
-		{
-			return Path::GetCleanName(MaterialInstanceHandle.GetPath());
-		}
-		else
-		{
-			drn_check(false);
-		}
-
-		return NAME_NULL;
 	}
 
 	void MaterialProperty::Serialize( Archive& Ar )

@@ -93,7 +93,6 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/Texture/TextureCube.h
 	Source/Runtime/Renderer/Texture/TextureVolume.h
 	Source/Runtime/Renderer/Texture/TextureHelper.h
-	Source/Runtime/Renderer/Material/Material.h
 	Source/Runtime/Renderer/VertexBuffer.h
 	Source/Runtime/Renderer/RenderGeometeryHelper.h
 	Source/Runtime/Renderer/ResourceView.h
@@ -114,9 +113,9 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/RenderQuery.h
 	Source/Runtime/Renderer/GpuProfiler.h
 	Source/Runtime/Renderer/Descriptor.h
+	Source/Runtime/Renderer/Material.h
 	Source/Runtime/Renderer/MaterialInterface.h
 	Source/Runtime/Renderer/MaterialInstance.h
-	Source/Runtime/Renderer/MaterialInstanceBase.h
 	Source/Runtime/Renderer/MaterialInstanceDynamic.h
 	Source/Runtime/Renderer/MaterialShared.h
 	Source/Runtime/Renderer/MaterialPipelines.h
@@ -315,7 +314,6 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/Texture/TextureCube.cpp
 	Source/Runtime/Renderer/Texture/TextureVolume.cpp
 	Source/Runtime/Renderer/Texture/TextureHelper.cpp
-	Source/Runtime/Renderer/Material/Material.cpp
 	Source/Runtime/Renderer/VertexBuffer.cpp
 	Source/Runtime/Renderer/RenderGeometeryHelper.cpp
 	Source/Runtime/Renderer/ResourceView.cpp
@@ -336,9 +334,9 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/RenderQuery.cpp
 	Source/Runtime/Renderer/GpuProfiler.cpp
 	Source/Runtime/Renderer/Descriptor.cpp
+	Source/Runtime/Renderer/Material.cpp
 	Source/Runtime/Renderer/MaterialInterface.cpp
 	Source/Runtime/Renderer/MaterialInstance.cpp
-	Source/Runtime/Renderer/MaterialInstanceBase.cpp
 	Source/Runtime/Renderer/MaterialInstanceDynamic.cpp
 	Source/Runtime/Renderer/MaterialShared.cpp
 	Source/Runtime/Renderer/MaterialPipelines.cpp

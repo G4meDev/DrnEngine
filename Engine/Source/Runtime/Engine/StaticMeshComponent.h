@@ -11,6 +11,7 @@ using namespace DirectX;
 namespace Drn
 {
 	class StaticMeshSceneProxy;
+	class MaterialInstanceDynamic;
 
 	class StaticMeshComponent : public PrimitiveComponent
 	{
@@ -33,6 +34,7 @@ namespace Drn
 
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<Material>& InMaterial);
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<MaterialInstance>& InMaterial);
+		void SetMaterial(uint16 MaterialIndex, TRefCountPtr<MaterialInstanceDynamic> InMaterial);
 
 		void RefreshOverrideMaterials();
 

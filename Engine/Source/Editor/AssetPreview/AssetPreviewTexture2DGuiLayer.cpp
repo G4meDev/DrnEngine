@@ -26,8 +26,10 @@ namespace Drn
 		AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
 		PlaneMesh.Load();
 		
-		m_PreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_Texture2DPreview.drn" );
-		m_PreviewMaterial.Load();
+		AssetHandle<Material> BasePreviewMaterial( "Engine\\Content\\Materials\\M_Texture2DPreview.drn" );
+		BasePreviewMaterial.Load();
+
+		m_PreviewMaterial = MaterialInstanceDynamic::Create(BasePreviewMaterial);
 		m_PreviewMaterial->SetNamedTexture2D("Texture", m_OwningAsset);
 
 		m_PreviewMeshPlane = m_PreviewWorld->SpawnActor<StaticMeshActor>();

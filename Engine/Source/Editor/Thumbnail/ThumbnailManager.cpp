@@ -177,8 +177,10 @@ namespace Drn
 				AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
 				PlaneMesh.Load();
 		
-				AssetHandle<Material> PreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_Texture2DPreview.drn" );
-				PreviewMaterial.Load();
+				AssetHandle<Material> ParentPreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_Texture2DPreview.drn" );
+				ParentPreviewMaterial.Load();
+
+				TRefCountPtr<MaterialInstanceDynamic> PreviewMaterial = MaterialInstanceDynamic::Create(ParentPreviewMaterial);
 				PreviewMaterial->SetNamedTexture2D("Texture", Texture2DAsset);
 
 				StaticMeshActor* PreviewMeshPlane = TargetWorld->GetWorld()->SpawnActor<StaticMeshActor>();
@@ -226,8 +228,10 @@ namespace Drn
 				AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
 				PlaneMesh.Load();
 
-				AssetHandle<Material> PreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_TextureCubePreview.drn" );
-				PreviewMaterial.Load();
+				AssetHandle<Material> ParentPreviewMaterial = AssetHandle<Material>( "Engine\\Content\\Materials\\M_TextureCubePreview.drn" );
+				ParentPreviewMaterial.Load();
+
+				TRefCountPtr<MaterialInstanceDynamic> PreviewMaterial = MaterialInstanceDynamic::Create(ParentPreviewMaterial);
 				PreviewMaterial->SetNamedTextureCube("Texture", TextureCubeAsset);
 
 				StaticMeshActor* PreviewMeshPlane = TargetWorld->GetWorld()->SpawnActor<StaticMeshActor>();

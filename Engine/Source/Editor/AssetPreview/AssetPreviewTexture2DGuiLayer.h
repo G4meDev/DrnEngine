@@ -8,6 +8,7 @@
 namespace Drn
 {
 	class ViewportPanel;
+	class MaterialInstanceDynamic;
 
 	class AssetPreviewTexture2DGuiLayer : public ImGuiLayer
 	{
@@ -33,7 +34,7 @@ namespace Drn
 		AssetHandle<Texture2D> m_OwningAsset;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 
-		AssetHandle<Material> m_PreviewMaterial;
+		TRefCountPtr<MaterialInstanceDynamic> m_PreviewMaterial;
 		float m_MipLevel;
 
 		bool m_ShowR = true;

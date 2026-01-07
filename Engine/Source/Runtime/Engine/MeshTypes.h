@@ -2,11 +2,13 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Core/Serializable.h"
-#include "Runtime/Renderer/Material/Material.h"
+#include "Runtime/Renderer/Material.h"
 #include "Runtime/Core/AssetManager.h"
 
 namespace Drn
 {
+	class MaterialInstanceDynamic;
+
 	enum class EMaterialType : uint8
 	{
 		Material,
@@ -43,6 +45,7 @@ namespace Drn
 
 		void SetMaterial(AssetHandle<Material> InMaterial);
 		void SetMaterial(AssetHandle<MaterialInstance> InMaterial);
+		void SetMaterial(TRefCountPtr<MaterialInstanceDynamic> InMaterial);
 
 		void LoadChecked();
 		void Load();
@@ -54,6 +57,7 @@ namespace Drn
 		EMaterialType Type;
 		AssetHandle<Material> MaterialHandle;
 		AssetHandle<MaterialInstance> MaterialInstanceHandle;
+		TRefCountPtr<MaterialInstanceDynamic> MaterialInstanceDynamicHandle;
 		//union
 		//{
 		//	AssetHandle<Material> MaterialHandle;

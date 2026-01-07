@@ -8,6 +8,7 @@
 namespace Drn
 {
 	class ViewportPanel;
+	class MaterialInstanceDynamic;
 
 	class AssetPreviewTextureCubeGuiLayer : public ImGuiLayer
 	{
@@ -32,8 +33,8 @@ namespace Drn
 		AssetHandle<TextureCube> m_OwningAsset;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 
-		AssetHandle<Material> m_PreviewMaterial;
-		AssetHandle<Material> m_Preview3DMaterial;
+		TRefCountPtr<MaterialInstanceDynamic> m_PreviewMaterial;
+		TRefCountPtr<MaterialInstanceDynamic> m_Preview3DMaterial;
 
 		float m_MipLevel = 0;
 	};

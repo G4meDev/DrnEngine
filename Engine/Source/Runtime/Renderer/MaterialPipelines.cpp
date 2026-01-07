@@ -1,6 +1,6 @@
 #include "DrnPCH.h"
 #include "MaterialPipelines.h"
-#include "Runtime/Renderer/Material/Material.h"
+#include "Runtime/Renderer/Material.h"
 #include "Runtime/Renderer/RenderState.h"
 
 namespace Drn

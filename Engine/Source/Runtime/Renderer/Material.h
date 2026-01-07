@@ -64,6 +64,8 @@ namespace Drn
 
 		inline bool IsTwoSided() const { return m_TwoSided; }
 
+		inline const MaterialUniformParameters& GetParameters() const { return MaterialParameters; }
+
 // -------------------------------------------------------------------------------------------------------------
 // ---------------------------------------- Material Interface -------------------------------------------------
 // -------------------------------------------------------------------------------------------------------------

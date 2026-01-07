@@ -11,7 +11,7 @@ namespace Drn
 	public:
 		virtual Material* GetMaterial() const = 0;
 		virtual bool IsDependent(MaterialInterface* OtherMaterial) const = 0;
-		virtual bool IsTwoSided() const;
+		//virtual bool IsTwoSided() const;
 
 		virtual void UploadResources( class D3D12CommandList* CommandList ) = 0;
 		virtual void BindResources( D3D12CommandList* CommandList ) = 0;
