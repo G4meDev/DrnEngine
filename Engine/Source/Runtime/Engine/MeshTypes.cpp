@@ -12,15 +12,34 @@ namespace Drn
 	{
 		if (Ar.IsLoading())
 		{
-			std::string MaterialPath;
-			Ar >> MaterialPath;
-			MaterialHandle = AssetHandle<Material>( MaterialPath );
-			MaterialHandle.LoadChecked();
+			uint8 T;
+			Ar >> T;
+			Type = (EMaterialType)T;
+
+			if (Type == EMaterialType::Material)
+			{
+				std::string MaterialPath;
+				Ar >> MaterialPath;
+				MaterialHandle = AssetHandle<Material>( MaterialPath );
+				MaterialHandle.LoadChecked();
+			}
+			else
+			{
+				drn_check(false);
+			}
 		}
 
 		else
 		{
-			Ar << MaterialHandle.GetPath();
+			Ar << (uint8)Type;
+			if (Type == EMaterialType::Material)
+			{
+				Ar << MaterialHandle.GetPath();
+			}
+			else
+			{
+				drn_check(false);
+			}
 		}
 	}
 
@@ -63,13 +82,13 @@ namespace Drn
 	{
 		if ( Ar.IsLoading() )
 		{
-			Ar >> m_Name;
 			m_MaterialSlot.Serialize(Ar);
+			Ar >> m_Name;
 		}
 		else
 		{
-			Ar << m_Name;
 			m_MaterialSlot.Serialize(Ar);
+			Ar << m_Name;
 		}
 	}
 
