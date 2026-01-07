@@ -175,6 +175,11 @@ namespace Drn
 	}
 #endif
 
+	bool Material::IsDependent( MaterialInterface* OtherMaterial ) const
+	{
+		return this == OtherMaterial;
+	}
+
 // ---------------------------------------------------------------------------------------------------------------
 
 	void Material::UploadResources( D3D12CommandList* CommandList )

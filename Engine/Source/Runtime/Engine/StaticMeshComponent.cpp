@@ -72,7 +72,7 @@ namespace Drn
 			Ar << Mesh.GetPath();
 
 			Ar << uint16(m_OverrideMaterials.size());
-			for (MaterialOverrideData& OD : m_OverrideMaterials)
+			for (MaterialPropertyOverride& OD : m_OverrideMaterials)
 			{
 				OD.Serialize(Ar);
 			}
@@ -119,7 +119,7 @@ namespace Drn
 	{
 		if (MaterialIndex < m_OverrideMaterials.size())
 		{
-			m_OverrideMaterials[MaterialIndex].m_MaterialSlot = InMaterial;
+			m_OverrideMaterials[MaterialIndex].SetMaterial(InMaterial);
 			m_OverrideMaterials[MaterialIndex].m_Overriden = true;
 			MarkRenderStateDirty();
 		}
@@ -199,9 +199,9 @@ namespace Drn
 
 	bool StaticMeshComponent::IsUsingMaterial( const AssetHandle<Material>& Mat )
 	{
-		for (const MaterialOverrideData& MD : m_OverrideMaterials)
+		for (const MaterialPropertyOverride& MD : m_OverrideMaterials)
 		{
-			if (MD.m_Overriden && MD.m_MaterialSlot.GetMaterial() == *Mat)
+			if (MD.m_Overriden && MD.GetMaterialInterface() && MD.GetMaterialInterface()->IsDependent(*Mat))
 			{
 				return true;
 			}
@@ -209,9 +209,9 @@ namespace Drn
 
 		if (Mesh.IsValid())
 		{
-			for (const MaterialData& MD : Mesh->Data.Materials)
+			for (const MaterialProperty& MD : Mesh->Data.Materials)
 			{
-				if (MD.m_MaterialSlot.GetMaterial() == *Mat)
+				if (MD.GetMaterialInterface() && MD.GetMaterialInterface()->IsDependent(*Mat))
 				{
 					return true;
 				}
@@ -259,7 +259,7 @@ namespace Drn
 				}
 				else
 				{
-					MaterialOverrideData MOD;
+					MaterialPropertyOverride MOD;
 					MOD.m_Name = MaterialName;
 					m_OverrideMaterials.push_back(MOD);
 				}

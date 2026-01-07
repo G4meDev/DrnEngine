@@ -54,7 +54,7 @@ namespace Drn
 		AssetHandle<StaticMesh> Mesh;
 		StaticMeshSceneProxy* m_SceneProxy;
 
-		std::vector<MaterialOverrideData> m_OverrideMaterials;
+		std::vector<MaterialPropertyOverride> m_OverrideMaterials;
 
 		friend class StaticMeshSceneProxy;
 

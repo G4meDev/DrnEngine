@@ -150,7 +150,7 @@ namespace Drn
 	{
 		if (Index >= 0 && Index < Data.Materials.size())
 		{
-			return Data.Materials[Index].m_MaterialSlot;
+			return Data.Materials[Index];
 		}
 
 		return MaterialSlot();
@@ -215,7 +215,7 @@ namespace Drn
 			Materials.resize(size);
 			for (int i = 0; i < size; i++)
 			{
-				MaterialData& Mat = Materials[i];
+				MaterialProperty& Mat = Materials[i];
 				Mat.Serialize(Ar);
 			}
 		}

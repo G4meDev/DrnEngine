@@ -36,6 +36,8 @@ namespace Drn
 
 		std::string GetMaterialPath() const;
 
+		void SetMaterial(AssetHandle<Material> InMaterial);
+
 		void LoadChecked();
 		void Load();
 		bool IsValid() const;
@@ -52,30 +54,29 @@ namespace Drn
 		//};
 	};
 
-	class MaterialData : public Serializable
+	class MaterialProperty : public MaterialSlot
 	{
 	public:
-		MaterialData()
+		MaterialProperty()
 		{};
 
-		virtual ~MaterialData() {}
+		virtual ~MaterialProperty() {}
 
 		virtual void Serialize( Archive& Ar ) override;
 
 		std::string m_Name;
-		MaterialSlot m_MaterialSlot;
 	};
 
-	class MaterialOverrideData : public MaterialData
+	class MaterialPropertyOverride : public MaterialProperty
 	{
 	public:
 
-		MaterialOverrideData()
-			: MaterialData()
+		MaterialPropertyOverride()
+			: MaterialProperty()
 		{
 		}
 
-		virtual ~MaterialOverrideData() {}
+		virtual ~MaterialPropertyOverride() {}
 
 		virtual void Serialize( Archive& Ar ) override;
 		bool m_Overriden = false;

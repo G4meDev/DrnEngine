@@ -51,11 +51,11 @@ namespace Drn
 				{
 					if (i < OverrideMaterialCount && m_OwningStaticMeshComponent->m_OverrideMaterials[i].m_Overriden)
 					{
-						m_Materials[i] = m_OwningStaticMeshComponent->m_OverrideMaterials[i].m_MaterialSlot;
+						m_Materials[i] = m_OwningStaticMeshComponent->m_OverrideMaterials[i];
 					}
 					else
 					{
-						m_Materials[i] = m_Mesh->Data.Materials[i].m_MaterialSlot;
+						m_Materials[i] = m_Mesh->Data.Materials[i];
 					}
 
 					// TODO: mark this only in with editor builds

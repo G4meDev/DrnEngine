@@ -42,7 +42,7 @@ namespace Drn
 		StaticMeshData() {};
 
 		std::vector<StaticMeshSlotData> MeshesData;
-		std::vector<MaterialData> Materials;
+		std::vector<MaterialProperty> Materials;
 
 		virtual void Serialize( Archive& Ar ) override;
 	};

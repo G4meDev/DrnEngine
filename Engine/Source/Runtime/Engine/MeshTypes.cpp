@@ -58,6 +58,12 @@ namespace Drn
 		return MaterialHandle.GetPath();
 	}
 
+	void MaterialSlot::SetMaterial( AssetHandle<Material> InMaterial )
+	{
+		Type = EMaterialType::Material;
+		MaterialHandle = InMaterial;
+	}
+
 	void MaterialSlot::LoadChecked()
 	{
 		MaterialHandle.LoadChecked();
@@ -78,23 +84,23 @@ namespace Drn
 		return Path::GetCleanName(MaterialHandle.GetPath());
 	}
 
-	void MaterialData::Serialize( Archive& Ar )
+	void MaterialProperty::Serialize( Archive& Ar )
 	{
+		MaterialSlot::Serialize(Ar);
+
 		if ( Ar.IsLoading() )
 		{
-			m_MaterialSlot.Serialize(Ar);
 			Ar >> m_Name;
 		}
 		else
 		{
-			m_MaterialSlot.Serialize(Ar);
 			Ar << m_Name;
 		}
 	}
 
-	void MaterialOverrideData::Serialize( Archive& Ar )
+	void MaterialPropertyOverride::Serialize( Archive& Ar )
 	{
-		MaterialData::Serialize(Ar);
+		MaterialProperty::Serialize(Ar);
 
 		if (Ar.IsLoading())
 		{
@@ -108,7 +114,7 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
-	void MaterialOverrideData::Draw( StaticMeshComponent* MC, uint32 MaterialIndex)
+	void MaterialPropertyOverride::Draw( StaticMeshComponent* MC, uint32 MaterialIndex)
 	{
 		ImGui::PushID( "MaterialName" );
 		ImGui::Text(m_Name.c_str());
@@ -122,7 +128,7 @@ namespace Drn
 		if (m_Overriden)
 		{
 			//const std::string MaterialPath = m_MaterialSlot.GetMaterialName() GetMaterial()->path() != "" ? m_Material.GetPath().c_str() : "..";
-			const std::string MaterialPath = m_MaterialSlot.GetMaterialName();
+			const std::string MaterialPath = GetMaterialName();
 			ImGui::PushID( "MaterialPath" );
 			ImGui::Text(MaterialPath.c_str());
 			ImGui::PopID();
@@ -137,7 +143,7 @@ namespace Drn
 					
 					if (Type == EAssetType::Material)
 					{
-						m_MaterialSlot = AssetHandle<Material>(AssetPath);
+						SetMaterial(AssetHandle<Material>(AssetPath));
 						MC->MarkRenderStateDirty();
 					}
 				}

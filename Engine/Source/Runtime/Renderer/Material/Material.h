@@ -70,7 +70,7 @@ namespace Drn
 // -------------------------------------------------------------------------------------------------------------
 
 		virtual const Material* GetMaterial() const override { return this; };
-		virtual bool IsDependent(MaterialInterface* OtherMaterial) const override { return false; }
+		virtual bool IsDependent(MaterialInterface* OtherMaterial) const override;
 
 		virtual void UploadResources( class D3D12CommandList* CommandList ) override;
 		virtual void BindResources( D3D12CommandList* CommandList ) override;

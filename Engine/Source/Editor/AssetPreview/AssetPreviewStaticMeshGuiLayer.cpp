@@ -201,10 +201,10 @@ namespace Drn
 		ImGui::Separator();
 		ImGui::Text("Materials");
 		
-		for (MaterialData& Mat : m_OwningAsset->Data.Materials)
+		for (MaterialProperty& Mat : m_OwningAsset->Data.Materials)
 		{
 			ImGui::Text(Mat.m_Name.c_str());
-			ImGui::Text(Mat.m_MaterialSlot.GetMaterialPath().c_str());
+			ImGui::Text(Mat.GetMaterialPath().c_str());
 
 			if (ImGui::BeginDragDropTarget())
 			{
@@ -216,7 +216,7 @@ namespace Drn
 					
 					if (Type == EAssetType::Material)
 					{
-						Mat.m_MaterialSlot = AssetHandle<Material>(AssetPath);
+						Mat.SetMaterial(AssetHandle<Material>(AssetPath));
 						PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
 					}
 				}
