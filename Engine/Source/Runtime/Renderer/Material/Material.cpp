@@ -220,7 +220,7 @@ namespace Drn
 	{
 		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_MainPassPSO);
 
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 	void Material::BindPrePass( D3D12CommandList* CommandList )
@@ -245,21 +245,21 @@ namespace Drn
 
 		CommandList->SetGraphicPipelineState(PSO);
 
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 	void Material::BindPointLightShadowDepthPass( D3D12CommandList* CommandList )
 	{
 		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_PointLightShadowDepthPassPSO);
 		
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 	void Material::BindSpotLightShadowDepthPass( D3D12CommandList* CommandList )
 	{
 		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_SpotLightShadowDepthPassPSO);
 		
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 	void Material::BindDeferredDecalPass( D3D12CommandList* CommandList )
@@ -268,14 +268,14 @@ namespace Drn
 
 		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_DeferredDecalPassPSO);
 
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 	void Material::BindStaticMeshDecalPass( D3D12CommandList* CommandList )
 	{
 		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_StaticMeshDecalPassPSO);
 
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 #if WITH_EDITOR
@@ -283,7 +283,7 @@ namespace Drn
 	{
 		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_EditorProxyPSO);
 
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 	void Material::BindSelectionPass( D3D12CommandList* CommandList )
@@ -291,7 +291,7 @@ namespace Drn
 		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_SelectionPassPSO);
 		CommandList->GetD3D12CommandList()->OMSetStencilRef( 255 );
 
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 	void Material::BindHitProxyPass( D3D12CommandList* CommandList )
@@ -300,7 +300,7 @@ namespace Drn
 
 		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_HitProxyPassPSO);
 
-		BindResources(CommandList);
+		//BindResources(CommandList);
 	}
 
 #endif

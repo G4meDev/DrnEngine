@@ -437,20 +437,11 @@ namespace Drn
 	{
 		AssetHandle<Material> ParentMaterial(Path);
 		ParentMaterial.LoadChecked();
+		drn_check(ParentMaterial.IsValid());
 
-		if (ParentMaterial.IsValid())
-		{
-			MaterialUniformParameters OldParams = MaterialAsset->MaterialParameters;
-			MaterialAsset->MaterialParameters.Clear();
-
-			MaterialAsset->MaterialParameters.CopyParameters(ParentMaterial->MaterialParameters);
-			MaterialAsset->MaterialParameters.OverrideParams(OldParams);
-		}
-
-		else
-		{
-			drn_check(false);
-		}
+		MaterialUniformParameters OldParams = MaterialAsset->MaterialParameters;
+		MaterialAsset->MaterialParameters.CopyParameters(ParentMaterial->MaterialParameters);
+		MaterialAsset->MaterialParameters.OverrideParams(OldParams);
 	}
 }
 

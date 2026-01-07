@@ -27,16 +27,22 @@ namespace Drn
 			, MaterialHandle(InMaterial)
 		{}
 
+		MaterialSlot(AssetHandle<MaterialInstance> InMaterial)
+			: Type(EMaterialType::Material)
+			, MaterialInstanceHandle(InMaterial)
+		{}
+
 		virtual ~MaterialSlot() {}
 
 		virtual void Serialize( Archive& Ar ) override;
 
-		Material* GetMaterial() const;
+		Material* GetParentMaterial() const;
 		MaterialInterface* GetMaterialInterface() const;
 
 		std::string GetMaterialPath() const;
 
 		void SetMaterial(AssetHandle<Material> InMaterial);
+		void SetMaterial(AssetHandle<MaterialInstance> InMaterial);
 
 		void LoadChecked();
 		void Load();
@@ -47,6 +53,7 @@ namespace Drn
 	private:
 		EMaterialType Type;
 		AssetHandle<Material> MaterialHandle;
+		AssetHandle<MaterialInstance> MaterialInstanceHandle;
 		//union
 		//{
 		//	AssetHandle<Material> MaterialHandle;

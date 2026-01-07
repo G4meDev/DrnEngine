@@ -32,6 +32,7 @@ namespace Drn
 		virtual void UnRegisterComponent() override;
 
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<Material>& InMaterial);
+		void SetMaterial(uint16 MaterialIndex, AssetHandle<MaterialInstance>& InMaterial);
 
 		void RefreshOverrideMaterials();
 

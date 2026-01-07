@@ -9,7 +9,7 @@ namespace Drn
 	class MaterialInterface
 	{
 	public:
-		virtual const Material* GetMaterial() const = 0;
+		virtual Material* GetMaterial() const = 0;
 		virtual bool IsDependent(MaterialInterface* OtherMaterial) const = 0;
 		virtual bool IsTwoSided() const;
 

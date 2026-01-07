@@ -92,14 +92,15 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				if (!Mat.GetMaterial()->IsSupportingBasePass())
+				if (!Mat.GetParentMaterial()->IsSupportingBasePass())
 				{
 					continue;
 				}
 
 				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat.GetMaterial()->BindMainPass(CommandList);
+				Mat.GetParentMaterial()->BindMainPass( CommandList );
+				Mat.GetMaterialInterface()->BindResources(CommandList);
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -129,14 +130,15 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat.GetMaterial()->IsSupportingPrePass())
+				if (!Mat.GetParentMaterial()->IsSupportingPrePass())
 				{
 					continue;
 				}
 
 				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat.GetMaterial()->BindPrePass(CommandList);
+				Mat.GetParentMaterial()->BindPrePass(CommandList);
+				Mat.GetMaterialInterface()->BindResources(CommandList);
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -165,7 +167,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat.GetMaterial()->IsSupportingShadowPass())
+				if (!Mat.GetParentMaterial()->IsSupportingShadowPass())
 				{
 					continue;
 				}
@@ -174,16 +176,18 @@ namespace Drn
 
 				if ( LightProxy->GetLightType() == ELightType::PointLight )
 				{
-					Mat.GetMaterial()->BindPointLightShadowDepthPass(CommandList);
+					Mat.GetParentMaterial()->BindPointLightShadowDepthPass(CommandList);
 				}
 				else if ( LightProxy->GetLightType() == ELightType::SpotLight)
 				{
-					Mat.GetMaterial()->BindSpotLightShadowDepthPass(CommandList);
+					Mat.GetParentMaterial()->BindSpotLightShadowDepthPass(CommandList);
 				}
 				else if ( LightProxy->GetLightType() == ELightType::DirectionalLight)
 				{
-					Mat.GetMaterial()->BindSpotLightShadowDepthPass(CommandList);
+					Mat.GetParentMaterial()->BindSpotLightShadowDepthPass(CommandList);
 				}
+
+				Mat.GetMaterialInterface()->BindResources(CommandList);
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -212,14 +216,15 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				if (!Mat.GetMaterial()->IsSupportingStaticMeshDecalPass())
+				if (!Mat.GetParentMaterial()->IsSupportingStaticMeshDecalPass())
 				{
 					continue;
 				}
 
 				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat.GetMaterial()->BindStaticMeshDecalPass(CommandList);
+				Mat.GetParentMaterial()->BindStaticMeshDecalPass(CommandList);
+				Mat.GetMaterialInterface()->BindResources(CommandList);
 
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -252,14 +257,15 @@ namespace Drn
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
 
-			if (!Mat.GetMaterial()->IsSupportingHitProxyPass())
+			if (!Mat.GetParentMaterial()->IsSupportingHitProxyPass())
 			{
 				continue;
 			}
 
 			SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-			Mat.GetMaterial()->BindHitProxyPass(CommandList);
+			Mat.GetParentMaterial()->BindHitProxyPass(CommandList);
+			Mat.GetMaterialInterface()->BindResources(CommandList);
 
 			{
 				SCOPE_STAT("Calculate");
@@ -292,14 +298,15 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 		
-			if (!Mat.GetMaterial()->IsSupportingEditorSelectionPass())
+			if (!Mat.GetParentMaterial()->IsSupportingEditorSelectionPass())
 			{
 				continue;
 			}
 
 			SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-			Mat.GetMaterial()->BindSelectionPass(CommandList);
+			Mat.GetParentMaterial()->BindSelectionPass(CommandList);
+			Mat.GetMaterialInterface()->BindResources(CommandList);
 		
 			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
@@ -332,14 +339,15 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat.GetMaterial()->IsSupportingEditorPrimitivePass())
+				if (!Mat.GetParentMaterial()->IsSupportingEditorPrimitivePass())
 				{
 					continue;
 				}
 
 				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat.GetMaterial()->BindEditorPrimitivePass(CommandList);
+				Mat.GetParentMaterial()->BindEditorPrimitivePass(CommandList);
+				Mat.GetMaterialInterface()->BindResources(CommandList);
 		
 				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );

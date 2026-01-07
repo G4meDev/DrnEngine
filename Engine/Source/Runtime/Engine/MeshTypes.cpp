@@ -23,6 +23,13 @@ namespace Drn
 				MaterialHandle = AssetHandle<Material>( MaterialPath );
 				MaterialHandle.LoadChecked();
 			}
+			else if (Type == EMaterialType::MaterialInstance)
+			{
+				std::string MaterialPath;
+				Ar >> MaterialPath;
+				MaterialInstanceHandle = AssetHandle<MaterialInstance>( MaterialPath );
+				MaterialInstanceHandle.LoadChecked();
+			}
 			else
 			{
 				drn_check(false);
@@ -36,6 +43,10 @@ namespace Drn
 			{
 				Ar << MaterialHandle.GetPath();
 			}
+			else if (Type == EMaterialType::MaterialInstance)
+			{
+				Ar << MaterialInstanceHandle.GetPath();
+			}
 			else
 			{
 				drn_check(false);
@@ -43,19 +54,51 @@ namespace Drn
 		}
 	}
 
-	Material* MaterialSlot::GetMaterial() const
+	Material* MaterialSlot::GetParentMaterial() const
 	{
-		return *MaterialHandle;
+		if (GetMaterialInterface())
+		{
+			return GetMaterialInterface()->GetMaterial();
+		}
+
+		return nullptr;
 	}
 
 	MaterialInterface* MaterialSlot::GetMaterialInterface() const
 	{
-		return *MaterialHandle;
+		if (Type == EMaterialType::Material)
+		{
+			return MaterialHandle.Get();
+		}
+		else if (Type == EMaterialType::MaterialInstance)
+		{
+			return MaterialInstanceHandle.Get();
+		}
+
+		else
+		{
+			drn_check(false);
+		}
+
+		return nullptr;
 	}
 
 	std::string MaterialSlot::GetMaterialPath() const
 	{
-		return MaterialHandle.GetPath();
+		if (Type == EMaterialType::Material)
+		{
+			return MaterialHandle.GetPath();
+		}
+		else if (Type == EMaterialType::MaterialInstance)
+		{
+			return MaterialInstanceHandle.GetPath();
+		}
+		else
+		{
+			drn_check(false);
+		}
+
+		return NAME_NULL;
 	}
 
 	void MaterialSlot::SetMaterial( AssetHandle<Material> InMaterial )
@@ -64,24 +107,79 @@ namespace Drn
 		MaterialHandle = InMaterial;
 	}
 
+	void MaterialSlot::SetMaterial( AssetHandle<MaterialInstance> InMaterial )
+	{
+		Type = EMaterialType::MaterialInstance;
+		MaterialInstanceHandle = InMaterial;
+	}
+
 	void MaterialSlot::LoadChecked()
 	{
-		MaterialHandle.LoadChecked();
+		if (Type == EMaterialType::Material)
+		{
+			MaterialHandle.LoadChecked();
+		}
+		else if (Type == EMaterialType::MaterialInstance)
+		{
+			MaterialInstanceHandle.LoadChecked();
+		}
+		else
+		{
+			drn_check(false);
+		}
+
 	}
 
 	void MaterialSlot::Load()
 	{
-		MaterialHandle.Load();
+		if (Type == EMaterialType::Material)
+		{
+			MaterialHandle.Load();
+		}
+		else if (Type == EMaterialType::MaterialInstance)
+		{
+			MaterialInstanceHandle.Load();
+		}
+		else
+		{
+			drn_check(false);
+		}
 	}
 
 	bool MaterialSlot::IsValid() const
 	{
-		return MaterialHandle.IsValid();
+		if (Type == EMaterialType::Material)
+		{
+			return MaterialHandle.IsValid();
+		}
+		else if (Type == EMaterialType::MaterialInstance)
+		{
+			return MaterialInstanceHandle.IsValid();
+		}
+		else
+		{
+			drn_check(false);
+		}
+
+		return false;
 	}
 
 	std::string MaterialSlot::GetMaterialName() const
 	{
-		return Path::GetCleanName(MaterialHandle.GetPath());
+		if (Type == EMaterialType::Material)
+		{
+			return Path::GetCleanName(MaterialHandle.GetPath());
+		}
+		else if (Type == EMaterialType::MaterialInstance)
+		{
+			return Path::GetCleanName(MaterialInstanceHandle.GetPath());
+		}
+		else
+		{
+			drn_check(false);
+		}
+
+		return NAME_NULL;
 	}
 
 	void MaterialProperty::Serialize( Archive& Ar )
@@ -144,6 +242,12 @@ namespace Drn
 					if (Type == EAssetType::Material)
 					{
 						SetMaterial(AssetHandle<Material>(AssetPath));
+						MC->MarkRenderStateDirty();
+					}
+
+					if (Type == EAssetType::MaterialInstance)
+					{
+						SetMaterial(AssetHandle<MaterialInstance>(AssetPath));
 						MC->MarkRenderStateDirty();
 					}
 				}

@@ -33,7 +33,7 @@ namespace Drn
 // ---------------------------------------- Material Interface -------------------------------------------------
 // -------------------------------------------------------------------------------------------------------------
 
-		virtual const Material* GetMaterial() const override { return *Parent; };
+		virtual Material* GetMaterial() const override { return *Parent; };
 		virtual bool IsDependent(MaterialInterface* OtherMaterial) const override;
 
 		virtual void UploadResources( class D3D12CommandList* CommandList ) override;

@@ -31,7 +31,7 @@ namespace Drn
 		PreviewMesh = PreviewWorld->SpawnActor<StaticMeshActor>();
 		PreviewMesh->GetMeshComponent()->SetSelectable( false );
 		PreviewMesh->GetMeshComponent()->SetMesh( SphereMesh );
-		//PreviewMesh->GetMeshComponent()->SetMaterial(0, m_OwningAsset);
+		PreviewMesh->GetMeshComponent()->SetMaterial(0, m_OwningAsset);
 
 		m_SkyLight = PreviewWorld->SpawnActor<SkyLightActor>();
 		m_SkyLight->SetIntensity(0.4f);

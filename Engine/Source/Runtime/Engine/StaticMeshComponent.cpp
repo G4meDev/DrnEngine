@@ -125,6 +125,16 @@ namespace Drn
 		}
 	}
 
+	void StaticMeshComponent::SetMaterial( uint16 MaterialIndex, AssetHandle<MaterialInstance>& InMaterial )
+	{
+		if (MaterialIndex < m_OverrideMaterials.size())
+		{
+			m_OverrideMaterials[MaterialIndex].SetMaterial(InMaterial);
+			m_OverrideMaterials[MaterialIndex].m_Overriden = true;
+			MarkRenderStateDirty();
+		}
+	}
+
 #if WITH_EDITOR
 
 	void StaticMeshComponent::DrawDetailPanel( float DeltaTime )
