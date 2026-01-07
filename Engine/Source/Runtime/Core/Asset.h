@@ -16,7 +16,8 @@ namespace Drn
 		Material,
 		Texture2D,
 		TextureVolume,
-		TextureCube
+		TextureCube,
+		MaterialInstance
 	};
 
 	class Asset : public Serializable

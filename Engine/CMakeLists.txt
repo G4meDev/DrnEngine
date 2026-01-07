@@ -203,6 +203,7 @@ set( HEADER_FILES
 
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.h
+	Source/Editor/AssetPreview/AssetPreviewMaterialInstanceGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.h
 
@@ -424,6 +425,7 @@ set( SOURCE_FILES
 
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.cpp
+	Source/Editor/AssetPreview/AssetPreviewMaterialInstanceGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.cpp
 

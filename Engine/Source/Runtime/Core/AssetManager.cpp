@@ -92,6 +92,19 @@ namespace Drn
 			CreatedAsset    = std::shared_ptr<Asset>(new TextureCube( AssetFilePath, SourceFile ) );
 		}
 
+		else if ( FileExtension == ".drn" )
+		{
+			// TODO: convert all other asset source to relative path
+			std::string RelativePath = Path::ConvertProjectRelativePath(SourceFile);
+			EAssetType AssetType = AssetHandle<Asset>(RelativePath).LoadGeneric();
+
+			if (AssetType == EAssetType::Material)
+			{
+				FormatSupported = true;
+				CreatedAsset    = std::shared_ptr<MaterialInstance>(new MaterialInstance( AssetFilePath, RelativePath ) );
+			}
+		}
+
 		if ( !FormatSupported )
 		{
 			LOG( LogAssetManager, Error, "file format %s is not supported. ", FileExtension.c_str() );

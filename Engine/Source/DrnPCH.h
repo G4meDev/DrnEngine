@@ -52,6 +52,7 @@
 #include "Runtime/Renderer/InputLayout.h"
 #include "Runtime/Renderer/D3D12Utils.h"
 #include "Runtime/Renderer/Material/Material.h"
+#include "Runtime/Renderer/MaterialInstance.h"
 #include "Runtime/Renderer/Texture/Texture2D.h"
 #include "Runtime/Renderer/Texture/TextureVolume.h"
 #include "Runtime/Renderer/Texture/TextureCube.h"

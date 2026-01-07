@@ -432,6 +432,26 @@ namespace Drn
 			MaterialAsset->MaterialParameters.m_TextureCubeSlots.push_back(TextureCubeProperty(Param.Name, Path));
 		}
 	}
+
+	void AssetImporterMaterial::Import( MaterialInstance* MaterialAsset, const std::string& Path )
+	{
+		AssetHandle<Material> ParentMaterial(Path);
+		ParentMaterial.LoadChecked();
+
+		if (ParentMaterial.IsValid())
+		{
+			MaterialUniformParameters OldParams = MaterialAsset->MaterialParameters;
+			MaterialAsset->MaterialParameters.Clear();
+
+			MaterialAsset->MaterialParameters.CopyParameters(ParentMaterial->MaterialParameters);
+			MaterialAsset->MaterialParameters.OverrideParams(OldParams);
+		}
+
+		else
+		{
+			drn_check(false);
+		}
+	}
 }
 
 #endif

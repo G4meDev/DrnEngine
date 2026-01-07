@@ -3,7 +3,6 @@
 #include "ForwardTypes.h"
 #include "Runtime/Core/Asset.h"
 #include "Runtime/Renderer/InputLayout.h"
-#include "Runtime/Engine/NamedProperty.h"
 #include "Runtime/Renderer/ShaderBlob.h"
 #include "Runtime/Renderer/MaterialShared.h"
 #include "Runtime/Renderer/MaterialInterface.h"

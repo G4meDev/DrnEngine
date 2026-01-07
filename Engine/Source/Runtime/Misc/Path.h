@@ -14,6 +14,7 @@ namespace Drn
 		static std::string GetProjectPath();
 
 		static std::string ConvertProjectPath(const std::string& Path);
+		static std::string ConvertProjectRelativePath(const std::string& FullPath);
 		static std::string ConvertShortPath(const std::string& FullPath);
 		static std::string GetDirectory(const std::string& FullPath);
 		

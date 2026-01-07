@@ -12,12 +12,12 @@ namespace Drn
 	{
 	public:
 		static void Import(Material* MaterialAsset, const std::string& Path);
+		static void Import(MaterialInstance* MaterialAsset, const std::string& Path);
 
 	protected:
 
 		static bool CompileShader( const std::wstring& ShaderPath, const wchar_t* EntryPoint, const wchar_t* Profile, const std::vector<const wchar_t*>& Macros, ID3DBlob** ByteBlob );
 		static void UpdateMaterialParameterSlots(Material* MaterialAsset, const std::string& ShaderCode);
-		static void FindNamedTokens(const std::string& ShaderCode, const std::string& Token, std::vector<std::string>& Result);
 
 	private:
 	};

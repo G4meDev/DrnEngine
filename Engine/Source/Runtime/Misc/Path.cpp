@@ -27,6 +27,21 @@ namespace Drn
 		return std::string(PROJECT_PATH) + "\\" + Path;
 	}
 
+	std::string Path::ConvertProjectRelativePath( const std::string& FullPath )
+	{
+		const std::string EnginePath = "\\Engine\\Content\\";
+		const std::string GamePath = "\\Game\\Content\\";
+
+		uint64 Pos = FullPath.find(EnginePath);
+		Pos = Pos == std::string::npos ? FullPath.find(GamePath) : Pos;
+		if (Pos != std::string::npos)
+		{
+			return FullPath.substr(Pos, -1);
+		}
+
+		return NAME_NULL;
+	}
+
 	std::string Path::ConvertShortPath( const std::string& FullPath )
 	{
 		size_t LastSlash = FullPath.find_last_of( "\\" );

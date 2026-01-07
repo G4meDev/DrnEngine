@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Engine/NamedProperty.h"
 
 namespace Drn
 {
@@ -20,6 +21,17 @@ namespace Drn
 			m_FloatSlots.clear();
 			m_Vector4Slots.clear();
 		}
+
+		inline void CopyParameters(const MaterialUniformParameters& Source)
+		{
+			m_Texture2DSlots = Source.m_Texture2DSlots;
+			m_TextureCubeSlots = Source.m_TextureCubeSlots;
+			m_FloatSlots = Source.m_FloatSlots;
+			m_Vector4Slots = Source.m_Vector4Slots;
+		};
+
+		// only updates params with same name
+		void OverrideParams(MaterialUniformParameters& Source);
 
 		void SetNamedTexture2D(const std::string& Name, AssetHandle<Texture2D> TextureAsset);
 		void SetIndexedTexture2D(uint8 Index, AssetHandle<Texture2D> TextureAsset);

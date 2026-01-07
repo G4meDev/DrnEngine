@@ -13,6 +13,7 @@ LOG_DECLARE_CATEGORY(LogAssetManager)
 namespace Drn
 {
 	class AssetManager;
+	class MaterialInstance;
 
 	template<typename T>
 	struct AssetHandle
@@ -114,6 +115,11 @@ namespace Drn
 				m_Asset = AssetManager::Get()->Load<Material>(m_Path);
 			}
 
+			else if (Type == EAssetType::MaterialInstance)
+			{
+				m_Asset = AssetManager::Get()->Load<MaterialInstance>(m_Path);
+			}
+
 			else if (Type == EAssetType::Texture2D)
 			{
 				m_Asset = AssetManager::Get()->Load<Texture2D>(m_Path);
@@ -128,6 +134,11 @@ namespace Drn
 			else if (Type == EAssetType::TextureCube)
 			{
 				m_Asset = AssetManager::Get()->Load<TextureCube>(m_Path);
+			}
+
+			else
+			{
+				drn_check(false);
 			}
 
 			return Type;

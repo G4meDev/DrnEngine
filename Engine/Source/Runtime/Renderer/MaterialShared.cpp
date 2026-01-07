@@ -135,6 +135,61 @@ namespace Drn
 		}
 	}
 
+	void MaterialUniformParameters::OverrideParams( MaterialUniformParameters& Source )
+	{
+		for (Texture2DProperty& Prop : m_Texture2DSlots)
+		{
+			for (Texture2DProperty& SourceProp : Source.m_Texture2DSlots)
+			{
+				if (Prop.m_Name == SourceProp.m_Name)
+				{
+					SourceProp.m_Texture2D.LoadChecked();
+					if (SourceProp.m_Texture2D.IsValid())
+					{
+						Prop.m_Texture2D = SourceProp.m_Texture2D;
+					}
+				}
+			}
+		}
+
+		for (TextureCubeProperty& Prop : m_TextureCubeSlots)
+		{
+			for (TextureCubeProperty& SourceProp : Source.m_TextureCubeSlots)
+			{
+				if (Prop.m_Name == SourceProp.m_Name)
+				{
+					SourceProp.m_TextureCube.LoadChecked();
+					if (SourceProp.m_TextureCube.IsValid())
+					{
+						Prop.m_TextureCube = SourceProp.m_TextureCube;
+					}
+				}
+			}
+		}
+
+		for (FloatProperty& Prop : m_FloatSlots)
+		{
+			for (FloatProperty& SourceProp : Source.m_FloatSlots)
+			{
+				if (Prop.m_Name == SourceProp.m_Name)
+				{
+					Prop.m_Value = SourceProp.m_Value;
+				}
+			}
+		}
+
+		for (Vector4Property& Prop : m_Vector4Slots)
+		{
+			for (Vector4Property& SourceProp : Source.m_Vector4Slots)
+			{
+				if (Prop.m_Name == SourceProp.m_Name)
+				{
+					Prop.m_Value = SourceProp.m_Value;
+				}
+			}
+		}
+	}
+
 	void MaterialUniformParameters::SetNamedTexture2D( const std::string& Name, AssetHandle<Texture2D> TextureAsset )
 	{
 		for (uint8 i = 0; i < m_Texture2DSlots.size(); i++)
