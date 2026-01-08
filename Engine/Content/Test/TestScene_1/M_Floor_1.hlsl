@@ -123,15 +123,13 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
-    float3 VertexNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
-    float3 VertexTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
-    float3 VertexBiNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Bitangent));
-    //OUT.TBN = float3x3(VertexTangent, VertexBiNormal, VertexNormal);
-    OUT.TBN = float3x3(VertexTangent, VertexNormal, VertexBiNormal);
+    float3 WorldNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
+    float3 WorldTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
+    OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
     OUT.Color = float4(IN.Color, 1.0f);
-    OUT.Normal = VertexNormal;
+    OUT.Normal = WorldNormal;
     OUT.UV = IN.UV1;
     
 #endif
@@ -170,13 +168,6 @@ struct PixelShaderOutput
 #elif SHADOW_PASS
 #endif
 };
-
-float3 ReconstructNormals(float2 xy)
-{
-    xy.y = 1 - xy.y;
-    float2 normalxy = xy * 2 - 1;
-    return float3(normalxy.x, 1 - dot(normalxy, normalxy), normalxy.y);
-}
 
 struct LayerData
 {
@@ -291,7 +282,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     //float3 Normal = FloorNormalTexture.Sample(LinearSampler, IN.UV).rgb;
     Masks.g *= Parameters.RoughnessIntensity;
 
-    Normal = ReconstructNormals(Normal.xy);
+    Normal = ReconstructTextureNormal(Normal.xy);
     Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Parameters.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
     

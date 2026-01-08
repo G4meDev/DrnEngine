@@ -109,7 +109,6 @@ struct VertexInputStaticMesh
     float3 Color : COLOR;
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
     float2 UV1 : TEXCOORD0;
     float2 UV2 : TEXCOORD1;
     float2 UV3 : TEXCOORD2;
@@ -204,9 +203,22 @@ float3 DecodeNormal(float2 Oct)
     return normalize(N);
 }
 
-float3 ReconstructNormal(float2 In)
+float3 ReconstructNormal(float2 xz)
 {
-    return float3(In, sqrt(1 - dot(In, In)));
+    return float3(xz.x, sqrt(1 - dot(xz, xz)), xz.y);
+}
+
+float3 ReconstructTextureNormal(float2 xy)
+{
+    xy.y = 1 - xy.y;
+    float2 normalxy = xy * 2 - 1;
+    return float3(normalxy.x, sqrt(1 - dot(normalxy, normalxy)), normalxy.y);
+}
+
+float3x3 GetTBN(float3 WorldNormal, float3 WorldTangent)
+{
+    float3 WorldBinormal = normalize(cross(WorldTangent, WorldNormal));
+    return float3x3(WorldTangent, WorldNormal, WorldBinormal);
 }
 
 float Pow4( float x )

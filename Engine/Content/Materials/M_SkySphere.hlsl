@@ -73,14 +73,13 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
-    float3 VertexNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
-    float3 VertexTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
-    float3 VertexBiNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Bitangent));
-    OUT.TBN = float3x3(VertexTangent, VertexNormal, VertexBiNormal);
+    float3 WorldNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
+    float3 WorldTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
+    OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
     OUT.Color = float4(IN.Color, 1.0f);
-    OUT.Normal = VertexNormal;
+    OUT.Normal = WorldNormal;
     OUT.UV = IN.UV1;
     
     return OUT;
