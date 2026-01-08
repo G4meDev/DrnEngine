@@ -61,11 +61,10 @@ namespace Drn
 		CommandList->SetStreamSource(1, m_ColorBuffer, 0);
 		CommandList->SetStreamSource(2, m_NormalBuffer, 0);
 		CommandList->SetStreamSource(3, m_TangentBuffer, 0);
-		CommandList->SetStreamSource(4, m_BitTangentBuffer, 0);
-		CommandList->SetStreamSource(5, m_UV1Buffer, 0);
-		CommandList->SetStreamSource(6, m_UV2Buffer, 0);
-		CommandList->SetStreamSource(7, m_UV3Buffer, 0);
-		CommandList->SetStreamSource(8, m_UV4Buffer, 0);
+		CommandList->SetStreamSource(4, m_UV1Buffer, 0);
+		CommandList->SetStreamSource(5, m_UV2Buffer, 0);
+		CommandList->SetStreamSource(6, m_UV3Buffer, 0);
+		CommandList->SetStreamSource(7, m_UV4Buffer, 0);
 	}
 
 	D3D12_VERTEX_BUFFER_VIEW StaticMeshVertexBuffer::VertexBufferViewNull;

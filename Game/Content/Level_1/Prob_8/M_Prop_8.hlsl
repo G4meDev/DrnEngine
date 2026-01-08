@@ -110,7 +110,6 @@ struct VertexShaderInput
 #if MAIN_PASS
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
 #endif
 };
 
@@ -143,11 +142,9 @@ VertexShaderOutput Main_VS(VertexShaderInput IN)
 #elif MAIN_PASS
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
-    float3 VertexNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
-    float3 VertexTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
-    float3 VertexBiNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Bitangent));
-    //OUT.TBN = float3x3(VertexTangent, VertexBiNormal, VertexNormal);
-    OUT.TBN = float3x3(VertexTangent, VertexNormal, VertexBiNormal);
+    float3 WorldNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
+    float3 WorldTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
+    OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
 #else
@@ -169,15 +166,6 @@ struct PixelShaderInput
     float3x3 TBN : TBN;
 #endif
 };
-
-
-
-float3 ReconstructNormals(float2 xy)
-{
-    xy.y = 1 - xy.y;
-    float2 normalxy = xy * 2 - 1;
-    return float3(normalxy.x, 1 - dot(normalxy, normalxy), normalxy.y);
-}
 
 //#define MAIN_PASS 1
 //#define PRE_PASS 1
@@ -205,7 +193,7 @@ BasePassPixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFro
     float3 Masks = float3(0, Parameters.RoughnessIntensity, 1);
     
     float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV).rgb;
-    Normal = ReconstructNormals(Normal.xy);
+    Normal = ReconstructTextureNormal(Normal.xy);
 
     Normal = lerp( float3(0.0f, 1.0f, 0.0f), Normal, Parameters.NormalIntensity );
     Normal = normalize(mul(Normal, IN.TBN));
