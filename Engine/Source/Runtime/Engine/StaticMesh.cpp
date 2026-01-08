@@ -64,7 +64,6 @@ namespace Drn
 
 				Ar >> m_ImportNormals;
 				Ar >> m_ImportTangents;
-				Ar >> m_ImportBitTangents;
 				Ar >> m_ImportColor;
 				Ar >> m_ImportUVs;
 
@@ -98,7 +97,6 @@ namespace Drn
 
 				Ar << m_ImportNormals;
 				Ar << m_ImportTangents;
-				Ar << m_ImportBitTangents;
 				Ar << m_ImportColor;
 				Ar << m_ImportUVs;
 

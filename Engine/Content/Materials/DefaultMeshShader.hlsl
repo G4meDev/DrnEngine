@@ -1,16 +1,9 @@
-
-//#include "../../../Engine/Content/Materials/Common.hlsl"
+#include "Common.hlsl"
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_HIT_PROXY_PASS
 // SUPPORT_PRE_PASS
 // SUPPORT_EDITOR_SELECTION_PASS
-
-
-float3 EncodeNormal(float3 Normal)
-{
-    return Normal * 0.5 + 0.5;
-}
 
 struct Resources
 {
@@ -39,19 +32,6 @@ struct Primitive
 struct StaticSamplers
 {
     uint LinearSamplerIndex;
-};
-
-struct VertexInputStaticMesh
-{
-    float3 Position : POSITION;
-    float3 Color : COLOR;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float3 Bitangent : BINORMAL;
-    float2 UV1 : TEXCOORD0;
-    float2 UV2 : TEXCOORD1;
-    float2 UV3 : TEXCOORD2;
-    float2 UV4 : TEXCOORD3;
 };
 
 struct VertexShaderOutput

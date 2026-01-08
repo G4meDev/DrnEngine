@@ -240,7 +240,6 @@ namespace Drn
 
 		ImGui::Checkbox( "Import Normal", &m_OwningAsset->m_ImportNormals);
 		ImGui::Checkbox( "Import Tangent", &m_OwningAsset->m_ImportTangents);
-		ImGui::Checkbox( "Import BitTangent", &m_OwningAsset->m_ImportBitTangents);
 		ImGui::Checkbox( "Import Color", &m_OwningAsset->m_ImportColor);
 		int32 UvNum = m_OwningAsset->m_ImportUVs;
 		ImGui::SliderInt( "Import UVs", &UvNum, 0, 8);
@@ -307,9 +306,12 @@ namespace Drn
 						PreviewWorld->DrawDebugLine( Pos, Pos + Tangent * m_DebugLinesSize, Color::Blue, 0, 0 );
 					}
 
-					if (m_DrawBitTangents && Data.VertexData.HasBitTangents())
+					if (m_DrawBitTangents && Data.VertexData.HasNormals() && Data.VertexData.HasTangents())
 					{
-						const Vector& BitTangent = Math::UnpackUint32ToSignedNormalizedVector(Data.VertexData.GetBitTangents()[i]);
+						const Vector& Normal = Math::UnpackUint32ToSignedNormalizedVector(Data.VertexData.GetNormals()[i]);
+						const Vector& Tangent = Math::UnpackUint32ToSignedNormalizedVector(Data.VertexData.GetTangents()[i]);
+
+						const Vector& BitTangent = Vector::CrossProduct(Tangent, Normal).GetSafeNormal();
 						PreviewWorld->DrawDebugLine( Pos, Pos + BitTangent * m_DebugLinesSize, Color::Red, 0, 0 );
 					}
 				}

@@ -226,7 +226,7 @@ namespace Drn
 				Data.VertexData.Positions.resize(VertexCount);
 				Data.VertexData.Normals.resize(MeshAsset->m_ImportNormals ? VertexCount : 0);
 				Data.VertexData.Tangents.resize(MeshAsset->m_ImportTangents ? VertexCount : 0);
-				Data.VertexData.BitTangents.resize(MeshAsset->m_ImportBitTangents ? VertexCount : 0);
+				//Data.VertexData.BitTangents.resize(MeshAsset->m_ImportBitTangents ? VertexCount : 0);
 				Data.VertexData.Colors.resize(MeshAsset->m_ImportColor? VertexCount : 0);
 
 				Data.VertexData.UV_1.resize(MeshAsset->m_ImportUVs >= 1 ? VertexCount : 0);
@@ -244,8 +244,8 @@ namespace Drn
 					if (MeshAsset->m_ImportTangents)
 						Data.VertexData.Tangents[i] = Math::PackSignedNormalizedVectorToUint32(Vector(IMD.Vertices[i].T_X, IMD.Vertices[i].T_Y, IMD.Vertices[i].T_Z));
 
-					if (MeshAsset->m_ImportBitTangents)
-						Data.VertexData.BitTangents[i] = Math::PackSignedNormalizedVectorToUint32(Vector(IMD.Vertices[i].BT_X, IMD.Vertices[i].BT_Y, IMD.Vertices[i].BT_Z));
+					//if (MeshAsset->m_ImportBitTangents)
+					//	Data.VertexData.BitTangents[i] = Math::PackSignedNormalizedVectorToUint32(Vector(IMD.Vertices[i].BT_X, IMD.Vertices[i].BT_Y, IMD.Vertices[i].BT_Z));
 
 					if (MeshAsset->m_ImportColor)
 						Data.VertexData.Colors[i] = Vector4(IMD.Vertices[i].R, IMD.Vertices[i].G, IMD.Vertices[i].B, IMD.Vertices[i].A);

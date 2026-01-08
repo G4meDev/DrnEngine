@@ -45,7 +45,7 @@ namespace Drn
 		CreateVertexBufferConditional(true, CommandList, Result->m_PositionBuffer, (void*)Source.GetPositions().data(), Source.GetVertexCount() * sizeof(Vector), "VB_Position");
 		CreateVertexBufferConditional(Source.HasNormals(), CommandList, Result->m_NormalBuffer, (void*)Source.GetNormals().data(), Source.GetVertexCount() * sizeof(uint32), "VB_Normal");
 		CreateVertexBufferConditional(Source.HasTangents(), CommandList, Result->m_TangentBuffer, (void*)Source.GetTangents().data(), Source.GetVertexCount() * sizeof(uint32), "VB_Tangent");
-		CreateVertexBufferConditional(Source.HasBitTangents(), CommandList, Result->m_BitTangentBuffer, (void*)Source.GetBitTangents().data(), Source.GetVertexCount() * sizeof(uint32), "VB_BitTangent");
+		//CreateVertexBufferConditional(Source.HasBitTangents(), CommandList, Result->m_BitTangentBuffer, (void*)Source.GetBitTangents().data(), Source.GetVertexCount() * sizeof(uint32), "VB_BitTangent");
 		CreateVertexBufferConditional(Source.HasColors(), CommandList, Result->m_ColorBuffer, (void*)Source.GetColor().data(), Source.GetVertexCount() * sizeof(Color), "VB_Color");
 		CreateVertexBufferConditional(Source.HasUV1(), CommandList, Result->m_UV1Buffer, (void*)Source.GetUV1().data(), Source.GetVertexCount() * sizeof(Vector2Half), "VB_UV1");
 		CreateVertexBufferConditional(Source.HasUV2(), CommandList, Result->m_UV2Buffer, (void*)Source.GetUV2().data(), Source.GetVertexCount() * sizeof(Vector2Half), "VB_UV2");

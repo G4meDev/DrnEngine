@@ -20,7 +20,6 @@ namespace Drn
 			Ar >> Positions;
 			Ar >> Normals;
 			Ar >> Tangents;
-			Ar >> BitTangents;
 			Ar >> Colors;
 			
 			Ar >> UV_1;
@@ -47,7 +46,6 @@ namespace Drn
 			Ar << Positions;
 			Ar << Normals;
 			Ar << Tangents;
-			Ar << BitTangents;
 			Ar << Colors;
 			
 			Ar << UV_1;

@@ -99,7 +99,6 @@ namespace Drn
 
 		bool m_ImportNormals = true;
 		bool m_ImportTangents = true;
-		bool m_ImportBitTangents = true;
 		bool m_ImportColor = false;
 		uint8 m_ImportUVs = 1;
 
