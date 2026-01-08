@@ -24,7 +24,7 @@ namespace Drn
 
 		void SetMaterial(AssetHandle<Material>& InMaterial);
 
-		AssetHandle<Material> m_Material;
+		MaterialSlot m_Material;
 		class DecalSceneProxy* m_SceneProxy;
 
 		void UpdateRenderStateConditional();

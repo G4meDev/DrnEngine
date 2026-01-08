@@ -22,19 +22,18 @@ namespace Drn
 
 		if (m_Material.IsValid())
 		{
-			m_Material->UploadResources(CommandList);
+			m_Material.GetMaterialInterface()->UploadResources(CommandList);
 		}
 	}
 
 	void DecalSceneProxy::Render( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		if (!m_Material.IsValid() || m_Material->GetMaterialDomain() != EMaterialDomain::Decal)
+		if (!m_Material.IsValid() || m_Material.GetParentMaterial()->GetMaterialDomain() != EMaterialDomain::Decal)
 		{
 			return;
 		}
 
-		const std::string MaterialName = Path::GetCleanName(m_Material.GetPath());
-		SCOPE_STAT_DYNAMIC(MaterialName.c_str());
+		SCOPE_STAT_DYNAMIC(m_Material.GetMaterialName().c_str());
 
 		Matrix LocalToWorldMatrix = Matrix( m_WorldTransform );
 		m_DecalData.LocalToProjection = LocalToWorldMatrix * Matrix(Renderer->GetSceneView().WorldToProjection);
@@ -44,7 +43,8 @@ namespace Drn
 
 		CommandList->SetGraphicRootConstant(DecalBuffer->GetViewIndex(), 1);
 
-		m_Material->BindDeferredDecalPass(CommandList);
+		m_Material.GetParentMaterial()->BindDeferredDecalPass(CommandList);
+		m_Material.GetMaterialInterface()->BindResources(CommandList);
 
 		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList);
 	}

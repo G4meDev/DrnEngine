@@ -27,7 +27,7 @@ namespace Drn
 		void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
 
 		Transform m_WorldTransform;
-		AssetHandle<Material> m_Material;
+		MaterialSlot m_Material;
 
 		class DecalComponent* m_DecalComponent;
 

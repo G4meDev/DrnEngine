@@ -24,14 +24,12 @@ namespace Drn
 		
 		if ( Ar.IsLoading() )
 		{
-			std::string MaterialPath;
-			Ar >> MaterialPath;
-			m_Material = AssetHandle<Material>( MaterialPath );
+			m_Material.Serialize(Ar);
 			m_Material.LoadChecked();
 		}
 		else
 		{
-			Ar << m_Material.GetPath();
+			m_Material.Serialize(Ar);
 		}
 	}
 
@@ -96,7 +94,7 @@ namespace Drn
 	{
 		SceneComponent::DrawDetailPanel(DeltaTime);
 
-		ImGui::TextWrapped(m_Material.IsValid() ? m_Material.GetPath().c_str() : "NULL");
+		ImGui::TextWrapped(m_Material.IsValid() ? m_Material.GetMaterialName().c_str() : "NULL");
 
 		if (ImGui::BeginDragDropTarget())
 		{
