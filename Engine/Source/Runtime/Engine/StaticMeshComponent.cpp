@@ -67,6 +67,9 @@ namespace Drn
 			}
 			
 			RefreshOverrideMaterials();
+
+			Ar >> MinDrawDistance;
+			Ar >> MaxDrawDistance;
 		}
 		
 		else
@@ -78,6 +81,9 @@ namespace Drn
 			{
 				OD.Serialize(Ar);
 			}
+
+			Ar << MinDrawDistance;
+			Ar << MaxDrawDistance;
 		}
 	}
 
