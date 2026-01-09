@@ -22,5 +22,7 @@ namespace Drn
 			, SphereRadius(InSphereRadius)
 		{}
 
+		void TranslateBy(const Vector& Offset);
+
 	};
 }

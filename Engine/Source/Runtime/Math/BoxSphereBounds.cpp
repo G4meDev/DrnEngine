@@ -3,5 +3,9 @@
 
 namespace Drn
 {
+	void BoxSphereBounds::TranslateBy( const Vector& Offset )
+	{
+		Origin = Origin + Offset;
+	}
 
 }

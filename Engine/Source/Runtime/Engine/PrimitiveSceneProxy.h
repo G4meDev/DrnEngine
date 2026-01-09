@@ -27,6 +27,8 @@ namespace Drn
 
 		inline void SetLocalToWorld( const Matrix& InMatrix ) { m_LocalToWorld = InMatrix; }
 
+		virtual const BoxSphereBounds& GetBounds() = 0;
+
 	protected:
 
 		virtual void RenderMainPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
@@ -39,6 +41,11 @@ namespace Drn
 		virtual PrimitiveComponent*  GetPrimitive() = 0;
 
 		Matrix m_LocalToWorld;
+
+		float MinDrawDistance;
+		float MaxDrawDistance;
+
+		BoxSphereBounds Bounds;
 
 #if WITH_EDITOR
 		virtual void RenderHitProxyPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;

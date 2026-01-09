@@ -74,6 +74,8 @@ namespace Drn
 		LineBatchSceneProxy(LineBatchComponent* InLineBatchComponent);
 		virtual ~LineBatchSceneProxy();
 
+		virtual const BoxSphereBounds& GetBounds() override;
+
 		bool m_Thickness;
 	protected:
 

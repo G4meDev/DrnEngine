@@ -150,8 +150,9 @@ namespace Drn
 		m_GBuffer->ClearDepth( m_CommandList);
 		m_GBuffer->BindDepth(m_CommandList);
 
-		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
+		for (VisiblePrimitiveIterator It(m_Scene->GetPrimitiveProxies(), PrimitiveVisibilityMap); It; ++It)
 		{
+			PrimitiveSceneProxy* Proxy = *It;
 			Proxy->RenderPrePass(m_CommandList, this);
 		}
 
@@ -239,8 +240,9 @@ namespace Drn
 
 		const bool IsGameMode = GetScene()->GetWorld()->IsInGameMode();
 
-		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
+		for (VisiblePrimitiveIterator It(m_Scene->GetPrimitiveProxies(), PrimitiveVisibilityMap); It; ++It)
 		{
+			PrimitiveSceneProxy* Proxy = *It;
 			if (!IsGameMode || (IsGameMode && !Proxy->IsEditorPrimitive()))
 			{
 				Proxy->RenderHitProxyPass(m_CommandList, this);
@@ -281,9 +283,9 @@ namespace Drn
 			m_CommandList->SetGraphicRootConstant(m_DecalBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
 		}
 
-
-		for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
+		for (VisiblePrimitiveIterator It(m_Scene->GetPrimitiveProxies(), PrimitiveVisibilityMap); It; ++It)
 		{
+			PrimitiveSceneProxy* Proxy = *It;
 			Proxy->RenderMainPass(m_CommandList, this);
 		}
 
@@ -867,6 +869,7 @@ namespace Drn
 
 		ResolvePostProcessSettings();
 		RecalculateView();
+		CalculateVisibity();
 
 		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 
@@ -1053,6 +1056,34 @@ namespace Drn
 		}
 
 		UpdateViewBuffer();
+	}
+
+	void SceneRenderer::CalculateVisibity()
+	{
+		PrimitiveVisibilityMap.resize(m_Scene->m_PrimitiveProxies.size());
+
+		int32 Index = 0;
+		for (auto It = m_Scene->GetPrimitiveProxies().begin(); It != m_Scene->GetPrimitiveProxies().end(); It++)
+		{
+			PrimitiveSceneProxy* Proxy = *It;
+			bool bDistanceCulled = false;
+
+			const bool HasMinDrawDistance = Proxy->MinDrawDistance > 0 ;
+			const bool HasMaxDrawDistance = Proxy->MaxDrawDistance > 0 ;
+
+			if (HasMinDrawDistance || HasMaxDrawDistance)
+			{
+				float Distance = Vector::Distance(m_SceneView.CameraPos, Proxy->GetBounds().Origin);
+				
+				const bool NearDistanceCulled = HasMinDrawDistance && (Distance < Proxy->MinDrawDistance);
+				const bool FarDistanceCulled = HasMaxDrawDistance && (Distance > Proxy->MaxDrawDistance);
+				
+				bDistanceCulled = NearDistanceCulled || FarDistanceCulled;
+			}
+
+			PrimitiveVisibilityMap[Index] = !bDistanceCulled;
+			Index++;
+		}
 	}
 
 #if WITH_EDITOR

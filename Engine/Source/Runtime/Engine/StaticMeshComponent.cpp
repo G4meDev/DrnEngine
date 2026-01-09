@@ -15,6 +15,8 @@ namespace Drn
 	StaticMeshComponent::StaticMeshComponent()
 		: PrimitiveComponent()
 		, m_SceneProxy(nullptr)
+		, MinDrawDistance(0)
+		, MaxDrawDistance(0)
 	{
 		
 	}
@@ -197,7 +199,15 @@ namespace Drn
 			}
 		}
 
+		if (ImGui::InputFloat("MinDrawDistance", &MinDrawDistance))
+		{
+			SetMinDrawDistance(MinDrawDistance);
+		}
 
+		if (ImGui::InputFloat("MaxDrawDistance", &MaxDrawDistance))
+		{
+			SetMaxDrawDistance(MaxDrawDistance);
+		}
 	}
 
 	void StaticMeshComponent::ClearMesh()
@@ -297,4 +307,22 @@ namespace Drn
 		}
 	}
 
-}
+	void StaticMeshComponent::SetMinDrawDistance( float Value )
+	{
+		MinDrawDistance = Value;
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->MinDrawDistance = MinDrawDistance;
+		}
+	}
+
+	void StaticMeshComponent::SetMaxDrawDistance( float Value )
+	{
+		MaxDrawDistance = Value;
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->MaxDrawDistance = MaxDrawDistance;
+		}
+	}
+
+        }

@@ -5,6 +5,8 @@ namespace Drn
 {
 	PrimitiveSceneProxy::PrimitiveSceneProxy( const PrimitiveComponent* InComponent )
 		: m_LocalToWorld( Matrix(InComponent->GetWorldTransform()) )
+		, MinDrawDistance(0)
+		, MaxDrawDistance(0)
 #if WITH_EDITOR
 		, m_EditorPrimitive( InComponent->IsEditorPrimitive() )
 #endif

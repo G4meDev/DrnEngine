@@ -85,6 +85,14 @@ namespace Drn
 		
 	}
 
+	const BoxSphereBounds& BillboardSceneProxy::GetBounds()
+	{
+		// TODO: only update bounds when dirty
+
+		Bounds = BoxSphereBounds(Vector::ZeroVector, FLT_MAX, FLT_MAX);
+		return Bounds;
+	}
+
 #if WITH_EDITOR
 	void BillboardSceneProxy::RenderHitProxyPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{

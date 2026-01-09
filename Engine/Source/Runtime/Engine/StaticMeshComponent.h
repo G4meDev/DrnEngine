@@ -38,6 +38,9 @@ namespace Drn
 
 		void RefreshOverrideMaterials();
 
+		void SetMinDrawDistance(float Value);
+		void SetMaxDrawDistance(float Value);
+
 #if WITH_EDITOR
 
 		virtual void DrawDetailPanel(float DeltaTime) override;
@@ -58,6 +61,9 @@ namespace Drn
 		StaticMeshSceneProxy* m_SceneProxy;
 
 		std::vector<MaterialPropertyOverride> m_OverrideMaterials;
+
+		float MinDrawDistance;
+		float MaxDrawDistance;
 
 		friend class StaticMeshSceneProxy;
 

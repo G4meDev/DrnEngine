@@ -196,6 +196,14 @@ namespace Drn
 	LineBatchSceneProxy::~LineBatchSceneProxy()
 	{}
 
+	const BoxSphereBounds& LineBatchSceneProxy::GetBounds()
+	{
+		// TODO: only update bounds when dirty
+
+		Bounds = BoxSphereBounds(Vector::ZeroVector, FLT_MAX, FLT_MAX);
+		return Bounds;
+	}
+
 	void LineBatchSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		SCOPE_STAT();

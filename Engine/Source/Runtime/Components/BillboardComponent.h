@@ -32,6 +32,7 @@ namespace Drn
 		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;
 		virtual void RenderDecalPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) override;
 
+		virtual const BoxSphereBounds& GetBounds() override;
 
 #if WITH_EDITOR
 		virtual void RenderHitProxyPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;

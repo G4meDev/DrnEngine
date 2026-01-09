@@ -14,10 +14,26 @@ namespace Drn
 		m_EditorPrimitive = InStaticMeshComponent->IsEditorPrimitive();
 		m_Selectable = InStaticMeshComponent->m_Selectable;
 #endif
+
+		MinDrawDistance = InStaticMeshComponent->MinDrawDistance;
+		MaxDrawDistance = InStaticMeshComponent->MaxDrawDistance;
 	}
 
 	StaticMeshSceneProxy::~StaticMeshSceneProxy()
 	{}
+
+	const BoxSphereBounds& StaticMeshSceneProxy::GetBounds()
+	{
+		// TODO: only update bounds when dirty
+
+		if (m_Mesh.IsValid())
+		{
+			Bounds = m_Mesh->GetBounds();
+			Bounds.TranslateBy(m_OwningStaticMeshComponent->GetWorldTransform().GetLocation());
+		}
+
+		return Bounds;
+	}
 
 	void StaticMeshSceneProxy::InitResources( D3D12CommandList* CommandList )
 	{}

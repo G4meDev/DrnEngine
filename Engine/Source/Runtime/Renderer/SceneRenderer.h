@@ -14,6 +14,44 @@ namespace Drn
 
 	DECLARE_DELEGATE_ThreeParams( OnScreenReprojectionDelegate, bool, const Vector&, void* );
 
+	struct VisiblePrimitiveIterator
+	{
+		VisiblePrimitiveIterator(const std::set<class PrimitiveSceneProxy*>& InPrimitives, const std::vector<bool>& InVisibilityMap)
+			: Primitives(InPrimitives)
+			, VisibilityMap(InVisibilityMap)
+			, It(InPrimitives.begin())
+			, Index(0)
+		{}
+
+		VisiblePrimitiveIterator& operator++()
+		{
+			It++;
+			Index++;
+
+			if (It != Primitives.end() && !VisibilityMap[Index])
+			{
+				++(*this);
+			}
+
+			return *this;
+		}
+
+		PrimitiveSceneProxy* operator*()
+		{
+			return *It;
+		}
+
+		operator bool() const
+		{
+			return It != Primitives.end();
+		}
+
+		const std::set<class PrimitiveSceneProxy*>& Primitives;
+		const std::vector<bool>& VisibilityMap;
+
+		std::set<PrimitiveSceneProxy*>::const_iterator It;
+		uint32 Index;
+	};
 
 	enum class EDebugViewFlags : uint32
 	{
@@ -116,6 +154,7 @@ namespace Drn
 		inline void Release() { delete this; }
 
 		void RecalculateView();
+		void CalculateVisibity();
 
 		Scene* m_Scene;
 
@@ -138,6 +177,9 @@ namespace Drn
 		bool m_RenderingEnabled;
 
 		std::string m_Name;
+
+		// TODO: swap with bit array
+		std::vector<bool> PrimitiveVisibilityMap;
 
 		void ResolvePostProcessSettings();
 		class PostProcessSettings* m_PostProcessSettings;

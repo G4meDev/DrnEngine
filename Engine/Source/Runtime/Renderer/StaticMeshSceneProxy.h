@@ -29,6 +29,8 @@ namespace Drn
 		inline bool IsMarkedPendingKill() const { return !m_OwningStaticMeshComponent; }
 		inline void MarkPendingKill() { m_OwningStaticMeshComponent = nullptr; }
 
+		virtual const BoxSphereBounds& GetBounds() override;
+
 	protected:
 
 		void RenderMainPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
@@ -58,5 +60,7 @@ namespace Drn
 		AssetHandle<StaticMesh> m_Mesh;
 
 		PrimitiveBuffer m_PrimitiveBuffer;
+
+		friend class StaticMeshComponent;
 	};
 }
