@@ -60,6 +60,8 @@ namespace Drn
 		inline void SetOutterRadius( float OutterRadius ) { m_SpotLightData.OutterRadius = OutterRadius; }
 		inline void SetInnerRadius( float InnerRadius ) { m_SpotLightData.InnerRadius = InnerRadius; }
 
+		virtual float GetMaxDrawDistance() const override { return MaxDrawDistance; };
+
 		void UpdateResources( class D3D12CommandList* CommandList );
 
 	protected:
@@ -73,6 +75,8 @@ namespace Drn
 		float m_OuterRadius;
 		float m_DepthBias;
 
+		float MaxDrawDistance;
+
 		SpotLightComponent* m_SpotLightComponent = nullptr;
 
 		TRefCountPtr<class RenderTexture2D> m_ShadowmapResource;
@@ -81,6 +85,8 @@ namespace Drn
 
 		SpotLightData m_SpotLightData;
 		SpotLightShadowData m_ShadowDepthData;
+
+		friend class SpotLightComponent;
 
 	private:
 

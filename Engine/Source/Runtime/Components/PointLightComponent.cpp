@@ -11,6 +11,7 @@ namespace Drn
 	PointLightComponent::PointLightComponent()
 		: LightComponent()
 		, m_Radius(3.0f)
+		, MaxDrawDistance(0.0f)
 		, m_PointLightSceneProxy(nullptr)
 	{
 		m_Intensity = 35;
@@ -28,11 +29,13 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			Ar >> m_Radius;
+			Ar >> MaxDrawDistance;
 		}
 
 		else
 		{
 			Ar << m_Radius;
+			Ar << MaxDrawDistance;
 		}
 	}
 
@@ -86,6 +89,15 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
+	void PointLightComponent::SetMaxDrawDistance( float InMaxDrawDistance )
+	{
+		MaxDrawDistance = InMaxDrawDistance;
+		if (m_PointLightSceneProxy)
+		{
+			m_PointLightSceneProxy->MaxDrawDistance = MaxDrawDistance;
+		}
+	}
+
 #if WITH_EDITOR
 	void PointLightComponent::DrawDetailPanel( float DeltaTime )
 	{
@@ -116,6 +128,12 @@ namespace Drn
 		{
 			SetDepthBias(m_DepthBias);
 		}
+
+		if ( ImGui::InputFloat( "MaxDrawDistance", &MaxDrawDistance ) )
+		{
+			SetMaxDrawDistance(MaxDrawDistance);
+		}
+
 	}
 
 	void PointLightComponent::DrawAttenuation()

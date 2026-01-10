@@ -20,6 +20,8 @@ namespace Drn
 		inline float GetOutterRadius() const { return m_OuterRadius; }
 		inline float GetInnerRadius() const { return m_InnerRadius; }
 
+		inline float GetMaxDrawDistance() const { return MaxDrawDistance; }
+
 		inline void SetAttenuation( float Attenuation )
 		{
 			m_Attenuation = Attenuation;
@@ -38,6 +40,8 @@ namespace Drn
 			MarkRenderStateDirty();
 		}
 
+		void SetMaxDrawDistance(float InMaxDrawDistance);
+
 	protected:
 		virtual void RegisterComponent( World* InOwningWorld ) override;
 		virtual void UnRegisterComponent() override;
@@ -47,6 +51,8 @@ namespace Drn
 		float m_Attenuation;
 		float m_OuterRadius;
 		float m_InnerRadius;
+
+		float MaxDrawDistance;
 
 		class SpotLightSceneProxy* m_SpotLightSceneProxy;
 

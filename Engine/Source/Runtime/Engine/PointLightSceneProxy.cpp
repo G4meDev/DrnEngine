@@ -12,6 +12,7 @@ namespace Drn
 		: LightSceneProxy(InComponent)
 		, m_PointLightComponent(InComponent)
 		, m_ShadowCubemapResource(nullptr)
+		, MaxDrawDistance(InComponent->GetMaxDrawDistance())
 	{}
 
 	PointLightSceneProxy::~PointLightSceneProxy()
@@ -126,7 +127,7 @@ namespace Drn
 	void PointLightSceneProxy::ReleaseBuffer()
 	{}
 
-	void PointLightSceneProxy::CalculateLocalToProjectionForDirection( Matrix& Mat, const Vector& Direction, const Vector& UpVector)
+	void PointLightSceneProxy::CalculateLocalToProjectionForDirection( Matrix& Mat, const Vector& Direction, const Vector& UpVector )
 	{
 		XMVECTOR LightPosition = XMLoadFloat3(m_WorldPosition.Get());
 		XMVECTOR ViewDirection = XMLoadFloat3(Direction.Get());

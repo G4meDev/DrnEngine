@@ -10,6 +10,7 @@ namespace Drn
 	SpotLightSceneProxy::SpotLightSceneProxy( class SpotLightComponent* InComponent )
 		: LightSceneProxy( InComponent )
 		, m_SpotLightComponent(InComponent)
+		, MaxDrawDistance(InComponent->GetMaxDrawDistance())
 		, m_ShadowmapResource(nullptr)
 	{}
 

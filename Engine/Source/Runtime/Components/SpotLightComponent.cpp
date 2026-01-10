@@ -11,6 +11,7 @@ namespace Drn
 		, m_Attenuation(10)
 		, m_OuterRadius(45)
 		, m_InnerRadius(0)
+		, MaxDrawDistance(0.0f)
 	{
 
 	}
@@ -29,12 +30,24 @@ namespace Drn
 			Ar >> m_Attenuation;
 			Ar >> m_OuterRadius;
 			Ar >> m_InnerRadius;
+			Ar >> MaxDrawDistance;
 		}
 		else
 		{
 			Ar << m_Attenuation;
 			Ar << m_OuterRadius;
 			Ar << m_InnerRadius;
+
+			Ar << MaxDrawDistance;
+		}
+	}
+
+	void SpotLightComponent::SetMaxDrawDistance( float InMaxDrawDistance )
+	{
+		MaxDrawDistance = InMaxDrawDistance;
+		if (m_SpotLightSceneProxy)
+		{
+			m_SpotLightSceneProxy->MaxDrawDistance = MaxDrawDistance;
 		}
 	}
 
@@ -118,6 +131,11 @@ namespace Drn
 		if ( ImGui::InputFloat( "DepthBias", &m_DepthBias, 0.001f, 1.0f ) )
 		{
 			SetDepthBias(m_DepthBias);
+		}
+
+		if ( ImGui::InputFloat( "MaxDrawDistance", &MaxDrawDistance ) )
+		{
+			SetMaxDrawDistance(MaxDrawDistance);
 		}
 	}
 

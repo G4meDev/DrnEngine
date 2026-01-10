@@ -53,12 +53,16 @@ namespace Drn
 		void UpdateResources( class D3D12CommandList* CommandList ) override;
 		void ReleaseBuffer();
 
+		virtual float GetMaxDrawDistance() const override { return MaxDrawDistance; };
+
 	protected:
 
 		Vector m_WorldPosition;
 
 		float m_Radius;
 		float m_DepthBias;
+
+		float MaxDrawDistance;
 
 		class PointLightComponent* m_PointLightComponent;
 
@@ -70,6 +74,8 @@ namespace Drn
 
 		ShadowDepthData m_ShadowDepthData;
 		TRefCountPtr<class RenderUniformBuffer> ShadowDepthBuffer;
+
+		friend class PointLightComponent;
 
 	private:
 

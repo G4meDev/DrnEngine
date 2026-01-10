@@ -34,6 +34,8 @@ namespace Drn
 
 		void UpdateResources( class D3D12CommandList* CommandList ) override;
 
+		virtual float GetMaxDrawDistance() const override { return FLT_MAX; }
+
 	protected:
 
 		SkyLightComponent* m_SkyLightComponent = nullptr;

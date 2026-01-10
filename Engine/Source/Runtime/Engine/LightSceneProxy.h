@@ -23,6 +23,8 @@ namespace Drn
 
 		inline virtual ELightType GetLightType() const = 0;
 
+		virtual float GetMaxDrawDistance() const = 0;
+
 	protected:
 		LightSceneProxy( class LightComponent* InComponent );
 		virtual ~LightSceneProxy();
