@@ -29,7 +29,7 @@ namespace Drn
 		if (m_Mesh.IsValid())
 		{
 			Bounds = m_Mesh->GetBounds();
-			Bounds.TranslateBy(m_OwningStaticMeshComponent->GetWorldTransform().GetLocation());
+			Bounds.TransformBy(m_OwningStaticMeshComponent->GetWorldTransform());
 		}
 
 		return Bounds;

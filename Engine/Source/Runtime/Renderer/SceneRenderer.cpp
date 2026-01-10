@@ -1055,6 +1055,11 @@ namespace Drn
 			}
 		}
 
+		XMFLOAT4 Rotation;
+		XMStoreFloat4(&Rotation, VInfo.Rotation.Get());
+		float HalfFOV = Math::DegreesToRadians(VInfo.FOV);
+		ViewFrustum = DirectX::BoundingFrustum( *VInfo.Location.Get(), Rotation, HalfFOV, -HalfFOV, HalfFOV, -HalfFOV, VInfo.NearClipPlane, VInfo.FarClipPlane );
+
 		UpdateViewBuffer();
 	}
 
@@ -1066,6 +1071,9 @@ namespace Drn
 		for (auto It = m_Scene->GetPrimitiveProxies().begin(); It != m_Scene->GetPrimitiveProxies().end(); It++)
 		{
 			PrimitiveSceneProxy* Proxy = *It;
+			bool bIsVisible = true;
+			const BoxSphereBounds& Bound = Proxy->GetBounds();
+
 			bool bDistanceCulled = false;
 
 			const bool HasMinDrawDistance = Proxy->MinDrawDistance > 0 ;
@@ -1073,15 +1081,23 @@ namespace Drn
 
 			if (HasMinDrawDistance || HasMaxDrawDistance)
 			{
-				float Distance = Vector::Distance(m_SceneView.CameraPos, Proxy->GetBounds().Origin);
+				float Distance = Vector::Distance(m_SceneView.CameraPos, Bound.Origin);
 				
 				const bool NearDistanceCulled = HasMinDrawDistance && (Distance < Proxy->MinDrawDistance);
 				const bool FarDistanceCulled = HasMaxDrawDistance && (Distance > Proxy->MaxDrawDistance);
 				
 				bDistanceCulled = NearDistanceCulled || FarDistanceCulled;
 			}
+			bIsVisible = !bDistanceCulled;
 
-			PrimitiveVisibilityMap[Index] = !bDistanceCulled;
+			if (bIsVisible)
+			{
+				DirectX::BoundingSphere SphereBound(*Bound.Origin.Get(), Bound.SphereRadius);
+				DirectX::ContainmentType Type = ViewFrustum.Contains(SphereBound);
+				bIsVisible = Type != DISJOINT;
+			}
+
+			PrimitiveVisibilityMap[Index] = bIsVisible;
 			Index++;
 		}
 	}

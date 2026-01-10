@@ -174,9 +174,12 @@ namespace Drn
 		static std::string GetStatName(EPrimitiveStatGroups Group);
 		static int32 GetStatSize(EPrimitiveStatGroups Group);
 
+		static uint32 GetDrawCallCount();
+
 	private:
 #if RENDER_STATS
 		static std::atomic<uint64> Stats[(uint8)EPrimitiveStatGroups::Max];
+		static std::atomic<uint32> DrawCallCount;
 #endif
 	};
 }

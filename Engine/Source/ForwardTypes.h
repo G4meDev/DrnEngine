@@ -22,6 +22,7 @@ private:
 #include <chrono>
 
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
 
 #include "Runtime/Core/CriticalSection.h"
 #include "Runtime/Misc/DebugHelper.h"

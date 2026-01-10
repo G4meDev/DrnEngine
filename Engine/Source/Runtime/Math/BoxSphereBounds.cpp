@@ -8,4 +8,11 @@ namespace Drn
 		Origin = Origin + Offset;
 	}
 
+	void BoxSphereBounds::TransformBy( const Transform& T )
+	{
+		Origin = Origin + T.GetLocation();
+		SphereRadius *= T.GetScale().GetMaxComponent();
+		BoxExtent = BoxExtent * T.GetScale();
+	}
+
 }

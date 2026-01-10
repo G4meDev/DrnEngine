@@ -23,6 +23,7 @@ namespace Drn
 		{}
 
 		void TranslateBy(const Vector& Offset);
+		void TransformBy(const Transform& T);
 
 	};
 }

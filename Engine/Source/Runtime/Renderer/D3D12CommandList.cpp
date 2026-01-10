@@ -639,6 +639,7 @@ namespace Drn
 
 #if RENDER_STATS
 	std::atomic<uint64> PrimitiveStats::Stats[(uint8)EPrimitiveStatGroups::Max];
+	std::atomic<uint32> PrimitiveStats::DrawCallCount;
 #endif
 
 	void PrimitiveStats::UpdateStats( uint64 Count, EPrimitiveType Topology )
@@ -655,6 +656,8 @@ namespace Drn
 
 		if (Index >= 0)
 			Stats[Index].fetch_add(Count);
+
+		DrawCallCount++;
 #endif
 	}
 
@@ -662,6 +665,7 @@ namespace Drn
 	{
 #if RENDER_STATS
 		Stats[(uint8)Group].fetch_add(Count);
+		DrawCallCount++;
 #endif
 	}
 
@@ -672,6 +676,8 @@ namespace Drn
 		{
 			Stats[i].store(0);
 		}
+
+		DrawCallCount = 0;
 #endif
 	}
 
@@ -694,4 +700,13 @@ namespace Drn
 #endif
 	}
 
-}  // namespace Drn
+	uint32 PrimitiveStats::GetDrawCallCount()
+	{
+#if RENDER_STATS
+		return DrawCallCount;
+#else
+		return 0;
+#endif
+	}
+
+        }  // namespace Drn

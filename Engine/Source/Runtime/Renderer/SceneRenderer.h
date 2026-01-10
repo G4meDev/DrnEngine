@@ -159,6 +159,7 @@ namespace Drn
 		Scene* m_Scene;
 
 		SceneRendererView m_SceneView;
+		DirectX::BoundingFrustum ViewFrustum;
 
 		std::shared_ptr<class GBuffer> m_GBuffer;
 		std::shared_ptr<class HZBBuffer> m_HZBBuffer;

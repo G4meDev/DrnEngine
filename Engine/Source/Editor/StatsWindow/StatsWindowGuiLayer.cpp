@@ -78,6 +78,8 @@ namespace Drn
 
 		ImGui::Separator();
 
+		ImGui::Text( std::format("draw call: {}", PrimitiveStats::GetDrawCallCount()).c_str() );
+
 		for (int32 i = 0; i < (uint8)PrimitiveStats::EPrimitiveStatGroups::Max; i++)
 		{
 			PrimitiveStats::EPrimitiveStatGroups Group = (PrimitiveStats::EPrimitiveStatGroups)i;
