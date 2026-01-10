@@ -53,7 +53,7 @@ namespace Drn
 
 		else if (SkyCubemap.IsValid() && SkyCubemap.GetPath() != LastUsedCubemap)
 		{
-			Renderer::Get()->MarkFrameForCapture();
+			//Renderer::Get()->MarkFrameForCapture();
 
 			LastUsedCubemap = SkyCubemap.GetPath();
 			

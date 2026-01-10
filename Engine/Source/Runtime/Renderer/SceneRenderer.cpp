@@ -1065,6 +1065,8 @@ namespace Drn
 
 	void SceneRenderer::CalculateVisibity()
 	{
+		SCOPE_STAT("CalculateVisibity");
+
 		PrimitiveVisibilityMap.resize(m_Scene->m_PrimitiveProxies.size());
 
 		int32 Index = 0;

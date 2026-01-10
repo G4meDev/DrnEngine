@@ -24,6 +24,9 @@ namespace Drn
 			uint8 Comp;
 			Ar >> Comp;
 			m_Compression = static_cast<ETextureCompression>(Comp);
+#else
+			uint16 SkipBytes;
+			Ar >> SkipBytes;
 #endif
 
 		}
