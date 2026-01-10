@@ -166,8 +166,9 @@ namespace Drn
 
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "ShadowDepths");
 
-		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
+		for (VisibleLightIterator It(m_Scene->GetLightProxies(), LightVisibilityMap); It; ++It)
 		{
+			LightSceneProxy* Proxy = *It;
 			Proxy->RenderShadowDepth(m_CommandList, this);
 		}
 
@@ -440,8 +441,9 @@ namespace Drn
 		m_CommandList->SetGraphicRootConstant(m_AOBuffer->m_AOTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
 		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_MasksBTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
 
-		for ( LightSceneProxy* Proxy : m_Scene->m_LightProxies )
+		for (VisibleLightIterator It(m_Scene->GetLightProxies(), LightVisibilityMap); It; ++It)
 		{
+			LightSceneProxy* Proxy = *It;
 			Proxy->Render(m_CommandList, this);
 		}
 
@@ -1100,6 +1102,32 @@ namespace Drn
 			}
 
 			PrimitiveVisibilityMap[Index] = bIsVisible;
+			Index++;
+		}
+
+		LightVisibilityMap.resize(m_Scene->GetLightProxies().size());
+		Index = 0;
+		for (auto It = m_Scene->GetLightProxies().begin(); It != m_Scene->GetLightProxies().end(); It++)
+		{
+			LightSceneProxy* Proxy = *It;
+			bool bIsVisible = true;
+
+			if (Proxy->GetLightType() == ELightType::PointLight || Proxy->GetLightType() == ELightType::SpotLight )
+			{
+				Sphere Bound = Proxy->GetBoundingSphere();
+
+				bool bDistanceCulled = (Proxy->GetMaxDrawDistance() > 0) && (Vector::Distance(m_SceneView.CameraPos, Bound.Center) > Proxy->GetMaxDrawDistance());
+				bIsVisible = !bDistanceCulled;
+
+				if (bIsVisible)
+				{
+					DirectX::BoundingSphere SphereBound(*Bound.Center.Get(), Bound.Radius);
+					DirectX::ContainmentType Type = ViewFrustum.Contains(SphereBound);
+					bIsVisible = Type != DISJOINT;
+				}
+			}
+
+			LightVisibilityMap[Index] = bIsVisible;
 			Index++;
 		}
 	}

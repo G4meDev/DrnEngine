@@ -54,6 +54,7 @@ namespace Drn
 		void ReleaseBuffer();
 
 		virtual float GetMaxDrawDistance() const override { return MaxDrawDistance; };
+		virtual Sphere GetBoundingSphere() const override { return Sphere(m_WorldPosition, m_Radius); };
 
 	protected:
 

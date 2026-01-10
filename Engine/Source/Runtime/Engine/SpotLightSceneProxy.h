@@ -61,6 +61,7 @@ namespace Drn
 		inline void SetInnerRadius( float InnerRadius ) { m_SpotLightData.InnerRadius = InnerRadius; }
 
 		virtual float GetMaxDrawDistance() const override { return MaxDrawDistance; };
+		virtual Sphere GetBoundingSphere() const override { return Sphere(m_WorldPosition, m_Attenuation); };
 
 		void UpdateResources( class D3D12CommandList* CommandList );
 

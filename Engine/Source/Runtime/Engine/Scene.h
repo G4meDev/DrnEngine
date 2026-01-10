@@ -41,6 +41,7 @@ namespace Drn
 		void UnRegisterDecalProxy( class DecalSceneProxy* InProxy );
 
 		inline const std::set<PrimitiveSceneProxy*>& GetPrimitiveProxies() const { return m_PrimitiveProxies; };
+		inline const std::set<LightSceneProxy*>& GetLightProxies() const { return m_LightProxies; };
 
 	protected:
 

@@ -21,7 +21,12 @@ namespace Drn
 			, VisibilityMap(InVisibilityMap)
 			, It(InPrimitives.begin())
 			, Index(0)
-		{}
+		{
+			if (!VisibilityMap[0])
+			{
+				++(*this);
+			}
+		}
 
 		VisiblePrimitiveIterator& operator++()
 		{
@@ -50,6 +55,50 @@ namespace Drn
 		const std::vector<bool>& VisibilityMap;
 
 		std::set<PrimitiveSceneProxy*>::const_iterator It;
+		uint32 Index;
+	};
+
+	struct VisibleLightIterator
+	{
+		VisibleLightIterator(const std::set<class LightSceneProxy*>& InLights, const std::vector<bool>& InVisibilityMap)
+			: Lights(InLights)
+			, VisibilityMap(InVisibilityMap)
+			, It(InLights.begin())
+			, Index(0)
+		{
+			if (!VisibilityMap[0])
+			{
+				++(*this);
+			}
+		}
+
+		VisibleLightIterator& operator++()
+		{
+			It++;
+			Index++;
+
+			if (It != Lights.end() && !VisibilityMap[Index])
+			{
+				++(*this);
+			}
+
+			return *this;
+		}
+
+		LightSceneProxy* operator*()
+		{
+			return *It;
+		}
+
+		operator bool() const
+		{
+			return It != Lights.end();
+		}
+
+		const std::set<class LightSceneProxy*>& Lights;
+		const std::vector<bool>& VisibilityMap;
+
+		std::set<LightSceneProxy*>::const_iterator It;
 		uint32 Index;
 	};
 
@@ -181,6 +230,7 @@ namespace Drn
 
 		// TODO: swap with bit array
 		std::vector<bool> PrimitiveVisibilityMap;
+		std::vector<bool> LightVisibilityMap;
 
 		void ResolvePostProcessSettings();
 		class PostProcessSettings* m_PostProcessSettings;

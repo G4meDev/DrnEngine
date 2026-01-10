@@ -49,6 +49,7 @@ namespace Drn
 		void UpdateResources( class D3D12CommandList* CommandList ) override;
 
 		virtual float GetMaxDrawDistance() const override { return FLT_MAX; }
+		virtual Sphere GetBoundingSphere() const override { return Sphere(Vector::ZeroVector, FLT_MAX); };
 
 	protected:
 
