@@ -62,13 +62,14 @@ namespace Drn
 
 	void PointLightComponent::UnRegisterComponent()
 	{
-		if (GetWorld())
+		if (m_PointLightSceneProxy)
 		{
-			GetWorld()->GetScene()->UnRegisterLightProxy( m_PointLightSceneProxy );
+			m_PointLightSceneProxy->MarkPendingKill();
+
+			m_PointLightSceneProxy = nullptr;
+			m_LightSceneProxy = nullptr;
 		}
 
-		m_PointLightSceneProxy = nullptr;
-		m_LightSceneProxy = nullptr;
 
 		LightComponent::UnRegisterComponent();
 	}

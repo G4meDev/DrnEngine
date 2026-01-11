@@ -28,24 +28,24 @@ namespace Drn
 
 		for (LightSceneProxy* Proxy : m_PendingLightProxies)
 		{
-			Proxy->Release();
+			delete Proxy;
 		}
 
 		for (LightSceneProxy* Proxy : m_LightProxies)
 		{
-			Proxy->Release();
+			delete Proxy;
 		}
 
 // --------------------------------------------------------------------------------------
 
 		for (SkyLightSceneProxy* Proxy : m_PendingSkyLightProxies)
 		{
-			Proxy->Release();
+			delete Proxy;
 		}
 
 		for (SkyLightSceneProxy* Proxy : m_SkyLightProxies)
 		{
-			Proxy->Release();
+			delete Proxy;
 		}
 
 // --------------------------------------------------------------------------------------
@@ -127,31 +127,69 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------
 
+		std::remove_if( m_LightProxies.begin(), m_LightProxies.end(), [CommandList](LightSceneProxy* Proxy)
+		{
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingKill())
+			{
+				delete Proxy;
+				return true;
+			}
+
+			Proxy->UpdateResources(CommandList);
+			return false;
+		});
+
 		for (auto it = m_PendingLightProxies.begin(); it != m_PendingLightProxies.end(); it++)
 		{
-			m_LightProxies.insert(*it);
+			LightSceneProxy* Proxy = *it;
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingKill())
+			{
+				delete Proxy;
+			}
+			else
+			{
+				Proxy->UpdateResources(CommandList);
+				m_LightProxies.push_back(Proxy);
+			}
 		}
 		m_PendingLightProxies.clear();
 
-		for (auto it = m_LightProxies.begin(); it != m_LightProxies.end(); it++)
-		{
-			LightSceneProxy* Proxy = *it;
-			Proxy->UpdateResources(CommandList);
-		}
-
 // ----------------------------------------------------------------------------------
+
+		std::remove_if( m_SkyLightProxies.begin(), m_SkyLightProxies.end(), [CommandList](SkyLightSceneProxy* Proxy)
+		{
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingKill())
+			{
+				delete Proxy;
+				return true;
+			}
+
+			Proxy->UpdateResources(CommandList);
+			return false;
+		});
 
 		for (auto it = m_PendingSkyLightProxies.begin(); it != m_PendingSkyLightProxies.end(); it++)
 		{
-			m_SkyLightProxies.insert(*it);
+			SkyLightSceneProxy* Proxy = *it;
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingKill())
+			{
+				delete Proxy;
+			}
+			else
+			{
+				Proxy->UpdateResources(CommandList);
+				m_SkyLightProxies.push_back(Proxy);
+			}
 		}
 		m_PendingSkyLightProxies.clear();
-
-		for (auto it = m_SkyLightProxies.begin(); it != m_SkyLightProxies.end(); it++)
-		{
-			SkyLightSceneProxy* Proxy = *it;
-			Proxy->UpdateResources(CommandList);
-		}
 
 // ----------------------------------------------------------------------------------
 
@@ -189,34 +227,12 @@ namespace Drn
 
 	void Scene::RegisterLightProxy( LightSceneProxy* InLightProxy )
 	{
-		m_PendingLightProxies.insert(InLightProxy);
-	}
-
-	void Scene::UnRegisterLightProxy( LightSceneProxy* InLightProxy )
-	{
-		if (InLightProxy)
-		{
-			m_PendingLightProxies.erase(InLightProxy);
-			m_LightProxies.erase(InLightProxy);
-
-			InLightProxy->Release();
-		}
+		m_PendingLightProxies.push_back(InLightProxy);
 	}
 
 	void Scene::RegisterSkyLightProxy( SkyLightSceneProxy* InLightProxy )
 	{
-		m_PendingSkyLightProxies.insert(InLightProxy);
-	}
-
-	void Scene::UnRegisterSkyLightProxy( SkyLightSceneProxy* InLightProxy )
-	{
-		if (InLightProxy)
-		{
-			m_PendingSkyLightProxies.erase(InLightProxy);
-			m_SkyLightProxies.erase(InLightProxy);
-
-			InLightProxy->Release();
-		}
+		m_PendingSkyLightProxies.push_back(InLightProxy);
 	}
 
 	void Scene::RegisterPostProcessProxy( class PostProcessSceneProxy* InProxy )

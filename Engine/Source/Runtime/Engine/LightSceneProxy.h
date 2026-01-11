@@ -8,8 +8,10 @@ namespace Drn
 	class LightSceneProxy
 	{
 	public:
+		virtual ~LightSceneProxy();
 
-		inline void Release() { delete this; }
+		inline bool IsMarkedPendingKill() const { return bPendingDestory; }
+		inline void MarkPendingKill() { bPendingDestory = true; }
 
 		inline void SetColor ( const Vector& Color ) { m_LightColor = Color; }
 		inline void SetCastShadow( bool CastShadow ) { m_CastShadow = CastShadow; }
@@ -28,7 +30,6 @@ namespace Drn
 
 	protected:
 		LightSceneProxy( class LightComponent* InComponent );
-		virtual ~LightSceneProxy();
 
 		class LightComponent* m_LightComponent;
 
@@ -38,6 +39,8 @@ namespace Drn
 #if D3D12_Debug_INFO
 		std::string m_Name;
 #endif
+
+		bool bPendingDestory;
 
 		friend class LightComponent;
 

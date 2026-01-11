@@ -75,13 +75,13 @@ namespace Drn
 
 	void SkyLightComponent::UnRegisterComponent()
 	{
-		if (GetWorld())
+		if (m_SkyLightSceneProxy)
 		{
-			GetWorld()->GetScene()->UnRegisterSkyLightProxy( m_SkyLightSceneProxy);
-		}
+			m_SkyLightSceneProxy->MarkPendingKill();
 
-		m_SkyLightSceneProxy = nullptr;
-		m_LightSceneProxy = nullptr;
+			m_SkyLightSceneProxy = nullptr;
+			m_LightSceneProxy = nullptr;
+		}
 
 		LightComponent::UnRegisterComponent();
 	}

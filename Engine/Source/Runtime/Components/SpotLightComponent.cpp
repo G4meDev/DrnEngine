@@ -69,13 +69,14 @@ namespace Drn
 
 	void SpotLightComponent::UnRegisterComponent()
 	{
-		if (GetWorld())
+		if (m_SpotLightSceneProxy)
 		{
-			GetWorld()->GetScene()->UnRegisterLightProxy( m_SpotLightSceneProxy);
+			m_SpotLightSceneProxy->MarkPendingKill();
+
+			m_SpotLightSceneProxy = nullptr;
+			m_LightSceneProxy = nullptr;
 		}
 
-		m_SpotLightSceneProxy = nullptr;
-		m_LightSceneProxy = nullptr;
 
 		LightComponent::UnRegisterComponent();
 	}

@@ -86,13 +86,14 @@ namespace Drn
 
 	void DirectionalLightComponent::UnRegisterComponent()
 	{
-		if (GetWorld())
+		if (m_DirectionalLightSceneProxy)
 		{
-			GetWorld()->GetScene()->UnRegisterLightProxy( m_DirectionalLightSceneProxy);
+			m_DirectionalLightSceneProxy->MarkPendingKill();
+
+			m_DirectionalLightSceneProxy = nullptr;
+			m_LightSceneProxy = nullptr;
 		}
 
-		m_DirectionalLightSceneProxy = nullptr;
-		m_LightSceneProxy = nullptr;
 
 		LightComponent::UnRegisterComponent();
 	}

@@ -15,50 +15,6 @@ namespace Drn
 
 	DECLARE_DELEGATE_ThreeParams( OnScreenReprojectionDelegate, bool, const Vector&, void* );
 
-	struct VisibleLightIterator
-	{
-		VisibleLightIterator(const std::set<class LightSceneProxy*>& InLights, const std::vector<bool>& InVisibilityMap)
-			: Lights(InLights)
-			, VisibilityMap(InVisibilityMap)
-			, It(InLights.begin())
-			, Index(0)
-		{
-			if (!VisibilityMap[0])
-			{
-				++(*this);
-			}
-		}
-
-		VisibleLightIterator& operator++()
-		{
-			It++;
-			Index++;
-
-			if (It != Lights.end() && !VisibilityMap[Index])
-			{
-				++(*this);
-			}
-
-			return *this;
-		}
-
-		LightSceneProxy* operator*()
-		{
-			return *It;
-		}
-
-		operator bool() const
-		{
-			return It != Lights.end();
-		}
-
-		const std::set<class LightSceneProxy*>& Lights;
-		const std::vector<bool>& VisibilityMap;
-
-		std::set<LightSceneProxy*>::const_iterator It;
-		uint32 Index;
-	};
-
 	enum class EDebugViewFlags : uint32
 	{
 		EShowCollision = 1
@@ -186,8 +142,7 @@ namespace Drn
 		std::string m_Name;
 
 		BitArray PrimitiveVisibilityMap;
-		// TODO: swap with bit array
-		std::vector<bool> LightVisibilityMap;
+		BitArray LightVisibilityMap;
 
 		void ResolvePostProcessSettings();
 		class PostProcessSettings* m_PostProcessSettings;

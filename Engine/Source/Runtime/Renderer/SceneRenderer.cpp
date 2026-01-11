@@ -166,9 +166,9 @@ namespace Drn
 
 		PIXBeginEvent(m_CommandList->GetD3D12CommandList(), 1, "ShadowDepths");
 
-		for (VisibleLightIterator It(m_Scene->GetLightProxies(), LightVisibilityMap); It; ++It)
+		for (BitArray::ConstSetBitIterator It(LightVisibilityMap); It; ++It)
 		{
-			LightSceneProxy* Proxy = *It;
+			LightSceneProxy* Proxy = m_Scene->GetLightProxies()[It.GetIndex()];
 			Proxy->RenderShadowDepth(m_CommandList, this);
 		}
 
@@ -442,9 +442,9 @@ namespace Drn
 		m_CommandList->SetGraphicRootConstant(m_AOBuffer->m_AOTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
 		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_MasksBTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
 
-		for (VisibleLightIterator It(m_Scene->GetLightProxies(), LightVisibilityMap); It; ++It)
+		for (BitArray::ConstSetBitIterator It(LightVisibilityMap); It; ++It)
 		{
-			LightSceneProxy* Proxy = *It;
+			LightSceneProxy* Proxy = m_Scene->GetLightProxies()[It.GetIndex()];
 			Proxy->Render(m_CommandList, this);
 		}
 
@@ -1106,7 +1106,7 @@ namespace Drn
 			Index++;
 		}
 
-		LightVisibilityMap.resize(m_Scene->GetLightProxies().size());
+		LightVisibilityMap.SetNumUninitialized(m_Scene->GetLightProxies().size());
 		Index = 0;
 		for (auto It = m_Scene->GetLightProxies().begin(); It != m_Scene->GetLightProxies().end(); It++)
 		{
@@ -1128,7 +1128,7 @@ namespace Drn
 				}
 			}
 
-			LightVisibilityMap[Index] = bIsVisible;
+			LightVisibilityMap.SetBitNoCheck(Index, bIsVisible);
 			Index++;
 		}
 	}
