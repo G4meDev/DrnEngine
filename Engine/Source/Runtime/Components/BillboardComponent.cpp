@@ -43,9 +43,9 @@ namespace Drn
 
 	void BillboardComponent::UnRegisterComponent()
 	{
-		if (GetWorld()->GetScene())
+		if (m_BillboardSceneProxy)
 		{
-			GetWorld()->GetScene()->UnRegisterPrimitiveProxy(m_BillboardSceneProxy);
+			m_BillboardSceneProxy->MarkPendingKill();
 		}
 
 		m_BillboardSceneProxy = nullptr;

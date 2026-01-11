@@ -93,19 +93,37 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
+		std::remove_if( m_PrimitiveProxies.begin(), m_PrimitiveProxies.end(), [CommandList](PrimitiveSceneProxy* Proxy)
+		{
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingKill())
+			{
+				delete Proxy;
+				return true;
+			}
+
+			Proxy->UpdateResources(CommandList);
+			return false;
+		});
+
 		for (auto it = m_PendingProxies.begin(); it != m_PendingProxies.end(); it++)
 		{
-			PrimitiveSceneProxy* SceneProxy = *it;
-			SceneProxy->InitResources(CommandList);
-			m_PrimitiveProxies.insert(SceneProxy);
+			PrimitiveSceneProxy* Proxy = *it;
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingKill())
+			{
+				delete Proxy;
+			}
+			else
+			{
+				Proxy->InitResources(CommandList);
+				Proxy->UpdateResources(CommandList);
+				m_PrimitiveProxies.push_back(Proxy);
+			}
 		}
 		m_PendingProxies.clear();
-
-		for (auto it = m_PrimitiveProxies.begin(); it != m_PrimitiveProxies.end(); it++)
-		{
-			PrimitiveSceneProxy* Proxy = *it;
-			Proxy->UpdateResources(CommandList);
-		}
 
 // ----------------------------------------------------------------------------------
 
@@ -166,19 +184,7 @@ namespace Drn
 
 	void Scene::RegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
 	{
-		m_PendingProxies.insert(InPrimitiveSceneProxy);
-	}
-
-	void Scene::UnRegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
-	{
-		if (InPrimitiveSceneProxy)
-		{
-			m_PendingProxies.erase(InPrimitiveSceneProxy);
-			m_PrimitiveProxies.erase(InPrimitiveSceneProxy);
-
-			//InPrimitiveSceneProxy->ReleaseBufferedResource();
-			delete InPrimitiveSceneProxy;
-		}
+		m_PendingProxies.push_back(InPrimitiveSceneProxy);
 	}
 
 	void Scene::RegisterLightProxy( LightSceneProxy* InLightProxy )

@@ -145,6 +145,7 @@ set( HEADER_FILES
 	Source/Runtime/Physic/PhysicUserData.h
 	
 	Source/Runtime/Containers/List.h
+	Source/Runtime/Containers/BitArray.h
 
 	Source/Runtime/Math/Math.h
 	Source/Runtime/Math/MathHelper.h
@@ -366,6 +367,7 @@ set( SOURCE_FILES
 	Source/Runtime/Physic/PhysicUserData.cpp
 	
 	Source/Runtime/Containers/List.cpp
+	Source/Runtime/Containers/BitArray.cpp
 	
 	Source/Runtime/Math/Math.cpp
 	Source/Runtime/Math/MathHelper.cpp

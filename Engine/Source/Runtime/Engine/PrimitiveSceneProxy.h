@@ -29,6 +29,9 @@ namespace Drn
 
 		virtual const BoxSphereBounds& GetBounds() = 0;
 
+		inline bool IsMarkedPendingKill() const { return bPendingDestory; }
+		inline void MarkPendingKill() { bPendingDestory = true; }
+
 	protected:
 
 		virtual void RenderMainPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
@@ -46,6 +49,8 @@ namespace Drn
 		float MaxDrawDistance;
 
 		BoxSphereBounds Bounds;
+
+		bool bPendingDestory;
 
 #if WITH_EDITOR
 		virtual void RenderHitProxyPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;

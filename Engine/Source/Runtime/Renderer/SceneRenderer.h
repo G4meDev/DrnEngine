@@ -16,7 +16,7 @@ namespace Drn
 
 	struct VisiblePrimitiveIterator
 	{
-		VisiblePrimitiveIterator(const std::set<class PrimitiveSceneProxy*>& InPrimitives, const std::vector<bool>& InVisibilityMap)
+		VisiblePrimitiveIterator(const std::vector<class PrimitiveSceneProxy*>& InPrimitives, const std::vector<bool>& InVisibilityMap)
 			: Primitives(InPrimitives)
 			, VisibilityMap(InVisibilityMap)
 			, It(InPrimitives.begin())
@@ -51,10 +51,10 @@ namespace Drn
 			return It != Primitives.end();
 		}
 
-		const std::set<class PrimitiveSceneProxy*>& Primitives;
+		const std::vector<class PrimitiveSceneProxy*>& Primitives;
 		const std::vector<bool>& VisibilityMap;
 
-		std::set<PrimitiveSceneProxy*>::const_iterator It;
+		std::vector<PrimitiveSceneProxy*>::const_iterator It;
 		uint32 Index;
 	};
 

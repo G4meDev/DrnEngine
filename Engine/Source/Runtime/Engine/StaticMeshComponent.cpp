@@ -103,17 +103,11 @@ namespace Drn
 
 	void StaticMeshComponent::UnRegisterComponent()
 	{
-		m_SceneProxy->MarkPendingKill();
-		if (GetWorld()->GetScene())
+		if (m_SceneProxy)
 		{
-			GetWorld()->GetScene()->UnRegisterPrimitiveProxy(m_SceneProxy);
+			m_SceneProxy->MarkPendingKill();
+			m_SceneProxy = nullptr;
 		}
-
-		//if (GetWorld()->GetScene())
-		//{
-		//	GetWorld()->GetScene()->RemovePrimitiveProxy(m_SceneProxy);
-		//}
-		//delete m_SceneProxy;
 
 		if (Mesh.IsValid())
 		{

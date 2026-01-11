@@ -40,13 +40,11 @@ namespace Drn
 
 	void LineBatchComponent::UnRegisterComponent()
 	{
-		//m_SceneProxy->
-		if (GetWorld()->GetScene())
+		if (m_SceneProxy)
 		{
-			GetWorld()->GetScene()->UnRegisterPrimitiveProxy(m_SceneProxy);
+			m_SceneProxy->MarkPendingKill();
+			m_SceneProxy = nullptr;
 		}
-
-		//delete m_SceneProxy;
 
 		PrimitiveComponent::UnRegisterComponent();
 	}

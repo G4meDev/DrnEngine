@@ -26,7 +26,6 @@ namespace Drn
 		void UpdatePendingProxyAndResources(class D3D12CommandList* CommandList);
 
 		void RegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
-		void UnRegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 
 		void RegisterLightProxy( class LightSceneProxy* InLightProxy );
 		void UnRegisterLightProxy( class LightSceneProxy* InLightProxy );
@@ -40,15 +39,15 @@ namespace Drn
 		void RegisterDecalProxy( class DecalSceneProxy* InProxy );
 		void UnRegisterDecalProxy( class DecalSceneProxy* InProxy );
 
-		inline const std::set<PrimitiveSceneProxy*>& GetPrimitiveProxies() const { return m_PrimitiveProxies; };
+		inline const std::vector<PrimitiveSceneProxy*>& GetPrimitiveProxies() { return m_PrimitiveProxies; };
 		inline const std::set<LightSceneProxy*>& GetLightProxies() const { return m_LightProxies; };
 
 	protected:
 
 		World* m_World;
 
-		std::set<PrimitiveSceneProxy*> m_PrimitiveProxies;
-		std::set<PrimitiveSceneProxy*> m_PendingProxies;
+		std::vector<PrimitiveSceneProxy*> m_PrimitiveProxies;
+		std::vector<PrimitiveSceneProxy*> m_PendingProxies;
 
 		std::set<class LightSceneProxy*> m_LightProxies;
 		std::set<class LightSceneProxy*> m_PendingLightProxies;
