@@ -178,5 +178,12 @@ namespace Drn
 		{
 			return (Dividend + Divisor - 1) / Divisor;
 		}
+
+		static inline uint32 CountLeadingZeros(uint32 Value)
+		{
+			unsigned long Log2;
+			long Mask = -long(_BitScanReverse(&Log2, Value) != 0);
+			return ((31 - Log2) & Mask) | (32 & ~Mask);
+		}
 	};
 }

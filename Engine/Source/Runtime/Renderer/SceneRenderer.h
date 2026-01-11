@@ -3,6 +3,7 @@
 #include "ForwardTypes.h"
 #include "Runtime/Renderer/SceneView.h"
 #include "Runtime/Engine/PostProcessSettings.h"
+#include "Runtime/Containers/BitArray.h"
 
 LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
@@ -13,50 +14,6 @@ namespace Drn
 	DECLARE_MULTICAST_DELEGATE( OnSceneRendererDestroyDelegate );
 
 	DECLARE_DELEGATE_ThreeParams( OnScreenReprojectionDelegate, bool, const Vector&, void* );
-
-	struct VisiblePrimitiveIterator
-	{
-		VisiblePrimitiveIterator(const std::vector<class PrimitiveSceneProxy*>& InPrimitives, const std::vector<bool>& InVisibilityMap)
-			: Primitives(InPrimitives)
-			, VisibilityMap(InVisibilityMap)
-			, It(InPrimitives.begin())
-			, Index(0)
-		{
-			if (!VisibilityMap[0])
-			{
-				++(*this);
-			}
-		}
-
-		VisiblePrimitiveIterator& operator++()
-		{
-			It++;
-			Index++;
-
-			if (It != Primitives.end() && !VisibilityMap[Index])
-			{
-				++(*this);
-			}
-
-			return *this;
-		}
-
-		PrimitiveSceneProxy* operator*()
-		{
-			return *It;
-		}
-
-		operator bool() const
-		{
-			return It != Primitives.end();
-		}
-
-		const std::vector<class PrimitiveSceneProxy*>& Primitives;
-		const std::vector<bool>& VisibilityMap;
-
-		std::vector<PrimitiveSceneProxy*>::const_iterator It;
-		uint32 Index;
-	};
 
 	struct VisibleLightIterator
 	{
@@ -228,8 +185,8 @@ namespace Drn
 
 		std::string m_Name;
 
+		BitArray PrimitiveVisibilityMap;
 		// TODO: swap with bit array
-		std::vector<bool> PrimitiveVisibilityMap;
 		std::vector<bool> LightVisibilityMap;
 
 		void ResolvePostProcessSettings();

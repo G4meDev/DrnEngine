@@ -150,9 +150,9 @@ namespace Drn
 		m_GBuffer->ClearDepth( m_CommandList);
 		m_GBuffer->BindDepth(m_CommandList);
 
-		for (VisiblePrimitiveIterator It(m_Scene->GetPrimitiveProxies(), PrimitiveVisibilityMap); It; ++It)
+		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 		{
-			PrimitiveSceneProxy* Proxy = *It;
+			PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
 			Proxy->RenderPrePass(m_CommandList, this);
 		}
 
@@ -241,9 +241,10 @@ namespace Drn
 
 		const bool IsGameMode = GetScene()->GetWorld()->IsInGameMode();
 
-		for (VisiblePrimitiveIterator It(m_Scene->GetPrimitiveProxies(), PrimitiveVisibilityMap); It; ++It)
+		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 		{
-			PrimitiveSceneProxy* Proxy = *It;
+			PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
+
 			if (!IsGameMode || (IsGameMode && !Proxy->IsEditorPrimitive()))
 			{
 				Proxy->RenderHitProxyPass(m_CommandList, this);
@@ -284,9 +285,9 @@ namespace Drn
 			m_CommandList->SetGraphicRootConstant(m_DecalBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
 		}
 
-		for (VisiblePrimitiveIterator It(m_Scene->GetPrimitiveProxies(), PrimitiveVisibilityMap); It; ++It)
+		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 		{
-			PrimitiveSceneProxy* Proxy = *It;
+			PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
 			Proxy->RenderMainPass(m_CommandList, this);
 		}
 
@@ -1069,7 +1070,7 @@ namespace Drn
 	{
 		SCOPE_STAT("CalculateVisibity");
 
-		PrimitiveVisibilityMap.resize(m_Scene->m_PrimitiveProxies.size());
+		PrimitiveVisibilityMap.SetNumUninitialized(m_Scene->m_PrimitiveProxies.size());
 
 		int32 Index = 0;
 		for (auto It = m_Scene->GetPrimitiveProxies().begin(); It != m_Scene->GetPrimitiveProxies().end(); It++)
@@ -1101,7 +1102,7 @@ namespace Drn
 				bIsVisible = Type != DISJOINT;
 			}
 
-			PrimitiveVisibilityMap[Index] = bIsVisible;
+			PrimitiveVisibilityMap.SetBitNoCheck(Index, bIsVisible);
 			Index++;
 		}
 
