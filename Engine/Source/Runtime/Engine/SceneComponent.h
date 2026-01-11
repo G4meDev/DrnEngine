@@ -62,6 +62,9 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+		inline void SetStatic(bool bInStatic) { bStatic = bInStatic; }
+		inline bool IsStatic() const { return bStatic; }
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
@@ -134,6 +137,7 @@ namespace Drn
 		std::vector<SceneComponent*> Childs;
 
 		std::string m_AttachSocketName;
+		bool bStatic;
 
 		friend class Actor;
 	};

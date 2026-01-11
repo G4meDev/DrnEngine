@@ -296,9 +296,9 @@ namespace Drn
 
 			Vector Center = Vector((MinX + MaxX) / 2, (MinY + MaxY) / 2, (MinZ + MaxZ) / 2);
 			Vector Extent = Vector(MaxX, MaxY, MaxZ) - Center;
-			float Radius = std::max(std::max(Extent.GetX(), Extent.GetY()), Extent.GetZ());
-
 			Extent = Vector(std::max(Extent.GetX(), MIN_BOX_BOUNDS), std::max(Extent.GetY(), MIN_BOX_BOUNDS), std::max(Extent.GetZ(), MIN_BOX_BOUNDS));
+
+			float Radius = Vector::Distance(Center, Extent);
 			Radius = std::max(Radius, MIN_SPHERE_BOUNDS);
 
 			MeshAsset->Bounds = BoxSphereBounds(Center, Extent, Radius);

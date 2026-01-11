@@ -10,6 +10,8 @@ namespace Drn
 		, m_Intensity(1.0f)
 		, m_DepthBias(0.005)
 		, m_CastShadow(false)
+		, bCastStaticShadow(true)
+		, bCastDynamicShadow(true)
 		, m_RenderStateDirty(true)
 	{
 	}
@@ -26,16 +28,22 @@ namespace Drn
 		{
 			Ar >> m_LightColor;
 			Ar >> m_Intensity;
-			Ar >> m_CastShadow;
 			Ar >> m_DepthBias;
+
+			Ar >> m_CastShadow;
+			Ar >> bCastStaticShadow;
+			Ar >> bCastDynamicShadow;
 		}
 
 		else
 		{
 			Ar << m_LightColor;
 			Ar << m_Intensity;
-			Ar << m_CastShadow;
 			Ar << m_DepthBias;
+
+			Ar << m_CastShadow;
+			Ar << bCastStaticShadow;
+			Ar << bCastDynamicShadow;
 		}
 	}
 
@@ -84,8 +92,12 @@ namespace Drn
 #if WITH_EDITOR
 	void LightComponent::DrawDetailPanel( float DeltaTime )
 	{
-		SceneComponent::DrawDetailPanel(DeltaTime);
+		if (ImGui::Checkbox("Static", &bStatic))
+		{
+			SetStatic(bStatic);
+		}
 
+		SceneComponent::DrawDetailPanel(DeltaTime);
 	}
 
 	void LightComponent::SetSelectedInEditor( bool SelectedInEditor )

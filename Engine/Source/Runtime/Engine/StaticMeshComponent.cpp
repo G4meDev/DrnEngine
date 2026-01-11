@@ -151,6 +151,11 @@ namespace Drn
 
 	void StaticMeshComponent::DrawDetailPanel( float DeltaTime )
 	{
+		if (ImGui::Checkbox("Static", &bStatic))
+		{
+			SetStatic(bStatic);
+		}
+
 		PrimitiveComponent::DrawDetailPanel(DeltaTime);
 
 		ImGui::TextWrapped( "Guid: %s", m_Guid.ToString().c_str());

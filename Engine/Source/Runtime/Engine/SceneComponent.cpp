@@ -13,6 +13,7 @@ namespace Drn
 	SceneComponent::SceneComponent() 
 		: Component() 
 		, m_AttachSocketName("")
+		, bStatic(true)
 	{
 
 	}
@@ -63,6 +64,8 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
+			Ar >> bStatic;
+
 			Transform T;
 			Ar >> T;
 			SetRelativeTransform(T);
@@ -70,6 +73,7 @@ namespace Drn
 
 		else
 		{
+			Ar << bStatic;
 			Ar << RelativeTransform;
 		}
 	}

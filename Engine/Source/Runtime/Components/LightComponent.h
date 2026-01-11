@@ -23,6 +23,12 @@ namespace Drn
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 
+		inline void SetCastStaticShadow( bool bInCastShadow ) { bCastStaticShadow = bInCastShadow; }
+		inline void SetCastDynamicShadow( bool bInCastShadow ) { bCastDynamicShadow = bInCastShadow; }
+
+		inline bool IsCastingStaticShadow() const { return bCastStaticShadow; }
+		inline bool IsCastingDynamicShadow() const { return bCastDynamicShadow; }
+
 	protected:
 		LightComponent();
 		virtual ~LightComponent();
@@ -41,11 +47,14 @@ namespace Drn
 
 		Vector m_LightColor;
 		float m_Intensity;
-		bool m_CastShadow;
 		float m_DepthBias;
 
-		bool m_RenderStateDirty;
+		// TODO: use bitfield for less memory footprint
+		bool m_CastShadow;
+		bool bCastStaticShadow;
+		bool bCastDynamicShadow;
 
+		bool m_RenderStateDirty;
 		class LightSceneProxy* m_LightSceneProxy;
 
 	private:

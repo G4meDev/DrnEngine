@@ -138,6 +138,18 @@ namespace Drn
 		{
 			SetMaxDrawDistance(MaxDrawDistance);
 		}
+
+// ---------------------------------------------------------------------------------------------------
+
+		if ( ImGui::Checkbox( "CastStaticShadows", &bCastStaticShadow ) )
+		{
+			SetCastStaticShadow(bCastStaticShadow);
+		}
+
+		if ( ImGui::Checkbox( "CastDynamicShadows", &bCastDynamicShadow ) )
+		{
+			SetCastDynamicShadow(bCastDynamicShadow);
+		}
 	}
 
 	void SpotLightComponent::DrawAttenuation()
