@@ -62,7 +62,7 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
-		inline void SetStatic(bool bInStatic) { bStatic = bInStatic; }
+		inline virtual void SetStatic(bool bInStatic) { bStatic = bInStatic; }
 		inline bool IsStatic() const { return bStatic; }
 
 #if WITH_EDITOR

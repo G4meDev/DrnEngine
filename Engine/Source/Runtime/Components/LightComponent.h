@@ -23,8 +23,10 @@ namespace Drn
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 
-		inline void SetCastStaticShadow( bool bInCastShadow ) { bCastStaticShadow = bInCastShadow; }
-		inline void SetCastDynamicShadow( bool bInCastShadow ) { bCastDynamicShadow = bInCastShadow; }
+		virtual void SetStatic(bool bInStatic) override;
+
+		void SetCastStaticShadow( bool bInCastShadow );
+		void SetCastDynamicShadow( bool bInCastShadow );
 
 		inline bool IsCastingStaticShadow() const { return bCastStaticShadow; }
 		inline bool IsCastingDynamicShadow() const { return bCastDynamicShadow; }

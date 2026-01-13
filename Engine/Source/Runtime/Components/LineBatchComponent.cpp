@@ -34,8 +34,9 @@ namespace Drn
 	{
 		PrimitiveComponent::RegisterComponent(InOwningWorld);
 
-		m_SceneProxy = new LineBatchSceneProxy(this);
-		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_SceneProxy);
+		m_LineBatchSceneProxy = new LineBatchSceneProxy(this);
+		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_LineBatchSceneProxy);
+		m_SceneProxy = m_LineBatchSceneProxy;
 	}
 
 	void LineBatchComponent::UnRegisterComponent()
@@ -44,6 +45,7 @@ namespace Drn
 		{
 			m_SceneProxy->MarkPendingKill();
 			m_SceneProxy = nullptr;
+			m_LineBatchSceneProxy = nullptr;
 		}
 
 		PrimitiveComponent::UnRegisterComponent();
@@ -173,9 +175,9 @@ namespace Drn
 	void LineBatchComponent::SetThickness( bool InThickness )
 	{
 		m_Thickness = InThickness;
-		if (m_SceneProxy)
+		if (m_LineBatchSceneProxy)
 		{
-			m_SceneProxy->m_Thickness = m_Thickness;
+			m_LineBatchSceneProxy->m_Thickness = m_Thickness;
 		}
 	}
 

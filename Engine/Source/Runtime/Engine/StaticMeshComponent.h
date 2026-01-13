@@ -58,7 +58,7 @@ namespace Drn
 	protected:
 
 		AssetHandle<StaticMesh> Mesh;
-		StaticMeshSceneProxy* m_SceneProxy;
+		StaticMeshSceneProxy* m_StaticMeshSceneProxy;
 
 		std::vector<MaterialPropertyOverride> m_OverrideMaterials;
 

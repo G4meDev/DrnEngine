@@ -36,6 +36,7 @@ namespace Drn
 		inline bool IsEditorPrimitive() const { return m_EditorPrimitive; }
 		inline void SetEditorPrimitive(bool EditorPrimitive) { m_EditorPrimitive = EditorPrimitive; }
 
+		virtual void SetStatic(bool bInStatic) override;
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;

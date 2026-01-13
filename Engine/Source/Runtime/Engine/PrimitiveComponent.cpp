@@ -79,6 +79,15 @@ namespace Drn
 	}
 
 
+	void PrimitiveComponent::SetStatic( bool bInStatic )
+	{
+		SceneComponent::SetStatic(bInStatic);
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->SetStatic(bInStatic);
+		}
+	}
+
 #if WITH_EDITOR
 	void PrimitiveComponent::DrawDetailPanel( float DeltaTime )
 	{

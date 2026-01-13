@@ -89,6 +89,33 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
+	void LightComponent::SetCastStaticShadow( bool bInCastShadow )
+	{
+		bCastStaticShadow = bInCastShadow;
+		if (m_LightSceneProxy)
+		{
+			m_LightSceneProxy->SetCastStaticShadow(bInCastShadow);
+		}
+	}
+
+	void LightComponent::SetCastDynamicShadow( bool bInCastShadow )
+	{
+		bCastDynamicShadow = bInCastShadow;
+		if (m_LightSceneProxy)
+		{
+			m_LightSceneProxy->SetCastDynamicShadow(bInCastShadow);
+		}
+	}
+
+	void LightComponent::SetStatic( bool bInStatic )
+	{
+		SceneComponent::SetStatic(bInStatic);
+		if (m_LightSceneProxy)
+		{
+			m_LightSceneProxy->SetStatic(bInStatic);
+		}
+	}
+
 #if WITH_EDITOR
 	void LightComponent::DrawDetailPanel( float DeltaTime )
 	{

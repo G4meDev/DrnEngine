@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Containers/BitArray.h"
 
 LOG_DECLARE_CATEGORY(LogScene);
 
@@ -38,6 +39,9 @@ namespace Drn
 		inline const std::vector<PrimitiveSceneProxy*>& GetPrimitiveProxies() { return m_PrimitiveProxies; };
 		inline const std::vector<LightSceneProxy*>& GetLightProxies() { return m_LightProxies; };
 
+		inline const BitArray& GetStaticPrimitiveProxiesMap() { return StaticPrimitiveMap; };
+		inline const BitArray& GetDynamicPrimitiveProxiesMap() { return DynamicPrimitiveMap; };
+
 	protected:
 
 		World* m_World;
@@ -58,6 +62,10 @@ namespace Drn
 		std::set<class DecalSceneProxy*> m_PendingDecalProxies;
 
 		std::set<SceneRenderer*> m_SceneRenderers;
+
+		// TODO: merge into one map with set and unset bit iterator
+		BitArray StaticPrimitiveMap;
+		BitArray DynamicPrimitiveMap;
 
 		friend class ReflectionEnvironmentBuffer;
 		friend class SceneRenderer;

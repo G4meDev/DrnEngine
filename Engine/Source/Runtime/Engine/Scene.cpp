@@ -125,6 +125,18 @@ namespace Drn
 		}
 		m_PendingProxies.clear();
 
+		StaticPrimitiveMap.SetNumUninitialized(m_PrimitiveProxies.size());
+		DynamicPrimitiveMap.SetNumUninitialized(m_PrimitiveProxies.size());
+
+		for (int32 i = 0; i < m_PrimitiveProxies.size(); i++)
+		{
+			PrimitiveSceneProxy* Proxy = m_PrimitiveProxies[i];
+			const bool bStatic = Proxy->IsStatic();
+
+			StaticPrimitiveMap.SetBitNoCheck(i, bStatic);
+			DynamicPrimitiveMap.SetBitNoCheck(i, !bStatic);
+		}
+
 // ----------------------------------------------------------------------------------
 
 		std::remove_if( m_LightProxies.begin(), m_LightProxies.end(), [CommandList](LightSceneProxy* Proxy)

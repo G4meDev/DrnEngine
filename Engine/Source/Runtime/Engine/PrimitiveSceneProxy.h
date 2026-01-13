@@ -29,6 +29,9 @@ namespace Drn
 
 		virtual const BoxSphereBounds& GetBounds() = 0;
 
+		inline virtual void SetStatic(bool bInStatic) { bStatic = bInStatic; }
+		inline bool IsStatic() const { return bStatic; }
+
 		inline bool IsMarkedPendingKill() const { return bPendingDestory; }
 		inline void MarkPendingKill() { bPendingDestory = true; }
 
@@ -50,6 +53,7 @@ namespace Drn
 
 		BoxSphereBounds Bounds;
 
+		bool bStatic;
 		bool bPendingDestory;
 
 #if WITH_EDITOR

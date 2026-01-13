@@ -24,7 +24,6 @@ namespace Drn
 		Vector Start;
 		Vector End;
 
-		// TODO: make color class of 8 bit
 		Color Color;
 		float Thickness;
 		float RemainingLifetime;
@@ -35,7 +34,7 @@ namespace Drn
 	public:
 		LineBatchComponent() : PrimitiveComponent()
 			, m_Thickness(false)
-			, m_SceneProxy(nullptr)
+			, m_LineBatchSceneProxy(nullptr)
 		{
 			SetEditorPrimitive(true);
 		}
@@ -64,7 +63,7 @@ namespace Drn
 
 		bool m_Thickness;
 
-		LineBatchSceneProxy* m_SceneProxy;
+		LineBatchSceneProxy* m_LineBatchSceneProxy;
 	};
 
 	class LineBatchSceneProxy : public PrimitiveSceneProxy

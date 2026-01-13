@@ -88,29 +88,33 @@ namespace Drn
 
 			ShadowDepthBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(SpotLightShadowData), EUniformBufferUsage::SingleFrame, &m_ShadowDepthData);
 
-			CommandList->SetGraphicRootConstant(ShadowDepthBuffer->GetViewIndex(), 6);
-
-			DirectX::BoundingSphere LightSphereBound( *m_WorldPosition.Get(), m_Attenuation );
-
-			XMFLOAT4 Rotation;
-			XMStoreFloat4(&Rotation, m_LocalToWorld.Rotation().Get());
-			DirectX::BoundingFrustum LightFrustum = DirectX::BoundingFrustum( *m_WorldPosition.Get(), Rotation, m_OuterRadius, -m_OuterRadius, m_OuterRadius, -m_OuterRadius, SPOTLIGHT_NEAR_Z, m_Attenuation );
-
-			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
+			if (bCastDynamicShadow)
 			{
-				drn_check(Proxy);
-				BoxSphereBounds PrimitiveBound = Proxy->GetBounds();
-				DirectX::BoundingSphere PrimitiveSphereBound(*PrimitiveBound.Origin.Get(), PrimitiveBound.SphereRadius);
+				CommandList->SetGraphicRootConstant(ShadowDepthBuffer->GetViewIndex(), 6);
 
-				bool bIsVisible = LightSphereBound.Contains(PrimitiveSphereBound) != DISJOINT;
-				if (bIsVisible)
-				{
-					bIsVisible = LightFrustum.Contains(PrimitiveSphereBound) != DISJOINT;
-				}
+				DirectX::BoundingSphere LightSphereBound( *m_WorldPosition.Get(), m_Attenuation );
 
-				if (bIsVisible)
+				XMFLOAT4 Rotation;
+				XMStoreFloat4(&Rotation, m_LocalToWorld.Rotation().Get());
+				DirectX::BoundingFrustum LightFrustum = DirectX::BoundingFrustum( *m_WorldPosition.Get(), Rotation, m_OuterRadius, -m_OuterRadius, m_OuterRadius, -m_OuterRadius, SPOTLIGHT_NEAR_Z, m_Attenuation );
+
+				for (BitArray::ConstSetBitIterator It(Renderer->GetScene()->GetDynamicPrimitiveProxiesMap()); It; ++It)
 				{
-					Proxy->RenderShadowPass(CommandList, Renderer, this);
+					PrimitiveSceneProxy* Proxy = Renderer->GetScene()->GetPrimitiveProxies()[It.GetIndex()];
+					drn_check(Proxy);
+					BoxSphereBounds PrimitiveBound = Proxy->GetBounds();
+					DirectX::BoundingSphere PrimitiveSphereBound(*PrimitiveBound.Origin.Get(), PrimitiveBound.SphereRadius);
+
+					bool bIsVisible = LightSphereBound.Contains(PrimitiveSphereBound) != DISJOINT;
+					if (bIsVisible)
+					{
+						bIsVisible = LightFrustum.Contains(PrimitiveSphereBound) != DISJOINT;
+					}
+
+					if (bIsVisible)
+					{
+						Proxy->RenderShadowPass(CommandList, Renderer, this);
+					}
 				}
 			}
 		}

@@ -14,7 +14,7 @@ namespace Drn
 {
 	StaticMeshComponent::StaticMeshComponent()
 		: PrimitiveComponent()
-		, m_SceneProxy(nullptr)
+		, m_StaticMeshSceneProxy(nullptr)
 		, MinDrawDistance(0)
 		, MaxDrawDistance(0)
 	{
@@ -96,9 +96,9 @@ namespace Drn
 			m_BodyInstance.InitBody(Mesh->GetBodySetup(), this, GetWorld()->GetPhysicScene());
 		}
 
-		m_SceneProxy = new StaticMeshSceneProxy(this);
-		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_SceneProxy);
-
+		m_StaticMeshSceneProxy = new StaticMeshSceneProxy(this);
+		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_StaticMeshSceneProxy);
+		m_SceneProxy = m_StaticMeshSceneProxy;
 	}
 
 	void StaticMeshComponent::UnRegisterComponent()
@@ -107,6 +107,7 @@ namespace Drn
 		{
 			m_SceneProxy->MarkPendingKill();
 			m_SceneProxy = nullptr;
+			m_StaticMeshSceneProxy= nullptr;
 		}
 
 		if (Mesh.IsValid())
@@ -315,18 +316,18 @@ namespace Drn
 	void StaticMeshComponent::SetMinDrawDistance( float Value )
 	{
 		MinDrawDistance = Value;
-		if (m_SceneProxy)
+		if (m_StaticMeshSceneProxy)
 		{
-			m_SceneProxy->MinDrawDistance = MinDrawDistance;
+			m_StaticMeshSceneProxy->MinDrawDistance = MinDrawDistance;
 		}
 	}
 
 	void StaticMeshComponent::SetMaxDrawDistance( float Value )
 	{
 		MaxDrawDistance = Value;
-		if (m_SceneProxy)
+		if (m_StaticMeshSceneProxy)
 		{
-			m_SceneProxy->MaxDrawDistance = MaxDrawDistance;
+			m_StaticMeshSceneProxy->MaxDrawDistance = MaxDrawDistance;
 		}
 	}
 

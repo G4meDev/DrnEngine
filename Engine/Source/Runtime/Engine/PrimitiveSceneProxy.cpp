@@ -5,6 +5,7 @@ namespace Drn
 {
 	PrimitiveSceneProxy::PrimitiveSceneProxy( const PrimitiveComponent* InComponent )
 		: m_LocalToWorld( Matrix(InComponent->GetWorldTransform()) )
+		, bStatic(InComponent->IsStatic())
 		, MinDrawDistance(0)
 		, MaxDrawDistance(0)
 		, bPendingDestory(false)
