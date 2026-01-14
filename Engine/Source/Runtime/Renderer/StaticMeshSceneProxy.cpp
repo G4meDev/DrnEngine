@@ -26,10 +26,9 @@ namespace Drn
 	{
 		// TODO: only update bounds when dirty
 
-		if (m_Mesh.IsValid())
+		if (m_OwningStaticMeshComponent)
 		{
-			Bounds = m_Mesh->GetBounds();
-			Bounds.TransformBy(m_OwningStaticMeshComponent->GetWorldTransform());
+			Bounds = m_OwningStaticMeshComponent->GetBounds();
 		}
 
 		return Bounds;

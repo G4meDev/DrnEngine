@@ -277,6 +277,21 @@ namespace Drn
 		}
 	}
 
+	void StaticMeshComponent::DrawEditorDefault()
+	{
+		PrimitiveComponent::DrawEditorDefault();
+		
+	}
+
+	void StaticMeshComponent::DrawEditorSelected()
+	{
+		PrimitiveComponent::DrawEditorSelected();
+
+		BoxSphereBounds Bounds = GetBounds();
+		GetWorld()->DrawDebugSphere(Bounds.Origin, Quat::Identity, Color::Green, Bounds.SphereRadius, 32, 0.0f, 0.0f);
+		GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::Blue, 0.0f, 0.0f);
+	}
+
 #endif
 
 	void StaticMeshComponent::RefreshOverrideMaterials()
@@ -331,4 +346,15 @@ namespace Drn
 		}
 	}
 
-        }
+	BoxSphereBounds StaticMeshComponent::GetBounds()
+	{
+		BoxSphereBounds Bounds;
+		if (Mesh.IsValid())
+		{
+			Bounds = Mesh->GetBounds();
+			Bounds = Bounds.TransformBy(GetWorldTransform());
+		}
+		return Bounds;
+	}
+
+        }  // namespace Drn

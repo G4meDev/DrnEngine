@@ -22,8 +22,8 @@ namespace Drn
 			, SphereRadius(InSphereRadius)
 		{}
 
-		void TranslateBy(const Vector& Offset);
-		void TransformBy(const Transform& T);
+		BoxSphereBounds TranslateBy(const Vector& Offset);
+		BoxSphereBounds TransformBy(const Transform& T);
 
 	};
 }

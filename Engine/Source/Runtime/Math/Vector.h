@@ -156,7 +156,13 @@ namespace Drn
 
 		inline float SizeSquared() const
 		{
-			return m_Vector.x * m_Vector.x + m_Vector.y * m_Vector.y + m_Vector.z * m_Vector.z;
+			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
+			return XMVectorGetX(XMVector3Dot(Vec, Vec));
+		}
+
+		inline float Length() const
+		{
+			return XMVectorGetX( XMVector3Length( XMLoadFloat3(&m_Vector) ) );
 		}
 
 		inline bool IsNormalized() const 

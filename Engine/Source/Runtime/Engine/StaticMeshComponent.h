@@ -41,6 +41,8 @@ namespace Drn
 		void SetMinDrawDistance(float Value);
 		void SetMaxDrawDistance(float Value);
 
+		BoxSphereBounds GetBounds();
+
 #if WITH_EDITOR
 
 		virtual void DrawDetailPanel(float DeltaTime) override;
@@ -53,6 +55,9 @@ namespace Drn
 
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
 		virtual void SetSelectable( bool Selectable ) override;
+
+		virtual void DrawEditorDefault() override;
+		virtual void DrawEditorSelected() override;
 #endif
 
 	protected:
