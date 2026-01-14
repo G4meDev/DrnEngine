@@ -7,6 +7,8 @@ namespace Drn
 	LightSceneProxy::LightSceneProxy( class LightComponent* InComponent )
 		: m_LightComponent( InComponent )
 		, bStatic( InComponent->IsStatic() )
+		, bCastStaticShadow( InComponent->IsCastingStaticShadow() )
+		, bCastDynamicShadow( InComponent->IsCastingDynamicShadow() )
 		, bPendingDestory(false)
 #if D3D12_Debug_INFO
 		, m_Name( InComponent ? InComponent->GetComponentLabel() : "InvalidLightComponent" )

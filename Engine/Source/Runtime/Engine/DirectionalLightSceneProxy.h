@@ -41,6 +41,11 @@ namespace Drn
 		virtual void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 
+#if WITH_EDITOR
+		virtual void BakeShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override {}
+		virtual bool RequiresShadowBake() const override { return false; }
+#endif
+
 		void AllocateShadowmap( class D3D12CommandList* CommandList );
 		void ReleaseShadowmap();
 

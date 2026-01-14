@@ -93,7 +93,7 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		std::remove_if( m_PrimitiveProxies.begin(), m_PrimitiveProxies.end(), [CommandList](PrimitiveSceneProxy* Proxy)
+		std::erase_if(m_PrimitiveProxies, [CommandList](PrimitiveSceneProxy* Proxy)
 		{
 			drn_check(Proxy);
 
@@ -139,7 +139,7 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------
 
-		std::remove_if( m_LightProxies.begin(), m_LightProxies.end(), [CommandList](LightSceneProxy* Proxy)
+		std::erase_if( m_LightProxies, [CommandList](LightSceneProxy* Proxy)
 		{
 			drn_check(Proxy);
 
@@ -172,7 +172,7 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------
 
-		std::remove_if( m_SkyLightProxies.begin(), m_SkyLightProxies.end(), [CommandList](SkyLightSceneProxy* Proxy)
+		std::erase_if( m_SkyLightProxies, [CommandList](SkyLightSceneProxy* Proxy)
 		{
 			drn_check(Proxy);
 
@@ -230,6 +230,7 @@ namespace Drn
 			DecalSceneProxy* Proxy = *it;
 			Proxy->UpdateResources(CommandList);
 		}
+
 	}
 
 	void Scene::RegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )

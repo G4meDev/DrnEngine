@@ -48,6 +48,7 @@ namespace Drn
 		virtual Archive& operator<<(const Vector2Half& Value) = 0;
 		virtual Archive& operator<<(const Color& Value) = 0;
 		virtual Archive& operator<<(const Quat& Value) = 0;
+		virtual Archive& operator<<(const Matrix& Value);
 		virtual Archive& operator<<(const Transform& Value) = 0;
 		virtual Archive& operator<<(const std::string& Value) = 0;
 		virtual Archive& operator<<(const std::vector<char>& Value) = 0;
@@ -79,6 +80,7 @@ namespace Drn
 		virtual Archive& operator>>(Vector2Half& Value) = 0;
 		virtual Archive& operator>>(Color& Value) = 0;
 		virtual Archive& operator>>(Quat& Value) = 0;
+		virtual Archive& operator>>(Matrix& Value);
 		virtual Archive& operator>>(Transform& Value) = 0;
 		virtual Archive& operator>>(std::string& Value) = 0;
 		virtual Archive& operator>>(std::vector<char>& Value) = 0;

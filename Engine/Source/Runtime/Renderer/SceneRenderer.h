@@ -100,6 +100,8 @@ namespace Drn
 
 		std::vector<class ThumbnailCaptureEvent*> ThumbnailCaptureEvents;
 		void ProccessThumbnailCapture();
+		void ShadowmapBake();
+		void ProcessCachedShadowReadback();
 #endif
 
 		uint32 m_FrameIndex;
@@ -160,6 +162,15 @@ namespace Drn
 		void ProccessScreenReprojectionQueue();
 		void KickstartScreenReprojection( ScreenReprojectionEvent& Event );
 		std::vector<ScreenReprojectionEvent> m_ScreenReprojectionQueue;
+
+		struct SpotlightCachedShadowReadbackEvent
+		{
+			uint64 FenceValue;
+			class SpotLightComponent* TargetComponent;
+			TRefCountPtr<RenderTexture2D> ReadbackBuffer;
+		};
+
+		std::vector<SpotlightCachedShadowReadbackEvent> SpotlightCachedShadowmapEvents;
 
 		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
 		std::shared_ptr<class EditorPrimitiveRenderBuffer> m_EditorPrimitiveBuffer;

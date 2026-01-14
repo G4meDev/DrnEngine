@@ -74,4 +74,51 @@ namespace Drn
 		return m_SingletonInstance;
 	}
 
-}
+	void StaticShadowDepthMapData::Empty()
+	{
+		ShadowMapSizeX = 0;
+		ShadowMapSizeY = 0;
+		DepthSamples.clear();
+	}
+
+	bool StaticShadowDepthMapData::IsValid() const
+	{
+		return !DepthSamples.empty() && (ShadowMapSizeX * ShadowMapSizeY == DepthSamples.size());
+	}
+
+	Archive& operator<<( Archive& Ar, StaticShadowDepthMapData& ShadowMap )
+	{
+		//Ar << ShadowMap.WorldToLight;
+		Ar << ShadowMap.ShadowMapSizeX;
+		Ar << ShadowMap.ShadowMapSizeY;
+
+		uint32 DepthSampleCount = ShadowMap.DepthSamples.size();
+		Ar << DepthSampleCount;
+
+		for (uint32 i = 0; i < DepthSampleCount; i++)
+		{
+			Ar << ShadowMap.DepthSamples[i];
+		}
+
+		return Ar;
+	}
+
+	Archive& operator>>(Archive& Ar, StaticShadowDepthMapData& ShadowMap)
+	{
+		//Ar >> ShadowMap.WorldToLight;
+		Ar >> ShadowMap.ShadowMapSizeX;
+		Ar >> ShadowMap.ShadowMapSizeY;
+
+		uint32 DepthSampleCount;
+		Ar >> DepthSampleCount;
+		ShadowMap.DepthSamples.resize(DepthSampleCount);
+
+		for (uint32 i = 0; i < DepthSampleCount; i++)
+		{
+			Ar >> ShadowMap.DepthSamples[i];
+		}
+
+		return Ar;
+	}
+
+        }

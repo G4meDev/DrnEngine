@@ -52,6 +52,7 @@ namespace Drn
 		}
 
 		drn_check( ThumbnailCaptureEvents.size() == 0 );
+		drn_check( SpotlightCachedShadowmapEvents.size() == 0 );
 
 		OnSceneRendererDestroy.Braodcast();
 #endif
@@ -862,6 +863,7 @@ namespace Drn
 #if WITH_EDITOR
 		ProccessMousePickQueue();
 		ProccessScreenReprojectionQueue();
+		ProcessCachedShadowReadback();
 #endif
 
 		if (!m_RenderingEnabled )
@@ -902,6 +904,8 @@ namespace Drn
 		RenderBufferVisulization();
 
 		ProccessThumbnailCapture();
+
+		ShadowmapBake();
 
 		{
 			m_CommandList->TransitionResourceWithTracking(m_TonemapBuffer->m_TonemapTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
@@ -1153,6 +1157,68 @@ namespace Drn
 
 			m_CommandList->CopyTexture(m_TonemapBuffer->m_TonemapTarget, Event->ReadbackBuffer, CopyInfo);
 			Event->FenceValue = Renderer::Get()->GetFence()->Signal();
+		}
+	}
+
+	void SceneRenderer::ShadowmapBake()
+	{
+		SCOPE_STAT("ShadowmapBake");
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Shadowmap Bake" );
+
+		for (LightSceneProxy* Proxy : m_Scene->GetLightProxies())
+		{
+			if (Proxy->RequiresShadowBake())
+			{
+				Proxy->BakeShadowDepth(m_CommandList, this);
+
+				if (Proxy->GetLightType() == ELightType::SpotLight)
+				{
+					SpotLightComponent* Light = static_cast<SpotLightComponent*>(Proxy->GetLightComponent());
+					drn_check(Light);
+
+					Light->GetCachedShadowmapData().ShadowMapSizeX = Light->GetCachedShadowmap()->GetSizeX();
+					Light->GetCachedShadowmapData().ShadowMapSizeY = Light->GetCachedShadowmap()->GetSizeY();
+
+					SpotlightCachedShadowmapEvents.push_back({});
+					SpotlightCachedShadowReadbackEvent& Event = SpotlightCachedShadowmapEvents.back();
+					Event.TargetComponent = Light;
+					Event.FenceValue = Renderer::Get()->GetFence()->GetCurrentFence();
+
+					RenderResourceCreateInfo CreateInfo( "SpotlightBakedShadowReadbackBuffer" );
+					Event.ReadbackBuffer = RenderTexture2D::Create(m_CommandList, Light->GetCachedShadowmap()->GetSizeX(), Light->GetCachedShadowmap()->GetSizeY(),
+						DXGI_FORMAT_D16_UNORM, 1, 1, false, ETextureCreateFlags::CPUReadback, CreateInfo );
+
+					m_CommandList->CopyTexture(Light->GetCachedShadowmap(), Event.ReadbackBuffer, CopyTextureInfo());
+				}
+			}
+		}
+
+		PIXEndEvent(m_CommandList->GetD3D12CommandList());
+	}
+
+	void SceneRenderer::ProcessCachedShadowReadback()
+	{
+		int32 ProccessedCount = 0;
+		for (SpotlightCachedShadowReadbackEvent& Event : SpotlightCachedShadowmapEvents)
+		{
+			if (Renderer::Get()->GetFence()->IsFenceComplete(Event.FenceValue))
+			{
+				uint32 SampleCount = Event.TargetComponent->GetCachedShadowmapData().ShadowMapSizeX * Event.TargetComponent->GetCachedShadowmapData().ShadowMapSizeY;
+				std::vector<Float16>& Samples = Event.TargetComponent->GetCachedShadowmapData().DepthSamples;
+				Samples.resize(SampleCount);
+
+				memcpy(Samples.data(), Event.ReadbackBuffer->m_ResourceLocation.GetMappedBaseAddress(), SampleCount * 2);
+				ProccessedCount++;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (ProccessedCount > 0)
+		{
+			SpotlightCachedShadowmapEvents.erase(SpotlightCachedShadowmapEvents.begin(), SpotlightCachedShadowmapEvents.begin() + ProccessedCount);
 		}
 	}
 

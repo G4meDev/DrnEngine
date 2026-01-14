@@ -32,6 +32,11 @@ namespace Drn
 		virtual void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 
+#if WITH_EDITOR
+		virtual void BakeShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override {}
+		virtual bool RequiresShadowBake() const override { return false; }
+#endif
+
 		void UpdateResources( class D3D12CommandList* CommandList ) override;
 
 		virtual float GetMaxDrawDistance() const override { return FLT_MAX; }

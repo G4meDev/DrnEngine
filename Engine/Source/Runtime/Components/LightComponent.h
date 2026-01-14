@@ -25,7 +25,7 @@ namespace Drn
 
 		virtual void SetStatic(bool bInStatic) override;
 
-		void SetCastStaticShadow( bool bInCastShadow );
+		virtual void SetCastStaticShadow( bool bInCastShadow );
 		void SetCastDynamicShadow( bool bInCastShadow );
 
 		inline bool IsCastingStaticShadow() const { return bCastStaticShadow; }

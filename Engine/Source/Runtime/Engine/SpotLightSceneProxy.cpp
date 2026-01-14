@@ -60,10 +60,20 @@ namespace Drn
 
 			CommandList->SetViewport( 0, 0, 0, SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, 1 );
 
-			CommandList->TransitionResourceWithTracking(m_ShadowmapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
-			CommandList->FlushBarriers();
+			if (bCastStaticShadow && m_SpotLightComponent->GetCachedShadowmap())
+			{
+				CommandList->CopyTexture(m_SpotLightComponent->GetCachedShadowmap(), m_ShadowmapResource, CopyTextureInfo());
 
-			CommandList->ClearDepthTexture(m_ShadowmapResource, EDepthStencilViewType::DepthWrite, true, false);
+				CommandList->TransitionResourceWithTracking(m_ShadowmapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				CommandList->FlushBarriers();
+			}
+			else
+			{
+				CommandList->TransitionResourceWithTracking(m_ShadowmapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				CommandList->FlushBarriers();
+
+				CommandList->ClearDepthTexture(m_ShadowmapResource, EDepthStencilViewType::DepthWrite, true, false);
+			}
 
 			D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_ShadowmapResource->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
 			CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &Handle);
@@ -120,6 +130,93 @@ namespace Drn
 		}
 	}
 
+#if WITH_EDITOR
+	void SpotLightSceneProxy::BakeShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	{
+		Renderer::Get()->MarkFrameForCapture();
+
+		TRefCountPtr<RenderTexture2D>& BakeTarget = m_SpotLightComponent->GetCachedShadowmap();
+		RenderResourceCreateInfo ShadowmapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "SpotLightBakeShadowmap" );
+		BakeTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCreateInfo);
+
+		bool bWasCastingShadow = m_CastShadow;
+		m_CastShadow = true;
+
+		UpdateResources(CommandList);
+
+		CommandList->SetViewport( 0, 0, 0, SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, 1 );
+
+		CommandList->TransitionResourceWithTracking(BakeTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		CommandList->FlushBarriers();
+
+		CommandList->ClearDepthTexture(BakeTarget, EDepthStencilViewType::DepthWrite, true, false);
+
+		D3D12_CPU_DESCRIPTOR_HANDLE Handle = BakeTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &Handle);
+
+// ----------------------------------------------------------------------------------------
+
+		XMVECTOR LightPosition = XMLoadFloat3(m_WorldPosition.Get());
+		XMVECTOR ViewDirection = XMLoadFloat3(m_Direction.Get());
+		XMVECTOR FocusPoint = LightPosition + ViewDirection;
+
+		Matrix ViewMatrix = XMMatrixLookAtLH( LightPosition, FocusPoint, XMLoadFloat3(Vector::UpVector.Get()));
+		Matrix ProjectionMatrix = XMMatrixPerspectiveFovLH(m_OuterRadius * 2, 1.0f, SPOTLIGHT_NEAR_Z, m_Attenuation);
+
+		Matrix ViewProjection = ViewMatrix * ProjectionMatrix;
+		m_ShadowDepthData.WorldToProjectionMatrices = ViewProjection;
+
+// ----------------------------------------------------------------------------------------
+
+		m_ShadowDepthData.DepthBias = m_DepthBias;
+		m_ShadowDepthData.InvShadowResolution = 1.0f / SPOTLIGHT_SHADOW_SIZE;
+		m_ShadowDepthData.ShadowmapTextureIndex = BakeTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+
+		ShadowDepthBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(SpotLightShadowData), EUniformBufferUsage::SingleFrame, &m_ShadowDepthData);
+
+		CommandList->SetGraphicRootConstant(ShadowDepthBuffer->GetViewIndex(), 6);
+
+		DirectX::BoundingSphere LightSphereBound( *m_WorldPosition.Get(), m_Attenuation );
+
+		XMFLOAT4 Rotation;
+		XMStoreFloat4(&Rotation, m_LocalToWorld.Rotation().Get());
+		DirectX::BoundingFrustum LightFrustum = DirectX::BoundingFrustum( *m_WorldPosition.Get(), Rotation, m_OuterRadius, -m_OuterRadius, m_OuterRadius, -m_OuterRadius, SPOTLIGHT_NEAR_Z, m_Attenuation );
+
+		for (BitArray::ConstSetBitIterator It(Renderer->GetScene()->GetStaticPrimitiveProxiesMap()); It; ++It)
+		{
+			PrimitiveSceneProxy* Proxy = Renderer->GetScene()->GetPrimitiveProxies()[It.GetIndex()];
+			drn_check(Proxy);
+			BoxSphereBounds PrimitiveBound = Proxy->GetBounds();
+			DirectX::BoundingSphere PrimitiveSphereBound(*PrimitiveBound.Origin.Get(), PrimitiveBound.SphereRadius);
+
+			bool bIsVisible = LightSphereBound.Contains(PrimitiveSphereBound) != DISJOINT;
+			if (bIsVisible)
+			{
+				bIsVisible = LightFrustum.Contains(PrimitiveSphereBound) != DISJOINT;
+			}
+
+			if (bIsVisible)
+			{
+				Proxy->RenderShadowPass(CommandList, Renderer, this);
+			}
+		}
+
+		if (!bWasCastingShadow)
+		{
+			m_CastShadow = false;
+			ReleaseShadowmap();
+		}
+
+		m_SpotLightComponent->ClearRequiredShadowBake();
+	}
+
+	bool SpotLightSceneProxy::RequiresShadowBake() const
+	{
+		return m_SpotLightComponent && m_SpotLightComponent->CanUseStaticShadowmap() && m_SpotLightComponent->IsRequiredShadowBake();
+	}
+#endif
+
 	void SpotLightSceneProxy::AllocateShadowmap( D3D12CommandList* CommandList )
 	{
 		RenderResourceCreateInfo ShadowmapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "SpotLightShadowmap" );
@@ -160,6 +257,15 @@ namespace Drn
 		else if (!m_CastShadow && m_ShadowmapResource)
 		{
 			ReleaseShadowmap();
+		}
+
+		// TODO: move to spotlight component
+		if (!m_SpotLightComponent->GetCachedShadowmap() && m_SpotLightComponent->CanUseStaticShadowmap() && m_SpotLightComponent->GetCachedShadowmapData().IsValid())
+		{
+			RenderResourceCreateInfo TextureCreateInfo( m_SpotLightComponent->GetCachedShadowmapData().DepthSamples.data(), nullptr, ClearValueBinding::Black, "SpotlightStaticShadowDepthmap" );
+			m_SpotLightComponent->GetCachedShadowmap() = RenderTexture2D::Create(CommandList, m_SpotLightComponent->GetCachedShadowmapData().ShadowMapSizeX,
+				m_SpotLightComponent->GetCachedShadowmapData().ShadowMapSizeY, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
 		}
 	}
 

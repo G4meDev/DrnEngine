@@ -40,6 +40,31 @@ namespace Drn
 		SkyLight,
 	};
 
+	class StaticShadowDepthMapData
+	{
+	public:
+		//Matrix WorldToLight;
+		int32 ShadowMapSizeX;
+		int32 ShadowMapSizeY;
+		std::vector<Float16> DepthSamples;
+
+		StaticShadowDepthMapData() :
+			//WorldToLight(Matrix::MatrixIdentity),
+			ShadowMapSizeX(0),
+			ShadowMapSizeY(0)
+		{}
+
+		void Empty();
+		bool IsValid() const;
+
+		//size_t GetAllocatedSize() const
+		//{
+		//	return DepthSamples.GetAllocatedSize();
+		//}
+		friend Archive& operator<<(Archive& Ar, StaticShadowDepthMapData& ShadowMap);
+		friend Archive& operator>>(Archive& Ar, StaticShadowDepthMapData& ShadowMap);
+	};
+
 	class Actor;
 	class PrimitiveComponent;
 	class BodyInstance;

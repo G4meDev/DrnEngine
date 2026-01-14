@@ -41,18 +41,34 @@ namespace Drn
 		}
 
 		void SetMaxDrawDistance(float InMaxDrawDistance);
+		virtual void SetCastStaticShadow( bool bInCastShadow ) override;
+
+		inline bool CanUseStaticShadowmap() const { return IsStatic() && bCastStaticShadow; }
+		inline TRefCountPtr<RenderTexture2D>& GetCachedShadowmap() { return CachedShadowmap; }
+		inline StaticShadowDepthMapData& GetCachedShadowmapData() { return CachedShadowmapData; }
+
+#if WITH_EDITOR
+		bool IsRequiredShadowBake() const { return bRequiredStaticShadowmapBake; }
+		void ClearRequiredShadowBake() { bRequiredStaticShadowmapBake = false; }
+#endif
 
 	protected:
 		virtual void RegisterComponent( World* InOwningWorld ) override;
 		virtual void UnRegisterComponent() override;
 	
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
+		virtual void SetStatic(bool bInStatic) override;
+
+		void InvalidateCachedShadow() { CachedShadowmap = nullptr; CachedShadowmapData.Empty(); }
 
 		float m_Attenuation;
 		float m_OuterRadius;
 		float m_InnerRadius;
 
 		float MaxDrawDistance;
+
+		TRefCountPtr<class RenderTexture2D> CachedShadowmap;
+		StaticShadowDepthMapData CachedShadowmapData;
 
 		class SpotLightSceneProxy* m_SpotLightSceneProxy;
 
@@ -68,6 +84,8 @@ namespace Drn
 
 		virtual void DrawEditorDefault() override;
 		virtual void DrawEditorSelected() override;
+
+		bool bRequiredStaticShadowmapBake = false;
 #endif
 	
 	private:

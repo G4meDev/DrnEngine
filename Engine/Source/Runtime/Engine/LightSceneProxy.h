@@ -10,6 +10,8 @@ namespace Drn
 	public:
 		virtual ~LightSceneProxy();
 
+		inline class LightComponent* GetLightComponent() { return m_LightComponent; }
+
 		inline bool IsMarkedPendingKill() const { return bPendingDestory; }
 		inline void MarkPendingKill() { bPendingDestory = true; }
 
@@ -20,6 +22,11 @@ namespace Drn
 
 		virtual void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) = 0;
 		virtual void RenderShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) = 0;
+
+#if WITH_EDITOR
+		virtual void BakeShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) = 0;
+		virtual bool RequiresShadowBake() const = 0;
+#endif
 
 		virtual void UpdateResources( class D3D12CommandList* CommandList ) = 0;
 

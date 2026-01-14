@@ -31,14 +31,17 @@ namespace Drn
 			Ar >> m_OuterRadius;
 			Ar >> m_InnerRadius;
 			Ar >> MaxDrawDistance;
+
+			Ar >> CachedShadowmapData;
 		}
 		else
 		{
 			Ar << m_Attenuation;
 			Ar << m_OuterRadius;
 			Ar << m_InnerRadius;
-
 			Ar << MaxDrawDistance;
+
+			Ar << CachedShadowmapData;
 		}
 	}
 
@@ -48,6 +51,16 @@ namespace Drn
 		if (m_SpotLightSceneProxy)
 		{
 			m_SpotLightSceneProxy->MaxDrawDistance = MaxDrawDistance;
+		}
+	}
+
+	void SpotLightComponent::SetCastStaticShadow( bool bInCastShadow )
+	{
+		LightComponent::SetCastStaticShadow(bInCastShadow);
+
+		if (!bCastStaticShadow)
+		{
+			InvalidateCachedShadow();
 		}
 	}
 
@@ -87,10 +100,25 @@ namespace Drn
 		MarkRenderStateDirty();
 	}
 
+	void SpotLightComponent::SetStatic( bool bInStatic )
+	{
+		LightComponent::SetStatic(bInStatic);
+
+		if (!bInStatic) { InvalidateCachedShadow(); }
+	}
+
 #if WITH_EDITOR
 	void SpotLightComponent::DrawDetailPanel( float DeltaTime )
 	{
 		LightComponent::DrawDetailPanel(DeltaTime);
+
+		if (ImGui::Button("BakeShadowmap"))
+		{
+			if (CanUseStaticShadowmap())
+			{
+				bRequiredStaticShadowmapBake = true;
+			}
+		}
 
 		float Color[3] = { m_LightColor.GetX(), m_LightColor.GetY(), m_LightColor.GetZ() };
 		if (ImGui::ColorEdit3("Color", Color))
