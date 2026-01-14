@@ -30,12 +30,28 @@ namespace Drn
 		{
 			Ar >> m_Radius;
 			Ar >> MaxDrawDistance;
+
+			Ar >> CachedShadowmapData;
 		}
 
 		else
 		{
 			Ar << m_Radius;
 			Ar << MaxDrawDistance;
+
+			Ar << CachedShadowmapData;
+		}
+	}
+
+	void PointLightComponent::UploadCachedShadowmap( D3D12CommandList* CmdList )
+	{
+		if (!CachedShadowmap && CanUseStaticShadowmap() && !CachedShadowmapData.DepthSamples.empty())
+		{
+			drn_check(CachedShadowmapData.ShadowMapSizeX * CachedShadowmapData.ShadowMapSizeY * 6 == CachedShadowmapData.DepthSamples.size());
+
+			RenderResourceCreateInfo ShadowmapCubemapCreateInfo( CachedShadowmapData.DepthSamples.data(), nullptr, ClearValueBinding::DepthOne, "PointLightCachedShadowmap" );
+			CachedShadowmap = RenderTextureCube::Create(CmdList, CachedShadowmapData.ShadowMapSizeX, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+				(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), ShadowmapCubemapCreateInfo);
 		}
 	}
 
@@ -99,10 +115,39 @@ namespace Drn
 		}
 	}
 
+	void PointLightComponent::SetStatic( bool bInStatic )
+	{
+		LightComponent::SetStatic(bInStatic);
+
+		if (!bInStatic)
+		{
+			InvalidateCachedShadow();
+		}
+	}
+
+	void PointLightComponent::SetCastStaticShadow( bool bInCastShadow )
+	{
+		LightComponent::SetCastStaticShadow(bInCastShadow);
+
+		if (!bInCastShadow)
+		{
+			InvalidateCachedShadow();
+		}
+	}
+
 #if WITH_EDITOR
 	void PointLightComponent::DrawDetailPanel( float DeltaTime )
 	{
 		LightComponent::DrawDetailPanel(DeltaTime);
+
+		if (ImGui::Button("BakeShadowmap"))
+		{
+			if (CanUseStaticShadowmap())
+			{
+				InvalidateCachedShadow();
+				bRequiredStaticShadowmapBake = true;
+			}
+		}
 
 		float Color[3] = { m_LightColor.GetX(), m_LightColor.GetY(), m_LightColor.GetZ() };
 		if (ImGui::ColorEdit3("Color", Color))

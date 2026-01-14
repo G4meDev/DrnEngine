@@ -81,11 +81,6 @@ namespace Drn
 		DepthSamples.clear();
 	}
 
-	bool StaticShadowDepthMapData::IsValid() const
-	{
-		return !DepthSamples.empty() && (ShadowMapSizeX * ShadowMapSizeY == DepthSamples.size());
-	}
-
 	Archive& operator<<( Archive& Ar, StaticShadowDepthMapData& ShadowMap )
 	{
 		//Ar << ShadowMap.WorldToLight;

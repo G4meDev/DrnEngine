@@ -119,7 +119,7 @@ namespace Drn
 	void DirectionalLightSceneProxy::AllocateShadowmap( D3D12CommandList* CommandList )
 	{
 		RenderResourceCreateInfo ShadowmapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "DirectionalLightShadowmap" );
-		m_ShadowmapResource = RenderTexture2DArray::Create(Renderer::Get()->GetCommandList_Temp(), DIRECTIONAL_SHADOW_SIZE, DIRECTIONAL_SHADOW_SIZE, m_CascadeCount, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+		m_ShadowmapResource = RenderTexture2DArray::Create(CommandList, DIRECTIONAL_SHADOW_SIZE, DIRECTIONAL_SHADOW_SIZE, m_CascadeCount, DXGI_FORMAT_D16_UNORM, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCreateInfo);
 
 		m_ShadowmapViews.clear();

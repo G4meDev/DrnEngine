@@ -55,7 +55,6 @@ namespace Drn
 		{}
 
 		void Empty();
-		bool IsValid() const;
 
 		//size_t GetAllocatedSize() const
 		//{

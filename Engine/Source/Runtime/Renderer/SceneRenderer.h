@@ -163,14 +163,16 @@ namespace Drn
 		void KickstartScreenReprojection( ScreenReprojectionEvent& Event );
 		std::vector<ScreenReprojectionEvent> m_ScreenReprojectionQueue;
 
-		struct SpotlightCachedShadowReadbackEvent
+		struct CachedShadowmapReadbackEvent
 		{
 			uint64 FenceValue;
-			class SpotLightComponent* TargetComponent;
-			TRefCountPtr<RenderTexture2D> ReadbackBuffer;
+			bool Spotlight;
+			class LightComponent* TargetComponent;
+			TRefCountPtr<RenderTexture2D> ReadbackBuffer2D;
+			TRefCountPtr<RenderTextureCube> ReadbackBufferCube;
 		};
 
-		std::vector<SpotlightCachedShadowReadbackEvent> SpotlightCachedShadowmapEvents;
+		std::vector<CachedShadowmapReadbackEvent> CachedShadowmapReadbackEvents;
 
 		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
 		std::shared_ptr<class EditorPrimitiveRenderBuffer> m_EditorPrimitiveBuffer;

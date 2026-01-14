@@ -137,7 +137,7 @@ namespace Drn
 
 		TRefCountPtr<RenderTexture2D>& BakeTarget = m_SpotLightComponent->GetCachedShadowmap();
 		RenderResourceCreateInfo ShadowmapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "SpotLightBakeShadowmap" );
-		BakeTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+		BakeTarget = RenderTexture2D::Create(CommandList, SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCreateInfo);
 
 		bool bWasCastingShadow = m_CastShadow;
@@ -220,7 +220,7 @@ namespace Drn
 	void SpotLightSceneProxy::AllocateShadowmap( D3D12CommandList* CommandList )
 	{
 		RenderResourceCreateInfo ShadowmapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "SpotLightShadowmap" );
-		m_ShadowmapResource = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+		m_ShadowmapResource = RenderTexture2D::Create(CommandList, SPOTLIGHT_SHADOW_SIZE, SPOTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCreateInfo);
 	}
 
@@ -247,6 +247,8 @@ namespace Drn
 			m_InnerRadius = Math::DegreesToRadians(m_SpotLightComponent->GetInnerRadius());
 			m_OuterRadius = Math::DegreesToRadians(m_SpotLightComponent->GetOutterRadius());
 			m_DepthBias = m_SpotLightComponent->GetDepthBias();
+
+			m_SpotLightComponent->UploadCachedShadowmap(CommandList);
 		}
 
 		if (m_CastShadow && !m_ShadowmapResource)
@@ -257,15 +259,6 @@ namespace Drn
 		else if (!m_CastShadow && m_ShadowmapResource)
 		{
 			ReleaseShadowmap();
-		}
-
-		// TODO: move to spotlight component
-		if (!m_SpotLightComponent->GetCachedShadowmap() && m_SpotLightComponent->CanUseStaticShadowmap() && m_SpotLightComponent->GetCachedShadowmapData().IsValid())
-		{
-			RenderResourceCreateInfo TextureCreateInfo( m_SpotLightComponent->GetCachedShadowmapData().DepthSamples.data(), nullptr, ClearValueBinding::Black, "SpotlightStaticShadowDepthmap" );
-			m_SpotLightComponent->GetCachedShadowmap() = RenderTexture2D::Create(CommandList, m_SpotLightComponent->GetCachedShadowmapData().ShadowMapSizeX,
-				m_SpotLightComponent->GetCachedShadowmapData().ShadowMapSizeY, DXGI_FORMAT_D16_UNORM, 1, 1, true,
-				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
 		}
 	}
 

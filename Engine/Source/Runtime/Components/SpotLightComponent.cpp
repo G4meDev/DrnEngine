@@ -45,6 +45,18 @@ namespace Drn
 		}
 	}
 
+	void SpotLightComponent::UploadCachedShadowmap( D3D12CommandList* CmdList )
+	{
+		if (!CachedShadowmap && CanUseStaticShadowmap() && !CachedShadowmapData.DepthSamples.empty())
+		{
+			drn_check(CachedShadowmapData.ShadowMapSizeX * CachedShadowmapData.ShadowMapSizeY == CachedShadowmapData.DepthSamples.size());
+
+			RenderResourceCreateInfo TextureCreateInfo( CachedShadowmapData.DepthSamples.data(), nullptr, ClearValueBinding::Black, "SpotlightStaticShadowDepthmap" );
+			CachedShadowmap = RenderTexture2D::Create(CmdList, CachedShadowmapData.ShadowMapSizeX, CachedShadowmapData.ShadowMapSizeY, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
+		}
+	}
+
 	void SpotLightComponent::SetMaxDrawDistance( float InMaxDrawDistance )
 	{
 		MaxDrawDistance = InMaxDrawDistance;
@@ -116,6 +128,7 @@ namespace Drn
 		{
 			if (CanUseStaticShadowmap())
 			{
+				InvalidateCachedShadow();
 				bRequiredStaticShadowmapBake = true;
 			}
 		}

@@ -56,10 +56,21 @@ namespace Drn
 
 			CommandList->SetViewport(0 ,0, 0, POINTLIGHT_SHADOW_SIZE, POINTLIGHT_SHADOW_SIZE, 1);
 
-			CommandList->TransitionResourceWithTracking(m_ShadowCubemapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
-			CommandList->FlushBarriers();
+			if (bCastStaticShadow && m_PointLightComponent->GetCachedShadowmap())
+			{
+				CommandList->CopyTexture(m_PointLightComponent->GetCachedShadowmap(), m_ShadowCubemapResource, CopyTextureInfo());
 
-			CommandList->ClearDepthTexture(m_ShadowCubemapResource, EDepthStencilViewType::DepthWrite, true, false);
+				CommandList->TransitionResourceWithTracking(m_ShadowCubemapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				CommandList->FlushBarriers();
+			}
+			else
+			{
+				CommandList->TransitionResourceWithTracking(m_ShadowCubemapResource->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
+				CommandList->FlushBarriers();
+
+				CommandList->ClearDepthTexture(m_ShadowCubemapResource, EDepthStencilViewType::DepthWrite, true, false);
+			}
+
 			D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_ShadowCubemapResource->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
 			CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &Handle);
 
@@ -76,29 +87,103 @@ namespace Drn
 
 			ShadowDepthBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ShadowDepthData), EUniformBufferUsage::SingleFrame, &m_ShadowDepthData);
 
-			CommandList->SetGraphicRootConstant(ShadowDepthBuffer->GetViewIndex(), 6);
-
-			DirectX::BoundingSphere LightSphereBound(*m_WorldPosition.Get(), m_Radius);
-
-			for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
+			if (bCastDynamicShadow)
 			{
-				drn_check(Proxy);
-				BoxSphereBounds PrimitiveBound = Proxy->GetBounds();
-				DirectX::BoundingSphere PrimitiveSphereBound(*PrimitiveBound.Origin.Get(), PrimitiveBound.SphereRadius);
-				bool bIsVisible = LightSphereBound.Contains(PrimitiveSphereBound) != DISJOINT;
+				CommandList->SetGraphicRootConstant(ShadowDepthBuffer->GetViewIndex(), 6);
 
-				if (bIsVisible)
+				DirectX::BoundingSphere LightSphereBound(*m_WorldPosition.Get(), m_Radius);
+
+				for (BitArray::ConstSetBitIterator It(Renderer->GetScene()->GetDynamicPrimitiveProxiesMap()); It; ++It)
 				{
-					Proxy->RenderShadowPass(CommandList, Renderer, this);
+					PrimitiveSceneProxy* Proxy = Renderer->GetScene()->GetPrimitiveProxies()[It.GetIndex()];
+					drn_check(Proxy);
+					BoxSphereBounds PrimitiveBound = Proxy->GetBounds();
+					DirectX::BoundingSphere PrimitiveSphereBound(*PrimitiveBound.Origin.Get(), PrimitiveBound.SphereRadius);
+					bool bIsVisible = LightSphereBound.Contains(PrimitiveSphereBound) != DISJOINT;
+
+					if (bIsVisible)
+					{
+						Proxy->RenderShadowPass(CommandList, Renderer, this);
+					}
 				}
 			}
 		}
 	}
 
+#if WITH_EDITOR
+	void PointLightSceneProxy::BakeShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	{
+		Renderer::Get()->MarkFrameForCapture();
+
+		bool bWasCastingShadow = m_CastShadow;
+		m_CastShadow = true;
+
+		UpdateResources(CommandList);
+
+		RenderResourceCreateInfo ShadowmapCubemapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "PointLightCachedShadowmap" );
+		m_PointLightComponent->GetCachedShadowmap() = RenderTextureCube::Create(CommandList, POINTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCubemapCreateInfo);
+
+		CommandList->SetViewport(0 ,0, 0, POINTLIGHT_SHADOW_SIZE, POINTLIGHT_SHADOW_SIZE, 1);
+
+		CommandList->TransitionResourceWithTracking(m_PointLightComponent->GetCachedShadowmap()->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		CommandList->FlushBarriers();
+
+		CommandList->ClearDepthTexture(m_PointLightComponent->GetCachedShadowmap(), EDepthStencilViewType::DepthWrite, true, false);
+		D3D12_CPU_DESCRIPTOR_HANDLE Handle = m_PointLightComponent->GetCachedShadowmap()->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets(0, nullptr, false, &Handle);
+
+		CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[0], Vector::RightVector, Vector::UpVector);
+		CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[1], Vector::LeftVector, Vector::UpVector);
+		CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[2], Vector::UpVector, Vector::BackwardVector);
+		CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[3], Vector::DownVector, Vector::ForwardVector);
+		CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[4], Vector::ForwardVector, Vector::UpVector);
+		CalculateLocalToProjectionForDirection(m_ShadowDepthData.WorldToProjectionMatrices[5], Vector::BackwardVector, Vector::UpVector);
+
+		m_ShadowDepthData.DepthBias = m_DepthBias;
+		m_ShadowDepthData.InvShadowResolution = 1.0f / POINTLIGHT_SHADOW_SIZE;
+		m_ShadowDepthData.ShadowmapTextureIndex = m_PointLightComponent->GetCachedShadowmap()->GetShaderResourceView()->GetDescriptorHeapIndex();
+
+		ShadowDepthBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ShadowDepthData), EUniformBufferUsage::SingleFrame, &m_ShadowDepthData);
+
+		CommandList->SetGraphicRootConstant(ShadowDepthBuffer->GetViewIndex(), 6);
+
+		DirectX::BoundingSphere LightSphereBound(*m_WorldPosition.Get(), m_Radius);
+
+		for (BitArray::ConstSetBitIterator It(Renderer->GetScene()->GetStaticPrimitiveProxiesMap()); It; ++It)
+		{
+			PrimitiveSceneProxy* Proxy = Renderer->GetScene()->GetPrimitiveProxies()[It.GetIndex()];
+			drn_check(Proxy);
+
+			BoxSphereBounds PrimitiveBound = Proxy->GetBounds();
+			DirectX::BoundingSphere PrimitiveSphereBound(*PrimitiveBound.Origin.Get(), PrimitiveBound.SphereRadius);
+			bool bIsVisible = LightSphereBound.Contains(PrimitiveSphereBound) != DISJOINT;
+
+			if (bIsVisible)
+			{
+				Proxy->RenderShadowPass(CommandList, Renderer, this);
+			}
+		}
+
+		if (!bWasCastingShadow)
+		{
+			m_CastShadow = false;
+			ReleaseShadowmap();
+		}
+
+		m_PointLightComponent->ClearRequiredShadowBake();
+	}
+
+	bool PointLightSceneProxy::RequiresShadowBake() const
+	{
+		return m_PointLightComponent && m_PointLightComponent->CanUseStaticShadowmap() && m_PointLightComponent->IsRequiredShadowBake();
+	}
+#endif
+
 	void PointLightSceneProxy::AllocateShadowmap( D3D12CommandList* CommandList )
 	{
 		RenderResourceCreateInfo ShadowmapCubemapCreateInfo( nullptr, nullptr, ClearValueBinding::DepthOne, "PointLightShadowmap" );
-		m_ShadowCubemapResource = RenderTextureCube::Create(Renderer::Get()->GetCommandList_Temp(), POINTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
+		m_ShadowCubemapResource = RenderTextureCube::Create(CommandList, POINTLIGHT_SHADOW_SIZE, DXGI_FORMAT_D16_UNORM, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), ShadowmapCubemapCreateInfo);
 	}
 
@@ -120,6 +205,8 @@ namespace Drn
 
 			m_Radius = m_PointLightComponent->GetRadius();
 			m_DepthBias = m_PointLightComponent->GetDepthBias();
+
+			m_PointLightComponent->UploadCachedShadowmap(CommandList);
 		}
 
 		if (m_CastShadow && !m_ShadowCubemapResource)

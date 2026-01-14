@@ -7,6 +7,8 @@
 
 namespace Drn
 {
+	class D3D12CommandList;
+
 	class SpotLightComponent : public LightComponent
 	{
 	public:
@@ -14,6 +16,8 @@ namespace Drn
 		virtual ~SpotLightComponent();
 	
 		virtual void Serialize( Archive& Ar ) override;
+
+		void UploadCachedShadowmap(D3D12CommandList* CmdList);
 
 		inline Vector GetDirection() const { return GetWorldRotation().GetVector(); }
 		inline float GetAttenuation() const { return m_Attenuation; }
@@ -59,7 +63,7 @@ namespace Drn
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 		virtual void SetStatic(bool bInStatic) override;
 
-		void InvalidateCachedShadow() { CachedShadowmap = nullptr; CachedShadowmapData.Empty(); }
+		void InvalidateCachedShadow() { CachedShadowmap = nullptr; CachedShadowmapData.Empty(); MarkRenderStateDirty(); }
 
 		float m_Attenuation;
 		float m_OuterRadius;
