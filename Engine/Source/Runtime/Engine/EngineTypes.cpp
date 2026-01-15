@@ -62,6 +62,7 @@ namespace Drn
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::DecalActor				, DecalActor );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::Pawn					, Pawn );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::Character				, Character );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::SphereReflectionCapture, SphereReflectionCapture );
 
 	}
 

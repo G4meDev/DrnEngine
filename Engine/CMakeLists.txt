@@ -54,6 +54,11 @@ set( HEADER_FILES
 	Source/Runtime/Engine/PostProcessVolume.h
 	Source/Runtime/Engine/InputManager.h
 	Source/Runtime/Engine/CameraTypes.h
+	Source/Runtime/Engine/ReflectionCapture.h
+	Source/Runtime/Engine/ReflectionCaptureComponent.h
+	Source/Runtime/Engine/ReflectionCaptureProxy.h
+	Source/Runtime/Engine/SphereReflectionCapture.h
+	Source/Runtime/Engine/SphereReflectionCaptureComponent.h
 
 	Source/Runtime/GameFramework/Pawn.h
 	Source/Runtime/GameFramework/Character.h
@@ -276,7 +281,12 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/PostProcessVolume.cpp
 	Source/Runtime/Engine/InputManager.cpp
 	Source/Runtime/Engine/CameraTypes.cpp
-	
+	Source/Runtime/Engine/ReflectionCapture.cpp
+	Source/Runtime/Engine/ReflectionCaptureComponent.cpp
+	Source/Runtime/Engine/ReflectionCaptureProxy.cpp
+	Source/Runtime/Engine/SphereReflectionCapture.cpp
+	Source/Runtime/Engine/SphereReflectionCaptureComponent.cpp
+
 	Source/Runtime/GameFramework/Pawn.cpp
 	Source/Runtime/GameFramework/Character.cpp
 	Source/Runtime/GameFramework/Controller.cpp

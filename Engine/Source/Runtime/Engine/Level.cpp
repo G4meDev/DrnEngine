@@ -106,6 +106,7 @@ namespace Drn
 			ActorType = static_cast<EActorType>(ActorTypeByte);
 
 			Actor* NewActor = EngineTypes::Get()->m_ActorSerializationMap[ActorType](InWorld, Ar);
+			drn_check(NewActor);
 		}
 	
 	}

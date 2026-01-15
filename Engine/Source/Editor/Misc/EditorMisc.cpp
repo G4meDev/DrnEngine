@@ -4,6 +4,7 @@
 #include "Runtime/Engine/SpotLightActor.h"
 #include "Runtime/Engine/PostProcessVolume.h"
 #include "Runtime/Engine/DecalActor.h"
+#include "Runtime/Engine/SphereReflectionCapture.h"
 
 #if WITH_EDITOR
 
@@ -24,6 +25,7 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( DirectionalLightActor	, Light );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( PostProcessVolume		, Volume );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( DecalActor				, Volume );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( SphereReflectionCapture	, Volume );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Pawn					, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Character				, Player );
 	}
