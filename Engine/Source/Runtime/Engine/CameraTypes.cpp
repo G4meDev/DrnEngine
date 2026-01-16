@@ -23,7 +23,8 @@ namespace Drn
 		FocusPointOffset = XMVector3Rotate(FocusPointOffset, Rotation.Get());
 		XMVECTOR m_FocusPoint = XMLoadFloat3(Location.Get()) + FocusPointOffset;
 
-		return XMMatrixLookAtLH( XMLoadFloat3(Location.Get()), m_FocusPoint, XMLoadFloat3(Vector::UpVector.Get()));
+		XMVECTOR UpVector = XMLoadFloat3(Rotation.GetUpAxis().Get());
+		return XMMatrixLookAtLH( XMLoadFloat3(Location.Get()), m_FocusPoint, UpVector);
 	}
 
 	Matrix ViewInfo::CalculateProjectionMatrix() const

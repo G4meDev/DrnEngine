@@ -45,7 +45,7 @@ namespace Drn
 
 		inline static Quat Multiply( const Quat& Q1, const Quat& Q2 ) { return XMQuaternionMultiply(Q2.Get(), Q1.Get()); }
 
-		inline Quat Normalize() { return Quat(XMQuaternionNormalize(Get())); }
+		inline void Normalize() { *this = Quat(XMQuaternionNormalize(Get())); }
 
 		inline bool Equals( const Quat& Other, float Tolerance = KINDA_SMALL_NUMBER ) const
 		{
@@ -93,6 +93,7 @@ namespace Drn
 		}
 
 		static Quat Identity;
+		static Quat CubeFaceOrientation[6];
 
 #if WITH_EDITOR
 		void Draw(const std::string& id);

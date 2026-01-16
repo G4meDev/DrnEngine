@@ -9,6 +9,16 @@ namespace Drn
 {
 	Quat Quat::Identity = Quat();
 
+	Quat Quat::CubeFaceOrientation[6] =
+	{
+		Quat(Vector::UpVector		, XM_PIDIV2),	// direction: right		, up: up
+		Quat(Vector::UpVector		, -XM_PIDIV2),	// direction: left		, up: up
+		Quat(Vector::LeftVector		, XM_PIDIV2),	// direction: up		, up: backward
+		Quat(Vector::LeftVector		, -XM_PIDIV2),	// direction: down		, up: forward
+		Quat(Vector::ForwardVector	, 0),			// direction: forward	, up: up
+		Quat(Vector::UpVector		, XM_PI),		// direction: backward	, up: up
+	};
+
 #if WITH_EDITOR
 	void Quat::Draw(const std::string& id)
 	{

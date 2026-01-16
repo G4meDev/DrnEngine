@@ -64,6 +64,11 @@ namespace Drn
 
 	}
 
+	void CameraActor::CalcCamera( struct ViewInfo& OutResult )
+	{
+		m_CameraComponenet->GetCameraView(OutResult);
+	}
+
 #if WITH_EDITOR
 	void CameraActor::ApplyViewportInput( const ViewportCameraInputHandler& CameraInput,
 		float CameraMovementSpeed, float CameraRotationSpeed )

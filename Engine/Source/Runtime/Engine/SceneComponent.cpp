@@ -379,7 +379,7 @@ namespace Drn
 		ImGui::DragFloat4( "Rotation", TempVector, 0.01f);
 		Quat NewRotation = Quat( TempVector[0], TempVector[1], TempVector[2], TempVector[3]);
 
-		NewRotation = NewRotation.Normalize();
+		NewRotation = NewRotation.GetNormalized();
 
 // scale
 // -------------------------------------------------------------------------------------------

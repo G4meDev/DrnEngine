@@ -89,6 +89,8 @@ namespace Drn
 		inline void SetName( const std::string& Name ) { m_Name = Name; }
 		inline const std::string& GetName() const { return m_Name; }
 
+		inline void SetViewTarget(Actor* InTarget) { ActiveViewTarget = InTarget; };
+		void GetViewInfo(ViewInfo& Info);
 		inline const SceneRendererView& GetSceneView() { return m_SceneView; }
 
 		void CopyRenderBuffer(TRefCountPtr<RenderTexture2D>& Target, ERenderBufferCopySource CopySource);
@@ -151,6 +153,7 @@ namespace Drn
 		void ResolvePostProcessSettings();
 		class PostProcessSettings* m_PostProcessSettings;
 
+		Actor* ActiveViewTarget;
 		void UpdateViewBuffer();
 
 #if WITH_EDITOR

@@ -36,6 +36,7 @@ namespace Drn
 		, m_CachedRenderSize(1920, 1080)
 		, m_CommandList(nullptr)
 		, m_FrameIndex(0)
+		, ActiveViewTarget(nullptr)
 	{
 		Init();
 	}
@@ -975,6 +976,18 @@ namespace Drn
 		m_RenderingEnabled = Enabled;
 	}
 
+	void SceneRenderer::GetViewInfo(ViewInfo& Info)
+	{
+		if (ActiveViewTarget)
+		{
+			ActiveViewTarget->CalcCamera(Info);
+		}
+		else
+		{
+			Info = m_Scene->GetWorld()->GetPlayerWorldView();
+		}
+	}
+
 	void SceneRenderer::CopyRenderBuffer( TRefCountPtr<RenderTexture2D>& Target, ERenderBufferCopySource CopySource )
 	{
 		RenderBufferCopyEvent Event;
@@ -1004,7 +1017,8 @@ namespace Drn
 		Matrix PrevViewMatrix = m_SceneView.WorldToView;
 		Matrix PrevProjectionMatrix = m_SceneView.ViewToProjection;
 
-		ViewInfo VInfo = m_Scene->GetWorld()->GetPlayerWorldView();
+		ViewInfo VInfo;
+		GetViewInfo(VInfo);
 		VInfo.AspectRatio = (float) GetViewportSize().X / GetViewportSize().Y;
 
 		m_SceneView.AspectRatio = VInfo.AspectRatio;

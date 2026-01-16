@@ -242,10 +242,26 @@ namespace Drn
 		{
 			if (Renderer::Get()->GetFence()->IsFenceComplete(Event.CaptureFenceValue))
 			{
+				Renderer::Get()->MarkFrameForCapture();
 				NumResolvedCaptureEvents++;
-				ReleaseSceneRenderer(Event.CaptureSceneRenderer);
 
+				const uint32 CaptureSize = Event.Targets[0]->GetSizeX();
+				RenderResourceCreateInfo CaptureCubemapCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "BakeReflectionCaptureCube" );
+				TRefCountPtr<RenderTextureCube> CaptureCubemap = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+					(ETextureCreateFlags)(ETextureCreateFlags::UAV | ETextureCreateFlags::ShaderResource), CaptureCubemapCreateInfo);
 
+				for (int32 i = 0; i < 6; i++)
+				{
+					ReleaseSceneRenderer(Event.CaptureSceneRenderers[i]);
+					Event.CaptureCameras[i]->Destroy();
+
+					CopyTextureInfo CopyInfo;
+					CopyInfo.Size = IntVector(CaptureSize, CaptureSize, 1);
+					CopyInfo.SourceSliceIndex = 0;
+					CopyInfo.DestSliceIndex = i;
+					CopyInfo.NumSlices = 1;
+					CommandList->CopyTexture(Event.Targets[i], CaptureCubemap, CopyInfo);
+				}
 			}
 		}
 		if (NumResolvedCaptureEvents > 0)
@@ -261,42 +277,40 @@ namespace Drn
 
 			if (CaptureComponent->GetWorld() == GetWorld())
 			{
-				Renderer::Get()->MarkFrameForCapture();
+				//Renderer::Get()->MarkFrameForCapture();
 
 				It = ReflectionCaptures.erase(It);
 				CaptureComponent->ClearNeedRecapture();
 
+				ReflectionCaptureEvent Event;
+				Event.CaptureFenceValue = Renderer::Get()->GetFence()->GetCurrentFence();
+
 				for (int32 i = 0; i < 6; i++)
 				{
-					ReflectionCaptureEvent Event;
-					Event.CaptureFenceValue = Renderer::Get()->GetFence()->GetCurrentFence();
-					Event.FaceIndex = i;
-
 					// TODO: make renderer capture only single frame. right now it captures num back buffers
-					Event.CaptureSceneRenderer = AllocateSceneRenderer();
-					Event.CaptureSceneRenderer->ResizeViewDeferred(IntPoint(REFLECTION_CAPTURE_SIZE));
+					Event.CaptureSceneRenderers[i] = AllocateSceneRenderer();
+					Event.CaptureSceneRenderers[i]->ResizeViewDeferred(IntPoint(REFLECTION_CAPTURE_SIZE));
 
-					// TODO: add flag to scene renderer
+					// TODO: add flag to scene renderer. also for disabling post process effect e.g. ssr, ssao, ...
 					GetWorld()->SetGameMode(true);
 
-					CameraActor* ViewportCamera = GetWorld()->GetViewportCamera();
-					ViewportCamera->GetCameraComponent()->m_FOV = 45.0f;
-
-					// TODO: add alternate view for scene
-					Quat CameraRotation = Quat::Identity;
-					CameraRotation = CameraRotation * Quat(Vector::UpVector, XM_PIDIV2);
-					ViewportCamera->SetActorRotation( CameraRotation );
+					Event.CaptureCameras[i] = GetWorld()->SpawnActor<CameraActor>();
+					Event.CaptureCameras[i]->SetTransient(true);
+					Event.CaptureSceneRenderers[i]->SetViewTarget(Event.CaptureCameras[i]);
+					Event.CaptureCameras[i]->GetCameraComponent()->m_FOV = 90.0f;
 
 					Vector CameraPosition = CaptureComponent->GetWorldLocation();
-					ViewportCamera->SetActorLocation( CameraPosition );
+					Event.CaptureCameras[i]->SetActorLocation( CameraPosition );
+					Event.CaptureCameras[i]->SetActorRotation( Quat::CubeFaceOrientation[i] );
 
-					RenderResourceCreateInfo CreateInfo(nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "ReflectionCaptureBakeTarget");
-					Event.Target = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), REFLECTION_CAPTURE_SIZE, REFLECTION_CAPTURE_SIZE, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+					RenderResourceCreateInfo CreateInfo(nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, std::format("ReflectionCaptureBakeTarget_{}", i));
+					Event.Targets[i] = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), REFLECTION_CAPTURE_SIZE, REFLECTION_CAPTURE_SIZE, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
 						(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), CreateInfo);
 
-					Event.CaptureSceneRenderer->CopyRenderBuffer(Event.Target, ERenderBufferCopySource::FinalColorPretonemap);
-					ReflectionCaptureEvents.push_back(Event);
+					Event.CaptureSceneRenderers[i]->CopyRenderBuffer(Event.Targets[i], ERenderBufferCopySource::FinalColorPretonemap);
 				}
+
+				ReflectionCaptureEvents.push_back(Event);
 			}
 
 			else

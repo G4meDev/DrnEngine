@@ -76,10 +76,10 @@ namespace Drn
 #if WITH_EDITOR
 		struct ReflectionCaptureEvent
 		{
-			SceneRenderer* CaptureSceneRenderer;
-			TRefCountPtr<class RenderTexture2D> Target;
 			uint64 CaptureFenceValue;
-			int32 FaceIndex;
+			SceneRenderer* CaptureSceneRenderers[6];
+			TRefCountPtr<class RenderTexture2D> Targets[6];
+			class CameraActor* CaptureCameras[6];
 		};
 		std::vector<ReflectionCaptureEvent> ReflectionCaptureEvents;
 #endif

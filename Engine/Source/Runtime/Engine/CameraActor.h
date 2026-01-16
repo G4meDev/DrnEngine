@@ -19,6 +19,8 @@ namespace Drn
 
 		inline virtual EActorType GetActorType() override { return EActorType::CameraActor; }
 
+		virtual void CalcCamera( struct ViewInfo& OutResult ) override;
+
 #if WITH_EDITOR
 		void ApplyViewportInput( const ViewportCameraInputHandler& CameraInput, float CameraMovementSpeed,
 			float CameraRotationSpeed );
