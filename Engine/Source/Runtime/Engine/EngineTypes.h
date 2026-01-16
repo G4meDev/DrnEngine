@@ -2,6 +2,8 @@
 
 #include "ForwardTypes.h"
 
+#define REFLECTION_CAPTURE_SIZE 128
+
 namespace Drn
 {
 	enum class EActorType : uint16
@@ -42,6 +44,12 @@ namespace Drn
 		SkyLight,
 	};
 
+	enum class ERenderBufferCopySource
+	{
+		FinalColor,
+		FinalColorPretonemap
+	};
+
 	class StaticShadowDepthMapData
 	{
 	public:
@@ -64,6 +72,24 @@ namespace Drn
 		//}
 		friend Archive& operator<<(Archive& Ar, StaticShadowDepthMapData& ShadowMap);
 		friend Archive& operator>>(Archive& Ar, StaticShadowDepthMapData& ShadowMap);
+	};
+
+	class ReflectionCaptureData
+	{
+	public:
+		int32 CubemapSize;
+		//float AverageBrightness;
+
+		std::vector<uint8> SamplesData;
+
+		ReflectionCaptureData()
+			: CubemapSize(0)
+		{}
+
+		void Empty();
+
+		friend Archive& operator<<(Archive& Ar, ReflectionCaptureData& CaptureData);
+		friend Archive& operator>>(Archive& Ar, ReflectionCaptureData& CaptureData);
 	};
 
 	class Actor;

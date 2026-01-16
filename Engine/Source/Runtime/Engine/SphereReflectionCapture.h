@@ -16,6 +16,7 @@ namespace Drn
 		inline SphereReflectionCaptureComponent* GetSphereReflectionCapture() const { return m_SphereReflectionCaptureComponent.get(); }
 
 		virtual EActorType GetActorType() override { return EActorType::SphereReflectionCapture; }
+		static EActorType GetActorTypeStatic() { return EActorType::SphereReflectionCapture; }
 
 	protected:
 		std::unique_ptr<SphereReflectionCaptureComponent> m_SphereReflectionCaptureComponent;

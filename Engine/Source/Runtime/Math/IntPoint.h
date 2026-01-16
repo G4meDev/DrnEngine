@@ -21,6 +21,7 @@ namespace Drn
 		IntPoint operator/(float R) const;
 		
 		void operator=(const IntPoint& R);
+		const bool operator==( const IntPoint& R ) const;
 		const bool operator!=(const IntPoint& R) const;
 
 		static IntPoint ComponentWiseMax( const IntPoint& A, const IntPoint& B );

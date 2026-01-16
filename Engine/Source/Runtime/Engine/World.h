@@ -143,6 +143,9 @@ namespace Drn
 		template<typename T>
 		T* GetActorFromClass();
 
+		//template<typename T>
+		//std::vector<T*> GetAllActorsFromClass();
+
 		std::set<Actor*> m_Actors;
 
 		// actors added in middle of frame get added to actor list at start of next frame
@@ -210,4 +213,17 @@ namespace Drn
 		return nullptr;
 	}
 
+	//template<typename T>
+	//std::vector<T*> World::GetAllActorsFromClass()
+	//{
+	//	std::vector<T*> Result;
+	//
+	//	for (Actor* A : m_Actors)
+	//	{
+	//		if (A->GetActorType() == T::GetActorTypeStatic())
+	//			Result.push_back(A);
+	//	}
+	//
+	//	return Result;
+	//}
 }

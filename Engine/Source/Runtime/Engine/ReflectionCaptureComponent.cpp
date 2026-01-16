@@ -3,6 +3,8 @@
 
 namespace Drn
 {
+	std::set<ReflectionCaptureComponent*> ReflectionCaptureComponent::ReflectionCapturesToUpdate;
+
 	ReflectionCaptureComponent::ReflectionCaptureComponent()
 		: SceneComponent()
 		, Brightness(1.0f)
@@ -24,11 +26,15 @@ namespace Drn
 		{
 			Ar >> Brightness;
 			Ar >> CaptureOffset;
+
+			Ar >> CachedData;
 		}
 		else
 		{
 			Ar << Brightness;
 			Ar << CaptureOffset;
+
+			Ar << CachedData;
 		}
 	}
 
@@ -55,6 +61,11 @@ namespace Drn
 	{
 		SceneComponent::DrawDetailPanel(DeltaTime);
 
+		if (ImGui::Button("Capture"))
+		{
+			MarkNeedRecapture();
+		}
+
 		ImGui::DragFloat("Brightness", &Brightness, 0.1f, 0.5f, 4.0f);
 		CaptureOffset.Draw("CaptureOffset");
 	}
@@ -63,5 +74,6 @@ namespace Drn
 	{
 		SceneComponent::SetSelectedInEditor(SelectedInEditor);
 	}
+
 #endif
 }  // namespace Drn

@@ -117,4 +117,42 @@ namespace Drn
 		return Ar;
 	}
 
-        }
+	void ReflectionCaptureData::Empty()
+	{
+		CubemapSize = 0;
+		SamplesData.clear();
+	}
+
+	Archive& operator<<( Archive& Ar, ReflectionCaptureData& CaptureData )
+	{
+		Ar << CaptureData.CubemapSize;
+
+		uint32 SamplesDataCount = CaptureData.SamplesData.size();
+		Ar << SamplesDataCount;
+
+		for (uint32 i = 0; i < SamplesDataCount; i++)
+		{
+			Ar << CaptureData.SamplesData[i];
+		}
+
+		return Ar;
+	}
+
+	Archive& operator>>(Archive& Ar, ReflectionCaptureData& CaptureData)
+	{
+		Ar >> CaptureData.CubemapSize;
+
+		uint32 SamplesDataCount;
+		Ar >> SamplesDataCount;
+		CaptureData.SamplesData.resize(SamplesDataCount);
+
+		for (uint32 i = 0; i < SamplesDataCount; i++)
+		{
+			Ar >> CaptureData.SamplesData[i];
+		}
+
+		return Ar;
+	}
+
+
+        }  // namespace Drn

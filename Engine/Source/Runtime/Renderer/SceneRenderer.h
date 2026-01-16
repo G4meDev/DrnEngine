@@ -91,6 +91,8 @@ namespace Drn
 
 		inline const SceneRendererView& GetSceneView() { return m_SceneView; }
 
+		void CopyRenderBuffer(TRefCountPtr<RenderTexture2D>& Target, ERenderBufferCopySource CopySource);
+
 #if WITH_EDITOR
 		OnPickedComponentDelegate OnPickedComponent;
 		void QueueMousePickEvent( const IntPoint& ScreenPosition );
@@ -171,8 +173,14 @@ namespace Drn
 			TRefCountPtr<RenderTexture2D> ReadbackBuffer2D;
 			TRefCountPtr<RenderTextureCube> ReadbackBufferCube;
 		};
-
 		std::vector<CachedShadowmapReadbackEvent> CachedShadowmapReadbackEvents;
+
+		struct RenderBufferCopyEvent
+		{
+			TRefCountPtr<RenderTexture2D> Target;
+			ERenderBufferCopySource CopySource;
+		};
+		std::vector<RenderBufferCopyEvent> RenderBufferCopyEvents;
 
 		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
 		std::shared_ptr<class EditorPrimitiveRenderBuffer> m_EditorPrimitiveBuffer;
@@ -210,6 +218,8 @@ namespace Drn
 		void PostProcess_SceneDownSample();
 		void PostProcess_Bloom();
 		void PostProcess_Tonemapping();
+
+		void ResolveRenderBufferCopyEvents();
 
 #if WITH_EDITOR
 		void RenderEditorPrimitives();

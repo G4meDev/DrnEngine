@@ -73,5 +73,15 @@ namespace Drn
 
 	private:
 
+#if WITH_EDITOR
+		struct ReflectionCaptureEvent
+		{
+			SceneRenderer* CaptureSceneRenderer;
+			TRefCountPtr<class RenderTexture2D> Target;
+			uint64 CaptureFenceValue;
+			int32 FaceIndex;
+		};
+		std::vector<ReflectionCaptureEvent> ReflectionCaptureEvents;
+#endif
 	};
 }

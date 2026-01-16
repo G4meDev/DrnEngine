@@ -108,7 +108,6 @@ namespace Drn
 			Actor* NewActor = EngineTypes::Get()->m_ActorSerializationMap[ActorType](InWorld, Ar);
 			drn_check(NewActor);
 		}
-	
 	}
 
 

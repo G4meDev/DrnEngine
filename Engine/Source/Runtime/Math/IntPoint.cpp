@@ -55,6 +55,11 @@ namespace Drn
 		Y = R.Y;
 	}
 
+	const bool IntPoint::operator==( const IntPoint& R ) const
+	{
+		return (X == R.X && Y == R.Y);
+	}
+
 	const bool IntPoint::operator!=(const IntPoint& R) const
 	{
 		return (X != R.X || Y != R.Y);

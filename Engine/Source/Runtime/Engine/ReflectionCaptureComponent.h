@@ -9,15 +9,10 @@ namespace Drn
 
 	class ReflectionCaptureComponent : public SceneComponent
 	{
+	public:
+
 		//ReflectionCaptureProxy* SceneProxy;
-
 		//ReflectionCaptureProxy* CreateSceneProxy();
-
-		//void MarkDirtyForRecaptureOrUpload();
-
-		//void MarkDirtyForRecapture();
-
-		//void SetCaptureCompleted() { bNeedsRecaptureOrUpload = false; }
 
 		//virtual float GetInfluenceBoundingRadius() const;
 
@@ -25,6 +20,14 @@ namespace Drn
 		//static void UpdateReflectionCaptureContents(UWorld* WorldToUpdate, const TCHAR* CaptureReason = nullptr, bool bVerifyOnlyCapturing = false, bool bCapturingForMobile = false);
 
 		//static int32 GetReflectionCaptureSize();
+
+#if WITH_EDITOR
+		void MarkNeedRecapture() { bNeedsRecapture = true; ReflectionCapturesToUpdate.insert(this); }
+		void ClearNeedRecapture() { bNeedsRecapture = false; }
+		bool NeedsRecapture() const { return bNeedsRecapture; }
+
+		static std::set<ReflectionCaptureComponent*>& GetReflectionCapturesToUpdate() { return ReflectionCapturesToUpdate; }
+#endif
 
 	protected:
 		ReflectionCaptureComponent();
@@ -40,20 +43,20 @@ namespace Drn
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+
+		bool bNeedsRecapture = false;
+		static std::set<ReflectionCaptureComponent*> ReflectionCapturesToUpdate;
 #endif
 
 		float Brightness;
 		Vector CaptureOffset;
 
+		ReflectionCaptureData CachedData;
+
 	private:
 
-		//bool bNeedsRecaptureOrUpload;
+		TRefCountPtr<RenderTextureCube> CachedCubemap;
 
-		//RenderTextureCube* CachedEncodedHDRCubemap;
-
-		//static TArray<UReflectionCaptureComponent*> ReflectionCapturesToUpdate;
-
-		//static TArray<UReflectionCaptureComponent*> ReflectionCapturesToUpdateForLoad;
 
 		friend class ReflectionCaptureProxy;
 	};

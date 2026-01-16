@@ -898,6 +898,8 @@ namespace Drn
 		RenderReflection();
 		RenderPostProcess();
 
+		ResolveRenderBufferCopyEvents();
+
 #if WITH_EDITOR
 		RenderEditorPrimitives();
 		RenderEditorSelection();
@@ -971,6 +973,15 @@ namespace Drn
 	void SceneRenderer::SetRenderingEnabled( bool Enabled )
 	{
 		m_RenderingEnabled = Enabled;
+	}
+
+	void SceneRenderer::CopyRenderBuffer( TRefCountPtr<RenderTexture2D>& Target, ERenderBufferCopySource CopySource )
+	{
+		RenderBufferCopyEvent Event;
+		Event.Target = Target;
+		Event.CopySource = CopySource;
+
+		RenderBufferCopyEvents.push_back(Event);
 	}
 
 	void SceneRenderer::RecalculateView()
@@ -1135,6 +1146,27 @@ namespace Drn
 			LightVisibilityMap.SetBitNoCheck(Index, bIsVisible);
 			Index++;
 		}
+	}
+
+	void SceneRenderer::ResolveRenderBufferCopyEvents()
+	{
+		for (RenderBufferCopyEvent& Event : RenderBufferCopyEvents)
+		{
+			if (Event.CopySource == ERenderBufferCopySource::FinalColorPretonemap)
+			{
+				drn_check(Event.Target && Event.Target->GetFormat() == GBUFFER_COLOR_DEFERRED_FORMAT);
+				drn_check(Event.Target->GetSizeXY() == GetViewportSize());
+
+				m_CommandList->CopyTexture(m_GBuffer->m_ColorDeferredTarget, Event.Target, CopyTextureInfo());
+			}
+
+			else
+			{
+				drn_check(false);
+			}
+		}
+
+		RenderBufferCopyEvents.clear();
 	}
 
 #if WITH_EDITOR
