@@ -1,5 +1,7 @@
 #include "Common.hlsl"
 
+#define MAX_REFLECTION_CAPTURE_COUNT 32
+
 struct Resources
 {
     uint ViewBufferIndex;
@@ -35,6 +37,15 @@ struct ViewBuffer
     uint FrameIndexMod8;
 };
 
+struct ReflectionCaptureData
+{
+    uint ReflectionTexture;
+    float3 Padding;
+    
+    float4 PositionRadius;
+    float4 OffsetBrightness;
+};
+
 struct SSRData
 {
     uint BaseColorTexture;
@@ -51,7 +62,10 @@ struct SSRData
     uint SkyLightMipCount;
     
     uint SkyIradianceCubemapTexture;
-    
+    uint NumReflectionCaptures;
+    float2 Pad_1;
+
+    ReflectionCaptureData CaptureData[MAX_REFLECTION_CAPTURE_COUNT];
 };
 
 struct StaticSamplers
@@ -163,6 +177,40 @@ float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
     return F0 + (max(float3(a.xxx), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
+float3 GetLookupVectorForSphereCapture(float3 ReflectionVector, float3 WorldPosition, float4 SphereCapturePositionAndRadius, float NormalizedDistanceToCapture, float3 LocalCaptureOffset, inout float DistanceAlpha)
+{
+	float3 ProjectedCaptureVector = ReflectionVector;
+	float ProjectionSphereRadius = SphereCapturePositionAndRadius.w;
+	float SphereRadiusSquared = ProjectionSphereRadius * ProjectionSphereRadius;
+
+	float3 LocalPosition = WorldPosition - SphereCapturePositionAndRadius.xyz;
+	float LocalPositionSqr = dot(LocalPosition, LocalPosition);
+
+	// Find the intersection between the ray along the reflection vector and the capture's sphere
+	float3 QuadraticCoef;
+	QuadraticCoef.x = 1;
+	QuadraticCoef.y = dot(ReflectionVector, LocalPosition);
+	QuadraticCoef.z = LocalPositionSqr - SphereRadiusSquared;
+
+	float Determinant = QuadraticCoef.y * QuadraticCoef.y - QuadraticCoef.z;
+
+	// Only continue if the ray intersects the sphere
+	[flatten]
+	if (Determinant >= 0)
+	{
+		float FarIntersection = sqrt(Determinant) - QuadraticCoef.y;
+
+		float3 LocalIntersectionPosition = LocalPosition + FarIntersection * ReflectionVector;
+		ProjectedCaptureVector = LocalIntersectionPosition - LocalCaptureOffset;
+		// Note: some compilers don't handle smoothstep min > max (this was 1, .6)
+		//DistanceAlpha = 1.0 - smoothstep(.6, 1, NormalizedDistanceToCapture);
+
+		float x = saturate( 2.5 * NormalizedDistanceToCapture - 1.5 );
+		DistanceAlpha = 1 - x*x*(3 - 2*x);
+	}
+	return ProjectedCaptureVector;
+}
+
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];
@@ -227,25 +275,69 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float SpecularOcclusion = GetSpecularOcclusion(NoV, RoughnessSq, CombinedAO);
 
     float3 LightDiffuse = SSRBuffer.SkyLightColor;
-    float3 Iraddiance = SSRBuffer.SkyLightColor;
         
     float3 F = fresnelSchlickRoughness(max(dot(WorldNormal, -CameraToPixel), 0.0), SpecularColor, Roughness);
     float3 kS = F;
     float3 kD = 1 - kS;
     kD *= 1.0f - Metallic;
     
+    float Mip = ComputeReflectionCaptureMipFromRoughness(Roughness, 7);
+    float4 ImageBasedReflections = float4(0, 0, 0, 1.0f);
+    float3 RayDirection = ReflectionVector;
+    
+    for(uint CaptureIndex = 0; CaptureIndex < SSRBuffer.NumReflectionCaptures; CaptureIndex++)
+    {
+        if(ImageBasedReflections.a < 0.001f)
+        {
+            break;
+        }
+        
+        float4 CapturePositionAndRadius = SSRBuffer.CaptureData[CaptureIndex].PositionRadius;
+        float3 CaptureVector = WorldPosition - CapturePositionAndRadius.xyz;
+        float CaptureVectorLength = sqrt(dot(CaptureVector, CaptureVector));
+        float NormalizedDistanceToCapture = saturate(CaptureVectorLength / CapturePositionAndRadius.w);
+        
+        [branch]
+		if (CaptureVectorLength < CapturePositionAndRadius.w)
+		{
+            float3 ProjectedCaptureVector = RayDirection;
+            float4 CaptureOffsetAndAverageBrightness = SSRBuffer.CaptureData[CaptureIndex].OffsetBrightness;
+
+			float DistanceAlpha = 0;
+			
+			ProjectedCaptureVector = GetLookupVectorForSphereCapture(RayDirection, WorldPosition, CapturePositionAndRadius, NormalizedDistanceToCapture, CaptureOffsetAndAverageBrightness.xyz, DistanceAlpha);
+
+			{
+                TextureCube ReflectionCubemap = ResourceDescriptorHeap[SSRBuffer.CaptureData[CaptureIndex].ReflectionTexture];
+				float4 Sample = ReflectionCubemap.SampleLevel(LinearSampler, ProjectedCaptureVector, Mip);
+
+				//Sample.rgb *= CaptureProperties.r;
+				Sample *= DistanceAlpha;
+
+				// Under operator (back to front)
+				ImageBasedReflections.rgb += Sample.rgb * ImageBasedReflections.a * SpecularOcclusion;
+				//ImageBasedReflections.a *= 1 - Sample.a;
+				ImageBasedReflections.a = 0.0f;
+
+				//float AverageBrightness = CaptureOffsetAndAverageBrightness.w;
+				//CompositedAverageBrightness.x += AverageBrightness * DistanceAlpha * CompositedAverageBrightness.y;
+				//CompositedAverageBrightness.y *= 1 - DistanceAlpha;
+			}
+		}
+    }
+    
     [branch]
     if(SSRBuffer.SkyCubemapTexture != 0)
     {
         half MipLevel = ComputeReflectionCaptureMipFromRoughness(Roughness, SSRBuffer.SkyLightMipCount);
-        Iraddiance *= SkyCubemapImage.SampleLevel(LinearSampler, ReflectionVector, MipLevel).xyz;
+        ImageBasedReflections.rgb += ImageBasedReflections.a * SSRBuffer.SkyLightColor * SkyCubemapImage.SampleLevel(LinearSampler, ReflectionVector, MipLevel).xyz;
         
         LightDiffuse *= SkyIradianceCubemapTexture.SampleLevel(LinearSampler, WorldNormal, 0).rgb;
     }
     float3 DiffuseTerm = LightDiffuse * kD * DiffueColor;
 
-    Iraddiance *= (1 - SSR.a) * SpecularOcclusion;
-    SpecularTerm += Iraddiance;
+    ImageBasedReflections.rgb *= (1 - SSR.a) * SpecularOcclusion;
+    SpecularTerm += ImageBasedReflections.rgb;
     float3 BRDF = EnvBRDF(SpecularColor, Roughness, NoV, PreintegeratedGFImage, LinearClampSampler);
     //float3 BRDF = EnvBRDFApprox(SpecularColor, Roughness, NoV);
     //float3 BRDF = EnvBRDFApproxNonmetal(Roughness, NoV);

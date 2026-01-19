@@ -6,6 +6,7 @@
 #include "Runtime/Renderer/RenderBuffer/RenderBufferAO.h"
 
 #include "Runtime/Engine/SkyLightSceneProxy.h"
+#include "Runtime/Engine/ReflectionCaptureProxy.h"
 
 namespace Drn
 {
@@ -251,6 +252,22 @@ namespace Drn
 
 	void ReflectionEnvironmentBuffer::MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		uint32 ReflectionCaptureIndex = 0;
+		for (ReflectionCaptureProxy* Proxy : Renderer->GetScene()->GetReflectionCaptureProxies())
+		{
+			drn_check(ReflectionCaptureIndex < MAX_REFLECTION_CAPTURE_COUNT);
+			if (Proxy->CubemapIndex != 0)
+			{
+				m_Data.CaptureData[ReflectionCaptureIndex].ReflectionTexture = Proxy->CubemapIndex;
+				m_Data.CaptureData[ReflectionCaptureIndex].PositionRadius = Vector4(Proxy->Position, Proxy->InfluenceRadius);
+				m_Data.CaptureData[ReflectionCaptureIndex].OffsetBrightness = Vector4(Proxy->CaptureOffset, Proxy->Brightness);
+
+				ReflectionCaptureIndex++;
+			}
+		}
+
+		m_Data.NumReflectionCaptures = ReflectionCaptureIndex;
+
 		m_Data.BaseColorTexture = Renderer->m_GBuffer->m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.WorldNormalTexture = Renderer->m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.MasksTexture = Renderer->m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();

@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "ReflectionCaptureComponent.h"
+#include "Runtime/Engine/ReflectionCaptureProxy.h"
 
 namespace Drn
 {
@@ -7,6 +8,7 @@ namespace Drn
 
 	ReflectionCaptureComponent::ReflectionCaptureComponent()
 		: SceneComponent()
+		, SceneProxy(nullptr)
 		, Brightness(1.0f)
 		, CaptureOffset(Vector::ZeroVector)
 	{
@@ -42,12 +44,18 @@ namespace Drn
 	{
 		SceneComponent::RegisterComponent(InOwningWorld);
 
+		SceneProxy = new ReflectionCaptureProxy( this );
+		InOwningWorld->GetScene()->RegisterReflectionCaptureProxy(SceneProxy);
 	}
 
 	void ReflectionCaptureComponent::UnRegisterComponent()
 	{
+		if (SceneProxy)
+		{
+			SceneProxy->MarkPendingDestroy();
+		}
+
 		SceneComponent::UnRegisterComponent();
-		
 	}
 
 	void ReflectionCaptureComponent::OnUpdateTransform( bool SkipPhysic )

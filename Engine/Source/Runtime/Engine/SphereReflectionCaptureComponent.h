@@ -13,7 +13,7 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 
-		//inline virtual float GetInfluenceBoundingRadius() const override { return InfluenceRadius; }
+		inline virtual float GetInfluenceBoundingRadius() const override { return InfluenceRadius; }
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;

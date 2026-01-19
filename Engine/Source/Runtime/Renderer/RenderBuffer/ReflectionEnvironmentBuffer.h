@@ -5,9 +5,21 @@
 
 namespace Drn
 {
+
 	struct ReflectionEnvironmentData
 	{
 	public:
+		struct ReflectionCaptureData
+		{
+			ReflectionCaptureData() = default;
+
+			uint32 ReflectionTexture;
+			Vector Padding;
+
+			Vector4 PositionRadius;
+			Vector4 OffsetBrightness;
+		};
+
 		ReflectionEnvironmentData() = default;
 
 		uint32 BaseColorTexture;
@@ -24,6 +36,10 @@ namespace Drn
 		uint32 SkyLightMipCount;
 
 		uint32 SkyIradianceCubemapTexture;
+		uint32 NumReflectionCaptures;
+		IntPoint Pad_1;
+
+		ReflectionCaptureData CaptureData[MAX_REFLECTION_CAPTURE_COUNT];
 	};
 
 	class ReflectionEnvironmentBuffer : public RenderBuffer

@@ -6,20 +6,18 @@
 namespace Drn
 {
 	class RenderTextureCube;
+	class ReflectionCaptureProxy;
 
 	class ReflectionCaptureComponent : public SceneComponent
 	{
 	public:
 
-		//ReflectionCaptureProxy* SceneProxy;
-		//ReflectionCaptureProxy* CreateSceneProxy();
+		ReflectionCaptureProxy* SceneProxy;
 
-		//virtual float GetInfluenceBoundingRadius() const;
+		virtual float GetInfluenceBoundingRadius() const = 0;
 
-		/** Called each tick to recapture and queued reflection captures. */
-		//static void UpdateReflectionCaptureContents(UWorld* WorldToUpdate, const TCHAR* CaptureReason = nullptr, bool bVerifyOnlyCapturing = false, bool bCapturingForMobile = false);
-
-		//static int32 GetReflectionCaptureSize();
+		inline TRefCountPtr<RenderTextureCube>& GetCachedCubemap() { return CachedCubemap; }
+		inline ReflectionCaptureData& GetCachedData() { return CachedData; }
 
 #if WITH_EDITOR
 		void MarkNeedRecapture() { bNeedsRecapture = true; ReflectionCapturesToUpdate.insert(this); }
@@ -56,7 +54,6 @@ namespace Drn
 	private:
 
 		TRefCountPtr<RenderTextureCube> CachedCubemap;
-
 
 		friend class ReflectionCaptureProxy;
 	};

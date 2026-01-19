@@ -7,6 +7,7 @@
 #include "Runtime/Engine/DecalSceneProxy.h"
 
 #include "Runtime/Engine/ReflectionCaptureComponent.h"
+#include "Runtime/Engine/ReflectionCaptureProxy.h"
 
 LOG_DEFINE_CATEGORY( LogScene, "Scene" );
 
@@ -207,6 +208,39 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------
 
+		std::erase_if( m_ReflectionCaptureProxies, [CommandList](ReflectionCaptureProxy* Proxy)
+		{
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingDestroy())
+			{
+				delete Proxy;
+				return true;
+			}
+
+			Proxy->UpdateResources(CommandList);
+			return false;
+		});
+
+		for (auto it = m_PendingReflectionCaptureProxies.begin(); it != m_PendingReflectionCaptureProxies.end(); it++)
+		{
+			ReflectionCaptureProxy* Proxy = *it;
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingDestroy())
+			{
+				delete Proxy;
+			}
+			else
+			{
+				Proxy->UpdateResources(CommandList);
+				m_ReflectionCaptureProxies.push_back(Proxy);
+			}
+		}
+		m_PendingReflectionCaptureProxies.clear();
+
+// ----------------------------------------------------------------------------------
+
 		for (auto it = m_PendingPostProcessProxies.begin(); it != m_PendingPostProcessProxies.end(); it++)
 		{
 			m_PostProcessProxies.insert(*it);
@@ -262,6 +296,15 @@ namespace Drn
 					CopyInfo.NumSlices = 1;
 					CommandList->CopyTexture(Event.Targets[i], CaptureCubemap, CopyInfo);
 				}
+
+				RenderResourceCreateInfo ReflectionCaptureCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "ReflectionCaptureCube" );
+				Event.TargetComponent->GetCachedCubemap() = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), ReflectionCaptureCreateInfo);
+
+				CommandList->CopyTexture(CaptureCubemap, Event.TargetComponent->GetCachedCubemap(), CopyTextureInfo());
+
+				CommandList->TransitionResourceWithTracking(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				CommandList->FlushBarriers();
 			}
 		}
 		if (NumResolvedCaptureEvents > 0)
@@ -283,6 +326,7 @@ namespace Drn
 				CaptureComponent->ClearNeedRecapture();
 
 				ReflectionCaptureEvent Event;
+				Event.TargetComponent = CaptureComponent;
 				Event.CaptureFenceValue = Renderer::Get()->GetFence()->GetCurrentFence();
 
 				for (int32 i = 0; i < 6; i++)
@@ -334,6 +378,11 @@ namespace Drn
 	void Scene::RegisterSkyLightProxy( SkyLightSceneProxy* InLightProxy )
 	{
 		m_PendingSkyLightProxies.push_back(InLightProxy);
+	}
+
+	void Scene::RegisterReflectionCaptureProxy( class ReflectionCaptureProxy* InReflectionCaptureProxy )
+	{
+		m_PendingReflectionCaptureProxies.push_back(InReflectionCaptureProxy);
 	}
 
 	void Scene::RegisterPostProcessProxy( class PostProcessSceneProxy* InProxy )

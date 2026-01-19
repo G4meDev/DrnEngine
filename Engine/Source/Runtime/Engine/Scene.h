@@ -29,6 +29,7 @@ namespace Drn
 		void RegisterPrimitiveProxy(PrimitiveSceneProxy* InPrimitiveSceneProxy);
 		void RegisterLightProxy( class LightSceneProxy* InLightProxy );
 		void RegisterSkyLightProxy( class SkyLightSceneProxy* InLightProxy );
+		void RegisterReflectionCaptureProxy( class ReflectionCaptureProxy* InReflectionCaptureProxy );
 
 		void RegisterPostProcessProxy( class PostProcessSceneProxy* InProxy );
 		void UnRegisterPostProcessProxy( class PostProcessSceneProxy* InProxy );
@@ -38,6 +39,7 @@ namespace Drn
 
 		inline const std::vector<PrimitiveSceneProxy*>& GetPrimitiveProxies() { return m_PrimitiveProxies; };
 		inline const std::vector<LightSceneProxy*>& GetLightProxies() { return m_LightProxies; };
+		inline const std::vector<ReflectionCaptureProxy*>& GetReflectionCaptureProxies() { return m_ReflectionCaptureProxies; };
 
 		inline const BitArray& GetStaticPrimitiveProxiesMap() { return StaticPrimitiveMap; };
 		inline const BitArray& GetDynamicPrimitiveProxiesMap() { return DynamicPrimitiveMap; };
@@ -54,6 +56,9 @@ namespace Drn
 
 		std::vector<class SkyLightSceneProxy*> m_SkyLightProxies;
 		std::vector<class SkyLightSceneProxy*> m_PendingSkyLightProxies;
+
+		std::vector<class ReflectionCaptureProxy*> m_ReflectionCaptureProxies;
+		std::vector<class ReflectionCaptureProxy*> m_PendingReflectionCaptureProxies;
 
 		std::set<class PostProcessSceneProxy*> m_PostProcessProxies;
 		std::set<class PostProcessSceneProxy*> m_PendingPostProcessProxies;
@@ -77,6 +82,7 @@ namespace Drn
 		struct ReflectionCaptureEvent
 		{
 			uint64 CaptureFenceValue;
+			class ReflectionCaptureComponent* TargetComponent;
 			SceneRenderer* CaptureSceneRenderers[6];
 			TRefCountPtr<class RenderTexture2D> Targets[6];
 			class CameraActor* CaptureCameras[6];
