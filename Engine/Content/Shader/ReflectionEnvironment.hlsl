@@ -316,8 +316,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
 
 				// Under operator (back to front)
 				ImageBasedReflections.rgb += Sample.rgb * ImageBasedReflections.a * SpecularOcclusion;
-				//ImageBasedReflections.a *= 1 - Sample.a;
-				ImageBasedReflections.a = 0.0f;
+				ImageBasedReflections.a *= 1 - Sample.a;
 
 				//float AverageBrightness = CaptureOffsetAndAverageBrightness.w;
 				//CompositedAverageBrightness.x += AverageBrightness * DistanceAlpha * CompositedAverageBrightness.y;

@@ -320,7 +320,7 @@ namespace Drn
 
 			if (CaptureComponent->GetWorld() == GetWorld())
 			{
-				//Renderer::Get()->MarkFrameForCapture();
+				Renderer::Get()->MarkFrameForCapture();
 
 				It = ReflectionCaptures.erase(It);
 				CaptureComponent->ClearNeedRecapture();
