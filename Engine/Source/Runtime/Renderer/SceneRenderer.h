@@ -20,6 +20,35 @@ namespace Drn
 		EShowCollision = 1
 	};
 
+	struct ViewShowFlags
+	{
+		ViewShowFlags()
+			: AntiAliasing(true)
+			, Decals(true)
+			, StaticMeshes(true)
+			, Lighting(true)
+			, Bloom(true)
+			, SkyLighting(true)
+			, AmbientOcclusion(true)
+			, DynamicLighting(true)
+			, ReflectionEnvironment(true)
+			, ScreenSpaceReflection(true)
+			, Game(false)
+		{}
+
+		bool AntiAliasing : 1;
+		bool Decals : 1;
+		bool StaticMeshes : 1;
+		bool Lighting : 1;
+		bool Bloom : 1;
+		bool SkyLighting : 1;
+		bool AmbientOcclusion : 1;
+		bool DynamicLighting : 1;
+		bool ReflectionEnvironment : 1;
+		bool ScreenSpaceReflection : 1;
+		bool Game : 1;
+	};
+
 	struct MousePickEvent
 	{
 		MousePickEvent( const IntPoint& InScreenPos )
@@ -72,7 +101,7 @@ namespace Drn
 		SceneRenderer(Scene* InScene);
 		virtual ~SceneRenderer();
 
-		inline Scene* GetScene() { return m_Scene; }
+		inline Scene* GetScene() const { return m_Scene; }
 
 		void Render();
 
@@ -94,6 +123,10 @@ namespace Drn
 		inline const SceneRendererView& GetSceneView() { return m_SceneView; }
 
 		void CopyRenderBuffer(TRefCountPtr<RenderTexture2D>& Target, ERenderBufferCopySource CopySource);
+
+		inline ViewShowFlags& GetShowFlags() { return ShowFlags; }
+
+		inline bool IsGameView() const;
 
 #if WITH_EDITOR
 		OnPickedComponentDelegate OnPickedComponent;
@@ -155,6 +188,8 @@ namespace Drn
 
 		Actor* ActiveViewTarget;
 		void UpdateViewBuffer();
+
+		ViewShowFlags ShowFlags;
 
 #if WITH_EDITOR
 		void RenderHitProxyPass();

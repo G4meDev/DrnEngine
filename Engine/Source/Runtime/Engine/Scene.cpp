@@ -336,7 +336,7 @@ namespace Drn
 					Event.CaptureSceneRenderers[i]->ResizeViewDeferred(IntPoint(REFLECTION_CAPTURE_SIZE));
 
 					// TODO: add flag to scene renderer. also for disabling post process effect e.g. ssr, ssao, ...
-					GetWorld()->SetGameMode(true);
+					Event.CaptureSceneRenderers[i]->GetShowFlags().Game = true;
 
 					Event.CaptureCameras[i] = GetWorld()->SpawnActor<CameraActor>();
 					Event.CaptureCameras[i]->SetTransient(true);

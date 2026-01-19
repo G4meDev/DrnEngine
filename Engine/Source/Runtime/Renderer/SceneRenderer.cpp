@@ -241,13 +241,13 @@ namespace Drn
 		m_HitProxyRenderBuffer->Clear( m_CommandList);
 		m_HitProxyRenderBuffer->Bind(m_CommandList);
 
-		const bool IsGameMode = GetScene()->GetWorld()->IsInGameMode();
+		const bool bGameView = IsGameView();
 
 		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 		{
 			PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
 
-			if (!IsGameMode || (IsGameMode && !Proxy->IsEditorPrimitive()))
+			if ( !bGameView || ( bGameView && !Proxy->IsEditorPrimitive() ) )
 			{
 				Proxy->RenderHitProxyPass(m_CommandList, this);
 			}
@@ -715,7 +715,9 @@ namespace Drn
 		m_EditorPrimitiveBuffer->Clear(m_CommandList);
 		m_EditorPrimitiveBuffer->Bind(m_CommandList);
 
-		if (!GetScene()->GetWorld()->IsInGameMode())
+		const bool bGameView = IsGameView();
+
+		if (!bGameView)
 		{
 			for (PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies)
 			{
@@ -757,11 +759,11 @@ namespace Drn
 		m_EditorSelectionBuffer->Clear(m_CommandList);
 		m_EditorSelectionBuffer->Bind(m_CommandList);
 
-		const bool IsGameMode = GetScene()->GetWorld()->IsInGameMode();
+		const bool bGameView = IsGameView();
 
 		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
 		{
-			if (!IsGameMode || (IsGameMode && !Proxy->IsEditorPrimitive()) )
+			if (!bGameView || (bGameView && !Proxy->IsEditorPrimitive()) )
 			{
 				Proxy->RenderSelectionPass( m_CommandList, this);
 			}
@@ -995,6 +997,11 @@ namespace Drn
 		Event.CopySource = CopySource;
 
 		RenderBufferCopyEvents.push_back(Event);
+	}
+
+	bool SceneRenderer::IsGameView() const
+	{
+		return ShowFlags.Game || GetScene()->GetWorld()->IsInGameMode();
 	}
 
 	void SceneRenderer::RecalculateView()
