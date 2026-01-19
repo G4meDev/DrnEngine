@@ -335,13 +335,16 @@ namespace Drn
 					Event.CaptureSceneRenderers[i] = AllocateSceneRenderer();
 					Event.CaptureSceneRenderers[i]->ResizeViewDeferred(IntPoint(REFLECTION_CAPTURE_SIZE));
 
-					// TODO: add flag to scene renderer. also for disabling post process effect e.g. ssr, ssao, ...
+					// TODO: add flag for static lighting only
 					Event.CaptureSceneRenderers[i]->GetShowFlags().Game = true;
+					Event.CaptureSceneRenderers[i]->GetShowFlags().AmbientOcclusion = false;
+					Event.CaptureSceneRenderers[i]->GetShowFlags().ReflectionEnvironment = false;
 
 					Event.CaptureCameras[i] = GetWorld()->SpawnActor<CameraActor>();
 					Event.CaptureCameras[i]->SetTransient(true);
 					Event.CaptureSceneRenderers[i]->SetViewTarget(Event.CaptureCameras[i]);
 					Event.CaptureCameras[i]->GetCameraComponent()->m_FOV = 90.0f;
+					Event.CaptureCameras[i]->GetCameraComponent()->m_ClipMax = Event.TargetComponent->GetMaxCaptureDistance();
 
 					Vector CameraPosition = CaptureComponent->GetWorldLocation();
 					Event.CaptureCameras[i]->SetActorLocation( CameraPosition );

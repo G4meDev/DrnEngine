@@ -361,6 +361,11 @@ namespace Drn
 
 	void SceneRenderer::RenderAO()
 	{
+		if (!ShouldRenderAmbientOcclusion())
+		{
+			return;
+		}
+
 		SCOPED_GPU_STAT(m_CommandList, "RenderAO");
 		SCOPE_STAT();
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "AO" );
@@ -427,8 +432,12 @@ namespace Drn
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "LightPass" );
 
-		m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
-		m_CommandList->FlushBarriers();
+		RenderTexture2D* TargetSSAOTexture = CommonResources::Get()->m_WhiteTexture;
+		if (ShouldRenderAmbientOcclusion())
+		{
+			m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+			TargetSSAOTexture = m_AOBuffer->m_AOTarget;
+		}
 
 		m_CommandList->SetGraphicPipelineState(CommonResources::Get()->m_LightPassPSO->m_PSO);
 
@@ -441,7 +450,7 @@ namespace Drn
 		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 4);
 		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 5);
 		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 6);
-		m_CommandList->SetGraphicRootConstant(m_AOBuffer->m_AOTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
+		m_CommandList->SetGraphicRootConstant(TargetSSAOTexture->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
 		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_MasksBTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 9);
 
 		for (BitArray::ConstSetBitIterator It(LightVisibilityMap); It; ++It)
@@ -455,6 +464,11 @@ namespace Drn
 
 	void SceneRenderer::RenderSSR()
 	{
+		if (!ShouldRenderScreenSpaceReflections())
+		{
+			return;
+		}
+
 		SCOPED_GPU_STAT(m_CommandList, "RenderSSR");
 		SCOPE_STAT();
 
@@ -487,6 +501,11 @@ namespace Drn
 
 	void SceneRenderer::RenderReflection()
 	{
+		if (!ShouldRenderEnvironmentReflections())
+		{
+			return;
+		}
+
 		SCOPED_GPU_STAT(m_CommandList, "RenderReflection");
 		SCOPE_STAT();
 
@@ -496,15 +515,22 @@ namespace Drn
 
 		m_ReflectionEnvironmentBuffer->MapBuffer(m_CommandList, this);
 		
+		if (ShouldRenderAmbientOcclusion())
+		{
+			m_CommandList->TransitionResourceWithTracking( m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
+		}
+
+		if (ShouldRenderScreenSpaceReflections())
+		{
+			m_CommandList->TransitionResourceWithTracking(m_ScreenSpaceReflectionBuffer->m_Target->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		}
+
 		m_CommandList->TransitionResourceWithTracking( m_HZBBuffer->M_HZBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE );
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-		m_CommandList->TransitionResourceWithTracking(m_ScreenSpaceReflectionBuffer->m_Target->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_BaseColorTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_WorldNormalTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		m_CommandList->TransitionResourceWithTracking(m_AOBuffer->m_AOTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-		m_CommandList->FlushBarriers();
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_GBuffer->m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &DeferredColorHandle, true, NULL);
@@ -1004,6 +1030,21 @@ namespace Drn
 		return ShowFlags.Game || GetScene()->GetWorld()->IsInGameMode();
 	}
 
+	bool SceneRenderer::ShouldRenderAmbientOcclusion() const
+	{
+		return ShowFlags.AmbientOcclusion && m_PostProcessSettings->m_SSAOSettings.m_Intensity > 0.0f;
+	}
+
+	bool SceneRenderer::ShouldRenderEnvironmentReflections() const
+	{
+		return ShowFlags.ReflectionEnvironment;
+	}
+
+	bool SceneRenderer::ShouldRenderScreenSpaceReflections() const
+	{
+		return ShowFlags.ScreenSpaceReflection && m_PostProcessSettings->m_SSRSettings.m_Intensity > 0.0f && ShouldRenderEnvironmentReflections();
+	}
+
 	void SceneRenderer::RecalculateView()
 	{
 		SCOPE_STAT();
@@ -1015,7 +1056,7 @@ namespace Drn
 		m_SceneView.InvSizeX = 1.0f / m_SceneView.Size.X;
 		m_SceneView.InvSizeY = 1.0f / m_SceneView.Size.Y;
 
-		m_SceneView.PrevJitterOffset[0] = m_SceneView.JitterOffset[0];
+		m_SceneView.PrevJitterOffset[0] = m_SceneView.JitterOffset[0]; 
 		m_SceneView.PrevJitterOffset[1] = m_SceneView.JitterOffset[1];
 
 		m_SceneView.JitterOffset[0] = TAABuffer::m_JitterOffsets[m_SceneView.FrameIndexMod8].GetX() * m_SceneView.InvSizeX * m_PostProcessSettings->m_TAASettings.m_JitterOffsetScale;

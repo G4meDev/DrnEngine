@@ -265,16 +265,27 @@ namespace Drn
 				ReflectionCaptureIndex++;
 			}
 		}
-
 		m_Data.NumReflectionCaptures = ReflectionCaptureIndex;
+
+		RenderTexture2D* TargetSSAOTexture = CommonResources::Get()->m_WhiteTexture;
+		if (Renderer->ShouldRenderAmbientOcclusion())
+		{
+			TargetSSAOTexture = Renderer->m_AOBuffer->m_AOTarget;
+		}
+
+		RenderTexture2D* TargetSSRTexture = CommonResources::Get()->m_BlackTexture;
+		if (Renderer->ShouldRenderScreenSpaceReflections())
+		{
+			TargetSSRTexture = Renderer->m_ScreenSpaceReflectionBuffer->m_Target;
+		}
 
 		m_Data.BaseColorTexture = Renderer->m_GBuffer->m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.WorldNormalTexture = Renderer->m_GBuffer->m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.MasksTexture = Renderer->m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.DepthTexture = Renderer->m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
-		m_Data.SSRTexture = Renderer->m_ScreenSpaceReflectionBuffer->m_Target->GetShaderResourceView()->GetDescriptorHeapIndex();
+		m_Data.SSRTexture = TargetSSRTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.PreintegratedGFTexture = CommonResources::Get()->m_PreintegratedGF->GetShaderResourceView()->GetDescriptorHeapIndex();
-		m_Data.AOTexture = Renderer->m_AOBuffer->m_AOTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		m_Data.AOTexture = TargetSSAOTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
 
 		SkyLightSceneProxy* SkyProxy = Renderer->GetScene()->m_SkyLightProxies.size() > 0 ? *Renderer->GetScene()->m_SkyLightProxies.begin() : nullptr;
 		AssetHandle<TextureCube> SkyCubemap = SkyProxy ? SkyProxy->GetCubemap() : AssetHandle<TextureCube>();

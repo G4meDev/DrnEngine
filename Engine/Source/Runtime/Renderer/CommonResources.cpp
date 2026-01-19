@@ -1687,6 +1687,58 @@ namespace Drn
 				delete[] Bytes;
 			}
 		}
+
+		{
+			const DXGI_FORMAT Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			const uint32 Width = 32;
+			const uint32 RowPitch = Width * 4;
+
+			uint64 TextureMemorySize = 0;
+			D3D12_PLACED_SUBRESOURCE_FOOTPRINT Layout[6];
+			uint32 NumRow[6];
+			uint64 RowSizeInBytes[6];
+
+			D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Width, 6, 1);
+			Renderer::Get()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, 6, 0, Layout, NumRow, RowSizeInBytes, &TextureMemorySize);
+
+			uint8* Bytes = new uint8[TextureMemorySize];
+			memset(Bytes, 0, TextureMemorySize);
+
+			RenderResourceCreateInfo TextureCreateInfo( Bytes, nullptr, ClearValueBinding::Black, "T_BlackCubemap" );
+			m_BlackCubemap = RenderTextureCube::Create(CommandList, Width, Format, 1, 1, false,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), TextureCreateInfo);
+
+			delete[] Bytes;
+		}
+
+		{
+			const DXGI_FORMAT Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			const uint32 Width = 32;
+			const uint32 Height = 32;
+			const uint32 RowPitch = Width * 4;
+
+			uint64 TextureMemorySize = 0;
+			D3D12_PLACED_SUBRESOURCE_FOOTPRINT Layout;
+			uint32 NumRow;
+			uint64 RowSizeInBytes;
+
+			D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Tex2D(Format, Width, Height, 1, 1);
+			Renderer::Get()->GetD3D12Device()->GetCopyableFootprints(&Desc, 0, 1, 0, &Layout, &NumRow, &RowSizeInBytes, &TextureMemorySize);
+
+			uint8* Bytes = new uint8[TextureMemorySize];
+			memset(Bytes, 0xFF, TextureMemorySize);
+
+			RenderResourceCreateInfo WhiteTextureCreateInfo( Bytes, nullptr, ClearValueBinding::Black, "T_WhiteTexture" );
+			m_WhiteTexture = RenderTexture2D::Create(CommandList, Width, Height, Format, 1, 1, false,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), WhiteTextureCreateInfo);
+
+			memset(Bytes, 0, TextureMemorySize);
+			RenderResourceCreateInfo BlackTextureCreateInfo( Bytes, nullptr, ClearValueBinding::Black, "T_BlackTexture" );
+			m_BlackTexture = RenderTexture2D::Create(CommandList, Width, Height, Format, 1, 1, false,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), BlackTextureCreateInfo);
+
+			delete[] Bytes;
+		}
 	}
 
 // --------------------------------------------------------------------------------------

@@ -15,9 +15,8 @@ namespace Drn
 	{
 		drn_check(OwningReflectionComponent);
 
-		// TODO: add default black cubemap
-		CubemapIndex = OwningReflectionComponent->GetCachedCubemap() ? OwningReflectionComponent->GetCachedCubemap()->GetShaderResourceView()->GetDescriptorHeapIndex() : 0;
-
+		RenderTextureCube* TargetCubemap = OwningReflectionComponent->GetCachedCubemap() ? OwningReflectionComponent->GetCachedCubemap() : CommonResources::Get()->m_BlackCubemap;
+		CubemapIndex = TargetCubemap->GetShaderResourceView()->GetDescriptorHeapIndex();
 		Position = OwningReflectionComponent->GetWorldLocation();
 		InfluenceRadius = OwningReflectionComponent->GetInfluenceBoundingRadius();
 		CaptureOffset = OwningReflectionComponent->CaptureOffset;

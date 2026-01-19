@@ -14,6 +14,7 @@ namespace Drn
 	class RenderVertexBuffer;
 	class RenderIndexBuffer;
 	class RenderTexture2D;
+	class RenderTextureCube;
 
 	class ScreenTriangle
 	{
@@ -374,6 +375,11 @@ namespace Drn
 
 		TRefCountPtr<RenderTexture2D> m_SSAO_Random;
 		TRefCountPtr<RenderTexture2D> m_PreintegratedGF;
+
+		TRefCountPtr<RenderTexture2D> m_WhiteTexture;
+		TRefCountPtr<RenderTexture2D> m_BlackTexture;
+
+		TRefCountPtr<RenderTextureCube> m_BlackCubemap;
 
 #if WITH_EDITOR
 		TRefCountPtr<BufferVisualizerPSO> m_BufferVisualizerPSO;

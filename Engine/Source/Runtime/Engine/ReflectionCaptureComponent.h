@@ -19,6 +19,9 @@ namespace Drn
 		inline TRefCountPtr<RenderTextureCube>& GetCachedCubemap() { return CachedCubemap; }
 		inline ReflectionCaptureData& GetCachedData() { return CachedData; }
 
+		inline float GetMaxCaptureDistance() const { return MaxCaptureDistance; }
+		inline void SetMaxCaptureDistance(float InMaxCaptureDistance) { MaxCaptureDistance = MaxCaptureDistance; }
+
 #if WITH_EDITOR
 		void MarkNeedRecapture() { bNeedsRecapture = true; ReflectionCapturesToUpdate.insert(this); }
 		void ClearNeedRecapture() { bNeedsRecapture = false; }
@@ -48,6 +51,9 @@ namespace Drn
 
 		float Brightness;
 		Vector CaptureOffset;
+
+		// mainly to cull sky
+		float MaxCaptureDistance;
 
 		ReflectionCaptureData CachedData;
 

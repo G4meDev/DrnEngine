@@ -11,6 +11,7 @@ namespace Drn
 		, SceneProxy(nullptr)
 		, Brightness(1.0f)
 		, CaptureOffset(Vector::ZeroVector)
+		, MaxCaptureDistance(100.0f)
 	{
 		
 	}
@@ -28,6 +29,7 @@ namespace Drn
 		{
 			Ar >> Brightness;
 			Ar >> CaptureOffset;
+			Ar >> MaxCaptureDistance;
 
 			Ar >> CachedData;
 		}
@@ -35,6 +37,7 @@ namespace Drn
 		{
 			Ar << Brightness;
 			Ar << CaptureOffset;
+			Ar << MaxCaptureDistance;
 
 			Ar << CachedData;
 		}
@@ -76,6 +79,8 @@ namespace Drn
 
 		ImGui::DragFloat("Brightness", &Brightness, 0.1f, 0.5f, 4.0f);
 		CaptureOffset.Draw("CaptureOffset");
+
+		ImGui::DragFloat("MaxCaptureDistance", &MaxCaptureDistance, 1.0f, 1.0f, 10000.0f);
 	}
 
 	void ReflectionCaptureComponent::SetSelectedInEditor( bool SelectedInEditor )

@@ -127,6 +127,9 @@ namespace Drn
 		inline ViewShowFlags& GetShowFlags() { return ShowFlags; }
 
 		inline bool IsGameView() const;
+		inline bool ShouldRenderAmbientOcclusion() const;
+		inline bool ShouldRenderEnvironmentReflections() const;
+		inline bool ShouldRenderScreenSpaceReflections() const;
 
 #if WITH_EDITOR
 		OnPickedComponentDelegate OnPickedComponent;
