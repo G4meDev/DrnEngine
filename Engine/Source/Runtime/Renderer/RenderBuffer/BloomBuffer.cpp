@@ -32,7 +32,7 @@ namespace Drn
 			m_Viewports[DownSampleIndex] = CD3DX12_VIEWPORT( 0.0f, 0.0f, static_cast<float>( Size.X ), static_cast<float>( Size.Y ) );
 
 			RenderResourceCreateInfo BloomCreateInfo( nullptr, nullptr, ClearValueBinding::DepthZero, "Bloom" + GetDownSamplePostfix(i) + ((i%2 == 0) ? "Y" : "X") );
-			m_BloomTargets[i] = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), Size.X, Size.Y, BLOOM_FORMAT, 1, 1, true,
+			m_BloomTargets[i] = RenderTexture2D::Create(nullptr, Size.X, Size.Y, BLOOM_FORMAT, 1, 1, true,
 				(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), BloomCreateInfo);
 		}
 	}

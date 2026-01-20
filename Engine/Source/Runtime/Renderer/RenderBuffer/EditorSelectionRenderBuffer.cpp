@@ -24,7 +24,7 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		RenderResourceCreateInfo DepthStencilCreateInfo( nullptr, nullptr, ClearValueBinding::DepthZero, "DepthStencilTarget" );
-		m_DepthStencilTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DEPTH_STENCIL_FORMAT, 1, 1, true,
+		m_DepthStencilTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DEPTH_STENCIL_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), DepthStencilCreateInfo);
 
 

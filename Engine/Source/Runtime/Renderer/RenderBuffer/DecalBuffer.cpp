@@ -26,15 +26,15 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		RenderResourceCreateInfo BaseColorCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "Decal_BaseColor" );
-		m_BaseColorTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DECAL_BASE_COLOR_FORMAT, 1, 1, true,
+		m_BaseColorTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DECAL_BASE_COLOR_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), BaseColorCreateInfo);
 
 		RenderResourceCreateInfo NormalCreateInfo( nullptr, nullptr, ClearValueBinding(Vector4(0.5f, 0.5f, 1.0f, 1.0f)), "Decal_Normal" );
-		m_NormalTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DECAL_NORMAL_FORMAT, 1, 1, true,
+		m_NormalTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DECAL_NORMAL_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), NormalCreateInfo);
 
 		RenderResourceCreateInfo MasksCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "Decal_Masks" );
-		m_MasksTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DECAL_MASKS_FORMAT, 1, 1, true,
+		m_MasksTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DECAL_MASKS_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), MasksCreateInfo);
 	}
 

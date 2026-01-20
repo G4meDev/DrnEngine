@@ -31,7 +31,7 @@ namespace Drn
 		m_MipCount = 1 + std::log2(MinAxis);
 
 		RenderResourceCreateInfo HzbTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "Hzb_Target" );
-		M_HZBTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_FirstMipSize.X, m_FirstMipSize.Y, HZB_FORMAT, m_MipCount, 1, true,
+		M_HZBTarget = RenderTexture2D::Create(nullptr, m_FirstMipSize.X, m_FirstMipSize.Y, HZB_FORMAT, m_MipCount, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::UAV | ETextureCreateFlags::ShaderResource), HzbTargetCreateInfo);
 
 		m_UAVHandles.clear();

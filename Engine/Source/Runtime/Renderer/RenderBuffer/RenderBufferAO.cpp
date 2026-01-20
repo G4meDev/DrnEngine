@@ -36,15 +36,15 @@ namespace Drn
 		HalfSize = IntPoint::ComponentWiseMax(m_Size / 2, IntPoint(1));
 
 		RenderResourceCreateInfo AOTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "AOTarget" );
-		m_AOTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, AO_FORMAT, 1, 1, true,
+		m_AOTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, AO_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), AOTargetCreateInfo);
 
 		RenderResourceCreateInfo AOHalfTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "AOHalfTarget" );
-		m_AOHalfTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), HalfSize.X, HalfSize.Y, AO_FORMAT, 1, 1, true,
+		m_AOHalfTarget = RenderTexture2D::Create(nullptr, HalfSize.X, HalfSize.Y, AO_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), AOHalfTargetCreateInfo);
 
 		RenderResourceCreateInfo AOSetupTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "AOSetupTarget" );
-		m_AOSetupTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), HalfSize.X, HalfSize.Y, AO_SETUP_FORMAT, 1, 1, true,
+		m_AOSetupTarget = RenderTexture2D::Create(nullptr, HalfSize.X, HalfSize.Y, AO_SETUP_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), AOSetupTargetCreateInfo);
 	}
 

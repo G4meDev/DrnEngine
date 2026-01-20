@@ -297,11 +297,6 @@ namespace Drn
 
 #endif
 
-	ID3D12GraphicsCommandList2* Renderer::GetCommandList()
-	{
-		return m_CommandList->GetD3D12CommandList();
-	}
-
 	void Renderer::Flush()
 	{
 		m_DeletionFence->Signal();
@@ -505,6 +500,14 @@ namespace Drn
 		}
 
 		CommandLists.push_back(m_CommandList->GetD3D12CommandList());
+		m_CommandQueue->ExecuteCommandLists( CommandLists.size(), CommandLists.data() );
+
+		m_DeletionFence->Signal();
+		SimpleRenderResource::FlushPendingDeletes();
+		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
+		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(1);
+		m_Device->GetDefaultFastAllocator().CleanupPages(1);
+		m_Device->GetDynamicHeapAllocator().CleanUpAllocations(2);
 
 #if WITH_EDITOR
 		if (bCapturingFrame)
@@ -514,15 +517,6 @@ namespace Drn
 
 		bCapturingFrame = false;
 #endif
-
-		m_CommandQueue->ExecuteCommandLists( CommandLists.size(), CommandLists.data() );
-
-		m_DeletionFence->Signal();
-		SimpleRenderResource::FlushPendingDeletes();
-		m_Device->GetDeferredDeletionQueue().ReleaseCompletedResources();
-		m_Device->GetDefaultBufferAllocator().CleanupFreeBlocks(1);
-		m_Device->GetDefaultFastAllocator().CleanupPages(1);
-		m_Device->GetDynamicHeapAllocator().CleanUpAllocations(2);
 	}
 
 	Scene* Renderer::AllocateScene( World* InWorld )

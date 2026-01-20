@@ -53,7 +53,7 @@ namespace Drn
 		for (int32 i = 0; i < 2; i++)
 		{
 			RenderResourceCreateInfo TaaTargetCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "TAATarget_" + std::to_string(i) );
-			m_TAATarget[i] = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+			m_TAATarget[i] = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
 				(ETextureCreateFlags)(ETextureCreateFlags::UAV | ETextureCreateFlags::ShaderResource), TaaTargetCreateInfo);
 
 			D3D12_UNORDERED_ACCESS_VIEW_DESC DescUAV = {};

@@ -25,11 +25,11 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		RenderResourceCreateInfo ColorCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "EditorPrimitiveColor" );
-		m_ColorTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DISPLAY_OUTPUT_FORMAT, 1, 1, true,
+		m_ColorTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DISPLAY_OUTPUT_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), ColorCreateInfo);
 
 		RenderResourceCreateInfo DepthCreateInfo( nullptr, nullptr, ClearValueBinding::DepthZero, "EditorPrimitiveDepth" );
-		m_DepthTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DEPTH_FORMAT, 1, 1, true,
+		m_DepthTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DEPTH_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), DepthCreateInfo);
 	}
 

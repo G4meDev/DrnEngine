@@ -134,7 +134,7 @@ namespace Drn
 		const ResourceTypeHelper Type(TextureDesc, D3D12_HEAP_TYPE_DEFAULT);
 		const D3D12_RESOURCE_STATES InitialState = Type.GetOptimalInitialState(false);
 
-		Device* const ParentDevice = CmdList->GetParentDevice();
+		Device* const ParentDevice = CmdList ? CmdList->GetParentDevice() : Renderer::Get()->GetDevice();
 
 		T* NewTexture;
 		if constexpr (std::is_same_v<T, RenderTexture2D>)
@@ -353,6 +353,8 @@ namespace Drn
 
 		if (CreateInfo.BulkData != nullptr)
 		{
+			drn_check(CmdList);
+
 			//NewTexture->InitializeTextureData(CmdList, CreateInfo.BulkData->GetResourceBulkData(), CreateInfo.BulkData->GetResourceBulkDataSize(), SizeX, SizeY, 1, SizeZ, NumMips, Format, InitialState);
 			NewTexture->InitializeTextureData(CmdList, CreateInfo.BulkData, 0, SizeX, SizeY, 1, SizeZ, NumMips, Format, InitialState);
 		

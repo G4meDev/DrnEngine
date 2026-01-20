@@ -33,31 +33,31 @@ namespace Drn
 		const Vector4 ClearColor = Vector4( ClearValue, ClearValue, ClearValue, 0.0f );
 
 		RenderResourceCreateInfo ColorDeferredCreateInfo( nullptr, nullptr, ClearValueBinding(ClearColor), "Gbuffer_DeferredColor" );
-		m_ColorDeferredTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+		m_ColorDeferredTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), ColorDeferredCreateInfo);
 
 		RenderResourceCreateInfo BaseColorCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "Gbuffer_BaseColor" );
-		m_BaseColorTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_BASE_COLOR_FORMAT, 1, 1, true,
+		m_BaseColorTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_BASE_COLOR_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), BaseColorCreateInfo);
 
 		RenderResourceCreateInfo WorldNormalCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "Gbuffer_WorldNormal" );
-		m_WorldNormalTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_WORLD_NORMAL_FORMAT, 1, 1, true,
+		m_WorldNormalTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_WORLD_NORMAL_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), WorldNormalCreateInfo);
 
 		RenderResourceCreateInfo MaskACreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "Gbuffer_MasksA" );
-		m_MasksTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_MASKS_FORMAT, 1, 1, true,
+		m_MasksTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_MASKS_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), MaskACreateInfo);
 
 		RenderResourceCreateInfo MaskBCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "Gbuffer_MasksB" );
-		m_MasksBTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_MASKS_FORMAT, 1, 1, true,
+		m_MasksBTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_MASKS_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), MaskBCreateInfo);
 
 		RenderResourceCreateInfo VelocityCreateInfo( nullptr, nullptr, ClearValueBinding(Vector4(0.5f, 0.5f, 0.0f, 0.0f)), "Gbuffer_Velocity" );
-		m_VelocityTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_VELOCITY_FORMAT, 1, 1, true,
+		m_VelocityTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_VELOCITY_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), VelocityCreateInfo);
 
 		RenderResourceCreateInfo DepthCreateInfo( nullptr, nullptr, ClearValueBinding::DepthZero, "Gbuffer_Depth" );
-		m_DepthTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DEPTH_FORMAT, 1, 1, true,
+		m_DepthTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DEPTH_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), DepthCreateInfo);
 	}
 

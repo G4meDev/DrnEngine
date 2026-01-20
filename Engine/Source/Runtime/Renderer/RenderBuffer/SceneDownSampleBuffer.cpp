@@ -31,7 +31,7 @@ namespace Drn
 			m_Viewports[i] = Size;
 
 			RenderResourceCreateInfo DownSampleCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "SceneDownSample" + GetDownSamplePostfix(i) );
-			m_DownSampleTargets[i] = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), Size.X, Size.Y, SCENE_DOWN_SAMPLE_FORMAT, 1, 1, true,
+			m_DownSampleTargets[i] = RenderTexture2D::Create(nullptr, Size.X, Size.Y, SCENE_DOWN_SAMPLE_FORMAT, 1, 1, true,
 				(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), DownSampleCreateInfo);
 		}
 	}

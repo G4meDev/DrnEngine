@@ -27,11 +27,11 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 		
 		RenderResourceCreateInfo GuidCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "HitProxy_GuidTarget" );
-		m_GuidTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, GBUFFER_GUID_FORMAT, 1, 1, true,
+		m_GuidTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_GUID_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), GuidCreateInfo);
 
 		RenderResourceCreateInfo DepthCreateInfo( nullptr, nullptr, ClearValueBinding::DepthZero, "HitProxy_DepthTarget" );
-		m_DepthTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DEPTH_FORMAT, 1, 1, true,
+		m_DepthTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DEPTH_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), DepthCreateInfo);
 	}
 

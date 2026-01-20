@@ -22,7 +22,7 @@ namespace Drn
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
 		RenderResourceCreateInfo TonemapTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "TonemapTarget" );
-		m_TonemapTarget = RenderTexture2D::Create(Renderer::Get()->GetCommandList_Temp(), m_Size.X, m_Size.Y, DISPLAY_OUTPUT_FORMAT, 1, 1, true,
+		m_TonemapTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DISPLAY_OUTPUT_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), TonemapTargetCreateInfo);
 	}
 
