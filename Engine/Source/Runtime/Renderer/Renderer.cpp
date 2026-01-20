@@ -400,6 +400,7 @@ namespace Drn
 #endif
 
 		SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
+		//SetBindlessHeaps(m_UploadCommandList->GetD3D12CommandList());
 	}
 
 	void Renderer::UpdateSceneProxyAndResources()
@@ -472,7 +473,6 @@ namespace Drn
 	{
 		SCOPE_STAT( "ExecuteCommands" );
 
-		uint32 NumCommandLists = 2;
 		std::vector<ID3D12CommandList*> CommandLists;
 
 #if RENDER_STATS
@@ -491,12 +491,7 @@ namespace Drn
 		}
 #endif
 
-		{
-			SCOPE_STAT( "E1" );
-			CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
-			m_CommandQueue->ExecuteCommandLists(1, CommandLists.data());
-		}
-		//CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
+		CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
 
 		for (Scene* S : m_AllocatedScenes)
 		{
@@ -504,27 +499,12 @@ namespace Drn
 			{
 				if (SceneRen->m_CommandList)
 				{
-					//CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
-					//NumCommandLists++;
-
-					{
-						SCOPE_STAT( "E2" );
-						CommandLists.clear();
-						CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
-						m_CommandQueue->ExecuteCommandLists(1, CommandLists.data());
-					}
+					CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
 				}
 			}
 		}
 
-		//CommandLists.push_back(m_CommandList->GetD3D12CommandList());
-
-		{
-			SCOPE_STAT( "E3" );
-			CommandLists.clear();
-			CommandLists.push_back(m_CommandList->GetD3D12CommandList());
-			m_CommandQueue->ExecuteCommandLists(1, CommandLists.data());
-		}
+		CommandLists.push_back(m_CommandList->GetD3D12CommandList());
 
 #if WITH_EDITOR
 		if (bCapturingFrame)
@@ -535,7 +515,7 @@ namespace Drn
 		bCapturingFrame = false;
 #endif
 
-		//m_CommandQueue->ExecuteCommandLists(NumCommandLists, CommandLists.data());
+		m_CommandQueue->ExecuteCommandLists( CommandLists.size(), CommandLists.data() );
 
 		m_DeletionFence->Signal();
 		SimpleRenderResource::FlushPendingDeletes();

@@ -1077,7 +1077,7 @@ namespace Drn
 
 		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, PShader, nullptr);
 
-		BlendStateInitializer BInit = {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::One, EBlendFactor::One, EBlendOperation::Max, EBlendFactor::One, EBlendFactor::Zero)};
+		BlendStateInitializer BInit = {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::One, EBlendFactor::One, EBlendOperation::Add, EBlendFactor::One, EBlendFactor::Zero)};
 		TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
 
 		RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Front);

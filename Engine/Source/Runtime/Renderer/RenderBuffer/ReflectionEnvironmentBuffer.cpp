@@ -174,7 +174,6 @@ namespace Drn
 
 				for (int32 MipIndex = 0; MipIndex < NumMips; MipIndex++)
 				{
-				
 					const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
 				
 					D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
@@ -252,20 +251,44 @@ namespace Drn
 
 	void ReflectionEnvironmentBuffer::MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		uint32 ReflectionCaptureIndex = 0;
-		for (ReflectionCaptureProxy* Proxy : Renderer->GetScene()->GetReflectionCaptureProxies())
 		{
-			drn_check(ReflectionCaptureIndex < MAX_REFLECTION_CAPTURE_COUNT);
-			if (Proxy->CubemapIndex != 0)
+			SCOPE_STAT("ReflectionCaptureSort");
+
+			std::vector<ReflectionCaptureProxy*> VisibleReflectionProxies;
+			for (ReflectionCaptureProxy* Proxy : Renderer->GetScene()->GetReflectionCaptureProxies())
 			{
+				drn_check(Proxy);
+
+				DirectX::BoundingSphere SphereBound(*Proxy->Position.Get(), Proxy->InfluenceRadius);
+				DirectX::ContainmentType Type = Renderer->ViewFrustum.Contains(SphereBound);
+				bool bIsVisible = Type != DISJOINT;
+
+				if (bIsVisible)
+				{
+					VisibleReflectionProxies.push_back(Proxy);
+				}
+			}
+
+			// TODO: add lighting grid for clustered rendering
+			std::sort(VisibleReflectionProxies.begin(), VisibleReflectionProxies.end(),
+			[](const ReflectionCaptureProxy* A, const ReflectionCaptureProxy* B)
+			{
+				return A->InfluenceRadius < B->InfluenceRadius;
+			});
+
+			uint32 ReflectionCaptureIndex = 0;
+			for (ReflectionCaptureProxy* Proxy : VisibleReflectionProxies)
+			{
+				drn_check(ReflectionCaptureIndex < MAX_REFLECTION_CAPTURE_COUNT);
+
 				m_Data.CaptureData[ReflectionCaptureIndex].ReflectionTexture = Proxy->CubemapIndex;
 				m_Data.CaptureData[ReflectionCaptureIndex].PositionRadius = Vector4(Proxy->Position, Proxy->InfluenceRadius);
 				m_Data.CaptureData[ReflectionCaptureIndex].OffsetBrightness = Vector4(Proxy->CaptureOffset, Proxy->Brightness);
 
 				ReflectionCaptureIndex++;
 			}
+			m_Data.NumReflectionCaptures = ReflectionCaptureIndex;
 		}
-		m_Data.NumReflectionCaptures = ReflectionCaptureIndex;
 
 		RenderTexture2D* TargetSSAOTexture = CommonResources::Get()->m_WhiteTexture;
 		if (Renderer->ShouldRenderAmbientOcclusion())

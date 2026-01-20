@@ -270,7 +270,60 @@ namespace Drn
 // ----------------------------------------------------------------------------------
 
 #if WITH_EDITOR
+		ResolveReflectionCaptures(CommandList);
+#endif
+	}
 
+	void Scene::RegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
+	{
+		m_PendingProxies.push_back(InPrimitiveSceneProxy);
+	}
+
+	void Scene::RegisterLightProxy( LightSceneProxy* InLightProxy )
+	{
+		m_PendingLightProxies.push_back(InLightProxy);
+	}
+
+	void Scene::RegisterSkyLightProxy( SkyLightSceneProxy* InLightProxy )
+	{
+		m_PendingSkyLightProxies.push_back(InLightProxy);
+	}
+
+	void Scene::RegisterReflectionCaptureProxy( class ReflectionCaptureProxy* InReflectionCaptureProxy )
+	{
+		m_PendingReflectionCaptureProxies.push_back(InReflectionCaptureProxy);
+	}
+
+	void Scene::RegisterPostProcessProxy( class PostProcessSceneProxy* InProxy )
+	{
+		m_PendingPostProcessProxies.insert(InProxy);
+	}
+
+	void Scene::UnRegisterPostProcessProxy( class PostProcessSceneProxy* InProxy )
+	{
+		m_PendingPostProcessProxies.erase(InProxy);
+		m_PostProcessProxies.erase(InProxy);
+	}
+
+	void Scene::RegisterDecalProxy( class DecalSceneProxy* InProxy )
+	{
+		m_PendingDecalProxies.insert(InProxy);
+	}
+
+	void Scene::UnRegisterDecalProxy( class DecalSceneProxy* InProxy )
+	{
+		if (InProxy)
+		{
+			m_PendingDecalProxies.erase(InProxy);
+			m_DecalProxies.erase(InProxy);
+
+			InProxy->Release();
+		}
+	}
+
+#if WITH_EDITOR
+	void Scene::ResolveReflectionCaptures(D3D12CommandList* CommandList)
+	{
 		int32 NumResolvedCaptureEvents = 0;
 		for (ReflectionCaptureEvent& Event : ReflectionCaptureEvents)
 		{
@@ -280,8 +333,10 @@ namespace Drn
 				NumResolvedCaptureEvents++;
 
 				const uint32 CaptureSize = Event.Targets[0]->GetSizeX();
+				const int32 NumMips = std::log2(CaptureSize) + 1;
+
 				RenderResourceCreateInfo CaptureCubemapCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "BakeReflectionCaptureCube" );
-				TRefCountPtr<RenderTextureCube> CaptureCubemap = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+				TRefCountPtr<RenderTextureCube> CaptureCubemap = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, NumMips, 1, true,
 					(ETextureCreateFlags)(ETextureCreateFlags::UAV | ETextureCreateFlags::ShaderResource), CaptureCubemapCreateInfo);
 
 				for (int32 i = 0; i < 6; i++)
@@ -294,17 +349,106 @@ namespace Drn
 					CopyInfo.SourceSliceIndex = 0;
 					CopyInfo.DestSliceIndex = i;
 					CopyInfo.NumSlices = 1;
+					CopyInfo.NumMips = 1;
 					CommandList->CopyTexture(Event.Targets[i], CaptureCubemap, CopyInfo);
 				}
 
-				RenderResourceCreateInfo ReflectionCaptureCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "ReflectionCaptureCube" );
-				Event.TargetComponent->GetCachedCubemap() = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
-					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), ReflectionCaptureCreateInfo);
+				// generate mip chain
+				{
+					for (int32 MipIndex = 1; MipIndex < NumMips; MipIndex++)
+					{
+						for (int32 i = 0; i < 6; i++)
+						{
+							uint32 SubresourceIndex = D3D12CalcSubresource(MipIndex, i, 0, NumMips, 6);
+							CommandList->TransitionResourceWithTracking(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, SubresourceIndex);
+						}
 
-				CommandList->CopyTexture(CaptureCubemap, Event.TargetComponent->GetCachedCubemap(), CopyTextureInfo());
+						const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
+			
+						TRefCountPtr<ShaderResourceView> SourceSrv = ShaderResourceView::CreateForMipLevel(CaptureCubemap, MipIndex - 1);
+			
+						D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
+						Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+						Desc.Texture2DArray.ArraySize = 6;
+						Desc.Texture2DArray.MipSlice = MipIndex;
+						Desc.Texture2DArray.FirstArraySlice = 0;
+						TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, CaptureCubemap->m_ResourceLocation);
+			
+						int32 ThreadGroupSize = 8;
+						int32 NumGroups = Math::DivideAndRoundUp(MipResolution, ThreadGroupSize);
+						int32 FaceGroupSize = NumGroups * ThreadGroupSize;
+			
+						IntPoint ValidDisppatchCoord(MipResolution, MipResolution);
 
-				CommandList->TransitionResourceWithTracking(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-				CommandList->FlushBarriers();
+						CommandList->SetComputePipelineState(CommonResources::Get()->m_CubemapDownsamplePSO->m_PSO);
+						//CommandList->SetComputeRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+						CommandList->SetComputeRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+						CommandList->SetComputeRootConstant(NumMips, 3);
+						CommandList->SetComputeRootConstant(MipIndex, 4);
+						CommandList->SetComputeRootConstant(FaceGroupSize, 5);
+						CommandList->SetComputeRootConstants(2, &ValidDisppatchCoord, 6);
+						CommandList->SetComputeRootConstant(SourceSrv->GetDescriptorHeapIndex(), 8);
+						CommandList->SetComputeRootConstant(DestUav->GetDescriptorHeapIndex(), 9);
+			
+						CommandList->DispatchComputeShader(NumGroups * 6, NumGroups, 1);
+			
+						for (int32 i = 0; i < 6; i++)
+						{
+							uint32 SubresourceIndex = D3D12CalcSubresource(MipIndex, i, 0, NumMips, 6);
+							CommandList->TransitionResourceWithTracking(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
+						}
+					}
+				}
+
+				//RenderResourceCreateInfo CaptureCubemapConvlutedCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "BakeReflectionCaptureConvlutedCube" );
+				//TRefCountPtr<RenderTextureCube> CaptureCubemapConvluted = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+				//	(ETextureCreateFlags)(ETextureCreateFlags::UAV | ETextureCreateFlags::ShaderResource), CaptureCubemapConvlutedCreateInfo);
+
+				// convolution
+				//{
+				//	CommandList->TransitionResourceWithTracking(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+				//
+				//	for (int32 MipIndex = 0; MipIndex < NumMips; MipIndex++)
+				//	{
+				//		const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
+				//
+				//		D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
+				//		Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+				//		Desc.Texture2DArray.ArraySize = 6;
+				//		Desc.Texture2DArray.MipSlice = MipIndex;
+				//		Desc.Texture2DArray.FirstArraySlice = 0;
+				//		TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, GeneratedCubemap->m_ResourceLocation);
+				//
+				//		int32 ThreadGroupSize = 8;
+				//		int32 NumGroups = Math::DivideAndRoundUp(MipResolution, ThreadGroupSize);
+				//		int32 FaceGroupSize = NumGroups * ThreadGroupSize;
+				//
+				//		IntPoint ValidDisppatchCoord(MipResolution, MipResolution);
+				//
+				//		CommandList->SetComputePipelineState(CommonResources::Get()->m_ConvolveSpecularPSO->m_PSO);
+				//		CommandList->SetComputeRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				//		CommandList->SetComputeRootConstant( Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2 );
+				//		CommandList->SetComputeRootConstant(NumMips, 3);
+				//		CommandList->SetComputeRootConstant(MipIndex, 4);
+				//		CommandList->SetComputeRootConstant(FaceGroupSize, 5);
+				//		CommandList->SetComputeRootConstants(2, &ValidDisppatchCoord, 6);
+				//		CommandList->SetComputeRootConstant(RawCubemap->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
+				//		CommandList->SetComputeRootConstant(DestUav->GetDescriptorHeapIndex(), 9);
+				//
+				//		CommandList->DispatchComputeShader(NumGroups * 6, NumGroups, 1);
+				//	}
+				//
+				//	CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+				//}
+
+				//RenderResourceCreateInfo ReflectionCaptureCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "ReflectionCaptureCube" );
+				//Event.TargetComponent->GetCachedCubemap() = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+				//	(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), ReflectionCaptureCreateInfo);
+				//
+				//CommandList->CopyTexture(CaptureCubemap, Event.TargetComponent->GetCachedCubemap(), CopyTextureInfo());
+
+				//CommandList->TransitionResourceWithTracking(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+				//CommandList->FlushBarriers();
 			}
 		}
 		if (NumResolvedCaptureEvents > 0)
@@ -365,54 +509,6 @@ namespace Drn
 				It++;
 			}
 		}
+	}
 #endif
-	}
-
-	void Scene::RegisterPrimitiveProxy( PrimitiveSceneProxy* InPrimitiveSceneProxy )
-	{
-		m_PendingProxies.push_back(InPrimitiveSceneProxy);
-	}
-
-	void Scene::RegisterLightProxy( LightSceneProxy* InLightProxy )
-	{
-		m_PendingLightProxies.push_back(InLightProxy);
-	}
-
-	void Scene::RegisterSkyLightProxy( SkyLightSceneProxy* InLightProxy )
-	{
-		m_PendingSkyLightProxies.push_back(InLightProxy);
-	}
-
-	void Scene::RegisterReflectionCaptureProxy( class ReflectionCaptureProxy* InReflectionCaptureProxy )
-	{
-		m_PendingReflectionCaptureProxies.push_back(InReflectionCaptureProxy);
-	}
-
-	void Scene::RegisterPostProcessProxy( class PostProcessSceneProxy* InProxy )
-	{
-		m_PendingPostProcessProxies.insert(InProxy);
-	}
-
-	void Scene::UnRegisterPostProcessProxy( class PostProcessSceneProxy* InProxy )
-	{
-		m_PendingPostProcessProxies.erase(InProxy);
-		m_PostProcessProxies.erase(InProxy);
-	}
-
-	void Scene::RegisterDecalProxy( class DecalSceneProxy* InProxy )
-	{
-		m_PendingDecalProxies.insert(InProxy);
-	}
-
-	void Scene::UnRegisterDecalProxy( class DecalSceneProxy* InProxy )
-	{
-		if (InProxy)
-		{
-			m_PendingDecalProxies.erase(InProxy);
-			m_DecalProxies.erase(InProxy);
-
-			InProxy->Release();
-		}
-	}
-
-}
+        }

@@ -338,8 +338,6 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     ImageBasedReflections.rgb *= (1 - SSR.a) * SpecularOcclusion;
     SpecularTerm += ImageBasedReflections.rgb;
     float3 BRDF = EnvBRDF(SpecularColor, Roughness, NoV, PreintegeratedGFImage, LinearClampSampler);
-    //float3 BRDF = EnvBRDFApprox(SpecularColor, Roughness, NoV);
-    //float3 BRDF = EnvBRDFApproxNonmetal(Roughness, NoV);
     
     SpecularTerm *= BRDF;
     //return float4(SpecularTerm, 1);

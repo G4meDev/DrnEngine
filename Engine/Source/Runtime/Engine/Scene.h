@@ -79,6 +79,8 @@ namespace Drn
 	private:
 
 #if WITH_EDITOR
+		void ResolveReflectionCaptures(class D3D12CommandList* CommandList);
+
 		struct ReflectionCaptureEvent
 		{
 			uint64 CaptureFenceValue;
