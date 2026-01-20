@@ -21,7 +21,7 @@ namespace Drn
 
 	Renderer::Renderer()
 		: m_CommandList(nullptr)
-		, m_UploadCommandList(nullptr)
+//		, m_UploadCommandList(nullptr)
 		, m_SwapChain(nullptr)
 	{
 	}
@@ -32,7 +32,7 @@ namespace Drn
 		drn_check(SingletonInstance->m_AllocatedScenes.size() == 0);
 
 		m_CommandList = nullptr;
-		m_UploadCommandList = nullptr;
+//		m_UploadCommandList = nullptr;
 		StaticSamplersBuffer = nullptr;
 
 		//SingletonInstance->Flush();
@@ -126,8 +126,8 @@ namespace Drn
 		m_CommandList = new D3D12CommandList(m_Device.get(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererDirect");
 		m_CommandList->Close();
 
-		m_UploadCommandList = new D3D12CommandList(m_Device.get(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererUpload");
-		m_UploadCommandList->Close();
+		//m_UploadCommandList = new D3D12CommandList(m_Device.get(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, "RendererUpload");
+		//m_UploadCommandList->Close();
 
 		m_Fence = new GpuFence( GetDevice(), 0, "RendererFence" );
 		m_DeletionFence = new GpuFence( GetDevice(), 0, "DeletionFence" );
@@ -383,10 +383,11 @@ namespace Drn
 		{
 			SCOPE_STAT( "CommandlistReset" );
 			m_CommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
-			m_UploadCommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
+			//m_UploadCommandList->SetAllocatorAndReset(m_SwapChain->GetBackBufferIndex());
 
 #if RENDER_STATS
-			GpuProfiler::Get()->PushStat( m_UploadCommandList, "Total" );
+			//GpuProfiler::Get()->PushStat( m_UploadCommandList, "Total" );
+			GpuProfiler::Get()->PushStat( m_CommandList, "Total" );
 #endif
 		}
 
@@ -400,12 +401,14 @@ namespace Drn
 
 	void Renderer::UpdateSceneProxyAndResources()
 	{
-		SCOPED_GPU_STAT(m_UploadCommandList, "UpdateResources");
+		//SCOPED_GPU_STAT(m_UploadCommandList, "UpdateResources");
+		SCOPED_GPU_STAT(m_CommandList, "UpdateResources");
 		SCOPE_STAT( "UpdateSceneProxyAndResources" );
 
 		for (Scene* S : m_AllocatedScenes)
 		{
-			S->UpdatePendingProxyAndResources(m_UploadCommandList);
+			//S->UpdatePendingProxyAndResources(m_UploadCommandList);
+			S->UpdatePendingProxyAndResources(m_CommandList);
 		}
 	}
 
@@ -476,8 +479,8 @@ namespace Drn
 		m_CommandList->EndFrame();
 		m_CommandList->Close();
 
-		m_UploadCommandList->EndFrame();
-		m_UploadCommandList->Close();
+		//m_UploadCommandList->EndFrame();
+		//m_UploadCommandList->Close();
 
 #if WITH_EDITOR
 		if (bCapturingFrame)
@@ -486,18 +489,21 @@ namespace Drn
 		}
 #endif
 
-		CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
-
-		for (Scene* S : m_AllocatedScenes)
-		{
-			for (SceneRenderer* SceneRen : S->m_SceneRenderers)
-			{
-				if (SceneRen->m_CommandList)
-				{
-					CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
-				}
-			}
-		}
+		//CommandLists.push_back(m_UploadCommandList->GetD3D12CommandList());
+		//
+		//for (Scene* S : m_AllocatedScenes)
+		//{
+		//	for (SceneRenderer* SceneRen : S->m_SceneRenderers)
+		//	{
+		//		if (SceneRen->m_CommandList)
+		//		{
+		//			CommandLists.push_back(SceneRen->m_CommandList->GetD3D12CommandList());
+		//		}
+		//	}
+		//}
+		//
+		//CommandLists.push_back(m_CommandList->GetD3D12CommandList());
+		//m_CommandQueue->ExecuteCommandLists( CommandLists.size(), CommandLists.data() );
 
 		CommandLists.push_back(m_CommandList->GetD3D12CommandList());
 		m_CommandQueue->ExecuteCommandLists( CommandLists.size(), CommandLists.data() );

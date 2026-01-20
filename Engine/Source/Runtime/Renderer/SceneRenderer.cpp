@@ -43,7 +43,7 @@ namespace Drn
 
 	SceneRenderer::~SceneRenderer()
 	{
-		m_CommandList = nullptr;
+		//m_CommandList = nullptr;
 
 #if WITH_EDITOR
 		if (m_MousePickQueue.size() > 0 || m_ScreenReprojectionQueue.size() > 0)
@@ -63,8 +63,10 @@ namespace Drn
 	{
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		m_CommandList = new D3D12CommandList(Renderer::Get()->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, m_Name);
-		m_CommandList->Close();
+		//m_CommandList = new D3D12CommandList(Renderer::Get()->GetDevice(), D3D12_COMMAND_LIST_TYPE_DIRECT, NUM_BACKBUFFERS, m_Name);
+		//m_CommandList->Close();
+
+		m_CommandList = Renderer::Get()->GetCommandList();
 
 		m_GBuffer = std::make_shared<class GBuffer>();
 		m_GBuffer->Init();
@@ -881,9 +883,9 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		m_CommandList->SetAllocatorAndReset(Renderer::Get()->m_SwapChain->GetBackBufferIndex());
-		Renderer::Get()->SetBindlessHeaps( m_CommandList->GetD3D12CommandList() );
-		m_CommandList->ClearState();
+		//m_CommandList->SetAllocatorAndReset(Renderer::Get()->m_SwapChain->GetBackBufferIndex());
+		//Renderer::Get()->SetBindlessHeaps( m_CommandList->GetD3D12CommandList() );
+		//m_CommandList->ClearState();
 
 		//PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Scene" );
 
@@ -944,8 +946,8 @@ namespace Drn
 		}
 #endif
 
-		m_CommandList->EndFrame(); 
-		m_CommandList->Close();
+		//m_CommandList->EndFrame(); 
+		//m_CommandList->Close();
 
 		//PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}

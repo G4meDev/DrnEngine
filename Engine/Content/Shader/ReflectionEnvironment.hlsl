@@ -281,7 +281,8 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     float3 kD = 1 - kS;
     kD *= 1.0f - Metallic;
     
-    float Mip = ComputeReflectionCaptureMipFromRoughness(Roughness, 7);
+    half Mip = ComputeReflectionCaptureMipFromRoughness(Roughness, 8); // TODO: pass mip count as constant
+    //float Mip = ComputeReflectionCaptureMipFromRoughness(RoughnessSq, 8);
     float4 ImageBasedReflections = float4(0, 0, 0, 1.0f);
     float3 RayDirection = ReflectionVector;
     
@@ -329,6 +330,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     if(SSRBuffer.SkyCubemapTexture != 0)
     {
         half MipLevel = ComputeReflectionCaptureMipFromRoughness(Roughness, SSRBuffer.SkyLightMipCount);
+        //half MipLevel = ComputeReflectionCaptureMipFromRoughness(RoughnessSq, SSRBuffer.SkyLightMipCount);
         ImageBasedReflections.rgb += ImageBasedReflections.a * SSRBuffer.SkyLightColor * SkyCubemapImage.SampleLevel(LinearSampler, ReflectionVector, MipLevel).xyz;
         
         LightDiffuse *= SkyIradianceCubemapTexture.SampleLevel(LinearSampler, WorldNormal, 0).rgb;

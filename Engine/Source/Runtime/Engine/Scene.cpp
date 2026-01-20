@@ -344,7 +344,7 @@ namespace Drn
 				{
 					ReleaseSceneRenderer(Event.CaptureSceneRenderers[i]);
 					Event.CaptureCameras[i]->Destroy();
-
+				
 					CopyTextureInfo CopyInfo;
 					CopyInfo.Size = IntVector(CaptureSize, CaptureSize, 1);
 					CopyInfo.SourceSliceIndex = 0;
@@ -355,104 +355,106 @@ namespace Drn
 				}
 
 				// generate mip chain
-				//{
-				//	for (int32 MipIndex = 1; MipIndex < NumMips; MipIndex++)
-				//	{
-				//		for (int32 i = 0; i < 6; i++)
-				//		{
-				//			uint32 SubresourceIndex = D3D12CalcSubresource(MipIndex, i, 0, NumMips, 6);
-				//			CommandList->AddTransitionBarrier(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, SubresourceIndex);
-				//		}
-				//
-				//		const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
-				//
-				//		TRefCountPtr<ShaderResourceView> SourceSrv = ShaderResourceView::CreateForMipLevel(CaptureCubemap, MipIndex - 1);
-				//
-				//		D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
-				//		Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
-				//		Desc.Texture2DArray.ArraySize = 6;
-				//		Desc.Texture2DArray.MipSlice = MipIndex;
-				//		Desc.Texture2DArray.FirstArraySlice = 0;
-				//		TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, CaptureCubemap->m_ResourceLocation);
-				//
-				//		int32 ThreadGroupSize = 8;
-				//		int32 NumGroups = Math::DivideAndRoundUp(MipResolution, ThreadGroupSize);
-				//		int32 FaceGroupSize = NumGroups * ThreadGroupSize;
-				//
-				//		IntPoint ValidDisppatchCoord(MipResolution, MipResolution);
-				//
-				//		// TODO: remove bind
-				//		//Renderer::Get()->SetBindlessHeaps(CommandList->GetD3D12CommandList());
-				//
-				//		CommandList->SetComputePipelineState(CommonResources::Get()->m_CubemapDownsamplePSO->m_PSO);
-				//		//CommandList->SetComputeRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-				//		CommandList->SetComputeRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-				//		CommandList->SetComputeRootConstant(NumMips, 3);
-				//		CommandList->SetComputeRootConstant(MipIndex, 4);
-				//		CommandList->SetComputeRootConstant(FaceGroupSize, 5);
-				//		CommandList->SetComputeRootConstants(2, &ValidDisppatchCoord, 6);
-				//		CommandList->SetComputeRootConstant(SourceSrv->GetDescriptorHeapIndex(), 8);
-				//		CommandList->SetComputeRootConstant(DestUav->GetDescriptorHeapIndex(), 9);
-				//
-				//		CommandList->DispatchComputeShader(NumGroups * 6, NumGroups, 1);
-				//
-				//		for (int32 i = 0; i < 6; i++)
-				//		{
-				//			uint32 SubresourceIndex = D3D12CalcSubresource(MipIndex, i, 0, NumMips, 6);
-				//			CommandList->AddTransitionBarrier(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
-				//		}
-				//	}
-				//}
+				{
+					for (int32 i = 0; i < 6; i++)
+					{
+						uint32 SubresourceIndex = D3D12CalcSubresource(0, i, 0, NumMips, 6);
+						CommandList->TransitionResourceWithTracking(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
+					}
 
-				//RenderResourceCreateInfo CaptureCubemapConvlutedCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "BakeReflectionCaptureConvlutedCube" );
-				//TRefCountPtr<RenderTextureCube> CaptureCubemapConvluted = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
-				//	(ETextureCreateFlags)(ETextureCreateFlags::UAV | ETextureCreateFlags::ShaderResource), CaptureCubemapConvlutedCreateInfo);
+					for (int32 MipIndex = 1; MipIndex < NumMips; MipIndex++)
+					{
+						for (int32 i = 0; i < 6; i++)
+						{
+							uint32 SubresourceIndex = D3D12CalcSubresource(MipIndex, i, 0, NumMips, 6);
+							CommandList->TransitionResourceWithTracking(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, SubresourceIndex);
+						}
+				
+						const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
+				
+						TRefCountPtr<ShaderResourceView> SourceSrv = ShaderResourceView::CreateForMipLevel(CaptureCubemap, MipIndex - 1);
+				
+						D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
+						Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+						Desc.Texture2DArray.ArraySize = 6;
+						Desc.Texture2DArray.MipSlice = MipIndex;
+						Desc.Texture2DArray.FirstArraySlice = 0;
+						TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, CaptureCubemap->m_ResourceLocation);
+				
+						int32 ThreadGroupSize = 8;
+						int32 NumGroups = Math::DivideAndRoundUp(MipResolution, ThreadGroupSize);
+						int32 FaceGroupSize = NumGroups * ThreadGroupSize;
+				
+						IntPoint ValidDisppatchCoord(MipResolution, MipResolution);
+
+						CommandList->SetComputePipelineState(CommonResources::Get()->m_CubemapDownsamplePSO->m_PSO);
+						//CommandList->SetComputeRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+						CommandList->SetComputeRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+						CommandList->SetComputeRootConstant(NumMips, 3);
+						CommandList->SetComputeRootConstant(MipIndex, 4);
+						CommandList->SetComputeRootConstant(FaceGroupSize, 5);
+						CommandList->SetComputeRootConstants(2, &ValidDisppatchCoord, 6);
+						CommandList->SetComputeRootConstant(SourceSrv->GetDescriptorHeapIndex(), 8);
+						CommandList->SetComputeRootConstant(DestUav->GetDescriptorHeapIndex(), 9);
+				
+						CommandList->DispatchComputeShader(NumGroups * 6, NumGroups, 1);
+				
+						for (int32 i = 0; i < 6; i++)
+						{
+							uint32 SubresourceIndex = D3D12CalcSubresource(MipIndex, i, 0, NumMips, 6);
+							CommandList->TransitionResourceWithTracking(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, SubresourceIndex);
+						}
+					}
+				}
+
+				RenderResourceCreateInfo CaptureCubemapConvlutedCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "BakeReflectionCaptureConvlutedCube" );
+				TRefCountPtr<RenderTextureCube> CaptureCubemapConvluted = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, NumMips, 1, true,
+					(ETextureCreateFlags)(ETextureCreateFlags::UAV | ETextureCreateFlags::ShaderResource), CaptureCubemapConvlutedCreateInfo);
 
 				// convolution
-				//{
-				//	CommandList->TransitionResourceWithTracking(CaptureCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-				//
-				//	for (int32 MipIndex = 0; MipIndex < NumMips; MipIndex++)
-				//	{
-				//		const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
-				//
-				//		D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
-				//		Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
-				//		Desc.Texture2DArray.ArraySize = 6;
-				//		Desc.Texture2DArray.MipSlice = MipIndex;
-				//		Desc.Texture2DArray.FirstArraySlice = 0;
-				//		TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, GeneratedCubemap->m_ResourceLocation);
-				//
-				//		int32 ThreadGroupSize = 8;
-				//		int32 NumGroups = Math::DivideAndRoundUp(MipResolution, ThreadGroupSize);
-				//		int32 FaceGroupSize = NumGroups * ThreadGroupSize;
-				//
-				//		IntPoint ValidDisppatchCoord(MipResolution, MipResolution);
-				//
-				//		CommandList->SetComputePipelineState(CommonResources::Get()->m_ConvolveSpecularPSO->m_PSO);
-				//		CommandList->SetComputeRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-				//		CommandList->SetComputeRootConstant( Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2 );
-				//		CommandList->SetComputeRootConstant(NumMips, 3);
-				//		CommandList->SetComputeRootConstant(MipIndex, 4);
-				//		CommandList->SetComputeRootConstant(FaceGroupSize, 5);
-				//		CommandList->SetComputeRootConstants(2, &ValidDisppatchCoord, 6);
-				//		CommandList->SetComputeRootConstant(RawCubemap->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
-				//		CommandList->SetComputeRootConstant(DestUav->GetDescriptorHeapIndex(), 9);
-				//
-				//		CommandList->DispatchComputeShader(NumGroups * 6, NumGroups, 1);
-				//	}
-				//
-				//	CommandList->AddTransitionBarrier(GeneratedCubemap->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-				//}
+				{
+					CommandList->TransitionResourceWithTracking(CaptureCubemapConvluted->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+				
+					for (int32 MipIndex = 0; MipIndex < NumMips; MipIndex++)
+					{
+						const int32 MipResolution = 1 << (NumMips - MipIndex - 1);
+				
+						D3D12_UNORDERED_ACCESS_VIEW_DESC Desc = {};
+						Desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+						Desc.Texture2DArray.ArraySize = 6;
+						Desc.Texture2DArray.MipSlice = MipIndex;
+						Desc.Texture2DArray.FirstArraySlice = 0;
+						TRefCountPtr<UnorderedAccessView> DestUav = new UnorderedAccessView(CommandList->GetParentDevice(), Desc, CaptureCubemapConvluted->m_ResourceLocation);
+				
+						int32 ThreadGroupSize = 8;
+						int32 NumGroups = Math::DivideAndRoundUp(MipResolution, ThreadGroupSize);
+						int32 FaceGroupSize = NumGroups * ThreadGroupSize;
+				
+						IntPoint ValidDisppatchCoord(MipResolution, MipResolution);
+				
+						CommandList->SetComputePipelineState(CommonResources::Get()->m_ConvolveSpecularPSO->m_PSO);
+						//CommandList->SetComputeRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+						CommandList->SetComputeRootConstant( Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2 );
+						CommandList->SetComputeRootConstant(NumMips, 3);
+						CommandList->SetComputeRootConstant(MipIndex, 4);
+						CommandList->SetComputeRootConstant(FaceGroupSize, 5);
+						CommandList->SetComputeRootConstants(2, &ValidDisppatchCoord, 6);
+						CommandList->SetComputeRootConstant(CaptureCubemap->GetShaderResourceView()->GetDescriptorHeapIndex(), 8);
+						CommandList->SetComputeRootConstant(DestUav->GetDescriptorHeapIndex(), 9);
+				
+						CommandList->DispatchComputeShader(NumGroups * 6, NumGroups, 1);
+					}
+				}
 
-				//RenderResourceCreateInfo ReflectionCaptureCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "ReflectionCaptureCube" );
-				//Event.TargetComponent->GetCachedCubemap() = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
-				//	(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), ReflectionCaptureCreateInfo);
-				//
-				//CommandList->CopyTexture(CaptureCubemap, Event.TargetComponent->GetCachedCubemap(), CopyTextureInfo());
+				RenderResourceCreateInfo ReflectionCaptureCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "ReflectionCaptureCube" );
+				Event.TargetComponent->GetCachedCubemap() = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, NumMips, 1, false,
+					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), ReflectionCaptureCreateInfo);
 
-				//CommandList->TransitionResourceWithTracking(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-				//CommandList->FlushBarriers();
+				CommandList->AddTransitionBarrier(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+				CommandList->TransitionResourceWithTracking(CaptureCubemapConvluted->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+				CommandList->FlushBarriers();
+				CommandList->GetD3D12CommandList()->CopyResource(Event.TargetComponent->GetCachedCubemap()->GetResource()->GetResource(), CaptureCubemapConvluted->GetResource()->GetResource());
+				CommandList->AddTransitionBarrier(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 			}
 		}
 		if (NumResolvedCaptureEvents > 0)

@@ -58,6 +58,7 @@ namespace Drn
 		inline Device* GetDevice() { return m_Device.get(); }
 		inline ID3D12Device* GetD3D12Device() { return m_Device->GetD3D12Device(); }
 		inline ID3D12CommandQueue* GetCommandQueue() { return m_CommandQueue.Get(); }
+		inline D3D12CommandList* GetCommandList() { return m_CommandList; }
 
 		inline Window* GetMainWindow() { return m_MainWindow; }
 
@@ -85,7 +86,7 @@ namespace Drn
 		std::unique_ptr<SwapChain> m_SwapChain;
 
 		TRefCountPtr<D3D12CommandList> m_CommandList;
-		TRefCountPtr<D3D12CommandList> m_UploadCommandList;
+		//TRefCountPtr<D3D12CommandList> m_UploadCommandList;
 
 		Microsoft::WRL::ComPtr<ID3D12CommandQueue> m_CommandQueue;
 
