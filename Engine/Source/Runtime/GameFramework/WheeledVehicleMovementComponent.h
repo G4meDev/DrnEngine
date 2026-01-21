@@ -3,8 +3,41 @@
 #include "ForwardTypes.h"
 #include "Runtime/Engine/Component.h"
 
+#define NUM_WHEELS 4
+
 namespace Drn
 {
+	enum class EWheelType : uint8
+	{
+		FrontLeft,
+		FrontRight,
+		RearLeft,
+		RearRight
+	};
+
+	struct WheelData
+	{
+		WheelData()
+			: SocketLocation(Vector::ZeroVector)
+			, Offset(0)
+			, WheelRadius(0.8f)
+			, SuspensionRestLength(1.0f)
+			, bFrontWheel(true)
+			, bRightWheel(true)
+		{}
+
+		Vector SocketLocation;
+		float WheelRadius;
+		float SuspensionRestLength;
+
+		float Offset;
+		bool bFrontWheel;
+		bool bRightWheel;
+
+		//bool bEffectedByEngine;
+		//bool bEffectedBySteer;
+	};
+
 	class WheeledVehicleMovementComponent: public Component
 	{
 	public:
@@ -20,6 +53,19 @@ namespace Drn
 
 		void RegisterComponent( World* InOwningWorld ) override;
 		void UnRegisterComponent() override;
+
+		union
+		{
+			struct
+			{
+				WheelData FrontLeftWheel;
+				WheelData FrontRightWheel;
+				WheelData RearLeftWheel;
+				WheelData RearRightWheel;
+			};
+
+			WheelData Wheels[NUM_WHEELS];
+		};
 
 		//void SetMovementInput(const Vector& Input);
 

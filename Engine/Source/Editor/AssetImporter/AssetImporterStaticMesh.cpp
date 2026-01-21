@@ -361,7 +361,25 @@ namespace Drn
 
 	void AssetImporterStaticMesh::ProcessCollisionBox( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )
 	{
-		MeshAsset->m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem(Vector::ZeroVector, Quat::Identity, Vector::OneVector * Vector(1, 1, 1)));
+		if (mesh->mNumVertices <= 0)
+		{
+			return;
+		}
+
+		LOG(LogStaticMeshImporter, Info, "%i", mesh->mNumVertices);
+
+		// TODO: for now just axis aligned box. extend later
+		Box CollisionBox(FLT_MAX, -FLT_MAX);
+		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
+		{
+			CollisionBox += Vector(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+		}
+
+		Vector Center = CollisionBox.GetCenter() * MeshAsset->ImportScale;
+		Vector Extent = CollisionBox.GetExtent() * MeshAsset->ImportScale;
+		Quat Rotation = Quat::Identity;
+
+		MeshAsset->m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem(Center, Rotation, Extent));
 	}
 
 	void AssetImporterStaticMesh::ProcessCollisionCapsule( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )

@@ -11,12 +11,26 @@ namespace Drn
 		, SteerInput(0)
 	{
 		VehicleMesh = std::make_unique<StaticMeshComponent>();
-		VehicleMesh->SetComponentLabel( "VehicleMesh" );
+		VehicleMesh->SetComponentLabel( "VehicleBody" );
+		VehicleMesh->SetStatic(false);
 		SetRootComponent(VehicleMesh.get());
 
-		AssetHandle<StaticMesh> CubeMesh("Engine\\Content\\BasicShapes\\SM_Cube.drn");
-		CubeMesh.Load();
-		VehicleMesh->SetMesh(CubeMesh);
+		AssetHandle<StaticMesh> DefaultVehicleBody("Engine\\Content\\DefaultVehicle\\SM_DefaultVehicle_Body.drn");
+		DefaultVehicleBody.Load();
+		VehicleMesh->SetMesh(DefaultVehicleBody);
+
+		AssetHandle<StaticMesh> DefaultVehicleWheel("Engine\\Content\\DefaultVehicle\\SM_DefaultVehicle_Wheel.drn");
+		DefaultVehicleWheel.Load();
+
+		for (int32 i = 0; i < 4; i++)
+		{
+			VehicleWheels[i] = std::make_unique<StaticMeshComponent>();
+			VehicleWheels[i]->SetStatic(false);
+			VehicleWheels[i]->SetComponentLabel( "VehicleWheel_" + std::to_string(i) );
+			VehicleMesh->AttachSceneComponent(VehicleWheels[i].get());
+			SetRootComponent(VehicleMesh.get());
+			VehicleWheels[i]->SetMesh(DefaultVehicleWheel);
+		}
 
 		MovementComponent = std::make_unique<WheeledVehicleMovementComponent>();
 		MovementComponent->SetComponentLabel( "WheeledVehicleMovementComponent" );
@@ -50,6 +64,12 @@ namespace Drn
 
 			VehicleMesh->GetBodyInstance().AddForce(ThrottleForce, false);
 			VehicleMesh->GetBodyInstance().AddTorque(SteerTorque, false);
+		}
+
+		for (int32 i = 0; i < NUM_WHEELS; i++)
+		{
+			const Vector WheelTransform = GetActorTransform().TransformPosition(MovementComponent->Wheels[i].SocketLocation);
+			VehicleWheels[i]->SetWorldLocation(WheelTransform);
 		}
 
 		ThrottleInput = 0;

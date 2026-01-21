@@ -23,6 +23,11 @@ namespace Drn
 			return Box(Origin - Extent, Origin + Extent);
 		}
 
+		inline Vector GetCenter() const { return Vector((Min + Max) * 0.5f); }
+		inline Vector GetExtent() const { return (Max - Min) * 0.5f; }
+
+		Box& operator+=( const Vector& Other );
+
 		Vector Min;
 		Vector Max;
 

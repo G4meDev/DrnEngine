@@ -57,12 +57,12 @@ namespace Drn
 #endif
 
 		TempMaterial = m_Physics->createMaterial( 0.5f, 0.5f, 0.6f );
-		physx::vehicle2::PxInitVehicleExtension( *m_Foundation );
+		//physx::vehicle2::PxInitVehicleExtension( *m_Foundation );
 	}
 
 	void PhysicManager::ShutdownPhysx()
 	{
-		physx::vehicle2::PxCloseVehicleExtension();
+		//physx::vehicle2::PxCloseVehicleExtension();
 		PX_RELEASE(TempMaterial);
 		PX_RELEASE(m_Physics);
 

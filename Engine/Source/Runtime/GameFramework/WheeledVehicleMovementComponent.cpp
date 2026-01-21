@@ -7,7 +7,27 @@ namespace Drn
 		: Component()
 		, Mass(1000.0f)
 	{
-	
+		Vector SocketOffset = Vector(2.25, 0.8f, 2.5);
+
+		FrontLeftWheel = WheelData();
+		FrontLeftWheel.bFrontWheel = true;
+		FrontLeftWheel.bRightWheel = false;
+		FrontLeftWheel.SocketLocation = SocketOffset * Vector(-1, 1, 1);
+
+		FrontRightWheel = WheelData();
+		FrontRightWheel.bFrontWheel = true;
+		FrontRightWheel.bRightWheel = true;
+		FrontRightWheel.SocketLocation = SocketOffset * Vector(1, 1, 1);
+
+		RearLeftWheel = WheelData();
+		RearLeftWheel.bFrontWheel = false;
+		RearLeftWheel.bRightWheel = false;
+		RearLeftWheel.SocketLocation = SocketOffset * Vector(-1, 1, -1);
+
+		RearRightWheel = WheelData();
+		RearRightWheel.bFrontWheel = false;
+		RearRightWheel.bRightWheel = true;
+		RearRightWheel.SocketLocation = SocketOffset * Vector(1, 1, -1);
 	}
 
 	WheeledVehicleMovementComponent::~WheeledVehicleMovementComponent()
@@ -19,7 +39,11 @@ namespace Drn
 	{
 		Component::Tick(DeltaTime);
 
-
+		for (int32 i = 0; i < NUM_WHEELS; i++)
+		{
+			Vector WheelWorldLocation = GetOwningActor()->GetActorTransform().TransformPosition(Wheels[i].SocketLocation);
+			GetWorld()->DrawDebugSphere(WheelWorldLocation, Quat::Identity, Color::Green, Wheels[i].WheelRadius, 32, 0.0f, 0.0f);
+		}
 	}
 
 	void WheeledVehicleMovementComponent::Serialize( Archive& Ar )

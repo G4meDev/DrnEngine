@@ -31,5 +31,7 @@ namespace Drn
 
 		std::unique_ptr<class StaticMeshComponent> VehicleMesh;
 		std::unique_ptr<class WheeledVehicleMovementComponent> MovementComponent;
+
+		std::unique_ptr<class StaticMeshComponent> VehicleWheels[4];
 	};
 }

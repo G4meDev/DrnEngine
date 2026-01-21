@@ -325,6 +325,19 @@ namespace Drn
 			PreviewWorld->DrawDebugSphere(Bounds.Origin, Quat::Identity, Color::Yellow, Bounds.SphereRadius, 32, 0, 0);
 			PreviewWorld->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::Blue, 0, 0);
 		}
+
+		if (true)
+		{
+			for (SphereElem& Elem : m_OwningAsset->GetBodySetup()->m_AggGeo.SphereElems)
+			{
+				PreviewWorld->DrawDebugSphere(Elem.Center, Quat::Identity, Color::White, Elem.Radius, 32, 0.0f, 0.0f);
+			}
+			 
+			for (BoxElem& Elem : m_OwningAsset->GetBodySetup()->m_AggGeo.BoxElems)
+			{
+				PreviewWorld->DrawDebugBox(Box(Elem.Extent * -1, Elem.Extent), Transform(Elem.Center, Elem.Rotation), Color::White, 0.0f, 0.0f);
+			}
+		}
 	}
 
 	void AssetPreviewStaticMeshGuiLayer::SetCurrentFocus()
