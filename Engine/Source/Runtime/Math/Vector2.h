@@ -28,8 +28,8 @@ namespace Drn
 		bool Draw();
 #endif
 
-		static Vector ZeroVector;
-		static Vector OneVector;
+		static Vector2 ZeroVector;
+		static Vector2 OneVector;
 
 		union { struct { float X, Y; }; XMFLOAT2 m_Vector; };
 

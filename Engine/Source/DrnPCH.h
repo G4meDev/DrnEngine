@@ -40,6 +40,7 @@
 #include "Runtime/GameFramework/Controller.h"
 #include "Runtime/GameFramework/PlayerController.h"
 #include "Runtime/GameFramework/CameraManager.h"
+#include "Runtime/GameFramework/WheeledVehiclePawn.h"
 
 #include "Runtime/Renderer/Device.h"
 #include "Runtime/Renderer/SwapChain.h"

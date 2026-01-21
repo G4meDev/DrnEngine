@@ -22,6 +22,7 @@ namespace Drn
 		Character,
 		DecalActor,
 		SphereReflectionCapture,
+		WheeledVehiclePawn,
 	};
 
 	enum class EComponentType : uint32
@@ -33,7 +34,8 @@ namespace Drn
 		InputComponent,
 		CharacterMovementComponent,
 		SpringArmComponent,
-		SphereReflectionCaptureComponent
+		SphereReflectionCaptureComponent,
+		WheeledVehicleMovementComponent,
 	};
 
 	enum class ELightType : uint8

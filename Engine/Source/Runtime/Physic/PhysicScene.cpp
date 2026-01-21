@@ -4,6 +4,7 @@
 #include "Runtime/Components/CharacterMovementComponent.h"
 
 LOG_DEFINE_CATEGORY( LogPhysicScene, "PhysicScene" )
+#define MAX_PHYSIC_TIMESTEP 0.033333f // 30fps
 
 namespace Drn
 {
@@ -122,7 +123,9 @@ namespace Drn
 		m_PhysxScene->lockWrite();
 		SCOPE_STAT();
 
-		m_PhysxScene->simulate(DeltaTime);
+		float ClampedDeltaTime = std::clamp(DeltaTime, 0.00001f, MAX_PHYSIC_TIMESTEP);
+
+		m_PhysxScene->simulate(ClampedDeltaTime);
 		m_PhysxScene->fetchResults(true);
 
 		m_PhysxScene->unlockWrite();

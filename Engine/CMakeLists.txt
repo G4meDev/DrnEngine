@@ -65,6 +65,8 @@ set( HEADER_FILES
 	Source/Runtime/GameFramework/Controller.h
 	Source/Runtime/GameFramework/PlayerController.h
 	Source/Runtime/GameFramework/CameraManager.h
+	Source/Runtime/GameFramework/WheeledVehiclePawn.h
+	Source/Runtime/GameFramework/WheeledVehicleMovementComponent.h
 	
 	Source/Runtime/Renderer/Renderer.h
 	Source/Runtime/Renderer/CommonResources.h
@@ -292,6 +294,8 @@ set( SOURCE_FILES
 	Source/Runtime/GameFramework/Controller.cpp
 	Source/Runtime/GameFramework/PlayerController.cpp
 	Source/Runtime/GameFramework/CameraManager.cpp
+	Source/Runtime/GameFramework/WheeledVehiclePawn.cpp
+	Source/Runtime/GameFramework/WheeledVehicleMovementComponent.cpp
 
 	Source/Runtime/Renderer/Renderer.cpp
 	Source/Runtime/Renderer/CommonResources.cpp

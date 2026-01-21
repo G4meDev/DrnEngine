@@ -38,6 +38,9 @@ namespace Drn
 		inline physx::PxTolerancesScale GetToleranceScale() const { return m_Physics->getTolerancesScale(); };
 		inline physx::PxPhysics* GetPhysics() { return m_Physics; }
 
+		// TODO: remove
+		physx::PxMaterial* TempMaterial;
+
 	protected:
 
 		static PhysicManager* m_SingletonInstance;

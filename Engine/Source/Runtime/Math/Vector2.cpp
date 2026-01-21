@@ -7,8 +7,8 @@
 
 namespace Drn
 {
-	Vector Vector2::ZeroVector(0);
-	Vector Vector2::OneVector(1);
+	Vector2 Vector2::ZeroVector(0);
+	Vector2 Vector2::OneVector(1);
 
 #if WITH_EDITOR
 	bool Vector2::Draw( const std::string& id )

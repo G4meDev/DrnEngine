@@ -35,7 +35,7 @@ namespace Drn
 
 		void AddForce(const Vector& Force, bool AccelChange);
 		void AddImpulse(const Vector& Impulse, bool AccelChange);
-
+		void AddTorque(const Vector& Force, bool AccelChange);
 
 #if WITH_EDITOR
 		void DrawDetailPanel(float DeltaTime);

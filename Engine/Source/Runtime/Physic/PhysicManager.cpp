@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "PhysicManager.h"
+#include "vehicle2/PxVehicleAPI.h"
 
 LOG_DEFINE_CATEGORY( LogPhysicManager, "PhysicManager" )
 
@@ -54,10 +55,15 @@ namespace Drn
 #else
 		m_Physics = PxCreatePhysics( PX_PHYSICS_VERSION, *m_Foundation, physx::PxTolerancesScale(), true, nullptr );
 #endif
+
+		TempMaterial = m_Physics->createMaterial( 0.5f, 0.5f, 0.6f );
+		physx::vehicle2::PxInitVehicleExtension( *m_Foundation );
 	}
 
 	void PhysicManager::ShutdownPhysx()
 	{
+		physx::vehicle2::PxCloseVehicleExtension();
+		PX_RELEASE(TempMaterial);
 		PX_RELEASE(m_Physics);
 
 #if WITH_PVD

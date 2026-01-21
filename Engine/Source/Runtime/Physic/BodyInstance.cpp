@@ -222,6 +222,15 @@ namespace Drn
 		}
 	}
 
+	void BodyInstance::AddTorque( const Vector& Force, bool AccelChange )
+	{
+		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;
+		if (RigidBody)
+		{
+			RigidBody->addTorque(Vector2P( Force ), AccelChange ? PxForceMode::eACCELERATION : PxForceMode::eFORCE);
+		}
+	}
+
 	int32 BodyInstance::GetAllShapes( std::vector<PxShape*>& Result )
 	{
 		uint32 NumShapes = 0;
