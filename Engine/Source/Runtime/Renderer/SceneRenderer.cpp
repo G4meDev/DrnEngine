@@ -899,7 +899,7 @@ namespace Drn
 
 		if (!m_RenderingEnabled )
 		{
-			m_CommandList->Close();
+			//m_CommandList->Close();
 			return;
 		}
 

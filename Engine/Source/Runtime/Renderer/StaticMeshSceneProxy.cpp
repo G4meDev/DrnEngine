@@ -261,7 +261,7 @@ namespace Drn
 	{
 		SCOPE_STAT("HitProxyMesh");
 
-		if (!m_Selectable)
+		if (!m_Mesh.IsValid() || !m_Selectable)
 		{
 			return;
 		}
@@ -302,7 +302,7 @@ namespace Drn
 
 	void StaticMeshSceneProxy::RenderSelectionPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		if (!m_SelectedInEditor)
+		if (!m_Mesh.IsValid() || !m_SelectedInEditor)
 			return;
 
 		const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
@@ -339,43 +339,40 @@ namespace Drn
 
 	void StaticMeshSceneProxy::RenderEditorPrimitivePass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		if (!m_EditorPrimitive)
+		if (!m_Mesh.IsValid() || !m_EditorPrimitive)
 		{
 			return;
 		}
 
-		if (m_Mesh.IsValid())
+		const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+		SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
+		for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
 		{
-			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
-			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
+			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
+			if (!Mat.GetParentMaterial()->IsSupportingEditorPrimitivePass())
 			{
-				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
-
-				if (!Mat.GetParentMaterial()->IsSupportingEditorPrimitivePass())
-				{
-					continue;
-				}
-
-				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
-
-				Mat.GetParentMaterial()->BindEditorPrimitivePass(CommandList);
-				Mat.GetMaterialInterface()->BindResources(CommandList);
-		
-				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-				m_PrimitiveBuffer.m_Guid = m_Guid;
-
-				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
-
-				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-		
-				RenderProxy.BindAndDraw( CommandList );
+				continue;
 			}
+
+			SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+
+			Mat.GetParentMaterial()->BindEditorPrimitivePass(CommandList);
+			Mat.GetMaterialInterface()->BindResources(CommandList);
+		
+			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+			m_PrimitiveBuffer.m_Guid = m_Guid;
+
+			TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+
+			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+			CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+			RenderProxy.BindAndDraw( CommandList );
 		}
 	}
 
