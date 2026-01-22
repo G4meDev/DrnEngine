@@ -35,6 +35,7 @@ namespace Drn
 		MovementComponent = std::make_unique<WheeledVehicleMovementComponent>();
 		MovementComponent->SetComponentLabel( "WheeledVehicleMovementComponent" );
 		AddComponent(MovementComponent.get());
+		MovementComponent->SetOwningVehicle(this);
 	}
 
 	WheeledVehiclePawn::~WheeledVehiclePawn()
@@ -57,30 +58,13 @@ namespace Drn
 		//m_MovementComponent->SetMovementInput(m_MovementInput * 2);
 
 		{
-			drn_check(VehicleMesh->GetMesh().IsValid());
-
-			Vector ThrottleForce = GetActorForwardVector() *  ThrottleInput * 1000.0f;
-			Vector SteerTorque = GetActorUpVector() * SteerInput * 300.0f;
-
-			VehicleMesh->GetBodyInstance().AddForce(ThrottleForce, false);
-			VehicleMesh->GetBodyInstance().AddTorque(SteerTorque, false);
-		}
-
-		if (VehicleMesh->GetMesh().IsValid())
-		{
-			const Vector SpringDirection = GetActorUpVector();
-			for (int32 i = 0; i < NUM_WHEELS; i++)
-			{
-				WheelData& Wheel = MovementComponent->Wheels[i];
-				if (Wheel.bOnGround)
-				{
-					VehicleMesh->GetBodyInstance().AddForceAtPosition(SpringDirection * Wheel.SuspensionForce, Wheel.LastLocation, false);
-				}
-
-				const Vector WheelTransform = Wheel.LastLocation + SpringDirection * -(Wheel.SuspensionRestLength - Wheel.Offset - Wheel.WheelRadius);
-				VehicleWheels[i]->SetWorldLocation(WheelTransform);
-			}
-			
+			//drn_check(VehicleMesh->GetMesh().IsValid());
+			//
+			//Vector ThrottleForce = GetActorForwardVector() *  ThrottleInput * 1000.0f;
+			//Vector SteerTorque = GetActorUpVector() * SteerInput * 300.0f;
+			//
+			//VehicleMesh->GetBodyInstance().AddForce(ThrottleForce, false);
+			//VehicleMesh->GetBodyInstance().AddTorque(SteerTorque, false);
 		}
 
 		ThrottleInput = 0;
@@ -107,11 +91,14 @@ namespace Drn
 	void WheeledVehiclePawn::OnThrottle( float Value )
 	{
 		ThrottleInput = Value;
+		MovementComponent->SetThrottleInput(Value);
 	}
 
 	void WheeledVehiclePawn::OnSteer( float Value )
 	{
 		SteerInput = Value;
+
+		MovementComponent->SetSteerInput(Value);
 	}
 
         }  // namespace Drn

@@ -7,6 +7,8 @@
 
 namespace Drn
 {
+	class WheeledVehiclePawn;
+
 	enum class EWheelType : uint8
 	{
 		FrontLeft,
@@ -20,15 +22,18 @@ namespace Drn
 		WheelData()
 			: SocketLocation(Vector::ZeroVector)
 			, Offset(0)
+			, SteerAngle(35.0f)
 			, WheelRadius(0.8f)
 			, SuspensionRestLength(1.2f)
-			, SpringStrength(1000.0f)
-			, SpringDamper(250.0f)
+			, SpringStrength(1500.0f)
+			, SpringDamper(350.0f)
 			, bFrontWheel(true)
 			, bRightWheel(true)
+			, RotationAngle(0.0f)
 		{}
 
 		Vector SocketLocation;
+		float SteerAngle;
 		float WheelRadius;
 		float SuspensionRestLength;
 		float SpringStrength;
@@ -40,10 +45,10 @@ namespace Drn
 
 		Vector LastLocation;
 		bool bOnGround;
-		float SuspensionForce;
+		float RotationAngle;
 
-		//bool bEffectedByEngine;
-		//bool bEffectedBySteer;
+		bool bEffectedByEngine;
+		bool bEffectedBySteer;
 	};
 
 	class WheeledVehicleMovementComponent: public Component
@@ -61,6 +66,10 @@ namespace Drn
 
 		void RegisterComponent( World* InOwningWorld ) override;
 		void UnRegisterComponent() override;
+
+		inline void SetOwningVehicle( WheeledVehiclePawn* InOwningVehicle ) { OwningVehicle = InOwningVehicle; }
+		inline void SetThrottleInput(float InThrottleInput) { ThrottleInput = InThrottleInput; }
+		inline void SetSteerInput(float InSteerInput) { SteerInput = InSteerInput; }
 
 		union
 		{
@@ -95,9 +104,9 @@ namespace Drn
 
 		float Mass;
 
-		//physx::PxController* m_Controller;
-		Vector m_MovementInput;
+		float ThrottleInput;
+		float SteerInput;
 
-		//PhysicUserData UserData;
+		WheeledVehiclePawn* OwningVehicle;
 	};
 }

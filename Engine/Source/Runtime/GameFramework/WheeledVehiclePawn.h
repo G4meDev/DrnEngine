@@ -24,6 +24,9 @@ namespace Drn
 		void OnThrottle( float Value );
 		void OnSteer(float Value);
 
+		inline StaticMeshComponent* GetVehicleBody() { return VehicleMesh.get(); }
+		inline StaticMeshComponent* GetVehicleWheel(int32 Index) { return VehicleWheels[Index].get(); }
+
 	protected:
 
 		float ThrottleInput;
