@@ -52,7 +52,8 @@ namespace Drn
 		physx::PxPhysics* Physics = PhysicManager::Get()->GetPhysics();
 
 		// TODO: cleanup memory
-		m_Material = Physics->createMaterial( 0.5f, 0.5f, 0.6f );
+		//m_Material = Physics->createMaterial( 0.5f, 0.5f, 0.6f );
+		m_Material = Physics->createMaterial( 1.0f, 1.0f, 0.0f );
 
 		if (m_SimulatePhysic)
 		{

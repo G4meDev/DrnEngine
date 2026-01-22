@@ -22,11 +22,11 @@ namespace Drn
 		WheelData()
 			: SocketLocation(Vector::ZeroVector)
 			, Offset(0)
-			, SteerAngle(35.0f)
+			, SteerAngle(45.0f)
 			, WheelRadius(0.8f)
 			, SuspensionRestLength(1.2f)
-			, SpringStrength(1500.0f)
-			, SpringDamper(350.0f)
+			, SpringStrength(1000.0f)
+			, SpringDamper(150.0f)
 			, ForceHeightOffset(2.0f)
 			, bFrontWheel(true)
 			, bRightWheel(true)
@@ -41,6 +41,11 @@ namespace Drn
 		float SpringDamper;
 		float ForceHeightOffset;
 
+		float ExtermSlipRatio = 0.1f;
+		float ExtermSlipRatioValue = 1.0f;
+		float AsympSlipRatio = 0.4f;
+		float AsympSlipRatioValue = 0.02f;
+
 		float Offset;
 		bool bFrontWheel;
 		bool bRightWheel;
@@ -51,6 +56,12 @@ namespace Drn
 
 		bool bEffectedByEngine;
 		bool bEffectedBySteer;
+
+		float CalculateTraction(float SlipRatio);
+
+#if WITH_EDITOR
+		void Draw();
+#endif
 	};
 
 	class WheeledVehicleMovementComponent: public Component
@@ -93,7 +104,7 @@ namespace Drn
 	protected:
 
 		float Mass;
-		float DragConstant = 3.0f;
+		float DragConstant = 5.0f;
 		float Drag = 0.42f;
 
 		float ThrottleInput;
