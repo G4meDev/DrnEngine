@@ -231,6 +231,11 @@ namespace Drn
 		return Vector::ZeroVector;
 	}
 
+	float BodyInstance::GetMass() const
+	{
+		return m_Mass;
+	}
+
 	void BodyInstance::AddForce( const Vector& Force, bool AccelChange )
 	{
 		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;

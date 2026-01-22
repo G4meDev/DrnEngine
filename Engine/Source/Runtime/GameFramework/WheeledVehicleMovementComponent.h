@@ -27,6 +27,7 @@ namespace Drn
 			, SuspensionRestLength(1.2f)
 			, SpringStrength(1500.0f)
 			, SpringDamper(350.0f)
+			, ForceHeightOffset(2.0f)
 			, bFrontWheel(true)
 			, bRightWheel(true)
 			, RotationAngle(0.0f)
@@ -38,6 +39,7 @@ namespace Drn
 		float SuspensionRestLength;
 		float SpringStrength;
 		float SpringDamper;
+		float ForceHeightOffset;
 
 		float Offset;
 		bool bFrontWheel;

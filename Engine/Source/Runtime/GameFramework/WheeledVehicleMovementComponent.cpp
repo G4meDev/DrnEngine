@@ -56,6 +56,12 @@ namespace Drn
 
 		const bool bValidBody = OwningVehicle->GetVehicleBody()->GetMesh().IsValid();
 		const Vector SpringDirection = GetOwningActor()->GetActorUpVector();
+		const float BodyMass = bValidBody ? OwningVehicle->GetVehicleBody()->GetBodyInstance().GetMass() : 1.0f;
+
+		if (bValidBody)
+		{
+			GetWorld()->DrawDebugSphere(OwningVehicle->GetVehicleBody()->GetBodyInstance().GetCenterOfMass(), Quat::Identity, Color::Green, 0.2f, 32, 0.0f, 0.0f);
+		}
 
 		for (int32 i = 0; i < NUM_WHEELS; i++)
 		{
@@ -63,6 +69,7 @@ namespace Drn
 
 			Vector WheelSocketLocation = GetOwningActor()->GetActorTransform().TransformPosition(Wheel.SocketLocation);
 			//GetWorld()->DrawDebugSphere(WheelWorldLocation, Quat::Identity, Color::Green, Wheels[i].WheelRadius, 32, 0.0f, 0.0f);
+			Vector ForceTarget =  GetOwningActor()->GetActorTransform().TransformPosition(Wheel.SocketLocation + Vector(0.0, Wheel.ForceHeightOffset, 0.0f));
 
 			Vector Displacement = WheelSocketLocation - Wheel.LastLocation;
 
@@ -90,7 +97,8 @@ namespace Drn
 				Wheel.Offset = Wheel.SuspensionRestLength - Vector::Distance(RayStart, Result.Location);
 				float SuspensionForce = (Wheel.Offset * Wheel.SpringStrength) - (Velocity * Wheel.SpringDamper);
 
-				OwningVehicle->GetVehicleBody()->GetBodyInstance().AddForceAtPosition(SpringDirection * SuspensionForce, Wheel.LastLocation, false);
+				//OwningVehicle->GetVehicleBody()->GetBodyInstance().AddForceAtPosition(SpringDirection * SuspensionForce, Wheel.LastLocation, false);
+				OwningVehicle->GetVehicleBody()->GetBodyInstance().AddForceAtPosition(SpringDirection * SuspensionForce, ForceTarget, false);
 
 				if (Wheel.bEffectedByEngine)
 				{
@@ -98,7 +106,8 @@ namespace Drn
 					float AvaliableTorque = 1000.0f * ThrottleInput;
 					Vector ThrottleForce = WheelRotation.GetAxisZ() * AvaliableTorque;
 
-					OwningVehicle->GetVehicleBody()->GetBodyInstance().AddForceAtPosition(ThrottleForce, Wheel.LastLocation, false);
+					GetWorld()->DrawDebugSphere(ForceTarget, Quat::Identity, Color::Green, 0.2f, 32, 0.0f, 0.0f);
+					OwningVehicle->GetVehicleBody()->GetBodyInstance().AddForceAtPosition(ThrottleForce, ForceTarget, false);
 				}
 
 				Vector SteerDirection = WheelRotation.GetAxisX();
@@ -107,11 +116,13 @@ namespace Drn
 				float SteerRatio = SteerVelocity == 0 ? 0 : SteerVelocity / WorldVelocity.Length();
 				SteerRatio = std::clamp(std::abs(SteerRatio), 0.0f, 1.0f);
 				//float Traction = 1 - SteerRatio;
-				float Traction = 0.6;
+				float Traction = 1.0f;
 				
-				float DesireVeloctyChange = -SteerVelocity * Traction;
+				//std::cout << SteerRatio << "\n";
+
+				float DesireVeloctyChange = -SteerVelocity * BodyMass * Traction / DeltaTime;
 				Vector TractionForce = SteerDirection * DesireVeloctyChange * 0.25f;
-				OwningVehicle->GetVehicleBody()->GetBodyInstance().AddForceAtPosition(TractionForce, Wheel.LastLocation, false);
+				OwningVehicle->GetVehicleBody()->GetBodyInstance().AddForceAtPosition(TractionForce, ForceTarget, false);
 			}
 			else
 			{

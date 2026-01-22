@@ -7,8 +7,6 @@ namespace Drn
 {
 	WheeledVehiclePawn::WheeledVehiclePawn()
 		: Pawn()
-		, ThrottleInput(0)
-		, SteerInput(0)
 	{
 		VehicleMesh = std::make_unique<StaticMeshComponent>();
 		VehicleMesh->SetComponentLabel( "VehicleBody" );
@@ -55,20 +53,6 @@ namespace Drn
 	{
 		Pawn::Tick(DeltaTime);
 
-		//m_MovementComponent->SetMovementInput(m_MovementInput * 2);
-
-		{
-			//drn_check(VehicleMesh->GetMesh().IsValid());
-			//
-			//Vector ThrottleForce = GetActorForwardVector() *  ThrottleInput * 1000.0f;
-			//Vector SteerTorque = GetActorUpVector() * SteerInput * 300.0f;
-			//
-			//VehicleMesh->GetBodyInstance().AddForce(ThrottleForce, false);
-			//VehicleMesh->GetBodyInstance().AddTorque(SteerTorque, false);
-		}
-
-		ThrottleInput = 0;
-		SteerInput = 0;
 	}
 
 	void WheeledVehiclePawn::SetupPlayerInputComponent( class InputComponent* PlayerInputComponent )
@@ -90,14 +74,11 @@ namespace Drn
 
 	void WheeledVehiclePawn::OnThrottle( float Value )
 	{
-		ThrottleInput = Value;
 		MovementComponent->SetThrottleInput(Value);
 	}
 
 	void WheeledVehiclePawn::OnSteer( float Value )
 	{
-		SteerInput = Value;
-
 		MovementComponent->SetSteerInput(Value);
 	}
 

@@ -29,9 +29,6 @@ namespace Drn
 
 	protected:
 
-		float ThrottleInput;
-		float SteerInput;
-
 		std::unique_ptr<class StaticMeshComponent> VehicleMesh;
 		std::unique_ptr<class WheeledVehicleMovementComponent> MovementComponent;
 

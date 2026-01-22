@@ -34,6 +34,7 @@ namespace Drn
 		void UpdateBodyScale(const Vector& InScale);
 
 		Vector GetCenterOfMass() const;
+		float GetMass() const;
 
 		void AddForce(const Vector& Force, bool AccelChange);
 		void AddImpulse(const Vector& Impulse, bool AccelChange);
