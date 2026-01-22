@@ -43,7 +43,7 @@ namespace Drn
 	{
 		ImGui::Text(m_Name.c_str());
 		ImGui::SameLine();
-		ImGui::TextWrapped(m_Texture2D.GetPath().c_str());
+		ImGui::TextWrapped(m_Texture2D.GetPath().empty() ? ".." : m_Texture2D.GetPath().c_str());
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -106,7 +106,7 @@ namespace Drn
 	{
 		ImGui::Text(m_Name.c_str());
 		ImGui::SameLine();
-		ImGui::TextWrapped(m_TextureCube.GetPath().c_str());
+		ImGui::TextWrapped(m_TextureCube.GetPath().empty() ? ".." : m_TextureCube.GetPath().c_str());
 
 		if (ImGui::BeginDragDropTarget())
 		{

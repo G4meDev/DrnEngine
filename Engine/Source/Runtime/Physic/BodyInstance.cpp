@@ -98,6 +98,13 @@ namespace Drn
 					shape->setLocalPose(Transform2P( Transform(SphereEl->Center, Quat(), Vector::OneVector ) ) );
 				}
 
+				// TODO: add rotation
+				else if (Element->GetType() == EAggCollisionShape::Box)
+				{
+					BoxElem* BoxEl = Element->GetShape<BoxElem>();
+					shape->setLocalPose(Transform2P( Transform(BoxEl->Center, Quat(), Vector::OneVector ) ) );
+				}
+
 				m_RigidActor->attachShape( *shape );
 				shape->release();
 			}
