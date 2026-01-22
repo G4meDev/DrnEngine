@@ -234,24 +234,24 @@ namespace Drn
 
 	void Actor::RegisterComponents( World* InWorld )
 	{
+		RegisterSceneComponentRecursive(Root, InWorld);
+
 		for (auto Comp : Components)
 		{
 			if(!Comp->IsRegistered())
 				Comp->RegisterComponent(InWorld);
 		}
-
-		RegisterSceneComponentRecursive(Root, InWorld);
 	}
 
 	void Actor::UnRegisterComponents()
 	{
+		UnRegisterSceneComponentRecursive(Root);
+
 		for (auto Comp : Components)
 		{
 			if(Comp->IsRegistered())
 				Comp->UnRegisterComponent();
 		}
-
-		UnRegisterSceneComponentRecursive(Root);
 	}
 
 	void Actor::PostInitializeComponents()

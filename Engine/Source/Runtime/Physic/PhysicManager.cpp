@@ -8,6 +8,8 @@ namespace Drn
 {
 	PhysicManager* PhysicManager::m_SingletonInstance;
 
+	physx::vehicle2::PxVehicleFrame PhysicManager::VehicleFrame;
+
 	void PhysicManager::Init()
 	{
 		LOG(LogPhysicManager, Info, "Initializing physic manager.")
@@ -57,12 +59,16 @@ namespace Drn
 #endif
 
 		TempMaterial = m_Physics->createMaterial( 0.5f, 0.5f, 0.6f );
-		//physx::vehicle2::PxInitVehicleExtension( *m_Foundation );
+		physx::vehicle2::PxInitVehicleExtension( *m_Foundation );
+
+		VehicleFrame.lngAxis = physx::vehicle2::PxVehicleAxes::ePosZ;
+		VehicleFrame.latAxis = physx::vehicle2::PxVehicleAxes::ePosX;
+		VehicleFrame.vrtAxis = physx::vehicle2::PxVehicleAxes::ePosY;
 	}
 
 	void PhysicManager::ShutdownPhysx()
 	{
-		//physx::vehicle2::PxCloseVehicleExtension();
+		physx::vehicle2::PxCloseVehicleExtension();
 		PX_RELEASE(TempMaterial);
 		PX_RELEASE(m_Physics);
 

@@ -322,6 +322,41 @@ namespace Drn
 						m_OwningWorld->DrawDebugLine(P3, P1, DebugDrawColor, 0, 0);
 					}
 				}
+
+				else if (Shape->getGeometry().getType() == PxGeometryType::eCONVEXMESH)
+				{
+					const PxConvexMeshGeometry* ConvexGeo = static_cast<const PxConvexMeshGeometry*>(&(Shape->getGeometry()));
+					drn_check(ConvexGeo);
+
+					const uint8* IndexBuffer = ConvexGeo->convexMesh->getIndexBuffer();
+					PxMeshScale Scale = ConvexGeo->scale;
+
+					const uint32 NumPolygons = ConvexGeo->convexMesh->getNbPolygons();
+					for (uint32 PolygonIndex = 0; PolygonIndex < NumPolygons; PolygonIndex++)
+					{
+						PxHullPolygon Polygon;
+						ConvexGeo->convexMesh->getPolygonData(PolygonIndex, Polygon);
+						uint16 Offset = Polygon.mIndexBase;
+
+						// TODO: maybe needs special case for index buffer of 16 bits
+						//const uint16* Indices = (uint16*)IndexBuffer;
+
+						const uint32 NumVertecies = Polygon.mNbVerts;
+						for (uint32 VertexIndex = 0; VertexIndex < NumVertecies - 1; VertexIndex++)
+						{
+							uint16 Index1 = IndexBuffer[Offset + VertexIndex];
+							uint16 Index2 = IndexBuffer[Offset + VertexIndex + 1];
+
+							const PxVec3& P1 = ConvexGeo->convexMesh->getVertices()[Index1];
+							const PxVec3& P2 = ConvexGeo->convexMesh->getVertices()[Index2];
+
+							const Vector Point1 = RigidTransform.TransformPosition( P2Vector( Scale.transform(P1)) );
+							const Vector Point2 = RigidTransform.TransformPosition( P2Vector( Scale.transform(P2)) );
+
+							m_OwningWorld->DrawDebugLine(Point1, Point2, DebugDrawColor, 0, 0);
+						}
+					}
+				}
 			}
 
 			delete[] Shapes;

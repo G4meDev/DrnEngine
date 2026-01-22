@@ -38,6 +38,8 @@ namespace Drn
 		inline physx::PxTolerancesScale GetToleranceScale() const { return m_Physics->getTolerancesScale(); };
 		inline physx::PxPhysics* GetPhysics() { return m_Physics; }
 
+		inline physx::vehicle2::PxVehicleFrame& GetDefaultVehicleFrame() const { return VehicleFrame; };
+
 		// TODO: remove
 		physx::PxMaterial* TempMaterial;
 
@@ -58,6 +60,7 @@ namespace Drn
 
 		std::set<PhysicScene*> m_AllocatedScenes;
 
+		static physx::vehicle2::PxVehicleFrame VehicleFrame;
 	private:
 	};
 }
