@@ -236,6 +236,18 @@ namespace Drn
 		return m_Mass;
 	}
 
+	Vector BodyInstance::GetVelocity() const
+	{
+		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;
+		if (RigidBody)
+		{
+			const physx::PxTransform LocalCOM = RigidBody->getCMassLocalPose();
+			return P2Vector(RigidBody->getLinearVelocity());
+		}
+
+		return Vector::ZeroVector;
+	}
+
 	void BodyInstance::AddForce( const Vector& Force, bool AccelChange )
 	{
 		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;

@@ -86,18 +86,6 @@ namespace Drn
 			WheelData Wheels[NUM_WHEELS];
 		};
 
-		//void SetMovementInput(const Vector& Input);
-
-		//inline Vector GetPosition() const { return m_Controller ? Pd2Vector(m_Controller->getFootPosition()) : GetOwningActor()->GetActorLocation(); }
-
-		//void SendPhysicTranform(const Transform& InTransform);
-
-		//PhysicUserData& GetUserData()
-		//{
-		//	PhysicUserData::Set<CharacterMovementComponent>((void*)&UserData, const_cast<CharacterMovementComponent*>(this));
-		//	return UserData;
-		//}
-
 #if WITH_EDITOR
 		void DrawDetailPanel( float DeltaTime ) override;
 #endif
@@ -105,6 +93,8 @@ namespace Drn
 	protected:
 
 		float Mass;
+		float DragConstant = 3.0f;
+		float Drag = 0.42f;
 
 		float ThrottleInput;
 		float SteerInput;

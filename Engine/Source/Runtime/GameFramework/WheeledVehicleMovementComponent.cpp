@@ -103,7 +103,7 @@ namespace Drn
 				if (Wheel.bEffectedByEngine)
 				{
 					//GetWorld()->DrawDebugLine(WheelSocketLocation, WheelSocketLocation + WheelRotation.GetAxisZ(), Color::Blue, 0.0f, 0.0f);
-					float AvaliableTorque = 1000.0f * ThrottleInput;
+					float AvaliableTorque = 3000.0f * ThrottleInput;
 					Vector ThrottleForce = WheelRotation.GetAxisZ() * AvaliableTorque;
 
 					GetWorld()->DrawDebugSphere(ForceTarget, Quat::Identity, Color::Green, 0.2f, 32, 0.0f, 0.0f);
@@ -144,6 +144,20 @@ namespace Drn
 			WheelRotation = WheelRotation * Quat(Vector::RightVector, Wheel.RotationAngle);
 
 			OwningVehicle->GetVehicleWheel(i)->SetWorldRotation(WheelRotation);
+		}
+
+		if (bValidBody)
+		{
+			Vector BodyVelocity = OwningVehicle->GetVehicleBody()->GetBodyInstance().GetVelocity();
+			std::cout << BodyVelocity.Length() << "\n";
+			
+			if (BodyVelocity.Length() > 0.01f)
+			{
+				Vector DragForce = BodyVelocity * -Drag;
+				DragForce = DragForce + BodyVelocity.GetSafeNormal() * -DragConstant;
+
+				OwningVehicle->GetVehicleBody()->GetBodyInstance().AddForce(DragForce, true);
+			}
 		}
 
 		ThrottleInput = 0;

@@ -36,6 +36,8 @@ namespace Drn
 		Vector GetCenterOfMass() const;
 		float GetMass() const;
 
+		Vector GetVelocity() const;
+
 		void AddForce(const Vector& Force, bool AccelChange);
 		void AddImpulse(const Vector& Impulse, bool AccelChange);
 		void AddTorque(const Vector& Force, bool AccelChange);
