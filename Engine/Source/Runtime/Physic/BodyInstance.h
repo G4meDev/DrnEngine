@@ -33,9 +33,14 @@ namespace Drn
 		void SetBodyTransform(const Transform& InTransform);
 		void UpdateBodyScale(const Vector& InScale);
 
+		Vector GetCenterOfMass() const;
+
 		void AddForce(const Vector& Force, bool AccelChange);
 		void AddImpulse(const Vector& Impulse, bool AccelChange);
 		void AddTorque(const Vector& Force, bool AccelChange);
+
+		void AddForceAtPosition(const Vector& Force, const Vector& Position, bool AccelChange);
+		//void AddForceAtLocalPosition(const Vector& Force, const Vector& Position, bool AccelChange);
 
 #if WITH_EDITOR
 		void DrawDetailPanel(float DeltaTime);

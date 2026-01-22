@@ -59,17 +59,28 @@ namespace Drn
 		{
 			drn_check(VehicleMesh->GetMesh().IsValid());
 
-			Vector ThrottleForce = GetActorForwardVector() *  ThrottleInput * 10.0f;
-			Vector SteerTorque = GetActorUpVector() * SteerInput * 30.0f;
+			Vector ThrottleForce = GetActorForwardVector() *  ThrottleInput * 1000.0f;
+			Vector SteerTorque = GetActorUpVector() * SteerInput * 300.0f;
 
 			VehicleMesh->GetBodyInstance().AddForce(ThrottleForce, false);
 			VehicleMesh->GetBodyInstance().AddTorque(SteerTorque, false);
 		}
 
-		for (int32 i = 0; i < NUM_WHEELS; i++)
+		if (VehicleMesh->GetMesh().IsValid())
 		{
-			const Vector WheelTransform = GetActorTransform().TransformPosition(MovementComponent->Wheels[i].SocketLocation);
-			VehicleWheels[i]->SetWorldLocation(WheelTransform);
+			const Vector SpringDirection = GetActorUpVector();
+			for (int32 i = 0; i < NUM_WHEELS; i++)
+			{
+				WheelData& Wheel = MovementComponent->Wheels[i];
+				if (Wheel.bOnGround)
+				{
+					VehicleMesh->GetBodyInstance().AddForceAtPosition(SpringDirection * Wheel.SuspensionForce, Wheel.LastLocation, false);
+				}
+
+				const Vector WheelTransform = Wheel.LastLocation + SpringDirection * -(Wheel.SuspensionRestLength - Wheel.Offset - Wheel.WheelRadius);
+				VehicleWheels[i]->SetWorldLocation(WheelTransform);
+			}
+			
 		}
 
 		ThrottleInput = 0;

@@ -56,7 +56,11 @@ namespace Drn
 
 		if (m_SimulatePhysic)
 		{
-			m_RigidActor = Physics->createRigidDynamic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
+			physx::PxRigidDynamic* DynamicActor = Physics->createRigidDynamic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
+			m_RigidActor = DynamicActor;
+
+			// TODO: cache center of mass and inertia instead of generating at runtime 
+			//physx::PxRigidBodyExt::setMassAndUpdateInertia(*DynamicActor, m_Mass);
 		}
 
 		else
@@ -110,10 +114,14 @@ namespace Drn
 			}
 		}
 
+		if (m_SimulatePhysic)
+		{
+			PxRigidDynamic* RigidDynamic = m_RigidActor ? m_RigidActor->is<PxRigidDynamic>() : nullptr;
+			drn_check(RigidDynamic);
 
-		//m_RigidActor->
-
-		//m_RigidActor->is<physx::PxRigidDynamic>()->setMassSpaceInertiaTensor(m_SimulatePhysic ? m_Mass : physx::PxReal(0));
+			// TODO: cache center of mass and inertia instead of generating at runtime 
+			physx::PxRigidBodyExt::setMassAndUpdateInertia(*RigidDynamic, m_Mass);
+		}
 
 		m_PhysicUserData = PhysicUserData(this);
 		m_RigidActor->userData = &m_PhysicUserData;
@@ -211,6 +219,18 @@ namespace Drn
 		}
 	}
 
+	Vector BodyInstance::GetCenterOfMass() const
+	{
+		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;
+		if (RigidBody)
+		{
+			const physx::PxTransform LocalCOM = RigidBody->getCMassLocalPose();
+			return P2Vector(RigidBody->getGlobalPose().transform(LocalCOM.p));
+		}
+
+		return Vector::ZeroVector;
+	}
+
 	void BodyInstance::AddForce( const Vector& Force, bool AccelChange )
 	{
 		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;
@@ -235,6 +255,15 @@ namespace Drn
 		if (RigidBody)
 		{
 			RigidBody->addTorque(Vector2P( Force ), AccelChange ? PxForceMode::eACCELERATION : PxForceMode::eFORCE);
+		}
+	}
+
+	void BodyInstance::AddForceAtPosition( const Vector& Force, const Vector& Position, bool AccelChange )
+	{
+		PxRigidBody* RigidBody = m_RigidActor ? m_RigidActor->is<PxRigidBody>() : nullptr;
+		if (RigidBody)
+		{
+			physx::PxRigidBodyExt::addForceAtPos(*RigidBody, Vector2P( Force ), Vector2P( Position ), AccelChange ? PxForceMode::eACCELERATION : PxForceMode::eFORCE);
 		}
 	}
 

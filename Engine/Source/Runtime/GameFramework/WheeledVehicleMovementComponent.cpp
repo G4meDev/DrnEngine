@@ -7,7 +7,9 @@ namespace Drn
 		: Component()
 		, Mass(1000.0f)
 	{
-		Vector SocketOffset = Vector(2.25, 0.8f, 2.5);
+		// TODO: move socket to vehicle collision to avoid getting stuck. for now it's outside cause there is no support for raycast filtering the vehicle body
+		Vector SocketOffset = Vector(2.25, 0.98f, 2.5);
+		//Vector SocketOffset = Vector(2.25, 1.1f, 2.5);
 
 		FrontLeftWheel = WheelData();
 		FrontLeftWheel.bFrontWheel = true;
@@ -39,10 +41,40 @@ namespace Drn
 	{
 		Component::Tick(DeltaTime);
 
+		const Vector SpringDirection = GetOwningActor()->GetActorUpVector();
+
 		for (int32 i = 0; i < NUM_WHEELS; i++)
 		{
-			Vector WheelWorldLocation = GetOwningActor()->GetActorTransform().TransformPosition(Wheels[i].SocketLocation);
-			GetWorld()->DrawDebugSphere(WheelWorldLocation, Quat::Identity, Color::Green, Wheels[i].WheelRadius, 32, 0.0f, 0.0f);
+			WheelData& Wheel = Wheels[i];
+
+			Vector WheelSocketLocation = GetOwningActor()->GetActorTransform().TransformPosition(Wheel.SocketLocation);
+			//GetWorld()->DrawDebugSphere(WheelWorldLocation, Quat::Identity, Color::Green, Wheels[i].WheelRadius, 32, 0.0f, 0.0f);
+
+			const Vector RayStart = WheelSocketLocation;
+			const Vector RayEnd = WheelSocketLocation + SpringDirection * -Wheel.SuspensionRestLength;
+			GetWorld()->DrawDebugLine(RayStart, RayEnd, Color::Blue, 0.0f, 0.0f);
+
+			HitResult Result;
+			GetWorld()->GetPhysicScene()->RaycastSingle(Result, RayStart, SpringDirection * -1, Wheel.SuspensionRestLength);
+
+			Wheel.bOnGround = Result.HitActor;
+			if (Wheel.bOnGround)
+			{
+				GetWorld()->DrawDebugSphere(Result.Location, Quat::Identity, Color::Red, 0.1f, 32, 0.0f, 0.0f);
+
+				Vector WorldVelocity = (WheelSocketLocation - Wheel.LastLocation) / DeltaTime;
+				float Velocity = Vector::DotProduct(SpringDirection, WorldVelocity);
+
+				Wheel.Offset = Wheel.SuspensionRestLength - Vector::Distance(RayStart, Result.Location);
+				Wheel.SuspensionForce = (Wheel.Offset * Wheel.SpringStrength) - (Velocity * Wheel.SpringDamper);
+			}
+			else
+			{
+				Wheel.Offset = 0;
+				Wheel.SuspensionForce = 0;
+			}
+
+			Wheel.LastLocation = WheelSocketLocation;
 		}
 	}
 

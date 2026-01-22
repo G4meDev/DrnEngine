@@ -21,7 +21,9 @@ namespace Drn
 			: SocketLocation(Vector::ZeroVector)
 			, Offset(0)
 			, WheelRadius(0.8f)
-			, SuspensionRestLength(1.0f)
+			, SuspensionRestLength(1.2f)
+			, SpringStrength(1000.0f)
+			, SpringDamper(250.0f)
 			, bFrontWheel(true)
 			, bRightWheel(true)
 		{}
@@ -29,10 +31,16 @@ namespace Drn
 		Vector SocketLocation;
 		float WheelRadius;
 		float SuspensionRestLength;
+		float SpringStrength;
+		float SpringDamper;
 
 		float Offset;
 		bool bFrontWheel;
 		bool bRightWheel;
+
+		Vector LastLocation;
+		bool bOnGround;
+		float SuspensionForce;
 
 		//bool bEffectedByEngine;
 		//bool bEffectedBySteer;
