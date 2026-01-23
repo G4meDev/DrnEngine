@@ -19,7 +19,7 @@ namespace Drn
 		gPhysXMaterialFrictions[0].material = PhysicManager::Get()->TempMaterial;
 
 		//Vector SocketOffset = Vector(2.25, 0.98f, 2.5);
-		Vector SocketOffset = Vector(2.25, -3.5f, 2.5);
+		Vector SocketOffset = Vector(2.25, -3.1f, 2.5);
 
 		FrontLeftWheel.SocketLocation = SocketOffset * Vector(-1, 1, 1);
 		FrontRightWheel.SocketLocation = SocketOffset * Vector(1, 1, 1);
@@ -30,12 +30,12 @@ namespace Drn
 		{
 			Wheels[i].Radius = 0.8f;
 			Wheels[i].HalfWidth = 0.2f;
-			Wheels[i].Mass = 10.0f;
-			Wheels[i].DampingRate = 1.0f;
+			Wheels[i].Mass = 20.0f;
+			Wheels[i].DampingRate = 0.25f;
 
-			Wheels[i].SusppensionLength = 0.4;
-			Wheels[i].SusppensionStrength = 50;
-			Wheels[i].SusppensionDamping = 15;
+			Wheels[i].SusppensionLength = 0.5;
+			Wheels[i].SusppensionStrength = 35000;
+			Wheels[i].SusppensionDamping = 8000;
 		}
 	}
 
@@ -162,8 +162,6 @@ namespace Drn
 				PxConvexMeshGeometry convexMeshGeom(convexMesh);
 				PxShape* wheelShape = PhysicManager::Get()->GetPhysics()->createShape(convexMeshGeom, *PhysicManager::Get()->TempMaterial, true);
 				wheelShape->setFlags(PxShapeFlag::eTRIGGER_SHAPE);
-				//wheelShape->setSimulationFilterData(wheelShapeParams.simulationFilterData);
-				//wheelShape->setQueryFilterData();
 
 				//wheelShape->setFlags(wheelShapeParams.flags);
 				//wheelShape->setSimulationFilterData(wheelShapeParams.simulationFilterData);
@@ -202,8 +200,7 @@ namespace Drn
 				VehicleParams.rigidBodyParams.mass = RigidBody->getMass();
 
 				// TODO: ???
-				//VehicleParams.rigidBodyParams.moi = RigidBody->getMassSpaceInertiaTensor();
-				VehicleParams.rigidBodyParams.moi = PxVec3(1);
+				VehicleParams.rigidBodyParams.moi = RigidBody->getMassSpaceInertiaTensor();
 
 				for (int32 i = 0; i < 4; i++)
 				{
@@ -221,11 +218,22 @@ namespace Drn
 					VehicleParams.suspensionParams[i].wheelAttachment = PxTransform(PxIdentity);
 
 					VehicleParams.suspensionForceParams[i].damping = Wheels[i].SusppensionDamping;
-					VehicleParams.suspensionForceParams[i].sprungMass = 1;
+					VehicleParams.suspensionForceParams[i].sprungMass = VehicleParams.rigidBodyParams.mass / 4;
 					VehicleParams.suspensionForceParams[i].stiffness = Wheels[i].SusppensionStrength;
 
-					//static PxVec3 ForceOffset = PxVec3(0);
-					//VehicleParams.suspensionComplianceParams[i].suspForceAppPoint.yVals = &ForceOffset;
+					PxVec3 ForceOffset = PxVec3(0);
+
+					VehicleParams.suspensionComplianceParams[i].suspForceAppPoint.clear();
+					VehicleParams.suspensionComplianceParams[i].suspForceAppPoint.addPair(0, ForceOffset);
+
+					VehicleParams.suspensionComplianceParams[i].tireForceAppPoint.clear();
+					VehicleParams.suspensionComplianceParams[i].tireForceAppPoint.addPair(0, ForceOffset);
+
+					VehicleParams.suspensionComplianceParams[i].wheelCamberAngle.clear();
+					VehicleParams.suspensionComplianceParams[i].wheelCamberAngle.addPair(0, 0);
+
+					VehicleParams.suspensionComplianceParams[i].wheelToeAngle.clear();
+					VehicleParams.suspensionComplianceParams[i].wheelToeAngle.addPair(0, 0);
 				}
 
 				PxVehicleConstraintsCreate(VehicleParams.axleDescription, *PhysicManager::Get()->GetPhysics(), *PhysxActor.rigidBody, VehicleState.physxConstraints);
