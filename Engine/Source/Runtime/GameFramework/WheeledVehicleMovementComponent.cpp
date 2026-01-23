@@ -31,7 +31,11 @@ namespace Drn
 			Wheels[i].Radius = 0.8f;
 			Wheels[i].HalfWidth = 0.2f;
 			Wheels[i].Mass = 10.0f;
-			Wheels[i].DampingRate = 1000.0f;
+			Wheels[i].DampingRate = 1.0f;
+
+			Wheels[i].SusppensionLength = 5.0;
+			Wheels[i].SusppensionStrength = 1000000;
+			Wheels[i].SusppensionDamping = 1;
 		}
 	}
 
@@ -182,6 +186,15 @@ namespace Drn
 
 					// TODO: ???
 					VehicleParams.wheelParams[i].moi = 1;
+
+					VehicleParams.suspensionParams[i].suspensionAttachment = PxTransform(Vector2P(Wheels[i].SocketLocation));
+					VehicleParams.suspensionParams[i].suspensionTravelDir = PxVec3(0, -1, 0);
+					VehicleParams.suspensionParams[i].suspensionTravelDist = Wheels[i].SusppensionLength;
+					VehicleParams.suspensionParams[i].wheelAttachment = PxTransform(PxIdentity);
+
+					VehicleParams.suspensionForceParams[i].damping = Wheels[i].SusppensionDamping;
+					VehicleParams.suspensionForceParams[i].sprungMass = 1;
+					VehicleParams.suspensionForceParams[i].stiffness = Wheels[i].SusppensionStrength;
 				}
 
 				PxVehicleConstraintsCreate(VehicleParams.axleDescription, *PhysicManager::Get()->GetPhysics(), *PhysxActor.rigidBody, VehicleState.physxConstraints);
@@ -225,16 +238,16 @@ namespace Drn
 				{
 					ComponentSequenceSubstepGroupHandle = ComponentSequence.beginSubstepGroup(3);
 
-					//ComponentSequence.add(static_cast<PxVehicleSuspensionComponent*>(this));
+					ComponentSequence.add(static_cast<PxVehicleSuspensionComponent*>(&VehicleCommands));
 					//ComponentSequence.add(static_cast<PxVehicleTireComponent*>(this));
-					//ComponentSequence.add(static_cast<PxVehiclePhysXConstraintComponent*>(this));
+					ComponentSequence.add(static_cast<PxVehiclePhysXConstraintComponent*>(&VehicleCommands));
 					//ComponentSequence.add(static_cast<PxVehicleEngineDrivetrainComponent*>(this));
 					ComponentSequence.add(static_cast<PxVehicleRigidBodyComponent*>(&VehicleCommands));
 
 					ComponentSequence.endSubstepGroup();
 				}
 
-				//ComponentSequence.add(static_cast<PxVehicleWheelComponent*>(this));
+				//ComponentSequence.add(static_cast<PxVehicleWheelComponent*>(&VehicleCommands));
 
 				ComponentSequence.add(static_cast<PxVehiclePhysXActorEndComponent*>(&VehicleCommands));
 			}
@@ -333,6 +346,78 @@ namespace Drn
 		gearState = NULL;
 		engineParams = NULL;
 		engineState = NULL;
+	}
+
+	void VehicleCommandsBase::getDataForSuspensionComponent(const PxVehicleAxleDescription*& axleDescription, const PxVehicleRigidBodyParams*& rigidBodyParams,
+		const PxVehicleSuspensionStateCalculationParams*& suspensionStateCalculationParams, PxVehicleArrayData<const PxReal>& steerResponseStates,
+		const PxVehicleRigidBodyState*& rigidBodyState, PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams,
+		PxVehicleArrayData<const PxVehicleSuspensionParams>& suspensionParams, PxVehicleArrayData<const PxVehicleSuspensionComplianceParams>& suspensionComplianceParams,
+		PxVehicleArrayData<const PxVehicleSuspensionForceParams>& suspensionForceParams, PxVehicleSizedArrayData<const PxVehicleAntiRollForceParams>& antiRollForceParams,
+		PxVehicleArrayData<const PxVehicleRoadGeometryState>& wheelRoadGeomStates, PxVehicleArrayData<PxVehicleSuspensionState>& suspensionStates,
+		PxVehicleArrayData<PxVehicleSuspensionComplianceState>& suspensionComplianceStates, PxVehicleArrayData<PxVehicleSuspensionForce>& suspensionForces,
+		PxVehicleAntiRollTorque*& antiRollTorque)
+	{
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		rigidBodyParams = &Params.rigidBodyParams;
+		suspensionStateCalculationParams = &Params.suspensionStateCalculationParams;
+		steerResponseStates.setData(State.steerCommandResponseStates);
+		rigidBodyState = &State.rigidBodyState;
+		wheelParams.setData(Params.wheelParams);
+		suspensionParams.setData(Params.suspensionParams);
+		suspensionComplianceParams.setData(Params.suspensionComplianceParams);
+		suspensionForceParams.setData(Params.suspensionForceParams);
+		antiRollForceParams.setEmpty();
+		wheelRoadGeomStates.setData(State.roadGeomStates);
+		suspensionStates.setData(State.suspensionStates);
+		suspensionComplianceStates.setData(State.suspensionComplianceStates);
+		suspensionForces.setData(State.suspensionForces);
+		antiRollTorque = NULL;
+	}
+
+	void VehicleCommandsBase::getDataForWheelComponent(const PxVehicleAxleDescription*& axleDescription,
+		PxVehicleArrayData<const PxReal>& steerResponseStates, PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams,
+		PxVehicleArrayData<const PxVehicleSuspensionParams>& suspensionParams, PxVehicleArrayData<const PxVehicleWheelActuationState>& actuationStates,
+		PxVehicleArrayData<const PxVehicleSuspensionState>& suspensionStates, PxVehicleArrayData<const PxVehicleSuspensionComplianceState>& suspensionComplianceStates,
+		PxVehicleArrayData<const PxVehicleTireSpeedState>& tireSpeedStates, PxVehicleArrayData<PxVehicleWheelRigidBody1dState>& wheelRigidBody1dStates,
+		PxVehicleArrayData<PxVehicleWheelLocalPose>& wheelLocalPoses)
+	{
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		steerResponseStates.setData(State.steerCommandResponseStates);
+		wheelParams.setData(Params.wheelParams);
+		suspensionParams.setData(Params.suspensionParams);
+		actuationStates.setData(State.actuationStates);
+		suspensionStates.setData(State.suspensionStates);
+		suspensionComplianceStates.setData(State.suspensionComplianceStates);
+		tireSpeedStates.setData(State.tireSpeedStates);
+		wheelRigidBody1dStates.setData(State.wheelRigidBody1dStates);
+		wheelLocalPoses.setData(State.wheelLocalPoses);
+	}
+
+	void VehicleCommandsBase::getDataForPhysXConstraintComponent(const PxVehicleAxleDescription*& axleDescription, const PxVehicleRigidBodyState*& rigidBodyState,
+		PxVehicleArrayData<const PxVehicleSuspensionParams>& suspensionParams, PxVehicleArrayData<const PxVehiclePhysXSuspensionLimitConstraintParams>& suspensionLimitParams,
+		PxVehicleArrayData<const PxVehicleSuspensionState>& suspensionStates, PxVehicleArrayData<const PxVehicleSuspensionComplianceState>& suspensionComplianceStates,
+		PxVehicleArrayData<const PxVehicleRoadGeometryState>& wheelRoadGeomStates, PxVehicleArrayData<const PxVehicleTireDirectionState>& tireDirectionStates,
+		PxVehicleArrayData<const PxVehicleTireStickyState>& tireStickyStates, PxVehiclePhysXConstraints*& constraints)
+	{
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		rigidBodyState = &State.rigidBodyState;
+		suspensionParams.setData(Params.suspensionParams);
+		suspensionLimitParams.setData(Params.physxSuspensionLimitConstraintParams);
+		suspensionStates.setData(State.suspensionStates);
+		suspensionComplianceStates.setData(State.suspensionComplianceStates);
+		wheelRoadGeomStates.setData(State.roadGeomStates);
+		tireDirectionStates.setData(State.tireDirectionStates);
+		tireStickyStates.setData(State.tireStickyStates);
+		constraints = &State.physxConstraints;
 	}
 
         }  // namespace Drn
