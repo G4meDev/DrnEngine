@@ -19,7 +19,7 @@ namespace Drn
 		gPhysXMaterialFrictions[0].material = PhysicManager::Get()->TempMaterial;
 
 		//Vector SocketOffset = Vector(2.25, 0.98f, 2.5);
-		Vector SocketOffset = Vector(2.25, 0.0f, 2.5);
+		Vector SocketOffset = Vector(2.25, -3.5f, 2.5);
 
 		FrontLeftWheel.SocketLocation = SocketOffset * Vector(-1, 1, 1);
 		FrontRightWheel.SocketLocation = SocketOffset * Vector(1, 1, 1);
@@ -33,9 +33,9 @@ namespace Drn
 			Wheels[i].Mass = 10.0f;
 			Wheels[i].DampingRate = 1.0f;
 
-			Wheels[i].SusppensionLength = 5.0;
-			Wheels[i].SusppensionStrength = 1000000;
-			Wheels[i].SusppensionDamping = 1;
+			Wheels[i].SusppensionLength = 0.4;
+			Wheels[i].SusppensionStrength = 50;
+			Wheels[i].SusppensionDamping = 15;
 		}
 	}
 
@@ -55,16 +55,23 @@ namespace Drn
 			CommandState.throttle = ThrottleInput;
 			CommandState.steer = SteerInput;
 
+			for (int32 i = 0; i < NUM_WHEELS; i++)
+			{
+				PxVec3 v, w;
+				PxF32 dist;
+				PxVehicleComputeSuspensionRaycast(SimulationContext.frame, VehicleParams.wheelParams[i], VehicleParams.suspensionParams[i], VehicleState.steerCommandResponseStates[i], VehicleState.rigidBodyState.pose, v, w, dist);
+
+				GetWorld()->DrawDebugLine(P2Vector(v), P2Vector(v) + P2Vector(w) * dist, Color::White, 0, 0);
+
+				PxRaycastBuffer buff;
+				GetWorld()->GetPhysicScene()->GetPhysxScene()->raycast( v, w, dist, buff, PxHitFlag::eDEFAULT );
+				if(buff.hasBlock && buff.block.distance != 0.0f)
+				{
+					GetWorld()->DrawDebugSphere(P2Vector(buff.block.position), Quat::Identity, Color::Red, 0.2f, 20, 0, 0);
+				}
+			}
+
 			ComponentSequence.update(DeltaTime, SimulationContext);
-		}
-
-		const bool bValidBody = OwningVehicle->GetVehicleBody()->GetMesh().IsValid();
-		const Vector SpringDirection = GetOwningActor()->GetActorUpVector();
-		const float BodyMass = bValidBody ? OwningVehicle->GetVehicleBody()->GetBodyInstance().GetMass() : 1.0f;
-
-		if (bValidBody)
-		{
-
 		}
 
 		ThrottleInput = 0;
@@ -99,6 +106,18 @@ namespace Drn
 			RigidBody->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
 			RigidBody->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 			RigidBody->setName("VehicleRigidBody");
+
+			// TODO: remove
+			//const uint32 NumShapes = RigidActor->getNbShapes();
+			//PxShape** Shapes = new PxShape*[NumShapes];
+			//RigidActor->getShapes(Shapes, NumShapes);
+			//for (int32 i = 0; i < NumShapes; i++)
+			//{
+			//	Shapes[i]->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+			//	Shapes[i]->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
+			//}
+			//delete[] Shapes;
+
 			//RigidBody->setCMassLocalPose(rigidActorCmassLocalPose);
 			//RigidBody->setMass(rigidActorParams.rigidBodyParams.mass);
 			//RigidBody->setMassSpaceInertiaTensor(rigidActorParams.rigidBodyParams.moi);
@@ -142,6 +161,10 @@ namespace Drn
 
 				PxConvexMeshGeometry convexMeshGeom(convexMesh);
 				PxShape* wheelShape = PhysicManager::Get()->GetPhysics()->createShape(convexMeshGeom, *PhysicManager::Get()->TempMaterial, true);
+				wheelShape->setFlags(PxShapeFlag::eTRIGGER_SHAPE);
+				//wheelShape->setSimulationFilterData(wheelShapeParams.simulationFilterData);
+				//wheelShape->setQueryFilterData();
+
 				//wheelShape->setFlags(wheelShapeParams.flags);
 				//wheelShape->setSimulationFilterData(wheelShapeParams.simulationFilterData);
 				//wheelShape->setQueryFilterData(wheelShapeParams.queryFilterData);
@@ -162,8 +185,13 @@ namespace Drn
 				SimulationContext.physxActorUpdateMode = PxVehiclePhysXActorUpdateMode::eAPPLY_ACCELERATION;
 			}
 
+			bool bUseSweepCast = false;
+
 			{
 				VehicleParams.axleDescription.setToDefault();
+				VehicleParams.suspensionStateCalculationParams.limitSuspensionExpansionVelocity = true;
+				VehicleParams.suspensionStateCalculationParams.suspensionJounceCalculationType = bUseSweepCast ?
+					PxVehicleSuspensionJounceCalculationType::eSWEEP : PxVehicleSuspensionJounceCalculationType::eRAYCAST;
 
 				uint32 FrontWheelsIndex[2] = {0, 1};
 				VehicleParams.axleDescription.addAxle(2, FrontWheelsIndex);
@@ -195,13 +223,17 @@ namespace Drn
 					VehicleParams.suspensionForceParams[i].damping = Wheels[i].SusppensionDamping;
 					VehicleParams.suspensionForceParams[i].sprungMass = 1;
 					VehicleParams.suspensionForceParams[i].stiffness = Wheels[i].SusppensionStrength;
+
+					//static PxVec3 ForceOffset = PxVec3(0);
+					//VehicleParams.suspensionComplianceParams[i].suspForceAppPoint.yVals = &ForceOffset;
 				}
 
 				PxVehicleConstraintsCreate(VehicleParams.axleDescription, *PhysicManager::Get()->GetPhysics(), *PhysxActor.rigidBody, VehicleState.physxConstraints);
 			}
 
 			{
-				VehicleParams.physxRoadGeometryQueryParams.roadGeometryQueryType = PxVehiclePhysXRoadGeometryQueryType::eRAYCAST;
+				VehicleParams.physxRoadGeometryQueryParams.roadGeometryQueryType = bUseSweepCast ? PxVehiclePhysXRoadGeometryQueryType::eSWEEP : PxVehiclePhysXRoadGeometryQueryType::eRAYCAST;
+				//VehicleParams.physxRoadGeometryQueryParams.roadGeometryQueryType = PxVehiclePhysXRoadGeometryQueryType::eSWEEP;
 				//VehicleParams.physxRoadGeometryQueryParams.defaultFilterData = queryFilterData;
 				//VehicleParams.physxRoadGeometryQueryParams.filterCallback = queryFilterCallback;
 				VehicleParams.physxRoadGeometryQueryParams.filterDataEntries = NULL;
@@ -218,8 +250,8 @@ namespace Drn
 					VehicleParams.physxSuspensionLimitConstraintParams[wheelId].restitution = 0.0f;
 					VehicleParams.physxSuspensionLimitConstraintParams[wheelId].directionForSuspensionLimitConstraint = PxVehiclePhysXSuspensionLimitConstraintParams::eROAD_GEOMETRY_NORMAL;
 
-					//VehicleParams.physxWheelShapeLocalPoses[wheelId] = PxTransform(PxIdentity);
-					VehicleParams.physxWheelShapeLocalPoses[wheelId] = PxTransform(Vector2P(Wheels[i].SocketLocation));
+					VehicleParams.physxWheelShapeLocalPoses[wheelId] = PxTransform(PxIdentity);
+					//VehicleParams.physxWheelShapeLocalPoses[wheelId] = PxTransform(Vector2P(Wheels[i].SocketLocation));
 				}
 				
 				VehicleParams.physxActorCMassLocalPose = RigidBody->getCMassLocalPose();
@@ -233,7 +265,7 @@ namespace Drn
 				//ComponentSequence.add(static_cast<PxVehicleEngineDriveCommandResponseComponent*>(&VehicleCommands));
 				//ComponentSequence.add(static_cast<PxVehicleFourWheelDriveDifferentialStateComponent*>(this));
 				//ComponentSequence.add(static_cast<PxVehicleEngineDriveActuationStateComponent*>(this));
-				//ComponentSequence.add(static_cast<PxVehiclePhysXRoadGeometrySceneQueryComponent*>(this));
+				ComponentSequence.add(static_cast<PxVehiclePhysXRoadGeometrySceneQueryComponent*>(&VehicleCommands));
 				
 				{
 					ComponentSequenceSubstepGroupHandle = ComponentSequence.beginSubstepGroup(3);
@@ -247,7 +279,7 @@ namespace Drn
 					ComponentSequence.endSubstepGroup();
 				}
 
-				//ComponentSequence.add(static_cast<PxVehicleWheelComponent*>(&VehicleCommands));
+				ComponentSequence.add(static_cast<PxVehicleWheelComponent*>(&VehicleCommands));
 
 				ComponentSequence.add(static_cast<PxVehiclePhysXActorEndComponent*>(&VehicleCommands));
 			}
@@ -418,6 +450,25 @@ namespace Drn
 		tireDirectionStates.setData(State.tireDirectionStates);
 		tireStickyStates.setData(State.tireStickyStates);
 		constraints = &State.physxConstraints;
+	}
+
+	void VehicleCommandsBase::getDataForPhysXRoadGeometrySceneQueryComponent(const PxVehicleAxleDescription*& axleDescription, const PxVehiclePhysXRoadGeometryQueryParams*& roadGeomParams,
+		PxVehicleArrayData<const PxReal>& steerResponseStates, const PxVehicleRigidBodyState*& rigidBodyState, PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams,
+		PxVehicleArrayData<const PxVehicleSuspensionParams>& suspensionParams, PxVehicleArrayData<const PxVehiclePhysXMaterialFrictionParams>& materialFrictionParams,
+		PxVehicleArrayData<PxVehicleRoadGeometryState>& roadGeometryStates, PxVehicleArrayData<PxVehiclePhysXRoadGeometryQueryState>& physxRoadGeometryStates)
+	{
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		roadGeomParams = &Params.physxRoadGeometryQueryParams;
+		steerResponseStates.setData(State.steerCommandResponseStates);
+		rigidBodyState = &State.rigidBodyState;
+		wheelParams.setData(Params.wheelParams);
+		suspensionParams.setData(Params.suspensionParams);
+		materialFrictionParams.setData(Params.physxMaterialFrictionParams);
+		roadGeometryStates.setData(State.roadGeomStates);
+		physxRoadGeometryStates.setEmpty();
 	}
 
         }  // namespace Drn

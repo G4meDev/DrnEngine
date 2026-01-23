@@ -187,6 +187,7 @@ namespace Drn
 		, public PxVehicleEngineDriveCommandResponseComponent
 		, public PxVehiclePhysXActorBeginComponent
 		, public PxVehiclePhysXActorEndComponent
+		, public PxVehiclePhysXRoadGeometrySceneQueryComponent
 		, public PxVehicleSuspensionComponent
 		, public PxVehicleWheelComponent
 		, public PxVehiclePhysXConstraintComponent
@@ -244,6 +245,11 @@ namespace Drn
 			PxVehicleArrayData<const PxVehicleSuspensionState>& suspensionStates, PxVehicleArrayData<const PxVehicleSuspensionComplianceState>& suspensionComplianceStates,
 			PxVehicleArrayData<const PxVehicleRoadGeometryState>& wheelRoadGeomStates, PxVehicleArrayData<const PxVehicleTireDirectionState>& tireDirectionStates,
 			PxVehicleArrayData<const PxVehicleTireStickyState>& tireStickyStates, PxVehiclePhysXConstraints*& constraints ) override;
+
+		void getDataForPhysXRoadGeometrySceneQueryComponent( const PxVehicleAxleDescription*& axleDescription, const PxVehiclePhysXRoadGeometryQueryParams*& roadGeomParams,
+			PxVehicleArrayData<const PxReal>& steerResponseStates, const PxVehicleRigidBodyState*& rigidBodyState, PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams,
+			PxVehicleArrayData<const PxVehicleSuspensionParams>& suspensionParams, PxVehicleArrayData<const PxVehiclePhysXMaterialFrictionParams>& materialFrictionParams,
+			PxVehicleArrayData<PxVehicleRoadGeometryState>& roadGeometryStates, PxVehicleArrayData<PxVehiclePhysXRoadGeometryQueryState>& physxRoadGeometryStates ) override;
         };
 
 	class WheelData

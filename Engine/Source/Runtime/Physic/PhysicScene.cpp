@@ -350,12 +350,17 @@ namespace Drn
 							const PxVec3& P1 = ConvexGeo->convexMesh->getVertices()[Index1];
 							const PxVec3& P2 = ConvexGeo->convexMesh->getVertices()[Index2];
 
-							const Vector Point1 = RigidTransform.TransformPosition( P2Vector( Scale.transform(P1)) );
-							const Vector Point2 = RigidTransform.TransformPosition( P2Vector( Scale.transform(P2)) );
+							const Vector Point1 = WorldTransform.TransformPosition( P2Vector( Scale.transform(P1)) );
+							const Vector Point2 = WorldTransform.TransformPosition( P2Vector( Scale.transform(P2)) );
 
 							m_OwningWorld->DrawDebugLine(Point1, Point2, DebugDrawColor, 0, 0);
 						}
 					}
+				}
+
+				else
+				{
+					drn_check(false);
 				}
 			}
 
