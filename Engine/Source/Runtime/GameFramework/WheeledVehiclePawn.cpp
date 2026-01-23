@@ -68,7 +68,7 @@ namespace Drn
 
 	void WheeledVehiclePawn::GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const
 	{
-		OutLocation = GetActorLocation() + Vector(0, 28, -20) * 3;
+		OutLocation = GetActorLocation() + Vector(0, 28, -20) * 1;
 		OutRotation = Matrix::MakeFromZ( GetActorLocation() - OutLocation ).Rotation();
 	}
 

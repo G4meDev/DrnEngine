@@ -58,7 +58,10 @@ namespace Drn
 			bool bShiftingGear = VehicleState.autoboxState.activeAutoboxGearShift;
 			int32 CurrentGear = VehicleState.gearboxState.currentGear;
 
-			std::cout << std::format("Current Gear : {}\n", CurrentGear);
+			float Throttle = VehicleState.throttleCommandResponseState.commandResponse;
+			float Brake = VehicleState.brakeCommandResponseStates[0];
+
+			std::cout << std::format("Current Gear: {}, Throttle: {}, Brake: {} \n", CurrentGear, Throttle, Brake);
 
 			for (int32 i = 0; i < NUM_WHEELS; i++)
 			{
@@ -76,7 +79,19 @@ namespace Drn
 				}
 			}
 
-			CommandState.throttle = ThrottleInput;
+			CommandState.nbBrakes = 2;
+			if (ThrottleInput >= 0)
+			{
+				CommandState.throttle = ThrottleInput;
+				CommandState.brakes[0] = 0;
+				CommandState.brakes[1] = 0;
+			}
+			else
+			{
+				CommandState.throttle = 0;
+				CommandState.brakes[0] = -ThrottleInput;
+				CommandState.brakes[1] = 0;
+			}
 			CommandState.steer = SteerInput;
 
 			ComponentSequence.update(DeltaTime, SimulationContext);
@@ -354,6 +369,7 @@ namespace Drn
 
 			{
 				VehicleParams.brakeResponseParams[0].maxResponse = 1875.0f;
+				VehicleParams.brakeResponseParams[0].nonlinearResponse.clear();
 				VehicleParams.brakeResponseParams[0].wheelResponseMultipliers[0] = 1.0f;
 				VehicleParams.brakeResponseParams[0].wheelResponseMultipliers[1] = 1.0f;
 				VehicleParams.brakeResponseParams[0].wheelResponseMultipliers[2] = 1.0f;
@@ -361,6 +377,7 @@ namespace Drn
 
 				// handbrake
 				VehicleParams.brakeResponseParams[1].maxResponse = 0.0f;
+				VehicleParams.brakeResponseParams[1].nonlinearResponse.clear();
 				VehicleParams.brakeResponseParams[1].wheelResponseMultipliers[0] = 0.0f;
 				VehicleParams.brakeResponseParams[1].wheelResponseMultipliers[1] = 0.0f;
 				VehicleParams.brakeResponseParams[1].wheelResponseMultipliers[2] = 1.0f;
