@@ -12,141 +12,214 @@ namespace Drn
 	using namespace physx::vehicle2;
 	class WheeledVehiclePawn;
 
-	//struct BaseVehicleParams
-	//{
-	//	PxVehicleAxleDescription axleDescription;
-	//	PxVehicleFrame frame;
-	//	PxVehicleScale scale;
-	//	PxVehicleSuspensionStateCalculationParams suspensionStateCalculationParams;
-	//
-	//	//Command response
-	//	PxVehicleBrakeCommandResponseParams brakeResponseParams[2];
-	//	PxVehicleSteerCommandResponseParams steerResponseParams;
-	//	PxVehicleAckermannParams ackermannParams[1];
-	//
-	//	//Suspension
-	//	PxVehicleSuspensionParams suspensionParams[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleSuspensionComplianceParams suspensionComplianceParams[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleSuspensionForceParams suspensionForceParams[PxVehicleLimits::eMAX_NB_WHEELS];
-	//
-	//	//Tires
-	//	PxVehicleTireForceParams tireForceParams[PxVehicleLimits::eMAX_NB_WHEELS];
-	//
-	//	//Wheels
-	//	PxVehicleWheelParams wheelParams[PxVehicleLimits::eMAX_NB_WHEELS];
-	//
-	//	//Rigid body
-	//	PxVehicleRigidBodyParams rigidBodyParams;
-	//
-	//	BaseVehicleParams transformAndScale(
-	//	const PxVehicleFrame& srcFrame, const PxVehicleFrame& trgFrame, const PxVehicleScale& srcScale, const PxVehicleScale& trgScale) const;
-	//
-	//	PX_FORCE_INLINE bool isValid() const
-	//	{
-	//		if (!axleDescription.isValid())
-	//			return false;
-	//		if (!frame.isValid())
-	//			return true;
-	//		if (!scale.isValid())
-	//			return false;
-	//		if (!suspensionStateCalculationParams.isValid())
-	//			return false;
-	//
-	//		if (!brakeResponseParams[0].isValid(axleDescription))
-	//			return false;
-	//		if (!brakeResponseParams[1].isValid(axleDescription))
-	//			return false;
-	//		if (!steerResponseParams.isValid(axleDescription))
-	//			return false;
-	//		if (!ackermannParams[0].isValid(axleDescription))
-	//				return false;
-	//
-	//		for (PxU32 i = 0; i < axleDescription.nbWheels; i++)
-	//		{
-	//			const PxU32 wheelId = axleDescription.wheelIdsInAxleOrder[i];
-	//
-	//			if (!suspensionParams[wheelId].isValid())
-	//				return false;
-	//			if (!suspensionComplianceParams[wheelId].isValid())
-	//				return false;
-	//			if (!suspensionForceParams[wheelId].isValid())
-	//				return false;
-	//
-	//			if (!tireForceParams[wheelId].isValid())
-	//				return false;
-	//
-	//			if (!wheelParams[wheelId].isValid())
-	//				return false;
-	//		}
-	//
-	//		if (!rigidBodyParams.isValid())
-	//			return false;
-	//
-	//		return true;
-	//	}
-	//};
-	//
-	//struct BaseVehicleState
-	//{
-	//	//Command responses
-	//	PxReal brakeCommandResponseStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxReal steerCommandResponseStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleWheelActuationState actuationStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//
-	//	//Road geometry
-	//	PxVehicleRoadGeometryState roadGeomStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//
-	//	//Suspensions
-	//	PxVehicleSuspensionState suspensionStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleSuspensionComplianceState suspensionComplianceStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleSuspensionForce suspensionForces[PxVehicleLimits::eMAX_NB_WHEELS];
-	//
-	//	//Tires
-	//	PxVehicleTireGripState tireGripStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleTireDirectionState tireDirectionStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleTireSpeedState tireSpeedStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleTireSlipState tireSlipStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleTireCamberAngleState tireCamberAngleStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleTireStickyState tireStickyStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleTireForce tireForces[PxVehicleLimits::eMAX_NB_WHEELS];
-	//
-	//	//Wheels
-	//	PxVehicleWheelRigidBody1dState wheelRigidBody1dStates[PxVehicleLimits::eMAX_NB_WHEELS];
-	//	PxVehicleWheelLocalPose wheelLocalPoses[PxVehicleLimits::eMAX_NB_WHEELS];
-	//
-	//	//Rigid body
-	//	PxVehicleRigidBodyState rigidBodyState;
-	//
-	//	PX_FORCE_INLINE void setToDefault()
-	//	{
-	//		for (unsigned int i = 0; i < PxVehicleLimits::eMAX_NB_WHEELS; i++)
-	//		{
-	//			brakeCommandResponseStates[i] = 0.0;
-	//			steerCommandResponseStates[i] = 0.0f;
-	//
-	//			actuationStates[i].setToDefault();
-	//
-	//			roadGeomStates[i].setToDefault();
-	//
-	//			suspensionStates[i].setToDefault();
-	//			suspensionComplianceStates[i].setToDefault();
-	//			suspensionForces[i].setToDefault();
-	//
-	//			tireGripStates[i].setToDefault();
-	//			tireDirectionStates[i].setToDefault();
-	//			tireSpeedStates[i].setToDefault();
-	//			tireSlipStates[i].setToDefault();
-	//			tireCamberAngleStates[i].setToDefault();
-	//			tireStickyStates[i].setToDefault();
-	//			tireForces[i].setToDefault();
-	//
-	//			wheelRigidBody1dStates[i].setToDefault();
-	//			wheelLocalPoses[i].setToDefault();
-	//		}
-	//
-	//		rigidBodyState.setToDefault();
-	//	}
-	//};
+	struct VehicleParams
+	{
+		PxVehicleAxleDescription axleDescription;
+		PxVehicleFrame frame;
+		PxVehicleScale scale;
+		PxVehicleSuspensionStateCalculationParams suspensionStateCalculationParams;
+	
+		//Command response
+		PxVehicleBrakeCommandResponseParams brakeResponseParams[2];
+		PxVehicleSteerCommandResponseParams steerResponseParams;
+		PxVehicleAckermannParams ackermannParams[1];
+	
+		//Suspension
+		PxVehicleSuspensionParams suspensionParams[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleSuspensionComplianceParams suspensionComplianceParams[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleSuspensionForceParams suspensionForceParams[PxVehicleLimits::eMAX_NB_WHEELS];
+	
+		//Tires
+		PxVehicleTireForceParams tireForceParams[PxVehicleLimits::eMAX_NB_WHEELS];
+	
+		//Wheels
+		PxVehicleWheelParams wheelParams[PxVehicleLimits::eMAX_NB_WHEELS];
+	
+		//Rigid body
+		PxVehicleRigidBodyParams rigidBodyParams;
+	
+		PxVehiclePhysXRoadGeometryQueryParams physxRoadGeometryQueryParams;
+		PxVehiclePhysXMaterialFrictionParams physxMaterialFrictionParams[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehiclePhysXSuspensionLimitConstraintParams physxSuspensionLimitConstraintParams[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxTransform physxActorCMassLocalPose;
+		PxVec3 physxActorBoxShapeHalfExtents;
+		PxTransform physxActorBoxShapeLocalPose;
+		PxTransform physxWheelShapeLocalPoses[PxVehicleLimits::eMAX_NB_WHEELS];
+
+		VehicleParams transformAndScale(
+		const PxVehicleFrame& srcFrame, const PxVehicleFrame& trgFrame, const PxVehicleScale& srcScale, const PxVehicleScale& trgScale) const;
+	
+		PX_FORCE_INLINE bool isValid() const
+		{
+			if (!axleDescription.isValid())
+				return false;
+			if (!frame.isValid())
+				return true;
+			if (!scale.isValid())
+				return false;
+			if (!suspensionStateCalculationParams.isValid())
+				return false;
+	
+			if (!brakeResponseParams[0].isValid(axleDescription))
+				return false;
+			if (!brakeResponseParams[1].isValid(axleDescription))
+				return false;
+			if (!steerResponseParams.isValid(axleDescription))
+				return false;
+			if (!ackermannParams[0].isValid(axleDescription))
+					return false;
+	
+			for (PxU32 i = 0; i < axleDescription.nbWheels; i++)
+			{
+				const PxU32 wheelId = axleDescription.wheelIdsInAxleOrder[i];
+	
+				if (!suspensionParams[wheelId].isValid())
+					return false;
+				if (!suspensionComplianceParams[wheelId].isValid())
+					return false;
+				if (!suspensionForceParams[wheelId].isValid())
+					return false;
+	
+				if (!tireForceParams[wheelId].isValid())
+					return false;
+	
+				if (!wheelParams[wheelId].isValid())
+					return false;
+			}
+	
+			if (!rigidBodyParams.isValid())
+				return false;
+	
+			return true;
+		}
+	};
+	
+	struct VehicleState
+	{
+		//Command responses
+		PxReal brakeCommandResponseStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxReal steerCommandResponseStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleWheelActuationState actuationStates[PxVehicleLimits::eMAX_NB_WHEELS];
+	
+		//Road geometry
+		PxVehicleRoadGeometryState roadGeomStates[PxVehicleLimits::eMAX_NB_WHEELS];
+	
+		//Suspensions
+		PxVehicleSuspensionState suspensionStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleSuspensionComplianceState suspensionComplianceStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleSuspensionForce suspensionForces[PxVehicleLimits::eMAX_NB_WHEELS];
+	
+		//Tires
+		PxVehicleTireGripState tireGripStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleTireDirectionState tireDirectionStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleTireSpeedState tireSpeedStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleTireSlipState tireSlipStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleTireCamberAngleState tireCamberAngleStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleTireStickyState tireStickyStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleTireForce tireForces[PxVehicleLimits::eMAX_NB_WHEELS];
+	
+		//Wheels
+		PxVehicleWheelRigidBody1dState wheelRigidBody1dStates[PxVehicleLimits::eMAX_NB_WHEELS];
+		PxVehicleWheelLocalPose wheelLocalPoses[PxVehicleLimits::eMAX_NB_WHEELS];
+	
+		//Rigid body
+		PxVehicleRigidBodyState rigidBodyState;
+	
+		PxVehiclePhysXActor physxActor;					//physx actor
+		PxVehiclePhysXSteerState physxSteerState;
+		PxVehiclePhysXConstraints physxConstraints;		//susp limit and sticky tire constraints
+
+		PxVehicleEngineDriveThrottleCommandResponseState throttleCommandResponseState;
+		PxVehicleAutoboxState autoboxState;
+		PxVehicleClutchCommandResponseState clutchCommandResponseState;
+		PxVehicleDifferentialState differentialState;
+		PxVehicleWheelConstraintGroupState wheelConstraintGroupState;
+		PxVehicleEngineState engineState;
+		PxVehicleGearboxState gearboxState;
+		PxVehicleClutchSlipState clutchState;
+
+		PX_FORCE_INLINE void setToDefault()
+		{
+			for (unsigned int i = 0; i < PxVehicleLimits::eMAX_NB_WHEELS; i++)
+			{
+				brakeCommandResponseStates[i] = 0.0;
+				steerCommandResponseStates[i] = 0.0f;
+	
+				actuationStates[i].setToDefault();
+	
+				roadGeomStates[i].setToDefault();
+	
+				suspensionStates[i].setToDefault();
+				suspensionComplianceStates[i].setToDefault();
+				suspensionForces[i].setToDefault();
+	
+				tireGripStates[i].setToDefault();
+				tireDirectionStates[i].setToDefault();
+				tireSpeedStates[i].setToDefault();
+				tireSlipStates[i].setToDefault();
+				tireCamberAngleStates[i].setToDefault();
+				tireStickyStates[i].setToDefault();
+				tireForces[i].setToDefault();
+				
+				wheelRigidBody1dStates[i].setToDefault();
+				wheelLocalPoses[i].setToDefault();
+			}
+	
+			rigidBodyState.setToDefault();
+
+			physxActor.setToDefault();
+			physxSteerState.setToDefault();
+			physxConstraints.setToDefault();
+
+			throttleCommandResponseState.setToDefault();
+			autoboxState.setToDefault();
+			clutchCommandResponseState.setToDefault();
+			differentialState.setToDefault();
+			wheelConstraintGroupState.setToDefault();
+			engineState.setToDefault();
+			gearboxState.setToDefault();
+			clutchState.setToDefault();
+		}
+	};
+
+	class VehicleCommandsBase
+		: public PxVehicleRigidBodyComponent
+		, public PxVehicleEngineDriveCommandResponseComponent
+        , public PxVehiclePhysXActorBeginComponent
+		, public PxVehiclePhysXActorEndComponent
+	{
+	public:
+		
+		VehicleCommandsBase(class WheeledVehicleMovementComponent* inOwningVehicle) : OwningVehicle(inOwningVehicle) {}
+		class WheeledVehicleMovementComponent* OwningVehicle;
+
+		void getDataForRigidBodyComponent( const PxVehicleAxleDescription*& axleDescription, const PxVehicleRigidBodyParams*& rigidBodyParams,
+			PxVehicleArrayData<const PxVehicleSuspensionForce>& suspensionForces, PxVehicleArrayData<const PxVehicleTireForce>& tireForces,
+			const PxVehicleAntiRollTorque*& antiRollTorque, PxVehicleRigidBodyState*& rigidBodyState ) override;
+
+		void getDataForEngineDriveCommandResponseComponent( const PxVehicleAxleDescription*& axleDescription, PxVehicleSizedArrayData<const PxVehicleBrakeCommandResponseParams>& brakeResponseParams,
+			const PxVehicleSteerCommandResponseParams*& steerResponseParams, PxVehicleSizedArrayData<const PxVehicleAckermannParams>& ackermannParams,
+			const PxVehicleGearboxParams*& gearboxParams, const PxVehicleClutchCommandResponseParams*& clutchResponseParams, const PxVehicleEngineParams*& engineParams,
+			const PxVehicleRigidBodyState*& rigidBodyState, const PxVehicleEngineState*& engineState, const PxVehicleAutoboxParams*& autoboxParams,
+			const PxVehicleCommandState*& commands, const PxVehicleEngineDriveTransmissionCommandState*& transmissionCommands,
+			PxVehicleArrayData<PxReal>& brakeResponseStates, PxVehicleEngineDriveThrottleCommandResponseState*& throttleResponseState,
+			PxVehicleArrayData<PxReal>& steerResponseStates, PxVehicleGearboxState*& gearboxResponseState,
+			PxVehicleClutchCommandResponseState*& clutchResponseState, PxVehicleAutoboxState*& autoboxState ) override;
+
+		void getDataForPhysXActorEndComponent( const PxVehicleAxleDescription*& axleDescription, const PxVehicleRigidBodyState*& rigidBodyState,
+			PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams, PxVehicleArrayData<const PxTransform>& wheelShapeLocalPoses,
+			PxVehicleArrayData<const PxVehicleWheelRigidBody1dState>& wheelRigidBody1dStates, PxVehicleArrayData<const PxVehicleWheelLocalPose>& wheelLocalPoses,
+			const PxVehicleGearboxState*& gearState, const PxReal*& throttle, PxVehiclePhysXActor*& physxActor ) override;
+
+		void getDataForPhysXActorBeginComponent( const PxVehicleAxleDescription*& axleDescription, const PxVehicleCommandState*& commands,
+			const PxVehicleEngineDriveTransmissionCommandState*& transmissionCommands,
+			const PxVehicleGearboxParams*& gearParams, const PxVehicleGearboxState*& gearState,
+			const PxVehicleEngineParams*& engineParams, PxVehiclePhysXActor*& physxActor,
+			PxVehiclePhysXSteerState*& physxSteerState, PxVehiclePhysXConstraints*& physxConstraints,
+			PxVehicleRigidBodyState*& rigidBodyState,
+			PxVehicleArrayData<PxVehicleWheelRigidBody1dState>& wheelRigidBody1dStates,
+			PxVehicleEngineState*& engineState ) override;
+        };
 
 	class WheelData
 	{
@@ -154,8 +227,8 @@ namespace Drn
 		Vector SocketLocation;
 		float Radius;
 		float HalfWidth;
-
-
+		float Mass;
+		float DampingRate;
 	};
 
 	class WheeledVehicleMovementComponent: public Component
@@ -204,16 +277,23 @@ namespace Drn
 
 // -------------------------------------------------------------------------------------------------
 
-		PxRigidDynamic* RigidBody;
-		//PxVehiclePhysXActor physxActor;
+		const PxVec3 Gravity = PxVec3( 0.0f, -9.81f, 0.0f );
+		PxVehiclePhysXActor PhysxActor;
+		
+		PxVehiclePhysXSimulationContext SimulationContext;
+		PxVehicleComponentSequence ComponentSequence;
+		uint8 ComponentSequenceSubstepGroupHandle;
 
-		//BaseVehicleParams BaseParams;
-		//BaseVehicleState BaseState;
-		//
-		//PxVehicleCommandState CommandState;
+		VehicleCommandsBase VehicleCommands;
+		PxVehicleCommandState CommandState;
 		//PxVehicleEngineDriveTransmissionCommandState TransmissionCommandState;
-		//
-		//PxVehicleComponentSequence ComponentSequence;
-		//uint8 ComponentSequenceSubstepGroupHandle;
+		VehicleParams VehicleParams;
+		VehicleState VehicleState;
+
+		// TODO: do table lookup
+		PxVehiclePhysXMaterialFriction gPhysXMaterialFrictions[16];
+		int32 gNbPhysXMaterialFrictions = 1;
+
+		friend class VehicleCommandsBase;
 	};
 }
