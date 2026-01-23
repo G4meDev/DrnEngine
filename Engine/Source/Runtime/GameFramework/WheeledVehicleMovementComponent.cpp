@@ -13,6 +13,7 @@ namespace Drn
 		PhysxActor.setToDefault();
 		CommandState.setToDefault();
 		VehicleState.setToDefault();
+		TransmissionCommandState.setToDefault();
 
 		// TODO: remove
 		gPhysXMaterialFrictions[0].friction = 1.0f;
@@ -52,9 +53,6 @@ namespace Drn
 
 		if (PhysxActor.rigidBody)
 		{
-			CommandState.throttle = ThrottleInput;
-			CommandState.steer = SteerInput;
-
 			for (int32 i = 0; i < NUM_WHEELS; i++)
 			{
 				PxVec3 v, w;
@@ -71,6 +69,8 @@ namespace Drn
 				}
 			}
 
+			CommandState.throttle = ThrottleInput;
+			CommandState.steer = SteerInput;
 			ComponentSequence.update(DeltaTime, SimulationContext);
 		}
 
@@ -234,6 +234,85 @@ namespace Drn
 
 					VehicleParams.suspensionComplianceParams[i].wheelToeAngle.clear();
 					VehicleParams.suspensionComplianceParams[i].wheelToeAngle.addPair(0, 0);
+
+					{
+						VehicleParams.tireForceParams[0].longStiff = 25000.0f;
+						VehicleParams.tireForceParams[0].latStiffX = 0.01f;
+						VehicleParams.tireForceParams[0].latStiffY = 120000.0f;
+						VehicleParams.tireForceParams[0].camberStiff = 0.0f;
+						VehicleParams.tireForceParams[0].restLoad = 5500.0f;
+
+						VehicleParams.tireForceParams[0].frictionVsSlip[0][0] = 0.0f;
+						VehicleParams.tireForceParams[0].frictionVsSlip[0][1] = 1.0f;
+						VehicleParams.tireForceParams[0].frictionVsSlip[1][0] = 0.1f;
+						VehicleParams.tireForceParams[0].frictionVsSlip[1][1] = 1.0f;
+						VehicleParams.tireForceParams[0].frictionVsSlip[2][0] = 1.0f;
+						VehicleParams.tireForceParams[0].frictionVsSlip[2][1] = 1.0f;
+
+						VehicleParams.tireForceParams[0].loadFilter[0][0] = 0.0f;
+						VehicleParams.tireForceParams[0].loadFilter[0][1] = 0.23f;
+						VehicleParams.tireForceParams[0].loadFilter[1][0] = 3.0f;
+						VehicleParams.tireForceParams[0].loadFilter[1][1] = 3.0f;
+
+					}
+					{
+						VehicleParams.tireForceParams[1].longStiff = 25000.0f;
+						VehicleParams.tireForceParams[1].latStiffX = 0.01f;
+						VehicleParams.tireForceParams[1].latStiffY = 120000.0f;
+						VehicleParams.tireForceParams[1].camberStiff = 0.0f;
+						VehicleParams.tireForceParams[1].restLoad = 5500.0f;
+
+						VehicleParams.tireForceParams[1].frictionVsSlip[0][0] = 0.0f;
+						VehicleParams.tireForceParams[1].frictionVsSlip[0][1] = 1.0f;
+						VehicleParams.tireForceParams[1].frictionVsSlip[1][0] = 0.1f;
+						VehicleParams.tireForceParams[1].frictionVsSlip[1][1] = 1.0f;
+						VehicleParams.tireForceParams[1].frictionVsSlip[2][0] = 1.0f;
+						VehicleParams.tireForceParams[1].frictionVsSlip[2][1] = 1.0f;
+
+						VehicleParams.tireForceParams[1].loadFilter[0][0] = 0.0f;
+						VehicleParams.tireForceParams[1].loadFilter[0][1] = 0.23f;
+						VehicleParams.tireForceParams[1].loadFilter[1][0] = 3.0f;
+						VehicleParams.tireForceParams[1].loadFilter[1][1] = 3.0f;
+					}
+										{
+						VehicleParams.tireForceParams[2].longStiff = 25000.0f;
+						VehicleParams.tireForceParams[2].latStiffX = 0.01f;
+						VehicleParams.tireForceParams[2].latStiffY = 150000.0f;
+						VehicleParams.tireForceParams[2].camberStiff = 0.0f;
+						VehicleParams.tireForceParams[2].restLoad = 4500.0f;
+
+						VehicleParams.tireForceParams[2].frictionVsSlip[0][0] = 0.0f;
+						VehicleParams.tireForceParams[2].frictionVsSlip[0][1] = 1.0f;
+						VehicleParams.tireForceParams[2].frictionVsSlip[1][0] = 0.1f;
+						VehicleParams.tireForceParams[2].frictionVsSlip[1][1] = 1.0f;
+						VehicleParams.tireForceParams[2].frictionVsSlip[2][0] = 1.0f;
+						VehicleParams.tireForceParams[2].frictionVsSlip[2][1] = 1.0f;
+
+						VehicleParams.tireForceParams[2].loadFilter[0][0] = 0.0f;
+						VehicleParams.tireForceParams[2].loadFilter[0][1] = 0.23f;
+						VehicleParams.tireForceParams[2].loadFilter[1][0] = 3.0f;
+						VehicleParams.tireForceParams[2].loadFilter[1][1] = 3.0f;
+					}
+					{
+						VehicleParams.tireForceParams[3].longStiff = 25000.0f;
+						VehicleParams.tireForceParams[3].latStiffX = 0.01f;
+						VehicleParams.tireForceParams[3].latStiffY = 150000.0f;
+						VehicleParams.tireForceParams[3].camberStiff = 0.0f;
+						VehicleParams.tireForceParams[3].restLoad = 4500.0f;
+
+						VehicleParams.tireForceParams[3].frictionVsSlip[0][0] = 0.0f;
+						VehicleParams.tireForceParams[3].frictionVsSlip[0][1] = 1.0f;
+						VehicleParams.tireForceParams[3].frictionVsSlip[1][0] = 0.1f;
+						VehicleParams.tireForceParams[3].frictionVsSlip[1][1] = 1.0f;
+						VehicleParams.tireForceParams[3].frictionVsSlip[2][0] = 1.0f;
+						VehicleParams.tireForceParams[3].frictionVsSlip[2][1] = 1.0f;
+
+						VehicleParams.tireForceParams[3].loadFilter[0][0] = 0.0f;
+						VehicleParams.tireForceParams[3].loadFilter[0][1] = 0.23f;
+						VehicleParams.tireForceParams[3].loadFilter[1][0] = 3.0f;
+						VehicleParams.tireForceParams[3].loadFilter[1][1] = 3.0f;
+					}
+
 				}
 
 				PxVehicleConstraintsCreate(VehicleParams.axleDescription, *PhysicManager::Get()->GetPhysics(), *PhysxActor.rigidBody, VehicleState.physxConstraints);
@@ -257,9 +336,7 @@ namespace Drn
 
 					VehicleParams.physxSuspensionLimitConstraintParams[wheelId].restitution = 0.0f;
 					VehicleParams.physxSuspensionLimitConstraintParams[wheelId].directionForSuspensionLimitConstraint = PxVehiclePhysXSuspensionLimitConstraintParams::eROAD_GEOMETRY_NORMAL;
-
 					VehicleParams.physxWheelShapeLocalPoses[wheelId] = PxTransform(PxIdentity);
-					//VehicleParams.physxWheelShapeLocalPoses[wheelId] = PxTransform(Vector2P(Wheels[i].SocketLocation));
 				}
 				
 				VehicleParams.physxActorCMassLocalPose = RigidBody->getCMassLocalPose();
@@ -268,20 +345,115 @@ namespace Drn
 			}
 
 			{
+				VehicleParams.brakeResponseParams[0].maxResponse = 1875.0f;
+				VehicleParams.brakeResponseParams[0].wheelResponseMultipliers[0] = 1.0f;
+				VehicleParams.brakeResponseParams[0].wheelResponseMultipliers[1] = 1.0f;
+				VehicleParams.brakeResponseParams[0].wheelResponseMultipliers[2] = 1.0f;
+				VehicleParams.brakeResponseParams[0].wheelResponseMultipliers[3] = 1.0f;
+
+				// handbrake
+				VehicleParams.brakeResponseParams[1].maxResponse = 0.0f;
+				VehicleParams.brakeResponseParams[1].wheelResponseMultipliers[0] = 0.0f;
+				VehicleParams.brakeResponseParams[1].wheelResponseMultipliers[1] = 0.0f;
+				VehicleParams.brakeResponseParams[1].wheelResponseMultipliers[2] = 1.0f;
+				VehicleParams.brakeResponseParams[1].wheelResponseMultipliers[3] = 1.0f;
+
+				VehicleParams.steerResponseParams.maxResponse = 0.5f;
+				VehicleParams.steerResponseParams.wheelResponseMultipliers[0] = 1.0f;
+				VehicleParams.steerResponseParams.wheelResponseMultipliers[1] = 1.0f;
+				VehicleParams.steerResponseParams.wheelResponseMultipliers[2] = 0.0f;
+				VehicleParams.steerResponseParams.wheelResponseMultipliers[3] = 0.0f;
+
+				VehicleParams.ackermannParams[0].wheelIds[0] = 0;
+				VehicleParams.ackermannParams[0].wheelIds[1] = 1;
+				// ???
+				VehicleParams.ackermannParams[0].wheelBase = Wheels[1].SocketLocation.GetZ() * 2;
+				VehicleParams.ackermannParams[0].trackWidth = Wheels[1].SocketLocation.GetX() * 2;
+				VehicleParams.ackermannParams[0].strength = 1.0f;
+
+				VehicleParams.autoboxParams.upRatios[0] = 0.65f;
+				VehicleParams.autoboxParams.upRatios[1] = 0.15f;
+				VehicleParams.autoboxParams.upRatios[2] = 0.65f;
+				VehicleParams.autoboxParams.upRatios[3] = 0.65f;
+				VehicleParams.autoboxParams.upRatios[4] = 0.65f;
+				VehicleParams.autoboxParams.upRatios[5] = 0.65f;
+				VehicleParams.autoboxParams.upRatios[6] = 0.65f;
+
+				VehicleParams.autoboxParams.downRatios[0] = 0.5f;
+				VehicleParams.autoboxParams.downRatios[1] = 0.5f;
+				VehicleParams.autoboxParams.downRatios[2] = 0.5f;
+				VehicleParams.autoboxParams.downRatios[3] = 0.5f;
+				VehicleParams.autoboxParams.downRatios[4] = 0.5f;
+				VehicleParams.autoboxParams.downRatios[5] = 0.5f;
+				VehicleParams.autoboxParams.downRatios[6] = 0.5f;
+				
+				VehicleParams.autoboxParams.latency = 2.0f;
+
+				VehicleParams.clutchCommandResponseParams.maxResponse = 10.0f;
+
+				VehicleParams.engineParams.torqueCurve.clear();
+				VehicleParams.engineParams.torqueCurve.addPair(0.0f, 1.0f);
+				VehicleParams.engineParams.torqueCurve.addPair(0.33f, 1.0f);
+				VehicleParams.engineParams.torqueCurve.addPair(1.0f, 1.0f);
+
+				VehicleParams.engineParams.moi = 1.0;
+				VehicleParams.engineParams.peakTorque = 500.0;
+				VehicleParams.engineParams.idleOmega = 0.0;
+				VehicleParams.engineParams.maxOmega = 600.0;
+				VehicleParams.engineParams.dampingRateFullThrottle = 0.15;
+				VehicleParams.engineParams.dampingRateZeroThrottleClutchEngaged = 2.0;
+				VehicleParams.engineParams.dampingRateZeroThrottleClutchDisengaged = 0.35;
+
+				VehicleParams.gearBoxParams.neutralGear = 1;
+				VehicleParams.gearBoxParams.finalRatio = 4.0f;
+				VehicleParams.gearBoxParams.switchTime = 0.5f;
+				VehicleParams.gearBoxParams.ratios[0] = -4.0f;
+				VehicleParams.gearBoxParams.ratios[1] = 0.0f;
+				VehicleParams.gearBoxParams.ratios[2] = 4.0f;
+				VehicleParams.gearBoxParams.ratios[3] = 2.0f;
+				VehicleParams.gearBoxParams.ratios[4] = 1.5f;
+				VehicleParams.gearBoxParams.ratios[5] = 1.1f;
+				VehicleParams.gearBoxParams.ratios[6] = 1.0f;
+
+				VehicleParams.fourWheelDifferentialParams.torqueRatios[0] = 0.25f;
+				VehicleParams.fourWheelDifferentialParams.torqueRatios[1] = 0.25f;
+				VehicleParams.fourWheelDifferentialParams.torqueRatios[2] = 0.25f;
+				VehicleParams.fourWheelDifferentialParams.torqueRatios[3] = 0.25f;
+
+				VehicleParams.fourWheelDifferentialParams.aveWheelSpeedRatios[0] = 0.25f;
+				VehicleParams.fourWheelDifferentialParams.aveWheelSpeedRatios[1] = 0.25f;
+				VehicleParams.fourWheelDifferentialParams.aveWheelSpeedRatios[2] = 0.25f;
+				VehicleParams.fourWheelDifferentialParams.aveWheelSpeedRatios[3] = 0.25f;
+
+				VehicleParams.fourWheelDifferentialParams.frontWheelIds[0] = 0;
+				VehicleParams.fourWheelDifferentialParams.frontWheelIds[1] = 1;
+				VehicleParams.fourWheelDifferentialParams.rearWheelIds[0] = 2;
+				VehicleParams.fourWheelDifferentialParams.rearWheelIds[1] = 3;
+
+				VehicleParams.fourWheelDifferentialParams.centerBias = 1.3f;
+				VehicleParams.fourWheelDifferentialParams.centerTarget = 1.29f;
+				VehicleParams.fourWheelDifferentialParams.frontBias = 1.3f;
+				VehicleParams.fourWheelDifferentialParams.frontTarget = 1.29f;
+				VehicleParams.fourWheelDifferentialParams.rearBias = 1.3f;
+				VehicleParams.fourWheelDifferentialParams.rearTarget = 1.29f;
+				VehicleParams.fourWheelDifferentialParams.rate = 10.0f;
+			}
+
+			{
 				ComponentSequence.add(static_cast<PxVehiclePhysXActorBeginComponent*>(&VehicleCommands));
 
-				//ComponentSequence.add(static_cast<PxVehicleEngineDriveCommandResponseComponent*>(&VehicleCommands));
-				//ComponentSequence.add(static_cast<PxVehicleFourWheelDriveDifferentialStateComponent*>(this));
-				//ComponentSequence.add(static_cast<PxVehicleEngineDriveActuationStateComponent*>(this));
+				ComponentSequence.add(static_cast<PxVehicleEngineDriveCommandResponseComponent*>(&VehicleCommands));
+				ComponentSequence.add(static_cast<PxVehicleFourWheelDriveDifferentialStateComponent*>(&VehicleCommands));
+				ComponentSequence.add(static_cast<PxVehicleEngineDriveActuationStateComponent*>(&VehicleCommands));
 				ComponentSequence.add(static_cast<PxVehiclePhysXRoadGeometrySceneQueryComponent*>(&VehicleCommands));
 				
 				{
 					ComponentSequenceSubstepGroupHandle = ComponentSequence.beginSubstepGroup(3);
 
 					ComponentSequence.add(static_cast<PxVehicleSuspensionComponent*>(&VehicleCommands));
-					//ComponentSequence.add(static_cast<PxVehicleTireComponent*>(this));
+					ComponentSequence.add(static_cast<PxVehicleTireComponent*>(&VehicleCommands));
 					ComponentSequence.add(static_cast<PxVehiclePhysXConstraintComponent*>(&VehicleCommands));
-					//ComponentSequence.add(static_cast<PxVehicleEngineDrivetrainComponent*>(this));
+					ComponentSequence.add(static_cast<PxVehicleEngineDrivetrainComponent*>(&VehicleCommands));
 					ComponentSequence.add(static_cast<PxVehicleRigidBodyComponent*>(&VehicleCommands));
 
 					ComponentSequence.endSubstepGroup();
@@ -337,7 +509,27 @@ namespace Drn
 		PxVehicleArrayData<PxReal>& steerResponseStates, PxVehicleGearboxState*& gearboxResponseState,
 		PxVehicleClutchCommandResponseState*& clutchResponseState, PxVehicleAutoboxState*& autoboxState )
 	{
-		
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		brakeResponseParams.setDataAndCount(Params.brakeResponseParams, sizeof(Params.brakeResponseParams) / sizeof(PxVehicleBrakeCommandResponseParams));
+		steerResponseParams = &Params.steerResponseParams;
+		ackermannParams.setDataAndCount(Params.ackermannParams, sizeof(Params.ackermannParams)/sizeof(PxVehicleAckermannParams));
+		gearboxParams = &Params.gearBoxParams;
+		clutchResponseParams = &Params.clutchCommandResponseParams;
+		engineParams = &Params.engineParams;
+		rigidBodyState = &State.rigidBodyState;
+		engineState = &State.engineState;
+		autoboxParams = &Params.autoboxParams;
+		commands = &OwningVehicle->CommandState;
+		transmissionCommands = &OwningVehicle->TransmissionCommandState;
+		brakeResponseStates.setData(State.brakeCommandResponseStates);
+		throttleResponseState = &State.throttleCommandResponseState;
+		steerResponseStates.setData(State.steerCommandResponseStates);
+		gearboxResponseState = &State.gearboxState;
+		clutchResponseState = &State.clutchCommandResponseState;
+		autoboxState = &State.autoboxState;
 	}
 
 	void VehicleCommandsBase::getDataForPhysXActorEndComponent(const PxVehicleAxleDescription*& axleDescription, const PxVehicleRigidBodyState*& rigidBodyState,
@@ -477,6 +669,102 @@ namespace Drn
 		materialFrictionParams.setData(Params.physxMaterialFrictionParams);
 		roadGeometryStates.setData(State.roadGeomStates);
 		physxRoadGeometryStates.setEmpty();
+	}
+
+	void VehicleCommandsBase::getDataForFourWheelDriveDifferentialStateComponent(const PxVehicleAxleDescription*& axleDescription, const PxVehicleFourWheelDriveDifferentialParams*& differentialParams,
+		PxVehicleArrayData<const PxVehicleWheelRigidBody1dState>& wheelRigidbody1dStates, PxVehicleDifferentialState*& differentialState,
+		PxVehicleWheelConstraintGroupState*& wheelConstraintGroupState)
+	{
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		differentialParams = &Params.fourWheelDifferentialParams;
+		wheelRigidbody1dStates.setData(State.wheelRigidBody1dStates);
+		differentialState = &State.differentialState;
+		wheelConstraintGroupState = &State.wheelConstraintGroupState;
+	}
+
+	void VehicleCommandsBase::getDataForEngineDrivetrainComponent(const PxVehicleAxleDescription*& axleDescription, PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams,
+		const PxVehicleEngineParams*& engineParams, const PxVehicleClutchParams*& clutchParams, const PxVehicleGearboxParams*& gearboxParams, PxVehicleArrayData<const PxReal>& brakeResponseStates,
+		PxVehicleArrayData<const PxVehicleWheelActuationState>& actuationStates, PxVehicleArrayData<const PxVehicleTireForce>& tireForces,
+		const PxVehicleEngineDriveThrottleCommandResponseState*& throttleResponseState, const PxVehicleClutchCommandResponseState*& clutchResponseState,
+		const PxVehicleDifferentialState*& differentialState, const PxVehicleWheelConstraintGroupState*& constraintGroupState,
+		PxVehicleArrayData<PxVehicleWheelRigidBody1dState>& wheelRigidBody1dStates, PxVehicleEngineState*& engineState, PxVehicleGearboxState*& gearboxState,
+		PxVehicleClutchSlipState*& clutchState)
+	{
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		wheelParams.setData(Params.wheelParams);
+		engineParams = &Params.engineParams;
+		clutchParams = &Params.clutchParams;
+		gearboxParams = &Params.gearBoxParams;
+		brakeResponseStates.setData(State.brakeCommandResponseStates);
+		actuationStates.setData(State.actuationStates);
+		tireForces.setData(State.tireForces);
+		throttleResponseState = &State.throttleCommandResponseState;
+		clutchResponseState = &State.clutchCommandResponseState;
+		differentialState = &State.differentialState;
+		constraintGroupState = NULL;
+		wheelRigidBody1dStates.setData(State.wheelRigidBody1dStates);
+		engineState = &State.engineState;
+		gearboxState = &State.gearboxState;
+		clutchState = &State.clutchState;
+	}
+
+	void VehicleCommandsBase::getDataForTireComponent(const PxVehicleAxleDescription*& axleDescription, PxVehicleArrayData<const PxReal>& steerResponseStates,
+		const PxVehicleRigidBodyState*& rigidBodyState, PxVehicleArrayData<const PxVehicleWheelActuationState>& actuationStates,
+		PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams, PxVehicleArrayData<const PxVehicleSuspensionParams>& suspensionParams,
+		PxVehicleArrayData<const PxVehicleTireForceParams>& tireForceParams, PxVehicleArrayData<const PxVehicleRoadGeometryState>& roadGeomStates,
+		PxVehicleArrayData<const PxVehicleSuspensionState>& suspensionStates, PxVehicleArrayData<const PxVehicleSuspensionComplianceState>& suspensionComplianceStates,
+		PxVehicleArrayData<const PxVehicleSuspensionForce>& suspensionForces, PxVehicleArrayData<const PxVehicleWheelRigidBody1dState>& wheelRigidBody1DStates,
+		PxVehicleArrayData<PxVehicleTireGripState>& tireGripStates, PxVehicleArrayData<PxVehicleTireDirectionState>& tireDirectionStates,
+		PxVehicleArrayData<PxVehicleTireSpeedState>& tireSpeedStates, PxVehicleArrayData<PxVehicleTireSlipState>& tireSlipStates,
+		PxVehicleArrayData<PxVehicleTireCamberAngleState>& tireCamberAngleStates, PxVehicleArrayData<PxVehicleTireStickyState>& tireStickyStates,
+		PxVehicleArrayData<PxVehicleTireForce>& tireForces)
+	{
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		steerResponseStates.setData(State.steerCommandResponseStates);
+		rigidBodyState = &State.rigidBodyState;
+		actuationStates.setData(State.actuationStates);
+		wheelParams.setData(Params.wheelParams);
+		suspensionParams.setData(Params.suspensionParams);
+		tireForceParams.setData(Params.tireForceParams);
+		roadGeomStates.setData(State.roadGeomStates);
+		suspensionStates.setData(State.suspensionStates);
+		suspensionComplianceStates.setData(State.suspensionComplianceStates);
+		suspensionForces.setData(State.suspensionForces);
+		wheelRigidBody1DStates.setData(State.wheelRigidBody1dStates);
+		tireGripStates.setData(State.tireGripStates);
+		tireDirectionStates.setData(State.tireDirectionStates);
+		tireSpeedStates.setData(State.tireSpeedStates);
+		tireSlipStates.setData(State.tireSlipStates);
+		tireCamberAngleStates.setData(State.tireCamberAngleStates);
+		tireStickyStates.setData(State.tireStickyStates);
+		tireForces.setData(State.tireForces);
+	}
+
+	void VehicleCommandsBase::getDataForEngineDriveActuationStateComponent(const PxVehicleAxleDescription*& axleDescription, const PxVehicleGearboxParams*& gearboxParams,
+		PxVehicleArrayData<const PxReal>& brakeResponseStates, const PxVehicleEngineDriveThrottleCommandResponseState*& throttleResponseState,
+		const PxVehicleGearboxState*& gearboxState, const PxVehicleDifferentialState*& differentialState,
+		const PxVehicleClutchCommandResponseState*& clutchResponseState, PxVehicleArrayData<PxVehicleWheelActuationState>& actuationStates)
+	{
+		VehicleParams& Params = OwningVehicle->VehicleParams;
+		VehicleState& State = OwningVehicle->VehicleState;
+
+		axleDescription = &Params.axleDescription;
+		gearboxParams = &Params.gearBoxParams;
+		brakeResponseStates.setData(State.brakeCommandResponseStates);
+		throttleResponseState = &State.throttleCommandResponseState;
+		gearboxState = &State.gearboxState;
+		differentialState = &State.differentialState;
+		clutchResponseState = &State.clutchCommandResponseState;
+		actuationStates.setData(State.actuationStates);
 	}
 
         }  // namespace Drn

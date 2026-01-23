@@ -46,6 +46,15 @@ namespace Drn
 		PxTransform physxActorBoxShapeLocalPose;
 		PxTransform physxWheelShapeLocalPoses[PxVehicleLimits::eMAX_NB_WHEELS];
 
+		PxVehicleAutoboxParams autoboxParams;
+		PxVehicleClutchCommandResponseParams clutchCommandResponseParams;
+		PxVehicleEngineParams engineParams;
+		PxVehicleGearboxParams gearBoxParams;
+		//PxVehicleMultiWheelDriveDifferentialParams multiWheelDifferentialParams;
+		PxVehicleFourWheelDriveDifferentialParams fourWheelDifferentialParams;
+		//PxVehicleTankDriveDifferentialParams tankDifferentialParams;
+		PxVehicleClutchParams clutchParams;
+
 		VehicleParams transformAndScale(
 		const PxVehicleFrame& srcFrame, const PxVehicleFrame& trgFrame, const PxVehicleScale& srcScale, const PxVehicleScale& trgScale) const;
 	
@@ -188,7 +197,11 @@ namespace Drn
 		, public PxVehiclePhysXActorBeginComponent
 		, public PxVehiclePhysXActorEndComponent
 		, public PxVehiclePhysXRoadGeometrySceneQueryComponent
+		, public PxVehicleFourWheelDriveDifferentialStateComponent
+		, public PxVehicleEngineDrivetrainComponent
+		, public PxVehicleEngineDriveActuationStateComponent
 		, public PxVehicleSuspensionComponent
+		, public PxVehicleTireComponent
 		, public PxVehicleWheelComponent
 		, public PxVehiclePhysXConstraintComponent
 	{
@@ -250,6 +263,34 @@ namespace Drn
 			PxVehicleArrayData<const PxReal>& steerResponseStates, const PxVehicleRigidBodyState*& rigidBodyState, PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams,
 			PxVehicleArrayData<const PxVehicleSuspensionParams>& suspensionParams, PxVehicleArrayData<const PxVehiclePhysXMaterialFrictionParams>& materialFrictionParams,
 			PxVehicleArrayData<PxVehicleRoadGeometryState>& roadGeometryStates, PxVehicleArrayData<PxVehiclePhysXRoadGeometryQueryState>& physxRoadGeometryStates ) override;
+
+		void getDataForFourWheelDriveDifferentialStateComponent( const PxVehicleAxleDescription*& axleDescription, const PxVehicleFourWheelDriveDifferentialParams*& differentialParams,
+			PxVehicleArrayData<const PxVehicleWheelRigidBody1dState>& wheelRigidbody1dStates, PxVehicleDifferentialState*& differentialState,
+			PxVehicleWheelConstraintGroupState*& wheelConstraintGroupState ) override;
+
+		void getDataForEngineDrivetrainComponent( const PxVehicleAxleDescription*& axleDescription, PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams,
+			const PxVehicleEngineParams*& engineParams, const PxVehicleClutchParams*& clutchParams, const PxVehicleGearboxParams*& gearboxParams, PxVehicleArrayData<const PxReal>& brakeResponseStates,
+			PxVehicleArrayData<const PxVehicleWheelActuationState>&  actuationStates, PxVehicleArrayData<const PxVehicleTireForce>& tireForces,
+			const PxVehicleEngineDriveThrottleCommandResponseState*& throttleResponseState, const PxVehicleClutchCommandResponseState*& clutchResponseState,
+			const PxVehicleDifferentialState*& differentialState, const PxVehicleWheelConstraintGroupState*& constraintGroupState,
+			PxVehicleArrayData<PxVehicleWheelRigidBody1dState>& wheelRigidBody1dStates, PxVehicleEngineState*& engineState, PxVehicleGearboxState*& gearboxState,
+			PxVehicleClutchSlipState*& clutchState ) override;
+
+		void getDataForTireComponent( const PxVehicleAxleDescription*& axleDescription, PxVehicleArrayData<const PxReal>& steerResponseStates,
+			const PxVehicleRigidBodyState*& rigidBodyState, PxVehicleArrayData<const PxVehicleWheelActuationState>& actuationStates,
+			PxVehicleArrayData<const PxVehicleWheelParams>& wheelParams, PxVehicleArrayData<const PxVehicleSuspensionParams>& suspensionParams,
+			PxVehicleArrayData<const PxVehicleTireForceParams>& tireForceParams, PxVehicleArrayData<const PxVehicleRoadGeometryState>& roadGeomStates,
+			PxVehicleArrayData<const PxVehicleSuspensionState>& suspensionStates, PxVehicleArrayData<const PxVehicleSuspensionComplianceState>& suspensionComplianceStates,
+			PxVehicleArrayData<const PxVehicleSuspensionForce>& suspensionForces, PxVehicleArrayData<const PxVehicleWheelRigidBody1dState>& wheelRigidBody1DStates,
+			PxVehicleArrayData<PxVehicleTireGripState>& tireGripStates, PxVehicleArrayData<PxVehicleTireDirectionState>& tireDirectionStates,
+			PxVehicleArrayData<PxVehicleTireSpeedState>& tireSpeedStates, PxVehicleArrayData<PxVehicleTireSlipState>& tireSlipStates,
+			PxVehicleArrayData<PxVehicleTireCamberAngleState>& tireCamberAngleStates, PxVehicleArrayData<PxVehicleTireStickyState>& tireStickyStates,
+			PxVehicleArrayData<PxVehicleTireForce>& tireForces ) override;
+
+		void getDataForEngineDriveActuationStateComponent( const PxVehicleAxleDescription*& axleDescription, const PxVehicleGearboxParams*& gearboxParams,
+			PxVehicleArrayData<const PxReal>& brakeResponseStates, const PxVehicleEngineDriveThrottleCommandResponseState*& throttleResponseState,
+			const PxVehicleGearboxState*& gearboxState, const PxVehicleDifferentialState*& differentialState,
+			const PxVehicleClutchCommandResponseState*& clutchResponseState, PxVehicleArrayData<PxVehicleWheelActuationState>& actuationStates ) override;
         };
 
 	class WheelData
@@ -321,7 +362,7 @@ namespace Drn
 
 		VehicleCommandsBase VehicleCommands;
 		PxVehicleCommandState CommandState;
-		//PxVehicleEngineDriveTransmissionCommandState TransmissionCommandState;
+		PxVehicleEngineDriveTransmissionCommandState TransmissionCommandState;
 		VehicleParams VehicleParams;
 		VehicleState VehicleState;
 
