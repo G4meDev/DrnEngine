@@ -53,6 +53,13 @@ namespace Drn
 
 		if (PhysxActor.rigidBody)
 		{
+			TransmissionCommandState.targetGear = TransmissionCommandState.eAUTOMATIC_GEAR;
+
+			bool bShiftingGear = VehicleState.autoboxState.activeAutoboxGearShift;
+			int32 CurrentGear = VehicleState.gearboxState.currentGear;
+
+			std::cout << std::format("Current Gear : {}\n", CurrentGear);
+
 			for (int32 i = 0; i < NUM_WHEELS; i++)
 			{
 				PxVec3 v, w;
@@ -71,6 +78,7 @@ namespace Drn
 
 			CommandState.throttle = ThrottleInput;
 			CommandState.steer = SteerInput;
+
 			ComponentSequence.update(DeltaTime, SimulationContext);
 		}
 
@@ -274,7 +282,7 @@ namespace Drn
 						VehicleParams.tireForceParams[1].loadFilter[1][0] = 3.0f;
 						VehicleParams.tireForceParams[1].loadFilter[1][1] = 3.0f;
 					}
-										{
+					{
 						VehicleParams.tireForceParams[2].longStiff = 25000.0f;
 						VehicleParams.tireForceParams[2].latStiffX = 0.01f;
 						VehicleParams.tireForceParams[2].latStiffY = 150000.0f;
@@ -548,8 +556,7 @@ namespace Drn
 		wheelLocalPoses.setData(State.wheelLocalPoses);
 		physxActor = &OwningVehicle->PhysxActor;
 
-		//gearState = &State.gearboxState;
-		gearState = NULL;
+		gearState = &State.gearboxState;
 		throttle = &OwningVehicle->CommandState.throttle;
 	}
 
@@ -573,11 +580,11 @@ namespace Drn
 		rigidBodyState = &State.rigidBodyState;
 		wheelRigidBody1dStates.setData(State.wheelRigidBody1dStates);
 
-		transmissionCommands = NULL;
-		gearParams = NULL;
-		gearState = NULL;
-		engineParams = NULL;
-		engineState = NULL;
+		transmissionCommands = &OwningVehicle->TransmissionCommandState;
+		gearParams = &Params.gearBoxParams;
+		gearState =  &State.gearboxState;
+		engineParams = &Params.engineParams;
+		engineState =  &State.engineState;
 	}
 
 	void VehicleCommandsBase::getDataForSuspensionComponent(const PxVehicleAxleDescription*& axleDescription, const PxVehicleRigidBodyParams*& rigidBodyParams,
