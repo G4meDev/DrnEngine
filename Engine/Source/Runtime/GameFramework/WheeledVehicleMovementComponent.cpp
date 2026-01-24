@@ -20,7 +20,8 @@ namespace Drn
 		gPhysXMaterialFrictions[0].material = PhysicManager::Get()->TempMaterial;
 
 		//Vector SocketOffset = Vector(2.25, 0.98f, 2.5);
-		Vector SocketOffset = Vector(2.25, -1.8f, 2.5);
+		//Vector SocketOffset = Vector(2.25, -1.8f, 2.5);
+		Vector SocketOffset = Vector(2.25, 0.98f, 2.5);
 
 		FrontLeftWheel.SocketLocation = SocketOffset * Vector(-1, 1, 1);
 		FrontRightWheel.SocketLocation = SocketOffset * Vector(1, 1, 1);
@@ -55,13 +56,17 @@ namespace Drn
 		{
 			TransmissionCommandState.targetGear = TransmissionCommandState.eAUTOMATIC_GEAR;
 
-			bool bShiftingGear = VehicleState.autoboxState.activeAutoboxGearShift;
-			int32 CurrentGear = VehicleState.gearboxState.currentGear;
+			//bool bShiftingGear = VehicleState.autoboxState.activeAutoboxGearShift;
+			//int32 CurrentGear = VehicleState.gearboxState.currentGear;
+			//
+			//float Throttle = VehicleState.throttleCommandResponseState.commandResponse;
+			//float Brake = VehicleState.brakeCommandResponseStates[0];
+			//
+			//std::cout << std::format("Current Gear: {}, Throttle: {}, Brake: {} \n", CurrentGear, Throttle, Brake);
 
-			float Throttle = VehicleState.throttleCommandResponseState.commandResponse;
-			float Brake = VehicleState.brakeCommandResponseStates[0];
-
-			std::cout << std::format("Current Gear: {}, Throttle: {}, Brake: {} \n", CurrentGear, Throttle, Brake);
+			// com
+			GetWorld()->DrawDebugSphere(P2Vector(VehicleState.rigidBodyState.pose.transform(VehicleParams.physxActorCMassLocalPose.p)), Quat::Identity, Color::Blue, 0.2f, 8, 0, 0);
+			//GetWorld()->DrawDebugSphere(P2Vector(VehicleState.rigidBodyState.pose.p), Quat::Identity, Color::Blue, 0.2f, 8, 0, 0);
 
 			for (int32 i = 0; i < NUM_WHEELS; i++)
 			{
@@ -77,6 +82,8 @@ namespace Drn
 				{
 					GetWorld()->DrawDebugSphere(P2Vector(buff.block.position), Quat::Identity, Color::Red, 0.2f, 20, 0, 0);
 				}
+
+
 			}
 
 			CommandState.nbBrakes = 2;
@@ -234,7 +241,8 @@ namespace Drn
 					VehicleParams.suspensionForceParams[i].sprungMass = VehicleParams.rigidBodyParams.mass / 4;
 					VehicleParams.suspensionForceParams[i].stiffness = Wheels[i].SusppensionStrength;
 
-					PxVec3 ForceOffset = PxVec3(0);
+					//PxVec3 ForceOffset = PxVec3(0);
+					PxVec3 ForceOffset = PxVec3(0, -1, 0);
 
 					VehicleParams.suspensionComplianceParams[i].suspForceAppPoint.clear();
 					VehicleParams.suspensionComplianceParams[i].suspForceAppPoint.addPair(0, ForceOffset);
@@ -353,7 +361,11 @@ namespace Drn
 					VehicleParams.physxWheelShapeLocalPoses[wheelId] = PxTransform(PxIdentity);
 				}
 				
-				VehicleParams.physxActorCMassLocalPose = RigidBody->getCMassLocalPose();
+				PxTransform LocalCom = RigidBody->getCMassLocalPose();
+				//PxTransform LocalCom = PxTransform(PxVec3(0));
+
+				RigidBody->setCMassLocalPose(PxTransform(PxVec3(0))); // this is used as origin for rigid body
+				VehicleParams.physxActorCMassLocalPose = LocalCom; // real com
 				//VehicleParams.physxActorBoxShapeHalfExtents = actorBoxShapeHalfExtents;
 				//VehicleParams.physxActorBoxShapeLocalPose = actorBoxShapeLocalPose;
 			}
@@ -419,6 +431,9 @@ namespace Drn
 				VehicleParams.engineParams.dampingRateFullThrottle = 0.15;
 				VehicleParams.engineParams.dampingRateZeroThrottleClutchEngaged = 2.0;
 				VehicleParams.engineParams.dampingRateZeroThrottleClutchDisengaged = 0.35;
+
+				VehicleParams.clutchParams.accuracyMode = PxVehicleClutchAccuracyMode::eESTIMATE;
+				VehicleParams.clutchParams.estimateIterations = 5;
 
 				VehicleParams.gearBoxParams.neutralGear = 1;
 				VehicleParams.gearBoxParams.finalRatio = 4.0f;
