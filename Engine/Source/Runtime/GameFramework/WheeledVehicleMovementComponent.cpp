@@ -20,7 +20,7 @@ namespace Drn
 		gPhysXMaterialFrictions[0].material = PhysicManager::Get()->TempMaterial;
 
 		//Vector SocketOffset = Vector(2.25, 0.98f, 2.5);
-		Vector SocketOffset = Vector(2.25, -3.1f, 2.5);
+		Vector SocketOffset = Vector(2.25, -1.8f, 2.5);
 
 		FrontLeftWheel.SocketLocation = SocketOffset * Vector(-1, 1, 1);
 		FrontRightWheel.SocketLocation = SocketOffset * Vector(1, 1, 1);
@@ -130,17 +130,6 @@ namespace Drn
 			RigidBody->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
 			RigidBody->setName("VehicleRigidBody");
 
-			// TODO: remove
-			//const uint32 NumShapes = RigidActor->getNbShapes();
-			//PxShape** Shapes = new PxShape*[NumShapes];
-			//RigidActor->getShapes(Shapes, NumShapes);
-			//for (int32 i = 0; i < NumShapes; i++)
-			//{
-			//	Shapes[i]->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
-			//	Shapes[i]->setFlag(PxShapeFlag::eTRIGGER_SHAPE, true);
-			//}
-			//delete[] Shapes;
-
 			//RigidBody->setCMassLocalPose(rigidActorCmassLocalPose);
 			//RigidBody->setMass(rigidActorParams.rigidBodyParams.mass);
 			//RigidBody->setMassSpaceInertiaTensor(rigidActorParams.rigidBodyParams.moi);
@@ -204,6 +193,7 @@ namespace Drn
 				SimulationContext.gravity = Gravity;
 				SimulationContext.physxScene = GetWorld()->GetPhysicScene()->GetPhysxScene();
 				SimulationContext.physxActorUpdateMode = PxVehiclePhysXActorUpdateMode::eAPPLY_ACCELERATION;
+				//SimulationContext.physxUnitCylinderSweepMesh = ;
 			}
 
 			bool bUseSweepCast = false;
@@ -343,9 +333,10 @@ namespace Drn
 
 			{
 				VehicleParams.physxRoadGeometryQueryParams.roadGeometryQueryType = bUseSweepCast ? PxVehiclePhysXRoadGeometryQueryType::eSWEEP : PxVehiclePhysXRoadGeometryQueryType::eRAYCAST;
-				//VehicleParams.physxRoadGeometryQueryParams.roadGeometryQueryType = PxVehiclePhysXRoadGeometryQueryType::eSWEEP;
-				//VehicleParams.physxRoadGeometryQueryParams.defaultFilterData = queryFilterData;
-				//VehicleParams.physxRoadGeometryQueryParams.filterCallback = queryFilterCallback;
+
+				// @TODO: add filtering. for now just query against static object to avoid hitting vehicle body or wheel
+				VehicleParams.physxRoadGeometryQueryParams.defaultFilterData = PxQueryFilterData(PxFilterData(0, 0, 0, 0), PxQueryFlag::eSTATIC);
+				VehicleParams.physxRoadGeometryQueryParams.filterCallback = NULL;
 				VehicleParams.physxRoadGeometryQueryParams.filterDataEntries = NULL;
 
 				const float DefaultFriction = 1.0f;
@@ -498,6 +489,18 @@ namespace Drn
 		Component::UnRegisterComponent();
 	}
 
+
+	Transform WheeledVehicleMovementComponent::GetWheelWorldTransform( int32 WheelIndex ) const
+	{
+		if (PhysxActor.rigidBody)
+		{
+			return P2Transform(PxVehicleComputeWheelPose(SimulationContext.frame, VehicleParams.suspensionParams[WheelIndex], VehicleState.suspensionStates[WheelIndex],
+				VehicleState.suspensionComplianceStates[WheelIndex], VehicleState.steerCommandResponseStates[WheelIndex],
+				VehicleState.rigidBodyState.pose, VehicleState.wheelRigidBody1dStates[WheelIndex]));
+		}
+
+		return Transform::Identity;
+	}
 
 #if WITH_EDITOR
 	void WheeledVehicleMovementComponent::DrawDetailPanel( float DeltaTime )

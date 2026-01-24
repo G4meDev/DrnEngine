@@ -327,6 +327,8 @@ namespace Drn
 		inline void SetThrottleInput(float InThrottleInput) { ThrottleInput = InThrottleInput; }
 		inline void SetSteerInput(float InSteerInput) { SteerInput = InSteerInput; }
 
+		Transform GetWheelWorldTransform(int32 WheelIndex) const;
+
 #if WITH_EDITOR
 		void DrawDetailPanel( float DeltaTime ) override;
 #endif

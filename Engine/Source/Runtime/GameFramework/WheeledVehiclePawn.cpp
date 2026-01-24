@@ -53,6 +53,11 @@ namespace Drn
 	{
 		Pawn::Tick(DeltaTime);
 
+		for (int32 i = 0; i < NUM_WHEELS; i++)
+		{
+			Transform WheelWorldTransform = MovementComponent->GetWheelWorldTransform(i);
+			VehicleWheels[i]->SetWorldLocationAndRotation(WheelWorldTransform.GetLocation(), WheelWorldTransform.GetRotation());
+		}
 	}
 
 	void WheeledVehiclePawn::SetupPlayerInputComponent( class InputComponent* PlayerInputComponent )
