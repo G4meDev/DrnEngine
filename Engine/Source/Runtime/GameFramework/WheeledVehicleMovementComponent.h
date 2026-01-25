@@ -335,11 +335,18 @@ namespace Drn
 
 	protected:
 
-		float ThrottleInput;
-		float SteerInput;
+		inline float InterpInputValue( float DeltaTime, float CurrentValue, float NewValue, float RiseRate, float FallRate ) const
+		{
+			const float DeltaValue = NewValue - CurrentValue;
+			const bool bRising = (( DeltaValue > 0.0f ) == ( CurrentValue > 0.0f )) ||
+									(( DeltaValue != 0.f ) && ( CurrentValue == 0.f ));
+
+			const float MaxDeltaValue = DeltaTime * ( bRising ? RiseRate : FallRate );
+			const float ClampedDeltaValue = std::clamp( DeltaValue, -MaxDeltaValue, MaxDeltaValue );
+			return CurrentValue + ClampedDeltaValue;
+		}
 
 		WheeledVehiclePawn* OwningVehicle;
-
 		union
 		{
 			struct
@@ -352,6 +359,18 @@ namespace Drn
 
 			WheelData Wheels[NUM_WHEELS];
 		};
+
+		float ThrottleInput;
+		float SteerInput;
+
+		float LastThrottleInput;
+		float LastSteerInput;
+
+		float ThrottleInputRiseRate = 6.0f;
+		float ThrottleInputFallRate = 10.0f;
+
+		float SteerInputRiseRate = 2.0f;
+		float SteerInputFallRate = 5.0f;
 
 // -------------------------------------------------------------------------------------------------
 

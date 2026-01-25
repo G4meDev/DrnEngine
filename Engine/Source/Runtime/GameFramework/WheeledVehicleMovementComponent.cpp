@@ -9,6 +9,8 @@ namespace Drn
 		, VehicleCommands(this)
 		, SteerInput(0.0f)
 		, ThrottleInput(0.0f)
+		, LastThrottleInput(0.0f)
+		, LastSteerInput(0.0f)
 	{
 		PhysxActor.setToDefault();
 		CommandState.setToDefault();
@@ -36,8 +38,8 @@ namespace Drn
 			Wheels[i].DampingRate = 0.25f;
 
 			Wheels[i].SusppensionLength = 0.5;
-			Wheels[i].SusppensionStrength = 35000;
-			Wheels[i].SusppensionDamping = 8000;
+			Wheels[i].SusppensionStrength = 3500;
+			Wheels[i].SusppensionDamping = 600;
 		}
 	}
 
@@ -52,17 +54,23 @@ namespace Drn
 
 		drn_check(OwningVehicle);
 
+		ThrottleInput = InterpInputValue(DeltaTime, LastThrottleInput, ThrottleInput, ThrottleInputRiseRate, ThrottleInputFallRate);
+		SteerInput = InterpInputValue(DeltaTime, LastSteerInput, SteerInput, SteerInputRiseRate, SteerInputFallRate);
+
 		if (PhysxActor.rigidBody)
 		{
 			TransmissionCommandState.targetGear = TransmissionCommandState.eAUTOMATIC_GEAR;
 
-			//bool bShiftingGear = VehicleState.autoboxState.activeAutoboxGearShift;
-			//int32 CurrentGear = VehicleState.gearboxState.currentGear;
-			//
-			//float Throttle = VehicleState.throttleCommandResponseState.commandResponse;
-			//float Brake = VehicleState.brakeCommandResponseStates[0];
-			//
-			//std::cout << std::format("Current Gear: {}, Throttle: {}, Brake: {} \n", CurrentGear, Throttle, Brake);
+			bool bShiftingGear = VehicleState.autoboxState.activeAutoboxGearShift;
+			int32 CurrentGear = VehicleState.gearboxState.currentGear;
+			
+			float Throttle = VehicleState.throttleCommandResponseState.commandResponse;
+			float Brake = VehicleState.brakeCommandResponseStates[0];
+			float Steer = VehicleState.steerCommandResponseStates[0];
+
+			float Speed = VehicleState.rigidBodyState.getLongitudinalSpeed(SimulationContext.frame);
+
+			std::cout << std::format("Speed: {:.1f}, Current Gear: {}, Throttle: {:.1f}, Brake: {:.1f}, Steer: {:.1f} \n", Speed, CurrentGear, Throttle, Brake, Steer);
 
 			// com
 			GetWorld()->DrawDebugSphere(P2Vector(VehicleState.rigidBodyState.pose.transform(VehicleParams.physxActorCMassLocalPose.p)), Quat::Identity, Color::Blue, 0.2f, 8, 0, 0);
@@ -83,7 +91,7 @@ namespace Drn
 					GetWorld()->DrawDebugSphere(P2Vector(buff.block.position), Quat::Identity, Color::Red, 0.2f, 20, 0, 0);
 				}
 
-
+				//float Friction = VehicleState.roadGeomStates[0].friction;
 			}
 
 			CommandState.nbBrakes = 2;
@@ -103,6 +111,9 @@ namespace Drn
 
 			ComponentSequence.update(DeltaTime, SimulationContext);
 		}
+
+		LastThrottleInput = ThrottleInput;
+		LastSteerInput = SteerInput;
 
 		ThrottleInput = 0;
 		SteerInput = 0;
@@ -207,7 +218,7 @@ namespace Drn
 
 			{
 				VehicleParams.axleDescription.setToDefault();
-				VehicleParams.suspensionStateCalculationParams.limitSuspensionExpansionVelocity = true;
+				VehicleParams.suspensionStateCalculationParams.limitSuspensionExpansionVelocity = false;
 				VehicleParams.suspensionStateCalculationParams.suspensionJounceCalculationType = bUseSweepCast ?
 					PxVehicleSuspensionJounceCalculationType::eSWEEP : PxVehicleSuspensionJounceCalculationType::eRAYCAST;
 
@@ -241,8 +252,8 @@ namespace Drn
 					VehicleParams.suspensionForceParams[i].sprungMass = VehicleParams.rigidBodyParams.mass / 4;
 					VehicleParams.suspensionForceParams[i].stiffness = Wheels[i].SusppensionStrength;
 
-					//PxVec3 ForceOffset = PxVec3(0);
-					PxVec3 ForceOffset = PxVec3(0, -1, 0);
+					PxVec3 ForceOffset = PxVec3(0, -0.8, 0);
+					//PxVec3 ForceOffset = PxVec3(0, -1, 0);
 
 					VehicleParams.suspensionComplianceParams[i].suspForceAppPoint.clear();
 					VehicleParams.suspensionComplianceParams[i].suspForceAppPoint.addPair(0, ForceOffset);
@@ -262,6 +273,7 @@ namespace Drn
 						VehicleParams.tireForceParams[0].latStiffY = 120000.0f;
 						VehicleParams.tireForceParams[0].camberStiff = 0.0f;
 						VehicleParams.tireForceParams[0].restLoad = 5500.0f;
+						//VehicleParams.tireForceParams[0].restLoad = (VehicleParams.wheelParams[0].mass + VehicleParams.suspensionForceParams[0].sprungMass) * 10;
 
 						VehicleParams.tireForceParams[0].frictionVsSlip[0][0] = 0.0f;
 						VehicleParams.tireForceParams[0].frictionVsSlip[0][1] = 1.0f;
@@ -282,6 +294,7 @@ namespace Drn
 						VehicleParams.tireForceParams[1].latStiffY = 120000.0f;
 						VehicleParams.tireForceParams[1].camberStiff = 0.0f;
 						VehicleParams.tireForceParams[1].restLoad = 5500.0f;
+						//VehicleParams.tireForceParams[1].restLoad = (VehicleParams.wheelParams[1].mass + VehicleParams.suspensionForceParams[1].sprungMass) * 10;
 
 						VehicleParams.tireForceParams[1].frictionVsSlip[0][0] = 0.0f;
 						VehicleParams.tireForceParams[1].frictionVsSlip[0][1] = 1.0f;
@@ -301,6 +314,7 @@ namespace Drn
 						VehicleParams.tireForceParams[2].latStiffY = 150000.0f;
 						VehicleParams.tireForceParams[2].camberStiff = 0.0f;
 						VehicleParams.tireForceParams[2].restLoad = 4500.0f;
+						//VehicleParams.tireForceParams[2].restLoad = (VehicleParams.wheelParams[2].mass + VehicleParams.suspensionForceParams[2].sprungMass) * 10;
 
 						VehicleParams.tireForceParams[2].frictionVsSlip[0][0] = 0.0f;
 						VehicleParams.tireForceParams[2].frictionVsSlip[0][1] = 1.0f;
@@ -320,6 +334,7 @@ namespace Drn
 						VehicleParams.tireForceParams[3].latStiffY = 150000.0f;
 						VehicleParams.tireForceParams[3].camberStiff = 0.0f;
 						VehicleParams.tireForceParams[3].restLoad = 4500.0f;
+						//VehicleParams.tireForceParams[3].restLoad = (VehicleParams.wheelParams[3].mass + VehicleParams.suspensionForceParams[3].sprungMass) * 10;
 
 						VehicleParams.tireForceParams[3].frictionVsSlip[0][0] = 0.0f;
 						VehicleParams.tireForceParams[3].frictionVsSlip[0][1] = 1.0f;
@@ -334,6 +349,27 @@ namespace Drn
 						VehicleParams.tireForceParams[3].loadFilter[1][1] = 3.0f;
 					}
 
+					for (int32 i = 0; i < 4; i++)
+					{
+						VehicleParams.tireForceParams[i].longStiff = 2500.0f;
+						VehicleParams.tireForceParams[i].latStiffX = 0.01f;
+						VehicleParams.tireForceParams[i].latStiffY = i > 1 ? 15000.0f : 12000.0f;
+						VehicleParams.tireForceParams[i].camberStiff = 0.0f;
+						VehicleParams.tireForceParams[i].restLoad = 20000.0f;
+						//VehicleParams.tireForceParams[3].restLoad = (VehicleParams.wheelParams[3].mass + VehicleParams.suspensionForceParams[3].sprungMass) * 10;
+
+						VehicleParams.tireForceParams[i].frictionVsSlip[0][0] = 0.0f;
+						VehicleParams.tireForceParams[i].frictionVsSlip[0][1] = 1.0f;
+						VehicleParams.tireForceParams[i].frictionVsSlip[1][0] = 0.1f;
+						VehicleParams.tireForceParams[i].frictionVsSlip[1][1] = 1.0f;
+						VehicleParams.tireForceParams[i].frictionVsSlip[2][0] = 1.0f;
+						VehicleParams.tireForceParams[i].frictionVsSlip[2][1] = 1.0f;
+
+						VehicleParams.tireForceParams[i].loadFilter[0][0] = 0.0f;
+						VehicleParams.tireForceParams[i].loadFilter[0][1] = 0.23f;
+						VehicleParams.tireForceParams[i].loadFilter[1][0] = 3.0f;
+						VehicleParams.tireForceParams[i].loadFilter[1][1] = 3.0f;
+					}
 				}
 
 				PxVehicleConstraintsCreate(VehicleParams.axleDescription, *PhysicManager::Get()->GetPhysics(), *PhysxActor.rigidBody, VehicleState.physxConstraints);
@@ -438,6 +474,7 @@ namespace Drn
 				VehicleParams.gearBoxParams.neutralGear = 1;
 				VehicleParams.gearBoxParams.finalRatio = 4.0f;
 				VehicleParams.gearBoxParams.switchTime = 0.5f;
+				VehicleParams.gearBoxParams.nbRatios = 7;
 				VehicleParams.gearBoxParams.ratios[0] = -4.0f;
 				VehicleParams.gearBoxParams.ratios[1] = 0.0f;
 				VehicleParams.gearBoxParams.ratios[2] = 4.0f;
