@@ -59,6 +59,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/ReflectionCaptureProxy.h
 	Source/Runtime/Engine/SphereReflectionCapture.h
 	Source/Runtime/Engine/SphereReflectionCaptureComponent.h
+	Source/Runtime/Engine/CurveFloat.h
 
 	Source/Runtime/GameFramework/Pawn.h
 	Source/Runtime/GameFramework/Character.h
@@ -288,6 +289,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/ReflectionCaptureProxy.cpp
 	Source/Runtime/Engine/SphereReflectionCapture.cpp
 	Source/Runtime/Engine/SphereReflectionCaptureComponent.cpp
+	Source/Runtime/Engine/CurveFloat.cpp
 
 	Source/Runtime/GameFramework/Pawn.cpp
 	Source/Runtime/GameFramework/Character.cpp

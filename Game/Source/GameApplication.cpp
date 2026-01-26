@@ -4,6 +4,7 @@
 
 #include "Editor/Misc/EditorMisc.h"
 #include "Player/TestPlayerCharacter.h"
+#include "Vehicle/RaceVehiclePawn.h"
 
 namespace Drn
 {
@@ -12,8 +13,10 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( TestPlayerCharacter, Game );
 		REGISTER_SERIALIZABLE_ACTOR( EGameActorType::TestPlayerCharacter , TestPlayerCharacter );
 
-		Application::Startup();
+		REGISTER_LEVEL_SPAWNABLE_CLASS( RaceVehiclePawn, Game );
+		REGISTER_SERIALIZABLE_ACTOR( EGameActorType::RaceVehiclePawn , RaceVehiclePawn);
 
+		Application::Startup();
 
 	}
 

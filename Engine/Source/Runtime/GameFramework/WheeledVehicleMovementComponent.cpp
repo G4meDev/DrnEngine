@@ -5,7 +5,8 @@ namespace Drn
 {
 	WheeledVehicleMovementComponent::WheeledVehicleMovementComponent()
 		: Component()
-		, OwningVehicle(nullptr)
+		//, OwningVehicle(nullptr)
+		, VehicleBody(nullptr)
 		, VehicleCommands(this)
 		, SteerInput(0.0f)
 		, ThrottleInput(0.0f)
@@ -41,6 +42,12 @@ namespace Drn
 			Wheels[i].SusppensionStrength = 3500;
 			Wheels[i].SusppensionDamping = 600;
 		}
+
+		SteerCurve.Reset();
+		SteerCurve.AddKey(0.0f, 1.0f);
+		SteerCurve.AddKey(20.0f, 0.8f);
+		SteerCurve.AddKey(60.0f, 0.4f);
+		SteerCurve.AddKey(120.0f, 0.3f);
 	}
 
 	WheeledVehicleMovementComponent::~WheeledVehicleMovementComponent()
@@ -52,10 +59,18 @@ namespace Drn
 	{
 		Component::Tick(DeltaTime);
 
-		drn_check(OwningVehicle);
+		//drn_check(OwningVehicle);
+		drn_check(VehicleBody);
 
-		ThrottleInput = InterpInputValue(DeltaTime, LastThrottleInput, ThrottleInput, ThrottleInputRiseRate, ThrottleInputFallRate);
-		SteerInput = InterpInputValue(DeltaTime, LastSteerInput, SteerInput, SteerInputRiseRate, SteerInputFallRate);
+		{
+			ThrottleInput = InterpInputValue(DeltaTime, LastThrottleInput, ThrottleInput, ThrottleInputRiseRate, ThrottleInputFallRate);
+			SteerInput = InterpInputValue(DeltaTime, LastSteerInput, SteerInput, SteerInputRiseRate, SteerInputFallRate);
+
+			LastThrottleInput = ThrottleInput;
+			LastSteerInput = SteerInput;
+
+			SteerInput *= SteerCurve.Eval(VehicleState.rigidBodyState.getLongitudinalSpeed(SimulationContext.frame));
+		}
 
 		if (PhysxActor.rigidBody)
 		{
@@ -112,9 +127,6 @@ namespace Drn
 			ComponentSequence.update(DeltaTime, SimulationContext);
 		}
 
-		LastThrottleInput = ThrottleInput;
-		LastSteerInput = SteerInput;
-
 		ThrottleInput = 0;
 		SteerInput = 0;
 	}
@@ -136,8 +148,10 @@ namespace Drn
 		Component::RegisterComponent(InOwningWorld);
 
 		//drn_check(BaseParams.isValid());
+		drn_check(VehicleBody);
 
-		PxRigidActor* RigidActor = OwningVehicle->GetVehicleBody()->GetBodyInstance().GetRigidActor();
+		//PxRigidActor* RigidActor = OwningVehicle->GetVehicleBody()->GetBodyInstance().GetRigidActor();
+		PxRigidActor* RigidActor = VehicleBody->GetBodyInstance().GetRigidActor();
 		PhysxActor.rigidBody = RigidActor ? RigidActor->is<PxRigidDynamic>() : nullptr;
 
 		if (PhysxActor.rigidBody)
@@ -559,6 +573,14 @@ namespace Drn
 	{
 		Component::DrawDetailPanel(DeltaTime);
 
+		const int32 SteerCurvePoints = 50;
+		float SteerCurveValues[SteerCurvePoints];
+		for (int32 i = 0; i < SteerCurvePoints; i++)
+		{
+			float NormalizedTime = (float)i / (SteerCurvePoints - 1);
+			SteerCurveValues[i] = SteerCurve.Eval(NormalizedTime * 140);
+		}
+		ImGui::PlotLines("SteerCurve", SteerCurveValues, SteerCurvePoints);
 	}
 
 #endif

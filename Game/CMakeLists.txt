@@ -7,6 +7,9 @@ set( HEADER_FILES
 	Source/GameForwardTypes.h
 
 	Source/Player/TestPlayerCharacter.h
+
+	Source/Vehicle/RaceVehiclePawn.h
+	Source/Vehicle/RaceVehicleMovementComponent.h
 )
 
 set( SRC_FILES
@@ -17,6 +20,9 @@ set( SRC_FILES
 	Source/GameForwardTypes.cpp
 
 	Source/Player/TestPlayerCharacter.cpp
+
+	Source/Vehicle/RaceVehiclePawn.cpp
+	Source/Vehicle/RaceVehicleMovementComponent.cpp
 )
 
 #set( SHADER_FILES

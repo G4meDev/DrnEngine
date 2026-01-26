@@ -1,11 +1,12 @@
-#include "DrnPCH.h"
-#include "WheeledVehiclePawn.h"
-#include "Runtime/GameFramework/WheeledVehicleMovementComponent.h"
+#include "GamePCH.h"
+#include "RaceVehiclePawn.h"
+
 #include "Runtime/Components/InputComponent.h"
+#include "Vehicle/RaceVehicleMovementComponent.h"
 
 namespace Drn
 {
-	WheeledVehiclePawn::WheeledVehiclePawn()
+	RaceVehiclePawn::RaceVehiclePawn()
 		: Pawn()
 	{
 		VehicleMesh = std::make_unique<StaticMeshComponent>();
@@ -13,11 +14,11 @@ namespace Drn
 		VehicleMesh->SetStatic(false);
 		SetRootComponent(VehicleMesh.get());
 
-		AssetHandle<StaticMesh> DefaultVehicleBody("Engine\\Content\\DefaultVehicle\\SM_DefaultVehicle_Body.drn");
+		AssetHandle<StaticMesh> DefaultVehicleBody("Game\\Content\\Level_2\\Vehicle\\SM_VehicleBody.drn");
 		DefaultVehicleBody.Load();
 		VehicleMesh->SetMesh(DefaultVehicleBody);
 
-		AssetHandle<StaticMesh> DefaultVehicleWheel("Engine\\Content\\DefaultVehicle\\SM_DefaultVehicle_Wheel.drn");
+		AssetHandle<StaticMesh> DefaultVehicleWheel("Game\\Content\\Level_2\\Vehicle\\SM_VehicleWheel.drn");
 		DefaultVehicleWheel.Load();
 
 		for (int32 i = 0; i < 4; i++)
@@ -30,19 +31,19 @@ namespace Drn
 			VehicleWheels[i]->SetMesh(DefaultVehicleWheel);
 		}
 
-		MovementComponent = std::make_unique<WheeledVehicleMovementComponent>();
-		MovementComponent->SetComponentLabel( "WheeledVehicleMovementComponent" );
+		MovementComponent = std::make_unique<RaceVehicleMovementComponent>();
+		MovementComponent->SetComponentLabel( "RaceVehicleMovementComponent" );
 		AddComponent(MovementComponent.get());
 		//MovementComponent->SetOwningVehicle(this);
 		MovementComponent->SetVehicleBody(VehicleMesh.get());
 	}
 
-	WheeledVehiclePawn::~WheeledVehiclePawn()
+	RaceVehiclePawn::~RaceVehiclePawn()
 	{
 		
 	}
 
-	void WheeledVehiclePawn::Serialize( Archive& Ar )
+	void RaceVehiclePawn::Serialize( Archive& Ar )
 	{
 		Pawn::Serialize(Ar);
 
@@ -55,7 +56,7 @@ namespace Drn
 		}
 	}
 
-	void WheeledVehiclePawn::Tick( float DeltaTime )
+	void RaceVehiclePawn::Tick( float DeltaTime )
 	{
 		Pawn::Tick(DeltaTime);
 
@@ -66,31 +67,31 @@ namespace Drn
 		}
 	}
 
-	void WheeledVehiclePawn::SetupPlayerInputComponent( class InputComponent* PlayerInputComponent )
+	void RaceVehiclePawn::SetupPlayerInputComponent( class InputComponent* PlayerInputComponent )
 	{
-		PlayerInputComponent->AddAxis(1, 1.0f, 1.0f, this, &WheeledVehiclePawn::OnThrottle);
+		PlayerInputComponent->AddAxis(1, 1.0f, 1.0f, this, &RaceVehiclePawn::OnThrottle);
 		PlayerInputComponent->AddAxisMapping(1, gainput::KeyW, 1);
 		PlayerInputComponent->AddAxisMapping(1, gainput::KeyS, -1);
 		
-		PlayerInputComponent->AddAxis(2, 1.0f, 1.0f, this, &WheeledVehiclePawn::OnSteer);
+		PlayerInputComponent->AddAxis(2, 1.0f, 1.0f, this, &RaceVehiclePawn::OnSteer);
 		PlayerInputComponent->AddAxisMapping(2, gainput::KeyD, 1);
 		PlayerInputComponent->AddAxisMapping(2, gainput::KeyA, -1);
 	}
 
-	void WheeledVehiclePawn::GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const
+	void RaceVehiclePawn::GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const
 	{
 		OutLocation = GetActorLocation() + Vector(0, 28, -20) * 3;
 		OutRotation = Matrix::MakeFromZ( GetActorLocation() - OutLocation ).Rotation();
 	}
 
-	void WheeledVehiclePawn::OnThrottle( float Value )
+	void RaceVehiclePawn::OnThrottle( float Value )
 	{
 		MovementComponent->SetThrottleInput(Value);
 	}
 
-	void WheeledVehiclePawn::OnSteer( float Value )
+	void RaceVehiclePawn::OnSteer( float Value )
 	{
 		MovementComponent->SetSteerInput(Value);
 	}
 
-        }  // namespace Drn
+}  // namespace Drn

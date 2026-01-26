@@ -2,6 +2,7 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Engine/Component.h"
+#include "Runtime/Engine/CurveFloat.h"
 
 #include "vehicle2/PxVehicleAPI.h"
 
@@ -11,6 +12,7 @@ namespace Drn
 {
 	using namespace physx::vehicle2;
 	class WheeledVehiclePawn;
+	class StaticMeshComponent;
 
 	struct VehicleParams
 	{
@@ -323,7 +325,8 @@ namespace Drn
 		void RegisterComponent( World* InOwningWorld ) override;
 		void UnRegisterComponent() override;
 
-		inline void SetOwningVehicle( WheeledVehiclePawn* InOwningVehicle ) { OwningVehicle = InOwningVehicle; }
+		//inline void SetOwningVehicle( WheeledVehiclePawn* InOwningVehicle ) { OwningVehicle = InOwningVehicle; }
+		inline void SetVehicleBody( StaticMeshComponent* InVehicleBody ) { VehicleBody = InVehicleBody; }
 		inline void SetThrottleInput(float InThrottleInput) { ThrottleInput = InThrottleInput; }
 		inline void SetSteerInput(float InSteerInput) { SteerInput = InSteerInput; }
 
@@ -346,7 +349,8 @@ namespace Drn
 			return CurrentValue + ClampedDeltaValue;
 		}
 
-		WheeledVehiclePawn* OwningVehicle;
+		//WheeledVehiclePawn* OwningVehicle;
+		StaticMeshComponent* VehicleBody;
 		union
 		{
 			struct
@@ -371,6 +375,8 @@ namespace Drn
 
 		float SteerInputRiseRate = 2.0f;
 		float SteerInputFallRate = 5.0f;
+
+		CurveFloat SteerCurve;
 
 // -------------------------------------------------------------------------------------------------
 
