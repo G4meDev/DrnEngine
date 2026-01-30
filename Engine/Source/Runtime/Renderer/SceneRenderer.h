@@ -126,10 +126,10 @@ namespace Drn
 
 		inline ViewShowFlags& GetShowFlags() { return ShowFlags; }
 
-		inline bool IsGameView() const;
-		inline bool ShouldRenderAmbientOcclusion() const;
-		inline bool ShouldRenderEnvironmentReflections() const;
-		inline bool ShouldRenderScreenSpaceReflections() const;
+		bool IsGameView() const;
+		bool ShouldRenderAmbientOcclusion() const;
+		bool ShouldRenderEnvironmentReflections() const;
+		bool ShouldRenderScreenSpaceReflections() const;
 
 #if WITH_EDITOR
 		OnPickedComponentDelegate OnPickedComponent;
@@ -216,17 +216,17 @@ namespace Drn
 		};
 		std::vector<CachedShadowmapReadbackEvent> CachedShadowmapReadbackEvents;
 
+		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
+		std::shared_ptr<class EditorPrimitiveRenderBuffer> m_EditorPrimitiveBuffer;
+		std::shared_ptr<class EditorSelectionRenderBuffer> m_EditorSelectionBuffer;
+#endif
+
 		struct RenderBufferCopyEvent
 		{
 			TRefCountPtr<RenderTexture2D> Target;
 			ERenderBufferCopySource CopySource;
 		};
 		std::vector<RenderBufferCopyEvent> RenderBufferCopyEvents;
-
-		std::shared_ptr<class HitProxyRenderBuffer> m_HitProxyRenderBuffer;
-		std::shared_ptr<class EditorPrimitiveRenderBuffer> m_EditorPrimitiveBuffer;
-		std::shared_ptr<class EditorSelectionRenderBuffer> m_EditorSelectionBuffer;
-#endif
 
 		friend class Scene;
 		friend class Renderer;

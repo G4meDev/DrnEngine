@@ -4,7 +4,9 @@
 
 namespace Drn
 {
+#if WITH_EDITOR
 	std::set<ReflectionCaptureComponent*> ReflectionCaptureComponent::ReflectionCapturesToUpdate;
+#endif
 
 	ReflectionCaptureComponent::ReflectionCaptureComponent()
 		: SceneComponent()

@@ -130,6 +130,8 @@ namespace Drn
 		inline bool IsInGameMode() { return bGameMode; }
 		inline void SetGameMode(bool InGameMode) { bGameMode = InGameMode; }
 		inline void ToggleGameMode() { SetGameMode(!bGameMode); }
+#else
+		inline bool IsInGameMode() { return true; }
 #endif
 
 	protected:

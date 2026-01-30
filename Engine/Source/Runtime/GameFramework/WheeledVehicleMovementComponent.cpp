@@ -369,7 +369,7 @@ namespace Drn
 						VehicleParams.tireForceParams[i].latStiffX = 0.01f;
 						VehicleParams.tireForceParams[i].latStiffY = i > 1 ? 15000.0f : 12000.0f;
 						VehicleParams.tireForceParams[i].camberStiff = 0.0f;
-						VehicleParams.tireForceParams[i].restLoad = 50000.0f;
+						VehicleParams.tireForceParams[i].restLoad = 15000.0f;
 						//VehicleParams.tireForceParams[3].restLoad = (VehicleParams.wheelParams[3].mass + VehicleParams.suspensionForceParams[3].sprungMass) * 10;
 
 						VehicleParams.tireForceParams[i].frictionVsSlip[0][0] = 0.0f;

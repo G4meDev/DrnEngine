@@ -4,6 +4,9 @@
 #include "Runtime/Components/InputComponent.h"
 #include "Vehicle/RaceVehicleMovementComponent.h"
 
+#include "Runtime/Components/SpringArmComponent.h"
+#include "Runtime/Engine/CameraComponent.h"
+
 namespace Drn
 {
 	RaceVehiclePawn::RaceVehiclePawn()
@@ -20,6 +23,21 @@ namespace Drn
 
 		AssetHandle<StaticMesh> DefaultVehicleWheel("Game\\Content\\Level_2\\Vehicle\\SM_VehicleWheel.drn");
 		DefaultVehicleWheel.Load();
+
+		m_SpringArm = std::make_shared<SpringArmComponent>();
+		GetRoot()->AttachSceneComponent(m_SpringArm.get());
+		m_SpringArm->SetComponentLabel("SpringArm");
+
+		m_Camera = std::make_shared<CameraComponent>();
+		m_SpringArm->AttachSceneComponent(m_Camera.get());
+		m_Camera->SetComponentLabel("Camera");
+
+		m_SpringArm->SetArmLength(11.0f);
+		m_SpringArm->SetRelativeLocationAndRotation(Vector(0.0f, 2.0, 0.0f), Quat(0, XM_PI / 12, 0));
+		m_SpringArm->SetEnableLocationLag(true);
+		m_SpringArm->SetLocationLagSpeed(20.0f);
+		m_SpringArm->SetEnableRotationLag(true);
+		m_SpringArm->SetRotationLagSpeed(30.0f);
 
 		for (int32 i = 0; i < 4; i++)
 		{
@@ -78,11 +96,16 @@ namespace Drn
 		PlayerInputComponent->AddAxisMapping(2, gainput::KeyA, -1);
 	}
 
-	void RaceVehiclePawn::GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const
+	void RaceVehiclePawn::CalcCamera( struct ViewInfo& OutResult )
 	{
-		OutLocation = GetActorLocation() + Vector(0, 28, -20) * 3;
-		OutRotation = Matrix::MakeFromZ( GetActorLocation() - OutLocation ).Rotation();
+		m_Camera->GetCameraView( OutResult );
 	}
+
+	//void RaceVehiclePawn::GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const
+	//{
+	//	OutLocation = GetActorLocation() + Vector(0, 28, -20) * 3;
+	//	OutRotation = Matrix::MakeFromZ( GetActorLocation() - OutLocation ).Rotation();
+	//}
 
 	void RaceVehiclePawn::OnThrottle( float Value )
 	{

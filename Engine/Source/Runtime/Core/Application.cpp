@@ -182,8 +182,11 @@ namespace Drn
 		
 		tf::Task RendererTick = taskflow.composed_of(Renderer::Get()->m_RendererTickTask);
 
-		WorldTick.precede(PhysicTick);
+		PhysicTick.precede(WorldTick);
 		WorldTick.precede(RendererTick);
+
+		//WorldTick.precede(PhysicTick);
+		//WorldTick.precede(RendererTick);
 
 #if WITH_EDITOR
 		auto EditorTick = taskflow.emplace( [&]() {OPTICK_THREAD_TASK(); Editor::Get()->Tick(m_DeltaTime); } );

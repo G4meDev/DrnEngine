@@ -18,7 +18,8 @@ namespace Drn
 		static EActorType GetActorTypeStatic() { return static_cast<EActorType>(EGameActorType::RaceVehiclePawn); }
 
 		void SetupPlayerInputComponent( class InputComponent* PlayerInputComponent ) override;
-		void GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const override;
+		//void GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const override;
+		virtual void CalcCamera( struct ViewInfo& OutResult ) override;
 
 		void OnThrottle( float Value );
 		void OnSteer(float Value);
@@ -32,6 +33,9 @@ namespace Drn
 		std::unique_ptr<class RaceVehicleMovementComponent> MovementComponent;
 
 		std::unique_ptr<class StaticMeshComponent> VehicleWheels[4];
+
+		std::shared_ptr<class SpringArmComponent> m_SpringArm;
+		std::shared_ptr<class CameraComponent> m_Camera;
 
 	};
 }

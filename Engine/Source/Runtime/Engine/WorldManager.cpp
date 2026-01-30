@@ -82,7 +82,8 @@ namespace Drn
 		//m_SingletonInstance->LoadDefaultWorld();
 
 		//AssetHandle<Level> DefaultLevel("Game\\Content\\Level_04.drn");
-		AssetHandle<Level> DefaultLevel("Game\\Content\\Level_1\\Level_01.drn");
+		//AssetHandle<Level> DefaultLevel("Game\\Content\\Level_1\\Level_01.drn");
+		AssetHandle<Level> DefaultLevel("Game\\Content\\Level_2\\Level_02.drn");
 		DefaultLevel.Load();
 
 		m_MainWorld = AllocateWorld();

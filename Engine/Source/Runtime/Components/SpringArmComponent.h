@@ -25,6 +25,12 @@ namespace Drn
 
 		virtual void RegisterComponent(World* InOwningWorld) override;
 
+		inline void SetArmLength( float InLength ) { m_ArmLength = InLength; }
+		inline void SetEnableLocationLag( bool bInEnabled ) { m_LocationLag = bInEnabled; }
+		inline void SetLocationLagSpeed( float InSpeed ) { m_LocationLagSpeed = InSpeed; }
+		inline void SetEnableRotationLag( bool bInEnabled ) { m_RotationLag = bInEnabled; }
+		inline void SetRotationLagSpeed( float InSpeed ) { m_RotationLagSpeed = InSpeed; }
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 

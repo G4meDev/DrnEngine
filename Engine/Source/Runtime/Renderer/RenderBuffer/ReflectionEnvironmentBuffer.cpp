@@ -54,7 +54,9 @@ namespace Drn
 
 		else if (SkyCubemap.IsValid() && SkyCubemap.GetPath() != LastUsedCubemap)
 		{
+#if WITH_EDITOR
 			Renderer::Get()->MarkFrameForCapture();
+#endif
 
 			LastUsedCubemap = SkyCubemap.GetPath();
 			
