@@ -144,6 +144,7 @@ namespace Drn
 			LoadLevel(m_LastLoadedLevel);
 			m_PendingLevel->SetTransient(true);
 			m_PendingLevel->SetPaused(false);
+			m_PendingLevel->SetGameMode(true);
 			m_PendingLevel->SetPlayInEditorWorld();
 			m_PendingLevel->InitPlay();
 		}

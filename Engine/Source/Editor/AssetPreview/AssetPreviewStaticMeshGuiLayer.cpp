@@ -219,6 +219,12 @@ namespace Drn
 						Mat.SetMaterial(AssetHandle<Material>(AssetPath));
 						PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
 					}
+
+					else if (Type == EAssetType::MaterialInstance)
+					{
+						Mat.SetMaterial(AssetHandle<MaterialInstance>(AssetPath));
+						PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
+					}
 				}
 
 				ImGui::EndDragDropTarget();
