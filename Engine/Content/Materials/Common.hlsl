@@ -208,9 +208,12 @@ float3 ReconstructNormal(float2 xz)
     return float3(xz.x, sqrt(1 - dot(xz, xz)), xz.y);
 }
 
-float3 ReconstructTextureNormal(float2 xy)
+float3 ReconstructTextureNormal(float2 xy, bool bInvertY = true)
 {
-    xy.y = 1 - xy.y;
+    if(bInvertY)
+    {
+        xy.y = 1 - xy.y;
+    }
     float2 normalxy = xy * 2 - 1;
     return float3(normalxy.x, sqrt(1 - dot(normalxy, normalxy)), normalxy.y);
 }
@@ -298,6 +301,19 @@ float D_GGX(float a2, float NoH)
 {
     float d = (NoH * a2 - NoH) * NoH + 1;
     return a2 / (PI * d * d);
+}
+
+float CameraDepthFade(float3 WorldPosition, float3 CameraPosition, float3 CameraDirection, float DepthOffset, float DepthLength)
+{
+    float3 CameraToWorldPosition = WorldPosition - CameraPosition;
+    float Depth = length(CameraToWorldPosition) * (dot(normalize(CameraToWorldPosition), CameraDirection));
+    
+    return saturate((Depth - DepthOffset) / DepthLength);
+}
+
+float CameraDepthFade(float PixelDepth, float DepthOffset, float DepthLength)
+{
+    return saturate((PixelDepth - DepthOffset) / DepthLength);
 }
 
 //float DistributionGGX(float3 N, float3 H, float roughness)
