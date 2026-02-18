@@ -77,10 +77,6 @@ struct ParametersBuffers
     SCALAR(NormalStrength, NormalStrength)
     SCALAR(MicroUvScale, MicroUvScale)
     
-    SCALAR(MicroDepthOffset, MicroDepthOffset)
-    SCALAR(MicroDepthLength, MicroDepthLength)
-    SCALAR(MicroLastMip, MicroLastMip)
-    
     TEX2D(BaseColor, BaseColorTexture)
     TEX2D(Normal, NormalTexture)
     TEX2D(Masks, MasksTexture)
@@ -104,8 +100,6 @@ struct VertexShaderOutput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV1 : TEXCOORD1;
-    float2 UV2 : TEXCOORD2;
-    //float4 MicroFadeColor : Color1;
     float4 Position : SV_Position;
 };
 
@@ -122,7 +116,6 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.Normal = IN.Position;
     OUT.UV1 = IN.UV1;
-    OUT.UV2 = IN.UV1;
 #elif SHADOW_PASS_SPOTLIGHT
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
@@ -133,7 +126,6 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.Normal = IN.Position;
     OUT.UV1 = IN.UV1;
-    OUT.UV2 = IN.UV1;
 #else
     
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
@@ -150,13 +142,8 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Normal = WorldNormal;
     OUT.UV1 = IN.UV1;
     
-    float3 WorldPos = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
-    OUT.UV2 = WorldPos.xz * Parameters.MicroUvScale;
-
-    float DepthFade = CameraDepthFade(WorldPos, View.CameraPos, View.CameraDir, Parameters.MicroDepthOffset, Parameters.MicroDepthLength);
-    Texture2D BaseColorTexture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
-    SamplerState BaseColorSampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
-    //OUT.MicroFadeColor = float4(BaseColorTexture.SampleLevel(BaseColorSampler, 0, Parameters.MicroLastMip).rgb, DepthFade);
+    //float3 WorldPos = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
+    //OUT.UV2 = WorldPos.xz * Parameters.MicroUvScale;
     
 #endif
     
@@ -174,8 +161,6 @@ struct PixelShaderInput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV1 : TEXCOORD1;
-    float2 UV2 : TEXCOORD2;
-    //float4 MicroFadeColor : Color1;
     float4 Position : SV_Position;
 #endif
 };
@@ -230,14 +215,13 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float4 DecalNormal = DecalNormalTexture.Sample(PointSampler, ScreenUV);
     float4 DecalMasks = DecalMasksTexture.Sample(PointSampler, ScreenUV);
     
-    float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV2).xyz;
-    //BaseColor = lerp(BaseColor, IN.MicroFadeColor.rgb, IN.MicroFadeColor.a);
+    float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV1).xyz;
     BaseColor = lerp(BaseColor, Parameters.ColorTint.xyz, Parameters.ColorTint.a);
     
-    float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV2).xyz;
+    float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV1).xyz;
     Masks.g *= Parameters.RoughnessMultiplier;
     
-    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV2).rgb;
+    float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV1).rgb;
     Normal = ReconstructTextureNormal(Normal.xy, false);
     Normal = lerp(float3(0.0f, 1.0f, 0.0f), Normal, Parameters.NormalStrength);
     Normal = normalize(mul(Normal, IN.TBN));
@@ -256,7 +240,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     //OUT.Velocity = Velocity;
     OUT.Velocity = 0;
     
-    OUT.BaseColor.xyz = lerp(DecalBaseColor.xyz, OUT.BaseColor.xyz, DecalBaseColor.w);
+    //OUT.BaseColor.xyz = lerp(DecalBaseColor.xyz, OUT.BaseColor.xyz, DecalBaseColor.w);
     OUT.Masks.xyz = lerp(DecalMasks.xyz, OUT.Masks.xyz, DecalMasks.w);
     
 #elif HITPROXY_PASS
