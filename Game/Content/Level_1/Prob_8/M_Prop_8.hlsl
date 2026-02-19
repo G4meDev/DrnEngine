@@ -214,7 +214,7 @@ BasePassPixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFro
     //float2 Velocity = IN.ScreenPos.xy / IN.ScreenPos.w - IN.PrevScreenPos.xy / IN.PrevScreenPos.w;
     //Velocity = Velocity * 0.25f + 0.5f;
     //OUT.Velocity = Velocity;
-    OUT.Velocity = 0;
+    //OUT.Velocity = 0;
     
     
 #elif HITPROXY_PASS

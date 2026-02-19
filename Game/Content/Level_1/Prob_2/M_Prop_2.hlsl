@@ -167,7 +167,6 @@ struct PixelShaderOutput
     float2 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
     float4 MasksB : SV_TARGET4;
-    float2 Velocity : SV_TARGET5;
 #elif HITPROXY_PASS
     uint4 Guid;
 #elif EDITOR_PRIMITIVE_PASS
@@ -221,9 +220,9 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     OUT.WorldNormal = N;
     OUT.Masks = float4(Masks, 1.0f/255);
     
-    float2 Velocity = IN.ScreenPos.xy / IN.ScreenPos.w - IN.PrevScreenPos.xy / IN.PrevScreenPos.w;
-    Velocity = Velocity * 0.25f + 0.5f;
-    OUT.Velocity = Velocity;
+    //float2 Velocity = IN.ScreenPos.xy / IN.ScreenPos.w - IN.PrevScreenPos.xy / IN.PrevScreenPos.w;
+    //Velocity = Velocity * 0.25f + 0.5f;
+    //OUT.Velocity = Velocity;
     
 #elif HITPROXY_PASS
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];

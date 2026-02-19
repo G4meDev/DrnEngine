@@ -169,7 +169,6 @@ struct PixelShaderOutput
     float2 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
     float4 MasksB : SV_TARGET4;
-    float2 Velocity : SV_TARGET5;
 #elif HITPROXY_PASS
     uint4 Guid;
 #elif EDITOR_PRIMITIVE_PASS
@@ -232,7 +231,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     //float2 Velocity = IN.ScreenPos.xy / IN.ScreenPos.w - IN.PrevScreenPos.xy / IN.PrevScreenPos.w;
     //Velocity = Velocity * 0.25f + 0.5f;
     //OUT.Velocity = Velocity;
-    OUT.Velocity = 0;
+    //OUT.Velocity = 0;
     
     OUT.BaseColor.xyz = lerp(DecalBaseColor.xyz, OUT.BaseColor.xyz, DecalBaseColor.w);
     OUT.Masks.xyz = lerp(DecalMasks.xyz, OUT.Masks.xyz, DecalMasks.w);

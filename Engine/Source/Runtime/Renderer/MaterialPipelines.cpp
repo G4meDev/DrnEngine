@@ -67,11 +67,11 @@ namespace Drn
 			DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
 			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
 		
-			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT, GBUFFER_BASE_COLOR_FORMAT, GBUFFER_WORLD_NORMAL_FORMAT, GBUFFER_MASKS_FORMAT, GBUFFER_MASKS_FORMAT, GBUFFER_VELOCITY_FORMAT };
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT, GBUFFER_BASE_COLOR_FORMAT, GBUFFER_WORLD_NORMAL_FORMAT, GBUFFER_MASKS_FORMAT, GBUFFER_MASKS_FORMAT };
 			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
 
 			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-				6, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+				_countof(TargetFormats), TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
 
 			m_MainPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_MainPassPSO->PipelineState, "PSO_MainPass_" + name);

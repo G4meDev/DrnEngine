@@ -82,18 +82,18 @@ namespace Drn
 	{
 		CommandList->SetViewport(0 ,0, 0, m_Size.X, m_Size.Y, 1);
 
-		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[6] = 
+		D3D12_CPU_DESCRIPTOR_HANDLE const RenderTargets[] = 
 		{
 			m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView(),
 			m_BaseColorTarget->GetRenderTargetView( 0, 0 )->GetView(),
 			m_WorldNormalTarget->GetRenderTargetView( 0, 0 )->GetView(),
 			m_MasksTarget->GetRenderTargetView(0, 0)->GetView(),
 			m_MasksBTarget->GetRenderTargetView(0, 0)->GetView(),
-			m_VelocityTarget->GetRenderTargetView(0, 0)->GetView(),
+			//m_VelocityTarget->GetRenderTargetView(0, 0)->GetView(),
 		};
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
-		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 6, RenderTargets, false, &DepthHandle );
+		CommandList->GetD3D12CommandList()->OMSetRenderTargets( _countof(RenderTargets), RenderTargets, false, &DepthHandle );
 	}
 
 	void GBuffer::BindDepth( D3D12CommandList* CommandList )

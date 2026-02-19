@@ -123,7 +123,6 @@ struct BasePassPixelShaderOutput
     float2 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
     float4 MasksB : SV_TARGET4;
-    float2 Velocity : SV_TARGET5;
 #elif HITPROXY_PASS
     uint4 Guid;
 #elif EDITOR_PRIMITIVE_PASS
