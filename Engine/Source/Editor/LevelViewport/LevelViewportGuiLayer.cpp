@@ -338,6 +338,10 @@ namespace Drn
 			AlignSelectedComponentToSurfaceBelow();
 		}
 
+		if ( ImGui::IsKeyPressed(ImGuiKey_F) )
+		{
+			FocusOnSelected();
+		}
 	}
 
 	void LevelViewportGuiLayer::HandleViewportSpawnEditorActor( EditorLevelSpawnable* EditorActor, const Vector& WorldPosition )
@@ -416,6 +420,48 @@ namespace Drn
 					SelectedSceneComponent->SetWorldLocation(Results[i].Location);
 					return;
 				}
+			}
+		}
+	}
+
+	void LevelViewportGuiLayer::FocusOnSelected()
+	{
+		SceneComponent* SelectedSceneComponent = static_cast<SceneComponent*>( m_OwningLevelViewport->GetSelectedComponent() );
+		if ( SelectedSceneComponent )
+		{
+			std::vector<PrimitiveComponent*> Primitives;
+			SelectedSceneComponent->GetComponents<PrimitiveComponent>(Primitives, EComponentType::Component, true);
+
+			bool HasFocusable = false;
+			BoxSphereBounds Bounds;
+
+			for (PrimitiveComponent* Primitive : Primitives)
+			{
+				if (!Primitive->IgnoreBoundsForEditorFocus())
+				{
+					if (HasFocusable)
+					{
+						// TODO: use cached bounds
+						Bounds = Bounds + Primitive->CalcBounds(Primitive->GetWorldTransform());
+					}
+					else
+					{
+						// TODO: use cached bounds
+						Bounds = Primitive->CalcBounds(Primitive->GetWorldTransform());
+						HasFocusable = true;
+					}
+				}
+			}
+
+			if (HasFocusable)
+			{
+				const float Addition = 5.0f;
+				const float Scalar = 1.5f;
+
+				CameraActor* ViewportCamera = m_OwningLevelViewport->m_OwningWorld->GetViewportCamera();
+				Vector CamLocation = Bounds.Origin + (ViewportCamera->GetActorForwardVector() * -Scalar * Bounds.SphereRadius) + (ViewportCamera->GetActorForwardVector() * -Addition);
+
+				ViewportCamera->SetActorLocation(CamLocation);
 			}
 		}
 	}

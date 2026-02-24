@@ -64,6 +64,10 @@ namespace Drn
 		bool m_Thickness;
 
 		LineBatchSceneProxy* m_LineBatchSceneProxy;
+
+#if WITH_EDITOR
+		virtual bool IgnoreBoundsForEditorFocus() const override { return true; }
+#endif
 	};
 
 	class LineBatchSceneProxy : public PrimitiveSceneProxy

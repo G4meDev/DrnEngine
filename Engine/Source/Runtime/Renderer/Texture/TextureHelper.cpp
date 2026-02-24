@@ -52,6 +52,14 @@ namespace Drn
 			}
 		}
 
+		else if (InFormat == DXGI_FORMAT_R8_UNORM)
+		{
+			if (Compression == ETextureCompression::BC4)
+			{
+				return DXGI_FORMAT_BC4_UNORM;
+			}
+		}
+
 		else if (InFormat == DXGI_FORMAT_R32G32B32A32_FLOAT)
 		{
 			if (Compression == ETextureCompression::BC1)

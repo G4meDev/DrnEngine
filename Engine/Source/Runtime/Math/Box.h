@@ -26,6 +26,12 @@ namespace Drn
 		inline Vector GetCenter() const { return Vector((Min + Max) * 0.5f); }
 		inline Vector GetExtent() const { return (Max - Min) * 0.5f; }
 
+		void GetCenterAndExtents( Vector& Center, Vector& Extents ) const
+		{
+			Extents = GetExtent();
+			Center = Min + Extents;
+		}
+
 		Box& operator+=( const Vector& Other );
 
 		Vector Min;

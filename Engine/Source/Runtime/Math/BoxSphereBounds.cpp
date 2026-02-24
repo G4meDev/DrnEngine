@@ -3,6 +3,19 @@
 
 namespace Drn
 {
+	BoxSphereBounds BoxSphereBounds::operator+( const BoxSphereBounds& Other ) const
+	{
+		Box BoundingBox(this->Origin - this->BoxExtent, this->Origin + this->BoxExtent);
+
+		BoundingBox += (Other.Origin - Other.BoxExtent);
+		BoundingBox += (Other.Origin + Other.BoxExtent);
+
+		BoxSphereBounds Result(BoundingBox);
+		Result.SphereRadius = std::min(Result.SphereRadius, std::max((Origin - Result.Origin).Length() + SphereRadius, (Other.Origin - Result.Origin).Length() + Other.SphereRadius));
+
+		return Result;
+	}
+
 	BoxSphereBounds BoxSphereBounds::TranslateBy( const Vector& Offset )
 	{
 		return BoxSphereBounds(Origin + Offset, BoxExtent, SphereRadius);

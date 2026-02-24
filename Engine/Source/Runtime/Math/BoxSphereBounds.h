@@ -22,6 +22,14 @@ namespace Drn
 			, SphereRadius(InSphereRadius)
 		{}
 
+		BoxSphereBounds( const Box& Box )
+		{
+			Box.GetCenterAndExtents(Origin, BoxExtent);
+			SphereRadius = BoxExtent.Length();
+		}
+
+		BoxSphereBounds operator+( const BoxSphereBounds& Other ) const;
+
 		BoxSphereBounds TranslateBy(const Vector& Offset);
 		BoxSphereBounds TransformBy(const Transform& T);
 

@@ -357,4 +357,18 @@ namespace Drn
 		return Bounds;
 	}
 
+	BoxSphereBounds StaticMeshComponent::CalcBounds( const Transform& LocalToWorld ) const
+	{
+		if (Mesh.IsValid())
+		{
+			BoxSphereBounds Bounds;
+			Bounds = Mesh->GetBounds();
+			Bounds = Bounds.TransformBy(LocalToWorld);
+
+			return Bounds;
+		}
+
+		return PrimitiveComponent::CalcBounds(LocalToWorld);
+	}
+
         }  // namespace Drn

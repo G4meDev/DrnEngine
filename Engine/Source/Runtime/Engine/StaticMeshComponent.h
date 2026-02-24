@@ -43,6 +43,8 @@ namespace Drn
 
 		BoxSphereBounds GetBounds();
 
+		virtual BoxSphereBounds CalcBounds(const Transform& LocalToWorld) const override;
+
 #if WITH_EDITOR
 
 		virtual void DrawDetailPanel(float DeltaTime) override;

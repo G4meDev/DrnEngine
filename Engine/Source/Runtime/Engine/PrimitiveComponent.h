@@ -44,6 +44,8 @@ namespace Drn
 
 		inline bool IsSelectable() const { return m_Selectable; }
 		virtual void SetSelectable( bool Selectable );
+
+		virtual bool IgnoreBoundsForEditorFocus() const { return false; }
 #endif
 
 	protected:

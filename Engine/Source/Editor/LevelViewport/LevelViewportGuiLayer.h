@@ -50,6 +50,7 @@ namespace Drn
 
 		void DeleteSelectedActor();
 		void AlignSelectedComponentToSurfaceBelow();
+		void FocusOnSelected();
 
 		void OnScreenReprojectDropAsset(bool bHit, const Vector& WorldLocation, void* Payload);
 		void OnScreenReprojectDropEditorActor(bool bHit, const Vector& WorldLocation, void* Payload);

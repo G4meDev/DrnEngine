@@ -45,7 +45,8 @@ namespace Drn
 		void GetComponents(std::vector<T*>& OutComponents, EComponentType Type, bool Recursive)
 		{
 			//if (Comp->GetComponentType() == Type)
-			T* C = static_cast<T*>(this);
+			//T* C = static_cast<T*>(this);
+			T* C = dynamic_cast<T*>(this);
 			if (C)
 			{
 				OutComponents.push_back( C );
@@ -113,6 +114,13 @@ namespace Drn
 		inline SceneComponent* GetParent() const { return Parent; }
 
 		virtual void DestroyComponent() override;
+
+		virtual BoxSphereBounds CalcBounds(const Transform& LocalToWorld) const;
+		virtual BoxSphereBounds CalcLocalBounds() const
+		{
+			return CalcBounds(Transform::Identity);
+		}
+		//virtual void UpdateBounds();
 
 		OnTransformUpdateDelegate OnTransformUpdateDel;
 

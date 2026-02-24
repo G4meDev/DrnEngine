@@ -306,6 +306,16 @@ namespace Drn
 
 	}
 
+	BoxSphereBounds SceneComponent::CalcBounds( const Transform& LocalToWorld ) const
+	{
+		BoxSphereBounds Result;
+		Result.Origin = LocalToWorld.GetLocation();
+		Result.BoxExtent = Vector::ZeroVector;
+		Result.SphereRadius = 0.0f;
+
+		return Result;
+	}
+
 	void SceneComponent::OnUpdateTransform( bool SkipPhysic )
 	{
 		OnTransformUpdateDel.Braodcast(this, SkipPhysic);

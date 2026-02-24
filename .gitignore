@@ -397,6 +397,7 @@ build_*/
 /ThirdParty/Physx/lib/*
 
 /**/.autosave
+/**/*_autosave_*
 
 # ignored by line 26
 !/ThirdParty/assimp/contrib/zlib/win32/
