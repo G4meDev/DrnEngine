@@ -117,6 +117,7 @@ namespace Drn
 		friend class StaticMeshSceneProxy;
 		friend class StaticMeshComponent;
 		friend class InstancedStaticMeshComponent;
+		friend class InstancedStaticMeshSceneProxy;
 		friend class Editor;
 	};
 }

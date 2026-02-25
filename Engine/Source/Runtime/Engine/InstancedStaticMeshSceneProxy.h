@@ -1,10 +1,61 @@
 #pragma once
 
 #include "ForwardTypes.h"
+#include "Runtime/Engine/PrimitiveSceneProxy.h"
 
 namespace Drn
 {
-	class InstancedStaticMeshSceneProxy
+	struct PrimitiveBuffer
 	{
+	public:
+		PrimitiveBuffer(){};
+
+		Matrix m_LocalToWorld;
+		Matrix m_LocalToProjection;
+		Guid m_Guid;
+		Matrix m_PrevLocalToWorld;
+		Matrix m_PrevLocalToProjection;
+	};
+
+	class InstancedStaticMeshSceneProxy : public PrimitiveSceneProxy
+	{
+	public:
+
+		InstancedStaticMeshSceneProxy(InstancedStaticMeshComponent* InInstancedStaticMeshComponent);
+		virtual ~InstancedStaticMeshSceneProxy();
+
+		virtual const BoxSphereBounds& GetBounds() override;
+
+	protected:
+
+		void RenderMainPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		void RenderPrePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;
+		virtual void RenderDecalPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) override;
+
+
+#if WITH_EDITOR
+		void RenderHitProxyPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		void RenderSelectionPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		void RenderEditorPrimitivePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+#endif
+
+		void InitResources( class D3D12CommandList* CommandList ) override;
+		void UpdateResources( class D3D12CommandList* CommandList ) override;
+
+		PrimitiveComponent* GetPrimitive() override { return m_OwningInstancedStaticMeshComponent; };
+
+	private:
+
+		InstancedStaticMeshComponent* m_OwningInstancedStaticMeshComponent;
+		std::vector<MaterialSlot> m_Materials;
+
+		Guid m_Guid;
+
+		AssetHandle<StaticMesh> m_Mesh;
+
+		PrimitiveBuffer m_PrimitiveBuffer;
+
+		friend class InstancedStaticMeshComponent;
 	};
 }

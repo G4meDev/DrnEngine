@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "InstancedStaticMeshComponent.h"
+#include "Runtime/Engine/InstancedStaticMeshSceneProxy.h"
 
 #if WITH_EDITOR
 
@@ -13,7 +14,7 @@ namespace Drn
 {
 	InstancedStaticMeshComponent::InstancedStaticMeshComponent()
 		: PrimitiveComponent()
-		, m_StaticMeshSceneProxy(nullptr)
+		, m_InstancedStaticMeshSceneProxy(nullptr)
 		, MinDrawDistance(0)
 		, MaxDrawDistance(0)
 	{}
@@ -93,21 +94,21 @@ namespace Drn
 		//{
 		//	m_BodyInstance.InitBody(Mesh->GetBodySetup(), this, GetWorld()->GetPhysicScene());
 		//}
-		//
-		//m_StaticMeshSceneProxy = new StaticMeshSceneProxy(this);
-		//InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_StaticMeshSceneProxy);
-		//m_SceneProxy = m_StaticMeshSceneProxy;
+
+		m_InstancedStaticMeshSceneProxy = new InstancedStaticMeshSceneProxy(this);
+		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_InstancedStaticMeshSceneProxy);
+		m_SceneProxy = m_InstancedStaticMeshSceneProxy;
 	}
 
 	void InstancedStaticMeshComponent::UnRegisterComponent()
 	{
-		//if (m_SceneProxy)
-		//{
-		//	m_SceneProxy->MarkPendingKill();
-		//	m_SceneProxy = nullptr;
-		//	m_StaticMeshSceneProxy= nullptr;
-		//}
-		//
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->MarkPendingKill();
+			m_SceneProxy = nullptr;
+			m_InstancedStaticMeshSceneProxy = nullptr;
+		}
+
 		//if (Mesh.IsValid())
 		//{
 		//	m_BodyInstance.TermBody();
@@ -183,18 +184,18 @@ namespace Drn
 	void InstancedStaticMeshComponent::SetMinDrawDistance( float Value )
 	{
 		MinDrawDistance = Value;
-		if (m_StaticMeshSceneProxy)
+		if (m_InstancedStaticMeshSceneProxy)
 		{
-			//m_StaticMeshSceneProxy->MinDrawDistance = MinDrawDistance;
+			m_InstancedStaticMeshSceneProxy->MinDrawDistance = MinDrawDistance;
 		}
 	}
 
 	void InstancedStaticMeshComponent::SetMaxDrawDistance( float Value )
 	{
 		MaxDrawDistance = Value;
-		if (m_StaticMeshSceneProxy)
+		if (m_InstancedStaticMeshSceneProxy)
 		{
-			//m_StaticMeshSceneProxy->MaxDrawDistance = MaxDrawDistance;
+			m_InstancedStaticMeshSceneProxy->MaxDrawDistance = MaxDrawDistance;
 		}
 	}
 
