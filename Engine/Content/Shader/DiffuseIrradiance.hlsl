@@ -16,16 +16,7 @@ struct Resources
     uint OutTextureMip;
 };
 
-ConstantBuffer<Resources> BindlessResources : register(b0);
-
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-    uint PointSamplerIndex;
-    uint LinearCmpSamplerIndex;
-    uint LinearClampIndex;
-    uint PointClampIndex;
-};
+ConstantBuffer<Resources> BindlessResources : register(b0);	
 
 float3 GetCubemapVector(float2 ScaledUVs, int InCubeFace)
 {

@@ -6,68 +6,7 @@
 // SUPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_SHADOW_PASS
 
-struct Resources
-{
-    uint ViewIndex;
-    uint PrimitiveIndex;
-    uint StaticSamplerBufferIndex;
-    uint ParametersBufferIndex;
-    uint unused_1;
-    uint unused_2;
-    uint ShadowDepthBuffer;
-    uint DecalBaseColor;
-    uint DecalNormal;
-    uint DecalMasks;
-};
-
-ConstantBuffer<Resources> BindlessResources : register(b0);
-
-struct ViewBuffer
-{
-    matrix WorldToView;
-    matrix ViewToProjection;
-    matrix WorldToProjection;
-    matrix ProjectionToView;
-    matrix ProjectionToWorld;
-    matrix LocalToCameraView;
-
-    uint2 RenderSize;
-    float2 InvSize;
-
-    float3 CameraPos;
-    float InvTanHalfFov;
-		
-    float3 CameraDir;
-    float Pad_4;
-
-    float4 InvDeviceZToWorldZTransform;
-    matrix ViewToWorld;
-    matrix ScreenToTranslatedWorld;
-    
-    uint FrameIndex;
-    uint FrameIndexMod8;
-    float2 JitterOffset;
-    
-    float2 PrevJitterOffset;
-    float2 Pad_1;
-    
-    matrix ClipToPreviousClip;
-};
-
-struct Primitive
-{
-    matrix LocalToWorld;
-    matrix LocalToProjection;
-    uint4 Guid;
-    matrix PrevLocalToWorld;
-    matrix PrevLocalToProjection;
-};
-
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-    uint PointSamplerIndex;
-};
+ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
 struct ParametersBuffers
 {
@@ -79,18 +18,6 @@ struct ParametersBuffers
     TEX2D(Normal, NormalTexture)
     TEX2D(Masks, MasksTexture)
 };
-
-#if SHADOW_PASS_POINTLIGHT
-struct ShadowDepth
-{
-    matrix WorldToProjectionMatrices[6];
-};
-#elif SHADOW_PASS_SPOTLIGHT
-struct ShadowDepth
-{
-    matrix WorldToProjectionMatrix;
-};
-#endif
 
 struct VertexShaderOutput
 {
@@ -107,7 +34,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     
 
 #if SHADOW_PASS_POINTLIGHT
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Position = mul(P.LocalToWorld, float4(IN.Position, 1.0f));
     
     OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
@@ -115,7 +42,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Normal = IN.Position;
     OUT.UV1 = IN.UV1;
 #elif SHADOW_PASS_SPOTLIGHT
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
     float3 WorldPosition = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
     OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, float4(WorldPosition, 1));
@@ -126,7 +53,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.UV1 = IN.UV1;
 #else
     
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
     
@@ -237,7 +164,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     OUT.Masks.xyz = lerp(DecalMasks.xyz, OUT.Masks.xyz, DecalMasks.w);
     
 #elif HITPROXY_PASS
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Guid = P.Guid;
 #endif
     

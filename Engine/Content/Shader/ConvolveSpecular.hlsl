@@ -18,15 +18,6 @@ struct Resources
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
 
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-    uint PointSamplerIndex;
-    uint LinearCmpSamplerIndex;
-    uint LinearClampIndex;
-    uint PointClampIndex;
-};
-
 float3 GetCubemapVector(float2 ScaledUVs, int InCubeFace)
 {
 	float3 CubeCoordinates;

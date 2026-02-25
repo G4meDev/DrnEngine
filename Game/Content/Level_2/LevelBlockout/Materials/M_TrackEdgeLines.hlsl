@@ -3,69 +3,7 @@
 // SUPPORT_DEFERRED_DECAL_PASS
 // SUPPORT_STATICMESH_DECAL_PASS
 
-struct Resources
-{
-    uint ViewIndex;
-#if DEFERRED_DECAL_PASS
-    uint DecalBufferIndex;
-#elif STATICMESH_DECAL_PASS
-    uint MeshDecalBufferIndex;
-#endif
-    uint StaticSamplerBufferIndex;
-    uint ParametersBufferIndex;
-    uint unused_1;
-    uint unused_2;
-    uint DepthTexture;
-};
-
-ConstantBuffer<Resources> BindlessResources : register(b0);
-
-struct ViewBuffer
-{
-    matrix WorldToView;
-    matrix ViewToProjection;
-    matrix WorldToProjection;
-    matrix ProjectionToView;
-    matrix ProjectionToWorld;
-    matrix LocalToCameraView;
-
-    uint2 RenderSize;
-    float2 InvSize;
-
-    float3 CameraPos;
-    float InvTanHalfFov;
-		
-    float3 CameraDir;
-    float Pad_4;
-
-    float4 InvDeviceZToWorldZTransform;
-    matrix ViewToWorld;
-    matrix ScreenToTranslatedWorld;
-    
-    uint FrameIndex;
-    uint FrameIndexMod8;
-    float2 JitterOffset;
-    
-    float2 PrevJitterOffset;
-};
-
-struct DecalBuffer
-{
-    matrix LocalToProjection;
-    matrix ProjectionToLocal;
-};
-
-struct MeshDecalBuffer
-{
-    matrix LocalToWorld;
-    matrix LocalToProjection;
-};
-
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-    uint PointSamplerIndex;
-};
+ConstantBuffer<DecalResources> BindlessResources : register(b0);
 
 struct ParametersBuffers
 {

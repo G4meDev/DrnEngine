@@ -11,32 +11,6 @@ struct Resources
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
 
-struct ViewBuffer
-{
-    matrix WorldToView;
-    matrix ViewToProjection;
-    matrix WorldToProjection;
-    matrix ProjectionToView;
-    matrix ProjectionToWorld;
-    matrix LocalToCameraView;
-
-    uint2 RenderSize;
-    float2 InvSize;
-
-    float3 CameraPos;
-    float InvTanHalfFov;
-		
-    float3 CameraDir;
-    float Pad_4;
-
-    float4 InvDeviceZToWorldZTransform;
-    matrix ViewToWorld;
-    matrix ScreenToTranslatedWorld;
-    
-    uint FrameIndex;
-    uint FrameIndexMod8;
-};
-
 struct ReflectionCaptureData
 {
     uint ReflectionTexture;
@@ -66,15 +40,6 @@ struct SSRData
     float2 Pad_1;
 
     ReflectionCaptureData CaptureData[MAX_REFLECTION_CAPTURE_COUNT];
-};
-
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-    uint PointSamplerIndex;
-    uint LinearCmpSamplerIndex;
-    uint LinearClampIndex;
-    uint PointClampIndex;
 };
 
 struct VertexInputPosUV

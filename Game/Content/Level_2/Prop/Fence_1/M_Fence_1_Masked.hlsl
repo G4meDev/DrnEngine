@@ -25,38 +25,6 @@ struct Resources
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
 
-struct ViewBuffer
-{
-    matrix WorldToView;
-    matrix ViewToProjection;
-    matrix WorldToProjection;
-    matrix ProjectionToView;
-    matrix ProjectionToWorld;
-    matrix LocalToCameraView;
-
-    uint2 RenderSize;
-    float2 InvSize;
-
-    float3 CameraPos;
-    float InvTanHalfFov;
-		
-    float3 CameraDir;
-    float Pad_4;
-
-    float4 InvDeviceZToWorldZTransform;
-    matrix ViewToWorld;
-    matrix ScreenToTranslatedWorld;
-    
-    uint FrameIndex;
-    uint FrameIndexMod8;
-    float2 JitterOffset;
-    
-    float2 PrevJitterOffset;
-    float2 Pad_1;
-    
-    matrix ClipToPreviousClip;
-};
-
 struct Primitive
 {
     matrix LocalToWorld;
@@ -64,12 +32,6 @@ struct Primitive
     uint4 Guid;
     matrix PrevLocalToWorld;
     matrix PrevLocalToProjection;
-};
-
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-    uint PointSamplerIndex;
 };
 
 struct ParametersBuffers
@@ -80,18 +42,6 @@ struct ParametersBuffers
     
     TEX2D(Opacity, OpacityTexture)
 };
-
-#if SHADOW_PASS_POINTLIGHT
-struct ShadowDepth
-{
-    matrix WorldToProjectionMatrices[6];
-};
-#elif SHADOW_PASS_SPOTLIGHT
-struct ShadowDepth
-{
-    matrix WorldToProjectionMatrix;
-};
-#endif
 
 struct VertexShaderOutput
 {
@@ -108,18 +58,18 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     VertexShaderOutput OUT;
     
 #if SHADOW_PASS_POINTLIGHT
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Position = mul(P.LocalToWorld, float4(IN.Position, 1.0f));
 #elif SHADOW_PASS_SPOTLIGHT
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
     float3 WorldPosition = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
     OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, float4(WorldPosition, 1));
 #elif PRE_PASS
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
 #elif MAIN_PASS
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
     
@@ -129,7 +79,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
 #else
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
 #endif
     
@@ -195,7 +145,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     OUT.MasksB = float4(OUT.BaseColor.rgb * 0.7, 1);
     
 #elif HITPROXY_PASS
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Guid = P.Guid;
 #elif PRE_PASS || SHADOW_PASS
     

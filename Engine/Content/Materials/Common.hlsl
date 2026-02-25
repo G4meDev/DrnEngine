@@ -3,71 +3,6 @@ static const float PI = 3.14159265359;
 #define FLT_MAX 3.402823466e+38
 #define FLT_MIN 1.175494351e-38
 
-//struct VertexInputStaticMesh
-//{
-//    float3 Position : POSITION;
-//    float3 Color : COLOR;
-//    float3 Normal : NORMAL;
-//    float3 Tangent : TANGENT;
-//    float3 Bitangent : BINORMAL;
-//    float2 UV1 : TEXCOORD0;
-//    float2 UV2 : TEXCOORD1;
-//    float2 UV3 : TEXCOORD2;
-//    float2 UV4 : TEXCOORD3;
-//};
-//
-//struct VertexInputPosColor
-//{
-//    float3 Position : POSITION;
-//    float4 Color : COLOR;
-//};
-//
-//struct GBuffer
-//{
-//    float4 BaseColor;
-//    float4 WorldNormal;
-//    float4 Mask;
-//};
-//
-//struct BasePassPixelShaderOutput
-//{
-//    float4 ColorDeferred : SV_TARGET0;
-//    float4 BaseColor : SV_TARGET1;
-//    float4 WorldNormal : SV_TARGET2;
-//    float4 Masks : SV_TARGET3;
-//};
-//
-//struct PixelShaderOutput
-//{
-//#if MAIN_PASS
-//    float4 ColorDeferred : SV_TARGET0;
-//    float4 BaseColor : SV_TARGET1;
-//    float4 WorldNormal : SV_TARGET2;
-//    float4 Masks : SV_TARGET3;
-//#elif HitProxyPass
-//    uint4 Guid;
-//#elif EDITOR_PRIMITIVE_PASS
-//    float4 Color;
-//#endif
-//};
-//
-//struct ViewBuffer
-//{
-//    matrix LocalToProjection;
-//    matrix LocalToWorld;
-//    uint4 Guid;
-//    matrix LocalToView;
-//};
-//
-//float2 VSPosToScreenUV(float4 VSPos)
-//{
-//    float2 UV = VSPos.xy / VSPos.w;
-//    UV = UV / 2 + 0.5f;
-//    UV.y = 1 - UV.y;
-//    
-//    return UV;
-//}
-
 #define VECTOR( name , displayname)         \
     float4 name;                            \
 
@@ -82,8 +17,6 @@ static const float PI = 3.14159265359;
     uint name##_Texture;                    \
     uint name##_Sampler;                    \
 
-
-
 #define SHADING_MODEL_UNLIT 0
 #define SHADING_MODEL_LIT 1
 #define SHADING_MODEL_FOLIAGE 2
@@ -97,6 +30,109 @@ uint FloatToUint8(float Value)
 {
     return (uint) (Value * 255);
 }
+
+struct StandardResources
+{
+    uint ViewIndex;
+    uint PrimitiveIndex;
+    uint StaticSamplerBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
+    uint ShadowDepthBuffer;
+    uint DecalBaseColor;
+    uint DecalNormal;
+    uint DecalMasks;
+};
+
+struct DecalResources
+{
+    uint ViewIndex;
+#if DEFERRED_DECAL_PASS
+    uint DecalBufferIndex;
+#elif STATICMESH_DECAL_PASS
+    uint MeshDecalBufferIndex;
+#endif
+    uint StaticSamplerBufferIndex;
+    uint ParametersBufferIndex;
+    uint unused_1;
+    uint unused_2;
+    uint DepthTexture;
+};
+
+struct DecalBuffer
+{
+    matrix LocalToProjection;
+    matrix ProjectionToLocal;
+};
+
+struct MeshDecalBuffer
+{
+    matrix LocalToWorld;
+    matrix LocalToProjection;
+};
+
+struct ViewBuffer
+{
+    matrix WorldToView;
+    matrix ViewToProjection;
+    matrix WorldToProjection;
+    matrix ProjectionToView;
+    matrix ProjectionToWorld;
+    matrix LocalToCameraView;
+
+    uint2 RenderSize;
+    float2 InvSize;
+
+    float3 CameraPos;
+    float InvTanHalfFov;
+		
+    float3 CameraDir;
+    float Pad_4;
+
+    float4 InvDeviceZToWorldZTransform;
+    matrix ViewToWorld;
+    matrix ScreenToTranslatedWorld;
+    
+    uint FrameIndex;
+    uint FrameIndexMod8;
+    float2 JitterOffset;
+    
+    float2 PrevJitterOffset;
+    float2 Pad_1;
+    
+    matrix ClipToPreviousClip;
+};
+
+struct PrimitiveBuffer
+{
+    matrix LocalToWorld;
+    matrix LocalToProjection;
+    uint4 Guid;
+    matrix PrevLocalToWorld;
+    matrix PrevLocalToProjection;
+};
+
+struct StaticSamplers
+{
+    uint LinearSamplerIndex;
+    uint PointSamplerIndex;
+    uint LinearCmpSamplerIndex;
+    uint LinearClampIndex;
+    uint PointClampIndex;
+};
+
+#if SHADOW_PASS_POINTLIGHT
+struct ShadowDepth
+{
+    matrix WorldToProjectionMatrices[6];
+};
+#elif SHADOW_PASS_SPOTLIGHT
+struct ShadowDepth
+{
+    matrix WorldToProjectionMatrix;
+};
+#endif
 
 struct VertexInputPositionOnly
 {

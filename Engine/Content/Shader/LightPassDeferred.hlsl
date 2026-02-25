@@ -100,32 +100,6 @@ struct Resources
 
 ConstantBuffer<Resources> BindlessResources : register(b0);
 
-struct ViewBuffer
-{
-    matrix WorldToView;
-    matrix ViewToProjection;
-    matrix WorldToProjection;
-    matrix ProjectionToView;
-    matrix ProjectionToWorld;
-    matrix LocalToCameraView;
-
-    uint2 RenderSize;
-    float2 InvSize;
-
-    float3 CameraPos;
-    float InvTanHalfFov;
-		
-    float3 CameraDir;
-    float Pad_4;
-
-    float4 InvDeviceZToWorldZTransform;
-    matrix ViewToWorld;
-    matrix ScreenToTranslatedWorld;
-    
-    uint FrameIndex;
-    uint FrameIndexMod8;
-};
-
 struct PointLightData
 {
     float4 WorldPosAndScale;
@@ -182,13 +156,6 @@ struct DirectionalLightShadowData
     
     matrix CsWorldToProjectionMatrices[8];
     float4 CsSplitDistances[2];
-};
-
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-    uint PointSamplerIndex;
-    uint LinearCompLessSamplerIndex;
 };
 
 struct VertexInputPosUV
@@ -715,7 +682,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
         {
             ConstantBuffer<PointLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
             TextureCube ShadowmapTexture = ResourceDescriptorHeap[ShadowBuffer.ShadowMapTextureIndex];
-            SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
+            SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCmpSamplerIndex];
             Shadow = CalculatePointLightShadow(WorldPos.xyz, Light.WorldPosAndScale.xyz, ShadowBuffer.WorldToProjectionMatrices,
                 ShadowBuffer.DepthBias, ShadowBuffer.InvShadowmapResolution, ShadowmapTexture, CompState);
         }
@@ -732,7 +699,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
         {
             ConstantBuffer<SpotLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
             Texture2D ShadowmapTexture = ResourceDescriptorHeap[ShadowBuffer.ShadowMapTextureIndex];
-            SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
+            SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCmpSamplerIndex];
             float3 ToLight = Light.WorldPosition - WorldPos.xyz;
             Shadow = CalculateSpotLightShadow(WorldPos.xyz, ToLight, ShadowBuffer.WorldToProjectionMatrix,
                 ShadowBuffer.DepthBias, ShadowBuffer.InvShadowmapResolution, ShadowmapTexture, CompState);
@@ -751,7 +718,7 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
             if (Light.ShadowDataIndex != 0)
             {
                 ConstantBuffer<DirectionalLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
-                SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCompLessSamplerIndex];
+                SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCmpSamplerIndex];
                 Shadow = CalculateDirectionalLightShadow(WorldPos.xyz, ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform), Light, ShadowBuffer, CompState);
             }
         }
