@@ -53,17 +53,18 @@ namespace Drn
 
 	void EngineTypes::Register()
 	{
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::StaticMeshActor		, StaticMeshActor );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::PointLight				, PointLightActor );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::SpotLight				, SpotLightActor );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::DirectionalLight		, DirectionalLightActor );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::SkyLight				, SkyLightActor );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::PostProcessVolume		, PostProcessVolume );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::DecalActor				, DecalActor );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::Pawn					, Pawn );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::Character				, Character );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::SphereReflectionCapture, SphereReflectionCapture );
-		REGISTER_SERIALIZABLE_ACTOR( EActorType::WheeledVehiclePawn		, WheeledVehiclePawn );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::StaticMeshActor			, StaticMeshActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::InstancedStaticMeshActor	, InstancedStaticMeshActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::PointLight					, PointLightActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::SpotLight					, SpotLightActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::DirectionalLight			, DirectionalLightActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::SkyLight					, SkyLightActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::PostProcessVolume			, PostProcessVolume );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::DecalActor					, DecalActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::Pawn						, Pawn );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::Character					, Character );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::SphereReflectionCapture	, SphereReflectionCapture );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::WheeledVehiclePawn			, WheeledVehiclePawn );
 
 	}
 

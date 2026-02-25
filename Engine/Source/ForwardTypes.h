@@ -86,6 +86,7 @@ namespace Drn
 	class PrimitiveSceneProxy;
 	class LightSceneProxy;
 	class StaticMeshComponent;
+	class InstancedStaticMeshComponent;
 	class StaticMesh;
 	class Material;
 	class PipelineStateObject;

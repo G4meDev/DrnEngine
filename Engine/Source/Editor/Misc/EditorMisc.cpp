@@ -30,6 +30,7 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Pawn					, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Character				, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( WheeledVehiclePawn		, Player );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( InstancedStaticMeshActor, Primitive );
 	}
 
 	void EditorMisc::RegisterLevelSpawnableClass( const char* Name, const char* Category, std::function<Actor*(World*)>&& SpawnFunc)

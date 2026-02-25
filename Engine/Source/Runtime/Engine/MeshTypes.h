@@ -94,6 +94,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		void Draw(StaticMeshComponent* MC, uint32 MaterialIndex);
+		void Draw(InstancedStaticMeshComponent* MC, uint32 MaterialIndex);
 #endif
 	};
 }

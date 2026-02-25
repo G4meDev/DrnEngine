@@ -116,6 +116,7 @@ namespace Drn
 		friend class AssetImporterStaticMesh;
 		friend class StaticMeshSceneProxy;
 		friend class StaticMeshComponent;
+		friend class InstancedStaticMeshComponent;
 		friend class Editor;
 	};
 }
