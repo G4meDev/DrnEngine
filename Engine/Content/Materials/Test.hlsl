@@ -5,34 +5,7 @@
 // SUPPORT_HIT_PROXY_PASS
 // SUPPORT_EDITOR_SELECTION_PASS
 
-struct Resources
-{
-    uint ViewIndex;
-    uint PrimitiveIndex;
-    uint StaticSamplerBufferIndex;
-    uint ParametersBufferIndex;
-    uint unused_1;
-    uint unused_2;
-};
-
-ConstantBuffer<Resources> BindlessResources : register(b0);
-
-struct View
-{
-    
-};
-
-struct Primitive
-{
-    matrix LocalToWorld;
-    matrix LocalToProjection;
-    uint4 Guid;
-};
-
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-};
+ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
 struct ParametersBuffers
 {
@@ -57,7 +30,7 @@ struct VertexShaderOutput
 
 VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
-    ConstantBuffer<Primitive> PrimitiveBuffer = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> PrimitiveBuffer = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
     VertexShaderOutput OUT;
 
@@ -95,7 +68,7 @@ struct PixelShaderInput
 
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
-    ConstantBuffer<Primitive> PrimitiveBuffer = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> PrimitiveBuffer = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
 
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];

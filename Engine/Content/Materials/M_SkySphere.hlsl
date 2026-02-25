@@ -6,35 +6,7 @@
 // SUPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_-_SHADOW_PASS
 
-struct Resources
-{
-    uint ViewIndex;
-    uint PrimitiveIndex;
-    uint StaticSamplerBufferIndex;
-    uint ParametersBufferIndex;
-    uint unused_1;
-    uint unused_2;
-    uint ShadowDepthBuffer;
-};
-
-ConstantBuffer<Resources> BindlessResources : register(b0);
-
-struct View
-{
-    
-};
-
-struct Primitive
-{
-    matrix LocalToWorld;
-    matrix LocalToProjection;
-    uint4 Guid;
-};
-
-struct StaticSamplers
-{
-    uint LinearSamplerIndex;
-};
+ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
 struct ParametersBuffers
 {
@@ -45,18 +17,6 @@ struct ParametersBuffers
 
     TEXCUBE(BaseColor, BaseColorTexture)
 };
-
-#if SHADOW_PASS_POINTLIGHT
-struct ShadowDepth
-{
-    matrix WorldToProjectionMatrices[6];
-};
-#elif SHADOW_PASS_SPOTLIGHT
-struct ShadowDepth
-{
-    matrix WorldToProjectionMatrix;
-};
-#endif
 
 struct VertexShaderOutput
 {
@@ -71,7 +31,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
     float3 WorldNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
     float3 WorldTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
@@ -143,7 +103,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     OUT.Masks.a = 0;
     
 #elif HITPROXY_PASS
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Guid = P.Guid;
 #endif
     

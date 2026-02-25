@@ -2,36 +2,7 @@
 
 // SUPPORT_EDITOR_PRIMITIVE_PASS
 
-struct Resources
-{
-    uint ViewIndex;
-    uint PrimitiveIndex;
-    uint StaticSamplerBufferIndex;
-    uint TextureBufferIndex;
-    uint ScalarBufferIndex;
-    uint VectorBufferIndex;
-};
-
-ConstantBuffer<Resources> BindlessResources : register(b0);
-
-struct ViewBuffer
-{
-    matrix WorldToView;
-    matrix ViewToProjection;
-    matrix WorldToProjection;
-    matrix ProjectionToView;
-    matrix ProjectionToWorld;
-    matrix LocalToCameraView;
-
-    uint2 RenderSize;
-};
-
-struct Primitive
-{
-    matrix LocalToWorld;
-    matrix LocalToProjection;
-    uint4 Guid;
-};
+ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
 struct PixelShaderOutput
 {
@@ -57,7 +28,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 
-    ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
     OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
     OUT.WorldPos = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
