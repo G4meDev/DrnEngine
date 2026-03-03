@@ -52,4 +52,75 @@ namespace Drn
 
 		TRefCountPtr<RenderUniformBuffer> ParametersBuffer;
 	};
+
+// -------------------------------------------------------------------------------------------------------------------
+
+	enum class EMaterialDomain : uint8
+	{
+		Surface,
+		Decal
+	};
+
+	enum class VertexFactoryType : uint8
+	{
+		StaticMesh,
+		InstancedStaticMesh,
+	};
+
+	struct MaterialShaderParameters
+	{
+		EMaterialDomain MaterialDomain;
+		//EMaterialShadingModel ShadingModel;
+		//EBlendMode BlendMode;
+
+		union
+		{
+			uint32 PackedFlags;
+			struct
+			{
+				uint32 bIsMasked : 1;
+				uint32 bIsTwoSided : 1;
+
+				uint32 bHasPrepass : 1;
+				uint32 bHasCustomPrepass : 1;
+				uint32 bHasShadowPass : 1;
+				uint32 bHasMainPass : 1;
+				uint32 bHasHitProxyPass : 1;
+				uint32 bHasEditorPrimitivePass : 1;
+				uint32 bHasEditorSelectionPass : 1;
+
+				uint32 bIsUsedWithInstancedStaticMesh : 1;
+			};
+		};
+
+		MaterialShaderParameters()
+			: MaterialDomain(EMaterialDomain::Surface)
+			, PackedFlags(0)
+		{}
+
+		MaterialShaderParameters(const class MaterialInterface* InMaterial)
+		{
+			//MaterialDomain = InMaterial->GetMaterialDomain();
+			//ShadingModels = InMaterial->GetShadingModels();
+			//BlendMode = InMaterial->GetBlendMode();
+
+			//bIsMasked = InMaterial->IsMasked();
+			//bIsMasked = InMaterial->IsTwoSided();
+			//bIsMasked = InMaterial->IsUsedWithInstancedStaticMesh();
+		}
+
+		friend Archive& operator<<(Archive& Ar, const MaterialShaderParameters& Value)
+		{
+			Ar << (uint8)Value.MaterialDomain;
+			Ar << Value.PackedFlags;
+			return Ar;
+		}
+
+		friend Archive& operator>>(Archive& Ar, MaterialShaderParameters& Value)
+		{
+			Ar >> *(uint8*)&Value.MaterialDomain;
+			Ar >> Value.PackedFlags;
+			return Ar;
+		}
+	};
 }

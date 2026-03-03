@@ -11,11 +11,6 @@ namespace Drn
 	Material::Material( const std::string& InPath )
 		: Asset(InPath)
 		, m_RenderStateDirty(true)
-		, m_SupportMainPass(true)
-		, m_SupportPrePass(true)
-		, m_SupportHitProxyPass(false)
-		, m_SupportEditorPrimitivePass(false)
-		, m_SupportEditorSelectionPass(true)
 		, m_SupportDeferredDecalPass(false)
 		, m_SupportStaticMeshDecalPass(false)
 		, m_MaterialDomain(EMaterialDomain::Surface)
@@ -28,11 +23,6 @@ namespace Drn
 	Material::Material( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath)
 		, m_RenderStateDirty(true)
-		, m_SupportMainPass(true)
-		, m_SupportPrePass(true)
-		, m_SupportHitProxyPass(false)
-		, m_SupportEditorPrimitivePass(false)
-		, m_SupportEditorSelectionPass(true)
 		, m_SupportDeferredDecalPass(false)
 		, m_SupportStaticMeshDecalPass(false)
 		, m_MaterialDomain(EMaterialDomain::Surface)
@@ -60,6 +50,7 @@ namespace Drn
 			ReleaseShaderBlobs();
 
 			Ar >> m_SourcePath;
+			Ar >> ShaderParameters;
 
 			m_MainShaderBlob.Serialize(Ar);
 			m_HitProxyShaderBlob.Serialize(Ar);
@@ -68,16 +59,7 @@ namespace Drn
 			Ar >> m_TwoSided;
 
 			MaterialParameters.Serialize(Ar);
-
-			Ar >> m_SupportHitProxyPass;
-			Ar >> m_SupportMainPass;
-			Ar >> m_SupportEditorPrimitivePass;
-
 			m_EditorPrimitiveShaderBlob.Serialize(Ar);
-
-			Ar >> m_SupportEditorSelectionPass;
-
-			Ar >> m_SupportShadowPass;
 			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
 			m_SpotlightShadowDepthShaderBlob.Serialize(Ar);
 
@@ -87,14 +69,13 @@ namespace Drn
 			Ar >> m_SupportStaticMeshDecalPass;
 			m_StaticMeshDecalShaderBlob.Serialize(Ar);
 
-			Ar >> m_SupportPrePass;
-			Ar >> m_HasCustomPrePass;
 			m_PrePassShaderBlob.Serialize(Ar);
 		}
 
 		else
 		{
 			Ar << m_SourcePath; 
+			Ar << ShaderParameters;
 			
 			m_MainShaderBlob.Serialize(Ar);
 			m_HitProxyShaderBlob.Serialize(Ar);
@@ -104,13 +85,8 @@ namespace Drn
 
 			MaterialParameters.Serialize(Ar);
 
-			Ar << m_SupportHitProxyPass;
-			Ar << m_SupportMainPass;
-			Ar << m_SupportEditorPrimitivePass;
 			m_EditorPrimitiveShaderBlob.Serialize(Ar);
-			Ar << m_SupportEditorSelectionPass;
 
-			Ar << m_SupportShadowPass;
 			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
 			m_SpotlightShadowDepthShaderBlob.Serialize(Ar);
 
@@ -120,8 +96,6 @@ namespace Drn
 			Ar << m_SupportStaticMeshDecalPass;
 			m_StaticMeshDecalShaderBlob.Serialize(Ar);
 
-			Ar << m_SupportPrePass;
-			Ar << m_HasCustomPrePass;
 			m_PrePassShaderBlob.Serialize(Ar);
 		}
 	}
@@ -226,7 +200,7 @@ namespace Drn
 	void Material::BindPrePass( D3D12CommandList* CommandList )
 	{
 		TRefCountPtr<GraphicsPipelineState> PSO;
-		if (m_HasCustomPrePass)
+		if (HasCustomPrePass())
 		{
 			PSO = m_MaterialPipelines->m_PrePassPSO;
 		}

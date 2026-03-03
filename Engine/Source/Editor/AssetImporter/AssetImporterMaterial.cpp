@@ -177,15 +177,20 @@ namespace Drn
 			MaterialAsset->m_StaticMeshDecalShaderBlob = StaticMeshDecalShaderBlob;
 			MaterialAsset->m_PrePassShaderBlob = PrePassShaderBlob;
 
-			MaterialAsset->m_SupportMainPass = SupportMainPass;
-			MaterialAsset->m_SupportHitProxyPass = SupportHitProxyPass;
-			MaterialAsset->m_SupportEditorPrimitivePass = SupportEditorPrimitivePass;
-			MaterialAsset->m_SupportEditorSelectionPass = SupportEditorSelectionPass;
-			MaterialAsset->m_SupportShadowPass = SupportShadowPass;
 			MaterialAsset->m_SupportDeferredDecalPass = SupportDeferredDecalPass;
 			MaterialAsset->m_SupportStaticMeshDecalPass = SupportStaticMeshDecalPass;
-			MaterialAsset->m_SupportPrePass = SupportPrePass;
-			MaterialAsset->m_HasCustomPrePass = HasCustomPrePass;
+
+			MaterialAsset->ShaderParameters.bIsMasked = HasOpacity;
+
+			MaterialAsset->ShaderParameters.bHasPrepass = SupportPrePass;
+			MaterialAsset->ShaderParameters.bHasCustomPrepass = HasCustomPrePass;
+			MaterialAsset->ShaderParameters.bHasShadowPass = SupportShadowPass;
+			MaterialAsset->ShaderParameters.bHasMainPass = SupportMainPass;
+			MaterialAsset->ShaderParameters.bHasHitProxyPass = SupportHitProxyPass;
+			MaterialAsset->ShaderParameters.bHasEditorPrimitivePass = SupportEditorPrimitivePass;
+			MaterialAsset->ShaderParameters.bHasEditorSelectionPass = SupportEditorSelectionPass;
+
+			MaterialAsset->ShaderParameters.bIsUsedWithInstancedStaticMesh = false; // TODO: update
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

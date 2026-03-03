@@ -151,6 +151,33 @@ struct VertexInputStaticMesh
     float2 UV4 : TEXCOORD3;
 };
 
+struct VertexInputInstancedStaticMesh
+{
+    float3 PositionRandom : POSITION;
+    float3 Color : COLOR;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
+    float2 UV1 : TEXCOORD0;
+    float2 UV2 : TEXCOORD1;
+    float2 UV3 : TEXCOORD2;
+    float2 UV4 : TEXCOORD3;
+    
+    float4 PivotPosition : PIVOT;
+    half4 LocalToProjection1 : MAT1;
+    half4 LocalToProjection2 : MAT2;
+    half4 LocalToProjection3 : MAT3;
+    
+    float4 PerInstanceCustom1 : CUSTOM1;
+    float4 PerInstanceCustom2 : CUSTOM2;
+    float4 PerInstanceCustom3 : CUSTOM3;
+};
+
+#if INSTANCED
+#define VertexInput VertexInputInstancedStaticMesh
+#elif STATICMESH
+#define VertexInput VertexInputStaticMesh
+#endif
+
 struct BasePassPixelShaderOutput
 {
 #if MAIN_PASS

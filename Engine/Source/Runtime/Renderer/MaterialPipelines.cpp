@@ -56,7 +56,7 @@ namespace Drn
 		std::string name = Path::ConvertShortPath(InMaterial->m_Path);
 		name = Path::RemoveFileExtension(name);
 
-		if (InMaterial->m_SupportMainPass)
+		if (InMaterial->HasBasePass())
 		{
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, InMaterial->m_MainShaderBlob);
 			TRefCountPtr<BlendState> BState = nullptr;
@@ -77,7 +77,7 @@ namespace Drn
 			SetName(m_MainPassPSO->PipelineState, "PSO_MainPass_" + name);
 		}
 
-		if ( InMaterial->m_SupportPrePass && InMaterial->m_HasCustomPrePass )
+		if ( InMaterial->HasPrePass() && InMaterial->HasCustomPrePass() )
 		{
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, InMaterial->m_PrePassShaderBlob);
 			TRefCountPtr<BlendState> BState = nullptr;
@@ -146,7 +146,7 @@ namespace Drn
 			SetName(m_StaticMeshDecalPassPSO->PipelineState, "PSO_StaticMeshDecalPass_" + name);
 		}
 
-		if (InMaterial->m_SupportShadowPass)
+		if (InMaterial->HasShadowPass())
 		{
 			{
 				BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, InMaterial->m_PointlightShadowDepthShaderBlob);
@@ -191,7 +191,7 @@ namespace Drn
 
 #if WITH_EDITOR
 
-		if ( InMaterial->m_SupportEditorSelectionPass )
+		if ( InMaterial->HasEditorSelectionPass() )
 		{
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, InMaterial->m_MainShaderBlob);
 			BoundShaderState.m_PixelShader = nullptr;
@@ -216,7 +216,7 @@ namespace Drn
 			SetName(m_SelectionPassPSO->PipelineState, "PSO_SelectionPass_" + name);
 		}
 
-		if ( InMaterial->IsSupportingHitProxyPass() )
+		if ( InMaterial->HasHitProxyPass() )
 		{
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, InMaterial->m_HitProxyShaderBlob);
 			TRefCountPtr<BlendState> BState = nullptr;
@@ -237,7 +237,7 @@ namespace Drn
 			SetName(m_HitProxyPassPSO->PipelineState, "PSO_HitProxyPass_" + name);
 		}
 
-		if ( InMaterial->m_SupportEditorPrimitivePass )
+		if ( InMaterial->HasEditorPrimitivePass() )
 		{
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, InMaterial->m_EditorPrimitiveShaderBlob);
 			TRefCountPtr<BlendState> BState = nullptr;

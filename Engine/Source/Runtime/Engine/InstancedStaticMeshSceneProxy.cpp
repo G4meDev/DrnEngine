@@ -43,7 +43,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				if (!Mat.GetParentMaterial()->IsSupportingBasePass())
+				if (!Mat.GetParentMaterial()->HasBasePass())
 				{
 					continue;
 				}
@@ -81,7 +81,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat.GetParentMaterial()->IsSupportingPrePass())
+				if (!Mat.GetParentMaterial()->HasPrePass())
 				{
 					continue;
 				}
@@ -118,7 +118,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat.GetParentMaterial()->IsSupportingShadowPass())
+				if (!Mat.GetParentMaterial()->HasShadowPass())
 				{
 					continue;
 				}
@@ -207,7 +207,7 @@ namespace Drn
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
 
-			if (!Mat.GetParentMaterial()->IsSupportingHitProxyPass())
+			if (!Mat.GetParentMaterial()->HasHitProxyPass())
 			{
 				continue;
 			}
@@ -248,7 +248,7 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 		
-			if (!Mat.GetParentMaterial()->IsSupportingEditorSelectionPass())
+			if (!Mat.GetParentMaterial()->HasEditorSelectionPass())
 			{
 				continue;
 			}
@@ -287,7 +287,7 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-			if (!Mat.GetParentMaterial()->IsSupportingEditorPrimitivePass())
+			if (!Mat.GetParentMaterial()->HasEditorPrimitivePass())
 			{
 				continue;
 			}

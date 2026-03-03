@@ -16,12 +16,6 @@ namespace Drn
 	class GraphicsPipelineState;
 	struct MaterialPipelines;
 
-	enum class EMaterialDomain : uint8
-	{
-		Surface,
-		Decal
-	};
-
 	class Material : public Asset, public MaterialInterface
 	{
 	public:
@@ -46,12 +40,13 @@ namespace Drn
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
-		inline bool IsSupportingBasePass() const { return m_SupportMainPass; }
-		inline bool IsSupportingPrePass() const { return m_SupportPrePass; }
-		inline bool IsSupportingShadowPass() const { return m_SupportShadowPass; }
-		inline bool IsSupportingHitProxyPass() const { return m_SupportHitProxyPass; }
-		inline bool IsSupportingEditorPrimitivePass() const { return m_SupportEditorPrimitivePass; }
-		inline bool IsSupportingEditorSelectionPass() const { return m_SupportEditorSelectionPass; }
+		inline bool HasBasePass() const { return ShaderParameters.bHasMainPass; }
+		inline bool HasCustomPrePass() const { return ShaderParameters.bHasCustomPrepass; }
+		inline bool HasPrePass() const { return ShaderParameters.bHasPrepass; }
+		inline bool HasShadowPass() const { return ShaderParameters.bHasShadowPass; }
+		inline bool HasHitProxyPass() const { return ShaderParameters.bHasHitProxyPass; }
+		inline bool HasEditorPrimitivePass() const { return ShaderParameters.bHasEditorPrimitivePass; }
+		inline bool HasEditorSelectionPass() const { return ShaderParameters.bHasEditorSelectionPass; }
 		inline bool IsSupportingDeferredDecalPass() const { return m_SupportDeferredDecalPass; }
 		inline bool IsSupportingStaticMeshDecalPass() const { return m_SupportStaticMeshDecalPass; }
 
@@ -121,15 +116,10 @@ namespace Drn
 
 		bool m_RenderStateDirty;
 
-		bool m_SupportMainPass;
-		bool m_SupportPrePass;
-		bool m_HasCustomPrePass;
-		bool m_SupportShadowPass;
-		bool m_SupportHitProxyPass;
-		bool m_SupportEditorPrimitivePass;
-		bool m_SupportEditorSelectionPass;
 		bool m_SupportDeferredDecalPass;
 		bool m_SupportStaticMeshDecalPass;
+
+		MaterialShaderParameters ShaderParameters;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
