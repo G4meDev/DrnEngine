@@ -12,16 +12,22 @@ namespace Drn
 	{
 	}
 
+	ShaderBlob::ShaderBlob(const ShaderBlob& Other)
+		: ShaderBlob()
+	{
+		*this = Other;
+	}
+
 	ShaderBlob::~ShaderBlob()
 	{
 		ReleaseBlobs();
 	}
 
-	ShaderBlob& ShaderBlob::operator=( ShaderBlob& Other )
+	ShaderBlob& ShaderBlob::operator=(const ShaderBlob& Other)
 	{
 		ReleaseBlobs();
 
-		auto CopyBlobConditional = [&]( ID3DBlob*& Source, ID3DBlob*& Dest )
+		auto CopyBlobConditional = [&](ID3DBlob*const& Source, ID3DBlob*& Dest)
 		{
 			if (Source)
 			{

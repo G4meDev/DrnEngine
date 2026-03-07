@@ -100,6 +100,7 @@ namespace Drn
 		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList, this);
 		m_BloomPSO = new BloomPSO(CommandList, this);
 		m_PositionOnlyDepthPSO = new PositionOnlyDepthPSO(CommandList, this);
+		m_PositionOnlyMaterialShaders.Init(CommandList, this);
 		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList, this);
 		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList, this);
 		m_LightPassPSO = new LightPassPSO(CommandList, this);
@@ -966,6 +967,73 @@ namespace Drn
 			m_CullBackPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_CullBackPSO->PipelineState, "PSO_PositionOnlyDepth_CullBack");
 		}
+	}
+
+// --------------------------------------------------------------------------------------
+
+	void PositionOnlyMaterialShaders::Init( D3D12CommandList* CommandList, CommonResources* CR )
+	{
+		auto GetPositionOnlyVertexDeclartionForVertexFactory = [&](VertexFactoryType* Type)
+		{
+			if (Type == VertexFactoryType::StaticMesh)
+			{
+				return CR->VertexDeclaration_Pos;
+			}
+
+			drn_check(false);
+			return CR->VertexDeclaration_Pos;
+		};
+
+		ERasterizerCullMode CullModes[] = {ERasterizerCullMode::None, ERasterizerCullMode::Back};
+		std::string CullModesStr[] = {"CullNone", "CullBack"};
+
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\PositionOnlyDepthVertexShader.hlsl" ) );
+
+		for (int32 NumVertexFactory = 0; NumVertexFactory < VertexFactoryType::GlobalFactories.size(); NumVertexFactory++)
+		{
+			for (int32 CullMode = 0; CullMode < 2; CullMode++)
+			{
+				VertexFactoryType* VertexFactory = VertexFactoryType::GlobalFactories[NumVertexFactory];
+
+				ID3DBlob* VertexShaderBlob;
+				std::vector<const wchar_t*> Macros = {};
+				Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+				CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+
+				VertexShader* VShader = new VertexShader();
+				VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+				VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
+
+				BoundShaderStateInput BoundShaderState(GetPositionOnlyVertexDeclartionForVertexFactory(VertexFactory), VShader, nullptr, nullptr, nullptr, nullptr);
+				TRefCountPtr<BlendState> BState = nullptr;
+
+				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, CullModes[CullMode]);
+				TRefCountPtr<RasterizerState> RState = nullptr;
+
+				DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+				DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+				ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+				GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+					0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+				TRefCountPtr<GraphicsPipelineState> Pipeline = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+				SetName(Pipeline->PipelineState, "PSO_PositionOnlyDepth_" + CullModesStr[CullMode]);
+
+				ShaderBlob S;
+				S.m_VS = VertexShaderBlob;
+				MaterialShaders& MatShaders = CullMode == 0 ? CullNone : CullBack;
+				MatShaders.PushShader(VertexFactory, EMaterialStage::Prepass, S);
+				MatShaders.GetShader(VertexFactory, EMaterialStage::Prepass)->SetPipeline(Pipeline);
+			}
+		}
+	}
+
+	MaterialShader* PositionOnlyMaterialShaders::GetShader( VertexFactoryType* VertexFactory, bool bInTwoSided )
+	{
+		return bInTwoSided ? CullNone.GetShader(VertexFactory, EMaterialStage::Prepass) : CullBack.GetShader(VertexFactory, EMaterialStage::Prepass);
 	}
 
 // --------------------------------------------------------------------------------------

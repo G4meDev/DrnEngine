@@ -2,9 +2,14 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Engine/NamedProperty.h"
+#include "Runtime/Renderer/VertexDeclaration.h"
+
+#define VERTEX_FACTORY_NAME_NULL "NullVertexFactory"
 
 namespace Drn
 {
+	//DECLARE_DELEGATE_RetVal( VertexDeclaration* , VertexDeclarationDelegate )
+
 	class RenderUniformBuffer;
 
 	struct MaterialUniformParameters : public Serializable
@@ -55,16 +60,54 @@ namespace Drn
 
 // -------------------------------------------------------------------------------------------------------------------
 
+	class VertexFactoryType
+	{
+	public:
+		VertexFactoryType(std::string&& InName)
+			: Name(std::move(InName))
+		{
+			drn_check(std::find_if(GlobalFactories.begin(), GlobalFactories.end(),
+				[&](const VertexFactoryType* Factroy){ return Factroy->GetName() == Name; }) == GlobalFactories.end());
+
+			//VertexDeclarationDel.BindLambda(InVertexDeclartionCallback);
+
+			GlobalFactories.push_back(this);
+		}
+
+		inline const std::string& GetName() const { return Name; }
+		//inline const VertexDeclaration* GetVertexDeclaration() const { drn_check(VertexDeclarationDel.IsBound()); return VertexDeclarationDel.Execute(); }
+
+		inline static VertexFactoryType* GetVertexFactory(const std::string Name)
+		{
+			if (Name == VERTEX_FACTORY_NAME_NULL)
+			{
+				return nullptr;
+			}
+
+			auto It = std::find_if(GlobalFactories.begin(), GlobalFactories.end(),
+				[&](const VertexFactoryType* Factroy){ return Factroy->GetName() == Name; });
+
+			drn_check(It != GlobalFactories.end());
+			return *It;
+		}
+
+		static std::vector<VertexFactoryType*> GlobalFactories;
+
+		static VertexFactoryType* StaticMesh;
+
+	private:
+		const std::string Name;
+		//VertexDeclarationDelegate VertexDeclarationDel; 
+		//VertexDeclaration(*VertexDeclarationCallback)(void);
+		// @TODO: maybe add hashed name for faster comparison
+	};
+
+// -------------------------------------------------------------------------------------------------------------------
+
 	enum class EMaterialDomain : uint8
 	{
 		Surface,
 		Decal
-	};
-
-	enum class VertexFactoryType : uint8
-	{
-		StaticMesh,
-		InstancedStaticMesh,
 	};
 
 	struct MaterialShaderParameters
@@ -123,4 +166,141 @@ namespace Drn
 			return Ar;
 		}
 	};
+
+// -------------------------------------------------------------------------------------------------------------------
+
+	enum class EMaterialStage : uint8
+	{
+		Prepass,
+		PointLightShadow,
+		SpotLightShadow,
+		Main,
+		Decal,
+		Hitproxy,
+		EditorPrimitive,
+		EditorSelection
+	};
+
+	class MaterialShader
+	{
+	public:
+		MaterialShader()
+			: VertexFactory(nullptr)
+			, MaterialStage(EMaterialStage::Main)
+			, Blob()
+			, PipelineState(nullptr)
+		{}
+
+		MaterialShader(VertexFactoryType* InVertexFactory, EMaterialStage InMaterialStage, const ShaderBlob& InBlob)
+			: VertexFactory(InVertexFactory)
+			, MaterialStage(InMaterialStage)
+			, Blob(InBlob)
+			, PipelineState(nullptr)
+		{}
+
+		inline bool CheckTypeStage(VertexFactoryType* InVertexFactory, EMaterialStage InMaterialStage) const
+		{
+			return (GetVertexFactoryType() == InVertexFactory) && (GetMaterialStage() == InMaterialStage);
+		}
+
+		inline bool operator==( const MaterialShader& Other ) const
+		{
+			return CheckTypeStage(Other.GetVertexFactoryType(), Other.GetMaterialStage());
+		}
+
+		inline VertexFactoryType* GetVertexFactoryType() const { return VertexFactory; }
+		inline EMaterialStage GetMaterialStage() const { return MaterialStage; }
+
+		inline friend Archive& operator<<(Archive& Ar, MaterialShader& Value)
+		{
+			Ar << (Value.VertexFactory ? Value.VertexFactory->GetName() : VERTEX_FACTORY_NAME_NULL);
+			Ar << static_cast<uint8>(Value.MaterialStage);
+			Value.Blob.Serialize(Ar);
+
+			return Ar;
+		}
+
+		inline friend Archive& operator>>(Archive& Ar, MaterialShader& Value)
+		{
+			std::string VertexFactoryName;
+			Ar >> VertexFactoryName;
+			Value.VertexFactory = VertexFactoryType::GetVertexFactory(VertexFactoryName);
+
+			Ar >> *(uint8*)&Value.MaterialStage;
+			Value.Blob.Serialize(Ar);
+
+			return Ar;
+		}
+
+		void UploadPipelineState(class D3D12CommandList* CmdList, Material* InMaterial);
+		void Bind(class D3D12CommandList* CmdList);
+		inline void SetPipeline(TRefCountPtr<class GraphicsPipelineState> InPipeline) { PipelineState = InPipeline; }
+
+	private:
+		VertexFactoryType* VertexFactory;
+		EMaterialStage MaterialStage;
+		ShaderBlob Blob;
+
+		TRefCountPtr<class GraphicsPipelineState> PipelineState;
+	};
+
+	class MaterialShaders
+	{
+	public:
+		MaterialShaders() {}
+
+		inline void PushShader(VertexFactoryType* InVertexFactory, EMaterialStage InMaterialStage, const ShaderBlob& InBlob)
+		{
+			Shaders.push_back(MaterialShader(InVertexFactory, InMaterialStage, InBlob));
+		}
+
+		inline MaterialShader* GetShader(VertexFactoryType* InVertexFactory, EMaterialStage InMaterialStage) const
+		{
+			auto It = std::find_if(Shaders.begin(), Shaders.end(), [&](const MaterialShader& InMaterialShader)
+				{ return InMaterialShader.CheckTypeStage(InVertexFactory, InMaterialStage); });
+
+			return It._Ptr;
+			//return It == Shaders.end() ? nullptr : &*It;
+		}
+
+		inline friend Archive& operator<<(Archive& Ar, MaterialShaders& Value)
+		{
+			uint64 ShaderCount = Value.Shaders.size();
+			drn_check(ShaderCount < UINT8_MAX);
+			Ar << static_cast<uint8>(ShaderCount);
+
+			for (MaterialShader& MatShader : Value.Shaders)
+			{
+				Ar << MatShader;
+			}
+
+			return Ar;
+		}
+
+		inline friend Archive& operator>>(Archive& Ar, MaterialShaders& Value)
+		{
+			uint8 ShaderCount;
+			Ar >> ShaderCount;
+
+			Value.Shaders.clear();
+			Value.Shaders.resize(ShaderCount);
+			for (MaterialShader& MatShader : Value.Shaders)
+			{
+				Ar >> MatShader;
+			}
+
+			return Ar;
+		}
+
+		void UploadPipelineStates(class D3D12CommandList* CmdList, Material* InMaterial);
+
+	private:
+		std::vector<MaterialShader> Shaders;
+	};
+
+	const wchar_t* GetVertexFactoryShaderMacro( VertexFactoryType* VertexFactory );
+
+// -------------------------------------------------------------------------------------------------------------------
+
+
 }

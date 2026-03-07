@@ -1,5 +1,9 @@
 #include "Common.hlsl"
 
+// DOMAIN_SURFACE
+
+// SUPPORT_STATICMESH
+
 // SUPPORT_MAIN_PASS
 // SUPPORT_PRE_PASS
 

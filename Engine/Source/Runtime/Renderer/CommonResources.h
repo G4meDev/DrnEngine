@@ -193,6 +193,16 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_CullBackPSO;
 	};
 
+	class PositionOnlyMaterialShaders
+	{
+	public:
+		void Init(D3D12CommandList* CommandList, CommonResources* CR);
+		MaterialShaders CullNone;
+		MaterialShaders CullBack;
+
+		MaterialShader* GetShader(VertexFactoryType* VertexFactory, bool bInTwoSided);
+	};
+
 	class ResolveEditorSelectionPSO : public RefCountedObject
 	{
 	public:
@@ -358,6 +368,8 @@ namespace Drn
 		TRefCountPtr<SceneDownSamplePSO> m_SceneDownSamplePSO;
 		TRefCountPtr<BloomPSO> m_BloomPSO;
 		TRefCountPtr<PositionOnlyDepthPSO> m_PositionOnlyDepthPSO;
+		//TRefCountPtr<PositionOnlyMaterialShaders> m_PositionOnlyMaterialShaders;
+		PositionOnlyMaterialShaders m_PositionOnlyMaterialShaders;
 
 		TRefCountPtr<SpriteEditorPrimitivePSO> m_SpriteEditorPrimitivePSO;
 		TRefCountPtr<SpriteHitProxyPSO> m_SpriteHitProxyPSO;

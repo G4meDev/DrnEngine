@@ -3,6 +3,10 @@
 
 namespace Drn
 {
+	std::vector<VertexFactoryType*> VertexFactoryType::GlobalFactories;
+	//VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh", []() { return CommonResources::Get()->VertexDeclaration_StaticMesh.GetReference(); });
+	VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh");
+
 	void MaterialUniformParameters::Serialize( Archive& Ar )
 	{
 		if (Ar.IsLoading())
@@ -271,4 +275,245 @@ namespace Drn
 			}
 		}
 	}
-}
+
+// ---------------------------------------------------------------------------------------------------------
+
+	BoundShaderStateInput GetShaderStateInput(VertexDeclaration* VDeclaration, ShaderBlob& Blob)
+	{
+		VertexShader* VShader = nullptr;
+		HullShader* HShader = nullptr;
+		DomainShader* DShader = nullptr;
+		PixelShader* PShader = nullptr;
+		GeometryShader* GShader = nullptr;
+
+		if (Blob.m_VS)
+		{
+			VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = Blob.m_VS->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = Blob.m_VS->GetBufferSize();
+		}
+
+		if (Blob.m_HS)
+		{
+			HShader = new HullShader();
+			HShader->ByteCode.pShaderBytecode = Blob.m_HS->GetBufferPointer();
+			HShader->ByteCode.BytecodeLength = Blob.m_HS->GetBufferSize();
+		}
+
+		if (Blob.m_DS)
+		{
+			DShader = new DomainShader();
+			DShader->ByteCode.pShaderBytecode = Blob.m_DS->GetBufferPointer();
+			DShader->ByteCode.BytecodeLength = Blob.m_DS->GetBufferSize();
+		}
+
+		if (Blob.m_PS)
+		{
+			PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = Blob.m_PS->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = Blob.m_PS->GetBufferSize();
+		}
+
+		if (Blob.m_GS)
+		{
+			GShader = new GeometryShader();
+			GShader->ByteCode.pShaderBytecode = Blob.m_GS->GetBufferPointer();
+			GShader->ByteCode.BytecodeLength = Blob.m_GS->GetBufferSize();
+		}
+
+		return BoundShaderStateInput(VDeclaration, VShader, HShader, DShader, PShader, GShader);
+	}
+
+	// @TODO: remove and embed in vertex factory class
+	VertexDeclaration* GetVertexDeclationForFactory(VertexFactoryType* VertexFactory)
+	{
+		if (VertexFactory == VertexFactoryType::StaticMesh)
+		{
+			return CommonResources::Get()->VertexDeclaration_StaticMesh;
+		}
+
+		drn_check(false);
+		return CommonResources::Get()->VertexDeclaration_StaticMesh;
+	}
+
+	void MaterialShader::UploadPipelineState(D3D12CommandList* CmdList, Material* InMaterial)
+	{
+		if (MaterialStage == EMaterialStage::Main)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			TRefCountPtr<BlendState> BState = nullptr;
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT, GBUFFER_BASE_COLOR_FORMAT, GBUFFER_WORLD_NORMAL_FORMAT, GBUFFER_MASKS_FORMAT, GBUFFER_MASKS_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				_countof(TargetFormats), TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_MainPass_" + InMaterial->GetMaterialName());
+		}
+
+		else if (MaterialStage == EMaterialStage::Prepass)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			TRefCountPtr<BlendState> BState = nullptr;
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_PrePass_" + InMaterial->GetMaterialName());
+		}
+
+		else if (MaterialStage == EMaterialStage::PointLightShadow)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			TRefCountPtr<BlendState> BState = nullptr;
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(true, ECompareFunction::LessEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+	
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				0, TargetFormats, TargetFlags, DXGI_FORMAT_D16_UNORM, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_PointLightShadowDepthPass_" + InMaterial->GetMaterialName());
+		}
+
+		else if (MaterialStage == EMaterialStage::SpotLightShadow)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			TRefCountPtr<BlendState> BState = nullptr;
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(true, ECompareFunction::LessEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+	
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				0, TargetFormats, TargetFlags, DXGI_FORMAT_D16_UNORM, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_SpotLightShadowDepthPass_" + InMaterial->GetMaterialName());
+		}
+
+#if WITH_EDITOR
+		else if (MaterialStage == EMaterialStage::Hitproxy)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			TRefCountPtr<BlendState> BState = nullptr;
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_GUID_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_HitProxyPass_" + InMaterial->GetMaterialName());
+		}
+
+		else if (MaterialStage == EMaterialStage::EditorPrimitive)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			TRefCountPtr<BlendState> BState = nullptr;
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DISPLAY_OUTPUT_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_EditorPrimitive_" + InMaterial->GetMaterialName());
+		}
+
+		else if (MaterialStage == EMaterialStage::EditorSelection)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderState.m_PixelShader = nullptr;
+
+			TRefCountPtr<BlendState> BState = nullptr;
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual,
+				true, ECompareFunction::Always, EStencilOp::Replace, EStencilOp::Replace, EStencilOp::Replace,
+				true, ECompareFunction::Always, EStencilOp::Replace, EStencilOp::Replace, EStencilOp::Replace);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				0, TargetFormats, TargetFlags, DEPTH_STENCIL_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_SelectionPass_" + InMaterial->GetMaterialName());
+		}
+#endif
+	}
+
+	void MaterialShader::Bind( D3D12CommandList* CmdList )
+	{
+		CmdList->SetGraphicPipelineState(PipelineState);
+	}
+
+	void MaterialShaders::UploadPipelineStates( D3D12CommandList* CmdList, Material* InMaterial )
+	{
+		for (MaterialShader& MatShader : Shaders)
+		{
+			MatShader.UploadPipelineState(CmdList, InMaterial);
+		}
+	}
+
+	const wchar_t* GetVertexFactoryShaderMacro( VertexFactoryType* VertexFactory )
+	{
+		if (VertexFactory == VertexFactoryType::StaticMesh)
+		{
+			return L"STATICMESH=1";
+		}
+
+		drn_check(false);
+		return L"STATICMESH=1";
+	}
+
+}  // namespace Drn

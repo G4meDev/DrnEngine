@@ -1,5 +1,9 @@
 #include "Common.hlsl"
 
+// DOMAIN_SURFACE
+
+// SUPPORT_STATICMESH
+
 // SUPPORT_EDITOR_PRIMITIVE_PASS
 
 ConstantBuffer<StandardResources> BindlessResources : register(b0);

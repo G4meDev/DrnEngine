@@ -26,13 +26,6 @@ namespace Drn
 		Material(const std::string& InPath, const std::string& InSourcePath);
 #endif
 
-		void BindMainPass( D3D12CommandList* CommandList );
-		void BindPrePass( D3D12CommandList* CommandList );
-		void BindPointLightShadowDepthPass( D3D12CommandList* CommandList );
-		void BindSpotLightShadowDepthPass( D3D12CommandList* CommandList );
-		void BindEditorPrimitivePass( D3D12CommandList* CommandList );
-		void BindSelectionPass( D3D12CommandList* CommandList );
-		void BindHitProxyPass( D3D12CommandList* CommandList );
 		void BindDeferredDecalPass( D3D12CommandList* CommandList );
 		void BindStaticMeshDecalPass( D3D12CommandList* CommandList );
 
@@ -40,13 +33,6 @@ namespace Drn
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
 
-		inline bool HasBasePass() const { return ShaderParameters.bHasMainPass; }
-		inline bool HasCustomPrePass() const { return ShaderParameters.bHasCustomPrepass; }
-		inline bool HasPrePass() const { return ShaderParameters.bHasPrepass; }
-		inline bool HasShadowPass() const { return ShaderParameters.bHasShadowPass; }
-		inline bool HasHitProxyPass() const { return ShaderParameters.bHasHitProxyPass; }
-		inline bool HasEditorPrimitivePass() const { return ShaderParameters.bHasEditorPrimitivePass; }
-		inline bool HasEditorSelectionPass() const { return ShaderParameters.bHasEditorSelectionPass; }
 		inline bool IsSupportingDeferredDecalPass() const { return m_SupportDeferredDecalPass; }
 		inline bool IsSupportingStaticMeshDecalPass() const { return m_SupportStaticMeshDecalPass; }
 
@@ -60,6 +46,10 @@ namespace Drn
 		inline bool IsTwoSided() const { return m_TwoSided; }
 
 		inline const MaterialUniformParameters& GetParameters() const { return MaterialParameters; }
+
+		inline const std::string& GetMaterialName() const { return MaterialName; }
+		inline const MaterialShaderParameters& GetShaderParameters() const { return ShaderParameters; }
+		inline const MaterialShaders& GetShaders() const { return Shaders; }
 
 // -------------------------------------------------------------------------------------------------------------
 // ---------------------------------------- Material Interface -------------------------------------------------
@@ -98,13 +88,8 @@ namespace Drn
 		void ReleasePSOs();
 
 		std::string m_SourcePath;
+		std::string MaterialName;
 
-		ShaderBlob m_MainShaderBlob;
-		ShaderBlob m_PrePassShaderBlob;
-		ShaderBlob m_HitProxyShaderBlob;
-		ShaderBlob m_EditorPrimitiveShaderBlob;
-		ShaderBlob m_PointlightShadowDepthShaderBlob;
-		ShaderBlob m_SpotlightShadowDepthShaderBlob;
 		ShaderBlob m_DeferredDecalShaderBlob;
 		ShaderBlob m_StaticMeshDecalShaderBlob;
 
@@ -120,6 +105,7 @@ namespace Drn
 		bool m_SupportStaticMeshDecalPass;
 
 		MaterialShaderParameters ShaderParameters;
+		MaterialShaders Shaders;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

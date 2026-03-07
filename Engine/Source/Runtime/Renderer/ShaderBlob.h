@@ -10,7 +10,8 @@ namespace Drn
 		ShaderBlob();
 		~ShaderBlob();
 
-		ShaderBlob& operator=(ShaderBlob& Other);
+		ShaderBlob(const ShaderBlob& Other);
+		ShaderBlob& operator=(const ShaderBlob& Other);
 
 		ID3DBlob* m_VS;
 		ID3DBlob* m_PS;

@@ -107,28 +107,30 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				if (!Mat.GetParentMaterial()->HasBasePass())
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasMainPass
+					? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Main)
+					: nullptr;
+
+				if (MatShader)
 				{
-					continue;
+					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+
+					MatShader->Bind(CommandList);
+					Mat.GetMaterialInterface()->BindResources(CommandList);
+
+					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+					m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+					m_PrimitiveBuffer.m_Guid = m_Guid;
+
+					// TODO: cache in different draws
+					TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+
+					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+					CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+					CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+
+					RenderProxy.BindAndDraw(CommandList);
 				}
-
-				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
-
-				Mat.GetParentMaterial()->BindMainPass( CommandList );
-				Mat.GetMaterialInterface()->BindResources(CommandList);
-
-				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-				m_PrimitiveBuffer.m_Guid = m_Guid;
-
-				// TODO: cache in different draws
-				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
-
-				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-
-				RenderProxy.BindAndDraw(CommandList);
 			}
 		}
 	}
@@ -145,33 +147,51 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat.GetParentMaterial()->HasPrePass())
+				MaterialShader* MatShader = nullptr;
+				if (Mat.GetParentMaterial()->GetShaderParameters().bHasPrepass)
 				{
-					continue;
+					MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasCustomPrepass
+						? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Prepass)
+						: CommonResources::Get()->m_PositionOnlyMaterialShaders.GetShader(VertexFactoryType::StaticMesh, Mat.GetParentMaterial()->IsTwoSided());
 				}
 
-				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+				if (MatShader)
+				{
+					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
-				Mat.GetParentMaterial()->BindPrePass(CommandList);
-				Mat.GetMaterialInterface()->BindResources(CommandList);
+					MatShader->Bind(CommandList);
+					Mat.GetMaterialInterface()->BindResources(CommandList);
 
-				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-				m_PrimitiveBuffer.m_Guid = m_Guid;
+					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+					m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+					m_PrimitiveBuffer.m_Guid = m_Guid;
 		
-				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+					TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
 		
-				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+					CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+					CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 		
-				RenderProxy.BindAndDraw(CommandList);
+					RenderProxy.BindAndDraw(CommandList);
+				}
 			}
 		}
 	}
 
 	void StaticMeshSceneProxy::RenderShadowPass( D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy)
 	{
+		auto GetMaterialShaderForLightType = [](const MaterialShaders& Shaders, ELightType Type)
+		{
+			switch ( Type )
+			{
+			case ELightType::PointLight: return Shaders.GetShader(VertexFactoryType::StaticMesh, EMaterialStage::PointLightShadow);
+			case ELightType::SpotLight:
+			case ELightType::DirectionalLight: return Shaders.GetShader(VertexFactoryType::StaticMesh, EMaterialStage::SpotLightShadow);
+			case ELightType::SkyLight:
+			default: drn_check(false); return Shaders.GetShader(VertexFactoryType::StaticMesh, EMaterialStage::PointLightShadow);
+			}
+		};
+
 		if (m_Mesh.IsValid())
 		{
 			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
@@ -182,39 +202,30 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				if (!Mat.GetParentMaterial()->HasShadowPass())
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasShadowPass
+					? GetMaterialShaderForLightType(Mat.GetParentMaterial()->GetShaders(), LightProxy->GetLightType())
+					: nullptr;
+
+				if (MatShader)
 				{
-					continue;
+					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+
+					MatShader->Bind(CommandList);
+					Mat.GetMaterialInterface()->BindResources(CommandList);
+
+					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+					m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+					m_PrimitiveBuffer.m_Guid = m_Guid;
+
+					TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+
+					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+					CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+					CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+
+					RenderProxy.BindAndDraw(CommandList);
 				}
 
-				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
-
-				if ( LightProxy->GetLightType() == ELightType::PointLight )
-				{
-					Mat.GetParentMaterial()->BindPointLightShadowDepthPass(CommandList);
-				}
-				else if ( LightProxy->GetLightType() == ELightType::SpotLight)
-				{
-					Mat.GetParentMaterial()->BindSpotLightShadowDepthPass(CommandList);
-				}
-				else if ( LightProxy->GetLightType() == ELightType::DirectionalLight)
-				{
-					Mat.GetParentMaterial()->BindSpotLightShadowDepthPass(CommandList);
-				}
-
-				Mat.GetMaterialInterface()->BindResources(CommandList);
-
-				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-				m_PrimitiveBuffer.m_Guid = m_Guid;
-
-				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
-
-				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-
-				RenderProxy.BindAndDraw(CommandList);
 			}
 		}
 	}
@@ -271,32 +282,33 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
+			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasHitProxyPass
+				? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Hitproxy)
+				: nullptr;
 
-			if (!Mat.GetParentMaterial()->HasHitProxyPass())
+			if (MatShader)
 			{
-				continue;
+				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+
+				MatShader->Bind(CommandList);
+				Mat.GetMaterialInterface()->BindResources(CommandList);
+
+				{
+					SCOPE_STAT("Calculate");
+
+					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+					m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+					m_PrimitiveBuffer.m_Guid = m_Guid;
+				}
+
+				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+
+				RenderProxy.BindAndDraw(CommandList);
 			}
-
-			SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
-
-			Mat.GetParentMaterial()->BindHitProxyPass(CommandList);
-			Mat.GetMaterialInterface()->BindResources(CommandList);
-
-			{
-				SCOPE_STAT("Calculate");
-
-				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-				m_PrimitiveBuffer.m_Guid = m_Guid;
-			}
-
-			TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
-
-			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-			CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-
-			RenderProxy.BindAndDraw(CommandList);
 		}
 	}
 
@@ -312,28 +324,30 @@ namespace Drn
 		{
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
-		
-			if (!Mat.GetParentMaterial()->HasEditorSelectionPass())
+
+			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasEditorSelectionPass
+				? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::EditorSelection)
+				: nullptr;
+			if (MatShader)
 			{
-				continue;
+				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+
+				MatShader->Bind(CommandList);
+				CommandList->GetD3D12CommandList()->OMSetStencilRef(255);
+				Mat.GetMaterialInterface()->BindResources(CommandList);
+		
+				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+				m_PrimitiveBuffer.m_Guid = m_Guid;
+
+				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+				RenderProxy.BindAndDraw(CommandList);
 			}
-
-			SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
-
-			Mat.GetParentMaterial()->BindSelectionPass(CommandList);
-			Mat.GetMaterialInterface()->BindResources(CommandList);
-		
-			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-			m_PrimitiveBuffer.m_Guid = m_Guid;
-
-			TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
-
-			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-			CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-		
-			RenderProxy.BindAndDraw(CommandList);
 		}
 	}
 
@@ -352,27 +366,29 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-			if (!Mat.GetParentMaterial()->HasEditorPrimitivePass())
+			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasEditorPrimitivePass
+				? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::EditorPrimitive)
+				: nullptr;
+			if (MatShader)
 			{
-				continue;
+				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+
+				MatShader->Bind(CommandList);
+				Mat.GetMaterialInterface()->BindResources(CommandList);
+		
+				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+				m_PrimitiveBuffer.m_Guid = m_Guid;
+
+				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+				RenderProxy.BindAndDraw( CommandList );
 			}
 
-			SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
-
-			Mat.GetParentMaterial()->BindEditorPrimitivePass(CommandList);
-			Mat.GetMaterialInterface()->BindResources(CommandList);
-		
-			m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-			m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-			m_PrimitiveBuffer.m_Guid = m_Guid;
-
-			TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
-
-			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-			CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-		
-			RenderProxy.BindAndDraw( CommandList );
 		}
 	}
 

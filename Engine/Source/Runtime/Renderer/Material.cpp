@@ -15,6 +15,7 @@ namespace Drn
 		, m_SupportStaticMeshDecalPass(false)
 		, m_MaterialDomain(EMaterialDomain::Surface)
 		, m_TwoSided(false)
+		, MaterialName("InvalidMaterial")
 	{
 		Load();
 	}
@@ -27,6 +28,7 @@ namespace Drn
 		, m_SupportStaticMeshDecalPass(false)
 		, m_MaterialDomain(EMaterialDomain::Surface)
 		, m_TwoSided(false)
+		, MaterialName("InvalidMaterial")
 	{
 		m_SourcePath = InSourcePath;
 		Import();
@@ -51,17 +53,13 @@ namespace Drn
 
 			Ar >> m_SourcePath;
 			Ar >> ShaderParameters;
+			Ar >> Shaders;
 
-			m_MainShaderBlob.Serialize(Ar);
-			m_HitProxyShaderBlob.Serialize(Ar);
 
 			Ar >> *((uint8*)(&m_MaterialDomain));
 			Ar >> m_TwoSided;
 
 			MaterialParameters.Serialize(Ar);
-			m_EditorPrimitiveShaderBlob.Serialize(Ar);
-			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
-			m_SpotlightShadowDepthShaderBlob.Serialize(Ar);
 
 			Ar >> m_SupportDeferredDecalPass;
 			m_DeferredDecalShaderBlob.Serialize(Ar);
@@ -69,45 +67,31 @@ namespace Drn
 			Ar >> m_SupportStaticMeshDecalPass;
 			m_StaticMeshDecalShaderBlob.Serialize(Ar);
 
-			m_PrePassShaderBlob.Serialize(Ar);
+			std::string name = Path::ConvertShortPath(m_Path);
+			MaterialName = Path::RemoveFileExtension(name);
 		}
 
 		else
 		{
 			Ar << m_SourcePath; 
 			Ar << ShaderParameters;
-			
-			m_MainShaderBlob.Serialize(Ar);
-			m_HitProxyShaderBlob.Serialize(Ar);
+			Ar << Shaders;
 
 			Ar << static_cast<uint8>(m_MaterialDomain);
 			Ar << m_TwoSided;
 
 			MaterialParameters.Serialize(Ar);
 
-			m_EditorPrimitiveShaderBlob.Serialize(Ar);
-
-			m_PointlightShadowDepthShaderBlob.Serialize(Ar);
-			m_SpotlightShadowDepthShaderBlob.Serialize(Ar);
-
 			Ar << m_SupportDeferredDecalPass;
 			m_DeferredDecalShaderBlob.Serialize(Ar);
 
 			Ar << m_SupportStaticMeshDecalPass;
 			m_StaticMeshDecalShaderBlob.Serialize(Ar);
-
-			m_PrePassShaderBlob.Serialize(Ar);
 		}
 	}
 
 	void Material::ReleaseShaderBlobs()
 	{
-		m_MainShaderBlob.ReleaseBlobs();
-		m_PrePassShaderBlob.ReleaseBlobs();
-		m_HitProxyShaderBlob.ReleaseBlobs();
-		m_EditorPrimitiveShaderBlob.ReleaseBlobs();
-		m_PointlightShadowDepthShaderBlob.ReleaseBlobs();
-		m_SpotlightShadowDepthShaderBlob.ReleaseBlobs();
 		m_DeferredDecalShaderBlob.ReleaseBlobs();
 		m_StaticMeshDecalShaderBlob.ReleaseBlobs();
 	}
@@ -183,57 +167,12 @@ namespace Drn
 			ReleasePSOs();
 
 			m_MaterialPipelines = new MaterialPipelines(CommandList, this);
+			Shaders.UploadPipelineStates(CommandList, this);
 
 			ClearRenderStateDirty();
 		}
 
 		MaterialParameters.UploadResources(CommandList);
-	}
-
-	void Material::BindMainPass( D3D12CommandList* CommandList )
-	{
-		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_MainPassPSO);
-
-		//BindResources(CommandList);
-	}
-
-	void Material::BindPrePass( D3D12CommandList* CommandList )
-	{
-		TRefCountPtr<GraphicsPipelineState> PSO;
-		if (HasCustomPrePass())
-		{
-			PSO = m_MaterialPipelines->m_PrePassPSO;
-		}
-		
-		else
-		{
-			PSO = m_TwoSided 
-				? CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullNonePSO
-				: CommonResources::Get()->m_PositionOnlyDepthPSO->m_CullBackPSO;
-		}
-
-		if (!PSO)
-		{
-			return;
-		}
-
-		CommandList->SetGraphicPipelineState(PSO);
-
-		//BindResources(CommandList);
-	}
-
-	void Material::BindPointLightShadowDepthPass( D3D12CommandList* CommandList )
-	{
-		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_PointLightShadowDepthPassPSO);
-		
-		//BindResources(CommandList);
-	}
-
-	void Material::BindSpotLightShadowDepthPass( D3D12CommandList* CommandList )
-	{
-		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_SpotLightShadowDepthPassPSO);
-		
-		//BindResources(CommandList);
 	}
 
 	void Material::BindDeferredDecalPass( D3D12CommandList* CommandList )
@@ -251,33 +190,6 @@ namespace Drn
 
 		//BindResources(CommandList);
 	}
-
-#if WITH_EDITOR
-	void Material::BindEditorPrimitivePass( D3D12CommandList* CommandList )
-	{
-		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_EditorProxyPSO);
-
-		//BindResources(CommandList);
-	}
-
-	void Material::BindSelectionPass( D3D12CommandList* CommandList )
-	{
-		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_SelectionPassPSO);
-		CommandList->GetD3D12CommandList()->OMSetStencilRef( 255 );
-
-		//BindResources(CommandList);
-	}
-
-	void Material::BindHitProxyPass( D3D12CommandList* CommandList )
-	{
-		SCOPE_STAT();
-
-		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_HitProxyPassPSO);
-
-		//BindResources(CommandList);
-	}
-
-#endif
 
 	void Material::BindResources( D3D12CommandList* CommandList )
 	{
