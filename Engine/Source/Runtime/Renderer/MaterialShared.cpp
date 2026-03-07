@@ -1,6 +1,10 @@
 #include "DrnPCH.h"
 #include "MaterialShared.h"
 
+#if WITH_EDITOR
+#include "imgui.h"
+#endif
+
 namespace Drn
 {
 	std::vector<VertexFactoryType*> VertexFactoryType::GlobalFactories;
@@ -515,5 +519,15 @@ namespace Drn
 		drn_check(false);
 		return L"STATICMESH=1";
 	}
+
+#if WITH_EDITOR
+	void MaterialShaderParameters::Draw()
+	{
+		bool bMasked = bIsMasked; ImGui::Checkbox("Masked", &bMasked);
+		bool bTwoSided = bIsTwoSided; ImGui::Checkbox("TwoSided", &bTwoSided);
+
+		bool bInstacedStaticMesh = bIsUsedWithInstancedStaticMesh; ImGui::Checkbox("Instanced Static Mesh", &bInstacedStaticMesh);
+	}
+#endif
 
 }  // namespace Drn

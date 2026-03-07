@@ -13,8 +13,6 @@ namespace Drn
 		, m_RenderStateDirty(true)
 		, m_SupportDeferredDecalPass(false)
 		, m_SupportStaticMeshDecalPass(false)
-		, m_MaterialDomain(EMaterialDomain::Surface)
-		, m_TwoSided(false)
 		, MaterialName("InvalidMaterial")
 	{
 		Load();
@@ -26,8 +24,6 @@ namespace Drn
 		, m_RenderStateDirty(true)
 		, m_SupportDeferredDecalPass(false)
 		, m_SupportStaticMeshDecalPass(false)
-		, m_MaterialDomain(EMaterialDomain::Surface)
-		, m_TwoSided(false)
 		, MaterialName("InvalidMaterial")
 	{
 		m_SourcePath = InSourcePath;
@@ -55,10 +51,6 @@ namespace Drn
 			Ar >> ShaderParameters;
 			Ar >> Shaders;
 
-
-			Ar >> *((uint8*)(&m_MaterialDomain));
-			Ar >> m_TwoSided;
-
 			MaterialParameters.Serialize(Ar);
 
 			Ar >> m_SupportDeferredDecalPass;
@@ -76,9 +68,6 @@ namespace Drn
 			Ar << m_SourcePath; 
 			Ar << ShaderParameters;
 			Ar << Shaders;
-
-			Ar << static_cast<uint8>(m_MaterialDomain);
-			Ar << m_TwoSided;
 
 			MaterialParameters.Serialize(Ar);
 

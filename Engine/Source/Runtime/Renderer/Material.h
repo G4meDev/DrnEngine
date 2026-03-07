@@ -39,11 +39,11 @@ namespace Drn
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
 
-		inline D3D12_CULL_MODE GetCullMode() const { return m_TwoSided ? D3D12_CULL_MODE_NONE : D3D12_CULL_MODE_BACK; }
+		inline D3D12_CULL_MODE GetCullMode() const { return IsTwoSided() ? D3D12_CULL_MODE_NONE : D3D12_CULL_MODE_BACK; }
 
-		inline EMaterialDomain GetMaterialDomain() const { return m_MaterialDomain; }
+		inline EMaterialDomain GetMaterialDomain() const { return ShaderParameters.MaterialDomain; }
 
-		inline bool IsTwoSided() const { return m_TwoSided; }
+		inline bool IsTwoSided() const { return ShaderParameters.bIsTwoSided; }
 
 		inline const MaterialUniformParameters& GetParameters() const { return MaterialParameters; }
 
@@ -92,9 +92,6 @@ namespace Drn
 
 		ShaderBlob m_DeferredDecalShaderBlob;
 		ShaderBlob m_StaticMeshDecalShaderBlob;
-
-		EMaterialDomain m_MaterialDomain;
-		bool m_TwoSided;
 
 		TRefCountPtr<MaterialPipelines> m_MaterialPipelines;
 		MaterialUniformParameters MaterialParameters;

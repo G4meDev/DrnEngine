@@ -130,7 +130,7 @@ namespace Drn
 			BInit.bUseIndependentRenderTargetBlendStates = false;
 			TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
 
-			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->m_TwoSided ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
 			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
 
 			DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);

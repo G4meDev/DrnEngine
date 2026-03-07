@@ -135,16 +135,20 @@ namespace Drn
 #endif
 		}
 
-		const char* MaterialDomains[] = { "Surface", "Decal" };
-		int CurrentDomain = static_cast<int>(m_OwningAsset->m_MaterialDomain);
-		if ( ImGui::Combo( "Material Domain", &CurrentDomain, MaterialDomains, IM_ARRAYSIZE( MaterialDomains )))
-		{
-			m_OwningAsset->m_MaterialDomain = static_cast<EMaterialDomain>(CurrentDomain);
-		}
-
-		ImGui::Checkbox( "TwoSided", &m_OwningAsset->m_TwoSided );
+		//const char* MaterialDomains[] = { "Surface", "Decal" };
+		//int CurrentDomain = static_cast<int>(m_OwningAsset->m_MaterialDomain);
+		//if ( ImGui::Combo( "Material Domain", &CurrentDomain, MaterialDomains, IM_ARRAYSIZE( MaterialDomains )))
+		//{
+		//	m_OwningAsset->m_MaterialDomain = static_cast<EMaterialDomain>(CurrentDomain);
+		//}
+		//
+		//ImGui::Checkbox( "TwoSided", &m_OwningAsset->m_TwoSided );
 
 		DrawParameters();
+
+		ImGui::Separator();
+
+		m_OwningAsset->ShaderParameters.Draw();
 	}
 
 	void AssetPreviewMaterialGuiLayer::DrawParameters()

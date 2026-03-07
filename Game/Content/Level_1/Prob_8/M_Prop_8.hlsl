@@ -12,6 +12,7 @@
 
 // HAS_CUSTOM_PRE_PASS
 // HAS_OPACITY
+// TWO_SIDED
 
 ConstantBuffer<StandardResources> BindlessResources : register(b0);
 

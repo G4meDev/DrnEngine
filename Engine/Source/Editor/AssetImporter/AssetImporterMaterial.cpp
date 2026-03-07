@@ -15,6 +15,7 @@ namespace Drn
 		DomainDecal,
 
 		Masked,
+		TwoSided,
 
 		VertexFactoryStaticMesh,
 
@@ -33,6 +34,7 @@ namespace Drn
 		{EMaterialShaderFlag::DomainDecal				, "DOMAIN_DECAL"},
 
 		{EMaterialShaderFlag::Masked					, "HAS_OPACITY"},
+		{EMaterialShaderFlag::TwoSided					, "TWO_SIDED"},
 
 		{EMaterialShaderFlag::VertexFactoryStaticMesh	, "SUPPORT_STATICMESH"},
 
@@ -207,6 +209,7 @@ namespace Drn
 
 		const EMaterialDomain MaterialDomain = Flags.GetMaterialDomain();
 		const bool bMasked = Flags.HasFlag(EMaterialShaderFlag::Masked);
+		const bool bTwoSided = Flags.HasFlag(EMaterialShaderFlag::TwoSided);
 
 		bool SuccessedTemp = true;
 
@@ -457,8 +460,7 @@ namespace Drn
 		{
 			MaterialAsset->ShaderParameters.MaterialDomain = MaterialDomain;
 			MaterialAsset->ShaderParameters.bIsMasked = bMasked;
-			// @TODO: impl
-			//MaterialAsset->ShaderParameters.bIsTwoSided = bMasked;
+			MaterialAsset->ShaderParameters.bIsTwoSided = bTwoSided;
 
 			MaterialAsset->Shaders = Shaders;
 
@@ -468,8 +470,6 @@ namespace Drn
 
 			MaterialAsset->m_SupportDeferredDecalPass = SupportDeferredDecalPass;
 			MaterialAsset->m_SupportStaticMeshDecalPass = SupportStaticMeshDecalPass;
-
-			MaterialAsset->ShaderParameters.bIsMasked = HasOpacity;
 
 			MaterialAsset->ShaderParameters.bHasPrepass = SupportPrePass;
 			MaterialAsset->ShaderParameters.bHasCustomPrepass = HasCustomPrePass;
