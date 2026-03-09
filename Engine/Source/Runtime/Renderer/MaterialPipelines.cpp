@@ -98,53 +98,53 @@ namespace Drn
 		//	SetName(m_PrePassPSO->PipelineState, "PSO_PrePass_" + name);
 		//}
 
-		if ( InMaterial->m_SupportDeferredDecalPass )
-		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_Pos, InMaterial->m_DeferredDecalShaderBlob);
+		//if ( InMaterial->m_SupportDeferredDecalPass )
+		//{
+		//	BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_Pos, InMaterial->m_DeferredDecalShaderBlob);
+		//
+		//	BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
+		//	BInit.bUseIndependentRenderTargetBlendStates = false;
+		//	TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+		//
+		//	RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Front);
+		//	TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+		//
+		//	DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+		//	TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		//
+		//	DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DECAL_BASE_COLOR_FORMAT, DECAL_NORMAL_FORMAT, DECAL_MASKS_FORMAT };
+		//	ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+		//
+		//	GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+		//		3, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+		//
+		//	m_DeferredDecalPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		//	SetName(m_DeferredDecalPassPSO->PipelineState, "PSO_DecalPass_" + name);
+		//}
 
-			BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
-			BInit.bUseIndependentRenderTargetBlendStates = false;
-			TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
-
-			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Front);
-			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
-
-			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
-			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
-		
-			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DECAL_BASE_COLOR_FORMAT, DECAL_NORMAL_FORMAT, DECAL_MASKS_FORMAT };
-			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
-
-			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-				3, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
-
-			m_DeferredDecalPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
-			SetName(m_DeferredDecalPassPSO->PipelineState, "PSO_DecalPass_" + name);
-		}
-
-		if ( InMaterial->m_SupportStaticMeshDecalPass )
-		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, InMaterial->m_StaticMeshDecalShaderBlob);
-
-			BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
-			BInit.bUseIndependentRenderTargetBlendStates = false;
-			TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
-
-			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
-			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
-
-			DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
-			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
-		
-			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DECAL_BASE_COLOR_FORMAT, DECAL_NORMAL_FORMAT, DECAL_MASKS_FORMAT };
-			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
-
-			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-				3, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
-
-			m_StaticMeshDecalPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
-			SetName(m_StaticMeshDecalPassPSO->PipelineState, "PSO_StaticMeshDecalPass_" + name);
-		}
+		//if ( InMaterial->m_SupportStaticMeshDecalPass )
+		//{
+		//	BoundShaderStateInput BoundShaderState = GetShaderStateInput(CommonResources::Get()->VertexDeclaration_StaticMesh, InMaterial->m_StaticMeshDecalShaderBlob);
+		//
+		//	BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
+		//	BInit.bUseIndependentRenderTargetBlendStates = false;
+		//	TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+		//
+		//	RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+		//	TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+		//
+		//	DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
+		//	TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		//
+		//	DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DECAL_BASE_COLOR_FORMAT, DECAL_NORMAL_FORMAT, DECAL_MASKS_FORMAT };
+		//	ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+		//
+		//	GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+		//		3, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+		//
+		//	m_StaticMeshDecalPassPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		//	SetName(m_StaticMeshDecalPassPSO->PipelineState, "PSO_StaticMeshDecalPass_" + name);
+		//}
 
 		//if (InMaterial->HasShadowPass())
 		//{

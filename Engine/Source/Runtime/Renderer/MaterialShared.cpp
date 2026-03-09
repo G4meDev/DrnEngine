@@ -10,6 +10,7 @@ namespace Drn
 	std::vector<VertexFactoryType*> VertexFactoryType::GlobalFactories;
 	//VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh", []() { return CommonResources::Get()->VertexDeclaration_StaticMesh.GetReference(); });
 	VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh");
+	VertexFactoryType* VertexFactoryType::Decal = new VertexFactoryType("Decal");
 
 	void MaterialUniformParameters::Serialize( Archive& Ar )
 	{
@@ -336,6 +337,11 @@ namespace Drn
 			return CommonResources::Get()->VertexDeclaration_StaticMesh;
 		}
 
+		if (VertexFactory == VertexFactoryType::Decal)
+		{
+			return CommonResources::Get()->VertexDeclaration_Pos;
+		}
+
 		drn_check(false);
 		return CommonResources::Get()->VertexDeclaration_StaticMesh;
 	}
@@ -426,6 +432,54 @@ namespace Drn
 			SetName(PipelineState->PipelineState, "PSO_SpotLightShadowDepthPass_" + InMaterial->GetMaterialName());
 		}
 
+		else if (MaterialStage == EMaterialStage::StaticMeshDecal)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+
+			BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
+			BInit.bUseIndependentRenderTargetBlendStates = false;
+			TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DECAL_BASE_COLOR_FORMAT, DECAL_NORMAL_FORMAT, DECAL_MASKS_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				3, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_StaticMeshDecalPass_" + InMaterial->GetMaterialName());
+		}
+
+		else if (MaterialStage == EMaterialStage::Decal)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+
+			BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
+			BInit.bUseIndependentRenderTargetBlendStates = false;
+			TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Front);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DECAL_BASE_COLOR_FORMAT, DECAL_NORMAL_FORMAT, DECAL_MASKS_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				3, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_DecalPass_" + InMaterial->GetMaterialName());
+		}
+
 #if WITH_EDITOR
 		else if (MaterialStage == EMaterialStage::Hitproxy)
 		{
@@ -514,6 +568,11 @@ namespace Drn
 		if (VertexFactory == VertexFactoryType::StaticMesh)
 		{
 			return L"STATICMESH=1";
+		}
+
+		else if (VertexFactory == VertexFactoryType::Decal)
+		{
+			return L"DECAL=1";
 		}
 
 		drn_check(false);

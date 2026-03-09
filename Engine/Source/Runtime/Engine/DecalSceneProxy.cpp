@@ -33,20 +33,27 @@ namespace Drn
 			return;
 		}
 
-		SCOPE_STAT_DYNAMIC(m_Material.GetMaterialName().c_str());
+		MaterialShader* MatShader = m_Material.GetParentMaterial()->GetShaderParameters().bHasDecalPass
+			? m_Material.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::Decal, EMaterialStage::Decal)
+			: nullptr;
 
-		Matrix LocalToWorldMatrix = Matrix( m_WorldTransform );
-		m_DecalData.LocalToProjection = LocalToWorldMatrix * Matrix(Renderer->GetSceneView().WorldToProjection);
-		m_DecalData.ProjectionToLocal = Matrix(Renderer->GetSceneView().ProjectionToWorld) * LocalToWorldMatrix.Inverse();
+		if (MatShader)
+		{
+			SCOPE_STAT_DYNAMIC(m_Material.GetMaterialName().c_str());
 
-		TRefCountPtr<RenderUniformBuffer> DecalBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(DecalData), EUniformBufferUsage::SingleFrame, &m_DecalData);
+			Matrix LocalToWorldMatrix = Matrix( m_WorldTransform );
+			m_DecalData.LocalToProjection = LocalToWorldMatrix * Matrix(Renderer->GetSceneView().WorldToProjection);
+			m_DecalData.ProjectionToLocal = Matrix(Renderer->GetSceneView().ProjectionToWorld) * LocalToWorldMatrix.Inverse();
 
-		CommandList->SetGraphicRootConstant(DecalBuffer->GetViewIndex(), 1);
+			TRefCountPtr<RenderUniformBuffer> DecalBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(DecalData), EUniformBufferUsage::SingleFrame, &m_DecalData);
 
-		m_Material.GetParentMaterial()->BindDeferredDecalPass(CommandList);
-		m_Material.GetMaterialInterface()->BindResources(CommandList);
+			CommandList->SetGraphicRootConstant(DecalBuffer->GetViewIndex(), 1);
 
-		CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList);
+			MatShader->Bind(CommandList);
+			m_Material.GetMaterialInterface()->BindResources(CommandList);
+
+			CommonResources::Get()->m_UniformCubePositionOnly->BindAndDraw(CommandList);
+		}
 	}
 
 	void DecalSceneProxy::ReleaseBuffers()

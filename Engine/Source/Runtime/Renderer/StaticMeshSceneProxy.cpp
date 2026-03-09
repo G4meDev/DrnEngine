@@ -241,27 +241,29 @@ namespace Drn
 			{
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
-				
-				if (!Mat.GetParentMaterial()->IsSupportingStaticMeshDecalPass())
+
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasStaticMeshDecalPass
+					? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::StaticMeshDecal)
+					: nullptr;
+
+				if (MatShader)
 				{
-					continue;
+					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+
+					MatShader->Bind(CommandList);
+					Mat.GetMaterialInterface()->BindResources(CommandList);
+
+					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
+					m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+
+					TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+
+					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+					CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+					CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+
+					RenderProxy.BindAndDraw(CommandList);
 				}
-
-				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
-
-				Mat.GetParentMaterial()->BindStaticMeshDecalPass(CommandList);
-				Mat.GetMaterialInterface()->BindResources(CommandList);
-
-				m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-				m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-
-				TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
-
-				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-				CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-
-				RenderProxy.BindAndDraw(CommandList);
 			}
 		}
 	}

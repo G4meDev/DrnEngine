@@ -11,8 +11,6 @@ namespace Drn
 	Material::Material( const std::string& InPath )
 		: Asset(InPath)
 		, m_RenderStateDirty(true)
-		, m_SupportDeferredDecalPass(false)
-		, m_SupportStaticMeshDecalPass(false)
 		, MaterialName("InvalidMaterial")
 	{
 		Load();
@@ -22,8 +20,6 @@ namespace Drn
 	Material::Material( const std::string& InPath, const std::string& InSourcePath )
 		: Asset(InPath)
 		, m_RenderStateDirty(true)
-		, m_SupportDeferredDecalPass(false)
-		, m_SupportStaticMeshDecalPass(false)
 		, MaterialName("InvalidMaterial")
 	{
 		m_SourcePath = InSourcePath;
@@ -33,7 +29,6 @@ namespace Drn
 	
 	Material::~Material()
 	{
-		ReleasePSOs();
 		
 	}
 
@@ -45,19 +40,11 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			ReleaseShaderBlobs();
-
 			Ar >> m_SourcePath;
 			Ar >> ShaderParameters;
 			Ar >> Shaders;
 
 			MaterialParameters.Serialize(Ar);
-
-			Ar >> m_SupportDeferredDecalPass;
-			m_DeferredDecalShaderBlob.Serialize(Ar);
-
-			Ar >> m_SupportStaticMeshDecalPass;
-			m_StaticMeshDecalShaderBlob.Serialize(Ar);
 
 			std::string name = Path::ConvertShortPath(m_Path);
 			MaterialName = Path::RemoveFileExtension(name);
@@ -70,24 +57,7 @@ namespace Drn
 			Ar << Shaders;
 
 			MaterialParameters.Serialize(Ar);
-
-			Ar << m_SupportDeferredDecalPass;
-			m_DeferredDecalShaderBlob.Serialize(Ar);
-
-			Ar << m_SupportStaticMeshDecalPass;
-			m_StaticMeshDecalShaderBlob.Serialize(Ar);
 		}
-	}
-
-	void Material::ReleaseShaderBlobs()
-	{
-		m_DeferredDecalShaderBlob.ReleaseBlobs();
-		m_StaticMeshDecalShaderBlob.ReleaseBlobs();
-	}
-
-	void Material::ReleasePSOs()
-	{
-		m_MaterialPipelines = nullptr;
 	}
 
 #if WITH_EDITOR
@@ -153,31 +123,12 @@ namespace Drn
 				}
 			}
 
-			ReleasePSOs();
-
-			m_MaterialPipelines = new MaterialPipelines(CommandList, this);
 			Shaders.UploadPipelineStates(CommandList, this);
 
 			ClearRenderStateDirty();
 		}
 
 		MaterialParameters.UploadResources(CommandList);
-	}
-
-	void Material::BindDeferredDecalPass( D3D12CommandList* CommandList )
-	{
-		SCOPE_STAT();
-
-		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_DeferredDecalPassPSO);
-
-		//BindResources(CommandList);
-	}
-
-	void Material::BindStaticMeshDecalPass( D3D12CommandList* CommandList )
-	{
-		CommandList->SetGraphicPipelineState(m_MaterialPipelines->m_StaticMeshDecalPassPSO);
-
-		//BindResources(CommandList);
 	}
 
 	void Material::BindResources( D3D12CommandList* CommandList )

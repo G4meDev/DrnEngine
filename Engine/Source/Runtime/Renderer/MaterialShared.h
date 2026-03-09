@@ -94,6 +94,7 @@ namespace Drn
 		static std::vector<VertexFactoryType*> GlobalFactories;
 
 		static VertexFactoryType* StaticMesh;
+		static VertexFactoryType* Decal;
 
 	private:
 		const std::string Name;
@@ -133,6 +134,8 @@ namespace Drn
 				uint32 bHasEditorSelectionPass : 1;
 
 				uint32 bIsUsedWithInstancedStaticMesh : 1;
+				uint32 bHasDecalPass : 1;
+				uint32 bHasStaticMeshDecalPass : 1;
 			};
 		};
 
@@ -182,7 +185,8 @@ namespace Drn
 		Decal,
 		Hitproxy,
 		EditorPrimitive,
-		EditorSelection
+		EditorSelection,
+		StaticMeshDecal,
 	};
 
 	class MaterialShader

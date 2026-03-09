@@ -26,15 +26,9 @@ namespace Drn
 		Material(const std::string& InPath, const std::string& InSourcePath);
 #endif
 
-		void BindDeferredDecalPass( D3D12CommandList* CommandList );
-		void BindStaticMeshDecalPass( D3D12CommandList* CommandList );
-
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }
 		inline void ClearRenderStateDirty() { m_RenderStateDirty = false; }
-
-		inline bool IsSupportingDeferredDecalPass() const { return m_SupportDeferredDecalPass; }
-		inline bool IsSupportingStaticMeshDecalPass() const { return m_SupportStaticMeshDecalPass; }
 
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::Material; }
@@ -84,25 +78,14 @@ namespace Drn
 
 	private:
 
-		void ReleaseShaderBlobs();
-		void ReleasePSOs();
-
 		std::string m_SourcePath;
 		std::string MaterialName;
 
-		ShaderBlob m_DeferredDecalShaderBlob;
-		ShaderBlob m_StaticMeshDecalShaderBlob;
-
-		TRefCountPtr<MaterialPipelines> m_MaterialPipelines;
 		MaterialUniformParameters MaterialParameters;
-
-		bool m_RenderStateDirty;
-
-		bool m_SupportDeferredDecalPass;
-		bool m_SupportStaticMeshDecalPass;
-
 		MaterialShaderParameters ShaderParameters;
 		MaterialShaders Shaders;
+
+		bool m_RenderStateDirty;
 
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;

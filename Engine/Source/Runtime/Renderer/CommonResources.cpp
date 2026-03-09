@@ -989,11 +989,26 @@ namespace Drn
 
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\PositionOnlyDepthVertexShader.hlsl" ) );
 
+		const VertexFactoryType* SupportedFactories[] = { VertexFactoryType::StaticMesh };
+		auto SupportedFactoriesContains = [&](VertexFactoryType* VertexFactory)
+		{
+			for (int32 i = 0; i < _countof(SupportedFactories); i++)
+			{
+				if (SupportedFactories[i] == VertexFactory)
+					return true;
+			}
+			return false;
+		};
+
 		for (int32 NumVertexFactory = 0; NumVertexFactory < VertexFactoryType::GlobalFactories.size(); NumVertexFactory++)
 		{
 			for (int32 CullMode = 0; CullMode < 2; CullMode++)
 			{
 				VertexFactoryType* VertexFactory = VertexFactoryType::GlobalFactories[NumVertexFactory];
+				if (!SupportedFactoriesContains(VertexFactory))
+				{
+					continue;
+				}
 
 				ID3DBlob* VertexShaderBlob;
 				std::vector<const wchar_t*> Macros = {};
