@@ -7,10 +7,10 @@
 
 namespace Drn
 {
+
 	std::vector<VertexFactoryType*> VertexFactoryType::GlobalFactories;
-	//VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh", []() { return CommonResources::Get()->VertexDeclaration_StaticMesh.GetReference(); });
-	VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh");
-	VertexFactoryType* VertexFactoryType::Decal = new VertexFactoryType("Decal");
+	VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh", &CommonResources::Get()->VertexDeclaration_StaticMesh, &CommonResources::Get()->VertexDeclaration_Pos);
+	VertexFactoryType* VertexFactoryType::Decal = new VertexFactoryType("Decal", &CommonResources::Get()->VertexDeclaration_Pos, nullptr);
 
 	void MaterialUniformParameters::Serialize( Archive& Ar )
 	{
@@ -329,28 +329,11 @@ namespace Drn
 		return BoundShaderStateInput(VDeclaration, VShader, HShader, DShader, PShader, GShader);
 	}
 
-	// @TODO: remove and embed in vertex factory class
-	VertexDeclaration* GetVertexDeclationForFactory(VertexFactoryType* VertexFactory)
-	{
-		if (VertexFactory == VertexFactoryType::StaticMesh)
-		{
-			return CommonResources::Get()->VertexDeclaration_StaticMesh;
-		}
-
-		if (VertexFactory == VertexFactoryType::Decal)
-		{
-			return CommonResources::Get()->VertexDeclaration_Pos;
-		}
-
-		drn_check(false);
-		return CommonResources::Get()->VertexDeclaration_StaticMesh;
-	}
-
 	void MaterialShader::UploadPipelineState(D3D12CommandList* CmdList, Material* InMaterial)
 	{
 		if (MaterialStage == EMaterialStage::Main)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 			TRefCountPtr<BlendState> BState = nullptr;
 
 			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
@@ -371,7 +354,7 @@ namespace Drn
 
 		else if (MaterialStage == EMaterialStage::Prepass)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 			TRefCountPtr<BlendState> BState = nullptr;
 
 			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
@@ -392,7 +375,7 @@ namespace Drn
 
 		else if (MaterialStage == EMaterialStage::PointLightShadow)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 			TRefCountPtr<BlendState> BState = nullptr;
 
 			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
@@ -413,7 +396,7 @@ namespace Drn
 
 		else if (MaterialStage == EMaterialStage::SpotLightShadow)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 			TRefCountPtr<BlendState> BState = nullptr;
 
 			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
@@ -434,7 +417,7 @@ namespace Drn
 
 		else if (MaterialStage == EMaterialStage::StaticMeshDecal)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 
 			BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
 			BInit.bUseIndependentRenderTargetBlendStates = false;
@@ -458,7 +441,7 @@ namespace Drn
 
 		else if (MaterialStage == EMaterialStage::Decal)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 
 			BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
 			BInit.bUseIndependentRenderTargetBlendStates = false;
@@ -483,7 +466,7 @@ namespace Drn
 #if WITH_EDITOR
 		else if (MaterialStage == EMaterialStage::Hitproxy)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 			TRefCountPtr<BlendState> BState = nullptr;
 
 			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
@@ -504,7 +487,7 @@ namespace Drn
 
 		else if (MaterialStage == EMaterialStage::EditorPrimitive)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 			TRefCountPtr<BlendState> BState = nullptr;
 
 			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
@@ -525,7 +508,7 @@ namespace Drn
 
 		else if (MaterialStage == EMaterialStage::EditorSelection)
 		{
-			BoundShaderStateInput BoundShaderState = GetShaderStateInput(GetVertexDeclationForFactory(VertexFactory), Blob);
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 			BoundShaderState.m_PixelShader = nullptr;
 
 			TRefCountPtr<BlendState> BState = nullptr;

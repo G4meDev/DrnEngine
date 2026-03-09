@@ -63,19 +63,18 @@ namespace Drn
 	class VertexFactoryType
 	{
 	public:
-		VertexFactoryType(std::string&& InName)
+		VertexFactoryType(std::string&& InName, TRefCountPtr<VertexDeclaration>* InVertexDeclaration, TRefCountPtr<VertexDeclaration>* InVertexDeclarationDefaultDepthOnly)
 			: Name(std::move(InName))
+			, VDeclaration(InVertexDeclaration)
+			, VDeclarationDefaultDepthOnly(InVertexDeclarationDefaultDepthOnly)
 		{
 			drn_check(std::find_if(GlobalFactories.begin(), GlobalFactories.end(),
 				[&](const VertexFactoryType* Factroy){ return Factroy->GetName() == Name; }) == GlobalFactories.end());
-
-			//VertexDeclarationDel.BindLambda(InVertexDeclartionCallback);
 
 			GlobalFactories.push_back(this);
 		}
 
 		inline const std::string& GetName() const { return Name; }
-		//inline const VertexDeclaration* GetVertexDeclaration() const { drn_check(VertexDeclarationDel.IsBound()); return VertexDeclarationDel.Execute(); }
 
 		inline static VertexFactoryType* GetVertexFactory(const std::string Name)
 		{
@@ -91,6 +90,17 @@ namespace Drn
 			return *It;
 		}
 
+		inline VertexDeclaration* GetVertexDeclaration() const
+		{
+			drn_check(VDeclaration);
+			return *VDeclaration;
+		}
+
+		inline VertexDeclaration* GetVertexDeclarationDefaultDepthOnly() const
+		{
+			return VDeclarationDefaultDepthOnly ? *VDeclarationDefaultDepthOnly : nullptr;
+		}
+
 		static std::vector<VertexFactoryType*> GlobalFactories;
 
 		static VertexFactoryType* StaticMesh;
@@ -98,8 +108,9 @@ namespace Drn
 
 	private:
 		const std::string Name;
-		//VertexDeclarationDelegate VertexDeclarationDel; 
-		//VertexDeclaration(*VertexDeclarationCallback)(void);
+		TRefCountPtr<VertexDeclaration>* VDeclaration;
+		TRefCountPtr<VertexDeclaration>* VDeclarationDefaultDepthOnly;
+
 		// @TODO: maybe add hashed name for faster comparison
 	};
 
@@ -268,7 +279,6 @@ namespace Drn
 				{ return InMaterialShader.CheckTypeStage(InVertexFactory, InMaterialStage); });
 
 			return It._Ptr;
-			//return It == Shaders.end() ? nullptr : &*It;
 		}
 
 		inline friend Archive& operator<<(Archive& Ar, MaterialShaders& Value)

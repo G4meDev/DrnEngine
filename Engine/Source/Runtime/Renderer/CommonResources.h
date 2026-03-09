@@ -184,15 +184,6 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_BloomXAddtivePSO;
 	};
 
-	class PositionOnlyDepthPSO : public RefCountedObject
-	{
-	public:
-		PositionOnlyDepthPSO( D3D12CommandList* CommandList, CommonResources* CR );
-		
-		TRefCountPtr<GraphicsPipelineState> m_CullNonePSO;
-		TRefCountPtr<GraphicsPipelineState> m_CullBackPSO;
-	};
-
 	class PositionOnlyMaterialShaders
 	{
 	public:
@@ -344,10 +335,11 @@ namespace Drn
 
 		inline static CommonResources* Get() { return m_SingletonInstance; }
 
-		TRefCountPtr<class VertexDeclaration> VertexDeclaration_Pos;
-		TRefCountPtr<class VertexDeclaration> VertexDeclaration_PosUV;
-		TRefCountPtr<class VertexDeclaration> VertexDeclaration_LineColorThickness;
-		TRefCountPtr<class VertexDeclaration> VertexDeclaration_StaticMesh;
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_Pos;
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_PosUV;
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_LineColorThickness;
+
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_StaticMesh;
 
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
@@ -367,8 +359,6 @@ namespace Drn
 		TRefCountPtr<TAAPSO> m_TAAPSO;
 		TRefCountPtr<SceneDownSamplePSO> m_SceneDownSamplePSO;
 		TRefCountPtr<BloomPSO> m_BloomPSO;
-		TRefCountPtr<PositionOnlyDepthPSO> m_PositionOnlyDepthPSO;
-		//TRefCountPtr<PositionOnlyMaterialShaders> m_PositionOnlyMaterialShaders;
 		PositionOnlyMaterialShaders m_PositionOnlyMaterialShaders;
 
 		TRefCountPtr<SpriteEditorPrimitivePSO> m_SpriteEditorPrimitivePSO;

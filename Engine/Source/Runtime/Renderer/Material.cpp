@@ -2,7 +2,6 @@
 #include "Material.h"
 #include "Editor/AssetPreview/AssetPreviewMaterialGuiLayer.h"
 #include "Editor/AssetImporter/AssetImporterMaterial.h"
-#include "Runtime/Renderer/MaterialPipelines.h"
 
 LOG_DEFINE_CATEGORY( LogMaterial, "Material" );
 

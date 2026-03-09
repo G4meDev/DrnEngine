@@ -51,6 +51,11 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------------------------------------------------
 
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_Pos;
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_PosUV;
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_LineColorThickness;
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_StaticMesh;
+
 	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
 		VertexDeclaration_Pos = VertexDeclaration::Create(
@@ -99,7 +104,6 @@ namespace Drn
 		m_TAAPSO = new TAAPSO(CommandList);
 		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList, this);
 		m_BloomPSO = new BloomPSO(CommandList, this);
-		m_PositionOnlyDepthPSO = new PositionOnlyDepthPSO(CommandList, this);
 		m_PositionOnlyMaterialShaders.Init(CommandList, this);
 		m_SpriteEditorPrimitivePSO = new SpriteEditorPrimitivePSO(CommandList, this);
 		m_SpriteHitProxyPSO = new SpriteHitProxyPSO(CommandList, this);
@@ -913,103 +917,83 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	PositionOnlyDepthPSO::PositionOnlyDepthPSO( D3D12CommandList* CommandList, CommonResources* CR )
-	{
-		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\PositionOnlyDepthVertexShader.hlsl" ) );
-
-		ID3DBlob* VertexShaderBlob;
-
-		const std::vector<const wchar_t*> Macros = {};
-		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
-
-		VertexShader* VShader = new VertexShader();
-		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
-		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
-
-		{
-			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, nullptr, nullptr);
-
-			TRefCountPtr<BlendState> BState = nullptr;
-
-			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::None);
-			TRefCountPtr<RasterizerState> RState = nullptr;
-
-			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
-			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
-		
-			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
-			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
-
-			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-				0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
-
-			m_CullNonePSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
-			SetName(m_CullNonePSO->PipelineState, "PSO_PositionOnlyDepth_CullNone");
-		}
-
-		{
-			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, nullptr, nullptr);
-
-			TRefCountPtr<BlendState> BState = nullptr;
-
-			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Back);
-			TRefCountPtr<RasterizerState> RState = nullptr;
-
-			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
-			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
-		
-			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
-			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
-
-			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-				0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
-
-			m_CullBackPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
-			SetName(m_CullBackPSO->PipelineState, "PSO_PositionOnlyDepth_CullBack");
-		}
-	}
+	//PositionOnlyDepthPSO::PositionOnlyDepthPSO( D3D12CommandList* CommandList, CommonResources* CR )
+	//{
+	//	std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\PositionOnlyDepthVertexShader.hlsl" ) );
+	//
+	//	ID3DBlob* VertexShaderBlob;
+	//
+	//	const std::vector<const wchar_t*> Macros = {};
+	//	CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+	//
+	//	VertexShader* VShader = new VertexShader();
+	//	VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+	//	VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
+	//
+	//	{
+	//		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, nullptr, nullptr);
+	//
+	//		TRefCountPtr<BlendState> BState = nullptr;
+	//
+	//		RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::None);
+	//		TRefCountPtr<RasterizerState> RState = nullptr;
+	//
+	//		DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+	//		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+	//	
+	//		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+	//		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+	//
+	//		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+	//			0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+	//
+	//		m_CullNonePSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+	//		SetName(m_CullNonePSO->PipelineState, "PSO_PositionOnlyDepth_CullNone");
+	//	}
+	//
+	//	{
+	//		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, nullptr, nullptr);
+	//
+	//		TRefCountPtr<BlendState> BState = nullptr;
+	//
+	//		RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Back);
+	//		TRefCountPtr<RasterizerState> RState = nullptr;
+	//
+	//		DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
+	//		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+	//	
+	//		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
+	//		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+	//
+	//		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+	//			0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+	//
+	//		m_CullBackPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+	//		SetName(m_CullBackPSO->PipelineState, "PSO_PositionOnlyDepth_CullBack");
+	//	}
+	//}
 
 // --------------------------------------------------------------------------------------
 
 	void PositionOnlyMaterialShaders::Init( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		auto GetPositionOnlyVertexDeclartionForVertexFactory = [&](VertexFactoryType* Type)
-		{
-			if (Type == VertexFactoryType::StaticMesh)
-			{
-				return CR->VertexDeclaration_Pos;
-			}
-
-			drn_check(false);
-			return CR->VertexDeclaration_Pos;
-		};
-
 		ERasterizerCullMode CullModes[] = {ERasterizerCullMode::None, ERasterizerCullMode::Back};
 		std::string CullModesStr[] = {"CullNone", "CullBack"};
 
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\PositionOnlyDepthVertexShader.hlsl" ) );
 
-		const VertexFactoryType* SupportedFactories[] = { VertexFactoryType::StaticMesh };
-		auto SupportedFactoriesContains = [&](VertexFactoryType* VertexFactory)
-		{
-			for (int32 i = 0; i < _countof(SupportedFactories); i++)
-			{
-				if (SupportedFactories[i] == VertexFactory)
-					return true;
-			}
-			return false;
-		};
-
 		for (int32 NumVertexFactory = 0; NumVertexFactory < VertexFactoryType::GlobalFactories.size(); NumVertexFactory++)
 		{
+			VertexFactoryType* VertexFactory = VertexFactoryType::GlobalFactories[NumVertexFactory];
+			VertexDeclaration* VertexDeclarationDepthOnly = VertexFactory->GetVertexDeclarationDefaultDepthOnly();
+
+			if (!VertexDeclarationDepthOnly)
+			{
+				continue;
+			}
+
 			for (int32 CullMode = 0; CullMode < 2; CullMode++)
 			{
-				VertexFactoryType* VertexFactory = VertexFactoryType::GlobalFactories[NumVertexFactory];
-				if (!SupportedFactoriesContains(VertexFactory))
-				{
-					continue;
-				}
-
 				ID3DBlob* VertexShaderBlob;
 				std::vector<const wchar_t*> Macros = {};
 				Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
@@ -1019,7 +1003,7 @@ namespace Drn
 				VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
 				VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-				BoundShaderStateInput BoundShaderState(GetPositionOnlyVertexDeclartionForVertexFactory(VertexFactory), VShader, nullptr, nullptr, nullptr, nullptr);
+				BoundShaderStateInput BoundShaderState(VertexDeclarationDepthOnly, VShader, nullptr, nullptr, nullptr, nullptr);
 				TRefCountPtr<BlendState> BState = nullptr;
 
 				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, CullModes[CullMode]);
@@ -1824,7 +1808,7 @@ namespace Drn
 		}
 	}
 
-// --------------------------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------
 
 	void CompileShaderString( const std::wstring& ShaderPath, const char* EntryPoint, const char* Profile, ID3DBlob*& ShaderBlob, const D3D_SHADER_MACRO* Macros)
 	{
