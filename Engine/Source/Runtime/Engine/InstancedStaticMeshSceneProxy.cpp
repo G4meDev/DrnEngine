@@ -67,43 +67,219 @@ namespace Drn
 		//		RenderProxy.BindAndDraw(CommandList);
 		//	}
 		//}
+
+		if (m_Mesh.IsValid())
+		{
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+		
+			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
+			{
+				const int32 NumInstances = m_OwningInstancedStaticMeshComponent->GetInstanceCount();
+				if (NumInstances == 0)
+				{
+					continue;
+				}
+
+				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
+				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
+				
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithInstancedStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasMainPass
+					? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::InstancedStaticMesh, EMaterialStage::Main)
+					: nullptr;
+
+				if (MatShader)
+				{
+					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+		
+					MatShader->Bind(CommandList);
+					Mat.GetMaterialInterface()->BindResources(CommandList);
+		
+					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningInstancedStaticMeshComponent->GetWorldTransform()).Get();
+					m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+					m_PrimitiveBuffer.m_Guid = m_Guid;
+		
+					// TODO: cache in different draws
+					TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+		
+					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+					CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+					CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+					//RenderProxy.BindAndDraw(CommandList);
+
+					uint32 VertexCount = RenderProxy.VertexData.GetVertexCount();
+					uint32 PrimitiveCount = RenderProxy.VertexData.GetPrimitiveCount();
+					RenderProxy.m_StaticMeshVertexBuffer->Bind(CommandList);
+
+					auto CreateVertexBufferConditional = [](bool bCreate, D3D12CommandList* CmdList, TRefCountPtr<class RenderVertexBuffer>& Buffer, void* Data, uint32 Size, const std::string& Name)
+					{
+						if (bCreate)
+						{
+							uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+							RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, Data, ClearValueBinding::Black, Name);
+							Buffer = RenderVertexBuffer::Create(CmdList->GetParentDevice(), CmdList, Size, VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
+						}
+						else
+						{
+							Buffer = nullptr;
+						}
+					};
+
+					TRefCountPtr<RenderVertexBuffer> OriginRandomBuffer;
+					TRefCountPtr<RenderVertexBuffer> LocalToWorldBuffer;
+
+					std::vector<Vector4> OriginRandom;
+					OriginRandom.resize(NumInstances);
+
+					struct LocalToWorldMat
+					{
+						LocalToWorldMat()
+						{}
+
+						LocalToWorldMat(const Matrix InMatrix)
+							: m11(InMatrix.m_Matrix._11), m12(InMatrix.m_Matrix._12), m13(InMatrix.m_Matrix._13), m14(InMatrix.m_Matrix._14)
+							, m21(InMatrix.m_Matrix._21), m22(InMatrix.m_Matrix._22), m23(InMatrix.m_Matrix._23), m24(InMatrix.m_Matrix._24)
+							, m31(InMatrix.m_Matrix._31), m32(InMatrix.m_Matrix._32), m33(InMatrix.m_Matrix._33), m34(InMatrix.m_Matrix._34)
+						{}
+
+						Float16 m11, m12, m13, m14;
+						Float16 m21, m22, m23, m24;
+						Float16 m31, m32, m33, m34;
+					};
+
+					std::vector<LocalToWorldMat> LocalToWorld;
+					LocalToWorld.resize(NumInstances);
+
+					for (int32 InstanceIndex = 0; InstanceIndex < NumInstances; InstanceIndex++)
+					{
+						Transform LocalToWorldTransform;
+						m_OwningInstancedStaticMeshComponent->GetInstanceTransform(InstanceIndex, LocalToWorldTransform, true);
+
+						LocalToWorld[InstanceIndex] = LocalToWorldMat(LocalToWorldTransform);
+						OriginRandom[InstanceIndex] = Vector4(LocalToWorldTransform.GetLocation(), 0);
+					}
+
+					CreateVertexBufferConditional(true, CommandList, OriginRandomBuffer, (void*)OriginRandom.data(), NumInstances * sizeof(Vector4), "VB_PositionRandom");
+					CreateVertexBufferConditional(true, CommandList, LocalToWorldBuffer, (void*)LocalToWorld.data(), NumInstances * sizeof(LocalToWorld), "VB_LocalToWorld");
+
+					CommandList->SetStreamSource(8, OriginRandomBuffer, 0);
+					CommandList->SetStreamSource(9, LocalToWorldBuffer, 0);
+
+					CommandList->DrawIndexedPrimitive(RenderProxy.m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, NumInstances);
+				}
+		
+			}
+		}
 	}
 
 	void InstancedStaticMeshSceneProxy::RenderPrePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		//if (m_Mesh.IsValid())
-		//{
-		//	const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
-		//	SCOPE_STAT_DYNAMIC(MeshName.c_str());
-		//
-		//	for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
-		//	{
-		//		const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
-		//		MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
-		//
-		//		if (!Mat.GetParentMaterial()->HasPrePass())
-		//		{
-		//			continue;
-		//		}
-		//
-		//		SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
-		//
-		//		Mat.GetParentMaterial()->BindPrePass(CommandList);
-		//		Mat.GetMaterialInterface()->BindResources(CommandList);
-		//
-		//		m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningInstancedStaticMeshComponent->GetWorldTransform()).Get();
-		//		m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-		//		m_PrimitiveBuffer.m_Guid = m_Guid;
-		//
-		//		TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
-		//
-		//		CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
-		//		CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
-		//		CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
-		//
-		//		RenderProxy.BindAndDraw(CommandList);
-		//	}
-		//}
+		if (m_Mesh.IsValid())
+		{
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+		
+			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
+			{
+				const int32 NumInstances = m_OwningInstancedStaticMeshComponent->GetInstanceCount();
+				if (NumInstances == 0)
+				{
+					continue;
+				}
+
+				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
+				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
+
+				MaterialShader* MatShader = nullptr;
+				if (Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithInstancedStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasPrepass)
+				{
+					MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasCustomPrepass
+						? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::InstancedStaticMesh, EMaterialStage::Prepass)
+						: CommonResources::Get()->m_PositionOnlyMaterialShaders.GetShader(VertexFactoryType::InstancedStaticMesh, Mat.GetParentMaterial()->IsTwoSided());
+				}
+
+				if (MatShader)
+				{
+					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+		
+					MatShader->Bind(CommandList);
+					Mat.GetMaterialInterface()->BindResources(CommandList);
+		
+					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningInstancedStaticMeshComponent->GetWorldTransform()).Get();
+					m_PrimitiveBuffer.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveBuffer.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
+					m_PrimitiveBuffer.m_Guid = m_Guid;
+		
+					TRefCountPtr<RenderUniformBuffer> MeshBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveBuffer), EUniformBufferUsage::SingleFrame, &m_PrimitiveBuffer);
+		
+					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+					CommandList->SetGraphicRootConstant(MeshBuffer->GetViewIndex(), 1);
+					CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+					//RenderProxy.BindAndDraw(CommandList);
+
+					uint32 VertexCount = RenderProxy.VertexData.GetVertexCount();
+					uint32 PrimitiveCount = RenderProxy.VertexData.GetPrimitiveCount();
+					RenderProxy.m_StaticMeshVertexBuffer->Bind(CommandList);
+
+					auto CreateVertexBufferConditional = [](bool bCreate, D3D12CommandList* CmdList, TRefCountPtr<class RenderVertexBuffer>& Buffer, void* Data, uint32 Size, const std::string& Name)
+					{
+						if (bCreate)
+						{
+							uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+							RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, Data, ClearValueBinding::Black, Name);
+							Buffer = RenderVertexBuffer::Create(CmdList->GetParentDevice(), CmdList, Size, VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
+						}
+						else
+						{
+							Buffer = nullptr;
+						}
+					};
+
+					TRefCountPtr<RenderVertexBuffer> OriginRandomBuffer;
+					TRefCountPtr<RenderVertexBuffer> LocalToWorldBuffer;
+
+					std::vector<Vector4> OriginRandom;
+					OriginRandom.resize(NumInstances);
+
+					struct LocalToWorldMat
+					{
+						LocalToWorldMat()
+						{}
+
+						LocalToWorldMat(const Matrix InMatrix)
+							: m11(InMatrix.m_Matrix._11), m12(InMatrix.m_Matrix._12), m13(InMatrix.m_Matrix._13), m14(InMatrix.m_Matrix._14)
+							, m21(InMatrix.m_Matrix._21), m22(InMatrix.m_Matrix._22), m23(InMatrix.m_Matrix._23), m24(InMatrix.m_Matrix._24)
+							, m31(InMatrix.m_Matrix._31), m32(InMatrix.m_Matrix._32), m33(InMatrix.m_Matrix._33), m34(InMatrix.m_Matrix._34)
+						{}
+
+						Float16 m11, m12, m13, m14;
+						Float16 m21, m22, m23, m24;
+						Float16 m31, m32, m33, m34;
+					};
+
+					std::vector<LocalToWorldMat> LocalToWorld;
+					LocalToWorld.resize(NumInstances);
+
+					for (int32 InstanceIndex = 0; InstanceIndex < NumInstances; InstanceIndex++)
+					{
+						Transform LocalToWorldTransform;
+						m_OwningInstancedStaticMeshComponent->GetInstanceTransform(InstanceIndex, LocalToWorldTransform, true);
+
+						LocalToWorld[InstanceIndex] = LocalToWorldMat(LocalToWorldTransform);
+						OriginRandom[InstanceIndex] = Vector4(LocalToWorldTransform.GetLocation(), 0);
+					}
+
+					CreateVertexBufferConditional(true, CommandList, OriginRandomBuffer, (void*)OriginRandom.data(), NumInstances * sizeof(Vector4), "VB_PositionRandom");
+					CreateVertexBufferConditional(true, CommandList, LocalToWorldBuffer, (void*)LocalToWorld.data(), NumInstances * sizeof(LocalToWorld), "VB_LocalToWorld");
+
+					CommandList->SetStreamSource(8, OriginRandomBuffer, 0);
+					CommandList->SetStreamSource(9, LocalToWorldBuffer, 0);
+
+					CommandList->DrawIndexedPrimitive(RenderProxy.m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, NumInstances);
+				}
+			}
+		}
 	}
 
 	void InstancedStaticMeshSceneProxy::RenderShadowPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )

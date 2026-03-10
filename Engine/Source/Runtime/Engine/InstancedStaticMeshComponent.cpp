@@ -352,7 +352,7 @@ namespace Drn
 			OutInstanceTransform = PerInstanceTransform[InstanceIndex];
 			if (bWorldSpace)
 			{
-				OutInstanceTransform = OutInstanceTransform * GetWorldTransform();
+				OutInstanceTransform = Transform(OutInstanceTransform) * GetWorldTransform();
 			}
 
 			return true;
@@ -500,11 +500,11 @@ namespace Drn
 
 			for (int32 InstanceIndex = 0; InstanceIndex < GetInstanceCount(); InstanceIndex++)
 			{
-				const char* InstanceLabel = std::to_string(InstanceIndex).c_str();
-				ImGui::Text(InstanceLabel);
+				std::string InstanceLabel = std::to_string(InstanceIndex).c_str();
+				ImGui::Text(InstanceLabel.c_str());
 
 				Transform InstanceTransform = PerInstanceTransform[InstanceIndex];
-				if (InstanceTransform.Draw(InstanceLabel))
+				if (InstanceTransform.Draw(InstanceLabel.c_str()))
 				{
 					UpdateInstanceTransform(InstanceIndex, InstanceTransform, false, true, true);
 				}
@@ -514,7 +514,7 @@ namespace Drn
 					if (bCustomData[CustomDataIndex])
 					{
 						Vector4 Data = CustomData[CustomDataIndex][InstanceIndex];
-						if (Data.Draw(InstanceLabel, std::format("Custom{}", CustomDataIndex).c_str()))
+						if (Data.Draw(InstanceLabel.c_str(), std::format("Custom{}", CustomDataIndex).c_str()))
 						{
 							SetCustomData(CustomDataIndex, InstanceIndex, Data, true);
 						}
@@ -536,7 +536,10 @@ namespace Drn
 
 		if (NewMesh.IsValid() && Type == EAssetType::StaticMesh)
 		{
-			SetMesh(AssetHandle<StaticMesh>(NewPath));
+			AssetHandle<StaticMesh> MeshAsset(NewPath);
+			MeshAsset.Load();
+
+			SetMesh(MeshAsset);
 		}
 	}
 

@@ -1,3 +1,4 @@
+//#define INSTANCED 1
 #include "Common.hlsl"
 
 struct Resources
@@ -41,7 +42,11 @@ VertexShaderOutput Main_VS(VertexInputPositionOnly IN)
     LocalToWorld = P.LocalToWorld;
     LocalToProjection = P.LocalToProjection;
 #elif INSTANCED
-    LocalToWorld = matrix((float3) IN.LocalToWorld1, (float3) IN.LocalToWorld2, (float3) IN.LocalToWorld3, IN.OriginRandom.xyz, float4(0, 0, 0, 1));
+    LocalToWorld = matrix
+        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld2.x, IN.LocalToWorld3.x, IN.OriginRandom.x)
+        , float4(IN.LocalToWorld1.y, IN.LocalToWorld2.y, IN.LocalToWorld3.y, IN.OriginRandom.y)
+        , float4(IN.LocalToWorld1.z, IN.LocalToWorld2.z, IN.LocalToWorld3.z, IN.OriginRandom.z)
+        , float4(0 , 0, 0, 1));
     LocalToProjection = mul(View.WorldToProjection, LocalToWorld);
 #endif
     

@@ -228,7 +228,10 @@ namespace Drn
 
 		if (NewMesh.IsValid() && Type == EAssetType::StaticMesh)
 		{
-			SetMesh(AssetHandle<StaticMesh>(NewPath));
+			AssetHandle<StaticMesh> MeshAsset(NewPath);
+			MeshAsset.Load();
+
+			SetMesh(MeshAsset);
 		}
 	}
 

@@ -948,64 +948,6 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
-	//PositionOnlyDepthPSO::PositionOnlyDepthPSO( D3D12CommandList* CommandList, CommonResources* CR )
-	//{
-	//	std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\PositionOnlyDepthVertexShader.hlsl" ) );
-	//
-	//	ID3DBlob* VertexShaderBlob;
-	//
-	//	const std::vector<const wchar_t*> Macros = {};
-	//	CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
-	//
-	//	VertexShader* VShader = new VertexShader();
-	//	VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
-	//	VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
-	//
-	//	{
-	//		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, nullptr, nullptr);
-	//
-	//		TRefCountPtr<BlendState> BState = nullptr;
-	//
-	//		RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::None);
-	//		TRefCountPtr<RasterizerState> RState = nullptr;
-	//
-	//		DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
-	//		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
-	//	
-	//		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
-	//		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
-	//
-	//		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-	//			0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
-	//
-	//		m_CullNonePSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
-	//		SetName(m_CullNonePSO->PipelineState, "PSO_PositionOnlyDepth_CullNone");
-	//	}
-	//
-	//	{
-	//		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, nullptr, nullptr);
-	//
-	//		TRefCountPtr<BlendState> BState = nullptr;
-	//
-	//		RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Back);
-	//		TRefCountPtr<RasterizerState> RState = nullptr;
-	//
-	//		DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
-	//		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
-	//	
-	//		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };
-	//		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
-	//
-	//		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-	//			0, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
-	//
-	//		m_CullBackPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
-	//		SetName(m_CullBackPSO->PipelineState, "PSO_PositionOnlyDepth_CullBack");
-	//	}
-	//}
-
-// --------------------------------------------------------------------------------------
-
 	void PositionOnlyMaterialShaders::Init( D3D12CommandList* CommandList, CommonResources* CR )
 	{
 		ERasterizerCullMode CullModes[] = {ERasterizerCullMode::None, ERasterizerCullMode::Back};

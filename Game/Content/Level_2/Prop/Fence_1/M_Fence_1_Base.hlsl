@@ -57,7 +57,12 @@ VertexShaderOutput Main_VS(
     LocalToWorld = P.LocalToWorld;
     LocalToProjection = P.LocalToProjection;
 #elif INSTANCED
-    LocalToWorld = matrix((float3) IN.LocalToWorld1, (float3) IN.LocalToWorld2, (float3) IN.LocalToWorld3, IN.OriginRandom.xyz, float4(0, 0, 0, 1));
+    LocalToWorld = matrix
+        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld2.x, IN.LocalToWorld3.x, IN.OriginRandom.x)
+        , float4(IN.LocalToWorld1.y, IN.LocalToWorld2.y, IN.LocalToWorld3.y, IN.OriginRandom.y)
+        , float4(IN.LocalToWorld1.z, IN.LocalToWorld2.z, IN.LocalToWorld3.z, IN.OriginRandom.z)
+        , float4(0 , 0, 0, 1));
+    
     LocalToProjection = mul(View.WorldToProjection, LocalToWorld);
 #endif
     
@@ -85,8 +90,8 @@ VertexShaderOutput Main_VS(
     float3 WorldTangent = normalize(mul((float3x3)LocalToWorld, IN.Tangent));
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
-    //OUT.Position = mul(LocalToProjection, IN.Position);
-    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1));
+    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1));
+    //OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1));
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.Normal = WorldNormal;
     OUT.UV1 = IN.UV1;
