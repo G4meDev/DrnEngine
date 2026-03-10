@@ -211,7 +211,7 @@ namespace Drn
 		static Vector BackwardVector;
 
 #if WITH_EDITOR
-		void Draw(const std::string& id);
+		bool Draw(const std::string& id, const std::string& Label = "");
 #endif
 
 	private:

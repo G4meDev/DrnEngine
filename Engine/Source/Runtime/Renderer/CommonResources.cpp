@@ -55,6 +55,8 @@ namespace Drn
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_PosUV;
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_LineColorThickness;
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_StaticMesh;
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_InstancedStaticMesh;
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_InstancedStaticMeshDefaultDepthOnly;
 
 	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
@@ -86,6 +88,35 @@ namespace Drn
 			VertexElement(5, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 1, 4),
 			VertexElement(6, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 2, 4),
 			VertexElement(7, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 3, 4),
+		});
+
+		VertexDeclaration_InstancedStaticMesh = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 12),
+			VertexElement(1, 0, DXGI_FORMAT_R8G8B8A8_UNORM, "COLOR", 0, 4),
+			VertexElement(2, 0, DXGI_FORMAT_R8G8B8A8_SNORM, "NORMAL", 0, 4),
+			VertexElement(3, 0, DXGI_FORMAT_R8G8B8A8_SNORM, "TANGENT", 0, 4),
+			VertexElement(4, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 0, 4),
+			VertexElement(5, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 1, 4),
+			VertexElement(6, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 2, 4),
+			VertexElement(7, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 3, 4),
+
+			VertexElement(8, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "ORIGIN_RANDOM", 0, 16, true),
+			VertexElement(9, 0, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 1, 24, true),
+			VertexElement(9, 8, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 2, 24, true),
+			VertexElement(9, 16, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 3, 24, true),
+			VertexElement(10, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "CUSTOM", 1, 16, true),
+			VertexElement(11, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "CUSTOM", 2, 16, true),
+		});
+
+		VertexDeclaration_InstancedStaticMeshDefaultDepthOnly = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 12),
+
+			VertexElement(8, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "ORIGIN_RANDOM", 0, 16, true),
+			VertexElement(9, 0, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 1, 24, true),
+			VertexElement(9, 8, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 2, 24, true),
+			VertexElement(9, 16, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 3, 24, true),
 		});
 
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
@@ -996,7 +1027,7 @@ namespace Drn
 			{
 				ID3DBlob* VertexShaderBlob;
 				std::vector<const wchar_t*> Macros = {};
-				Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+				Macros.push_back(VertexFactory->GetShaderMacro());
 				CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
 
 				VertexShader* VShader = new VertexShader();

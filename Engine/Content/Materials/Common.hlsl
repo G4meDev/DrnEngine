@@ -137,6 +137,13 @@ struct ShadowDepth
 struct VertexInputPositionOnly
 {
     float3 Position : POSITION;
+    
+#if INSTANCED
+    float4 OriginRandom : ORIGIN_RANDOM;
+    half4 LocalToWorld1 : MAT1;
+    half4 LocalToWorld2 : MAT2;
+    half4 LocalToWorld3 : MAT3;
+#endif
 };
 
 struct VertexInputStaticMesh
@@ -153,7 +160,7 @@ struct VertexInputStaticMesh
 
 struct VertexInputInstancedStaticMesh
 {
-    float3 PositionRandom : POSITION;
+    float3 Position : POSITION;
     float3 Color : COLOR;
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
@@ -162,14 +169,13 @@ struct VertexInputInstancedStaticMesh
     float2 UV3 : TEXCOORD2;
     float2 UV4 : TEXCOORD3;
     
-    float4 PivotPosition : PIVOT;
-    half4 LocalToProjection1 : MAT1;
-    half4 LocalToProjection2 : MAT2;
-    half4 LocalToProjection3 : MAT3;
+    float4 OriginRandom : ORIGIN_RANDOM;
+    half4 LocalToWorld1 : MAT1;
+    half4 LocalToWorld2 : MAT2;
+    half4 LocalToWorld3 : MAT3;
     
     float4 PerInstanceCustom1 : CUSTOM1;
     float4 PerInstanceCustom2 : CUSTOM2;
-    float4 PerInstanceCustom3 : CUSTOM3;
 };
 
 #if INSTANCED

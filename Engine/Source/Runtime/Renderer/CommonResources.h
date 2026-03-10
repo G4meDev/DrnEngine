@@ -340,6 +340,8 @@ namespace Drn
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_LineColorThickness;
 
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_StaticMesh;
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_InstancedStaticMesh;
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_InstancedStaticMeshDefaultDepthOnly;
 
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;

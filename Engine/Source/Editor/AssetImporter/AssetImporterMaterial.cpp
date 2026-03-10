@@ -18,6 +18,7 @@ namespace Drn
 		TwoSided,
 
 		VertexFactoryStaticMesh,
+		VertexFactoryInstancedStaticMesh,
 		VertexFactoryDecal,
 
 		HasPrePass,
@@ -33,24 +34,25 @@ namespace Drn
 	
 	const std::unordered_map<EMaterialShaderFlag, std::string> MaterialShaderFlagTokenMap = 
 	{
-		{EMaterialShaderFlag::DomainSurface				, "DOMAIN_SURFACE"},
-		{EMaterialShaderFlag::DomainDecal				, "DOMAIN_DECAL"},
+		{EMaterialShaderFlag::DomainSurface						, "DOMAIN_SURFACE"},
+		{EMaterialShaderFlag::DomainDecal						, "DOMAIN_DECAL"},
 
-		{EMaterialShaderFlag::Masked					, "HAS_OPACITY"},
-		{EMaterialShaderFlag::TwoSided					, "TWO_SIDED"},
+		{EMaterialShaderFlag::Masked							, "HAS_OPACITY"},
+		{EMaterialShaderFlag::TwoSided							, "TWO_SIDED"},
 
-		{EMaterialShaderFlag::VertexFactoryStaticMesh	, "SUPPORT_STATICMESH"},
-		{EMaterialShaderFlag::VertexFactoryDecal		, "SUPPORT_DECAL"},
+		{EMaterialShaderFlag::VertexFactoryStaticMesh			, "SUPPORT_STATICMESH"},
+		{EMaterialShaderFlag::VertexFactoryInstancedStaticMesh	, "SUPPORT_INSTANCED"},
+		{EMaterialShaderFlag::VertexFactoryDecal				, "SUPPORT_DECAL"},
 
-		{EMaterialShaderFlag::HasPrePass				, "SUPPORT_PRE_PASS"},
-		{EMaterialShaderFlag::HasCustomPrePass			, "HAS_CUSTOM_PRE_PASS"},
-		{EMaterialShaderFlag::HasShadowPass				, "SUPPORT_SHADOW_PASS"},
-		{EMaterialShaderFlag::HasMainPass				, "SUPPORT_MAIN_PASS"},
-		{EMaterialShaderFlag::HasHitProxyPass			, "SUPPORT_HIT_PROXY_PASS"},
-		{EMaterialShaderFlag::HasEditorPrimitivePass	, "SUPPORT_EDITOR_PRIMITIVE_PASS"},
-		{EMaterialShaderFlag::HasEditorSelectionPass	, "SUPPORT_EDITOR_SELECTION_PASS"},
-		{EMaterialShaderFlag::HasDecalPass				, "SUPPORT_DEFERRED_DECAL_PASS"},
-		{EMaterialShaderFlag::HasStaticMeshDecalPass	, "SUPPORT_STATICMESH_DECAL_PASS"},
+		{EMaterialShaderFlag::HasPrePass						, "SUPPORT_PRE_PASS"},
+		{EMaterialShaderFlag::HasCustomPrePass					, "HAS_CUSTOM_PRE_PASS"},
+		{EMaterialShaderFlag::HasShadowPass						, "SUPPORT_SHADOW_PASS"},
+		{EMaterialShaderFlag::HasMainPass						, "SUPPORT_MAIN_PASS"},
+		{EMaterialShaderFlag::HasHitProxyPass					, "SUPPORT_HIT_PROXY_PASS"},
+		{EMaterialShaderFlag::HasEditorPrimitivePass			, "SUPPORT_EDITOR_PRIMITIVE_PASS"},
+		{EMaterialShaderFlag::HasEditorSelectionPass			, "SUPPORT_EDITOR_SELECTION_PASS"},
+		{EMaterialShaderFlag::HasDecalPass						, "SUPPORT_DEFERRED_DECAL_PASS"},
+		{EMaterialShaderFlag::HasStaticMeshDecalPass			, "SUPPORT_STATICMESH_DECAL_PASS"},
 	};
 
 	inline static bool IsMaterialFlagDomain( EMaterialShaderFlag Flag )
@@ -59,20 +61,16 @@ namespace Drn
 			|| Flag == EMaterialShaderFlag::DomainDecal;
 	}
 
-	VertexFactoryType* GetVertexFactoryFromShaderFlag(EMaterialShaderFlag Flag)
-	{
-		switch ( Flag )
-		{
-		case EMaterialShaderFlag::VertexFactoryStaticMesh: return VertexFactoryType::StaticMesh;
-		default: drn_check(false); return VertexFactoryType::StaticMesh;
-		}
-	}
-
 	EMaterialShaderFlag GetShaderFlagFromVertexFactory(VertexFactoryType* VertexFactory)
 	{
 		if (VertexFactory == VertexFactoryType::StaticMesh)
 		{
 			return EMaterialShaderFlag::VertexFactoryStaticMesh;
+		}
+
+		else if (VertexFactory == VertexFactoryType::InstancedStaticMesh)
+		{
+			return EMaterialShaderFlag::VertexFactoryInstancedStaticMesh;
 		}
 
 		else if (VertexFactory == VertexFactoryType::Decal)
@@ -231,7 +229,7 @@ namespace Drn
 				{
 					ShaderBlob CustomPrePassShaderBlob;
 					std::vector<const wchar_t*> Macros = { L"PRE_PASS=1" };
-					Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+					Macros.push_back(VertexFactory->GetShaderMacro());
 
 					CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &CustomPrePassShaderBlob.m_VS);
 					CompileShaderBlobConditional(bMasked && HasPS, Path, L"Main_PS", L"ps_6_6", Macros, &CustomPrePassShaderBlob.m_PS);
@@ -244,7 +242,7 @@ namespace Drn
 					{
 						ShaderBlob PointLightShadowDepthShaderBlob;
 						std::vector<const wchar_t*> Macros = { L"SHADOW_PASS=1", L"SHADOW_PASS_POINTLIGHT=1" };
-						Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+						Macros.push_back(VertexFactory->GetShaderMacro());
 						CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &PointLightShadowDepthShaderBlob.m_VS);
 						if (bMasked)
 						{
@@ -260,7 +258,7 @@ namespace Drn
 					{
 						ShaderBlob SpotLightShadowDepthShaderBlob;
 						std::vector<const wchar_t*> Macros = { L"SHADOW_PASS=1", L"SHADOW_PASS_SPOTLIGHT=1" };
-						Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+						Macros.push_back(VertexFactory->GetShaderMacro());
 						CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &SpotLightShadowDepthShaderBlob.m_VS);
 						if (bMasked)
 						{
@@ -278,7 +276,7 @@ namespace Drn
 				{
 					ShaderBlob MainShaderBlob;
 					std::vector<const wchar_t*> Macros = { L"MAIN_PASS=1" };
-					Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+					Macros.push_back(VertexFactory->GetShaderMacro());
 
 					CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &MainShaderBlob.m_VS);
 					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", Macros, &MainShaderBlob.m_PS);
@@ -293,7 +291,7 @@ namespace Drn
 				{
 					ShaderBlob HitProxyShaderBlob;
 					std::vector<const wchar_t*> Macros = { L"HITPROXY_PASS=1" };
-					Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+					Macros.push_back(VertexFactory->GetShaderMacro());
 
 					CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &HitProxyShaderBlob.m_VS);
 					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", Macros, &HitProxyShaderBlob.m_PS);
@@ -308,7 +306,7 @@ namespace Drn
 				{
 					ShaderBlob EditorPrimitiveShaderBlob;
 					std::vector<const wchar_t*> Macros = { L"EDITOR_PRIMITIVE_PASS=1" };
-					Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+					Macros.push_back(VertexFactory->GetShaderMacro());
 
 					CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &EditorPrimitiveShaderBlob.m_VS);
 					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", Macros, &EditorPrimitiveShaderBlob.m_PS);
@@ -325,7 +323,7 @@ namespace Drn
 
 					ShaderBlob MainShaderBlob;
 					std::vector<const wchar_t*> Macros = { L"MAIN_PASS=1" };
-					Macros.push_back(GetVertexFactoryShaderMacro(VertexFactory));
+					Macros.push_back(VertexFactory->GetShaderMacro());
 
 					CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &MainShaderBlob.m_VS);
 					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", Macros, &MainShaderBlob.m_PS);
@@ -384,8 +382,7 @@ namespace Drn
 			MaterialAsset->ShaderParameters.bHasDecalPass = Flags.HasFlag(EMaterialShaderFlag::HasDecalPass);
 			MaterialAsset->ShaderParameters.bHasStaticMeshDecalPass = Flags.HasFlag(EMaterialShaderFlag::HasStaticMeshDecalPass);
 
-
-			MaterialAsset->ShaderParameters.bIsUsedWithInstancedStaticMesh = false; // TODO: update
+			MaterialAsset->ShaderParameters.bIsUsedWithInstancedStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryInstancedStaticMesh);
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

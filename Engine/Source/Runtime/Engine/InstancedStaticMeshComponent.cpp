@@ -224,6 +224,177 @@ namespace Drn
 		return PrimitiveComponent::CalcBounds(LocalToWorld);
 	}
 
+	int32 InstancedStaticMeshComponent::AddInstance( const Transform& InstanceTransform )
+	{
+		PerInstanceTransform.push_back(InstanceTransform);
+		for (int32 CustomDataIndex = 0; CustomDataIndex < NUM_INSTANCED_CUSTOM_DATA; CustomDataIndex++)
+		{
+			if (bCustomData[CustomDataIndex])
+			{
+				CustomData[CustomDataIndex].push_back(Vector4(0));
+			}
+		}
+
+		MarkRenderStateDirty();
+		return GetInstanceCount() - 1;
+	}
+
+	std::vector<int32> InstancedStaticMeshComponent::AddInstances( const std::vector<Transform>& InstanceTransforms, bool bShouldReturnIndices )
+	{
+		const int32 Count = InstanceTransforms.size();
+		const int32 NewSize = GetInstanceCount() + Count;
+		std::vector<int32> NewIndices;
+
+		if (Count > 0)
+		{
+			if (bShouldReturnIndices)
+			{
+				NewIndices.reserve(Count);
+			}
+
+			int32 InstanceIndex = GetInstanceCount();
+			PerInstanceTransform.reserve(NewSize);
+
+			for (int32 CustomDataIndex = 0; CustomDataIndex < NUM_INSTANCED_CUSTOM_DATA; CustomDataIndex++)
+			{
+				if (bCustomData[CustomDataIndex])
+				{
+					CustomData[CustomDataIndex].reserve(NewSize);
+				}
+			}
+
+			for (int32 i = 0; i < Count; i++)
+			{
+				PerInstanceTransform.push_back(InstanceTransforms[i]);
+
+				for (int32 CustomDataIndex = 0; CustomDataIndex < NUM_INSTANCED_CUSTOM_DATA; CustomDataIndex++)
+				{
+					if (bCustomData[CustomDataIndex])
+					{
+						CustomData[CustomDataIndex].push_back(Vector4(0));
+					}
+				}
+
+				if (bShouldReturnIndices)
+				{
+					NewIndices.push_back(InstanceIndex);
+				}
+
+				InstanceIndex++;
+			}
+
+			MarkRenderStateDirty();
+		}
+
+		return NewIndices;
+	}
+
+	int32 InstancedStaticMeshComponent::AddInstanceWorldSpace( const Transform& WorldTransform )
+	{
+		AddInstance(WorldTransform.GetRelativeTransform(GetWorldTransform()));
+
+		return GetInstanceCount() - 1;
+	}
+
+	bool InstancedStaticMeshComponent::UpdateInstanceTransform( int32 InstanceIndex, const Transform& NewInstanceTransform, bool bWorldSapce, bool bMarkRenderStateDirty, bool bTeleport )
+	{
+		if (InstanceIndex < GetInstanceCount())
+		{
+			Matrix& InstanceTransform = PerInstanceTransform[InstanceIndex];
+			InstanceTransform = bWorldSapce ? NewInstanceTransform.GetRelativeTransform(GetWorldTransform()) : NewInstanceTransform;
+
+			if (bMarkRenderStateDirty)
+			{
+				MarkRenderStateDirty();
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void InstancedStaticMeshComponent::SetCustomData( int32 DataIndex, int32 InstanceIndex, const Vector4& Value, bool bMarkRenderStateDirty )
+	{
+		drn_check(DataIndex < NUM_INSTANCED_CUSTOM_DATA && bCustomData[DataIndex]);
+		drn_check(InstanceIndex < GetInstanceCount() && InstanceIndex < CustomData[DataIndex].size());
+
+		CustomData[DataIndex][InstanceIndex] = Value;
+
+		if (bMarkRenderStateDirty)
+		{
+			MarkRenderStateDirty();
+		}
+	}
+
+	void InstancedStaticMeshComponent::SetCustomDataEnabled( int32 Index, bool bEnabled )
+	{
+		drn_check(Index < NUM_INSTANCED_CUSTOM_DATA);
+
+		if (bEnabled && !bCustomData[Index])
+		{
+			CustomData[Index].resize(GetInstanceCount());
+			MarkRenderStateDirty();
+		}
+		else if (!bEnabled && bCustomData[Index])
+		{
+			CustomData[Index].clear();
+			MarkRenderStateDirty();
+		}
+
+		bCustomData[Index] = bEnabled;
+	}
+
+	bool InstancedStaticMeshComponent::GetInstanceTransform( int32 InstanceIndex, Transform& OutInstanceTransform, bool bWorldSpace ) const
+	{
+		if (InstanceIndex < GetInstanceCount())
+		{
+			OutInstanceTransform = PerInstanceTransform[InstanceIndex];
+			if (bWorldSpace)
+			{
+				OutInstanceTransform = OutInstanceTransform * GetWorldTransform();
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	bool InstancedStaticMeshComponent::RemoveInstance( int32 InstanceIndex )
+	{
+		if (InstanceIndex < GetInstanceCount())
+		{
+			PerInstanceTransform.erase(PerInstanceTransform.begin() + InstanceIndex);
+
+			for (int32 i = 0; i < NUM_INSTANCED_CUSTOM_DATA; i++)
+			{
+				if (bCustomData[i])
+				{
+					drn_check(InstanceIndex < CustomData[i].size());
+					CustomData[i].erase(CustomData[i].begin() + InstanceIndex);
+				}
+			}
+
+			MarkRenderStateDirty();
+
+			return true;
+		}
+
+		return false;
+	}
+
+	void InstancedStaticMeshComponent::ClearInstances()
+	{
+		PerInstanceTransform.clear();
+		for (int32 i = 0; i < NUM_INSTANCED_CUSTOM_DATA; i++)
+		{
+			CustomData[i].clear();
+		}
+
+		MarkRenderStateDirty();
+	}
+
 #if WITH_EDITOR
 
 	void InstancedStaticMeshComponent::DrawDetailPanel( float DeltaTime )
@@ -289,6 +460,67 @@ namespace Drn
 		if (ImGui::InputFloat("MaxDrawDistance", &MaxDrawDistance))
 		{
 			SetMaxDrawDistance(MaxDrawDistance);
+		}
+
+		for (int32 CustomDataIndex = 0; CustomDataIndex < NUM_INSTANCED_CUSTOM_DATA; CustomDataIndex++)
+		{
+			const std::string Label = "Custom Data " + std::to_string(CustomDataIndex);
+			bool bEnabled = bCustomData[CustomDataIndex];
+
+			if (ImGui::Checkbox(Label.c_str(), &bEnabled))
+			{
+				SetCustomDataEnabled(CustomDataIndex, bEnabled);
+			}
+		}
+
+		DrawInstances();
+	}
+
+	void InstancedStaticMeshComponent::DrawInstances()
+	{
+		if (ImGui::CollapsingHeader("Instances"))
+		{
+			if (ImGui::Button("Add"))
+			{
+				AddInstance(Transform::Identity);
+			}
+			
+			if (ImGui::Button("Remove"))
+			{
+				RemoveInstance(GetInstanceCount() - 1);
+			}
+
+			if (ImGui::Button("Clear"))
+			{
+				ClearInstances();
+			}
+
+			ImGui::Text( std::format("{} instances", GetInstanceCount()).c_str() );
+			ImGui::Separator();
+
+			for (int32 InstanceIndex = 0; InstanceIndex < GetInstanceCount(); InstanceIndex++)
+			{
+				const char* InstanceLabel = std::to_string(InstanceIndex).c_str();
+				ImGui::Text(InstanceLabel);
+
+				Transform InstanceTransform = PerInstanceTransform[InstanceIndex];
+				if (InstanceTransform.Draw(InstanceLabel))
+				{
+					UpdateInstanceTransform(InstanceIndex, InstanceTransform, false, true, true);
+				}
+				
+				for (int32 CustomDataIndex = 0; CustomDataIndex < NUM_INSTANCED_CUSTOM_DATA; CustomDataIndex++)
+				{
+					if (bCustomData[CustomDataIndex])
+					{
+						Vector4 Data = CustomData[CustomDataIndex][InstanceIndex];
+						if (Data.Draw(InstanceLabel, std::format("Custom{}", CustomDataIndex).c_str()))
+						{
+							SetCustomData(CustomDataIndex, InstanceIndex, Data, true);
+						}
+					}
+				}
+			}
 		}
 	}
 

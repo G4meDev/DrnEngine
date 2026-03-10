@@ -23,7 +23,7 @@ namespace Drn
 
 
 #if WITH_EDITOR
-		bool Draw(const std::string& id);
+		bool Draw(const std::string& id, const std::string& Label = "");
 		bool Draw();
 #endif
 

@@ -63,10 +63,14 @@ namespace Drn
 	class VertexFactoryType
 	{
 	public:
-		VertexFactoryType(std::string&& InName, TRefCountPtr<VertexDeclaration>* InVertexDeclaration, TRefCountPtr<VertexDeclaration>* InVertexDeclarationDefaultDepthOnly)
+		VertexFactoryType(std::string&& InName, const wchar_t* InShaderMacro,
+			TRefCountPtr<VertexDeclaration>* InVertexDeclaration, TRefCountPtr<VertexDeclaration>* InVertexDeclarationDefaultDepthOnly)
 			: Name(std::move(InName))
 			, VDeclaration(InVertexDeclaration)
 			, VDeclarationDefaultDepthOnly(InVertexDeclarationDefaultDepthOnly)
+#if WITH_EDITOR
+			, ShaderMacro(InShaderMacro)
+#endif
 		{
 			drn_check(std::find_if(GlobalFactories.begin(), GlobalFactories.end(),
 				[&](const VertexFactoryType* Factroy){ return Factroy->GetName() == Name; }) == GlobalFactories.end());
@@ -101,17 +105,26 @@ namespace Drn
 			return VDeclarationDefaultDepthOnly ? *VDeclarationDefaultDepthOnly : nullptr;
 		}
 
+
+#if WITH_EDITOR
+		inline const wchar_t* GetShaderMacro() const { return ShaderMacro; }
+#endif
+
 		static std::vector<VertexFactoryType*> GlobalFactories;
 
 		static VertexFactoryType* StaticMesh;
+		static VertexFactoryType* InstancedStaticMesh;
 		static VertexFactoryType* Decal;
 
 	private:
 		const std::string Name;
 		TRefCountPtr<VertexDeclaration>* VDeclaration;
 		TRefCountPtr<VertexDeclaration>* VDeclarationDefaultDepthOnly;
-
 		// @TODO: maybe add hashed name for faster comparison
+
+#if WITH_EDITOR
+		const wchar_t* ShaderMacro;
+#endif
 	};
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -315,8 +328,6 @@ namespace Drn
 	private:
 		std::vector<MaterialShader> Shaders;
 	};
-
-	const wchar_t* GetVertexFactoryShaderMacro( VertexFactoryType* VertexFactory );
 
 // -------------------------------------------------------------------------------------------------------------------
 

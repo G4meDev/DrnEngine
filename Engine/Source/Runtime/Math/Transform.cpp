@@ -5,7 +5,7 @@
 
 namespace Drn
 {
-	Transform Transform::Identity = Transform(XMMatrixIdentity());
+	Transform Transform::Identity = Transform( XMMatrixIdentity() );
 
 	Transform::Transform( const Matrix& InMatrix )
 	{
@@ -97,4 +97,16 @@ namespace Drn
 		return SafeReciprocalScale;
 	}
 
-}
+#if WITH_EDITOR
+	bool Transform::Draw( const std::string& id )
+	{
+		bool bDirty = false;
+
+		bDirty |= Location.Draw(id, "Location");
+		bDirty |= Rotation.Draw(id, "Rotation");
+		bDirty |= Scale.Draw(id, "Scale");
+
+		return bDirty;
+	}
+#endif
+        }

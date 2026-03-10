@@ -31,8 +31,21 @@ VertexShaderOutput Main_VS(VertexInputPositionOnly IN)
 {
     VertexShaderOutput OUT;
     
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
+    
+    matrix LocalToWorld;
+    matrix LocalToProjection;
+    
+#if STATICMESH
+    LocalToWorld = P.LocalToWorld;
+    LocalToProjection = P.LocalToProjection;
+#elif INSTANCED
+    LocalToWorld = matrix((float3) IN.LocalToWorld1, (float3) IN.LocalToWorld2, (float3) IN.LocalToWorld3, IN.OriginRandom.xyz, float4(0, 0, 0, 1));
+    LocalToProjection = mul(View.WorldToProjection, LocalToWorld);
+#endif
+    
+    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1.0f));
     
     return OUT;
 }

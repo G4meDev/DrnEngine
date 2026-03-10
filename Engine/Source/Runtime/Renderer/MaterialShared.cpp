@@ -9,8 +9,9 @@ namespace Drn
 {
 
 	std::vector<VertexFactoryType*> VertexFactoryType::GlobalFactories;
-	VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh", &CommonResources::Get()->VertexDeclaration_StaticMesh, &CommonResources::Get()->VertexDeclaration_Pos);
-	VertexFactoryType* VertexFactoryType::Decal = new VertexFactoryType("Decal", &CommonResources::Get()->VertexDeclaration_Pos, nullptr);
+	VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh", L"STATICMESH=1", &CommonResources::Get()->VertexDeclaration_StaticMesh, &CommonResources::Get()->VertexDeclaration_Pos);
+	VertexFactoryType* VertexFactoryType::InstancedStaticMesh = new VertexFactoryType("InstancedStaticMesh", L"INSTANCED=1", &CommonResources::Get()->VertexDeclaration_InstancedStaticMesh, &CommonResources::Get()->VertexDeclaration_InstancedStaticMeshDefaultDepthOnly);
+	VertexFactoryType* VertexFactoryType::Decal = new VertexFactoryType("Decal", L"DECAL=1", &CommonResources::Get()->VertexDeclaration_Pos, nullptr);
 
 	void MaterialUniformParameters::Serialize( Archive& Ar )
 	{
@@ -544,22 +545,6 @@ namespace Drn
 		{
 			MatShader.UploadPipelineState(CmdList, InMaterial);
 		}
-	}
-
-	const wchar_t* GetVertexFactoryShaderMacro( VertexFactoryType* VertexFactory )
-	{
-		if (VertexFactory == VertexFactoryType::StaticMesh)
-		{
-			return L"STATICMESH=1";
-		}
-
-		else if (VertexFactory == VertexFactoryType::Decal)
-		{
-			return L"DECAL=1";
-		}
-
-		drn_check(false);
-		return L"STATICMESH=1";
 	}
 
 #if WITH_EDITOR

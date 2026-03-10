@@ -20,8 +20,9 @@ namespace Drn
 	Vector Vector::BackwardVector	= Vector(0, 0, -1);
 
 #if WITH_EDITOR
-	void Vector::Draw(const std::string& id)
+	bool Vector::Draw(const std::string& id, const std::string& Label)
 	{
+		bool bDirty = false;
 		XMVECTOR Vec = XMLoadFloat3(&m_Vector);
 
 		float Value[3];
@@ -30,11 +31,14 @@ namespace Drn
 		Value[2] = XMVectorGetZ(Vec);
 
 		ImGui::PushID( id.c_str() );
-		if (ImGui::DragFloat3("", Value, 0.3f, 0, 0, "%.3f"))
+		if (ImGui::DragFloat3(Label.c_str(), Value, 0.3f, 0, 0, "%.3f"))
 		{
 			XMStoreFloat3( &m_Vector, XMVectorSet( Value[0], Value[1], Value[2], 0 ) );
+			bDirty = true;
 		}
 		ImGui::PopID();
+
+		return bDirty;
 	}
 #endif
 }

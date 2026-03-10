@@ -20,15 +20,20 @@ namespace Drn
 	};
 
 #if WITH_EDITOR
-	void Quat::Draw(const std::string& id)
+	bool Quat::Draw(const std::string& id, const std::string& Label)
 	{
+		bool bDirty = false;
+
 		float Value[4] = { GetX(), GetY(), GetZ(), GetW() };
 		ImGui::PushID(id.c_str());
-		if ( ImGui::DragFloat4( "", Value, 0.3f, 0, 0, "%.3f" ) )
+		if ( ImGui::DragFloat4( Label.c_str(), Value, 0.3f, 0, 0, "%.3f" ) )
 		{
 			XMStoreFloat4(&m_Vector, XMQuaternionNormalize( XMVectorSet( Value[0], Value[1], Value[2], Value[3] ) ));
+			bDirty = true;
 		}
 		ImGui::PopID();
+
+		return bDirty;
 	}
 #endif
 }

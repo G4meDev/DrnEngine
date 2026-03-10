@@ -9,6 +9,10 @@
 #include "Quat.h"
 #include "Matrix.h"
 
+#if WITH_EDITOR
+#include "imgui.h"
+#endif
+
 using namespace DirectX;
 
 namespace Drn
@@ -54,6 +58,10 @@ namespace Drn
 
 			return ss.str();
 		}
+
+#if WITH_EDITOR
+		bool Draw( const std::string& id );
+#endif
 
 		static Transform Identity;
 
