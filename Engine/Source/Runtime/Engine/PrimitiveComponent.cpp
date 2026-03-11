@@ -70,6 +70,7 @@ namespace Drn
 		if (m_SceneProxy)
 		{
 			m_SceneProxy->SetLocalToWorld(GetWorldTransform());
+			MarkRenderStateDirty();
 		}
 
 		if (!SkipPhysic)

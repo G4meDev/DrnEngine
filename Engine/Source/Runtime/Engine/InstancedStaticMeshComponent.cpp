@@ -36,6 +36,7 @@ namespace Drn
 		MarkRenderStateDirty();
 
 		RefreshOverrideMaterials();
+		UpdateBounds();
 	}
 
 	void InstancedStaticMeshComponent::Serialize( Archive& Ar )
@@ -69,6 +70,34 @@ namespace Drn
 
 			Ar >> MinDrawDistance;
 			Ar >> MaxDrawDistance;
+
+// --------------------------------------------------------------------
+
+			int32 InstanceCount;
+			Ar >> InstanceCount;
+			PerInstanceTransform.resize(InstanceCount);
+			for (int32 InstanceIndex = 0; InstanceIndex < InstanceCount; InstanceIndex++)
+			{
+				Ar >> PerInstanceTransform[InstanceIndex];
+			}
+
+			for (int32 CustomDataIndex = 0; CustomDataIndex < NUM_INSTANCED_CUSTOM_DATA; CustomDataIndex++)
+			{
+				Ar >> bCustomData[CustomDataIndex];
+				if (bCustomData[CustomDataIndex])
+				{
+					CustomData[CustomDataIndex].resize(InstanceCount);
+
+					for (int32 InstanceIndex = 0; InstanceIndex < InstanceCount; InstanceIndex++)
+					{
+						Ar >> CustomData[CustomDataIndex][InstanceIndex];
+					}
+				}
+			}
+
+			UpdateBounds();
+
+			Ar >> InstancingRandomSeed;
 		}
 		
 		else
@@ -83,6 +112,28 @@ namespace Drn
 
 			Ar << MinDrawDistance;
 			Ar << MaxDrawDistance;
+
+// --------------------------------------------------------------------
+
+			const int32 InstanceCount = GetInstanceCount();
+			Ar << InstanceCount;
+			for (int32 InstanceIndex = 0; InstanceIndex < InstanceCount; InstanceIndex++)
+			{
+				Ar << PerInstanceTransform[InstanceIndex];
+			}
+			for (int32 CustomDataIndex = 0; CustomDataIndex < NUM_INSTANCED_CUSTOM_DATA; CustomDataIndex++)
+			{
+				Ar << bCustomData[CustomDataIndex];
+				if (bCustomData[CustomDataIndex])
+				{
+					for (int32 InstanceIndex = 0; InstanceIndex < InstanceCount; InstanceIndex++)
+					{
+						Ar << CustomData[CustomDataIndex][InstanceIndex];
+					}
+				}
+			}
+
+			Ar << InstancingRandomSeed;
 		}
 	}
 
@@ -199,29 +250,24 @@ namespace Drn
 		}
 	}
 
-	BoxSphereBounds InstancedStaticMeshComponent::GetBounds()
-	{
-		BoxSphereBounds Bounds;
-		if (Mesh.IsValid())
-		{
-			Bounds = Mesh->GetBounds();
-			Bounds = Bounds.TransformBy(GetWorldTransform());
-		}
-		return Bounds;
-	}
-
 	BoxSphereBounds InstancedStaticMeshComponent::CalcBounds( const Transform& LocalToWorld ) const
 	{
-		if (Mesh.IsValid())
+		if (Mesh.IsValid() && GetInstanceCount() > 0)
 		{
-			BoxSphereBounds Bounds;
-			Bounds = Mesh->GetBounds();
-			Bounds = Bounds.TransformBy(LocalToWorld);
+			Matrix BoundTransformMatrix = LocalToWorld;
+
+			BoxSphereBounds RenderBounds = Mesh->GetBounds();
+			BoxSphereBounds Bounds = RenderBounds.TransformBy(PerInstanceTransform[0] * LocalToWorld);
+
+			for (int32 InstanceIndex = 1; InstanceIndex < GetInstanceCount(); InstanceIndex++)
+			{
+				Bounds = Bounds + RenderBounds.TransformBy(PerInstanceTransform[InstanceIndex] * LocalToWorld);
+			}
 
 			return Bounds;
 		}
 
-		return PrimitiveComponent::CalcBounds(LocalToWorld);
+		return BoxSphereBounds(LocalToWorld.GetLocation(), Vector::ZeroVector, 0.0f);
 	}
 
 	int32 InstancedStaticMeshComponent::AddInstance( const Transform& InstanceTransform )
@@ -235,6 +281,7 @@ namespace Drn
 			}
 		}
 
+		UpdateBounds();
 		MarkRenderStateDirty();
 		return GetInstanceCount() - 1;
 	}
@@ -283,6 +330,7 @@ namespace Drn
 				InstanceIndex++;
 			}
 
+			UpdateBounds();
 			MarkRenderStateDirty();
 		}
 
@@ -305,6 +353,7 @@ namespace Drn
 
 			if (bMarkRenderStateDirty)
 			{
+				UpdateBounds();
 				MarkRenderStateDirty();
 			}
 
@@ -376,6 +425,7 @@ namespace Drn
 				}
 			}
 
+			UpdateBounds();
 			MarkRenderStateDirty();
 
 			return true;
@@ -392,6 +442,7 @@ namespace Drn
 			CustomData[i].clear();
 		}
 
+		UpdateBounds();
 		MarkRenderStateDirty();
 	}
 

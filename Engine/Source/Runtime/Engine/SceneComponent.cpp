@@ -316,6 +316,11 @@ namespace Drn
 		return Result;
 	}
 
+	void SceneComponent::UpdateBounds()
+	{
+		Bounds = CalcBounds(GetWorldTransform());
+	}
+
 	void SceneComponent::OnUpdateTransform( bool SkipPhysic )
 	{
 		OnTransformUpdateDel.Braodcast(this, SkipPhysic);
@@ -330,6 +335,7 @@ namespace Drn
 		{
 			CachedWorldTransform = NewTransform;
 			PropagateTransformUpdate( SkipPhysic );
+			UpdateBounds();
 		}
 	}
 

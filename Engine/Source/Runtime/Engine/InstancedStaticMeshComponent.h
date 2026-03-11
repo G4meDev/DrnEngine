@@ -36,8 +36,6 @@ namespace Drn
 		void SetMinDrawDistance(float Value);
 		void SetMaxDrawDistance(float Value);
 
-		BoxSphereBounds GetBounds();
-
 		virtual BoxSphereBounds CalcBounds(const Transform& LocalToWorld) const override;
 
 		int32 AddInstance(const Transform& InstanceTransform);
@@ -53,7 +51,7 @@ namespace Drn
 		void ClearInstances();
 
 		inline int32 GetInstanceCount() const { return PerInstanceTransform.size(); }
-
+		inline int32 GetInstanceRandomSeed() const { return ActualInstanceRandomSeed; }
 
 #if WITH_EDITOR
 
@@ -89,8 +87,8 @@ namespace Drn
 		bool bCustomData[NUM_INSTANCED_CUSTOM_DATA];
 		std::vector<Vector4> CustomData[NUM_INSTANCED_CUSTOM_DATA];
 
-		int32 InstancingRandomSeed; // if 0, generate at runtime
-
+		int32 InstancingRandomSeed = 0; // if 0, generate at runtime
+		int32 ActualInstanceRandomSeed;
 
 		friend class InstancedStaticMeshSceneProxy;
 

@@ -116,6 +116,7 @@ namespace Drn
 					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
 					MatShader->Bind(CommandList);
+					CommandList->GetD3D12CommandList()->OMSetStencilRef(255);
 					Mat.GetMaterialInterface()->BindResources(CommandList);
 
 					m_PrimitiveBuffer.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();

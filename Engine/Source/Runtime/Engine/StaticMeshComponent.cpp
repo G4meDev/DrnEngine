@@ -37,6 +37,7 @@ namespace Drn
 		MarkRenderStateDirty();
 
 		RefreshOverrideMaterials();
+		UpdateBounds();
 	}
 
 	void StaticMeshComponent::Serialize( Archive& Ar )

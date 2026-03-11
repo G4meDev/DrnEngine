@@ -120,7 +120,9 @@ namespace Drn
 		{
 			return CalcBounds(Transform::Identity);
 		}
-		//virtual void UpdateBounds();
+		virtual void UpdateBounds();
+
+		inline const BoxSphereBounds& GetBounds() const { return Bounds; }
 
 		OnTransformUpdateDelegate OnTransformUpdateDel;
 
@@ -146,6 +148,8 @@ namespace Drn
 
 		std::string m_AttachSocketName;
 		bool bStatic;
+
+		BoxSphereBounds Bounds;
 
 		friend class Actor;
 	};

@@ -52,6 +52,8 @@ namespace Drn
 		float MaxDrawDistance;
 
 		BoxSphereBounds Bounds;
+		BoxSphereBounds LocalBounds;
+		Vector ActorPosition;
 
 		bool bStatic;
 		bool bPendingDestory;
