@@ -39,7 +39,7 @@ namespace Drn
 		}
 	}
 
-	void BodyInstance::InitBody( BodySetup* Setup, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene )
+	void BodyInstance::InitBody( BodySetup* Setup, const Transform& BodyTransform, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene )
 	{
 		m_OwnerComponent = InOwnerComponent;
 		m_BodySetup = Setup;
@@ -57,7 +57,7 @@ namespace Drn
 
 		if (m_SimulatePhysic)
 		{
-			physx::PxRigidDynamic* DynamicActor = Physics->createRigidDynamic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
+			physx::PxRigidDynamic* DynamicActor = Physics->createRigidDynamic( Transform2P(BodyTransform) );
 			m_RigidActor = DynamicActor;
 
 			// TODO: cache center of mass and inertia instead of generating at runtime 
@@ -66,14 +66,14 @@ namespace Drn
 
 		else
 		{
-			m_RigidActor = Physics->createRigidStatic( Transform2P(m_OwnerComponent->GetWorldTransform()) );
+			m_RigidActor = Physics->createRigidStatic( Transform2P(BodyTransform) );
 		}
 
 		if (Setup->m_UseTriMesh)
 		{
 			for (int32 i = 0; i < Setup->m_TriMeshes.size(); i++)
 			{
-				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(m_OwnerComponent->GetWorldScale())), *m_Material);
+				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(BodyTransform.GetScale())), *m_Material);
 				shape->userData = &Setup->m_TriMeshes[i].GetUserData();
 
 				m_RigidActor->attachShape( *shape );
@@ -92,7 +92,7 @@ namespace Drn
 				//filterData.word0 = UINT32_MAX;
 				//filterData.word1 = UINT32_MAX;
 
-				physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(m_OwnerComponent->GetWorldScale()).get()), *m_Material );
+				physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(BodyTransform.GetScale()).get()), *m_Material );
 				//shape->setSimulationFilterData( filterData );
 
 				shape->userData = &Element->GetUserData();

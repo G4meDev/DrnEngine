@@ -3,6 +3,7 @@
 // DOMAIN_SURFACE
 
 // SUPPORT_STATICMESH
+// SUPPORT_INSTANCED
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_PRE_PASS
@@ -58,34 +59,46 @@ struct VertexShaderOutput
 #endif
 };
 
-VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
+VertexShaderOutput Main_VS(VertexInput IN)
 {
     VertexShaderOutput OUT;
     
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+
+    matrix LocalToWorld;
+    matrix LocalToProjection;
+    
+#if STATICMESH
+    LocalToWorld = Primitive.LocalToWorld;
+    LocalToProjection = Primitive.LocalToProjection;
+#elif INSTANCED
+    LocalToWorld = matrix
+        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld2.x, IN.LocalToWorld3.x, IN.OriginRandom.x)
+        , float4(IN.LocalToWorld1.y, IN.LocalToWorld2.y, IN.LocalToWorld3.y, IN.OriginRandom.y)
+        , float4(IN.LocalToWorld1.z, IN.LocalToWorld2.z, IN.LocalToWorld3.z, IN.OriginRandom.z)
+        , float4(0 , 0, 0, 1));
+    LocalToProjection = mul(View.WorldToProjection, LocalToWorld);
+#endif
+    
 #if SHADOW_PASS_POINTLIGHT
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    OUT.Position = mul(P.LocalToWorld, float4(IN.Position, 1.0f));
+    OUT.Position = mul(LocalToWorld, float4(IN.Position, 1.0f));
 #elif SHADOW_PASS_SPOTLIGHT
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
-    float3 WorldPosition = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
+    float3 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f)).xyz;
     OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, float4(WorldPosition, 1));
 #elif PRE_PASS
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1.0f));
 #elif MAIN_PASS
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
     
-    float3 WorldNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
-    float3 WorldTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
+    float3 WorldNormal = normalize(mul((float3x3) LocalToWorld, IN.Normal));
+    float3 WorldTangent = normalize(mul((float3x3) LocalToWorld, IN.Tangent));
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
-    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1.0f));
 #else
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1.0f));
 #endif
     
     OUT.UV1 = IN.UV1;

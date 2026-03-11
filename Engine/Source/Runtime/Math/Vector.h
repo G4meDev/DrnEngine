@@ -137,6 +137,18 @@ namespace Drn
 			return XMVectorGetX(Vec) == 0.0f && XMVectorGetY(Vec) == 0.0f && XMVectorGetZ(Vec) == 0.0f;
 		}
 
+		inline bool IsNearlyEqual(const Vector& Other, float Tolerance = KINDA_SMALL_NUMBER) const
+		{
+			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
+			XMVECTOR OtherVec = XMLoadFloat3(Other.Get());
+			return XMVector3NearEqual(Vec, OtherVec, XMVectorSet(Tolerance, Tolerance, Tolerance, Tolerance));
+		}
+
+		inline bool IsNearlyZero(float Tolerance = KINDA_SMALL_NUMBER) const
+		{
+			return IsNearlyEqual(Vector::ZeroVector, Tolerance);
+		}
+
 		inline Vector GetSafeNormal( float Tolerance = SMALL_NUMBER) const
 		{
 			const float SquareSum = m_Vector.x * m_Vector.x + m_Vector.y * m_Vector.y + m_Vector.z * m_Vector.z;

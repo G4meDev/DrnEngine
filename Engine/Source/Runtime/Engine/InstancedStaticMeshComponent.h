@@ -27,6 +27,16 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+		virtual void OnUpdateTransform(bool SkipPhysic) override;
+
+		inline BodySetup* GetBodySetup() const { return Mesh.IsValid() ? Mesh->GetBodySetup() : nullptr; }
+
+		void InitInstanceBody(int32 InstanceIndex);
+		void CreateAllInstanceBodies();
+		void DestoryAllInstanceBodies();
+		void RecreateAllInstanceBodies();
+		void UpdateInstanceBodyTransform(int32 InstanceIndex, const Transform& WorldTransform);
+
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<Material>& InMaterial);
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<MaterialInstance>& InMaterial);
 		void SetMaterial(uint16 MaterialIndex, TRefCountPtr<MaterialInstanceDynamic> InMaterial);
@@ -89,6 +99,9 @@ namespace Drn
 
 		int32 InstancingRandomSeed = 0; // if 0, generate at runtime
 		int32 ActualInstanceRandomSeed;
+
+		std::vector<BodyInstance*> InstanceBodies;
+		bool bPhysicStateCreated;
 
 		friend class InstancedStaticMeshSceneProxy;
 

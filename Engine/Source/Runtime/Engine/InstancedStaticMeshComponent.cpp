@@ -14,6 +14,7 @@ namespace Drn
 {
 	InstancedStaticMeshComponent::InstancedStaticMeshComponent()
 		: PrimitiveComponent()
+		, bPhysicStateCreated(false)
 		, m_InstancedStaticMeshSceneProxy(nullptr)
 		, MinDrawDistance(0)
 		, MaxDrawDistance(0)
@@ -37,6 +38,11 @@ namespace Drn
 
 		RefreshOverrideMaterials();
 		UpdateBounds();
+
+		if (InHandle.IsValid() && IsRegistered())
+		{
+			RecreateAllInstanceBodies();
+		}
 	}
 
 	void InstancedStaticMeshComponent::Serialize( Archive& Ar )
@@ -141,6 +147,8 @@ namespace Drn
 	{
 		PrimitiveComponent::RegisterComponent(InOwningWorld);
 
+		CreateAllInstanceBodies();
+
 		//if (Mesh.IsValid())
 		//{
 		//	m_BodyInstance.InitBody(Mesh->GetBodySetup(), this, GetWorld()->GetPhysicScene());
@@ -153,6 +161,8 @@ namespace Drn
 
 	void InstancedStaticMeshComponent::UnRegisterComponent()
 	{
+		DestoryAllInstanceBodies();
+
 		if (m_SceneProxy)
 		{
 			m_SceneProxy->MarkPendingKill();
@@ -166,6 +176,102 @@ namespace Drn
 		//}
 
 		PrimitiveComponent::UnRegisterComponent();
+	}
+
+	void InstancedStaticMeshComponent::OnUpdateTransform( bool SkipPhysic )
+	{
+		PrimitiveComponent::OnUpdateTransform(SkipPhysic);
+
+		if (bPhysicStateCreated && !SkipPhysic)
+		{
+			const int32 NumInstances = GetInstanceCount();
+			for (int32 InstanceIndex = 0; InstanceIndex < NumInstances; InstanceIndex++)
+			{
+				const Transform InstanceTransform(PerInstanceTransform[InstanceIndex]);
+				UpdateInstanceBodyTransform(InstanceIndex, InstanceTransform * GetWorldTransform());
+			}
+		}
+	}
+
+	void InstancedStaticMeshComponent::InitInstanceBody( int32 InstanceIndex )
+	{
+		drn_check(GetBodySetup() && InstanceIndex < GetInstanceCount() && InstanceIndex < InstanceBodies.size() && !InstanceBodies[InstanceIndex]);
+
+		Transform InstanceTransform = Transform(PerInstanceTransform[InstanceIndex]) * GetWorldTransform();
+		if (!InstanceTransform.GetScale().IsNearlyZero())
+		{
+			InstanceBodies[InstanceIndex] = new BodyInstance();
+			InstanceBodies[InstanceIndex]->InitBody(Mesh->GetBodySetup(), InstanceTransform, this, GetWorld()->GetPhysicScene());
+		}
+	}
+
+	void InstancedStaticMeshComponent::CreateAllInstanceBodies()
+	{
+		const int32 NumInstances = GetInstanceCount();
+		drn_check(InstanceBodies.size() == 0);
+
+		if (GetBodySetup() && GetBodySetup()->HasCollision())
+		{
+			InstanceBodies.resize(NumInstances, nullptr);
+			for (int32 InstanceIndex = 0; InstanceIndex < NumInstances; InstanceIndex++)
+			{
+				InitInstanceBody(InstanceIndex);
+			}
+
+			bPhysicStateCreated = true;
+		}
+	}
+
+	void InstancedStaticMeshComponent::DestoryAllInstanceBodies()
+	{
+		for (int32 InstanceIndex = 0; InstanceIndex < InstanceBodies.size(); InstanceIndex++)
+		{
+			if (InstanceBodies[InstanceIndex])
+			{
+				InstanceBodies[InstanceIndex]->TermBody();
+				delete InstanceBodies[InstanceIndex];
+			}
+		}
+		
+		InstanceBodies.clear();
+		bPhysicStateCreated = false;
+	}
+
+	void InstancedStaticMeshComponent::RecreateAllInstanceBodies()
+	{
+		drn_check(IsRegistered());
+		
+		DestoryAllInstanceBodies();
+		CreateAllInstanceBodies();
+	}
+
+	void InstancedStaticMeshComponent::UpdateInstanceBodyTransform(int32 InstanceIndex, const Transform& WorldTransform)
+	{
+		drn_check(bPhysicStateCreated);
+
+		BodyInstance*& Body = InstanceBodies[InstanceIndex];
+		if (WorldTransform.GetScale().IsNearlyZero())
+		{
+			if (Body)
+			{
+				Body->TermBody();
+				delete Body;
+				Body = nullptr;
+			}
+		}
+		else
+		{
+			if (Body)
+			{
+				Body->SetBodyTransform(WorldTransform);
+				Body->UpdateBodyScale(WorldTransform.GetScale());
+			}
+			else
+			{
+				Body = new BodyInstance();
+				InitInstanceBody(InstanceIndex);
+			}
+		}
 	}
 
 	void InstancedStaticMeshComponent::SetMaterial( uint16 MaterialIndex, AssetHandle<Material>& InMaterial )
@@ -281,6 +387,12 @@ namespace Drn
 			}
 		}
 
+		if (bPhysicStateCreated)
+		{
+			InstanceBodies.push_back(nullptr);
+			InitInstanceBody(GetInstanceCount()-1);
+		}
+
 		UpdateBounds();
 		MarkRenderStateDirty();
 		return GetInstanceCount() - 1;
@@ -322,6 +434,12 @@ namespace Drn
 					}
 				}
 
+				if (bPhysicStateCreated)
+				{
+					InstanceBodies.push_back(nullptr);
+					InitInstanceBody(GetInstanceCount()-1);
+				}
+
 				if (bShouldReturnIndices)
 				{
 					NewIndices.push_back(InstanceIndex);
@@ -350,6 +468,12 @@ namespace Drn
 		{
 			Matrix& InstanceTransform = PerInstanceTransform[InstanceIndex];
 			InstanceTransform = bWorldSapce ? NewInstanceTransform.GetRelativeTransform(GetWorldTransform()) : NewInstanceTransform;
+
+			if (bPhysicStateCreated)
+			{
+				Transform WorldTransform = bWorldSapce ? NewInstanceTransform : (Transform(InstanceTransform) * GetWorldTransform());
+				UpdateInstanceBodyTransform(InstanceIndex, WorldTransform);
+			}
 
 			if (bMarkRenderStateDirty)
 			{
@@ -425,6 +549,13 @@ namespace Drn
 				}
 			}
 
+			if (InstanceBodies[InstanceIndex])
+			{
+				InstanceBodies[InstanceIndex]->TermBody();
+				delete InstanceBodies[InstanceIndex];
+				InstanceBodies.erase(InstanceBodies.begin() + InstanceIndex);
+			}
+
 			UpdateBounds();
 			MarkRenderStateDirty();
 
@@ -441,6 +572,16 @@ namespace Drn
 		{
 			CustomData[i].clear();
 		}
+
+		for (int32 InstanceIndex = 0; InstanceIndex < InstanceBodies.size(); InstanceIndex++)
+		{
+			if (InstanceBodies[InstanceIndex])
+			{
+				InstanceBodies[InstanceIndex]->TermBody();
+				delete InstanceBodies[InstanceIndex];
+			}
+		}
+		InstanceBodies.clear();
 
 		UpdateBounds();
 		MarkRenderStateDirty();

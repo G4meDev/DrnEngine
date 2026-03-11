@@ -50,6 +50,11 @@ namespace Drn
 
 		bool m_UseTriMesh;
 
+		inline bool HasCollision() const
+		{
+			return m_UseTriMesh ? m_TriMeshes.size() != 0 : m_AggGeo.GetElementCount() != 0;
+		}
+
 		// TODO: Add physic material
 
 #if WITH_EDITOR

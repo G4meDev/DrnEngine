@@ -94,7 +94,7 @@ namespace Drn
 
 		if (Mesh.IsValid())
 		{
-			m_BodyInstance.InitBody(Mesh->GetBodySetup(), this, GetWorld()->GetPhysicScene());
+			m_BodyInstance.InitBody(Mesh->GetBodySetup(), GetWorldTransform(), this, GetWorld()->GetPhysicScene());
 		}
 
 		m_StaticMeshSceneProxy = new StaticMeshSceneProxy(this);

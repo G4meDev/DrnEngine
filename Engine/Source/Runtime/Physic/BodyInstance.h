@@ -27,7 +27,7 @@ namespace Drn
 
 		inline BodySetup* GetBodySetup() const { return m_BodySetup; }
 
-		void InitBody(BodySetup* Setup, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene);
+		void InitBody(BodySetup* Setup, const Transform& BodyTransform, PrimitiveComponent* InOwnerComponent, PhysicScene* InScene);
 		void TermBody();
 
 		void SetBodyTransform(const Transform& InTransform);

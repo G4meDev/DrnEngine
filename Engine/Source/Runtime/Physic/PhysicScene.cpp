@@ -360,7 +360,7 @@ namespace Drn
 
 				else
 				{
-					drn_check(false);
+					drn_check(false); // @TODO: fix null actors
 				}
 			}
 
