@@ -30,6 +30,8 @@ namespace Drn
 
 		virtual void OnUpdateTransform( bool SkipPhysic ) override;
 
+		inline bool IsPhysicStateCreated() const { return bPhysicStateCreated; }
+
 		//virtual PrimitiveSceneProxy* AllocateSceneProxy() = 0;
 		//virtual PrimitiveSceneProxy* GetSceneProxy() const = 0;
 
@@ -54,6 +56,8 @@ namespace Drn
 
 		bool m_RenderStateDirty;
 		bool m_EditorPrimitive;
+
+		bool bPhysicStateCreated;
 
 #if WITH_EDITOR
 		bool m_Selectable = true;

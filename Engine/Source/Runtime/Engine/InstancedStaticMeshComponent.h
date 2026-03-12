@@ -101,7 +101,6 @@ namespace Drn
 		int32 ActualInstanceRandomSeed;
 
 		std::vector<BodyInstance*> InstanceBodies;
-		bool bPhysicStateCreated;
 
 		friend class InstancedStaticMeshSceneProxy;
 

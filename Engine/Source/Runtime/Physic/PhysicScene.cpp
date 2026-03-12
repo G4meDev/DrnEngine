@@ -284,6 +284,12 @@ namespace Drn
 					m_OwningWorld->DrawDebugBox(box, WorldTransform, DebugDrawColor, 0.0f, 0);
 				}
 
+				else if ( Shape->getGeometry().getType() == PxGeometryType::eCAPSULE)
+				{
+					const PxCapsuleGeometry* CapsuleGeo = static_cast<const PxCapsuleGeometry*>(&(Shape->getGeometry()));
+					m_OwningWorld->DrawDebugCapsule(WorldTransform.GetLocation(), CapsuleGeo->halfHeight, CapsuleGeo->radius, WorldTransform.GetRotation(), DebugDrawColor, 0.0f, 0);
+				}
+
 				else if (Shape->getGeometry().getType() == PxGeometryType::eTRIANGLEMESH)
 				{
 					const PxTriangleMeshGeometry* TriGeo = static_cast<const PxTriangleMeshGeometry*>(&(Shape->getGeometry()));
@@ -360,7 +366,7 @@ namespace Drn
 
 				else
 				{
-					drn_check(false); // @TODO: fix null actors
+					drn_check(false);
 				}
 			}
 

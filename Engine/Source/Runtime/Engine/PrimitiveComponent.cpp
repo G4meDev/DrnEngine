@@ -9,6 +9,7 @@ namespace Drn
 {
 	PrimitiveComponent::PrimitiveComponent()
 		: SceneComponent()
+		, bPhysicStateCreated(false)
 		, m_RenderStateDirty(true)
 		, m_EditorPrimitive(false)
 		, m_SceneProxy(nullptr)
@@ -73,7 +74,7 @@ namespace Drn
 			MarkRenderStateDirty();
 		}
 
-		if (!SkipPhysic)
+		if (bPhysicStateCreated && !SkipPhysic)
 		{
 			SendPhysicsTransform();
 		}

@@ -14,7 +14,6 @@ namespace Drn
 {
 	InstancedStaticMeshComponent::InstancedStaticMeshComponent()
 		: PrimitiveComponent()
-		, bPhysicStateCreated(false)
 		, m_InstancedStaticMeshSceneProxy(nullptr)
 		, MinDrawDistance(0)
 		, MaxDrawDistance(0)
@@ -149,11 +148,6 @@ namespace Drn
 
 		CreateAllInstanceBodies();
 
-		//if (Mesh.IsValid())
-		//{
-		//	m_BodyInstance.InitBody(Mesh->GetBodySetup(), this, GetWorld()->GetPhysicScene());
-		//}
-
 		m_InstancedStaticMeshSceneProxy = new InstancedStaticMeshSceneProxy(this);
 		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_InstancedStaticMeshSceneProxy);
 		m_SceneProxy = m_InstancedStaticMeshSceneProxy;
@@ -169,11 +163,6 @@ namespace Drn
 			m_SceneProxy = nullptr;
 			m_InstancedStaticMeshSceneProxy = nullptr;
 		}
-
-		//if (Mesh.IsValid())
-		//{
-		//	m_BodyInstance.TermBody();
-		//}
 
 		PrimitiveComponent::UnRegisterComponent();
 	}

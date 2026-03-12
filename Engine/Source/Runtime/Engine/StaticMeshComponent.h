@@ -32,6 +32,10 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+		void CreatePhysicState();
+		void DestroyPhysicState();
+		void RecreatePhysicState();
+
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<Material>& InMaterial);
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<MaterialInstance>& InMaterial);
 		void SetMaterial(uint16 MaterialIndex, TRefCountPtr<MaterialInstanceDynamic> InMaterial);
@@ -41,6 +45,7 @@ namespace Drn
 		void SetMinDrawDistance(float Value);
 		void SetMaxDrawDistance(float Value);
 
+		inline BodySetup* GetBodySetup() const { return Mesh.IsValid() ? Mesh->GetBodySetup() : nullptr; }
 		BoxSphereBounds GetBounds();
 
 		virtual BoxSphereBounds CalcBounds(const Transform& LocalToWorld) const override;

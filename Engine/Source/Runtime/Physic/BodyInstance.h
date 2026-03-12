@@ -24,6 +24,7 @@ namespace Drn
 
 		inline PrimitiveComponent* GetOwnerComponent() const { return m_OwnerComponent; }
 		inline PxRigidActor* GetRigidActor() { return m_RigidActor; }
+		inline bool IsValid() const { return m_RigidActor != nullptr; }
 
 		inline BodySetup* GetBodySetup() const { return m_BodySetup; }
 

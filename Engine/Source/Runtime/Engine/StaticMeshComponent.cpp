@@ -38,6 +38,11 @@ namespace Drn
 
 		RefreshOverrideMaterials();
 		UpdateBounds();
+
+		if (IsRegistered())
+		{
+			RecreatePhysicState();
+		}
 	}
 
 	void StaticMeshComponent::Serialize( Archive& Ar )
@@ -92,10 +97,7 @@ namespace Drn
 	{
 		PrimitiveComponent::RegisterComponent(InOwningWorld);
 
-		if (Mesh.IsValid())
-		{
-			m_BodyInstance.InitBody(Mesh->GetBodySetup(), GetWorldTransform(), this, GetWorld()->GetPhysicScene());
-		}
+		CreatePhysicState();
 
 		m_StaticMeshSceneProxy = new StaticMeshSceneProxy(this);
 		InOwningWorld->GetScene()->RegisterPrimitiveProxy(m_StaticMeshSceneProxy);
@@ -104,6 +106,8 @@ namespace Drn
 
 	void StaticMeshComponent::UnRegisterComponent()
 	{
+		DestroyPhysicState();
+
 		if (m_SceneProxy)
 		{
 			m_SceneProxy->MarkPendingKill();
@@ -111,12 +115,30 @@ namespace Drn
 			m_StaticMeshSceneProxy= nullptr;
 		}
 
-		if (Mesh.IsValid())
-		{
-			m_BodyInstance.TermBody();
-		}
-
 		PrimitiveComponent::UnRegisterComponent();
+	}
+
+	void StaticMeshComponent::CreatePhysicState()
+	{
+		if (GetBodySetup() && GetBodySetup()->HasCollision())
+		{
+			m_BodyInstance.InitBody(Mesh->GetBodySetup(), GetWorldTransform(), this, GetWorld()->GetPhysicScene());
+			bPhysicStateCreated = true;
+		}
+	}
+
+	void StaticMeshComponent::DestroyPhysicState()
+	{
+		m_BodyInstance.TermBody();
+		bPhysicStateCreated = false;
+	}
+
+	void StaticMeshComponent::RecreatePhysicState()
+	{
+		drn_check(IsRegistered());
+
+		DestroyPhysicState();
+		CreatePhysicState();
 	}
 
 	void StaticMeshComponent::SetMaterial( uint16 MaterialIndex, AssetHandle<Material>& InMaterial )
