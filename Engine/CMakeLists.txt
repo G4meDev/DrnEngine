@@ -176,6 +176,7 @@ set( HEADER_FILES
 	Source/Runtime/Math/Color.h
 	Source/Runtime/Math/Float16.h
 	Source/Runtime/Math/BoxSphereBounds.h
+	Source/Runtime/Math/Frustum.h
 	
 	Source/Runtime/Misc/StringHelper.h
 	Source/Runtime/Misc/FileSystem.h
@@ -408,6 +409,7 @@ set( SOURCE_FILES
 	Source/Runtime/Math/Color.cpp
 	Source/Runtime/Math/Float16.cpp
 	Source/Runtime/Math/BoxSphereBounds.cpp
+	Source/Runtime/Math/Frustum.cpp
 	
 	Source/Runtime/Misc/StringHelper.cpp
 	Source/Runtime/Misc/FileSystem.cpp

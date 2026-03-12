@@ -261,10 +261,7 @@ namespace Drn
 			{
 				drn_check(Proxy);
 
-				DirectX::BoundingSphere SphereBound(*Proxy->Position.Get(), Proxy->InfluenceRadius);
-				DirectX::ContainmentType Type = Renderer->ViewFrustum.Contains(SphereBound);
-				bool bIsVisible = Type != DISJOINT;
-
+				bool bIsVisible = Renderer->ViewFrustum.Contains(Sphere(Proxy->Position, Proxy->InfluenceRadius));
 				if (bIsVisible)
 				{
 					VisibleReflectionProxies.push_back(Proxy);

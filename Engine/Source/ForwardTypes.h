@@ -45,6 +45,7 @@ private:
 #include "Runtime/Math/Matrix.h"
 #include "Runtime/Math/Color.h"
 #include "Runtime/Math/BoxSphereBounds.h"
+#include "Runtime/Math/Frustum.h"
 
 
 #include "Runtime/Core/Delegate.h"

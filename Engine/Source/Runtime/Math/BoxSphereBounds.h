@@ -33,5 +33,10 @@ namespace Drn
 		BoxSphereBounds TranslateBy(const Vector& Offset);
 		BoxSphereBounds TransformBy(const Transform& T);
 
+		inline Sphere GetSphere() const
+		{
+			return Sphere(Origin, SphereRadius);
+		}
+
 	};
 }

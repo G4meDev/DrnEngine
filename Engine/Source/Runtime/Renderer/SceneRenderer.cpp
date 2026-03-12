@@ -1139,11 +1139,7 @@ namespace Drn
 			}
 		}
 
-		XMFLOAT4 Rotation;
-		XMStoreFloat4(&Rotation, VInfo.Rotation.Get());
-		const float YSlope = VInfo.FOV / 45.0f;
-		const float XSlope = YSlope * m_SceneView.AspectRatio;
-		ViewFrustum = DirectX::BoundingFrustum( *VInfo.Location.Get(), Rotation, XSlope, -XSlope, YSlope, -YSlope, VInfo.NearClipPlane, VInfo.FarClipPlane );
+		ViewFrustum = Frustum(VInfo);
 
 		UpdateViewBuffer();
 	}
@@ -1179,9 +1175,7 @@ namespace Drn
 
 			if (bIsVisible)
 			{
-				DirectX::BoundingSphere SphereBound(*Bound.Origin.Get(), Bound.SphereRadius);
-				DirectX::ContainmentType Type = ViewFrustum.Contains(SphereBound);
-				bIsVisible = Type != DISJOINT;
+				bIsVisible = ViewFrustum.Contains(Bound.GetSphere());
 			}
 
 			PrimitiveVisibilityMap.SetBitNoCheck(Index, bIsVisible);
@@ -1204,9 +1198,7 @@ namespace Drn
 
 				if (bIsVisible)
 				{
-					DirectX::BoundingSphere SphereBound(*Bound.Center.Get(), Bound.Radius);
-					DirectX::ContainmentType Type = ViewFrustum.Contains(SphereBound);
-					bIsVisible = Type != DISJOINT;
+					bIsVisible = ViewFrustum.Contains(Bound);
 				}
 			}
 
@@ -1228,9 +1220,7 @@ namespace Drn
 
 			if (bIsVisible)
 			{
-				DirectX::BoundingSphere SphereBound(*Bound.Origin.Get(), Bound.SphereRadius);
-				DirectX::ContainmentType Type = ViewFrustum.Contains(SphereBound);
-				bIsVisible = Type != DISJOINT;
+				bIsVisible = ViewFrustum.Contains(Bound.GetSphere());
 			}
 
 			DecalVisibilityMap.SetBitNoCheck(Index, bIsVisible);
