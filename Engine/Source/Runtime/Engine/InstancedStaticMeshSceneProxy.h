@@ -11,10 +11,8 @@ namespace Drn
 		PrimitiveData(){};
 
 		Matrix m_LocalToWorld;
-		Matrix m_LocalToProjection;
-		Guid m_Guid;
 		Matrix m_PrevLocalToWorld;
-		Matrix m_PrevLocalToProjection;
+		Guid m_Guid;
 	};
 
 	struct Matrix16_4x3

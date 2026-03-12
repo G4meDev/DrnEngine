@@ -41,7 +41,6 @@ namespace Drn
 	{
 		// TODO: issue when proxy not begin rendered
 		m_PrimitiveData.m_PrevLocalToWorld = m_PrimitiveData.m_LocalToWorld;
-		m_PrimitiveData.m_PrevLocalToProjection = m_PrimitiveData.m_LocalToProjection;
 
 		if (m_OwningStaticMeshComponent->IsRenderStateDirty())
 		{
@@ -86,6 +85,7 @@ namespace Drn
 				}
 			}
 
+			UpdatePrimitiveBuffer(CommandList);
 		}
 
 		for (MaterialSlot& MatSlot : m_Materials)
@@ -96,13 +96,12 @@ namespace Drn
 		m_OwningStaticMeshComponent->ClearRenderStateDirty();
 	}
 
-	void StaticMeshSceneProxy::UpdatePrimitiveBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	void StaticMeshSceneProxy::UpdatePrimitiveBuffer(D3D12CommandList* CommandList)
 	{
 		m_PrimitiveData.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-		m_PrimitiveData.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveData.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
 		m_PrimitiveData.m_Guid = m_Guid;
 
-		PrimitiveBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveData), EUniformBufferUsage::SingleFrame, &m_PrimitiveData);
+		PrimitiveBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveData), EUniformBufferUsage::MultiFrame, &m_PrimitiveData);
 	}
 
 	void StaticMeshSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
@@ -128,8 +127,6 @@ namespace Drn
 					MatShader->Bind(CommandList);
 					CommandList->GetD3D12CommandList()->OMSetStencilRef(255);
 					Mat.GetMaterialInterface()->BindResources(CommandList);
-
-					UpdatePrimitiveBuffer(CommandList, Renderer);
 
 					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
 					CommandList->SetGraphicRootConstant(PrimitiveBuffer->GetViewIndex(), 1);
@@ -167,8 +164,6 @@ namespace Drn
 
 					MatShader->Bind(CommandList);
 					Mat.GetMaterialInterface()->BindResources(CommandList);
-
-					UpdatePrimitiveBuffer( CommandList, Renderer );
 		
 					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
 					CommandList->SetGraphicRootConstant(PrimitiveBuffer->GetViewIndex(), 1);
@@ -215,8 +210,6 @@ namespace Drn
 					MatShader->Bind(CommandList);
 					Mat.GetMaterialInterface()->BindResources(CommandList);
 
-					UpdatePrimitiveBuffer( CommandList, Renderer );
-
 					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
 					CommandList->SetGraphicRootConstant(PrimitiveBuffer->GetViewIndex(), 1);
 					CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
@@ -250,8 +243,6 @@ namespace Drn
 
 					MatShader->Bind(CommandList);
 					Mat.GetMaterialInterface()->BindResources(CommandList);
-
-					UpdatePrimitiveBuffer( CommandList, Renderer );
 
 					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
 					CommandList->SetGraphicRootConstant(PrimitiveBuffer->GetViewIndex(), 1);
@@ -290,8 +281,6 @@ namespace Drn
 				MatShader->Bind(CommandList);
 				Mat.GetMaterialInterface()->BindResources(CommandList);
 
-				UpdatePrimitiveBuffer( CommandList, Renderer );
-
 				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
 				CommandList->SetGraphicRootConstant(PrimitiveBuffer->GetViewIndex(), 1);
 				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
@@ -324,8 +313,6 @@ namespace Drn
 				MatShader->Bind(CommandList);
 				CommandList->GetD3D12CommandList()->OMSetStencilRef(255);
 				Mat.GetMaterialInterface()->BindResources(CommandList);
-		
-				UpdatePrimitiveBuffer( CommandList, Renderer );
 
 				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
 				CommandList->SetGraphicRootConstant(PrimitiveBuffer->GetViewIndex(), 1);
@@ -360,8 +347,6 @@ namespace Drn
 
 				MatShader->Bind(CommandList);
 				Mat.GetMaterialInterface()->BindResources(CommandList);
-		
-				UpdatePrimitiveBuffer( CommandList, Renderer );
 
 				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
 				CommandList->SetGraphicRootConstant(PrimitiveBuffer->GetViewIndex(), 1);

@@ -13,10 +13,8 @@ namespace Drn
 		PrimitiveData(){};
 
 		Matrix m_LocalToWorld;
-		Matrix m_LocalToProjection;
-		Guid m_Guid;
 		Matrix m_PrevLocalToWorld;
-		Matrix m_PrevLocalToProjection;
+		Guid m_Guid;
 	};
 
 	class StaticMeshSceneProxy : public PrimitiveSceneProxy
@@ -45,7 +43,7 @@ namespace Drn
 		void InitResources( class D3D12CommandList* CommandList ) override;
 		void UpdateResources( class D3D12CommandList* CommandList ) override;
 
-		void UpdatePrimitiveBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
+		void UpdatePrimitiveBuffer(class D3D12CommandList* CommandList);
 
 
 		PrimitiveComponent* GetPrimitive() override { return m_OwningStaticMeshComponent; };

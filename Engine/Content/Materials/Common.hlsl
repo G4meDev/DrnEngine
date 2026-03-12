@@ -51,7 +51,7 @@ struct DecalResources
 #if DECAL
     uint DecalBufferIndex;
 #elif STATICMESH
-    uint MeshDecalBufferIndex;
+    uint PrimitiveIndex;
 #endif
     uint StaticSamplerBufferIndex;
     uint ParametersBufferIndex;
@@ -64,12 +64,6 @@ struct DecalBuffer
 {
     matrix LocalToProjection;
     matrix ProjectionToLocal;
-};
-
-struct MeshDecalBuffer
-{
-    matrix LocalToWorld;
-    matrix LocalToProjection;
 };
 
 struct ViewBuffer
@@ -107,10 +101,8 @@ struct ViewBuffer
 struct PrimitiveBuffer
 {
     matrix LocalToWorld;
-    matrix LocalToProjection;
-    uint4 Guid;
     matrix PrevLocalToWorld;
-    matrix PrevLocalToProjection;
+    uint4 Guid;
 };
 
 struct StaticSamplers

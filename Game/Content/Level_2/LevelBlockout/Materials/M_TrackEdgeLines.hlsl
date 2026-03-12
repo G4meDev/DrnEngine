@@ -1,3 +1,4 @@
+//#define STATICMESH 1
 #include "Common.hlsl"
 
 // DOMAIN_DECAL
@@ -51,12 +52,14 @@ VertexShaderOutput Main_VS(VertexShaderInput IN)
     ConstantBuffer<DecalBuffer> Decal = ResourceDescriptorHeap[BindlessResources.DecalBufferIndex];
     OUT.Position = mul(Decal.LocalToProjection, float4(IN.Position, 1.0f));
 #elif STATICMESH
-    ConstantBuffer<MeshDecalBuffer> Decal = ResourceDescriptorHeap[BindlessResources.MeshDecalBufferIndex];
-    OUT.Position = mul(Decal.LocalToProjection, float4(IN.Position, 1.0f));
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    float4 WorldPosition = mul(Primitive.LocalToWorld, float4(IN.Position, 1.0f));
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
     OUT.UV0 = IN.UV1;
     
-    float3 WorldNormal = normalize(mul((float3x3) Decal.LocalToWorld, IN.Normal));
-    float3 WorldTangent = normalize(mul((float3x3) Decal.LocalToWorld, IN.Tangent));
+    float3 WorldNormal = normalize(mul((float3x3) Primitive.LocalToWorld, IN.Normal));
+    float3 WorldTangent = normalize(mul((float3x3) Primitive.LocalToWorld, IN.Tangent));
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
 #endif
     
