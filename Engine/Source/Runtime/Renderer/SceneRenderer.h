@@ -184,6 +184,7 @@ namespace Drn
 		std::string m_Name;
 
 		BitArray PrimitiveVisibilityMap;
+		BitArray DecalVisibilityMap;
 		BitArray LightVisibilityMap;
 
 		void ResolvePostProcessSettings();

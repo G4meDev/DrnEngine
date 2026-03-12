@@ -35,10 +35,10 @@ namespace Drn
 		void UnRegisterPostProcessProxy( class PostProcessSceneProxy* InProxy );
 
 		void RegisterDecalProxy( class DecalSceneProxy* InProxy );
-		void UnRegisterDecalProxy( class DecalSceneProxy* InProxy );
 
 		inline const std::vector<PrimitiveSceneProxy*>& GetPrimitiveProxies() { return m_PrimitiveProxies; };
 		inline const std::vector<LightSceneProxy*>& GetLightProxies() { return m_LightProxies; };
+		inline const std::vector<DecalSceneProxy*>& GetDecalProxies() { return m_DecalProxies; };
 		inline const std::vector<ReflectionCaptureProxy*>& GetReflectionCaptureProxies() { return m_ReflectionCaptureProxies; };
 
 		inline const BitArray& GetStaticPrimitiveProxiesMap() { return StaticPrimitiveMap; };
@@ -63,8 +63,8 @@ namespace Drn
 		std::set<class PostProcessSceneProxy*> m_PostProcessProxies;
 		std::set<class PostProcessSceneProxy*> m_PendingPostProcessProxies;
 
-		std::set<class DecalSceneProxy*> m_DecalProxies;
-		std::set<class DecalSceneProxy*> m_PendingDecalProxies;
+		std::vector<class DecalSceneProxy*> m_DecalProxies;
+		std::vector<class DecalSceneProxy*> m_PendingDecalProxies;
 
 		std::set<SceneRenderer*> m_SceneRenderers;
 

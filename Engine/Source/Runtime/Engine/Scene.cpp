@@ -255,17 +255,36 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------
 
+		std::erase_if( m_DecalProxies, [CommandList](DecalSceneProxy* Proxy)
+		{
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingKill())
+			{
+				delete Proxy;
+				return true;
+			}
+
+			Proxy->UpdateResources(CommandList);
+			return false;
+		});
+
 		for (auto it = m_PendingDecalProxies.begin(); it != m_PendingDecalProxies.end(); it++)
 		{
-			m_DecalProxies.insert(*it);
+			DecalSceneProxy* Proxy = *it;
+			drn_check(Proxy);
+
+			if (Proxy->IsMarkedPendingKill())
+			{
+				delete Proxy;
+			}
+			else
+			{
+				Proxy->UpdateResources(CommandList);
+				m_DecalProxies.push_back(Proxy);
+			}
 		}
 		m_PendingDecalProxies.clear();
-
-		for (auto it = m_DecalProxies.begin(); it != m_DecalProxies.end(); it++)
-		{
-			DecalSceneProxy* Proxy = *it;
-			Proxy->UpdateResources(CommandList);
-		}
 
 // ----------------------------------------------------------------------------------
 
@@ -307,18 +326,7 @@ namespace Drn
 
 	void Scene::RegisterDecalProxy( class DecalSceneProxy* InProxy )
 	{
-		m_PendingDecalProxies.insert(InProxy);
-	}
-
-	void Scene::UnRegisterDecalProxy( class DecalSceneProxy* InProxy )
-	{
-		if (InProxy)
-		{
-			m_PendingDecalProxies.erase(InProxy);
-			m_DecalProxies.erase(InProxy);
-
-			InProxy->Release();
-		}
+		m_PendingDecalProxies.push_back(InProxy);
 	}
 
 #if WITH_EDITOR

@@ -112,7 +112,7 @@ namespace Drn
 		{
 			m_SceneProxy->MarkPendingKill();
 			m_SceneProxy = nullptr;
-			m_StaticMeshSceneProxy= nullptr;
+			m_StaticMeshSceneProxy = nullptr;
 		}
 
 		PrimitiveComponent::UnRegisterComponent();
@@ -377,11 +377,6 @@ namespace Drn
 		{
 			m_StaticMeshSceneProxy->MaxDrawDistance = MaxDrawDistance;
 		}
-	}
-
-	BoxSphereBounds StaticMeshComponent::GetBounds()
-	{
-		return Bounds;
 	}
 
 	BoxSphereBounds StaticMeshComponent::CalcBounds( const Transform& LocalToWorld ) const

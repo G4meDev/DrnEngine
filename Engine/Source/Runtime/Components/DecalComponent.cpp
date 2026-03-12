@@ -50,8 +50,11 @@ namespace Drn
 
 	void DecalComponent::UnRegisterComponent()
 	{
-		GetWorld()->GetScene()->UnRegisterDecalProxy(m_SceneProxy);
-		m_SceneProxy = nullptr;
+		if (m_SceneProxy)
+		{
+			m_SceneProxy->MarkPendingKill();
+			m_SceneProxy = nullptr;
+		}
 
 		SceneComponent::UnRegisterComponent();
 	}
@@ -60,6 +63,7 @@ namespace Drn
 	{
 		SceneComponent::OnUpdateTransform(SkipPhysic);
 
+		UpdateBounds();
 		m_RenderTransformDirty = true;
 	}
 
@@ -87,6 +91,11 @@ namespace Drn
 			m_RenderTransformDirty = false;
 			m_RenderStateDirty = false;
 		}
+	}
+
+	BoxSphereBounds DecalComponent::CalcBounds( const Transform& LocalToWorld ) const
+	{
+		return BoxSphereBounds(Vector::ZeroVector, Vector::OneVector, 1.0).TransformBy(LocalToWorld);
 	}
 
 #if WITH_EDITOR
@@ -118,6 +127,10 @@ namespace Drn
 		if (GetWorld())
 		{
 			GetWorld()->DrawDebugBox(Box(Vector(-1.0f), Vector(1.0f)), GetWorldTransform(), Color::White, 0.0f, 0.0f);
+
+			BoxSphereBounds Bounds = GetBounds();
+			GetWorld()->DrawDebugSphere(Bounds.Origin, Quat::Identity, Color::Green, Bounds.SphereRadius, 32, 0.0f, 0.0f);
+			GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::Blue, 0.0f, 0.0f);
 		}
 	}
 

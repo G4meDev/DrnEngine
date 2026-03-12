@@ -29,6 +29,8 @@ namespace Drn
 
 		void UpdateRenderStateConditional();
 
+		virtual BoxSphereBounds CalcBounds(const Transform& LocalToWorld) const override;
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		inline virtual bool HasSprite() const override { return true; }

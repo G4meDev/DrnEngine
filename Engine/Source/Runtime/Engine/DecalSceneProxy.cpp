@@ -6,11 +6,11 @@ namespace Drn
 {
 	DecalSceneProxy::DecalSceneProxy( class DecalComponent* InComponent )
 		: m_DecalComponent( InComponent )
+		, bPendingDestory(false)
 	{}
 
 	DecalSceneProxy::~DecalSceneProxy()
 	{
-		ReleaseBuffers();
 	}
 
 	void DecalSceneProxy::UpdateResources( D3D12CommandList* CommandList )
@@ -56,6 +56,15 @@ namespace Drn
 		}
 	}
 
-	void DecalSceneProxy::ReleaseBuffers()
-	{}
+	BoxSphereBounds DecalSceneProxy::GetBounds()
+	{
+		// TODO: only update bounds when dirty
+		if (m_DecalComponent)
+		{
+			Bounds = m_DecalComponent->GetBounds();
+		}
+
+		return Bounds;
+	}
+
 }

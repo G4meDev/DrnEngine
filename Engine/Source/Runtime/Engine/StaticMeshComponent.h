@@ -48,8 +48,6 @@ namespace Drn
 		void SetMaxDrawDistance(float Value);
 
 		inline BodySetup* GetBodySetup() const { return Mesh.IsValid() ? Mesh->GetBodySetup() : nullptr; }
-		BoxSphereBounds GetBounds();
-
 		virtual BoxSphereBounds CalcBounds(const Transform& LocalToWorld) const override;
 
 #if WITH_EDITOR

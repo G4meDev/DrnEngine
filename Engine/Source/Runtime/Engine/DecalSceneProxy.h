@@ -21,10 +21,14 @@ namespace Drn
 		virtual ~DecalSceneProxy();
 
 		inline void Release() { delete this; }
-		void ReleaseBuffers();
+
+		inline bool IsMarkedPendingKill() const { return bPendingDestory; }
+		inline void MarkPendingKill() { bPendingDestory = true; }
 
 		void UpdateResources( class D3D12CommandList* CommandList );
 		void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
+
+		BoxSphereBounds GetBounds();
 
 		Transform m_WorldTransform;
 		MaterialSlot m_Material;
@@ -32,5 +36,10 @@ namespace Drn
 		class DecalComponent* m_DecalComponent;
 
 		DecalData m_DecalData;
+
+	protected:
+
+		BoxSphereBounds Bounds;
+		bool bPendingDestory;
 	};
 }

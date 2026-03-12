@@ -198,8 +198,9 @@ namespace Drn
 		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
 		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 6);
 
-		for ( DecalSceneProxy* Proxy : m_Scene->m_DecalProxies )
+		for (BitArray::ConstSetBitIterator It(DecalVisibilityMap); It; ++It)
 		{
+			DecalSceneProxy* Proxy = m_Scene->GetDecalProxies()[It.GetIndex()];
 			Proxy->Render(m_CommandList, this);
 		}
 
@@ -220,8 +221,9 @@ namespace Drn
 		D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 3, RenderTargets, false, &DepthHandle);
 
-		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
+		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 		{
+			PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
 			Proxy->RenderDecalPass(m_CommandList, this);
 		}
 
@@ -1139,8 +1141,9 @@ namespace Drn
 
 		XMFLOAT4 Rotation;
 		XMStoreFloat4(&Rotation, VInfo.Rotation.Get());
-		float HalfFOV = Math::DegreesToRadians(VInfo.FOV);
-		ViewFrustum = DirectX::BoundingFrustum( *VInfo.Location.Get(), Rotation, HalfFOV, -HalfFOV, HalfFOV, -HalfFOV, VInfo.NearClipPlane, VInfo.FarClipPlane );
+		const float YSlope = VInfo.FOV / 45.0f;
+		const float XSlope = YSlope * m_SceneView.AspectRatio;
+		ViewFrustum = DirectX::BoundingFrustum( *VInfo.Location.Get(), Rotation, XSlope, -XSlope, YSlope, -YSlope, VInfo.NearClipPlane, VInfo.FarClipPlane );
 
 		UpdateViewBuffer();
 	}
@@ -1208,6 +1211,29 @@ namespace Drn
 			}
 
 			LightVisibilityMap.SetBitNoCheck(Index, bIsVisible);
+			Index++;
+		}
+
+		DecalVisibilityMap.SetNumUninitialized(m_Scene->GetDecalProxies().size());
+		Index = 0;
+		for (auto It = m_Scene->GetDecalProxies().begin(); It != m_Scene->GetDecalProxies().end(); It++)
+		{
+			DecalSceneProxy* Proxy = *It;
+			bool bIsVisible = true;
+
+			BoxSphereBounds Bound = Proxy->GetBounds();
+
+			//bool bDistanceCulled = (Proxy->GetMaxDrawDistance() > 0) && (Vector::Distance(m_SceneView.CameraPos, Bound.Center) > Proxy->GetMaxDrawDistance());
+			//bIsVisible = !bDistanceCulled;
+
+			if (bIsVisible)
+			{
+				DirectX::BoundingSphere SphereBound(*Bound.Origin.Get(), Bound.SphereRadius);
+				DirectX::ContainmentType Type = ViewFrustum.Contains(SphereBound);
+				bIsVisible = Type != DISJOINT;
+			}
+
+			DecalVisibilityMap.SetBitNoCheck(Index, bIsVisible);
 			Index++;
 		}
 	}
