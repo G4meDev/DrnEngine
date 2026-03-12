@@ -5,8 +5,7 @@
 // SUPPORT_DECAl
 // SUPPORT_STATICMESH
 
-// SUPPORT_DEFERRED_DECAL_PASS
-// SUPPORT_STATICMESH_DECAL_PASS
+// SUPPORT_DECAL_PASS
 
 ConstantBuffer<DecalResources> BindlessResources : register(b0);
 
@@ -27,7 +26,7 @@ struct VertexShaderInput
 {
     float3 Position : POSITION;
 
-#if STATICMESH_DECAL_PASS
+#if STATICMESH
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
     float2 UV1 : TEXCOORD0;
@@ -38,7 +37,7 @@ struct VertexShaderOutput
 {
     float4 Position : SV_Position;
     
-#if STATICMESH_DECAL_PASS
+#if STATICMESH
     float3x3 TBN : TBN;
     float2 UV0 : TEXCOORD0;
 #endif
@@ -48,10 +47,10 @@ VertexShaderOutput Main_VS(VertexShaderInput IN)
 {
     VertexShaderOutput OUT;
     
-#if DEFERRED_DECAL_PASS
+#if DECAL
     ConstantBuffer<DecalBuffer> Decal = ResourceDescriptorHeap[BindlessResources.DecalBufferIndex];
     OUT.Position = mul(Decal.LocalToProjection, float4(IN.Position, 1.0f));
-#elif STATICMESH_DECAL_PASS
+#elif STATICMESH
     ConstantBuffer<MeshDecalBuffer> Decal = ResourceDescriptorHeap[BindlessResources.MeshDecalBufferIndex];
     OUT.Position = mul(Decal.LocalToProjection, float4(IN.Position, 1.0f));
     OUT.UV0 = IN.UV1;
@@ -70,7 +69,7 @@ struct PixelShaderInput
 {
     float4 Position : SV_Position;
     
-#if STATICMESH_DECAL_PASS
+#if STATICMESH
     float3x3 TBN : TBN;
     float2 UV0 : TEXCOORD0;
 #endif
@@ -87,7 +86,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
 
-#if DEFERRED_DECAL_PASS
+#if DECAL
 
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<DecalBuffer> Decal = ResourceDescriptorHeap[BindlessResources.DecalBufferIndex];
@@ -132,7 +131,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     OUT.Normal = float4(Normal, BlendAlpha);
     OUT.Masks = float4(0.0f, Masks.gb, BlendAlpha);
 
-#elif STATICMESH_DECAL_PASS
+#elif STATICMESH
 
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];

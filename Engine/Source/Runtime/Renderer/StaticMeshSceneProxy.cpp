@@ -117,7 +117,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasMainPass
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasMainPass
 					? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Main)
 					: nullptr;
 
@@ -156,7 +156,7 @@ namespace Drn
 				MaterialShader* MatShader = nullptr;
 				if (Mat.GetParentMaterial()->GetShaderParameters().bHasPrepass)
 				{
-					MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasCustomPrepass
+					MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasCustomPrepass
 						? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Prepass)
 						: CommonResources::Get()->m_PositionOnlyMaterialShaders.GetShader(VertexFactoryType::StaticMesh, Mat.GetParentMaterial()->IsTwoSided());
 				}
@@ -204,7 +204,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasShadowPass
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasShadowPass
 					? GetMaterialShaderForLightType(Mat.GetParentMaterial()->GetShaders(), LightProxy->GetLightType())
 					: nullptr;
 
@@ -240,8 +240,8 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasStaticMeshDecalPass
-					? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::StaticMeshDecal)
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasDecalPass
+					? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Decal)
 					: nullptr;
 
 				if (MatShader)
@@ -279,7 +279,7 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasHitProxyPass
+			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasHitProxyPass
 				? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Hitproxy)
 				: nullptr;
 
@@ -314,7 +314,7 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasEditorSelectionPass
+			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasEditorSelectionPass
 				? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::EditorSelection)
 				: nullptr;
 			if (MatShader)
@@ -351,7 +351,7 @@ namespace Drn
 			const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 			MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
-			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasEditorPrimitivePass
+			MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasEditorPrimitivePass
 				? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::EditorPrimitive)
 				: nullptr;
 			if (MatShader)

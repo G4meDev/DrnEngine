@@ -33,7 +33,7 @@ namespace Drn
 			return;
 		}
 
-		MaterialShader* MatShader = m_Material.GetParentMaterial()->GetShaderParameters().bHasDecalPass
+		MaterialShader* MatShader = m_Material.GetParentMaterial()->GetShaderParameters().bIsUsedWithDecal && m_Material.GetParentMaterial()->GetShaderParameters().bHasDecalPass
 			? m_Material.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::Decal, EMaterialStage::Decal)
 			: nullptr;
 

@@ -416,7 +416,7 @@ namespace Drn
 			SetName(PipelineState->PipelineState, "PSO_SpotLightShadowDepthPass_" + InMaterial->GetMaterialName());
 		}
 
-		else if (MaterialStage == EMaterialStage::StaticMeshDecal)
+		else if (MaterialStage == EMaterialStage::Decal && VertexFactory == VertexFactoryType::StaticMesh)
 		{
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 
@@ -440,7 +440,7 @@ namespace Drn
 			SetName(PipelineState->PipelineState, "PSO_StaticMeshDecalPass_" + InMaterial->GetMaterialName());
 		}
 
-		else if (MaterialStage == EMaterialStage::Decal)
+		else if (MaterialStage == EMaterialStage::Decal && VertexFactory == VertexFactoryType::Decal)
 		{
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 

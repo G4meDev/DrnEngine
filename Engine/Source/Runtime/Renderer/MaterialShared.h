@@ -148,7 +148,7 @@ namespace Drn
 			{
 				uint32 bIsMasked : 1;
 				uint32 bIsTwoSided : 1;
-
+				
 				uint32 bHasPrepass : 1;
 				uint32 bHasCustomPrepass : 1;
 				uint32 bHasShadowPass : 1;
@@ -156,10 +156,11 @@ namespace Drn
 				uint32 bHasHitProxyPass : 1;
 				uint32 bHasEditorPrimitivePass : 1;
 				uint32 bHasEditorSelectionPass : 1;
-
-				uint32 bIsUsedWithInstancedStaticMesh : 1;
 				uint32 bHasDecalPass : 1;
-				uint32 bHasStaticMeshDecalPass : 1;
+				
+				uint32 bIsUsedWithStaticMesh : 1;
+				uint32 bIsUsedWithInstancedStaticMesh : 1;
+				uint32 bIsUsedWithDecal : 1;
 			};
 		};
 
@@ -210,7 +211,6 @@ namespace Drn
 		Hitproxy,
 		EditorPrimitive,
 		EditorSelection,
-		StaticMeshDecal,
 	};
 
 	class MaterialShader

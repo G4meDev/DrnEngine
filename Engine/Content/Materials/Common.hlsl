@@ -48,9 +48,9 @@ struct StandardResources
 struct DecalResources
 {
     uint ViewIndex;
-#if DEFERRED_DECAL_PASS
+#if DECAL
     uint DecalBufferIndex;
-#elif STATICMESH_DECAL_PASS
+#elif STATICMESH
     uint MeshDecalBufferIndex;
 #endif
     uint StaticSamplerBufferIndex;
