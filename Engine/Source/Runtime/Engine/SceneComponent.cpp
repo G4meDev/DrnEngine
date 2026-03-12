@@ -318,6 +318,8 @@ namespace Drn
 
 	void SceneComponent::UpdateBounds()
 	{
+		SCOPE_STAT("UpdateBounds");
+
 		Bounds = CalcBounds(GetWorldTransform());
 	}
 

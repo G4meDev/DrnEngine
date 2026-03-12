@@ -51,24 +51,17 @@ VertexShaderOutput Main_VS(
     ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
 
     matrix LocalToWorld;
-    matrix LocalToProjection;
     
 #if STATICMESH
     LocalToWorld = P.LocalToWorld;
-    LocalToProjection = P.LocalToProjection;
 #elif INSTANCED
-    LocalToWorld = matrix
-        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld2.x, IN.LocalToWorld3.x, IN.OriginRandom.x)
-        , float4(IN.LocalToWorld1.y, IN.LocalToWorld2.y, IN.LocalToWorld3.y, IN.OriginRandom.y)
-        , float4(IN.LocalToWorld1.z, IN.LocalToWorld2.z, IN.LocalToWorld3.z, IN.OriginRandom.z)
-        , float4(0 , 0, 0, 1));
-    
-    LocalToProjection = mul(View.WorldToProjection, LocalToWorld);
+    LocalToWorld = GetLocalToWorld(IN);
 #endif
     
+    float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1));
+    
 #if SHADOW_PASS_POINTLIGHT
-    OUT.Position = mul(LocalToWorld, float4(IN.Position, 1));
-    //OUT.Position = mul(LocalToWorld, IN.Position);
+    OUT.Position = WorldPosition;
     
     OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
     OUT.Color = float4(IN.Color, 1.0f);
@@ -76,9 +69,7 @@ VertexShaderOutput Main_VS(
     OUT.UV1 = IN.UV1;
 #elif SHADOW_PASS_SPOTLIGHT
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
-    float3 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1)).xyz;
-    //float3 WorldPosition = mul(LocalToWorld, IN.Position).xyz;
-    OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, float4(WorldPosition, 1));
+    OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, WorldPosition);
 
     OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
     OUT.Color = float4(IN.Color, 1.0f);
@@ -90,8 +81,7 @@ VertexShaderOutput Main_VS(
     float3 WorldTangent = normalize(mul((float3x3)LocalToWorld, IN.Tangent));
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
-    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1));
-    //OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1));
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.Normal = WorldNormal;
     OUT.UV1 = IN.UV1;

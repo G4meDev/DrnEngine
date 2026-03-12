@@ -65,40 +65,33 @@ VertexShaderOutput Main_VS(VertexInput IN)
     
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-
-    matrix LocalToWorld;
-    matrix LocalToProjection;
     
+    matrix LocalToWorld;
 #if STATICMESH
     LocalToWorld = Primitive.LocalToWorld;
-    LocalToProjection = Primitive.LocalToProjection;
 #elif INSTANCED
-    LocalToWorld = matrix
-        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld2.x, IN.LocalToWorld3.x, IN.OriginRandom.x)
-        , float4(IN.LocalToWorld1.y, IN.LocalToWorld2.y, IN.LocalToWorld3.y, IN.OriginRandom.y)
-        , float4(IN.LocalToWorld1.z, IN.LocalToWorld2.z, IN.LocalToWorld3.z, IN.OriginRandom.z)
-        , float4(0 , 0, 0, 1));
-    LocalToProjection = mul(View.WorldToProjection, LocalToWorld);
+    LocalToWorld = GetLocalToWorld(IN);
 #endif
     
+    float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f));
+    
 #if SHADOW_PASS_POINTLIGHT
-    OUT.Position = mul(LocalToWorld, float4(IN.Position, 1.0f));
+    OUT.Position = WorldPosition;
 #elif SHADOW_PASS_SPOTLIGHT
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
-    float3 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f)).xyz;
-    OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, float4(WorldPosition, 1));
+    OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, WorldPosition);
 #elif PRE_PASS
-    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
 #elif MAIN_PASS
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
     
-    float3 WorldNormal = normalize(mul((float3x3) LocalToWorld, IN.Normal));
-    float3 WorldTangent = normalize(mul((float3x3) LocalToWorld, IN.Tangent));
+    float3 WorldNormal = normalize(mul((float3x3)LocalToWorld, IN.Normal));
+    float3 WorldTangent = normalize(mul((float3x3)LocalToWorld, IN.Tangent));
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
-    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
 #else
-    OUT.Position = mul(LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
 #endif
     
     OUT.UV1 = IN.UV1;

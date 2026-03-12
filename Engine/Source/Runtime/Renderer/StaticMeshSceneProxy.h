@@ -7,10 +7,10 @@ LOG_DECLARE_CATEGORY(LogStaticMeshSceneProxy);
 
 namespace Drn
 {
-	struct PrimitiveBuffer
+	struct PrimitiveData
 	{
 	public:
-		PrimitiveBuffer(){};
+		PrimitiveData(){};
 
 		Matrix m_LocalToWorld;
 		Matrix m_LocalToProjection;
@@ -45,6 +45,9 @@ namespace Drn
 		void InitResources( class D3D12CommandList* CommandList ) override;
 		void UpdateResources( class D3D12CommandList* CommandList ) override;
 
+		void UpdatePrimitiveBuffer( class D3D12CommandList* CommandList, SceneRenderer* Renderer );
+
+
 		PrimitiveComponent* GetPrimitive() override { return m_OwningStaticMeshComponent; };
 
 	private:
@@ -56,7 +59,8 @@ namespace Drn
 
 		AssetHandle<StaticMesh> m_Mesh;
 
-		PrimitiveBuffer m_PrimitiveBuffer;
+		PrimitiveData m_PrimitiveData;
+		TRefCountPtr<RenderUniformBuffer> PrimitiveBuffer;
 
 		friend class StaticMeshComponent;
 	};

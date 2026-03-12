@@ -65,6 +65,7 @@ namespace Drn
 
 		inline BodySetup* GetBodySetup() { return &m_BodySetup; }
 		inline const BoxSphereBounds& GetBounds() const { return Bounds; }
+		inline BoxSphereBounds GetBounds() { return Bounds; }
 
 		inline bool IsRenderStateDirty() const { return m_RenderStateDirty; }
 		inline void MarkRenderStateDirty() { m_RenderStateDirty = true; }

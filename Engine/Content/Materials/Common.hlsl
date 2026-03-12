@@ -134,17 +134,26 @@ struct ShadowDepth
 };
 #endif
 
-struct VertexInputPositionOnly
+struct VertexInputPositionOnlyStaticMesh
+{
+    float3 Position : POSITION;
+};
+
+struct VertexInputPositionOnlyInstancedStaticMesh
 {
     float3 Position : POSITION;
     
-#if INSTANCED
     float4 OriginRandom : ORIGIN_RANDOM;
     half4 LocalToWorld1 : MAT1;
     half4 LocalToWorld2 : MAT2;
     half4 LocalToWorld3 : MAT3;
-#endif
 };
+
+#if INSTANCED
+#define VertexInputPositionOnly VertexInputPositionOnlyInstancedStaticMesh
+#elif STATICMESH
+#define VertexInputPositionOnly VertexInputPositionOnlyStaticMesh
+#endif
 
 struct VertexInputStaticMesh
 {
@@ -202,6 +211,24 @@ struct BasePassPixelShaderOutput
     
 #endif
 };
+
+matrix GetLocalToWorld(VertexInputInstancedStaticMesh IN)
+{
+    return matrix
+        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld2.x, IN.LocalToWorld3.x, IN.OriginRandom.x)
+        , float4(IN.LocalToWorld1.y, IN.LocalToWorld2.y, IN.LocalToWorld3.y, IN.OriginRandom.y)
+        , float4(IN.LocalToWorld1.z, IN.LocalToWorld2.z, IN.LocalToWorld3.z, IN.OriginRandom.z)
+        , float4(0, 0, 0, 1));
+}
+
+matrix GetLocalToWorld(VertexInputPositionOnlyInstancedStaticMesh IN)
+{
+    return matrix
+        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld2.x, IN.LocalToWorld3.x, IN.OriginRandom.x)
+        , float4(IN.LocalToWorld1.y, IN.LocalToWorld2.y, IN.LocalToWorld3.y, IN.OriginRandom.y)
+        , float4(IN.LocalToWorld1.z, IN.LocalToWorld2.z, IN.LocalToWorld3.z, IN.OriginRandom.z)
+        , float4(0, 0, 0, 1));
+}
 
 uint ReverseBits32( uint bits )
 {

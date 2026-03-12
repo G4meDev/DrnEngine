@@ -38,11 +38,13 @@ struct PixelShaderOutput
 
 VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
-    ConstantBuffer<PrimitiveBuffer> PrimitiveBuffer = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    
     VertexShaderOutput OUT;
+    
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
 
-    OUT.Position = mul(PrimitiveBuffer.LocalToProjection, float4(IN.Position, 1.0f));
+    float4 WorldPosition = mul(Primitive.LocalToWorld, float4(IN.Position, 1.0f));
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
     OUT.UV = IN.UV1;
     
     return OUT;

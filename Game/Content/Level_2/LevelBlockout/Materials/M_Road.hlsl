@@ -43,10 +43,20 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
     
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+
+    matrix LocalToWorld;
+#if STATICMESH
+    LocalToWorld = Primitive.LocalToWorld;
+#elif INSTANCED
+    LocalToWorld = GetLocalToWorld(IN);
+#endif
+    
+    float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f));
 
 #if SHADOW_PASS_POINTLIGHT
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    OUT.Position = mul(P.LocalToWorld, float4(IN.Position, 1.0f));
+    OUT.Position = WorldPosition;
     
     OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
     OUT.Color = float4(IN.Color, 1.0f);
@@ -54,10 +64,8 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.UV1 = IN.UV1;
     OUT.UV2 = IN.UV1;
 #elif SHADOW_PASS_SPOTLIGHT
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
-    float3 WorldPosition = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
-    OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, float4(WorldPosition, 1));
+    OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, WorldPosition);
 
     OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
     OUT.Color = float4(IN.Color, 1.0f);
@@ -66,24 +74,19 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.UV2 = IN.UV1;
 #else
     
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    float3 WorldNormal = normalize(mul((float3x3)LocalToWorld, IN.Normal));
+    float3 WorldTangent = normalize(mul((float3x3)LocalToWorld, IN.Tangent));
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
-    
-    float3 WorldNormal = normalize(mul((float3x3) P.LocalToWorld, IN.Normal));
-    float3 WorldTangent = normalize(mul((float3x3) P.LocalToWorld, IN.Tangent));
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
-    //OUT.TBN = float3x3(WorldTangent, WorldNormal, VertexBiNormal);
     
-    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.Normal = WorldNormal;
     OUT.UV1 = IN.UV1;
     
-    float3 WorldPos = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
-    OUT.UV2 = WorldPos.xz * Parameters.MicroUvScale;
+    OUT.UV2 = WorldPosition.xz * Parameters.MicroUvScale;
 
-    float DepthFade = CameraDepthFade(WorldPos, View.CameraPos, View.CameraDir, Parameters.MicroDepthOffset, Parameters.MicroDepthLength);
+    float DepthFade = CameraDepthFade(WorldPosition.xyz, View.CameraPos, View.CameraDir, Parameters.MicroDepthOffset, Parameters.MicroDepthLength);
     Texture2D BaseColorTexture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
     SamplerState BaseColorSampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
     //OUT.MicroFadeColor = float4(BaseColorTexture.SampleLevel(BaseColorSampler, 0, Parameters.MicroLastMip).rgb, DepthFade);

@@ -301,6 +301,7 @@ namespace Drn
 
 	void InstancedStaticMeshSceneProxy::UpdateResources( class D3D12CommandList* CommandList )
 	{
+		// TODO: issue when proxy not begin rendered
 		//m_PrimitiveData.m_PrevLocalToWorld = m_PrimitiveData.m_LocalToWorld;
 		//m_PrimitiveData.m_PrevLocalToProjection = m_PrimitiveData.m_LocalToProjection;
 

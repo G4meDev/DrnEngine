@@ -32,6 +32,8 @@ namespace Drn
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
 
+		virtual void OnUpdateTransform(bool SkipPhysic) override;
+
 		void CreatePhysicState();
 		void DestroyPhysicState();
 		void RecreatePhysicState();

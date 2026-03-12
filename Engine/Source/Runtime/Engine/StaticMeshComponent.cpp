@@ -118,6 +118,13 @@ namespace Drn
 		PrimitiveComponent::UnRegisterComponent();
 	}
 
+	void StaticMeshComponent::OnUpdateTransform(bool SkipPhysic)
+	{
+		PrimitiveComponent::OnUpdateTransform(SkipPhysic);
+
+		UpdateBounds();
+	}
+
 	void StaticMeshComponent::CreatePhysicState()
 	{
 		if (GetBodySetup() && GetBodySetup()->HasCollision())
@@ -374,12 +381,6 @@ namespace Drn
 
 	BoxSphereBounds StaticMeshComponent::GetBounds()
 	{
-		BoxSphereBounds Bounds;
-		if (Mesh.IsValid())
-		{
-			Bounds = Mesh->GetBounds();
-			Bounds = Bounds.TransformBy(GetWorldTransform());
-		}
 		return Bounds;
 	}
 
@@ -387,11 +388,7 @@ namespace Drn
 	{
 		if (Mesh.IsValid())
 		{
-			BoxSphereBounds Bounds;
-			Bounds = Mesh->GetBounds();
-			Bounds = Bounds.TransformBy(LocalToWorld);
-
-			return Bounds;
+			return Mesh->GetBounds().TransformBy(LocalToWorld);
 		}
 
 		return PrimitiveComponent::CalcBounds(LocalToWorld);

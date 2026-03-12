@@ -466,10 +466,10 @@ namespace Drn
 
 			if (bMarkRenderStateDirty)
 			{
-				UpdateBounds();
 				MarkRenderStateDirty();
 			}
 
+			UpdateBounds();
 			return true;
 		}
 

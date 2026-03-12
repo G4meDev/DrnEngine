@@ -6,6 +6,8 @@
 
 // SUPPORT_EDITOR_PRIMITIVE_PASS
 
+// TWO_SIDED
+
 ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
 struct PixelShaderOutput
@@ -32,10 +34,12 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 {
     VertexShaderOutput OUT;
 
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
-    OUT.Position = mul(P.LocalToProjection, float4(IN.Position, 1.0f));
-    OUT.WorldPos = mul(P.LocalToWorld, float4(IN.Position, 1.0f)).xyz;
+    float4 WorldPosition = mul(Primitive.LocalToWorld, float4(IN.Position, 1.0f));
+    OUT.WorldPos = WorldPosition.xyz;
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
 
     return OUT;
 }

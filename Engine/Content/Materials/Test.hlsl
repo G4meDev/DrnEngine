@@ -32,13 +32,23 @@ struct VertexShaderOutput
     float4 Position : SV_Position;
 };
 
-VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
+VertexShaderOutput Main_VS(VertexInput IN)
 {
-    ConstantBuffer<PrimitiveBuffer> PrimitiveBuffer = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
-    
     VertexShaderOutput OUT;
 
-    OUT.Position = mul(PrimitiveBuffer.LocalToProjection, float4(IN.Position, 1.0f));
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    
+    matrix LocalToWorld;
+#if STATICMESH
+    LocalToWorld = Primitive.LocalToWorld;
+#elif INSTANCED
+    LocalToWorld = GetLocalToWorld(IN);
+#endif
+    
+    float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f));
+    
+    OUT.Position = mul(View.WorldToProjection, WorldPosition);
     OUT.Color = float4(IN.UV1, 0.0f, 1.0f);
     OUT.Normal = IN.Normal;
     OUT.UV = IN.UV1;
