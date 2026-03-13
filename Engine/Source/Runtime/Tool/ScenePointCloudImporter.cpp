@@ -133,14 +133,30 @@ namespace Drn
 		for (auto& A : Arr)
 		{
 			rapidjson::Value& DisplayName = A["DisplayName"];
-			std::cout << DisplayName.GetString() << "\n";
+
+			rapidjson::Value& MeshPath = A["Mesh"];
+			AssetHandle<StaticMesh> Mesh(MeshPath.GetString());
+			Mesh.Load();
 
 			rapidjson::Value& T = A["ActorTransform"];
 			Transform ActorTransform = ReadTransform(T);
 
+			rapidjson::Value& InstancesTransforms = A["InstanceTransforms"];
+			auto InstancesTransformsArr = InstancesTransforms.GetArray();
+			const int32 InstanceCount = InstancesTransforms.Size();
+			std::vector<Transform> IT;
+			IT.reserve(InstanceCount);
+			for (int32 InstanceIndex = 0; InstanceIndex < InstanceCount; InstanceIndex++)
+			{
+				IT.push_back(ReadTransform(InstancesTransformsArr[InstanceIndex]));
+			}
+
 			InstancedStaticMeshActor* SpawnedActor = Context->SpawnActor<InstancedStaticMeshActor>();
 			SpawnedActor->SetActorTransform(ActorTransform);
 			SpawnedActor->SetActorLabel(DisplayName.GetString());
+
+			SpawnedActor->GetInstancedStaticMeshComponent()->AddInstances(IT, false);
+			SpawnedActor->GetInstancedStaticMeshComponent()->SetMesh(Mesh);
 		}
 	}
 
