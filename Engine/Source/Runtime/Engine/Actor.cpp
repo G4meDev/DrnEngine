@@ -156,6 +156,16 @@ namespace Drn
 			ActorLabel = ActorLabelStr;
 #endif
 
+			uint8 ActorTagsCount;
+			Ar >> ActorTagsCount;
+
+			Tags.resize(ActorTagsCount);
+
+			for (uint8 TagIndex = 0; TagIndex < ActorTagsCount; TagIndex++)
+			{
+				Ar >> Tags[TagIndex];
+			}
+
 			Root->Serialize(Ar);
 		}
 
@@ -164,6 +174,16 @@ namespace Drn
 		else
 		{
 			Ar << ActorLabel;
+
+			const uint32 ActorTagsCount = Tags.size();
+			drn_check(ActorTagsCount < UINT8_MAX)
+			Ar << static_cast<uint8>(ActorTagsCount);
+
+			for (uint8 TagIndex = 0; TagIndex < ActorTagsCount; TagIndex++)
+			{
+				Ar << Tags[TagIndex];
+			}
+
 			Root->Serialize(Ar);
 		}
 
@@ -230,6 +250,56 @@ namespace Drn
 			Comp->SetSelectedInEditor(SelectedInEditor);
 		}
 	}
+
+	bool Actor::DrawDetailPanel()
+	{
+		bool bDirty = false;
+
+		if (ImGui::CollapsingHeader("Tags"))
+		{
+			ImGui::PushID("Tags");
+			if (ImGui::Button("Add"))
+			{
+				AddActorTag("");
+				bDirty = true;
+			}
+
+			if (ImGui::Button("Remove"))
+			{
+				if (!Tags.empty())
+				{
+					Tags.pop_back();
+					bDirty = true;
+				}
+			}
+
+			if (ImGui::Button("Clear"))
+			{
+				Tags.clear();
+				bDirty = true;
+			}
+
+
+			const int32 NumTags = Tags.size();
+			for (int32 Index = 0; Index < NumTags; Index++)
+			{
+				char Tag[128];
+				strcpy(Tag, Tags[Index].c_str());
+
+				ImGui::PushID(Index);
+				if (ImGui::InputText("##", Tag, 128))
+				{
+					Tags[Index] = Tag;
+					bDirty = true;
+				}
+				ImGui::PopID();
+			}
+			ImGui::PopID();
+		}
+
+		return bDirty;
+	}
+
 #endif
 
 	void Actor::RegisterComponents( World* InWorld )
@@ -266,6 +336,19 @@ namespace Drn
 		{
 			Root->GetWorld()->DrawDebugSphere( ContactInfo.ContactPosition, Quat::Identity, Color::Blue, 0.2f, 8, 0.05, 0 );
 			Root->GetWorld()->DrawDebugLine( ContactInfo.ContactPosition, ContactInfo.ContactPosition + ContactInfo.ContactNormal * 0.5, Color::Blue, 0.05f, 0 );
+		}
+	}
+
+	bool Actor::ActorHasTag( const std::string& Tag ) const
+	{
+		return std::find(Tags.begin(), Tags.end(), Tag) != Tags.end();
+	}
+
+	void Actor::AddActorTag( const std::string& Tag )
+	{
+		if (!ActorHasTag(Tag))
+		{
+			Tags.push_back(Tag);
 		}
 	}
 

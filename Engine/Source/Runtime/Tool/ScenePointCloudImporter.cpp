@@ -56,12 +56,26 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+	void DestroyGenerated(World* Context)
+	{
+		auto& Actors = Context->GetActorList();
+		for (Actor* A : Actors)
+		{
+			if (A->ActorHasTag("Generated"))
+			{
+				A->Destroy();
+			}
+		}
+	}
+
 	bool ScenePointCloudImporter::DrawDetailPanel()
 	{
 		bool Dirty = Actor::DrawDetailPanel();
 
 		if (ImGui::Button("Import"))
 		{
+			DestroyGenerated(GetWorld());
+
 			for (int32 Index = 0; Index < FilesPath.size(); Index++)
 			{
 				Import(FilesPath[Index]);
@@ -75,7 +89,10 @@ namespace Drn
 
 		if (ImGui::Button("Remove"))
 		{
-			FilesPath.pop_back();
+			if (!FilesPath.empty())
+			{
+				FilesPath.pop_back();
+			}
 		}
 
 		if (ImGui::Button("Clear"))
@@ -89,10 +106,12 @@ namespace Drn
 			char Path[128];
 			strcpy(Path, FilesPath[Index].c_str());
 
+			ImGui::PushID(Index);
 			if (ImGui::InputText("##", Path, 128))
 			{
 				FilesPath[Index] = Path;
 			}
+			ImGui::PopID();
 		}
 
 		return Dirty;
@@ -157,6 +176,8 @@ namespace Drn
 
 			SpawnedActor->GetInstancedStaticMeshComponent()->AddInstances(IT, false);
 			SpawnedActor->GetInstancedStaticMeshComponent()->SetMesh(Mesh);
+
+			SpawnedActor->AddActorTag("Generated");
 		}
 	}
 

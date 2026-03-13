@@ -82,7 +82,7 @@ namespace Drn
 
 		void SetComponentsSelectedInEditor( bool SelectedInEditor );
 
-		virtual bool DrawDetailPanel() { return false; };
+		virtual bool DrawDetailPanel();
 
 		virtual void DrawEditorDefault();
 		virtual void DrawEditorSelected();
@@ -97,6 +97,9 @@ namespace Drn
 		virtual void PostInitializeComponents();
 
 		void DispatchPhysicsCollisionHit(const RigidBodyCollisionInfo& MyInfo, const RigidBodyCollisionInfo& OtherInfo, const CollisionImpactData& RigidCollisionData);
+
+		bool ActorHasTag(const std::string& Tag) const;
+		void AddActorTag(const std::string& Tag);
 
 	private:
 
@@ -113,6 +116,8 @@ namespace Drn
 
 		bool m_PendingKill;
 		World* m_World;
+
+		std::vector<std::string> Tags;
 
 #if WITH_EDITOR
 		std::string ActorLabel = "Actor_00";
