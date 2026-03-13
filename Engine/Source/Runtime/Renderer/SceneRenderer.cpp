@@ -1215,6 +1215,7 @@ namespace Drn
 
 			BoxSphereBounds Bound = Proxy->GetBounds();
 
+			// @TODO: add screen size culling
 			//bool bDistanceCulled = (Proxy->GetMaxDrawDistance() > 0) && (Vector::Distance(m_SceneView.CameraPos, Bound.Center) > Proxy->GetMaxDrawDistance());
 			//bIsVisible = !bDistanceCulled;
 

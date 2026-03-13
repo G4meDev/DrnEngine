@@ -6,6 +6,7 @@
 #include "Runtime/Engine/DecalActor.h"
 #include "Runtime/Engine/SphereReflectionCapture.h"
 #include "Runtime/GameFramework/WheeledVehiclePawn.h"
+#include "Runtime/Tool/ScenePointCloudImporter.h"
 
 #if WITH_EDITOR
 
@@ -31,6 +32,7 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Character				, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( WheeledVehiclePawn		, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( InstancedStaticMeshActor, Primitive );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( ScenePointCloudImporter	, Tool );
 	}
 
 	void EditorMisc::RegisterLevelSpawnableClass( const char* Name, const char* Category, std::function<Actor*(World*)>&& SpawnFunc)

@@ -1,0 +1,24 @@
+{
+	"project":"rapidjson",
+	"InstancedStaticMeshes":
+	[
+		{
+			"DisplayName":"Mesh1",
+			"ActorTransform":
+			{
+				"Location":[1.0, 2.0, 1.0],
+				"Rotation":[0.0, 0.0, 0.0, 1.0],
+				"Scale":[1.0, 1.0, 1.0]
+			}
+		},
+		{
+			"DisplayName":"Mesh2",
+			"ActorTransform":
+			{
+				"Location":[1.0, 2.0, 1.0],
+				"Rotation":[0.0, 0.0, 0.0, 1.0],
+				"Scale":[1.0, 1.0, 1.0]
+			}
+		}
+	]
+}

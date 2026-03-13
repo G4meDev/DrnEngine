@@ -186,6 +186,8 @@ set( HEADER_FILES
 	Source/Runtime/Misc/Path.h
 	Source/Runtime/Misc/StatsMisc.h
 	Source/Runtime/Misc/DebugHelper.h
+
+	Source/Runtime/Tool/ScenePointCloudImporter.h
 	
 	Source/Editor/Misc/ViewportCameraInputHandler.h
 	Source/Editor/Misc/GizmoState.h
@@ -419,6 +421,8 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/Path.cpp
 	Source/Runtime/Misc/StatsMisc.cpp
 	Source/Runtime/Misc/DebugHelper.cpp
+
+	Source/Runtime/Tool/ScenePointCloudImporter.cpp
 	
 	Source/Editor/Editor.cpp
 	Source/Editor/EditorConfig.cpp
@@ -540,6 +544,7 @@ add_compile_definitions($<$<CONFIG:RelWithDebInfo>:USE_PIX>)
 target_include_directories( Engine
     PUBLIC inc Source/
 	PUBLIC inc Source/ThirdParty/
+	PUBLIC inc Source/ThirdParty/rapidjson/include/
     PUBLIC inc ../ThirdParty/ImGui/
     PUBLIC inc ../ThirdParty/ImGuiFileDialog/
     PUBLIC inc ../ThirdParty/ImGuizmo/

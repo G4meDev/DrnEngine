@@ -24,6 +24,7 @@ namespace Drn
 		SphereReflectionCapture,
 		WheeledVehiclePawn,
 		InstancedStaticMeshActor,
+		ScenePointCloudImporter,
 	};
 
 	enum class EComponentType : uint32

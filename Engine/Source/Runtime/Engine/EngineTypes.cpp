@@ -2,6 +2,7 @@
 #include "EngineTypes.h"
 
 #include "Editor/Misc/EditorMisc.h"
+#include "Runtime/Tool/ScenePointCloudImporter.h"
 
 namespace Drn
 {
@@ -65,6 +66,7 @@ namespace Drn
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::Character					, Character );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::SphereReflectionCapture	, SphereReflectionCapture );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::WheeledVehiclePawn			, WheeledVehiclePawn );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::ScenePointCloudImporter	, ScenePointCloudImporter );
 
 	}
 
