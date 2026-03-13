@@ -279,7 +279,6 @@ namespace Drn
 				bDirty = true;
 			}
 
-
 			const int32 NumTags = Tags.size();
 			for (int32 Index = 0; Index < NumTags; Index++)
 			{

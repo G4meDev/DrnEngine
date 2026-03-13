@@ -154,6 +154,7 @@ namespace Drn
 			rapidjson::Value& DisplayName = A["DisplayName"];
 
 			rapidjson::Value& MeshPath = A["Mesh"];
+			std::string p = MeshPath.GetString();
 			AssetHandle<StaticMesh> Mesh(MeshPath.GetString());
 			Mesh.Load();
 
