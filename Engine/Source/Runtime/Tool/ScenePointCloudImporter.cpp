@@ -135,13 +135,16 @@ namespace Drn
 		return Quat(Arr[0].GetFloat(), Arr[1].GetFloat(), Arr[2].GetFloat(), Arr[3].GetFloat());
 	}
 
+	Vector H2Position(const Vector& InVecor ) { return Vector(1, 1, -1) * InVecor; }
+	Quat H2Quat(const Quat& InQuat ) { return Quat(InQuat.GetX(), InQuat.GetY(), InQuat.GetZ(), -InQuat.GetW()); }
+
 	Transform ReadTransform(rapidjson::Value& Input)
 	{
 		rapidjson::Value& Location = Input["Location"];
 		rapidjson::Value& Rotation = Input["Rotation"];
 		rapidjson::Value& Scale = Input["Scale"];
 
-		return Transform(ReadVector(Location), ReadQuat(Rotation), ReadVector(Scale));
+		return Transform(H2Position(ReadVector(Location)), H2Quat(ReadQuat(Rotation)), ReadVector(Scale));
 	}
 
 	void ImportInstancedStaticMeshes(rapidjson::Document& Document, World* Context)
