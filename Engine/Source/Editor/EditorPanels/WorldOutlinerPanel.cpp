@@ -36,22 +36,26 @@ namespace Drn
 			SelectedComponent = GetSelectedComponentDel.Execute();
 		}
 
-		int i = 0;
+		std::vector<Actor*> SortedActors;
 		for (Actor* actor : m_World->GetActorList())
 		{
-			if (!m_ShowTransient && actor->IsTransient())
+			if (!actor->IsTransient() || (actor->IsTransient() && m_ShowTransient))
 			{
-				continue;
+				SortedActors.push_back(actor);
 			}
+		}
 
-			else if (actor->IsTransient())
+		std::sort( SortedActors.begin(), SortedActors.end(), []( Actor* A, Actor* B ) { return A->GetActorLabel() < B->GetActorLabel(); } );
+		for (int32 ActorIndex = 0; ActorIndex < SortedActors.size(); ActorIndex++)
+		{
+			Actor* actor = SortedActors[ActorIndex];
+			if (actor->IsTransient())
 			{
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1,1,0,1));
 			}
 
 			std::string ActorLabel = actor->GetActorLabel();
-
-			ImGui::PushID(i++);
+			ImGui::PushID(ActorIndex);
 
 			const bool ActorIsSelected = SelectedComponent ? SelectedComponent->GetOwningActor() == actor : false;
 			if ( ImGui::Selectable(ActorLabel.c_str(), ActorIsSelected) )

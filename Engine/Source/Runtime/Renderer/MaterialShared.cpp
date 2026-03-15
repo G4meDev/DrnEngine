@@ -7,7 +7,6 @@
 
 namespace Drn
 {
-
 	std::vector<VertexFactoryType*> VertexFactoryType::GlobalFactories;
 	VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh", L"STATICMESH=1", &CommonResources::Get()->VertexDeclaration_StaticMesh, &CommonResources::Get()->VertexDeclaration_Pos);
 	VertexFactoryType* VertexFactoryType::InstancedStaticMesh = new VertexFactoryType("InstancedStaticMesh", L"INSTANCED=1", &CommonResources::Get()->VertexDeclaration_InstancedStaticMesh, &CommonResources::Get()->VertexDeclaration_InstancedStaticMeshDefaultDepthOnly);

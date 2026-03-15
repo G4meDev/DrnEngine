@@ -68,9 +68,7 @@ namespace Drn
 			: Name(std::move(InName))
 			, VDeclaration(InVertexDeclaration)
 			, VDeclarationDefaultDepthOnly(InVertexDeclarationDefaultDepthOnly)
-#if WITH_EDITOR
 			, ShaderMacro(InShaderMacro)
-#endif
 		{
 			drn_check(std::find_if(GlobalFactories.begin(), GlobalFactories.end(),
 				[&](const VertexFactoryType* Factroy){ return Factroy->GetName() == Name; }) == GlobalFactories.end());
@@ -105,10 +103,7 @@ namespace Drn
 			return VDeclarationDefaultDepthOnly ? *VDeclarationDefaultDepthOnly : nullptr;
 		}
 
-
-#if WITH_EDITOR
 		inline const wchar_t* GetShaderMacro() const { return ShaderMacro; }
-#endif
 
 		static std::vector<VertexFactoryType*> GlobalFactories;
 
@@ -122,9 +117,7 @@ namespace Drn
 		TRefCountPtr<VertexDeclaration>* VDeclarationDefaultDepthOnly;
 		// @TODO: maybe add hashed name for faster comparison
 
-#if WITH_EDITOR
 		const wchar_t* ShaderMacro;
-#endif
 	};
 
 // -------------------------------------------------------------------------------------------------------------------
