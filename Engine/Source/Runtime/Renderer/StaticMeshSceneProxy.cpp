@@ -151,9 +151,9 @@ namespace Drn
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 
 				MaterialShader* MatShader = nullptr;
-				if (Mat.GetParentMaterial()->GetShaderParameters().bHasPrepass)
+				if (Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasPrepass)
 				{
-					MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasCustomPrepass
+					MatShader = Mat.GetParentMaterial()->GetShaderParameters().bHasCustomPrepass
 						? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Prepass)
 						: CommonResources::Get()->m_PositionOnlyMaterialShaders.GetShader(VertexFactoryType::StaticMesh, Mat.GetParentMaterial()->IsTwoSided());
 				}

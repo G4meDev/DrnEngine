@@ -980,7 +980,7 @@ namespace Drn
 				TRefCountPtr<BlendState> BState = nullptr;
 
 				RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, CullModes[CullMode]);
-				TRefCountPtr<RasterizerState> RState = nullptr;
+				TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
 
 				DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual);
 				TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
