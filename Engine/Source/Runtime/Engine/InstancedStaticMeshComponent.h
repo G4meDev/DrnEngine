@@ -63,6 +63,13 @@ namespace Drn
 		inline int32 GetInstanceCount() const { return PerInstanceTransform.size(); }
 		inline int32 GetInstanceRandomSeed() const { return ActualInstanceRandomSeed; }
 
+		inline void SetInstanceRandomSeed(int32 Seed)
+		{
+			InstancingRandomSeed = Seed;
+			ActualInstanceRandomSeed = Seed == 0 ? Math::Rand() : Seed;
+			MarkRenderStateDirty();
+		}
+
 #if WITH_EDITOR
 
 		virtual void DrawDetailPanel(float DeltaTime) override;

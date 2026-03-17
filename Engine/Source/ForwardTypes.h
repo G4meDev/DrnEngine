@@ -46,6 +46,7 @@ private:
 #include "Runtime/Math/Color.h"
 #include "Runtime/Math/BoxSphereBounds.h"
 #include "Runtime/Math/Frustum.h"
+#include "Runtime/Math/RandomStream.h"
 
 
 #include "Runtime/Core/Delegate.h"

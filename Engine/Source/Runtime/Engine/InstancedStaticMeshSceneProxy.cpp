@@ -384,6 +384,8 @@ namespace Drn
 				}
 			};
 
+			RandomStream RandStream(m_OwningInstancedStaticMeshComponent->GetInstanceRandomSeed());
+
 			OriginRandom.resize(NumInstances);
 			LocalToWorldMatrices.resize(NumInstances);
 			for (int32 InstanceIndex = 0; InstanceIndex < NumInstances; InstanceIndex++)
@@ -392,7 +394,7 @@ namespace Drn
 				m_OwningInstancedStaticMeshComponent->GetInstanceTransform(InstanceIndex, LocalToWorldTransform, true);
 
 				LocalToWorldMatrices[InstanceIndex] = Matrix16_4x3(LocalToWorldTransform);
-				OriginRandom[InstanceIndex] = Vector4(LocalToWorldTransform.GetLocation(), 0); // @TODO: add rand in w
+				OriginRandom[InstanceIndex] = Vector4(LocalToWorldTransform.GetLocation(), RandStream.GetFraction());
 			}
 
 			CreateVertexBufferConditional(true, CommandList, OriginRandomBuffer, (void*)OriginRandom.data(), NumInstances * sizeof(Vector4), "VB_PositionRandom");

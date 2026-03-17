@@ -166,6 +166,12 @@ namespace Drn
 			return Vector(m_Vector.x * Scale, m_Vector.y * Scale, m_Vector.z * Scale);
 		}
 
+		inline Vector GetUnsafeNormal() const
+		{
+			const float Scale = 1.0f / sqrt(m_Vector.x*m_Vector.x+m_Vector.y*m_Vector.y+m_Vector.z*m_Vector.z);
+			return Vector(m_Vector.x*Scale, m_Vector.y*Scale, m_Vector.z*Scale);
+		}
+
 		inline float SizeSquared() const
 		{
 			XMVECTOR Vec = XMLoadFloat3(&m_Vector);

@@ -177,6 +177,7 @@ set( HEADER_FILES
 	Source/Runtime/Math/Float16.h
 	Source/Runtime/Math/BoxSphereBounds.h
 	Source/Runtime/Math/Frustum.h
+	Source/Runtime/Math/RandomStream.h
 	
 	Source/Runtime/Misc/StringHelper.h
 	Source/Runtime/Misc/FileSystem.h
@@ -412,6 +413,7 @@ set( SOURCE_FILES
 	Source/Runtime/Math/Float16.cpp
 	Source/Runtime/Math/BoxSphereBounds.cpp
 	Source/Runtime/Math/Frustum.cpp
+	Source/Runtime/Math/RandomStream.cpp
 	
 	Source/Runtime/Misc/StringHelper.cpp
 	Source/Runtime/Misc/FileSystem.cpp

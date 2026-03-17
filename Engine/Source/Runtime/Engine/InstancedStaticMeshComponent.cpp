@@ -104,6 +104,7 @@ namespace Drn
 			UpdateBounds();
 
 			Ar >> InstancingRandomSeed;
+			SetInstanceRandomSeed(InstancingRandomSeed);
 		}
 		
 		else
@@ -654,6 +655,13 @@ namespace Drn
 				SetCustomDataEnabled(CustomDataIndex, bEnabled);
 			}
 		}
+
+		if (ImGui::InputInt("Instancing Seed", &InstancingRandomSeed))
+		{
+			SetInstanceRandomSeed(InstancingRandomSeed);
+		}
+
+		ImGui::Text(std::format("Seed: {}", ActualInstanceRandomSeed).c_str());
 
 		DrawInstances();
 	}

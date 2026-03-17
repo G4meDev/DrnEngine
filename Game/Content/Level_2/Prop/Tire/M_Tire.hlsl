@@ -21,6 +21,7 @@ struct ParametersBuffers
 {
     SCALAR(RoughnessMultiplier, RoughnessMultiplier)
     SCALAR(NormalStrength, NormalStrength)
+    SCALAR(RandomRoughnessStrength, RandomRoughnessStrength)
     
     TEX2D(BaseColor, BaseColorTexture)
     TEX2D(Normal, NormalTexture)
@@ -34,6 +35,7 @@ struct VertexShaderOutput
     float3x3 TBN : TBN;
     float2 UV1 : TEXCOORD1;
     float InstanceVarIndex : Data1;
+    float InstanceRandom : Data2;
     float4 Position : SV_Position;
 };
 
@@ -54,13 +56,14 @@ VertexShaderOutput Main_VS(
 
     matrix LocalToWorld;
     
-    
 #if STATICMESH
     LocalToWorld = P.LocalToWorld;
     OUT.InstanceVarIndex = 0;
+    OUT.InstanceRandom = 0.0f;
 #elif INSTANCED
     LocalToWorld = GetLocalToWorld(IN);
     OUT.InstanceVarIndex = IN.PerInstanceCustom1.r;
+    OUT.InstanceRandom = IN.OriginRandom.w - 0.5f;
 #endif
     
     float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1));
@@ -108,6 +111,7 @@ struct PixelShaderInput
     float3x3 TBN : TBN;
     float2 UV1 : TEXCOORD1;
     float InstanceVarIndex : Data1;
+    float InstanceRandom : Data2;
     float4 Position : SV_Position;
 #endif
 };
@@ -167,6 +171,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     
     float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV1).xyz;
     Masks.g *= Parameters.RoughnessMultiplier;
+    Masks.g += IN.InstanceRandom * Parameters.RandomRoughnessStrength;
     
     float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV1).rgb;
     Normal = ReconstructTextureNormal(Normal.xy, false);

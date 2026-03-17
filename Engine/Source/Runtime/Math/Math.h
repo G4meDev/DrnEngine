@@ -11,13 +11,13 @@
 namespace Drn
 {
 	template <typename T>
-	FORCEINLINE constexpr T Align(T Val, uint64 Alignment)
+	inline constexpr T Align(T Val, uint64 Alignment)
 	{
 		return (T)(((uint64)Val + Alignment - 1) & ~(Alignment - 1));
 	}
 
 	template <typename T>
-	FORCEINLINE constexpr T AlignArbitrary(T Val, uint64 Alignment)
+	inline constexpr T AlignArbitrary(T Val, uint64 Alignment)
 	{
 		return (T)((((uint64)Val + Alignment - 1) / Alignment) * Alignment);
 	}
@@ -112,6 +112,10 @@ namespace Drn
 			int32 Exp = std::floor(std::log2(Value));
 			return std::pow(2, Exp);
 		}
+
+		static int32 Rand() { return std::rand(); }
+		static inline float InvSqrt(float F) {  return 1.0f / std::sqrt(F); }
+		static inline float TruncToInt(float F) { return std::trunc(F); }
 
 		static Vector VInterpTo(const Vector& Current, const Vector& Target, float DeltaTime, float InterpSpeed);
 		static Quat QInterpTo(const Quat& Current, const Quat& Target, float DeltaTime, float InterpSpeed);
