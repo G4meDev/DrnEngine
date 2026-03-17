@@ -181,6 +181,25 @@ namespace Drn
 			SpawnedActor->GetInstancedStaticMeshComponent()->AddInstances(IT, false);
 			SpawnedActor->GetInstancedStaticMeshComponent()->SetMesh(Mesh);
 
+			bool bCustomData[NUM_INSTANCED_CUSTOM_DATA];
+			std::vector<Vector4> CustomData[NUM_INSTANCED_CUSTOM_DATA];
+			for (int32 CustomIndex = 0; CustomIndex < NUM_INSTANCED_CUSTOM_DATA; CustomIndex++)
+			{
+				const bool HasCustomData = A[std::format("HasCustomData{}", CustomIndex + 1).c_str()].GetBool();
+				SpawnedActor->GetInstancedStaticMeshComponent()->SetCustomDataEnabled(CustomIndex, HasCustomData);
+
+				if (HasCustomData)
+				{
+					for (int32 InstanceIndex = 0; InstanceIndex < InstanceCount; InstanceIndex++)
+					{
+						auto CustomDataArray = A[std::format("CustomData{}", CustomIndex + 1).c_str()].GetArray();
+						Vector4 Data = ReadVector4(CustomDataArray[InstanceIndex]);
+						SpawnedActor->GetInstancedStaticMeshComponent()->SetCustomData(CustomIndex, InstanceIndex, Data);
+					}
+					SpawnedActor->GetInstancedStaticMeshComponent()->MarkRenderStateDirty();
+				}
+			}
+
 			SpawnedActor->AddActorTag("Generated");
 		}
 	}

@@ -17,6 +17,7 @@ namespace Drn
 		, m_InstancedStaticMeshSceneProxy(nullptr)
 		, MinDrawDistance(0)
 		, MaxDrawDistance(0)
+		, bCustomData{false}
 	{}
 
 	InstancedStaticMeshComponent::~InstancedStaticMeshComponent()
