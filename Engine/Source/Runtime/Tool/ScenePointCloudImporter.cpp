@@ -136,7 +136,10 @@ namespace Drn
 	}
 
 	Vector H2Position(const Vector& InVecor ) { return Vector(1, 1, -1) * InVecor; }
-	Quat H2Quat(const Quat& InQuat ) { return Quat(InQuat.GetX(), InQuat.GetY(), InQuat.GetZ(), -InQuat.GetW()); }
+	Quat H2Quat(const Quat& InQuat )
+	{
+		return Quat(-InQuat.GetZ(), InQuat.GetW(), -InQuat.GetX(), InQuat.GetY());
+	}
 
 	Transform ReadTransform(rapidjson::Value& Input)
 	{
@@ -161,8 +164,9 @@ namespace Drn
 			AssetHandle<StaticMesh> Mesh(MeshPath.GetString());
 			Mesh.Load();
 
-			rapidjson::Value& T = A["ActorTransform"];
-			Transform ActorTransform = ReadTransform(T);
+			//rapidjson::Value& T = A["ActorTransform"];
+			//Transform ActorTransform = ReadTransform(T);
+			Transform ActorTransform = Transform(H2Position(ReadVector(A["ActorPosition"])), Quat::Identity);
 
 			rapidjson::Value& InstancesTransforms = A["InstanceTransforms"];
 			auto InstancesTransformsArr = InstancesTransforms.GetArray();
