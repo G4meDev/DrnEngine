@@ -26,7 +26,7 @@ namespace Drn
 
 		Assimp::Importer importer;
 		//const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
-		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded );
+		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded );
 
 		if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
 		{
