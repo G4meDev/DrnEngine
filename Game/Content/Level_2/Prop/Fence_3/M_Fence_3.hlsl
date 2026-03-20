@@ -20,10 +20,12 @@ struct ParametersBuffers
     VECTOR(ColorTint, ColorTint)
     SCALAR(RoughnessMultiplier, RoughnessMultiplier)
     SCALAR(NormalStrength, NormalStrength)
+    SCALAR(GrungeStrength, GrungeStrength)
     
     TEX2D(BaseColor, BaseColorTexture)
     TEX2D(Normal, NormalTexture)
     TEX2D(Masks, MasksTexture)
+    TEX2D(Grunge, GrungeTexture)
 };
 
 struct VertexShaderOutput
@@ -32,6 +34,7 @@ struct VertexShaderOutput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV1 : TEXCOORD1;
+    float Rand : DATA1;
     float4 Position : SV_Position;
 };
 
@@ -54,8 +57,11 @@ VertexShaderOutput Main_VS(
     
 #if STATICMESH
     LocalToWorld = P.LocalToWorld;
+    OUT.Rand = 0.0f;
+   
 #elif INSTANCED
     LocalToWorld = GetLocalToWorld(IN);
+    OUT.Rand = IN.OriginRandom.w;
 #endif
     
     float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1));
@@ -102,6 +108,7 @@ struct PixelShaderInput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV1 : TEXCOORD1;
+    float Rand : DATA1;
     float4 Position : SV_Position;
 #endif
 };
@@ -150,13 +157,20 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D MasksTexture = ResourceDescriptorHeap[Parameters.Masks_Texture];
     SamplerState MasksSampler = ResourceDescriptorHeap[Parameters.Masks_Sampler];
     
+    Texture2D GrungeTexture = ResourceDescriptorHeap[Parameters.Grunge_Texture];
+    SamplerState GrungeSampler = ResourceDescriptorHeap[Parameters.Grunge_Sampler];
+    
     float2 ScreenUV = SvPositionToViewportUV(IN.Position.xy, View.InvSize);
     float4 DecalBaseColor = DecalBaseColorTexture.Sample(PointSampler, ScreenUV);
     float4 DecalNormal = DecalNormalTexture.Sample(PointSampler, ScreenUV);
     float4 DecalMasks = DecalMasksTexture.Sample(PointSampler, ScreenUV);
     
     float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV1).xyz;
-    BaseColor = lerp(BaseColor, Parameters.ColorTint.xyz, Parameters.ColorTint.a);
+    
+    float2 GrungeUV = IN.UV1 + IN.Rand.xx;
+    float Grunge = GrungeTexture.Sample(GrungeSampler, GrungeUV).r;
+    //BaseColor = lerp(BaseColor, Parameters.ColorTint.xyz, Parameters.ColorTint.a);
+    BaseColor += (Grunge - 0.5) * Parameters.GrungeStrength;
     
     float3 Masks = MasksTexture.Sample(MasksSampler, IN.UV1).xyz;
     Masks.g *= Parameters.RoughnessMultiplier;

@@ -17,6 +17,7 @@ ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
 struct ParametersBuffers
 {
+    SCALAR(Metallic, Metallic)
     TEX2D(BaseColor, BaseColorTexture)
 };
 
@@ -144,7 +145,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float4 DecalMasks = DecalMasksTexture.Sample(PointSampler, ScreenUV);
     
     float3 BaseColor = BaseColorTexture.Sample(BaseColorSampler, IN.UV1).xyz;
-    float3 Masks = float3(1, saturate((BaseColor.r + 0.5f) * 0.5f), 1);
+    float3 Masks = float3(Parameters.Metallic, saturate((BaseColor.r + 0.5f) * 0.5f), 1);
     BaseColor *= 1.25f;
     
     float3 Normal = float3(0.0f, 1.0f, 0.0f);
