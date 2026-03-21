@@ -164,6 +164,9 @@ namespace Drn
 			AssetHandle<StaticMesh> Mesh(MeshPath.GetString());
 			Mesh.Load();
 
+			const float MinDrawDistance = A["MinDrawDistance"].GetFloat();
+			const float MaxDrawDistance = A["MaxDrawDistance"].GetFloat();
+
 			//rapidjson::Value& T = A["ActorTransform"];
 			//Transform ActorTransform = ReadTransform(T);
 			Transform ActorTransform = Transform(H2Position(ReadVector(A["ActorPosition"])), Quat::Identity);
@@ -203,6 +206,9 @@ namespace Drn
 					SpawnedActor->GetInstancedStaticMeshComponent()->MarkRenderStateDirty();
 				}
 			}
+
+			SpawnedActor->GetInstancedStaticMeshComponent()->SetMinDrawDistance(MinDrawDistance);
+			SpawnedActor->GetInstancedStaticMeshComponent()->SetMaxDrawDistance(MaxDrawDistance);
 
 			SpawnedActor->AddActorTag("Generated");
 		}
