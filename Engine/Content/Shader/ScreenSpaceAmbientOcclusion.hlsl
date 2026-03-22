@@ -308,8 +308,8 @@ float Main_PS(PixelShaderInput IN) : SV_Target
     float SceneDepth = ConvertFromDeviceZ(SetupSample.a, View.InvDeviceZToWorldZTransform);
     
     //float3 WorldNormal = SetupSample.xyz * 2 - 1;
-    float2 EncodedNormal = SetupSample.xy;
-    float3 WorldNormal = DecodeNormal(EncodedNormal);
+    //float2 EncodedNormal = SetupSample.xy;
+    float3 WorldNormal = SetupSample.xyz;
 #else
     float Depth = DepthImage.Sample(PointClampSampler, UV).x;
     float SceneDepth = ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform);
