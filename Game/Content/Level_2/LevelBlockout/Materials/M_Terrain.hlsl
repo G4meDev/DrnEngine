@@ -17,6 +17,7 @@ struct ParametersBuffers
     VECTOR(TintColor, TintColor)
     
     SCALAR(GrassUVScale, GrassUVScale)
+    SCALAR(GravelUVScale, GravelUVScale)
     SCALAR(RoughnessIntensity, RoughnessIntensity)
     SCALAR(NormalIntensity, NormalIntensity)
     SCALAR(FloorAlpha, FloorAlpha)
@@ -39,6 +40,7 @@ struct VertexShaderOutput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
+    float2 UV2 : TEXCOORD2;
 };
 
 VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
@@ -65,6 +67,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.Normal = IN.Position;
     OUT.UV = IN.UV1;
+    OUT.UV2 = IN.UV1;
 #elif SHADOW_PASS_SPOTLIGHT
     ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
     OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, WorldPosition);
@@ -73,6 +76,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Color = float4(IN.Color, 1.0f);
     OUT.Normal = IN.Position;
     OUT.UV = IN.UV1;
+    OUT.UV2 = IN.UV1;
 #else
         
     float3 WorldNormal = normalize(mul((float3x3)LocalToWorld, IN.Normal));
@@ -84,6 +88,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Normal = WorldNormal;
     //OUT.UV = IN.UV1;
     OUT.UV = WorldPosition.xz * Parameters.GrassUVScale;
+    OUT.UV2 = WorldPosition.xz * Parameters.GravelUVScale;
     
 #endif
     
@@ -102,6 +107,7 @@ struct PixelShaderInput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
+    float2 UV2 : TEXCOORD2;
 #endif
 };
 
@@ -194,9 +200,9 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 
     float4 VertexColor = IN.Color;
     
-    float3 FloorColor = FloorAlbedoTexture.Sample(LinearSampler, IN.UV).xyz;
-    float3 FloorNormal = FloorNormalTexture.Sample(LinearSampler, IN.UV).xyz;
-    float4 FloorMasks = FloorMasksTexture.Sample(LinearSampler, IN.UV);
+    float3 FloorColor = FloorAlbedoTexture.Sample(LinearSampler, IN.UV2).xyz;
+    float3 FloorNormal = FloorNormalTexture.Sample(LinearSampler, IN.UV2).xyz;
+    float4 FloorMasks = FloorMasksTexture.Sample(LinearSampler, IN.UV2);
     
     LayerData FloorLayer;
     FloorLayer.Color = FloorColor;
