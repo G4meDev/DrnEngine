@@ -23,6 +23,7 @@ struct ParametersBuffers
 {
     SCALAR(RoughnessMultiplier, RoughnessMultiplier)
     SCALAR(NormalStrength, NormalStrength)
+    SCALAR(FlatNormalStrength, FlatNormalStrength)
     SCALAR(SubsurfaceColorIntensity, SubsurfaceColorIntensity)
     SCALAR(CullDistance, CullDistance)
     
@@ -171,12 +172,15 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     float3 Normal = NormalTexture.Sample(NormalSampler, IN.UV1).rgb;
     Normal = ReconstructTextureNormal(Normal.xy, false);
     Normal = lerp(float3(0.0f, 1.0f, 0.0f), Normal, Parameters.NormalStrength);
-    Normal = normalize(mul(Normal, IN.TBN));
-
     if(!FrontFace)
     {
         Normal = -Normal;
     }
+    //Normal = normalize(mul(Normal, IN.TBN));
+    Normal = mul(Normal, IN.TBN);
+    Normal = lerp(Normal, float3(0, 1, 0), Parameters.FlatNormalStrength);
+    Normal = normalize(Normal);
+    
     //Normal = lerp(DecalNormal.xyz, Normal, DecalNormal.w);
     float2 N = EncodeNormal(Normal);
     

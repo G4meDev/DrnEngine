@@ -9,10 +9,10 @@ FBXHeaderExtension:  {
 		Year: 2026
 		Month: 3
 		Day: 22
-		Hour: 4
-		Minute: 7
-		Second: 16
-		Millisecond: 59
+		Hour: 16
+		Minute: 36
+		Second: 15
+		Millisecond: 762
 	}
 	Creator: "FBX SDK/FBX Plugins version 2020.0.1"
 	SceneInfo: "SceneInfo::GlobalInfo", "UserData" {
@@ -34,13 +34,13 @@ FBXHeaderExtension:  {
 			P: "Original|ApplicationVendor", "KString", "", "", "SideFX Software"
 			P: "Original|ApplicationName", "KString", "", "", "Houdini"
 			P: "Original|ApplicationVersion", "KString", "", "", "19.5.435"
-			P: "Original|DateTime_GMT", "DateTime", "", "", "22/03/2026 00:37:16.055"
+			P: "Original|DateTime_GMT", "DateTime", "", "", "22/03/2026 13:06:15.754"
 			P: "Original|FileName", "KString", "", "", "C:\SelfProjects\DrnEngine\Game\Content\Level_2\Prop\Foliage\SM_Grass.fbx"
 			P: "LastSaved", "Compound", "", ""
 			P: "LastSaved|ApplicationVendor", "KString", "", "", "SideFX Software"
 			P: "LastSaved|ApplicationName", "KString", "", "", "Houdini"
 			P: "LastSaved|ApplicationVersion", "KString", "", "", "19.5.435"
-			P: "LastSaved|DateTime_GMT", "DateTime", "", "", "22/03/2026 00:37:16.055"
+			P: "LastSaved|DateTime_GMT", "DateTime", "", "", "22/03/2026 13:06:15.754"
 			P: "Original|ApplicationActiveProject", "KString", "", "", "C:\Users\Abolfazl"
 			P: "Original|ApplicationNativeFile", "KString", "", "", "C:\SelfProjects\DrnEngine\Game\Content\Level_2\Prop\Foliage\Foliage.hip"
 		}
@@ -77,7 +77,7 @@ GlobalSettings:  {
 
 Documents:  {
 	Count: 1
-	Document: 4067627792, "", "Scene" {
+	Document: 4585174848, "", "Scene" {
 		Properties70:  {
 			P: "SourceObject", "object", "", ""
 			P: "ActiveAnimStackName", "KString", "", "", ""
@@ -277,7 +277,7 @@ Definitions:  {
 ;------------------------------------------------------------------
 
 Objects:  {
-	Geometry: 4209453536, "Geometry::transform2", "Mesh" {
+	Geometry: 2095265088, "Geometry::transform2", "Mesh" {
 		Vertices: *96 {
 			a: 2.81937503814697,-0.0200000014156103,1.15878355503082,0.909551680088043,-0.0200000014156103,0.267468243837357,2.81937503814697,0.432175576686859,1.15878355503082,0.909551680088043,0.432175576686859,0.267468243837357,0.98953914642334,-0.0200000014156103,0.44753834605217,0.23062926530838,-0.0200000014156103,2.46335005760193,0.98953914642334,0.432175576686859,0.44753834605217,0.23062926530838,0.432175576686859,2.46335005760193,-2.58722066879272,-0.0200000014156103,-1.60422778129578,-0.704695045948029,-0.0200000014156103,-0.656616985797882,-2.58722066879272,0.432175576686859,-1.60422778129578,-0.704695045948029,0.432175576686859,-0.656616985797882,1.75216174125671,-0.0200000014156103,-2.11506104469299,1.6495463848114,-0.0200000014156103,0.0364294648170471,1.75216174125671,0.432175576686859,-2.11506104469299,1.6495463848114,0.432175576686859,0.0364294648170471,0.47990682721138,-0.0200000014156103,1.18226230144501,0.277877926826477,-0.0200000014156103,-0.915606319904327,0.47990682721138,0.432175576686859,1.18226230144501,0.277877926826477,0.432175576686859,-0.915606319904327,-0.590543270111084,-0.0200000014156103,0.707057118415833,-2.42083740234375,-0.0200000014156103,-0.428488910198212,-0.590543270111084,0.432175576686859,0.707057118415833,-2.42083740234375,0.432175576686859,-0.428488910198212,-0.340566873550415,-0.0200000014156103,-2.03131222724915,1.08752477169037,-0.0200000014156103,-0.481337010860443,-0.340566873550415,0.432175576686859,-2.03131222724915,1.08752477169037,0.432175576686859,-0.481337010860443,-1.73994052410126,-0.0200000014156103,2.23625135421753,-0.422597378492355,-0.0200000014156103,0.53212434053421,-1.73994052410126,0.432175576686859,2.23625135421753,-0.422597378492355,0.432175576686859,0.53212434053421
 		} 
@@ -454,7 +454,7 @@ Objects:  {
 			}
 		}
 	}
-	Model: 3995008560, "Model::transform2", "Mesh" {
+	Model: 3873921936, "Model::transform2", "Mesh" {
 		Version: 232
 		Properties70:  {
 			P: "ScalingMax", "Vector3D", "Vector", "",0,0,0
@@ -464,7 +464,7 @@ Objects:  {
 		Shading: Y
 		Culling: "CullingOff"
 	}
-	Material: 1493120432, "Material::Baker", "" {
+	Material: 87273072, "Material::Baker", "" {
 		Version: 102
 		ShadingModel: "phong"
 		MultiLayer: 0
@@ -479,7 +479,7 @@ Objects:  {
 			P: "Reflectivity", "double", "Number", "",0
 		}
 	}
-	Video: 1548501808, "Video::Baker_texture1", "Clip" {
+	Video: 3909472336, "Video::Baker_texture1", "Clip" {
 		Type: "Clip"
 		Properties70:  {
 			P: "Path", "KString", "XRefUrl", "", "C:/SelfProjects/DrnEngine/Game/Content/Level_2/Prop/Foliage/render/Grass_ao.png"
@@ -489,7 +489,7 @@ Objects:  {
 		Filename: "C:/SelfProjects/DrnEngine/Game/Content/Level_2/Prop/Foliage/render/Grass_ao.png"
 		RelativeFilename: "render\Grass_ao.png"
 	}
-	Video: 1548514208, "Video::Baker_texture1", "Clip" {
+	Video: 3909475312, "Video::Baker_texture1", "Clip" {
 		Type: "Clip"
 		Properties70:  {
 			P: "Path", "KString", "XRefUrl", "", "C:/SelfProjects/DrnEngine/Game/Content/Level_2/Prop/Foliage/render/Grass_normal.png"
@@ -499,7 +499,7 @@ Objects:  {
 		Filename: "C:/SelfProjects/DrnEngine/Game/Content/Level_2/Prop/Foliage/render/Grass_normal.png"
 		RelativeFilename: "render\Grass_normal.png"
 	}
-	Texture: 1548502304, "Texture::Baker_texture1", "" {
+	Texture: 3909467376, "Texture::Baker_texture1", "" {
 		Type: "TextureVideoClip"
 		Version: 202
 		TextureName: "Texture::Baker_texture1"
@@ -514,7 +514,7 @@ Objects:  {
 		Texture_Alpha_Source: "None"
 		Cropping: 0,0,0,0
 	}
-	Texture: 1548511728, "Texture::Baker_texture1", "" {
+	Texture: 3909471840, "Texture::Baker_texture1", "" {
 		Type: "TextureVideoClip"
 		Version: 202
 		TextureName: "Texture::Baker_texture1"
@@ -537,25 +537,25 @@ Objects:  {
 Connections:  {
 	
 	;Model::transform2, Model::RootNode
-	C: "OO",3995008560,0
+	C: "OO",3873921936,0
 	
 	;Geometry::transform2, Model::transform2
-	C: "OO",4209453536,3995008560
+	C: "OO",2095265088,3873921936
 	
 	;Material::Baker, Model::transform2
-	C: "OO",1493120432,3995008560
+	C: "OO",87273072,3873921936
 	
 	;Texture::Baker_texture1, Material::Baker
-	C: "OP",1548502304,1493120432, "DiffuseColor"
+	C: "OP",3909467376,87273072, "DiffuseColor"
 	
 	;Texture::Baker_texture1, Material::Baker
-	C: "OP",1548511728,1493120432, "NormalMap"
+	C: "OP",3909471840,87273072, "NormalMap"
 	
 	;Video::Baker_texture1, Texture::Baker_texture1
-	C: "OO",1548501808,1548502304
+	C: "OO",3909472336,3909467376
 	
 	;Video::Baker_texture1, Texture::Baker_texture1
-	C: "OO",1548514208,1548511728
+	C: "OO",3909475312,3909471840
 }
 ;Takes section
 ;----------------------------------------------------
