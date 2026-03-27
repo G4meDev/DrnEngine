@@ -3,6 +3,7 @@
 // DOMAIN_SURFACE
 
 // SUPPORT_STATICMESH
+// SUPPORT_INSTANCED
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_PRE_PASS
@@ -32,7 +33,7 @@ struct VertexShaderOutput
     float4 Position : SV_Position;
 };
 
-VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
+VertexShaderOutput Main_VS(VertexInput IN)
 {
     VertexShaderOutput OUT;
     
