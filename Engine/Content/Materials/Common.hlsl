@@ -403,6 +403,27 @@ float CameraDepthFade(float PixelDepth, float DepthOffset, float DepthLength)
     return saturate((PixelDepth - DepthOffset) / DepthLength);
 }
 
+float CheapContrast(float Value, float Contrast)
+{
+    return saturate(lerp(-Contrast, Contrast, Value));
+}
+
+float4 WorldAlignedTexture(float3 WorldPosition, float3 TextureSize, Texture2D Texture, SamplerState Sampler, float3 WorldNormal, float TransitionContrast)
+{
+    float3 ScaledPosition = WorldPosition / TextureSize;
+    float4 XProjected = Texture.Sample(Sampler, ScaledPosition.zy);
+    float4 YProjected = Texture.Sample(Sampler, ScaledPosition.xz);
+    float4 ZProjected = Texture.Sample(Sampler, ScaledPosition.xy);
+    
+    float ZTransition = CheapContrast(abs(WorldNormal.z), TransitionContrast);
+    float YTransition = CheapContrast(abs(WorldNormal.y), TransitionContrast);
+    
+    float4 Result = lerp(XProjected, ZProjected, ZTransition);
+    Result = lerp(Result, YProjected, YTransition);
+    
+    return Result;
+}
+
 //float DistributionGGX(float3 N, float3 H, float roughness)
 //{
 //    float a = roughness * roughness;
