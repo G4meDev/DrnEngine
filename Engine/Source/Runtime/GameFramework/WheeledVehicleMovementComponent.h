@@ -332,6 +332,8 @@ namespace Drn
 
 		Transform GetWheelWorldTransform(int32 WheelIndex) const;
 
+		const WheelData& GetWheelData( int32 Index ) const { return Wheels[Index]; }
+
 #if WITH_EDITOR
 		void DrawDetailPanel( float DeltaTime ) override;
 #endif

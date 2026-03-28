@@ -560,9 +560,12 @@ namespace Drn
 	{
 		if (PhysxActor.rigidBody)
 		{
+			//PxTransform BodyPose = VehicleState.rigidBodyState.pose;
+			PxTransform BodyPose = PhysxActor.rigidBody->getGlobalPose();
+
 			return P2Transform(PxVehicleComputeWheelPose(SimulationContext.frame, VehicleParams.suspensionParams[WheelIndex], VehicleState.suspensionStates[WheelIndex],
 				VehicleState.suspensionComplianceStates[WheelIndex], VehicleState.steerCommandResponseStates[WheelIndex],
-				VehicleState.rigidBodyState.pose, VehicleState.wheelRigidBody1dStates[WheelIndex]));
+				BodyPose, VehicleState.wheelRigidBody1dStates[WheelIndex]));
 		}
 
 		return Transform::Identity;
