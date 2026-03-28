@@ -60,6 +60,8 @@ namespace Drn
 			physx::PxRigidDynamic* DynamicActor = Physics->createRigidDynamic( Transform2P(BodyTransform) );
 			m_RigidActor = DynamicActor;
 
+			DynamicActor->setSolverIterationCounts(8, 2);
+
 			// TODO: cache center of mass and inertia instead of generating at runtime 
 			//physx::PxRigidBodyExt::setMassAndUpdateInertia(*DynamicActor, m_Mass);
 		}

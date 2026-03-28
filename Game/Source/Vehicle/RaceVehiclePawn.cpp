@@ -54,6 +54,8 @@ namespace Drn
 		AddComponent(MovementComponent.get());
 		//MovementComponent->SetOwningVehicle(this);
 		MovementComponent->SetVehicleBody(VehicleMesh.get());
+
+		SpringarmInitalRotation = m_SpringArm->GetRelativeRotation();
 	}
 
 	RaceVehiclePawn::~RaceVehiclePawn()
@@ -78,6 +80,13 @@ namespace Drn
 	{
 		Pawn::Tick(DeltaTime);
 
+		const float InterpSpeed = 1.0f;
+		CameraPitch = Math::FInterpTo(CameraPitch, 0, DeltaTime, InterpSpeed);
+		CameraYaw = Math::FInterpTo(CameraYaw, 0, DeltaTime, InterpSpeed);
+
+		Quat SpringarmRotation = Quat(0, Math::DegreesToRadians(CameraPitch), Math::DegreesToRadians(-CameraYaw)) * SpringarmInitalRotation;
+		m_SpringArm->SetRelativeRotation(SpringarmRotation);
+
 		for (int32 i = 0; i < NUM_WHEELS; i++)
 		{
 			Transform WheelWorldTransform = MovementComponent->GetWheelWorldTransform(i);
@@ -94,6 +103,14 @@ namespace Drn
 		PlayerInputComponent->AddAxis(2, 1.0f, 1.0f, this, &RaceVehiclePawn::OnSteer);
 		PlayerInputComponent->AddAxisMapping(2, gainput::KeyD, 1);
 		PlayerInputComponent->AddAxisMapping(2, gainput::KeyA, -1);
+
+		PlayerInputComponent->AddAxis(3, 1.0f, 1.0f, this, &RaceVehiclePawn::OnLookUp);
+		PlayerInputComponent->AddAxisMapping(3, gainput::KeyUp, 1);
+		PlayerInputComponent->AddAxisMapping(3, gainput::KeyDown, -1);
+		
+		PlayerInputComponent->AddAxis(4, 1.0f, 1.0f, this, &RaceVehiclePawn::OnLookRight);
+		PlayerInputComponent->AddAxisMapping(4, gainput::KeyRight, 1);
+		PlayerInputComponent->AddAxisMapping(4, gainput::KeyLeft, -1);
 	}
 
 	void RaceVehiclePawn::CalcCamera( struct ViewInfo& OutResult )
@@ -117,4 +134,14 @@ namespace Drn
 		MovementComponent->SetSteerInput(Value);
 	}
 
-}  // namespace Drn
+	void RaceVehiclePawn::OnLookUp( float Value )
+	{
+		CameraPitch = Math::Clamp(CameraPitch + Value * Time::GetApplicationDeltaTime() * 50, -10.0f, 30.0f);
+	}
+
+	void RaceVehiclePawn::OnLookRight( float Value )
+	{
+		CameraYaw = Math::Clamp(CameraYaw + Value * Time::GetApplicationDeltaTime() * 100, -90.0f, 90.0f);
+	}
+
+        }  // namespace Drn

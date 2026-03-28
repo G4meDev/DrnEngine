@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "Vector.h"
+#include "Runtime/Math/Rotator.h"
 
 using namespace DirectX;
 
@@ -20,6 +21,8 @@ namespace Drn
 		inline Quat() { XMStoreFloat4(&m_Vector, XMQuaternionIdentity()); }
 
 		inline Quat( const XMVECTOR& InVector ) { XMStoreFloat4(&m_Vector, InVector); }
+
+		//Rotator ToRotator() const;
 
 		inline float GetX() const { return m_Vector.x; }
 		inline float GetY() const { return m_Vector.y; }

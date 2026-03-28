@@ -24,6 +24,9 @@ namespace Drn
 		void OnThrottle( float Value );
 		void OnSteer(float Value);
 
+		void OnLookUp(float Value);
+		void OnLookRight(float Value);
+
 		inline StaticMeshComponent* GetVehicleBody() { return VehicleMesh.get(); }
 		inline StaticMeshComponent* GetVehicleWheel(int32 Index) { return VehicleWheels[Index].get(); }
 
@@ -37,5 +40,8 @@ namespace Drn
 		std::shared_ptr<class SpringArmComponent> m_SpringArm;
 		std::shared_ptr<class CameraComponent> m_Camera;
 
+		Quat SpringarmInitalRotation;
+		float CameraPitch = 0;
+		float CameraYaw = 0;
 	};
 }

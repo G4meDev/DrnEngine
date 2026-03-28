@@ -58,6 +58,22 @@ static const int2 ClampOffset[4] =
 };
 #endif
 
+float HistoryClip(float3 History, float3 Filtered, float3 NeighborMin, float3 NeighborMax)
+{
+    float3 BoxMin = NeighborMin;
+    float3 BoxMax = NeighborMax;
+
+    float3 RayOrigin = History;
+    float3 RayDir = Filtered - History;
+    RayDir = select(abs(RayDir) < (1.0 / 65536.0), (1.0 / 65536.0), RayDir);
+    float3 InvRayDir = rcp(RayDir);
+
+    float3 MinIntersect = (BoxMin - RayOrigin) * InvRayDir;
+    float3 MaxIntersect = (BoxMax - RayOrigin) * InvRayDir;
+    float3 EnterIntersect = min(MinIntersect, MaxIntersect);
+    return max3(EnterIntersect.x, EnterIntersect.y, EnterIntersect.z);
+}
+
 [numthreads(8, 8, 1)]
 void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_GroupID, uint GroupThreadIndex : SV_GroupIndex)
 {
@@ -157,7 +173,12 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
         BoundsMax = max(BoundsMax, Sample);
     }
 
-    HistoryColor = clamp(HistoryColor, BoundsMin, BoundsMax);
+    //HistoryColor = clamp(HistoryColor, BoundsMin, BoundsMax);
+    
+    float3 TargetColor = 0.5 * (BoundsMin + BoundsMax);
+    float ClipBlend = HistoryClip(HistoryColor, TargetColor, BoundsMin, BoundsMax);
+	ClipBlend = saturate( ClipBlend );
+	HistoryColor = lerp(HistoryColor, TargetColor, ClipBlend);
     
 #endif
     

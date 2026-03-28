@@ -210,6 +210,25 @@ namespace Drn
 			return X * X +	Y * Y + Z * Z;
 		}
 
+		inline Vector GetClampedToMaxSize(float MaxSize) const
+		{
+			if (MaxSize < KINDA_SMALL_NUMBER)
+			{
+				return Vector::ZeroVector;
+			}
+
+			const float VSq = SizeSquared();
+			if (VSq > (MaxSize * MaxSize))
+			{
+				const float Scale = MaxSize / std::sqrt(VSq);
+				return Vector(m_Vector.x*Scale, m_Vector.y*Scale, m_Vector.z*Scale);
+			}
+			else
+			{
+				return *this;
+			}	
+		}
+
 		inline std::string ToString()
 		{
 			XMVECTOR Vec = XMLoadFloat3(&m_Vector);

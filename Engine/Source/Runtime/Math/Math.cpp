@@ -44,6 +44,24 @@ namespace Drn
 		return Delta > -Telorance && Delta < Telorance;
 	}
 
+	float Math::FInterpTo( float Current, float Target, float DeltaTime, float InterpSpeed )
+	{
+		if( InterpSpeed <= 0.f )
+		{
+			return Target;
+		}
+
+		const float Dist = Target - Current;
+
+		if( (Dist * Dist) < SMALL_NUMBER )
+		{
+			return Target;
+		}
+
+		const float DeltaMove = Dist * Math::Clamp<float>(DeltaTime * InterpSpeed, 0.f, 1.f);
+		return Current + DeltaMove;
+	}
+
 	Vector Math::VInterpTo( const Vector& Current, const Vector& Target, float DeltaTime, float InterpSpeed )
 	{
 		if (InterpSpeed <= 0.0f)

@@ -117,6 +117,7 @@ namespace Drn
 		static inline float InvSqrt(float F) {  return 1.0f / std::sqrt(F); }
 		static inline float TruncToInt(float F) { return std::trunc(F); }
 
+		static float FInterpTo(float Current, float Target, float DeltaTime, float InterpSpeed);
 		static Vector VInterpTo(const Vector& Current, const Vector& Target, float DeltaTime, float InterpSpeed);
 		static Quat QInterpTo(const Quat& Current, const Quat& Target, float DeltaTime, float InterpSpeed);
 

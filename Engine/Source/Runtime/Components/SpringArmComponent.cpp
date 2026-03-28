@@ -83,20 +83,87 @@ namespace Drn
 
 	void SpringArmComponent::UpdateDesiredLocationAndRotation( float DeltaTime, bool LocationLag, bool RotationLag )
 	{
+		// @TODO: make parameter
+		const bool bUseSubstepping = true;
+		const float CameraLagMaxTimeStep = 1.f / 120.f;
+		const float CameraLagMaxDistance = 0.0f;
+
 		Quat DesireRotation = GetWorldRotation();
 		if (RotationLag)
 		{
-			DesireRotation = Math::QInterpTo(m_PreviousDesiredRotation, DesireRotation, DeltaTime, m_RotationLagSpeed);
+			//if (bUseSubstepping && DeltaTime > CameraLagMaxTimeStep && m_RotationLagSpeed > 0.f)
+			//{
+			//	//const Rotator ArmRotStep = (Rotator(DesireRotation) - Rotator(m_PreviousDesiredRotation)).GetNormalized() * (1.f / DeltaTime);
+			//	//Rotator LerpTarget = Rotator(m_PreviousDesiredRotation);
+			//	//float RemainingTime = DeltaTime;
+			//	//while (RemainingTime > KINDA_SMALL_NUMBER)
+			//	//{
+			//	//	const float LerpAmount = std::min(CameraLagMaxTimeStep, RemainingTime);
+			//	//	LerpTarget += ArmRotStep * LerpAmount;
+			//	//	RemainingTime -= LerpAmount;
+			//	//
+			//	//	DesireRotation = Math::QInterpTo(m_PreviousDesiredRotation, Quat(LerpTarget), LerpAmount, m_RotationLagSpeed);
+			//	//	m_PreviousDesiredRotation = DesireRotation;
+			//	//}
+			//
+			//	//const Quat ArmRotStep = (DesireRotation - m_PreviousDesiredRotation).GetNormalized() * (1.f / DeltaTime);
+			//	//
+			//	//XM
+			//	//
+			//	//FRotator LerpTarget = PreviousDesiredRot;
+			//	//float RemainingTime = DeltaTime;
+			//	//while (RemainingTime > KINDA_SMALL_NUMBER)
+			//	//{
+			//	//	const float LerpAmount = FMath::Min(CameraLagMaxTimeStep, RemainingTime);
+			//	//	LerpTarget += ArmRotStep * LerpAmount;
+			//	//	RemainingTime -= LerpAmount;
+			//	//
+			//	//	DesiredRot = FRotator(FMath::QInterpTo(FQuat(PreviousDesiredRot), FQuat(LerpTarget), LerpAmount, CameraRotationLagSpeed));
+			//	//	PreviousDesiredRot = DesiredRot;
+			//	//}
+			//}
+			//else
+			//{
+				DesireRotation = Math::QInterpTo(m_PreviousDesiredRotation, DesireRotation, DeltaTime, m_RotationLagSpeed);
+			//}
 		}
-		
-		m_PreviousDesiredRotation = DesireRotation;
 
-		Vector DesireLocation = GetWorldTransform().TransformPosition(Vector(0, 0, -m_ArmLength));
+		Vector ArmOrigin = GetWorldTransform().TransformPosition(Vector(0, 0, -m_ArmLength));
+		Vector DesireLocation = ArmOrigin;
 		if (LocationLag)
 		{
-			DesireLocation = Math::VInterpTo(m_PreviousDesiredLocation, DesireLocation, DeltaTime, m_LocationLagSpeed);
+			if (bUseSubstepping && DeltaTime > CameraLagMaxTimeStep && m_LocationLagSpeed > 0.f)
+			{
+				const Vector ArmMovementStep = (DesireLocation - m_PreviousDesiredLocation) * (1.f / DeltaTime);
+				Vector LerpTarget = m_PreviousDesiredLocation;
+
+				float RemainingTime = DeltaTime;
+				while (RemainingTime > KINDA_SMALL_NUMBER)
+				{
+					const float LerpAmount = std::min(CameraLagMaxTimeStep, RemainingTime);
+					LerpTarget = LerpTarget + ArmMovementStep * LerpAmount;
+					RemainingTime -= LerpAmount;
+
+					DesireLocation = Math::VInterpTo(m_PreviousDesiredLocation, LerpTarget, LerpAmount, m_LocationLagSpeed);
+					m_PreviousDesiredLocation = DesireLocation;
+				}
+			}
+			else
+			{
+				DesireLocation = Math::VInterpTo(m_PreviousDesiredLocation, DesireLocation, DeltaTime, m_LocationLagSpeed);
+			}
 		}
 
+		if (CameraLagMaxDistance > 0.f)
+		{
+			const Vector FromOrigin = DesireLocation - ArmOrigin;
+			if (FromOrigin.SizeSquared() > (CameraLagMaxDistance * CameraLagMaxDistance))
+			{
+				DesireLocation = ArmOrigin + FromOrigin.GetClampedToMaxSize(CameraLagMaxDistance);
+			}
+		}
+
+		m_PreviousDesiredRotation = DesireRotation;
 		m_PreviousDesiredLocation = DesireLocation;
 
 		Transform RelTransform = Transform(DesireLocation, DesireRotation).GetRelativeTransform(GetWorldTransform());

@@ -223,6 +223,11 @@ matrix GetLocalToWorld(VertexInputPositionOnlyInstancedStaticMesh IN)
         , float4(0, 0, 0, 1));
 }
 
+float max3(float A, float B, float C)
+{
+    return max(max(A, B), C);
+}
+
 uint ReverseBits32( uint bits )
 {
 #if SM5_PROFILE || COMPILER_METAL

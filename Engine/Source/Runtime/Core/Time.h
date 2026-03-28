@@ -12,7 +12,7 @@ namespace Drn
 
 		static void Init();
 
-		static FORCEINLINE double GetSeconds()
+		static inline double GetSeconds()
 		{
 			LARGE_INTEGER Cycles;
 			QueryPerformanceCounter(&Cycles);
@@ -20,11 +20,11 @@ namespace Drn
 			return Cycles.QuadPart / SecondsPerCycle;
 		}
 
-		static FORCEINLINE float GetApplicationDeltaTime() { return m_ApplicationDeltaTime; }
+		static inline float GetApplicationDeltaTime() { return m_ApplicationDeltaTime; }
 
 	private:
 
-		static FORCEINLINE void SetApplicationDeltaTime( float DeltaTime ) { m_ApplicationDeltaTime = DeltaTime; }
+		static inline void SetApplicationDeltaTime( float DeltaTime ) { m_ApplicationDeltaTime = DeltaTime; }
 
 		static float m_ApplicationDeltaTime;
 
