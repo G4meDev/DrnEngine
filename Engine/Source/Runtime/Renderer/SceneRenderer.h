@@ -250,6 +250,7 @@ namespace Drn
 		void RenderPrepass();
 		void RenderShadowDepths();
 		void RenderDecals();
+		void RenderVelocity();
 		void RenderBasePass();
 		void RenderHZB();
 		void RenderAO();

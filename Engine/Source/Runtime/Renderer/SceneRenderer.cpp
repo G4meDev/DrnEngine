@@ -261,6 +261,34 @@ namespace Drn
 	}
 #endif
 
+	void SceneRenderer::RenderVelocity()
+	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderVelocityPass");
+		SCOPE_STAT();
+		
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Velocity" );
+		
+		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_VelocityTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		m_CommandList->FlushBarriers();
+
+		m_CommandList->ClearColorTexture(m_GBuffer->m_VelocityTarget);
+		const D3D12_CPU_DESCRIPTOR_HANDLE VelocityHandle = m_GBuffer->m_VelocityTarget->GetRenderTargetView(0, 0)->GetView();
+		const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &VelocityHandle, true, &DepthHandle );
+		
+		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
+		{
+			PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
+			if (!Proxy->IsStatic())
+			{
+				Proxy->RenderVelocityPass(m_CommandList, this);
+			}
+		}
+		
+		PIXEndEvent( m_CommandList->GetD3D12CommandList());
+	}
+
 	void SceneRenderer::RenderBasePass()
 	{
 		SCOPED_GPU_STAT(m_CommandList, "RenderBasePass");
@@ -925,6 +953,7 @@ namespace Drn
 		RenderShadowDepths();
 		RenderDecals();
 		RenderBasePass();
+		RenderVelocity();
 		RenderAO();
 		RenderLights();
 		RenderSSR();
@@ -1068,6 +1097,8 @@ namespace Drn
 
 		Matrix PrevViewMatrix = m_SceneView.WorldToView;
 		Matrix PrevProjectionMatrix = m_SceneView.ViewToProjection;
+
+		m_SceneView.PrevWorldToProjection = m_SceneView.WorldToProjection;
 
 		ViewInfo VInfo;
 		GetViewInfo(VInfo);

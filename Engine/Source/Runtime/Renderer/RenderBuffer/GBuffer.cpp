@@ -52,7 +52,7 @@ namespace Drn
 		m_MasksBTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_MASKS_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), MaskBCreateInfo);
 
-		RenderResourceCreateInfo VelocityCreateInfo( nullptr, nullptr, ClearValueBinding(Vector4(0.5f, 0.5f, 0.0f, 0.0f)), "Gbuffer_Velocity" );
+		RenderResourceCreateInfo VelocityCreateInfo( nullptr, nullptr, ClearValueBinding(Vector4(0.0f, 0.0f, 0.0f, 0.0f)), "Gbuffer_Velocity" );
 		m_VelocityTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_VELOCITY_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), VelocityCreateInfo);
 

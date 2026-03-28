@@ -29,6 +29,7 @@ namespace Drn
 		HasEditorPrimitivePass,
 		HasEditorSelectionPass,
 		HasDecalPass,
+		HasVeloictyPass,
 	};
 	
 	const std::unordered_map<EMaterialShaderFlag, std::string> MaterialShaderFlagTokenMap = 
@@ -51,6 +52,7 @@ namespace Drn
 		{EMaterialShaderFlag::HasEditorPrimitivePass			, "SUPPORT_EDITOR_PRIMITIVE_PASS"},
 		{EMaterialShaderFlag::HasEditorSelectionPass			, "SUPPORT_EDITOR_SELECTION_PASS"},
 		{EMaterialShaderFlag::HasDecalPass						, "SUPPORT_DECAL_PASS"},
+		{EMaterialShaderFlag::HasVeloictyPass					, "SUPPORT_VELOCITY"},
 	};
 
 	inline static bool IsMaterialFlagDomain( EMaterialShaderFlag Flag )
@@ -285,6 +287,21 @@ namespace Drn
 					Shaders.PushShader(VertexFactory, EMaterialStage::Main, MainShaderBlob);
 				}
 
+				if (Flags.HasFlag(EMaterialShaderFlag::HasVeloictyPass))
+				{
+					ShaderBlob VelocityShaderBlob;
+					std::vector<const wchar_t*> Macros = { L"VELOCITY_PASS=1" };
+					Macros.push_back(VertexFactory->GetShaderMacro());
+
+					CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &VelocityShaderBlob.m_VS);
+					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", Macros, &VelocityShaderBlob.m_PS);
+					//CompileShaderBlobConditional(HasGS, Path, L"Main_GS", L"gs_6_6", Macros, &MainShaderBlob.m_GS);
+					//CompileShaderBlobConditional(HasHS, Path, L"Main_HS", L"hs_6_6", Macros, &MainShaderBlob.m_HS);
+					//CompileShaderBlobConditional(HasDS, Path, L"Main_DS", L"ds_6_6", Macros, &MainShaderBlob.m_DS);
+
+					Shaders.PushShader(VertexFactory, EMaterialStage::Velocity, VelocityShaderBlob);
+				}
+
 				if (Flags.HasFlag(EMaterialShaderFlag::HasHitProxyPass))
 				{
 					ShaderBlob HitProxyShaderBlob;
@@ -369,6 +386,7 @@ namespace Drn
 			MaterialAsset->ShaderParameters.bHasEditorPrimitivePass = Flags.HasFlag(EMaterialShaderFlag::HasEditorPrimitivePass);
 			MaterialAsset->ShaderParameters.bHasEditorSelectionPass = Flags.HasFlag(EMaterialShaderFlag::HasEditorSelectionPass);
 			MaterialAsset->ShaderParameters.bHasDecalPass = Flags.HasFlag(EMaterialShaderFlag::HasDecalPass);
+			MaterialAsset->ShaderParameters.bHasVelocityPass = Flags.HasFlag(EMaterialShaderFlag::HasVeloictyPass);
 
 			MaterialAsset->ShaderParameters.bIsUsedWithStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryStaticMesh);
 			MaterialAsset->ShaderParameters.bIsUsedWithInstancedStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryInstancedStaticMesh);

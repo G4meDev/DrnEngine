@@ -82,6 +82,7 @@ namespace Drn
 		bool m_Thickness;
 	protected:
 
+		virtual void RenderVelocityPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderMainPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderPrePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;

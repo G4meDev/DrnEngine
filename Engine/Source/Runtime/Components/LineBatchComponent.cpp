@@ -204,6 +204,11 @@ namespace Drn
 		return Bounds;
 	}
 
+	void LineBatchSceneProxy::RenderVelocityPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 	void LineBatchSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		SCOPE_STAT();

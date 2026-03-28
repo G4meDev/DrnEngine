@@ -65,6 +65,11 @@ namespace Drn
 	BillboardSceneProxy::~BillboardSceneProxy()
 	{}
 
+	void BillboardSceneProxy::RenderVelocityPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 	void BillboardSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		

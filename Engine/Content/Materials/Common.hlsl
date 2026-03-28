@@ -96,6 +96,7 @@ struct ViewBuffer
     float2 Pad_1;
     
     matrix ClipToPreviousClip;
+    matrix PrevWorldToProjection;
 };
 
 struct PrimitiveBuffer
@@ -422,6 +423,34 @@ float4 WorldAlignedTexture(float3 WorldPosition, float3 TextureSize, Texture2D T
     Result = lerp(Result, YProjected, YTransition);
     
     return Result;
+}
+
+float3 Calculate3DVelocity(float4 PackedVelocityA, float4 PackedVelocityC, float2 TaaJitter, float2 PrevTaaJitter)
+{
+    float2 ScreenPos = PackedVelocityA.xy / PackedVelocityA.w - TaaJitter;
+    float2 PrevScreenPos = PackedVelocityC.xy / PackedVelocityC.w - PrevTaaJitter;
+
+    float DeviceZ = PackedVelocityA.z / PackedVelocityA.w;
+    float PrevDeviceZ = PackedVelocityC.z / PackedVelocityC.w;
+
+    float3 Velocity = float3(ScreenPos - PrevScreenPos, DeviceZ - PrevDeviceZ);
+    return Velocity;
+}
+
+float2 EncodeVelocityToTexture(float2 V)
+{
+    float2 EncodedV;
+    EncodedV.xy = V.xy * (0.499f * 0.5f) + 32767.0f / 65535.0f;
+    return EncodedV;
+}
+
+float2 DecodeVelocityFromTexture(float2 EncodedV)
+{
+    const float InvDiv = 1.0f / (0.499f * 0.5f);
+
+    float2 V;
+    V.xy = EncodedV.xy * InvDiv - 32767.0f / 65535.0f * InvDiv;
+    return V;
 }
 
 //float DistributionGGX(float3 N, float3 H, float roughness)

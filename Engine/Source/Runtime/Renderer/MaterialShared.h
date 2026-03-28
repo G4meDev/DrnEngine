@@ -154,6 +154,8 @@ namespace Drn
 				uint32 bIsUsedWithStaticMesh : 1;
 				uint32 bIsUsedWithInstancedStaticMesh : 1;
 				uint32 bIsUsedWithDecal : 1;
+
+				uint32 bHasVelocityPass : 1;
 			};
 		};
 
@@ -204,6 +206,7 @@ namespace Drn
 		Hitproxy,
 		EditorPrimitive,
 		EditorSelection,
+		Velocity,
 	};
 
 	class MaterialShader

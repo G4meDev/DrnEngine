@@ -31,6 +31,11 @@ namespace Drn
 		return Bounds;
 	}
 
+	void InstancedStaticMeshSceneProxy::RenderVelocityPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 	void InstancedStaticMeshSceneProxy::RenderMainPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		const int32 NumInstances = m_OwningInstancedStaticMeshComponent->GetInstanceCount();

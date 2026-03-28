@@ -42,6 +42,7 @@ namespace Drn
 		float Pad_1[2];
 
 		Matrix ClipToPreviousClip;
+		Matrix PrevWorldToProjection;
 
 		Vector4 PixelToScreen(float InX, float InY, float InZ) const;
 		Vector PixelToWorld(float InX, float InY, float InZ) const;

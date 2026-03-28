@@ -75,6 +75,7 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointClampIndex];
     
     float2 BufferUV = (DispatchThreadId + 0.5f) * View.InvSize;
+    float2 NearestBufferUV = BufferUV;
     uint2 OutputPixelPos = DispatchThreadId;
     
     float PixelDepth = SampleDepthTexture(DepthTexture, PointSampler, BufferUV, int2(0, 0));
@@ -122,6 +123,18 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     
     float2 Velo = ScreenPos - PrevScreenPos;
     float2 VeloTemp = Velo * View.RenderSize;
+    
+#if 1
+    float2 EncodedVelocity = VelocityTexture.SampleLevel(PointSampler, NearestBufferUV + VelocityOffset, 0).rg;
+    bool DynamicN = EncodedVelocity.x > 0.0;
+    if (DynamicN)
+    {
+        Velo = DecodeVelocityFromTexture(EncodedVelocity);
+        PrevUV = ScreenPosToViewportUV(ScreenPos - Velo);
+        VeloTemp = Velo * View.RenderSize;
+    }
+#endif
+    
     float VeloLen = sqrt(dot(VeloTemp, VeloTemp));
     
     float3 DeferredColor = DeferredTexture.Sample(PointSampler, BufferUV).xyz;
