@@ -6,10 +6,13 @@
 
 namespace Drn
 {
-	struct TAAData
+	struct alignas(16) TAAData
 	{
 	public:
 		TAAData() = default;
+
+		float SampleWeights[12];
+		float PlusWeights[8];
 
 		uint32 DeferredColorTexture;
 		uint32 VelocityTexture;
@@ -20,6 +23,7 @@ namespace Drn
 		float CurrentFrameWeight;
 		float CcurrentFrameVelocityWeight;
 		float CcurrentFrameVelocityMultiplier;
+
 	};
 
 	class TAABuffer : public RenderBuffer

@@ -87,6 +87,61 @@ namespace Drn
 		m_Data.CcurrentFrameVelocityWeight = Renderer->m_PostProcessSettings->m_TAASettings.m_CcurrentFrameVelocityWeight;
 		m_Data.CcurrentFrameVelocityMultiplier = Renderer->m_PostProcessSettings->m_TAASettings.m_CcurrentFrameVelocityMultiplier;
 
+		float JitterX = Renderer->GetSceneView().JitterOffset[0];
+		float JitterY = Renderer->GetSceneView().JitterOffset[1];
+		float ResDivisorInvX = Renderer->GetSceneView().InvSizeX;
+		float ResDivisorInvY = Renderer->GetSceneView().InvSizeY;
+
+		float FilterSize = 1.0f;
+
+		static const float SampleOffsets[9][2] =
+		{
+			{ -1.0f, -1.0f },
+			{  0.0f, -1.0f },
+			{  1.0f, -1.0f },
+			{ -1.0f,  0.0f },
+			{  0.0f,  0.0f },
+			{  1.0f,  0.0f },
+			{ -1.0f,  1.0f },
+			{  0.0f,  1.0f },
+			{  1.0f,  1.0f },
+		};
+
+		{
+			float TotalWeight = 0.0f;
+			for (int32 i = 0; i < 9; i++)
+			{
+				float PixelOffsetX = SampleOffsets[i][0] - JitterX * ResDivisorInvX;
+				float PixelOffsetY = SampleOffsets[i][1] - JitterY * ResDivisorInvY;
+
+				PixelOffsetX /= FilterSize;
+				PixelOffsetY /= FilterSize;
+
+				m_Data.SampleWeights[i] = std::exp(-2.29f * (PixelOffsetX * PixelOffsetX + PixelOffsetY * PixelOffsetY));
+				TotalWeight += m_Data.SampleWeights[i];
+			}
+	
+			for (int32 i = 0; i < 9; i++)
+				m_Data.SampleWeights[i] /= TotalWeight;
+		}
+
+		{
+			m_Data.PlusWeights[0] = m_Data.SampleWeights[1];
+			m_Data.PlusWeights[1] = m_Data.SampleWeights[3];
+			m_Data.PlusWeights[2] = m_Data.SampleWeights[4];
+			m_Data.PlusWeights[3] = m_Data.SampleWeights[5];
+			m_Data.PlusWeights[4] = m_Data.SampleWeights[7];
+			float TotalWeightPlus = (
+				m_Data.SampleWeights[1] +
+				m_Data.SampleWeights[3] +
+				m_Data.SampleWeights[4] +
+				m_Data.SampleWeights[5] +
+				m_Data.SampleWeights[7]);
+	
+			for (int32 i = 0; i < 5; i++)
+				m_Data.PlusWeights[i] /= TotalWeightPlus;
+		}
+
 		Buffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(TAAData), EUniformBufferUsage::SingleFrame, &m_Data);
 	}
 

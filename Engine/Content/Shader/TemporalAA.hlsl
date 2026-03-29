@@ -12,6 +12,12 @@ ConstantBuffer<Resources> BindlessResources : register(b0);
 
 struct TAAData
 {
+    float4 SampleWeights[3];
+    float4 PlusWeights[2];
+    
+    //float SampleWeights[12];
+    //float PlusWeights[8];
+
     uint DeferredColorTexture;
     uint VelocityTexture;
     uint HistoryTexture;
@@ -21,6 +27,7 @@ struct TAAData
     float CcurrentFrameWeight;
     float CcurrentFrameVelocityWeight;
     float CcurrentFrameVelocityMultiplier;
+    
 };
 
 float3 Luminance(float3 LinearColor)
@@ -32,6 +39,11 @@ float SampleDepthTexture(Texture2D DepthTexture, SamplerState Sampler, float2 UV
 {
     return DepthTexture.SampleLevel(Sampler, UV, 0, PixelOffset).r;
 }
+
+struct FTAAIntermediaryResult
+{
+    float4 Filtered;
+};
 
 #define CROSS_DIST 1
 
@@ -58,6 +70,22 @@ static const int2 ClampOffset[4] =
 };
 #endif
 
+static const int2 kOffsets3x3[9] =
+{
+    int2(-1, -1),
+	int2(0, -1),
+	int2(1, -1),
+	int2(-1, 0),
+	int2(0, 0), // K
+	int2(1, 0),
+	int2(-1, 1),
+	int2(0, 1),
+	int2(1, 1),
+};
+	
+static const uint kSquareIndexes3x3[9] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+static const uint kPlusIndexes3x3[5] = { 1, 3, 4, 5, 7 };
+
 float HistoryClip(float3 History, float3 Filtered, float3 NeighborMin, float3 NeighborMax)
 {
     float3 BoxMin = NeighborMin;
@@ -72,6 +100,104 @@ float HistoryClip(float3 History, float3 Filtered, float3 NeighborMin, float3 Ne
     float3 MaxIntersect = (BoxMax - RayOrigin) * InvRayDir;
     float3 EnterIntersect = min(MinIntersect, MaxIntersect);
     return max3(EnterIntersect.x, EnterIntersect.y, EnterIntersect.z);
+}
+
+float4 SampleCachedSceneColorTexture(Texture2D SceneColorTexture, int2 ScreenPixel, int2 PixelOffset)
+{
+    int2 Coord = ScreenPixel + PixelOffset;
+    return SceneColorTexture[Coord];
+}
+
+void FilterCurrentFrameInputSamples(in TAAData Data, Texture2D SceneColorTexture, int2 ScreenPixel, inout FTAAIntermediaryResult Result)
+{
+#define AA_SAMPLES 9
+    
+    Result.Filtered = 0;
+    
+    [unroll]
+    for (uint i = 0; i < AA_SAMPLES; i++)
+    {
+        #if AA_SAMPLES == 9
+            const uint SampleIndexes[9] = kSquareIndexes3x3;
+        #elif AA_SAMPLES == 5
+		    const uint SampleIndexes[5] = kPlusIndexes3x3;
+        #endif
+        
+		const uint SampleIndex = SampleIndexes[i];
+		int2 SampleOffset = kOffsets3x3[SampleIndex];
+		//float2 fSampleOffset = float2(SampleOffset);
+        
+        const int j = i / 4;
+        const int k = i % 4;
+        
+        #if AA_SAMPLES == 9
+            //float SampleSpatialWeight = Data.SampleWeights[i];
+            float SampleSpatialWeight = Data.SampleWeights[j][k];
+
+		#elif AA_SAMPLES == 5
+            //float SampleSpatialWeight = Data.PlusWeights[i];
+            float SampleSpatialWeight = Data.PlusWeights[j][k];
+
+        #else
+            #error unsupported
+        #endif
+
+        float4 Sample = SampleCachedSceneColorTexture(SceneColorTexture, ScreenPixel, SampleOffset);
+        Result.Filtered += Sample * SampleSpatialWeight;
+    }
+}
+
+void ComputeNeighborhoodBoundingbox(FTAAIntermediaryResult IntermediaryResult, Texture2D SceneColorTexture, int2 ScreenPixel, out float3 BoundsMin, out float3 BoundsMax)
+{
+#if 1
+    BoundsMin = 100000;
+    BoundsMax = 0;
+    
+    [unroll]
+    for (int i = 0; i < CLAMP_COUNT; i++)
+    {
+        float3 Sample = SampleCachedSceneColorTexture(SceneColorTexture, ScreenPixel, ClampOffset[i]).rgb;
+        BoundsMin = min(BoundsMin, Sample);
+        BoundsMax = max(BoundsMax, Sample);
+    }
+#else
+    const uint kNeighborsCount = 9;
+    float3 Neighbors[kNeighborsCount];
+    [unroll]
+    for (uint i = 0; i < kNeighborsCount; i++)
+    {
+        Neighbors[i] = SampleCachedSceneColorTexture(SceneColorTexture, ScreenPixel, kOffsets3x3[i]).rgb;
+    }
+    
+    #if AA_SAMPLES == 9
+        const uint SampleIndexes[9] = kSquareIndexes3x3;
+    #elif AA_SAMPLES == 5
+		const uint SampleIndexes[5] = kPlusIndexes3x3;
+    #else
+		#error Unknown number of samples.
+    #endif
+
+    float3 m1 = 0;
+    float3 m2 = 0;
+    [unroll]
+    for (uint i = 0; i < AA_SAMPLES; i++)
+    {
+        float3 SampleColor = Neighbors[SampleIndexes[i]];
+
+        m1 += SampleColor;
+        m2 += SampleColor * SampleColor;
+    }
+
+    m1 *= (1.0 / AA_SAMPLES);
+    m2 *= (1.0 / AA_SAMPLES);
+
+    float3 StdDev = sqrt(abs(m2 - m1 * m1));
+    BoundsMin = m1 - 1.25 * StdDev;
+    BoundsMax = m1 + 1.25 * StdDev;
+
+    BoundsMin = min(BoundsMin, IntermediaryResult.Filtered.rgb);
+    BoundsMax = max(BoundsMax, IntermediaryResult.Filtered.rgb);
+#endif
 }
 
 [numthreads(8, 8, 1)]
@@ -93,6 +219,7 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     float2 BufferUV = (DispatchThreadId + 0.5f) * View.InvSize;
     float2 NearestBufferUV = BufferUV;
     uint2 OutputPixelPos = DispatchThreadId;
+    float2 ScreenPixel = int2(NearestBufferUV * View.RenderSize);
     
     float PixelDepth = SampleDepthTexture(DepthTexture, PointSampler, BufferUV, int2(0, 0));
     float2 VelocityOffset = float2(0.0, 0.0);
@@ -122,15 +249,7 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     VelocityOffset = DepthOffset * View.InvSize;
 #endif
     
-    //float2 Velocity = VelocityTexture.Sample(PointSampler, BufferUV + VelocityOffset).xy;
-    //Velocity = (Velocity - 0.5f) * 4;
-    //
-    //float2 VeloTemp = Velocity * View.RenderSize;
-    //float VeloLen = sqrt(dot(VeloTemp, VeloTemp));
-    
     float2 ScreenPos = ViewportUVToScreenPos(BufferUV);
-    //float2 PrevScreenPos = ScreenPos - Velocity;
-    //float2 PrevUV = ScreenPosToViewportUV(PrevScreenPos);
     
     float4 ThisClip = float4(ScreenPos, PixelDepth, 1);
     float4 PrevClip = mul(View.ClipToPreviousClip, ThisClip);
@@ -153,44 +272,82 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     
     float VeloLen = sqrt(dot(VeloTemp, VeloTemp));
     
+    float HistoryBlurAmp = 2.0;
+    float HistoryBlur = saturate(abs(VeloTemp.x) * HistoryBlurAmp + abs(VeloTemp.y) * HistoryBlurAmp);
+    
     float3 DeferredColor = DeferredTexture.Sample(PointSampler, BufferUV).xyz;
     float3 Result;
 
     bool OffScreen = max(abs(PrevScreenPos.x), abs(PrevScreenPos.y)) >= 1.0;
     
-    float3 HistoryColor = HistoryTexture.Sample(LinearSampler, PrevUV).xyz;
+    FTAAIntermediaryResult IntermediaryResult;
+    FilterCurrentFrameInputSamples(TAABuffer, DeferredTexture, ScreenPixel, IntermediaryResult);
+    
+    float4 History = HistoryTexture.Sample(LinearSampler, PrevUV);
+    float3 HistoryColor = History.xyz;
     
 #if CLAMP_COUNT
-    float3 BoundsMin = 100000;
-    float3 BoundsMax = 0;
-        
-    [unroll]
-    for (int i = 0; i < CLAMP_COUNT; i++)
-    {
-        float3 Sample = DeferredTexture.Sample(PointSampler, BufferUV, ClampOffset[i]).rgb;
-            
-        BoundsMin = min(BoundsMin, Sample);
-        BoundsMax = max(BoundsMax, Sample);
-    }
-
-    //HistoryColor = clamp(HistoryColor, BoundsMin, BoundsMax);
     
+    float3 BoundsMin;
+    float3 BoundsMax;
+    ComputeNeighborhoodBoundingbox(IntermediaryResult, DeferredTexture, ScreenPixel, BoundsMin, BoundsMax);
+
+    bool IgnoreHistory = false;
+    bool Dynamic4;
+#if 1
+	{
+        bool Dynamic1 = VelocityTexture.SampleLevel(PointSampler, NearestBufferUV, 0, int2(0, -1)).x > 0;
+        bool Dynamic3 = VelocityTexture.SampleLevel(PointSampler, NearestBufferUV, 0, int2(-1, 0)).x > 0;
+        Dynamic4 = VelocityTexture.SampleLevel(PointSampler, NearestBufferUV, 0).x > 0;
+        bool Dynamic5 = VelocityTexture.SampleLevel(PointSampler, NearestBufferUV, 0, int2(1, 0)).x > 0;
+        bool Dynamic7 = VelocityTexture.SampleLevel(PointSampler, NearestBufferUV, 0, int2(0, 1)).x > 0;
+
+        bool Dynamic = Dynamic1 || Dynamic3 || Dynamic4 || Dynamic5 || Dynamic7;
+        IgnoreHistory = !Dynamic && History.a > 0;
+    }
+#endif
+    
+    float LumaHistory = Luma4(HistoryColor);
+    float LumaFiltered = Luma4(IntermediaryResult.Filtered.rgb);
+    float LumaMin = Luma4(BoundsMin);
+    float LumaMax = Luma4(BoundsMax);
+    
+#define AA_CLIP 1
+//#define AA_CLAMP 1
+    
+#if AA_CLAMP
+    HistoryColor = clamp(HistoryColor, BoundsMin, BoundsMax);
+#elif AA_CLIP
     float3 TargetColor = 0.5 * (BoundsMin + BoundsMax);
     float ClipBlend = HistoryClip(HistoryColor, TargetColor, BoundsMin, BoundsMax);
 	ClipBlend = saturate( ClipBlend );
 	HistoryColor = lerp(HistoryColor, TargetColor, ClipBlend);
-    
+#else 
+    #error err
+#endif
 #endif
     
-    //BlendFactor = lerp(0.04, 0.2f, saturate(VeloLen * 0.025f));
-    float BlendFactor = lerp(TAABuffer.CcurrentFrameWeight, TAABuffer.CcurrentFrameVelocityWeight, saturate(VeloLen * TAABuffer.CcurrentFrameVelocityMultiplier));
+    //{
+    //    float AddAliasing = saturate(HistoryBlur) * 0.5;
+    //    float LumaContrastFactor = 32.0;
+    //    float LumaContrast = LumaMax - LumaMin;
+    //    AddAliasing = saturate(AddAliasing + rcp(1.0 + LumaContrast * LumaContrastFactor));
+    //    IntermediaryResult.Filtered = lerp(IntermediaryResult.Filtered, SampleCachedSceneColorTexture(DeferredTexture, ScreenPixel, int2(0, 0)), AddAliasing);
+    //}
     
-    if(OffScreen)
+    //float BlendFactor = lerp(0.04, 0.2f, saturate(VeloLen * 0.025f));
+    float BlendFactor = lerp(TAABuffer.CcurrentFrameWeight, TAABuffer.CcurrentFrameVelocityWeight, saturate(VeloLen * TAABuffer.CcurrentFrameVelocityMultiplier));
+    BlendFactor = max(BlendFactor, saturate(0.01 * LumaHistory / abs(LumaFiltered - LumaHistory)));
+    
+    if(OffScreen || IgnoreHistory)
     {
         BlendFactor = 1.0f;
     }
     
-    Result = lerp(HistoryColor, DeferredColor, BlendFactor);
+    //Result = lerp(HistoryColor, DeferredColor, BlendFactor);
+    Result = lerp(HistoryColor, IntermediaryResult.Filtered.rgb, BlendFactor);
+    //Result = IntermediaryResult.Filtered.rgb;
     
-    TargetTexture[OutputPixelPos] = float4(Result, 1);
+    //TargetTexture[OutputPixelPos] = float4(Result, 1);
+    TargetTexture[OutputPixelPos] = float4(Result, Dynamic4 ? 1 : 0);
 }
