@@ -569,8 +569,11 @@ namespace Drn
 
 #if WITH_EDITOR
 	void MaterialShaderParameters::Draw()
-	{
-		bool bMasked = bIsMasked; ImGui::Checkbox("Masked", &bMasked);
+	{	
+		ImGui::Text( ("Domain: " + GetDomainName()).c_str() );
+		ImGui::Text( ("BlendMode: " + GetBlendName()).c_str() );
+		ImGui::Text( ("ShadingModel: " + GetShadingName()).c_str() );
+
 		bool bTwoSided = bIsTwoSided; ImGui::Checkbox("TwoSided", &bTwoSided);
 
 		bool bInstacedStaticMesh = bIsUsedWithInstancedStaticMesh; ImGui::Checkbox("Instanced Static Mesh", &bInstacedStaticMesh);

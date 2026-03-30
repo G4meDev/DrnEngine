@@ -149,18 +149,6 @@ void FilterCurrentFrameInputSamples(in TAAData Data, Texture2D SceneColorTexture
 
 void ComputeNeighborhoodBoundingbox(FTAAIntermediaryResult IntermediaryResult, Texture2D SceneColorTexture, int2 ScreenPixel, out float3 BoundsMin, out float3 BoundsMax)
 {
-#if 1
-    BoundsMin = 100000;
-    BoundsMax = 0;
-    
-    [unroll]
-    for (int i = 0; i < CLAMP_COUNT; i++)
-    {
-        float3 Sample = SampleCachedSceneColorTexture(SceneColorTexture, ScreenPixel, ClampOffset[i]).rgb;
-        BoundsMin = min(BoundsMin, Sample);
-        BoundsMax = max(BoundsMax, Sample);
-    }
-#else
     const uint kNeighborsCount = 9;
     float3 Neighbors[kNeighborsCount];
     [unroll]
@@ -169,6 +157,57 @@ void ComputeNeighborhoodBoundingbox(FTAAIntermediaryResult IntermediaryResult, T
         Neighbors[i] = SampleCachedSceneColorTexture(SceneColorTexture, ScreenPixel, kOffsets3x3[i]).rgb;
     }
     
+    BoundsMin = 100000;
+    BoundsMax = 0;
+
+#if 0
+    [unroll]
+    for (int i = 0; i < CLAMP_COUNT; i++)
+    {
+        float3 Sample = SampleCachedSceneColorTexture(SceneColorTexture, ScreenPixel, ClampOffset[i]).rgb;
+        BoundsMin = min(BoundsMin, Sample);
+        BoundsMax = max(BoundsMax, Sample);
+    }
+#elif 1
+    BoundsMin = min(min(Neighbors[1], Neighbors[3]), Neighbors[4]);
+    BoundsMin = min(min(BoundsMin, Neighbors[5]), Neighbors[7]);
+
+    BoundsMax = max(max(Neighbors[1], Neighbors[3]), Neighbors[4]);
+    BoundsMax = max(max(BoundsMax, Neighbors[5]), Neighbors[7]);
+		
+	#if AA_SAMPLES == 5
+	{
+		float2 PPCo = InputParams.ViewportUV * InputViewSize.xy + TemporalJitterPixels;
+		float2 PPCk = floor(PPCo) + 0.5;
+		float2 dKO = PPCo - PPCk;
+			
+		int2 FifthNeighborOffset = SignFastInt(dKO);
+
+		FTAAHistoryPayload FifthNeighbor;
+		FifthNeighbor.Color = SampleCachedSceneColorTexture(InputParams, FifthNeighborOffset).Color;
+		FifthNeighbor.CocRadius = SampleCachedSceneColorTexture(InputParams, FifthNeighborOffset).CocRadius;
+			
+		NeighborMin = MinPayload(NeighborMin, FifthNeighbor);
+		NeighborMax = MaxPayload(NeighborMax, FifthNeighbor);
+	}
+	#elif AA_SAMPLES == 9
+	{
+        float3 NeighborMinPlus = BoundsMin;
+        float3 NeighborMaxPlus = BoundsMax;
+
+        BoundsMin = min(min(BoundsMin, Neighbors[0]), Neighbors[2]);
+        BoundsMin = min(min(BoundsMin, Neighbors[6]), Neighbors[8]);
+
+        BoundsMax = max(max(BoundsMax, Neighbors[0]), Neighbors[2]);
+        BoundsMax = max(max(BoundsMax, Neighbors[6]), Neighbors[8]);
+    #endif
+
+    #if 1
+        BoundsMin = BoundsMin * 0.5 + NeighborMinPlus * 0.5;
+        BoundsMax = BoundsMax * 0.5 + NeighborMaxPlus * 0.5;
+    #endif
+    }
+#else
     #if AA_SAMPLES == 9
         const uint SampleIndexes[9] = kSquareIndexes3x3;
     #elif AA_SAMPLES == 5
@@ -243,10 +282,14 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
         }
     }
     
-    float2 DepthOffset = int2(CrossOffset[index]);
-    //DepthOffset = PixelDepth > MaxDepth ? float2(0, 0) : DepthOffset;
+    if(MaxDepth > PixelDepth)
+    {
+        PixelDepth = MaxDepth;
+    }
     
-    VelocityOffset = DepthOffset * View.InvSize;
+    //float2 DepthOffset = int2(CrossOffset[index]);
+    //DepthOffset = PixelDepth > MaxDepth ? float2(0, 0) : DepthOffset;
+    //VelocityOffset = DepthOffset * View.InvSize;
 #endif
     
     float2 ScreenPos = ViewportUVToScreenPos(BufferUV);
@@ -322,8 +365,6 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     float ClipBlend = HistoryClip(HistoryColor, TargetColor, BoundsMin, BoundsMax);
 	ClipBlend = saturate( ClipBlend );
 	HistoryColor = lerp(HistoryColor, TargetColor, ClipBlend);
-#else 
-    #error err
 #endif
 #endif
     
@@ -346,7 +387,6 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
     
     //Result = lerp(HistoryColor, DeferredColor, BlendFactor);
     Result = lerp(HistoryColor, IntermediaryResult.Filtered.rgb, BlendFactor);
-    //Result = IntermediaryResult.Filtered.rgb;
     
     //TargetTexture[OutputPixelPos] = float4(Result, 1);
     TargetTexture[OutputPixelPos] = float4(Result, Dynamic4 ? 1 : 0);

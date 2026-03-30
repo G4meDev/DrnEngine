@@ -14,7 +14,13 @@ namespace Drn
 		DomainSurface,
 		DomainDecal,
 
-		Masked,
+		BlendOpaque,
+		BlendMasked,
+		BlendTranslucent,
+
+		ShadingLit,
+		ShadingUnlit,
+
 		TwoSided,
 
 		VertexFactoryStaticMesh,
@@ -37,7 +43,13 @@ namespace Drn
 		{EMaterialShaderFlag::DomainSurface						, "DOMAIN_SURFACE"},
 		{EMaterialShaderFlag::DomainDecal						, "DOMAIN_DECAL"},
 
-		{EMaterialShaderFlag::Masked							, "HAS_OPACITY"},
+		{EMaterialShaderFlag::BlendOpaque						, "BLEND_OPAQUE"},
+		{EMaterialShaderFlag::BlendMasked						, "BLEND_MASKED"},
+		{EMaterialShaderFlag::BlendTranslucent					, "BLEND_TRANSLUCENT"},
+
+		{EMaterialShaderFlag::ShadingLit						, "SHADING_LIT"},
+		{EMaterialShaderFlag::ShadingUnlit						, "SHADING_UNLIT"},
+
 		{EMaterialShaderFlag::TwoSided							, "TWO_SIDED"},
 
 		{EMaterialShaderFlag::VertexFactoryStaticMesh			, "SUPPORT_STATICMESH"},
@@ -59,6 +71,19 @@ namespace Drn
 	{
 		return Flag == EMaterialShaderFlag::DomainSurface
 			|| Flag == EMaterialShaderFlag::DomainDecal;
+	}
+
+	inline static bool IsMaterialFlagBlendMode( EMaterialShaderFlag Flag )
+	{
+		return Flag == EMaterialShaderFlag::BlendOpaque
+			|| Flag == EMaterialShaderFlag::BlendMasked
+			|| Flag == EMaterialShaderFlag::BlendTranslucent;
+	}
+
+	inline static bool IsMaterialFlagShadingModel( EMaterialShaderFlag Flag )
+	{
+		return Flag == EMaterialShaderFlag::ShadingLit
+			|| Flag == EMaterialShaderFlag::ShadingUnlit;
 	}
 
 	EMaterialShaderFlag GetShaderFlagFromVertexFactory(VertexFactoryType* VertexFactory)
@@ -109,8 +134,27 @@ namespace Drn
 					DomainFlagCount++;
 				}
 			}
-
 			drn_check(DomainFlagCount == 1);
+
+			int32 BlendModeFlagCount = 0;
+			for (EMaterialShaderFlag Flag : Flags)
+			{
+				if (IsMaterialFlagBlendMode(Flag))
+				{
+					BlendModeFlagCount++;
+				}
+			}
+			drn_check(BlendModeFlagCount == 1);
+			
+			int32 ShadingModelFlagCount = 0;
+			for (EMaterialShaderFlag Flag : Flags)
+			{
+				if (IsMaterialFlagShadingModel(Flag))
+				{
+					ShadingModelFlagCount++;
+				}
+			}
+			drn_check(ShadingModelFlagCount == 1);
 		}
 
 		bool HasFlag(EMaterialShaderFlag Flag)
@@ -140,6 +184,43 @@ namespace Drn
 
 			drn_check(false);
 			return EMaterialDomain::Surface;
+		}
+
+		EBlendMode GetMaterialBlendMode()
+		{
+			if (HasFlag(EMaterialShaderFlag::BlendOpaque))
+			{
+				return EBlendMode::Opaque;
+			}
+
+			else if (HasFlag(EMaterialShaderFlag::BlendMasked))
+			{
+				return EBlendMode::Masked;
+			}
+
+			else if (HasFlag(EMaterialShaderFlag::BlendTranslucent))
+			{
+				return EBlendMode::Translucent;
+			}
+
+			drn_check(false);
+			return EBlendMode::Opaque;
+		}
+
+		EMaterialShadingModel GetMaterialShadingModel()
+		{
+			if (HasFlag(EMaterialShaderFlag::ShadingLit))
+			{
+				return EMaterialShadingModel::Lit;
+			}
+
+			else if (HasFlag(EMaterialShaderFlag::ShadingUnlit))
+			{
+				return EMaterialShadingModel::Unlit;
+			}
+
+			drn_check(false);
+			return EMaterialShadingModel::Lit;
 		}
 	};
 
@@ -206,7 +287,9 @@ namespace Drn
 		}
 
 		const EMaterialDomain MaterialDomain = Flags.GetMaterialDomain();
-		const bool bMasked = Flags.HasFlag(EMaterialShaderFlag::Masked);
+		const EBlendMode BlendMode = Flags.GetMaterialBlendMode();
+		const EMaterialShadingModel ShadingModel = Flags.GetMaterialShadingModel();
+		const bool bMasked = Flags.HasFlag(EMaterialShaderFlag::BlendMasked);
 		const bool bTwoSided = Flags.HasFlag(EMaterialShaderFlag::TwoSided);
 
 		bool Successed = true;
@@ -373,7 +456,8 @@ namespace Drn
 		if (Successed)
 		{
 			MaterialAsset->ShaderParameters.MaterialDomain = MaterialDomain;
-			MaterialAsset->ShaderParameters.bIsMasked = bMasked;
+			MaterialAsset->ShaderParameters.BlendMode = BlendMode;
+			MaterialAsset->ShaderParameters.ShadingModel = ShadingModel;
 			MaterialAsset->ShaderParameters.bIsTwoSided = bTwoSided;
 
 			MaterialAsset->Shaders = Shaders;

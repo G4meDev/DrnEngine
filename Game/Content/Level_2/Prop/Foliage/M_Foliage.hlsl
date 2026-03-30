@@ -3,6 +3,8 @@
 #include "Common.hlsl"
 
 // DOMAIN_SURFACE
+// BLEND_MASKED
+// SHADING_LIT
 
 // SUPPORT_STATICMESH
 // SUPPORT_INSTANCED
@@ -14,7 +16,6 @@
 // SUPPORT_SHADOW_PASS
 
 // HAS_CUSTOM_PRE_PASS
-// HAS_OPACITY
 // TWO_SIDED
 
 ConstantBuffer<StandardResources> BindlessResources : register(b0);

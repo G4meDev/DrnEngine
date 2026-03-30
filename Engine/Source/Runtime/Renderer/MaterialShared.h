@@ -128,18 +128,31 @@ namespace Drn
 		Decal
 	};
 
+	enum class EBlendMode : uint8
+	{
+		Opaque,
+		Masked,
+		Translucent,
+	};
+
+	enum class EMaterialShadingModel : uint8
+	{
+		Lit,
+		Unlit
+	};
+
 	struct MaterialShaderParameters
 	{
 		EMaterialDomain MaterialDomain;
-		//EMaterialShadingModel ShadingModel;
-		//EBlendMode BlendMode;
+		EBlendMode BlendMode;
+		EMaterialShadingModel ShadingModel;
 
 		union
 		{
 			uint32 PackedFlags;
 			struct
 			{
-				uint32 bIsMasked : 1;
+				uint32 Unused : 1;
 				uint32 bIsTwoSided : 1;
 				
 				uint32 bHasPrepass : 1;
@@ -178,15 +191,52 @@ namespace Drn
 		friend Archive& operator<<(Archive& Ar, const MaterialShaderParameters& Value)
 		{
 			Ar << (uint8)Value.MaterialDomain;
+			Ar << (uint8)Value.BlendMode;
+			Ar << (uint8)Value.ShadingModel;
 			Ar << Value.PackedFlags;
+
 			return Ar;
 		}
 
 		friend Archive& operator>>(Archive& Ar, MaterialShaderParameters& Value)
 		{
 			Ar >> *(uint8*)&Value.MaterialDomain;
+			Ar >> *(uint8*)&Value.BlendMode;
+			Ar >> *(uint8*)&Value.ShadingModel;
 			Ar >> Value.PackedFlags;
+
 			return Ar;
+		}
+
+		inline std::string GetDomainName() const
+		{
+			switch ( MaterialDomain )
+			{
+				case EMaterialDomain::Surface:	return "Surface";
+				case EMaterialDomain::Decal:	return "Decal";
+				default:						return "Unkown";
+			}
+		}
+
+		inline std::string GetBlendName() const
+		{
+			switch ( BlendMode )
+			{
+				case EBlendMode::Opaque:		return "Opaque";
+				case EBlendMode::Masked:		return "Masked";
+				case EBlendMode::Translucent:	return "Translucent";
+				default:						return "Unkown";
+			}
+		}
+
+		inline std::string GetShadingName() const
+		{
+			switch ( ShadingModel )
+			{
+				case EMaterialShadingModel::Lit:	return "Lit";
+				case EMaterialShadingModel::Unlit:	return "Unlit";
+				default:							return "Unkown";
+			}
 		}
 
 #if WITH_EDITOR

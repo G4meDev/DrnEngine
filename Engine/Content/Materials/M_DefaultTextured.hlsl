@@ -1,6 +1,8 @@
 #include "Common.hlsl"
 
 // DOMAIN_SURFACE
+// BLEND_OPAQUE
+// SHADING_LIT
 
 // SUPPORT_STATICMESH
 
