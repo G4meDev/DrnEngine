@@ -467,7 +467,10 @@ namespace Drn
 			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
 			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
 
-			DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
+			DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual,
+				true, ECompareFunction::Always, EStencilOp::Keep, EStencilOp::Keep, EStencilOp::Replace,
+				true, ECompareFunction::Always, EStencilOp::Keep, EStencilOp::Keep, EStencilOp::Replace,
+				DISTORTION_STENCIL_COMP_MASK, DISTORTION_STENCIL_WRITE_MASK);
 			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
 		
 			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DISTORTION_FORMAT };

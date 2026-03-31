@@ -615,6 +615,7 @@ namespace Drn
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Distortion" );
 
 		RenderTexture2D* DistortionTarget = m_TonemapBuffer->m_TonemapTarget;
+		m_CommandList->GetD3D12CommandList()->OMSetStencilRef(DISTORTION_STENCIL_REF);
 
 		{
 			PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Accumulate" );
@@ -622,11 +623,13 @@ namespace Drn
 			m_CommandList->TransitionResourceWithTracking(DistortionTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 			//m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
 			m_GBuffer->TransitionTexturesToRead(m_CommandList);
+			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, 1); // stencil
 			m_CommandList->FlushBarriers();
 
 			m_CommandList->ClearColorTexture(DistortionTarget);
 			const D3D12_CPU_DESCRIPTOR_HANDLE DistortionHandle = DistortionTarget->GetRenderTargetView(0, 0)->GetView();
-			const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+			//const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+			const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::StencilWrite)->GetView();
 			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DistortionHandle, true, &DepthHandle );
 
 			RenderUniformBuffer* GbufferTexturesBuffer = m_GBuffer->GetTexturesBuffer(m_CommandList);
@@ -673,10 +676,11 @@ namespace Drn
 			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DistortedSceneColorTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_WRITE, 1); // stencil
 			m_CommandList->FlushBarriers();
 
 			const D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_GBuffer->m_ColorDeferredTarget->GetRenderTargetView(0, 0)->GetView();
-			const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+			const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::StencilWrite)->GetView();
 			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DeferredColorHandle, true, &DepthHandle );
 
 			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_DistortionPSO->m_MergeDistortionPSO );

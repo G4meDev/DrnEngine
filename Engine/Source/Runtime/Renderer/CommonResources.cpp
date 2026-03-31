@@ -609,14 +609,17 @@ namespace Drn
 			TRefCountPtr<BlendState> BState = nullptr;
 			TRefCountPtr<RasterizerState> RState = nullptr;
 
-			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
-			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always,
+				true, ECompareFunction::Equal, EStencilOp::Keep, EStencilOp::Keep, EStencilOp::Keep,
+				true, ECompareFunction::Equal, EStencilOp::Keep, EStencilOp::Keep, EStencilOp::Keep,
+				DISTORTION_STENCIL_COMP_MASK, DISTORTION_STENCIL_WRITE_MASK);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create( DInit );
 		
 			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
 			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
 
 			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-				1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+				1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
 
 			m_ApplyDistortionPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_ApplyDistortionPSO->PipelineState, "PSO_ApplyDistortion");
@@ -645,14 +648,17 @@ namespace Drn
 			TRefCountPtr<BlendState> BState = nullptr;
 			TRefCountPtr<RasterizerState> RState = nullptr;
 
-			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
-			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always,
+				true, ECompareFunction::Equal, EStencilOp::Keep, EStencilOp::Keep, EStencilOp::Zero,
+				true, ECompareFunction::Equal, EStencilOp::Keep, EStencilOp::Keep, EStencilOp::Zero,
+				DISTORTION_STENCIL_COMP_MASK, DISTORTION_STENCIL_WRITE_MASK);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create( DInit );
 		
 			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
 			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
 
 			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-				1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+				1, TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
 
 			m_MergeDistortionPSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_MergeDistortionPSO->PipelineState, "PSO_MergeDistortion");
