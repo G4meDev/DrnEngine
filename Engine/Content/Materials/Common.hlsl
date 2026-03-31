@@ -458,6 +458,14 @@ float2 DecodeVelocityFromTexture(float2 EncodedV)
     return V;
 }
 
+float Fresnel_Function(float3 Normal, float3 CameraVector, float Power)
+{
+    float NdotC = saturate(dot(Normal, CameraVector));
+    float Result = pow(1 - NdotC, Power);
+    
+    return Result;
+}
+
 //float DistributionGGX(float3 N, float3 H, float roughness)
 //{
 //    float a = roughness * roughness;
