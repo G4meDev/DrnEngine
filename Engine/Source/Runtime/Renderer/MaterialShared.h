@@ -169,6 +169,7 @@ namespace Drn
 				uint32 bIsUsedWithDecal : 1;
 
 				uint32 bHasVelocityPass : 1;
+				uint32 bHasTranslucencyPass : 1;
 			};
 		};
 

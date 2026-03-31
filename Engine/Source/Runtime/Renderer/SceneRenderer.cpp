@@ -625,7 +625,6 @@ namespace Drn
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "ComposeSeperateTranslucency" );
 
-
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_SceneColorTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_SeparateTranslucencyTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);

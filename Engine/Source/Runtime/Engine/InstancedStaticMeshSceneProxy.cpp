@@ -49,7 +49,7 @@ namespace Drn
 				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
 				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
 				
-				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithInstancedStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().BlendMode == EBlendMode::Translucent
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithInstancedStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().bHasTranslucencyPass
 					? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::InstancedStaticMesh, EMaterialStage::Translucensy)
 					: nullptr;
 

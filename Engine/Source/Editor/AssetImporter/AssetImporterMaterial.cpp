@@ -483,6 +483,7 @@ namespace Drn
 			MaterialAsset->ShaderParameters.bHasEditorSelectionPass = Flags.HasFlag(EMaterialShaderFlag::HasEditorSelectionPass);
 			MaterialAsset->ShaderParameters.bHasDecalPass = Flags.HasFlag(EMaterialShaderFlag::HasDecalPass);
 			MaterialAsset->ShaderParameters.bHasVelocityPass = Flags.HasFlag(EMaterialShaderFlag::HasVeloictyPass);
+			MaterialAsset->ShaderParameters.bHasTranslucencyPass = (MaterialDomain == EMaterialDomain::Surface) && (BlendMode == EBlendMode::Translucent);
 
 			MaterialAsset->ShaderParameters.bIsUsedWithStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryStaticMesh);
 			MaterialAsset->ShaderParameters.bIsUsedWithInstancedStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryInstancedStaticMesh);
