@@ -258,6 +258,7 @@ namespace Drn
 		void RenderSSR();
 		void RenderReflection();
 		void RenderTranslucency();
+		void RenderDistortion();
 		void RenderPostProcess();
 		void PostProcess_ComposeSeperateTranslucency();
 		void PostProcess_TemporalAA();

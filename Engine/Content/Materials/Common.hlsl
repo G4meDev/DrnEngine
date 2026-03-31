@@ -31,6 +31,17 @@ uint FloatToUint8(float Value)
     return (uint) (Value * 255);
 }
 
+struct GBufferTextures
+{
+    uint DepthIndex;
+    uint DeferredColorIndex;
+    uint BaseColorIndex;
+    uint NormalIndex;
+    uint MasksAIndex;
+    uint MasksBIndex;
+    uint VelocityIndex;
+};
+
 struct StandardResources
 {
     uint ViewIndex;
@@ -38,7 +49,7 @@ struct StandardResources
     uint StaticSamplerBufferIndex;
     uint ParametersBufferIndex;
     uint unused_1;
-    uint unused_2;
+    uint GbufferTextureIndex;
     uint ShadowDepthBuffer;
     uint DecalBaseColor;
     uint DecalNormal;
@@ -82,7 +93,7 @@ struct ViewBuffer
     float InvTanHalfFov;
 		
     float3 CameraDir;
-    float Pad_4;
+    float AspectRatio;
 
     float4 InvDeviceZToWorldZTransform;
     matrix ViewToWorld;
@@ -464,6 +475,46 @@ float Fresnel_Function(float3 Normal, float3 CameraVector, float Power)
     float Result = pow(1 - NdotC, Power);
     
     return Result;
+}
+
+float2 ComputeBufferUVDistortion(ViewBuffer View, half3 Normal, float IOR)
+{
+    half3 ViewNormal = normalize(mul((float3x3) View.WorldToView, Normal));
+    float AirIOR = 1.0f;
+    float2 ViewportUVDistortion = ViewNormal.xy * (IOR - AirIOR);
+    
+    //float2 BufferUVDistortion = ViewportUVDistortion * ResolvedView.ViewSizeAndInvSize.xy * ResolvedView.BufferSizeAndInvSize.zw;
+    float2 BufferUVDistortion = ViewportUVDistortion;
+    
+    //if (TryToClip)
+    //{
+    //    clip(dot(BufferUVDistortion, BufferUVDistortion) - .00001);
+    //}
+    
+    float4 DistortionParameters = float4(View.InvTanHalfFov, View.AspectRatio, View.RenderSize);
+    
+    float InvTanHalfFov = DistortionParameters.x;
+    float Ratio = DistortionParameters.y;
+    
+    float2 FovFix = float2(InvTanHalfFov, Ratio * InvTanHalfFov);
+
+    const float OffsetFudgeFactor = 0.00023;
+    BufferUVDistortion *= DistortionParameters.zw * float2(OffsetFudgeFactor, -OffsetFudgeFactor) * FovFix;
+
+    return BufferUVDistortion;
+}
+
+void PostProcessUVDistortion(float4 ScreenPosition, float DistortSceneDepth, float RefractionBias, inout float2 BufferUVDistortion)
+{
+    float Bias = -RefractionBias;
+    float Range = clamp(abs(Bias * 0.5f), 0, 50);
+    float Z = DistortSceneDepth;
+    float ZCompare = ScreenPosition.w;
+    float InvWidth = 1.0f / max(1.0f, Range);
+    BufferUVDistortion *= saturate((Z - ZCompare) * InvWidth + Bias);
+
+    static const half DistortionScaleBias = 4.0f;
+    BufferUVDistortion *= DistortionScaleBias;
 }
 
 //float DistributionGGX(float3 N, float3 H, float roughness)

@@ -75,6 +75,11 @@ namespace Drn
 		
 	}
 
+	void BillboardSceneProxy::RenderDistortionPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 	void BillboardSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		

@@ -12,6 +12,7 @@ namespace Drn
 		, m_MasksBTarget(nullptr)
 		, m_VelocityTarget(nullptr)
 		, m_DepthTarget(nullptr)
+		, bTexturesBufferDirty(true)
 	{}
 
 	GBuffer::~GBuffer()
@@ -67,6 +68,12 @@ namespace Drn
 		RenderResourceCreateInfo SceneColorCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "SceneColor" );
 		m_SceneColorTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), SceneColorCreateInfo);
+
+		RenderResourceCreateInfo DistortedSceneColorCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "DistortedSceneColor" );
+		m_DistortedSceneColorTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), DistortedSceneColorCreateInfo);
+
+		bTexturesBufferDirty = true;
 	}
 
 	void GBuffer::Clear( D3D12CommandList* CommandList )
@@ -127,4 +134,29 @@ namespace Drn
 		CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DeferredColorHandle, true, nullptr );
 	}
 
-}
+	void GBuffer::TransitionTexturesToRead(D3D12CommandList* CommandList)
+	{
+		CommandList->TransitionResourceWithTracking(m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->TransitionResourceWithTracking(m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->TransitionResourceWithTracking(m_BaseColorTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->TransitionResourceWithTracking(m_WorldNormalTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->TransitionResourceWithTracking(m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->TransitionResourceWithTracking(m_MasksBTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->TransitionResourceWithTracking(m_VelocityTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CommandList->FlushBarriers();
+	}
+
+	void GBuffer::UpdateTexturesBuffer( D3D12CommandList* CommandList )
+	{
+		Textures.DepthIndex = m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		Textures.DeferredColorIndex = m_ColorDeferredTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		Textures.BaseColorIndex = m_BaseColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		Textures.NormalIndex = m_WorldNormalTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		Textures.MasksAIndex = m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		Textures.MasksBIndex = m_MasksBTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		Textures.VelocityIndex = m_VelocityTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+
+		TexturesBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(GBufferTextures), EUniformBufferUsage::MultiFrame, &Textures);
+	}
+
+        }

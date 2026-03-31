@@ -36,6 +36,7 @@ namespace Drn
 		HasEditorSelectionPass,
 		HasDecalPass,
 		HasVeloictyPass,
+		HasDistortionPass,
 	};
 	
 	const std::unordered_map<EMaterialShaderFlag, std::string> MaterialShaderFlagTokenMap = 
@@ -65,6 +66,7 @@ namespace Drn
 		{EMaterialShaderFlag::HasEditorSelectionPass			, "SUPPORT_EDITOR_SELECTION_PASS"},
 		{EMaterialShaderFlag::HasDecalPass						, "SUPPORT_DECAL_PASS"},
 		{EMaterialShaderFlag::HasVeloictyPass					, "SUPPORT_VELOCITY"},
+		{EMaterialShaderFlag::HasDistortionPass					, "SUPPORT_DISTORTION"},
 	};
 
 	inline static bool IsMaterialFlagDomain( EMaterialShaderFlag Flag )
@@ -443,6 +445,18 @@ namespace Drn
 
 					Shaders.PushShader(VertexFactory, EMaterialStage::Translucensy, TranslucentShaderBlob);
 				}
+
+				if (Flags.HasFlag(EMaterialShaderFlag::HasDistortionPass))
+				{
+					ShaderBlob DistortionShaderBlob;
+					std::vector<const wchar_t*> Macros = { L"DISTORTION_PASS=1" };
+					Macros.push_back(VertexFactory->GetShaderMacro());
+
+					CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &DistortionShaderBlob.m_VS);
+					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", Macros, &DistortionShaderBlob.m_PS);
+
+					Shaders.PushShader(VertexFactory, EMaterialStage::Distortion, DistortionShaderBlob);
+				}
 			}
 		}
 
@@ -484,6 +498,7 @@ namespace Drn
 			MaterialAsset->ShaderParameters.bHasDecalPass = Flags.HasFlag(EMaterialShaderFlag::HasDecalPass);
 			MaterialAsset->ShaderParameters.bHasVelocityPass = Flags.HasFlag(EMaterialShaderFlag::HasVeloictyPass);
 			MaterialAsset->ShaderParameters.bHasTranslucencyPass = (MaterialDomain == EMaterialDomain::Surface) && (BlendMode == EBlendMode::Translucent);
+			MaterialAsset->ShaderParameters.bHasDistortionPass = Flags.HasFlag(EMaterialShaderFlag::HasDistortionPass);
 
 			MaterialAsset->ShaderParameters.bIsUsedWithStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryStaticMesh);
 			MaterialAsset->ShaderParameters.bIsUsedWithInstancedStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryInstancedStaticMesh);

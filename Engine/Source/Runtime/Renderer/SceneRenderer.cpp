@@ -586,7 +586,8 @@ namespace Drn
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Translucency" );
 
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_SeparateTranslucencyTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		//m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		m_GBuffer->TransitionTexturesToRead(m_CommandList);
 		m_CommandList->FlushBarriers();
 
 		m_CommandList->ClearColorTexture(m_GBuffer->m_SeparateTranslucencyTarget);
@@ -594,10 +595,99 @@ namespace Drn
 		const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &SeparateTranslucencyHandle, true, &DepthHandle );
 
+		RenderUniformBuffer* GbufferTexturesBuffer = m_GBuffer->GetTexturesBuffer(m_CommandList);
+		m_CommandList->SetGraphicRootConstant(GbufferTexturesBuffer->GetViewIndex(), 5);
+
 		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 		{
 			PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
 			Proxy->RenderTranslucencyPass(m_CommandList, this);
+		}
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList());
+	}
+
+	void SceneRenderer::RenderDistortion()
+	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderDistortaion");
+		SCOPE_STAT();
+
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Distortion" );
+
+		RenderTexture2D* DistortionTarget = m_TonemapBuffer->m_TonemapTarget;
+
+		{
+			PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Accumulate" );
+
+			m_CommandList->TransitionResourceWithTracking(DistortionTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+			//m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+			m_GBuffer->TransitionTexturesToRead(m_CommandList);
+			m_CommandList->FlushBarriers();
+
+			m_CommandList->ClearColorTexture(DistortionTarget);
+			const D3D12_CPU_DESCRIPTOR_HANDLE DistortionHandle = DistortionTarget->GetRenderTargetView(0, 0)->GetView();
+			const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DistortionHandle, true, &DepthHandle );
+
+			RenderUniformBuffer* GbufferTexturesBuffer = m_GBuffer->GetTexturesBuffer(m_CommandList);
+			m_CommandList->SetGraphicRootConstant(GbufferTexturesBuffer->GetViewIndex(), 5);
+
+			for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
+			{
+				PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
+				Proxy->RenderDistortionPass(m_CommandList, this);
+			}
+
+			PIXEndEvent( m_CommandList->GetD3D12CommandList());
+		}
+
+		{
+			PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Apply" );
+
+			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DistortedSceneColorTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			m_CommandList->TransitionResourceWithTracking(DistortionTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+			m_CommandList->FlushBarriers();
+
+			m_CommandList->ClearColorTexture(m_GBuffer->m_DistortedSceneColorTarget);
+			const D3D12_CPU_DESCRIPTOR_HANDLE DistortedSceneColor = m_GBuffer->m_DistortedSceneColorTarget->GetRenderTargetView(0, 0)->GetView();
+			const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DistortedSceneColor, true, &DepthHandle );
+
+			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_DistortionPSO->m_ApplyDistortionPSO );
+
+			m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+			m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			m_CommandList->SetGraphicRootConstant(m_GBuffer->m_ColorDeferredTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
+			m_CommandList->SetGraphicRootConstant(DistortionTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 4);
+
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
+
+			PIXEndEvent( m_CommandList->GetD3D12CommandList());
+		}
+
+		{
+			PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Merge" );
+
+			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DistortedSceneColorTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+			m_CommandList->FlushBarriers();
+
+			const D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_GBuffer->m_ColorDeferredTarget->GetRenderTargetView(0, 0)->GetView();
+			const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DeferredColorHandle, true, &DepthHandle );
+
+			m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_DistortionPSO->m_MergeDistortionPSO );
+
+			m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+			m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+			m_CommandList->SetGraphicRootConstant(m_GBuffer->m_DistortedSceneColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
+
+			CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
+
+			PIXEndEvent( m_CommandList->GetD3D12CommandList());
 		}
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
@@ -1011,6 +1101,7 @@ namespace Drn
 		RenderSSR();
 		RenderReflection();
 		RenderTranslucency();
+		RenderDistortion();
 		RenderPostProcess();
 
 		ResolveRenderBufferCopyEvents();

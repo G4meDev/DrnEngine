@@ -21,7 +21,7 @@ namespace Drn
 		RenderBuffer::Resize(Size);
 		ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
 
-		RenderResourceCreateInfo TonemapTargetCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "TonemapTarget" );
+		RenderResourceCreateInfo TonemapTargetCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "TonemapTarget" );
 		m_TonemapTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DISPLAY_OUTPUT_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), TonemapTargetCreateInfo);
 	}

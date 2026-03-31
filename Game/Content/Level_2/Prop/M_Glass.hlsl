@@ -11,8 +11,9 @@
 
 // S-----UPPORT_HIT_PROXY_PASS
 // S-----UPPORT_EDITOR_SELECTION_PASS
+// SUPPORT_DISTORTION
 
-// TWO_SIDED
+// T---WO_SIDED
 
 ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
@@ -25,6 +26,8 @@ struct ParametersBuffers
     SCALAR(OpacityB, OpacityB)
     SCALAR(Opacity, Opacity)
     SCALAR(OpacityFresnelPower, OpacityFresnelPower)
+    SCALAR(IOR, IOR)
+    SCALAR(RefractionBias, RefractionBias)
     
     TEX2D(BaseColor, BaseColorTexture)
     TEX2D(Normal, NormalTexture)
@@ -87,6 +90,8 @@ struct PixelShaderOutput
 {
 #if TRANSLUCENCY_PASS
     float4 TranslucentColor;
+#elif DISTORTION_PASS
+    float4 Distortion;
 #elif HITPROXY_PASS
     uint4 Guid;
 #elif EDITOR_PRIMITIVE_PASS
@@ -96,14 +101,15 @@ struct PixelShaderOutput
 };
 
 //#define TRANSLUCENCY_PASS 1
+//#define DISTORTION_PASS 1
 
 PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) : SV_Target
 {
     PixelShaderOutput OUT;
  
-#if TRANSLUCENCY_PASS
-
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
+    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<GBufferTextures> GbufferTextures = ResourceDescriptorHeap[BindlessResources.GbufferTextureIndex];
     
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
@@ -141,11 +147,32 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     float OpacityFresnel = Fresnel_Function(Normal, CameraVector, Parameters.OpacityFresnelPower);
     float Opacity = lerp(Parameters.OpacityA, Parameters.OpacityB, OpacityFresnel) * Parameters.Opacity;
     Opacity = saturate(Opacity);
+
+// -------------------------------------------------------------------------------------------------------------
     
+    Texture2D DepthTexture = ResourceDescriptorHeap[GbufferTextures.DepthIndex];
+    
+    float IOR = Parameters.IOR;
+    float RefractionBias = Parameters.RefractionBias;
+    
+    float2 ScreenUV = SvPositionToViewportUV(IN.Position.xy, View.InvSize);
+    
+    float2 BufferUVDistortion = ComputeBufferUVDistortion(View, Normal, IOR);
+    float2 DistortBufferUV = ScreenUV + BufferUVDistortion;
+
+    float DistortSceneDepth = ConvertFromDeviceZ(DepthTexture.Sample(PointSampler, DistortBufferUV).r, View.InvDeviceZToWorldZTransform);
+    PostProcessUVDistortion(IN.Position, DistortSceneDepth, RefractionBias, BufferUVDistortion);
+
+    float2 PosOffset = max(BufferUVDistortion, 0);
+    float2 NegOffset = abs(min(BufferUVDistortion, 0));
+
+    float4 Distortion = float4(PosOffset.x, PosOffset.y, NegOffset.x, NegOffset.y);
+    
+#if TRANSLUCENCY_PASS
     OUT.TranslucentColor = float4(BaseColor, Opacity);
-    
+#elif DISTORTION_PASS
+    OUT.Distortion = Distortion;
 #elif HITPROXY_PASS
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Guid = P.Guid;
 #endif
     

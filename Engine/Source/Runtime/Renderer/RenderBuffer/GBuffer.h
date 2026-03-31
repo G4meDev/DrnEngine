@@ -6,6 +6,17 @@
 
 namespace Drn
 {
+	struct GBufferTextures
+	{
+		uint32 DepthIndex;
+		uint32 DeferredColorIndex;
+		uint32 BaseColorIndex;
+		uint32 NormalIndex;
+		uint32 MasksAIndex;
+		uint32 MasksBIndex;
+		uint32 VelocityIndex;
+	};
+
 	class GBuffer : public RenderBuffer
 	{
 	public:
@@ -36,7 +47,26 @@ namespace Drn
 
 		TRefCountPtr<RenderTexture2D> m_SeparateTranslucencyTarget;
 		TRefCountPtr<RenderTexture2D> m_SceneColorTarget;
+		TRefCountPtr<RenderTexture2D> m_DistortedSceneColorTarget;
+
+		inline class RenderUniformBuffer* GetTexturesBuffer(D3D12CommandList* CommandList)
+		{
+			if (bTexturesBufferDirty)
+			{
+				UpdateTexturesBuffer(CommandList);
+				bTexturesBufferDirty = false;
+			}
+			return TexturesBuffer;
+		}
+
+		void TransitionTexturesToRead(D3D12CommandList* CommandList);
 
 	private:
+		void UpdateTexturesBuffer(D3D12CommandList* CommandList);
+
+		TRefCountPtr<class RenderUniformBuffer> TexturesBuffer;
+		GBufferTextures Textures;
+
+		bool bTexturesBufferDirty;
 	};
 }

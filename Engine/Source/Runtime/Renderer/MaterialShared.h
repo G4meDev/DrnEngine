@@ -170,6 +170,7 @@ namespace Drn
 
 				uint32 bHasVelocityPass : 1;
 				uint32 bHasTranslucencyPass : 1;
+				uint32 bHasDistortionPass : 1;
 			};
 		};
 
@@ -258,7 +259,8 @@ namespace Drn
 		EditorPrimitive,
 		EditorSelection,
 		Velocity,
-		Translucensy
+		Translucensy,
+		Distortion,
 	};
 
 	class MaterialShader

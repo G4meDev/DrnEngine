@@ -136,6 +136,15 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
+	class DistortionPSO : public RefCountedObject
+	{
+	public:
+
+		DistortionPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_ApplyDistortionPSO;
+		TRefCountPtr<GraphicsPipelineState> m_MergeDistortionPSO;
+	};
+
 	class TonemapPSO : public RefCountedObject
 	{
 	public:
@@ -367,6 +376,7 @@ namespace Drn
 		TRefCountPtr<ScreenSpaceReflectionPSO> m_ScreenSpaceReflectionPSO;
 		TRefCountPtr<ReflectionEnvironemntPSO> m_ReflectionEnvironmentPSO;
 		TRefCountPtr<ComposeSeparateTranslucencyPSO> m_ComposeSeparateTranslucencyPSO;
+		TRefCountPtr<DistortionPSO> m_DistortionPSO;
 		TRefCountPtr<TAAPSO> m_TAAPSO;
 		TRefCountPtr<SceneDownSamplePSO> m_SceneDownSamplePSO;
 		TRefCountPtr<BloomPSO> m_BloomPSO;

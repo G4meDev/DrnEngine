@@ -39,6 +39,7 @@ namespace Drn
 
 		virtual void RenderVelocityPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 		virtual void RenderTranslucencyPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
+		virtual void RenderDistortionPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 		virtual void RenderMainPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 		virtual void RenderPrePass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;
 		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) = 0;
