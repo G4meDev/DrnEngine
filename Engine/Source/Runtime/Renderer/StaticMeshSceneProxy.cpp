@@ -224,7 +224,6 @@ namespace Drn
 					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
 					MatShader->Bind(CommandList);
-					CommandList->GetD3D12CommandList()->OMSetStencilRef(255);
 					Mat.GetMaterialInterface()->BindResources(CommandList);
 
 					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
@@ -410,7 +409,6 @@ namespace Drn
 				SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
 
 				MatShader->Bind(CommandList);
-				CommandList->GetD3D12CommandList()->OMSetStencilRef(255);
 				Mat.GetMaterialInterface()->BindResources(CommandList);
 
 				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);

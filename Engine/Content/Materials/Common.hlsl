@@ -483,13 +483,8 @@ float2 ComputeBufferUVDistortion(ViewBuffer View, half3 Normal, float IOR)
     float AirIOR = 1.0f;
     float2 ViewportUVDistortion = ViewNormal.xy * (IOR - AirIOR);
     
-    //float2 BufferUVDistortion = ViewportUVDistortion * ResolvedView.ViewSizeAndInvSize.xy * ResolvedView.BufferSizeAndInvSize.zw;
     float2 BufferUVDistortion = ViewportUVDistortion;
-    
-    //if (TryToClip)
-    //{
-    //    clip(dot(BufferUVDistortion, BufferUVDistortion) - .00001);
-    //}
+    clip(dot(BufferUVDistortion, BufferUVDistortion) - .00001);
     
     float4 DistortionParameters = float4(View.InvTanHalfFov, View.AspectRatio, View.RenderSize);
     

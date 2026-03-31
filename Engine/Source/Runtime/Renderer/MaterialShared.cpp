@@ -586,7 +586,8 @@ namespace Drn
 
 			DepthStencilStateInitializer DInit(true, ECompareFunction::GreaterEqual,
 				true, ECompareFunction::Always, EStencilOp::Replace, EStencilOp::Replace, EStencilOp::Replace,
-				true, ECompareFunction::Always, EStencilOp::Replace, EStencilOp::Replace, EStencilOp::Replace);
+				true, ECompareFunction::Always, EStencilOp::Replace, EStencilOp::Replace, EStencilOp::Replace,
+				SELECTION_STENCIL_COMP_MASK, SELECTION_STENCIL_WRITE_MASK);
 			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
 		
 			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { DXGI_FORMAT_UNKNOWN };

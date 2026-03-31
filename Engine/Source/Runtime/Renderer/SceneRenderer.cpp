@@ -963,6 +963,7 @@ namespace Drn
 		m_EditorSelectionBuffer->Clear(m_CommandList);
 		m_EditorSelectionBuffer->Bind(m_CommandList);
 
+		m_CommandList->GetD3D12CommandList()->OMSetStencilRef(SELECTION_STENCIL_REF);
 		const bool bGameView = IsGameView();
 
 		for ( PrimitiveSceneProxy* Proxy : m_Scene->m_PrimitiveProxies )
