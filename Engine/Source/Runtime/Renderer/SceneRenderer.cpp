@@ -578,6 +578,31 @@ namespace Drn
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
 
+	void SceneRenderer::RenderTranslucency()
+	{
+		SCOPED_GPU_STAT(m_CommandList, "RenderTranslucency");
+		SCOPE_STAT();
+
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Translucency" );
+
+		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_SeparateTranslucencyTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		m_CommandList->FlushBarriers();
+
+		m_CommandList->ClearColorTexture(m_GBuffer->m_SeparateTranslucencyTarget);
+		const D3D12_CPU_DESCRIPTOR_HANDLE SeparateTranslucencyHandle = m_GBuffer->m_SeparateTranslucencyTarget->GetRenderTargetView(0, 0)->GetView();
+		const D3D12_CPU_DESCRIPTOR_HANDLE DepthHandle = m_GBuffer->m_DepthTarget->GetDepthStencilView(EDepthStencilViewType::DepthWrite)->GetView();
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &SeparateTranslucencyHandle, true, &DepthHandle );
+
+		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
+		{
+			PrimitiveSceneProxy* Proxy = m_Scene->GetPrimitiveProxies()[It.GetIndex()];
+			Proxy->RenderTranslucencyPass(m_CommandList, this);
+		}
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList());
+	}
+
 	void SceneRenderer::RenderPostProcess()
 	{
 		SCOPED_GPU_STAT(m_CommandList, "RenderPostProcess");
@@ -585,10 +610,38 @@ namespace Drn
 
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Post Process" );
 
+		PostProcess_ComposeSeperateTranslucency();
 		PostProcess_TemporalAA();
 		PostProcess_SceneDownSample();
 		PostProcess_Bloom();
 		PostProcess_Tonemapping();
+
+		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
+	}
+
+	void SceneRenderer::PostProcess_ComposeSeperateTranslucency()
+	{
+		SCOPE_STAT("ComposeSeperateTranslucency");
+
+		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "ComposeSeperateTranslucency" );
+
+
+		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_SceneColorTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_SeparateTranslucencyTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->FlushBarriers();
+
+		const D3D12_CPU_DESCRIPTOR_HANDLE SceneColorHandle = m_GBuffer->m_SceneColorTarget->GetRenderTargetView(0, 0)->GetView();
+		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &SceneColorHandle, true, NULL );
+
+		m_CommandList->SetGraphicPipelineState( CommonResources::Get()->m_ComposeSeparateTranslucencyPSO->m_PSO );
+
+		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
+		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_ColorDeferredTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 3);
+		m_CommandList->SetGraphicRootConstant(m_GBuffer->m_SeparateTranslucencyTarget->GetShaderResourceView()->GetDescriptorHeapIndex(), 4);
+
+		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList() );
 	}
@@ -603,7 +656,7 @@ namespace Drn
 
 		m_CommandList->TransitionResourceWithTracking( m_TAABuffer->GetHistoryResource(m_SceneView.FrameIndex)->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking( m_TAABuffer->GetFrameResource(m_SceneView.FrameIndex)->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_ColorDeferredTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_SceneColorTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_VelocityTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking( m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->FlushBarriers();
@@ -958,6 +1011,7 @@ namespace Drn
 		RenderLights();
 		RenderSSR();
 		RenderReflection();
+		RenderTranslucency();
 		RenderPostProcess();
 
 		ResolveRenderBufferCopyEvents();

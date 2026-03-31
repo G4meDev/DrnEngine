@@ -431,6 +431,18 @@ namespace Drn
 
 					Shaders.PushShader(VertexFactory, EMaterialStage::EditorSelection, MainShaderBlob);
 				}
+
+				if (BlendMode == EBlendMode::Translucent)
+				{
+					ShaderBlob TranslucentShaderBlob;
+					std::vector<const wchar_t*> Macros = { L"TRANSLUCENCY_PASS=1" };
+					Macros.push_back(VertexFactory->GetShaderMacro());
+
+					CompileShaderBlobConditional(HasVS, Path, L"Main_VS", L"vs_6_6", Macros, &TranslucentShaderBlob.m_VS);
+					CompileShaderBlobConditional(HasPS, Path, L"Main_PS", L"ps_6_6", Macros, &TranslucentShaderBlob.m_PS);
+
+					Shaders.PushShader(VertexFactory, EMaterialStage::Translucensy, TranslucentShaderBlob);
+				}
 			}
 		}
 

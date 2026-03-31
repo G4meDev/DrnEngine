@@ -128,6 +128,14 @@ namespace Drn
 		TRefCountPtr<GraphicsPipelineState> m_PSO;
 	};
 
+	class ComposeSeparateTranslucencyPSO : public RefCountedObject
+	{
+	public:
+
+		ComposeSeparateTranslucencyPSO( D3D12CommandList* CommandList, CommonResources* CR );
+		TRefCountPtr<GraphicsPipelineState> m_PSO;
+	};
+
 	class TonemapPSO : public RefCountedObject
 	{
 	public:
@@ -358,6 +366,7 @@ namespace Drn
 		TRefCountPtr<LightPassPSO> m_LightPassPSO;
 		TRefCountPtr<ScreenSpaceReflectionPSO> m_ScreenSpaceReflectionPSO;
 		TRefCountPtr<ReflectionEnvironemntPSO> m_ReflectionEnvironmentPSO;
+		TRefCountPtr<ComposeSeparateTranslucencyPSO> m_ComposeSeparateTranslucencyPSO;
 		TRefCountPtr<TAAPSO> m_TAAPSO;
 		TRefCountPtr<SceneDownSamplePSO> m_SceneDownSamplePSO;
 		TRefCountPtr<BloomPSO> m_BloomPSO;

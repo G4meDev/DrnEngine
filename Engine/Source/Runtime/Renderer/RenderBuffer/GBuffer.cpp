@@ -59,6 +59,14 @@ namespace Drn
 		RenderResourceCreateInfo DepthCreateInfo( nullptr, nullptr, ClearValueBinding::DepthZero, "Gbuffer_Depth" );
 		m_DepthTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, DEPTH_FORMAT, 1, 1, true,
 			(ETextureCreateFlags)(ETextureCreateFlags::DepthStencilTargetable | ETextureCreateFlags::ShaderResource), DepthCreateInfo);
+
+		RenderResourceCreateInfo SeparateTranslucencyCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "SeparateTranslucency" );
+		m_SeparateTranslucencyTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), SeparateTranslucencyCreateInfo);
+
+		RenderResourceCreateInfo SceneColorCreateInfo( nullptr, nullptr, ClearValueBinding::Black, "SceneColor" );
+		m_SceneColorTarget = RenderTexture2D::Create(nullptr, m_Size.X, m_Size.Y, GBUFFER_COLOR_DEFERRED_FORMAT, 1, 1, true,
+			(ETextureCreateFlags)(ETextureCreateFlags::RenderTargetable | ETextureCreateFlags::ShaderResource), SceneColorCreateInfo);
 	}
 
 	void GBuffer::Clear( D3D12CommandList* CommandList )

@@ -137,6 +137,39 @@ namespace Drn
 		}
 	}
 
+	void StaticMeshSceneProxy::RenderTranslucencyPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	{
+		if (m_Mesh.IsValid())
+		{
+			const std::string MeshName = Path::GetCleanName(m_Mesh.GetPath());
+			SCOPE_STAT_DYNAMIC(MeshName.c_str());
+
+			for (size_t i = 0; i < m_Mesh->Data.MeshesData.size(); i++)
+			{
+				const StaticMeshSlotData& RenderProxy = m_Mesh->Data.MeshesData[i];
+				MaterialSlot& Mat = m_Materials[RenderProxy.MaterialIndex];
+				
+				MaterialShader* MatShader = Mat.GetParentMaterial()->GetShaderParameters().bIsUsedWithStaticMesh && Mat.GetParentMaterial()->GetShaderParameters().BlendMode == EBlendMode::Translucent
+					? Mat.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::StaticMesh, EMaterialStage::Translucensy)
+					: nullptr;
+
+				if (MatShader)
+				{
+					SCOPE_STAT_DYNAMIC(Mat.GetMaterialName().c_str());
+
+					MatShader->Bind(CommandList);
+					Mat.GetMaterialInterface()->BindResources(CommandList);
+
+					CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+					CommandList->SetGraphicRootConstant(PrimitiveBuffer->GetViewIndex(), 1);
+					CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+
+					RenderProxy.BindAndDraw(CommandList);
+				}
+			}
+		}
+	}
+
 	void StaticMeshSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		if (m_Mesh.IsValid())

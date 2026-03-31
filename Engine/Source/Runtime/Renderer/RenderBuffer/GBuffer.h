@@ -34,6 +34,9 @@ namespace Drn
 
 		TRefCountPtr<RenderTexture2D> m_DepthTarget;
 
+		TRefCountPtr<RenderTexture2D> m_SeparateTranslucencyTarget;
+		TRefCountPtr<RenderTexture2D> m_SceneColorTarget;
+
 	private:
 	};
 }

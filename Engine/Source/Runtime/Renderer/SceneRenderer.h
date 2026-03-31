@@ -257,7 +257,9 @@ namespace Drn
 		void RenderLights();
 		void RenderSSR();
 		void RenderReflection();
+		void RenderTranslucency();
 		void RenderPostProcess();
+		void PostProcess_ComposeSeperateTranslucency();
 		void PostProcess_TemporalAA();
 		void PostProcess_SceneDownSample();
 		void PostProcess_Bloom();

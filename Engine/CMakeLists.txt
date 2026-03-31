@@ -31,6 +31,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/StaticMesh.h
 	Source/Runtime/Engine/StaticMeshVertexData.h
 	Source/Runtime/Engine/NamedProperty.h
+	Source/Runtime/Engine/NamedProperty.h
 	Source/Runtime/Engine/MeshTypes.h
 	Source/Runtime/Engine/CameraComponent.h
 	Source/Runtime/Engine/Component.h

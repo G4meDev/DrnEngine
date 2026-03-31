@@ -436,6 +436,28 @@ namespace Drn
 			SetName(PipelineState->PipelineState, "PSO_SpotLightShadowDepthPass_" + InMaterial->GetMaterialName());
 		}
 
+		if (MaterialStage == EMaterialStage::Translucensy)
+		{
+			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
+			BlendStateInitializer BInit( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha, EBlendFactor::InverseSourceAlpha, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
+			TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, InMaterial->IsTwoSided() ? ERasterizerCullMode::None : ERasterizerCullMode::Back);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::GreaterEqual);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				_countof(TargetFormats), TargetFormats, TargetFlags, DEPTH_FORMAT, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			PipelineState = GraphicsPipelineState::Create(CmdList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(PipelineState->PipelineState, "PSO_TranslucentPass_" + InMaterial->GetMaterialName());
+		}
+
 		else if (MaterialStage == EMaterialStage::Decal && VertexFactory == VertexFactoryType::StaticMesh)
 		{
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);

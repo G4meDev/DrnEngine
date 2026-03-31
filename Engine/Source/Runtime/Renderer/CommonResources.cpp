@@ -132,6 +132,7 @@ namespace Drn
 		m_AmbientOcclusionPSO = new AmbientOcclusionPSO(CommandList, this);
 		m_ScreenSpaceReflectionPSO = new ScreenSpaceReflectionPSO(CommandList, this);
 		m_ReflectionEnvironmentPSO = new ReflectionEnvironemntPSO(CommandList, this);
+		m_ComposeSeparateTranslucencyPSO = new ComposeSeparateTranslucencyPSO(CommandList, this);
 		m_TAAPSO = new TAAPSO(CommandList);
 		m_SceneDownSamplePSO = new SceneDownSamplePSO(CommandList, this);
 		m_BloomPSO = new BloomPSO(CommandList, this);
@@ -542,6 +543,46 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
+	ComposeSeparateTranslucencyPSO::ComposeSeparateTranslucencyPSO( D3D12CommandList* CommandList, CommonResources* CR )
+	{
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ComposeSeparateTranslucency.hlsl" ) );
+		ID3DBlob* VertexShaderBlob;
+		ID3DBlob* PixelShaderBlob;
+
+		std::vector<const wchar_t*> Macros = {};
+		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+
+		VertexShader* VShader = new VertexShader();
+		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
+
+		PixelShader* PShader = new PixelShader();
+		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
+
+
+		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
+
+		TRefCountPtr<BlendState> BState = nullptr;
+		TRefCountPtr<RasterizerState> RState = nullptr;
+
+		DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
+		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+			1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_ComposeSeparateTranslucency");
+	}
+
+// --------------------------------------------------------------------------------------
+
 	TonemapPSO::TonemapPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
 		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\Tonemap.hlsl" ) );
@@ -560,7 +601,6 @@ namespace Drn
 		PixelShader* PShader = new PixelShader();
 		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
 		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
-
 
 		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_PosUV, VShader, nullptr, nullptr, PShader, nullptr);
 

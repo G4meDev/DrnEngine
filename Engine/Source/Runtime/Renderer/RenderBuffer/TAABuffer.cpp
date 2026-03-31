@@ -77,7 +77,7 @@ namespace Drn
 
 	void TAABuffer::MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		m_Data.DeferredColorTexture = Renderer->m_GBuffer->m_ColorDeferredTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
+		m_Data.DeferredColorTexture = Renderer->m_GBuffer->m_SceneColorTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.VelocityTexture = Renderer->m_GBuffer->m_VelocityTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.HistoryTexture = GetHistoryResource(Renderer->m_SceneView.FrameIndex)->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.TargetTexture = GetFrameUAV(Renderer->m_SceneView.FrameIndex)->GetDescriptorHeapIndex();

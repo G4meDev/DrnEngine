@@ -257,6 +257,7 @@ namespace Drn
 		EditorPrimitive,
 		EditorSelection,
 		Velocity,
+		Translucensy
 	};
 
 	class MaterialShader

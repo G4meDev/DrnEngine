@@ -28,6 +28,7 @@ namespace Drn
 		inline void SetSprite( AssetHandle<Texture2D> InSprite ) { m_Sprite = InSprite; }
 
 		virtual void RenderVelocityPass( D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
+		virtual void RenderTranslucencyPass( D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderPrePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy) override;

@@ -70,6 +70,11 @@ namespace Drn
 		
 	}
 
+	void BillboardSceneProxy::RenderTranslucencyPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
+	{
+		
+	}
+
 	void BillboardSceneProxy::RenderMainPass( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
 		
