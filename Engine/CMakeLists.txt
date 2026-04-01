@@ -131,6 +131,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/MaterialInstance.h
 	Source/Runtime/Renderer/MaterialInstanceDynamic.h
 	Source/Runtime/Renderer/MaterialShared.h
+	Source/Runtime/Renderer/LightGrid.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -367,6 +368,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/MaterialInstance.cpp
 	Source/Runtime/Renderer/MaterialInstanceDynamic.cpp
 	Source/Runtime/Renderer/MaterialShared.cpp
+	Source/Runtime/Renderer/LightGrid.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

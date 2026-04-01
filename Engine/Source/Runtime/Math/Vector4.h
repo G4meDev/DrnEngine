@@ -2,7 +2,7 @@
 
 namespace Drn
 {
-	class Vector4
+	class alignas(16) Vector4
 	{
 	public:
 		inline Vector4(float X, float Y, float Z, float W) { XMStoreFloat4(&m_Vector, XMVectorSet(X, Y, Z, W)); }

@@ -4,6 +4,7 @@
 #include "Runtime/Renderer/SceneView.h"
 #include "Runtime/Engine/PostProcessSettings.h"
 #include "Runtime/Containers/BitArray.h"
+#include "Runtime/Renderer/LightGrid.h"
 
 LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
@@ -131,6 +132,9 @@ namespace Drn
 		bool ShouldRenderEnvironmentReflections() const;
 		bool ShouldRenderScreenSpaceReflections() const;
 
+		inline const BitArray& GetVisibleLights() const { return LightVisibilityMap; }
+		inline class D3D12CommandList* GetCommandList() const { return m_CommandList; }
+
 #if WITH_EDITOR
 		OnPickedComponentDelegate OnPickedComponent;
 		void QueueMousePickEvent( const IntPoint& ScreenPosition );
@@ -163,8 +167,8 @@ namespace Drn
 		Scene* m_Scene;
 
 		SceneRendererView m_SceneView;
-		//DirectX::BoundingFrustum ViewFrustum;
 		Frustum ViewFrustum;
+		LightGrid m_LightGrid;
 
 		std::shared_ptr<class GBuffer> m_GBuffer;
 		std::shared_ptr<class HZBBuffer> m_HZBBuffer;

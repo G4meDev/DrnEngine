@@ -38,6 +38,8 @@ namespace Drn
 
 		inline virtual ELightType GetLightType() const { return ELightType::DirectionalLight; };
 
+		inline Vector GetLightDirection() const { return m_Direction; }
+
 		virtual void Render( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 		virtual void RenderShadowDepth( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
 

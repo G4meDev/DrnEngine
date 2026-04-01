@@ -51,7 +51,6 @@
 
 #define MAX_REFLECTION_CAPTURE_COUNT 32
 
-
 static bool IsValidD3D12ResourceState(D3D12_RESOURCE_STATES InState)
 {
 	return (InState != D3D12_RESOURCE_STATE_TBD && InState != D3D12_RESOURCE_STATE_CORRUPT);

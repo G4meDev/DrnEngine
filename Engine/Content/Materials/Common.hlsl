@@ -49,11 +49,21 @@ struct StandardResources
     uint StaticSamplerBufferIndex;
     uint ParametersBufferIndex;
     uint unused_1;
-    uint GbufferTextureIndex;
+    uint unused_2;
     uint ShadowDepthBuffer;
     uint DecalBaseColor;
     uint DecalNormal;
     uint DecalMasks;
+};
+
+struct TranslucentResources
+{
+    uint ViewIndex;
+    uint PrimitiveIndex;
+    uint StaticSamplerBufferIndex;
+    uint ParametersBufferIndex;
+    uint GbufferTextureIndex;
+    
 };
 
 struct DecalResources
@@ -215,6 +225,60 @@ struct BasePassPixelShaderOutput
     
 #endif
 };
+
+#define LIGHT_GRID_MAX_LOCAL_LIGHTS 100
+#define LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE 5
+
+struct LightGridDirectionalLightData
+{
+    uint HasDirectionalLight;
+    float3 LightColor;
+    float3 LightDirection;
+};
+
+struct LightGridLocalLightData
+{
+    float4 LightPositionAndInvRadius;
+	float4 LightColorAndFalloffExponent;
+	float4 SpotAnglesAndSourceRadiusPacked;
+    float4 LightDirectionAndShadowMask;
+    float4 LightTangentAndSoftSourceRadius;
+};
+
+struct LightGridData
+{
+    uint HasDirectionalLight;
+    float3 DirectionalLightColor;
+    float3 DirectionalLightDirection;
+    
+    uint NumCulledLights;
+    float4 LocalLightBuffer[LIGHT_GRID_MAX_LOCAL_LIGHTS * LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE];
+};
+
+LightGridDirectionalLightData GetDirectionalLightData(LightGridData LightGrid)
+{
+    LightGridDirectionalLightData Result;
+    
+    Result.HasDirectionalLight = LightGrid.HasDirectionalLight;
+    Result.LightColor = LightGrid.DirectionalLightColor;
+    Result.LightDirection = LightGrid.DirectionalLightDirection;
+    
+    return Result;
+}
+
+LightGridLocalLightData GetLocalLightData(LightGridData LightGrid, uint LightIndex)
+{
+    LightGridLocalLightData Result;
+    
+    uint LocalLightBaseIndex = LightIndex * LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE;
+    Result.LightPositionAndInvRadius = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 0];
+    Result.LightColorAndFalloffExponent = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 1];
+    Result.LightDirectionAndShadowMask = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 2];
+    Result.SpotAnglesAndSourceRadiusPacked = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 3];
+    Result.LightTangentAndSoftSourceRadius = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 4];
+    
+    return Result;
+}
 
 matrix GetLocalToWorld(VertexInputInstancedStaticMesh IN)
 {

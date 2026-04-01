@@ -15,7 +15,7 @@
 
 // T---WO_SIDED
 
-ConstantBuffer<StandardResources> BindlessResources : register(b0);
+ConstantBuffer<TranslucentResources> BindlessResources : register(b0);
 
 struct ParametersBuffers
 {

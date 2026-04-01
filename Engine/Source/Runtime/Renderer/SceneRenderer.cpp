@@ -37,6 +37,7 @@ namespace Drn
 		, m_CommandList(nullptr)
 		, m_FrameIndex(0)
 		, ActiveViewTarget(nullptr)
+		, m_LightGrid(this)
 	{
 		Init();
 	}
@@ -596,7 +597,7 @@ namespace Drn
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &SeparateTranslucencyHandle, true, &DepthHandle );
 
 		RenderUniformBuffer* GbufferTexturesBuffer = m_GBuffer->GetTexturesBuffer(m_CommandList);
-		m_CommandList->SetGraphicRootConstant(GbufferTexturesBuffer->GetViewIndex(), 5);
+		m_CommandList->SetGraphicRootConstant(GbufferTexturesBuffer->GetViewIndex(), 4);
 
 		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 		{
@@ -633,7 +634,7 @@ namespace Drn
 			m_CommandList->GetD3D12CommandList()->OMSetRenderTargets( 1, &DistortionHandle, true, &DepthHandle );
 
 			RenderUniformBuffer* GbufferTexturesBuffer = m_GBuffer->GetTexturesBuffer(m_CommandList);
-			m_CommandList->SetGraphicRootConstant(GbufferTexturesBuffer->GetViewIndex(), 5);
+			m_CommandList->SetGraphicRootConstant(GbufferTexturesBuffer->GetViewIndex(), 4);
 
 			for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 			{
@@ -1083,6 +1084,7 @@ namespace Drn
 		ResolvePostProcessSettings();
 		RecalculateView();
 		CalculateVisibity();
+		m_LightGrid.ComputeLightGrid();
 
 		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 
