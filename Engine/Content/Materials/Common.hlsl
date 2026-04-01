@@ -794,7 +794,7 @@ float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, f
     [branch]
     if (Gbuffer.ShadingModel == SHADING_MODEL_FOLIAGE && dot(Gbuffer.WorldNormal, -L) > 0.0f)
     {
-        return CalculateLighting(L, -Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.TransmittanceColor, Gbuffer.Matallic, Gbuffer.Roughness);
+        return CalculateLighting(-L, Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.TransmittanceColor, Gbuffer.Matallic, Gbuffer.Roughness);
     }
     else
     {
@@ -807,7 +807,7 @@ float3 CalculateDirectionalLightRadiance(float3 WorldPosition, float3 LightDirec
     [branch]
     if (Gbuffer.ShadingModel == SHADING_MODEL_FOLIAGE && dot(Gbuffer.WorldNormal, LightDirection) > 0.0f)
     {
-        return CalculateLighting(-LightDirection, -Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.TransmittanceColor, Gbuffer.Matallic, Gbuffer.Roughness);
+        return CalculateLighting(LightDirection, Gbuffer.WorldNormal, normalize(CameraVector), LightColor, Gbuffer.TransmittanceColor, Gbuffer.Matallic, Gbuffer.Roughness);
     }
     else
     {
