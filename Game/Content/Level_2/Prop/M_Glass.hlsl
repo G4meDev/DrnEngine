@@ -13,7 +13,7 @@
 // S-----UPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_DISTORTION
 
-// T---WO_SIDED
+// T--WO_SIDED
 
 ConstantBuffer<TranslucentResources> BindlessResources : register(b0);
 
@@ -150,6 +150,21 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
 
 // -------------------------------------------------------------------------------------------------------------
     
+    GBufferData GBuffer;
+    GBuffer.BaseColor = BaseColor;
+    GBuffer.WorldNormal = Normal;
+    GBuffer.Matallic = Masks.r;
+    GBuffer.Roughness = Masks.g;
+    GBuffer.AmbientOcclusion = Masks.b;
+    GBuffer.TransmittanceColor = float3(0, 0, 0);
+    GBuffer.ShadingModel = SHADING_MODEL_LIT;
+    
+    ConstantBuffer<LightGridData> LightGrid = ResourceDescriptorHeap[BindlessResources.LightGridIndex];
+    float4 OutColor = float4(CalculateLightingForTranslucency(View, LightGrid, GBuffer, IN.WorldPosition), Opacity);
+    //float4 OutColor = float4(BaseColor, Opacity);
+    
+// -------------------------------------------------------------------------------------------------------------
+    
     Texture2D DepthTexture = ResourceDescriptorHeap[GbufferTextures.DepthIndex];
     
     float IOR = Parameters.IOR;
@@ -169,7 +184,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     float4 Distortion = float4(PosOffset.x, PosOffset.y, NegOffset.x, NegOffset.y);
     
 #if TRANSLUCENCY_PASS
-    OUT.TranslucentColor = float4(BaseColor, Opacity);
+    OUT.TranslucentColor = OutColor;
 #elif DISTORTION_PASS
     OUT.Distortion = Distortion;
 #elif HITPROXY_PASS

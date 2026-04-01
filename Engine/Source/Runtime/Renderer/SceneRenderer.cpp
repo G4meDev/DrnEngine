@@ -598,6 +598,7 @@ namespace Drn
 
 		RenderUniformBuffer* GbufferTexturesBuffer = m_GBuffer->GetTexturesBuffer(m_CommandList);
 		m_CommandList->SetGraphicRootConstant(GbufferTexturesBuffer->GetViewIndex(), 4);
+		m_CommandList->SetGraphicRootConstant(m_LightGrid.GetBuffer()->GetViewIndex(), 5);
 
 		for (BitArray::ConstSetBitIterator It(PrimitiveVisibilityMap); It; ++It)
 		{

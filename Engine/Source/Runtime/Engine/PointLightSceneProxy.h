@@ -61,6 +61,9 @@ namespace Drn
 		virtual float GetMaxDrawDistance() const override { return MaxDrawDistance; };
 		virtual Sphere GetBoundingSphere() const override { return Sphere(m_WorldPosition, m_Radius); };
 
+		inline Vector GetWorldPosition() const { return m_WorldPosition; }
+		inline float GetRadius() const { return m_Radius; }
+
 	protected:
 
 		Vector m_WorldPosition;

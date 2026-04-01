@@ -70,6 +70,14 @@ namespace Drn
 
 		void UpdateResources( class D3D12CommandList* CommandList );
 
+		inline Vector GetWorldPosition() const { return m_WorldPosition; }
+		inline Vector GetDirection() const { return m_Direction; }
+		inline float GetAttenuation() const { return m_Attenuation; }
+		inline float GetInnerRadius() const { return m_InnerRadius; }
+		inline float GetOuterRadius() const { return m_OuterRadius; }
+		inline float GetCosOuterCone() const { return std::cos(m_OuterRadius); }
+		inline float GetInvCosConeDifference() const { return 1.0f / (1 - (std::cos(m_OuterRadius - m_InnerRadius))); }
+
 	protected:
 
 		Matrix m_LocalToWorld;

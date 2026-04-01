@@ -31,8 +31,8 @@ namespace Drn
 		m_SpotLightData.Color = m_LightColor;
 		m_SpotLightData.OutterRadius = m_OuterRadius;
 		m_SpotLightData.InnerRadius = m_InnerRadius;
-		m_SpotLightData.CosOuterCone = std::cos(m_OuterRadius);
-		m_SpotLightData.InvCosConeDifference = 1.0f / (1 - (std::cos(m_OuterRadius - m_InnerRadius)));
+		m_SpotLightData.CosOuterCone = GetCosOuterCone();
+		m_SpotLightData.InvCosConeDifference = GetInvCosConeDifference();
 		m_SpotLightData.ShadowBufferIndex = m_CastShadow ? ShadowDepthBuffer->GetViewIndex() : 0;
 
 		TRefCountPtr<RenderUniformBuffer> LightBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(SpotLightData), EUniformBufferUsage::SingleFrame, &m_SpotLightData);
