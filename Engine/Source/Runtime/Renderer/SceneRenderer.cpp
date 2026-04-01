@@ -1654,8 +1654,15 @@ namespace Drn
 			{
 				if (Renderer::Get()->GetFence()->IsFenceComplete(Event.FenceValue))
 				{
-					float Depth;
-					memcpy(&Depth, Event.ReadbackBuffer->m_ResourceLocation.GetMappedBaseAddress(), sizeof(float));
+					//float Depth;
+					//memcpy(&Depth, Event.ReadbackBuffer->m_ResourceLocation.GetMappedBaseAddress(), sizeof(float));
+
+					uint32 DepthStencil;
+					memcpy(&DepthStencil, Event.ReadbackBuffer->m_ResourceLocation.GetMappedBaseAddress(), sizeof(uint32));
+
+					constexpr uint32 MaxUint24 = 1 << 24;
+					float Depth = (float)DepthStencil / MaxUint24; // @TODO: make sure this is right
+					Depth = std::clamp(Depth, 0.0f, 1.0f);
 
 					World* W = GetScene() ? GetScene()->GetWorld() : nullptr;
 					if (W && Event.OnScreenReprojection.IsBound())
