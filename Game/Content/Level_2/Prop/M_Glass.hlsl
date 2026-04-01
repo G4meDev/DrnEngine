@@ -13,7 +13,7 @@
 // S-----UPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_DISTORTION
 
-// T--WO_SIDED
+// TWO_SIDED
 
 ConstantBuffer<TranslucentResources> BindlessResources : register(b0);
 
@@ -156,8 +156,9 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     GBuffer.Matallic = Masks.r;
     GBuffer.Roughness = Masks.g;
     GBuffer.AmbientOcclusion = Masks.b;
-    GBuffer.TransmittanceColor = float3(0, 0, 0);
-    GBuffer.ShadingModel = SHADING_MODEL_LIT;
+    GBuffer.TransmittanceColor = BaseColor;
+    //GBuffer.ShadingModel = SHADING_MODEL_LIT;
+    GBuffer.ShadingModel = SHADING_MODEL_FOLIAGE;
     
     ConstantBuffer<LightGridData> LightGrid = ResourceDescriptorHeap[BindlessResources.LightGridIndex];
     float4 OutColor = float4(CalculateLightingForTranslucency(View, LightGrid, GBuffer, IN.WorldPosition), Opacity);
