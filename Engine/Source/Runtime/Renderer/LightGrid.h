@@ -23,25 +23,22 @@ namespace Drn
 		uint32 HasDirectionalLight;
 		Vector DirectionalLightDirection;
 		uint32 NumCulledLights;
-
-		union
-		{
-			struct LightGridDirectionalLightData
-			{
-				Vector4 LightPositionAndInvRadius;
-				Vector4 LightColorAndFalloffExponent;
-				Vector4 LightDirectionAndLightType;
-				Vector4 SpotAnglesAndSourceRadiusPacked;
-				Vector4 LightTangentAndSoftSourceRadius;
-			} LocalLightData[LIGHT_GRID_MAX_LOCAL_LIGHTS];
-
-			Vector4 LocalLightPackedData[LIGHT_GRID_MAX_LOCAL_LIGHTS * LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE];
-		};
-
+		uint32 LocalLightBufferIndex;
 	};
 
+	// update data stride if changed
+	struct LightGridLocalLightData
+	{
+		Vector4 LightPositionAndInvRadius;
+		Vector4 LightColorAndFalloffExponent;
+		Vector4 LightDirectionAndLightType;
+		Vector4 SpotAnglesAndSourceRadiusPacked;
+		Vector4 LightTangentAndSoftSourceRadius;
+	};
+	
 	class LightGrid
 	{
+
 	public:
 		LightGrid(SceneRenderer* InView) : View(InView) {}
 		~LightGrid() {}
@@ -54,5 +51,7 @@ namespace Drn
 		class SceneRenderer* View;
 		TRefCountPtr<class RenderUniformBuffer> LightGridBuffer;
 		LightGridData Data;
+		std::vector<LightGridLocalLightData> LocalLightData;
+		TRefCountPtr<class RenderUniformBuffer> LocalLightBuffer;
 	};
 }

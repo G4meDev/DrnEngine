@@ -11,8 +11,8 @@ namespace Drn
 	{
 		Data.HasDirectionalLight = 0;
 		Data.NumCulledLights = 0;
+		LocalLightData.clear();
 
-		uint32 LightIndex = 0;
 		for (BitArray::ConstSetBitIterator It(View->GetVisibleLights()); It; ++It)
 		{
 			LightSceneProxy* Proxy = View->GetScene()->GetLightProxies()[It.GetIndex()];
@@ -22,12 +22,11 @@ namespace Drn
 				PointLightSceneProxy* PointLight = static_cast<PointLightSceneProxy*>(Proxy);
 				uint32 LightType = LIGHT_GRID_LIGHT_TYPE_POINT;
 
-				Data.LocalLightData[LightIndex].LightPositionAndInvRadius = Vector4(PointLight->GetWorldPosition(), 1.0f / PointLight->GetRadius());
-				Data.LocalLightData[LightIndex].LightColorAndFalloffExponent = Vector4(PointLight->GetColor(), 0.0f);
-				Data.LocalLightData[LightIndex].LightDirectionAndLightType = Vector4(Vector::ZeroVector, *((float*)&LightType));
-				Data.LocalLightData[LightIndex].SpotAnglesAndSourceRadiusPacked = Vector4(0.0f, 0.0f, PointLight->GetRadius(), 0.0f);
-
-				LightIndex++;
+				LocalLightData.push_back({});
+				LocalLightData.back().LightPositionAndInvRadius = Vector4(PointLight->GetWorldPosition(), 1.0f / PointLight->GetRadius());
+				LocalLightData.back().LightColorAndFalloffExponent = Vector4(PointLight->GetColor(), 0.0f);
+				LocalLightData.back().LightDirectionAndLightType = Vector4(Vector::ZeroVector, *((float*)&LightType));
+				LocalLightData.back().SpotAnglesAndSourceRadiusPacked = Vector4(0.0f, 0.0f, PointLight->GetRadius(), 0.0f);
 			}
 
 			else if (Proxy->GetLightType() == ELightType::SpotLight)
@@ -35,12 +34,11 @@ namespace Drn
 				SpotLightSceneProxy* SpotLight = static_cast<SpotLightSceneProxy*>(Proxy);
 				uint32 LightType = LIGHT_GRID_LIGHT_TYPE_SPOT;
 
-				Data.LocalLightData[LightIndex].LightPositionAndInvRadius = Vector4(SpotLight->GetWorldPosition(), 1.0f / SpotLight->GetAttenuation());
-				Data.LocalLightData[LightIndex].LightColorAndFalloffExponent = Vector4(SpotLight->GetColor(), 0.0f);
-				Data.LocalLightData[LightIndex].LightDirectionAndLightType = Vector4(SpotLight->GetDirection(), *((float*)&LightType));
-				Data.LocalLightData[LightIndex].SpotAnglesAndSourceRadiusPacked = Vector4(SpotLight->GetCosOuterCone(), SpotLight->GetInvCosConeDifference(), SpotLight->GetAttenuation(), 0.0f);
-
-				LightIndex++;
+				LocalLightData.push_back({});
+				LocalLightData.back().LightPositionAndInvRadius = Vector4(SpotLight->GetWorldPosition(), 1.0f / SpotLight->GetAttenuation());
+				LocalLightData.back().LightColorAndFalloffExponent = Vector4(SpotLight->GetColor(), 0.0f);
+				LocalLightData.back().LightDirectionAndLightType = Vector4(SpotLight->GetDirection(), *((float*)&LightType));
+				LocalLightData.back().SpotAnglesAndSourceRadiusPacked = Vector4(SpotLight->GetCosOuterCone(), SpotLight->GetInvCosConeDifference(), SpotLight->GetAttenuation(), 0.0f);
 			}
 
 			else if (Proxy->GetLightType() == ELightType::DirectionalLight)
@@ -57,7 +55,17 @@ namespace Drn
 			}
 		}
 
-		Data.NumCulledLights = LightIndex;
+		uint32 ActualNumLights = LocalLightData.size();
+		drn_check(ActualNumLights < LIGHT_GRID_MAX_LOCAL_LIGHTS); // TODO: calculate tight fit for 65kb constant buffer target and clamp extra ones
+
+		if (ActualNumLights == 0)
+		{
+			LocalLightData.push_back({});
+		}
+		LocalLightBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridLocalLightData) * LocalLightData.size(), EUniformBufferUsage::SingleFrame, LocalLightData.data());
+
+		Data.NumCulledLights = ActualNumLights;
+		Data.LocalLightBufferIndex = LocalLightBuffer->GetViewIndex();
 		LightGridBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridData), EUniformBufferUsage::SingleFrame, &Data);
 	}
 

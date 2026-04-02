@@ -268,8 +268,13 @@ struct LightGridData
     float3 DirectionalLightColor;
     uint HasDirectionalLight;
     float3 DirectionalLightDirection;
-    
     uint NumCulledLights;
+    
+    uint LocalLightBufferIndex;
+};
+
+struct LightGridPackedLocalLightData
+{
     float4 LocalLightBuffer[LIGHT_GRID_MAX_LOCAL_LIGHTS * LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE];
 };
 
@@ -284,16 +289,16 @@ LightGridDirectionalLightData GetDirectionalLightData(LightGridData LightGrid)
     return Result;
 }
 
-LightGridLocalLightData GetLocalLightData(LightGridData LightGrid, uint LightIndex)
+LightGridLocalLightData GetLocalLightData(LightGridPackedLocalLightData PackedLocalLights, uint LightIndex)
 {
     LightGridLocalLightData Result;
     
     uint LocalLightBaseIndex = LightIndex * LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE;
-    Result.LightPositionAndInvRadius = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 0];
-    Result.LightColorAndFalloffExponent = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 1];
-    Result.LightDirectionAndLightType = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 2];
-    Result.SpotAnglesAndSourceRadiusPacked = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 3];
-    Result.LightTangentAndSoftSourceRadius = LightGrid.LocalLightBuffer[LocalLightBaseIndex + 4];
+    Result.LightPositionAndInvRadius = PackedLocalLights.LocalLightBuffer[LocalLightBaseIndex + 0];
+    Result.LightColorAndFalloffExponent = PackedLocalLights.LocalLightBuffer[LocalLightBaseIndex + 1];
+    Result.LightDirectionAndLightType = PackedLocalLights.LocalLightBuffer[LocalLightBaseIndex + 2];
+    Result.SpotAnglesAndSourceRadiusPacked = PackedLocalLights.LocalLightBuffer[LocalLightBaseIndex + 3];
+    Result.LightTangentAndSoftSourceRadius = PackedLocalLights.LocalLightBuffer[LocalLightBaseIndex + 4];
     
     return Result;
 }
@@ -1095,10 +1100,12 @@ float3 CalculateLightingForTranslucency(ViewBuffer View, LightGridData LightGrid
         Result += Radiance * Gbuffer.AmbientOcclusion;
     }
     
+    ConstantBuffer<LightGridPackedLocalLightData> PackedLocalLights = ResourceDescriptorHeap[LightGrid.LocalLightBufferIndex];
+    
     [loop]
     for (uint LightIndex = 0; LightIndex < LightGrid.NumCulledLights; LightIndex++)
     {
-        LightGridLocalLightData LocalLightData = GetLocalLightData(LightGrid, LightIndex);
+        LightGridLocalLightData LocalLightData = GetLocalLightData(PackedLocalLights, LightIndex);
         uint LightType = asuint(LocalLightData.LightDirectionAndLightType.w);
 
         [branch]
