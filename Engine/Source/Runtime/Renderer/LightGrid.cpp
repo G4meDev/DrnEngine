@@ -7,6 +7,20 @@
 
 namespace Drn
 {
+	Vector GetLightGridZParams(float NearPlane, float FarPlane)
+	{
+		double NearOffset = .095 * 100;
+		double S = 4.05;
+
+		double N = NearPlane + NearOffset;
+		double F = FarPlane;
+
+		double O = (F - N * exp2((LIGHT_GRID_SIZE_Z - 1) / S)) / (F - N);
+		double B = (1 - O) / N;
+
+		return Vector(B, O, S);
+	}
+
 	void LightGrid::ComputeLightGrid()
 	{
 		Data.HasDirectionalLight = 0;
@@ -64,9 +78,46 @@ namespace Drn
 		}
 		LocalLightBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridLocalLightData) * LocalLightData.size(), EUniformBufferUsage::SingleFrame, LocalLightData.data());
 
-		Data.NumCulledLights = ActualNumLights;
+		IntPoint ViewportSize = View->GetViewportSize();
+		IntVector LightGridSize = IntVector(Math::DivideAndRoundUp(ViewportSize.X, LIGHT_GRID_PIXEL_SIZE), Math::DivideAndRoundUp(ViewportSize.Y, LIGHT_GRID_PIXEL_SIZE), LIGHT_GRID_SIZE_Z);
+
 		Data.LocalLightBufferIndex = LocalLightBuffer->GetViewIndex();
+		Data.NumCulledLights = ActualNumLights;
+		Data.CulledGridSize = LightGridSize;
+		Data.NumGridCells = LightGridSize.GetX() * LightGridSize.GetY() * LightGridSize.GetZ();
+		Data.MaxCulledLightsPerCell = LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL;
+		Data.LightGridPixelSizeShift = std::_Floor_of_log_2(LIGHT_GRID_PIXEL_SIZE);
+
 		LightGridBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridData), EUniformBufferUsage::SingleFrame, &Data);
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
+
+		D3D12CommandList* CmdList = View->GetCommandList();
+
+		PIXBeginEvent(CmdList->GetD3D12CommandList(), 1, "LightGrid");
+		{
+			SCOPED_GPU_STAT(CmdList, "LightGridInjection");
+			SCOPE_STAT();
+			PIXBeginEvent( CmdList->GetD3D12CommandList(), 1, "Injection" );
+
+			//m_CommandList->TransitionResourceWithTracking(m_HZBBuffer->M_HZBTarget->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			//m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			CmdList->FlushBarriers();
+
+			IntVector NumGroups = IntVector::DivideAndRoundUp(LightGridSize, LIGHT_GRID_INJECTION_GROUP_SIZE);
+
+			CmdList->SetComputePipelineState(CommonResources::Get()->m_LightGridPSO->m_Injection_PSO);
+
+			CmdList->SetComputeRootConstant(View->ViewBuffer->GetViewIndex(), 0);
+			CmdList->SetComputeRootConstant(LightGridBuffer->GetViewIndex(), 1);
+
+			CmdList->DispatchComputeShader(NumGroups.X, NumGroups.Y, NumGroups.Z);
+
+			PIXEndEvent(CmdList->GetD3D12CommandList());
+		}
+		PIXEndEvent(CmdList->GetD3D12CommandList());
+
 	}
 
 }

@@ -3,6 +3,9 @@ static const float PI = 3.14159265359;
 #define FLT_MAX 3.402823466e+38
 #define FLT_MIN 1.175494351e-38
 
+// max 16 bit/float4s in cnstant buffer
+#define D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT 4096
+
 #define VECTOR( name , displayname)         \
     float4 name;                            \
 
@@ -239,8 +242,8 @@ struct BasePassPixelShaderOutput
 #endif
 };
 
-#define LIGHT_GRID_MAX_LOCAL_LIGHTS 100
 #define LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE 5
+#define LIGHT_GRID_MAX_LOCAL_LIGHTS D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT / LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE
 
 #define LIGHT_GRID_LIGHT_TYPE_DIRECTIONAL	0
 #define LIGHT_GRID_LIGHT_TYPE_POINT			1
@@ -268,9 +271,17 @@ struct LightGridData
     float3 DirectionalLightColor;
     uint HasDirectionalLight;
     float3 DirectionalLightDirection;
+    uint LocalLightBufferIndex;
+    
+    int3 CulledGridSize;
     uint NumCulledLights;
     
-    uint LocalLightBufferIndex;
+    uint NumGridCells;
+    uint MaxCulledLightsPerCell;
+    uint LightGridPixelSizeShift;
+    uint unused1;
+
+    float3 LightGridZParams;
 };
 
 struct LightGridPackedLocalLightData
@@ -343,6 +354,21 @@ uint ReverseBits32( uint bits )
 float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 {
     return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
+}
+
+float ConvertToDeviceZ(float SceneDepth, ViewBuffer View)
+{
+    //[branch]
+    //if (View.ViewToClip[3][3] < 1.0f)
+    //{
+		// Perspective
+        return 1.0f / ((SceneDepth + View.InvDeviceZToWorldZTransform[3]) * View.InvDeviceZToWorldZTransform[2]);
+    //}
+    //else
+    //{
+	//	// Ortho
+    //    return SceneDepth * View.ViewToClip[2][2] + View.ViewToClip[3][2];
+    //}
 }
 
 float InterleavedGradientNoise(float2 uv, float FrameId)

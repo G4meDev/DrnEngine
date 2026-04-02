@@ -144,6 +144,7 @@ namespace Drn
 		m_DebugLineThicknessPSO = new DebugLineThicknessPSO(CommandList, this);
 		m_DebugLinePSO = new DebugLinePSO(CommandList, this);
 		m_HZBPSO = new HZBPSO(CommandList);
+		m_LightGridPSO = new LightGridPSO(CommandList);
 		m_CubemapDownsamplePSO = new CubemapDownsamplePSO(CommandList);
 		m_ResizeSkycubemapPSO = new ResizeSkycubemapPSO(CommandList);
 		m_ApplyLowerHemisphereColorPSO = new ApplyLowerHemisphereColorPSO(CommandList);
@@ -1589,6 +1590,39 @@ namespace Drn
 
 			m_4Mip_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_4Mip_PSO->PipelineState, "PSO_HZB_4Mip");
+		}
+	}
+
+// --------------------------------------------------------------------------------------
+
+	LightGridPSO::LightGridPSO( D3D12CommandList* CommandList )
+	{
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightGridInjection.hlsl" ) );
+			ID3DBlob* ComputeShaderBlob;
+			const std::vector<const wchar_t*> Macros = {};
+			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+
+			ComputeShader* CShader = new ComputeShader();
+			CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+			CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
+
+			m_Injection_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_Injection_PSO->PipelineState, "PSO_LightGridInjection");
+		}
+
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightGridCompact.hlsl" ) );
+			ID3DBlob* ComputeShaderBlob;
+			const std::vector<const wchar_t*> Macros = {};
+			CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+
+			ComputeShader* CShader = new ComputeShader();
+			CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+			CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
+
+			m_Compact_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_Compact_PSO->PipelineState, "PSO_LightGridCompact");
 		}
 	}
 

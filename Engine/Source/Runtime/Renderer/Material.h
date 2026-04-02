@@ -101,5 +101,7 @@ namespace Drn
 
 		friend class MaterialPipelines;
 		friend class StaticMeshSceneProxy;
+
+		friend class ContentBrowserGuiLayer;
 	};
 }

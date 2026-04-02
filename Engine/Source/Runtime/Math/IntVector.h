@@ -16,6 +16,7 @@ namespace Drn
 		inline int GetY() const { return Y; }
 		inline int GetZ() const { return Z; }
 
+		static IntVector DivideAndRoundUp( IntVector lhs, int32 Divisor );
 
 	public:
 		int X;

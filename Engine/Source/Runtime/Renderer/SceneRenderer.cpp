@@ -1085,7 +1085,6 @@ namespace Drn
 		ResolvePostProcessSettings();
 		RecalculateView();
 		CalculateVisibity();
-		m_LightGrid.ComputeLightGrid();
 
 		Renderer::Get()->SetBindlessHeaps(m_CommandList->GetD3D12CommandList());
 
@@ -1095,6 +1094,7 @@ namespace Drn
 #endif
 
 		RenderPrepass();
+		m_LightGrid.ComputeLightGrid();
 		RenderHZB();
 
 		// TODO: remove. just to force early root change. otherwise all call to change root constant before setting pipeline state will miss

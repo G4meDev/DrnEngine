@@ -44,6 +44,10 @@ namespace Drn
 
 		void GetDirectoryWithPath(SystemFileNode* Node, const std::string& Path, SystemFileNode** Result);
 
+		void ReimportSelectedAssets();
+
+		static ImGuiID AdapterIndexToStorageId(ImGuiSelectionBasicStorage* self_, int idx);
+
 		std::unique_ptr<SystemFileNode> EngineRootFolder;
 		std::unique_ptr<SystemFileNode> GameRootFolder;
 

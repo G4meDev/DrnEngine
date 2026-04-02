@@ -298,6 +298,15 @@ namespace Drn
 		TRefCountPtr<ComputePipelineState> m_4Mip_PSO;
 	};
 
+	class LightGridPSO : public RefCountedObject
+	{
+	public:
+		LightGridPSO( D3D12CommandList* CommandList );
+		
+		TRefCountPtr<ComputePipelineState> m_Injection_PSO;
+		TRefCountPtr<ComputePipelineState> m_Compact_PSO;
+	};
+
 	class CubemapDownsamplePSO : public RefCountedObject
 	{
 	public:
@@ -389,6 +398,7 @@ namespace Drn
 		TRefCountPtr<DebugLinePSO> m_DebugLinePSO;
 
 		TRefCountPtr<HZBPSO> m_HZBPSO;
+		TRefCountPtr<LightGridPSO> m_LightGridPSO;
 		TRefCountPtr<CubemapDownsamplePSO> m_CubemapDownsamplePSO;
 
 		TRefCountPtr<ResizeSkycubemapPSO> m_ResizeSkycubemapPSO;

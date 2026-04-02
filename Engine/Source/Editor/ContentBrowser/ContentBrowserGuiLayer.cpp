@@ -163,8 +163,7 @@ namespace Drn
 
 			// Use custom selection adapter: store ID in selection (recommended)
 			Selection.UserData = this;
-			Selection.AdapterIndexToStorageId = [](ImGuiSelectionBasicStorage* self_, int idx) { ContentBrowserGuiLayer* self = (ContentBrowserGuiLayer*)self_->UserData; return ImHashData(self->Assets[idx].FullPath.c_str(), 
-				std::strlen(self->Assets[idx].FullPath.c_str())); };
+			Selection.AdapterIndexToStorageId = &AdapterIndexToStorageId;
 			Selection.ApplyRequests(ms_io);
 
 			const bool want_delete = (ImGui::Shortcut(ImGuiKey_Delete, ImGuiInputFlags_Repeat) && (Selection.Size > 0)) || RequestDelete;
@@ -251,6 +250,9 @@ namespace Drn
 				ImGui::Separator();
 				if (ImGui::MenuItem("Delete", "Del", false, Selection.Size > 0))
 					RequestDelete = true;
+				if (ImGui::MenuItem("Reimport", NULL, false, Selection.Size > 0))
+					ReimportSelectedAssets();
+
 				ImGui::EndPopup();
 			}
 
@@ -490,6 +492,35 @@ namespace Drn
 			}
 		}
 	}
+
+	void ContentBrowserGuiLayer::ReimportSelectedAssets()
+	{
+		int32 Size = Assets.size();
+		for (int32 idx = 0; idx < Size; idx++)
+		{
+			if (Selection.Contains(Selection.AdapterIndexToStorageId(&Selection, idx)))
+			{
+				//std::string AssetPath = Path::ConvertProjectRelativePath(Assets[idx].FullPath);
+				std::string AssetPath = Assets[idx].FullPath;
+				AssetHandle<Asset> ReimportingAsset(AssetPath);
+				EAssetType Type = ReimportingAsset.LoadGeneric();
+				if (Type == EAssetType::Material)
+				{
+					// @TODO: move import to parent asset class
+
+					AssetHandle<Material> ReimportingMaterial(AssetPath);
+					ReimportingMaterial.Load();
+					ReimportingMaterial.Get()->Import();
+				}
+			}
+		}
+	}
+
+	ImGuiID ContentBrowserGuiLayer::AdapterIndexToStorageId( ImGuiSelectionBasicStorage* self_, int idx )
+	{
+		ContentBrowserGuiLayer* self = (ContentBrowserGuiLayer*)self_->UserData;
+		return ImHashData(self->Assets[idx].FullPath.c_str(), std::strlen(self->Assets[idx].FullPath.c_str()));
+	};
 
 	void ContentBrowserGuiLayer::AddEmptyLevel()
 	{

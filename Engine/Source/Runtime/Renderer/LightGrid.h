@@ -2,13 +2,23 @@
 
 #include "ForwardTypes.h"
 
-#define LIGHT_GRID_MAX_LOCAL_LIGHTS			100
 #define LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE	5
+#define LIGHT_GRID_MAX_LOCAL_LIGHTS			D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT / LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE
 
 #define LIGHT_GRID_LIGHT_TYPE_DIRECTIONAL	0
 #define LIGHT_GRID_LIGHT_TYPE_POINT			1
 #define LIGHT_GRID_LIGHT_TYPE_SPOT			2
 #define LIGHT_GRID_LIGHT_TYPE_MAX			3
+
+#define LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL 32
+
+#define LIGHT_GRID_STRIDE_CULLED_LIGHT			2
+#define LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES	2
+#define LIGHT_GRID_LIGHT_LINK_STRIDE			2
+
+#define LIGHT_GRID_PIXEL_SIZE 64
+#define LIGHT_GRID_SIZE_Z 32
+#define LIGHT_GRID_INJECTION_GROUP_SIZE 4
 
 namespace Drn
 {
@@ -21,9 +31,19 @@ namespace Drn
 
 		Vector DirectionalLightColor;
 		uint32 HasDirectionalLight;
+
 		Vector DirectionalLightDirection;
-		uint32 NumCulledLights;
 		uint32 LocalLightBufferIndex;
+
+		IntVector CulledGridSize;
+		uint32 NumCulledLights;
+
+		uint32 NumGridCells;
+		uint32 MaxCulledLightsPerCell;
+		uint32 LightGridPixelSizeShift;
+		uint32 unused1;
+
+		Vector LightGridZParams;
 	};
 
 	// update data stride if changed
