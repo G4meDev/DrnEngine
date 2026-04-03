@@ -41,9 +41,12 @@ namespace Drn
 		uint32 NumGridCells;
 		uint32 MaxCulledLightsPerCell;
 		uint32 LightGridPixelSizeShift;
-		uint32 unused1;
+		uint32 ViewSpacePositionAndRadiusIndex;
 
 		Vector LightGridZParams;
+		uint32 LightViewSpaceDirAndPreprocAngleIndex;
+
+		uint32 RWNumCulledLightsGridIndex;
 	};
 
 	// update data stride if changed
@@ -71,7 +74,16 @@ namespace Drn
 		class SceneRenderer* View;
 		TRefCountPtr<class RenderUniformBuffer> LightGridBuffer;
 		LightGridData Data;
+
 		std::vector<LightGridLocalLightData> LocalLightData;
 		TRefCountPtr<class RenderUniformBuffer> LocalLightBuffer;
+
+		std::vector<Vector4> ViewSpacePosAndRadiusData;
+		TRefCountPtr<class RenderUniformBuffer> ViewSpacePosAndRadiusBuffer;
+
+		std::vector<Vector4> ViewSpaceDirAndPreprocAngleData;
+		TRefCountPtr<class RenderUniformBuffer> ViewSpaceDirAndPreprocAngleBuffer;
+
+		TRefCountPtr<class RenderUniformBuffer> RWNumCulledLightsGridBuffer;
 	};
 }

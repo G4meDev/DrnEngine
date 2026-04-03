@@ -44,7 +44,14 @@ namespace Drn
 
 		inline Vector TransformVector(const Vector& V) const
 		{
-			return XMVector3Transform(XMLoadFloat3(V.Get()), XMLoadFloat4x4(&m_Matrix));
+			Vector4 Result = TransformVector4(Vector4(V, 0.0f));
+			return Vector(Result.GetX(), Result.GetY(), Result.GetZ());
+		}
+
+		inline Vector TransformPosition(const Vector& V) const
+		{
+			Vector4 Result = TransformVector4(Vector4(V, 1.0f));
+			return Vector(Result.GetX(), Result.GetY(), Result.GetZ());
 		}
 
 		inline Matrix GetTranspose() const

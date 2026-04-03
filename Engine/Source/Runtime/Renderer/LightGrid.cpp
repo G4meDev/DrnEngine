@@ -21,11 +21,23 @@ namespace Drn
 		return Vector(B, O, S);
 	}
 
+	float GetTanRadAngleOrZero(float coneAngle)
+	{
+		if (coneAngle < XM_PIDIV2)
+		{
+			return std::tan(coneAngle);
+		}
+
+		return 0.0f;
+	}
+
 	void LightGrid::ComputeLightGrid()
 	{
 		Data.HasDirectionalLight = 0;
 		Data.NumCulledLights = 0;
 		LocalLightData.clear();
+		ViewSpacePosAndRadiusData.clear();
+		ViewSpaceDirAndPreprocAngleData.clear();
 
 		for (BitArray::ConstSetBitIterator It(View->GetVisibleLights()); It; ++It)
 		{
@@ -41,6 +53,9 @@ namespace Drn
 				LocalLightData.back().LightColorAndFalloffExponent = Vector4(PointLight->GetColor(), 0.0f);
 				LocalLightData.back().LightDirectionAndLightType = Vector4(Vector::ZeroVector, *((float*)&LightType));
 				LocalLightData.back().SpotAnglesAndSourceRadiusPacked = Vector4(0.0f, 0.0f, PointLight->GetRadius(), 0.0f);
+
+				ViewSpacePosAndRadiusData.push_back(Vector4(View->GetSceneView().WorldToView.TransformPosition(PointLight->GetWorldPosition()), PointLight->GetRadius()));
+				ViewSpaceDirAndPreprocAngleData.push_back(Vector4(0, 0, 0, 0));
 			}
 
 			else if (Proxy->GetLightType() == ELightType::SpotLight)
@@ -53,6 +68,10 @@ namespace Drn
 				LocalLightData.back().LightColorAndFalloffExponent = Vector4(SpotLight->GetColor(), 0.0f);
 				LocalLightData.back().LightDirectionAndLightType = Vector4(SpotLight->GetDirection(), *((float*)&LightType));
 				LocalLightData.back().SpotAnglesAndSourceRadiusPacked = Vector4(SpotLight->GetCosOuterCone(), SpotLight->GetInvCosConeDifference(), SpotLight->GetAttenuation(), 0.0f);
+
+				// @TODO: maybe use a tight bound sphere
+				ViewSpacePosAndRadiusData.push_back(Vector4(View->GetSceneView().WorldToView.TransformPosition(SpotLight->GetWorldPosition()), SpotLight->GetAttenuation()));
+				ViewSpaceDirAndPreprocAngleData.push_back((Vector4(View->GetSceneView().WorldToView.TransformVector(SpotLight->GetDirection()), GetTanRadAngleOrZero(SpotLight->GetOuterRadius()))));
 			}
 
 			else if (Proxy->GetLightType() == ELightType::DirectionalLight)
@@ -73,20 +92,28 @@ namespace Drn
 		drn_check(ActualNumLights < LIGHT_GRID_MAX_LOCAL_LIGHTS); // TODO: calculate tight fit for 65kb constant buffer target and clamp extra ones
 
 		if (ActualNumLights == 0)
-		{
 			LocalLightData.push_back({});
-		}
+		if (ViewSpacePosAndRadiusData.empty())
+			ViewSpacePosAndRadiusData.push_back({});
+		if (ViewSpaceDirAndPreprocAngleData.empty())
+			ViewSpaceDirAndPreprocAngleData.push_back({});
+
 		LocalLightBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridLocalLightData) * LocalLightData.size(), EUniformBufferUsage::SingleFrame, LocalLightData.data());
+		ViewSpacePosAndRadiusBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(Vector4) * ViewSpacePosAndRadiusData.size(), EUniformBufferUsage::SingleFrame, ViewSpacePosAndRadiusData.data());
+		ViewSpaceDirAndPreprocAngleBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(Vector4) * ViewSpaceDirAndPreprocAngleData.size(), EUniformBufferUsage::SingleFrame, ViewSpaceDirAndPreprocAngleData.data());
 
 		IntPoint ViewportSize = View->GetViewportSize();
 		IntVector LightGridSize = IntVector(Math::DivideAndRoundUp(ViewportSize.X, LIGHT_GRID_PIXEL_SIZE), Math::DivideAndRoundUp(ViewportSize.Y, LIGHT_GRID_PIXEL_SIZE), LIGHT_GRID_SIZE_Z);
 
 		Data.LocalLightBufferIndex = LocalLightBuffer->GetViewIndex();
+		Data.ViewSpacePositionAndRadiusIndex = ViewSpacePosAndRadiusBuffer->GetViewIndex();
+		Data.LightViewSpaceDirAndPreprocAngleIndex = ViewSpaceDirAndPreprocAngleBuffer->GetViewIndex();
 		Data.NumCulledLights = ActualNumLights;
 		Data.CulledGridSize = LightGridSize;
 		Data.NumGridCells = LightGridSize.GetX() * LightGridSize.GetY() * LightGridSize.GetZ();
 		Data.MaxCulledLightsPerCell = LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL;
 		Data.LightGridPixelSizeShift = std::_Floor_of_log_2(LIGHT_GRID_PIXEL_SIZE);
+		//Data.RWNumCulledLightsGridIndex = RWNumCulledLightsGridBuffer->;
 
 		LightGridBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridData), EUniformBufferUsage::SingleFrame, &Data);
 

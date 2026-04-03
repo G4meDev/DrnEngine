@@ -279,14 +279,27 @@ struct LightGridData
     uint NumGridCells;
     uint MaxCulledLightsPerCell;
     uint LightGridPixelSizeShift;
-    uint unused1;
+    uint ViewSpacePositionAndRadiusIndex;
 
     float3 LightGridZParams;
+    uint ViewSpaceDirAndPreprocAngleIndex;
+    
+    uint RWNumCulledLightsGridIndex;
 };
 
 struct LightGridPackedLocalLightData
 {
     float4 LocalLightBuffer[LIGHT_GRID_MAX_LOCAL_LIGHTS * LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE];
+};
+
+struct LightGridViewSpacePositionAndRadius
+{
+    float4 PackedData[LIGHT_GRID_MAX_LOCAL_LIGHTS];
+};
+
+struct LightGridViewSpaceDirAndPreprocAngle
+{
+    float4 PackedData[LIGHT_GRID_MAX_LOCAL_LIGHTS];
 };
 
 LightGridDirectionalLightData GetDirectionalLightData(LightGridData LightGrid)

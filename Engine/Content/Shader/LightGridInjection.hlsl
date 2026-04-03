@@ -29,6 +29,12 @@ float ComputeCellNearViewDepthFromZSlice(LightGridData LightGrid, uint ZSlice)
     return SliceDepth;
 }
 
+float ComputeSquaredDistanceFromBoxToPoint(float3 BoxCenter, float3 BoxExtent, float3 InPoint)
+{
+    float3 AxisDistances = max(abs(InPoint - BoxCenter) - BoxExtent, 0);
+    return dot(AxisDistances, AxisDistances);
+}
+
 void ComputeCellViewAABB(ViewBuffer View, LightGridData LightGrid, uint3 GridCoordinate, out float3 ViewTileMin, out float3 ViewTileMax)
 {
     const float2 InvCulledGridSizeF = (float)(1u << LightGrid.LightGridPixelSizeShift) * View.InvSize;
@@ -82,6 +88,25 @@ void ComputeCellViewAABB(ViewBuffer View, LightGridData LightGrid, uint3 GridCoo
     ViewTileMax.z = MaxTileZ;
 }
 
+bool AabbOutsidePlane(float3 center, float3 extents, float4 plane)
+{
+    float dist = dot(float4(center, 1.0), plane);
+    float radius = dot(extents, abs(plane.xyz));
+
+    return dist > radius;
+}
+
+bool IsAabbOutsideInfiniteAcuteConeApprox(float3 ConeVertex, float3 ConeAxis, float TanConeAngle, float3 AabbCentre, float3 AabbExt)
+{
+    float3 D = AabbCentre - ConeVertex;
+
+    float3 M = -normalize(cross(cross(D, ConeAxis), ConeAxis));
+    float3 N = -TanConeAngle * ConeAxis + M;
+    float4 Plane = float4(N, 0.0);
+
+    return AabbOutsidePlane(D, AabbExt, Plane);
+}
+
 [numthreads(THREADGROUP_SIZE, THREADGROUP_SIZE, THREADGROUP_SIZE)]
 void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThreadID, uint3 GroupThreadId : SV_GroupThreadID)
 {
@@ -108,13 +133,76 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
         
         uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES;
 
-        //[loop]
-        //for (uint LocalLightIndex = 0; LocalLightIndex < ForwardLightData.NumLocalLights; LocalLightIndex++)
-        //{
-        //    uint LocalLightBaseIndex = LocalLightIndex * LOCAL_LIGHT_DATA_STRIDE;
-        //    
-        //    
-        //}
+        ConstantBuffer<LightGridPackedLocalLightData> PackedLocalLights = ResourceDescriptorHeap[LightGrid.LocalLightBufferIndex];
+        ConstantBuffer<LightGridViewSpacePositionAndRadius> ViewSpacePositionAndRadiusBuffer = ResourceDescriptorHeap[LightGrid.ViewSpacePositionAndRadiusIndex];
+        ConstantBuffer<LightGridViewSpaceDirAndPreprocAngle> ViewSpaceDirAndPreprocAngleBuffer = ResourceDescriptorHeap[LightGrid.ViewSpaceDirAndPreprocAngleIndex];
+        
+        //RWBuffer<uint> RWNumCulledLightsGrid = ResourceDescriptorHeap[LightGrid.RWNumCulledLightsGridIndex];
+        
+        [loop]
+        for (uint LocalLightIndex = 0; LocalLightIndex < LightGrid.NumCulledLights; LocalLightIndex++)
+        {
+            LightGridLocalLightData LocalLightData = GetLocalLightData(PackedLocalLights, LocalLightIndex);
+            
+            float4 LightPositionAndInvRadius = LocalLightData.LightPositionAndInvRadius;
+            float3 ViewSpaceLightPosition = ViewSpacePositionAndRadiusBuffer.PackedData[LocalLightIndex].xyz;
+            float LightRadius = ViewSpacePositionAndRadiusBuffer.PackedData[LocalLightIndex].w;
+            
+            float BoxDistanceSq = ComputeSquaredDistanceFromBoxToPoint(ViewTileCenter, ViewTileExtent, ViewSpaceLightPosition);
+            if (BoxDistanceSq < LightRadius * LightRadius)
+            {
+				bool bPassSpotlightTest = true;
+				{
+                    float4 ViewSpaceDirAndPreprocAngle = ViewSpaceDirAndPreprocAngleBuffer.PackedData[LocalLightIndex];
+					float TanConeAngle = ViewSpaceDirAndPreprocAngle.w;
+
+					if (TanConeAngle > 0.0f)
+					{
+						float3 ViewSpaceLightDirection = -ViewSpaceDirAndPreprocAngle.xyz;
+						bPassSpotlightTest = !IsAabbOutsideInfiniteAcuteConeApprox(ViewSpaceLightPosition, ViewSpaceLightDirection, TanConeAngle, ViewTileCenter, ViewTileExtent);
+					}
+				}
+                
+                if (bPassSpotlightTest)
+				{
+					uint CulledLightIndex;
+					//InterlockedAdd(RWNumCulledLightsGrid[GridIndex], 1U, CulledLightIndex);
+
+					//if (CulledLightIndex < LightGrid.MaxCulledLightsPerCell)
+					//{
+					//	RWCulledLightDataGrid[GridIndex * ForwardLightData.MaxCulledLightsPerCell + CulledLightIndex] = LocalLightIndex;
+					//}
+				}
+//              if (bPassSpotlightTest)
+//				{
+//
+//#if USE_LINKED_CULL_LIST
+//					uint NextLink;
+//					InterlockedAdd(RWNextCulledLightLink[0], 1U, NextLink);
+//
+//					if (NextLink < NumAvailableLinks)
+//					{
+//						uint PreviousLink;
+//						InterlockedExchange(RWStartOffsetGrid[GridIndex], NextLink, PreviousLink);
+//						RWCulledLightLinks[NextLink * LIGHT_LINK_STRIDE + 0] = LocalLightIndex;
+//						RWCulledLightLinks[NextLink * LIGHT_LINK_STRIDE + 1] = PreviousLink;
+//					}
+//
+//#else
+//                    InterlockedExchange()
+//                    
+//					uint CulledLightIndex;
+//					InterlockedAdd(RWNumCulledLightsGrid[GridIndex * NUM_CULLED_LIGHTS_GRID_STRIDE + 0], 1U, CulledLightIndex);
+//					RWNumCulledLightsGrid[GridIndex * NUM_CULLED_LIGHTS_GRID_STRIDE + 1] = GridIndex * ForwardLightData.MaxCulledLightsPerCell;
+//
+//					if (CulledLightIndex < ForwardLightData.MaxCulledLightsPerCell)
+//					{
+//						RWCulledLightDataGrid[GridIndex * ForwardLightData.MaxCulledLightsPerCell + CulledLightIndex] = LocalLightIndex;
+//					}
+//#endif
+//				}
+            }
+        }
 #endif
     }
 }
