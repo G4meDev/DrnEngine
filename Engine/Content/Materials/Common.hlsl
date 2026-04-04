@@ -285,6 +285,9 @@ struct LightGridData
     uint ViewSpaceDirAndPreprocAngleIndex;
     
     uint RWNumCulledLightsGridIndex;
+    uint RWCulledLightsGridIndex;
+    uint NumCulledLightsGridIndex;
+    uint CulledLightsGridIndex;
 };
 
 struct LightGridPackedLocalLightData
@@ -375,7 +378,8 @@ float ConvertToDeviceZ(float SceneDepth, ViewBuffer View)
     //if (View.ViewToClip[3][3] < 1.0f)
     //{
 		// Perspective
-        return 1.0f / ((SceneDepth + View.InvDeviceZToWorldZTransform[3]) * View.InvDeviceZToWorldZTransform[2]);
+        //return 1.0f / ((SceneDepth + View.InvDeviceZToWorldZTransform[3]) * View.InvDeviceZToWorldZTransform[2]);
+        return ((1 / SceneDepth) + View.InvDeviceZToWorldZTransform[3]) / View.InvDeviceZToWorldZTransform[2];
     //}
     //else
     //{
@@ -390,6 +394,15 @@ float InterleavedGradientNoise(float2 uv, float FrameId)
 
     const float3 magic = float3(0.06711056f, 0.00583715f, 52.9829189f);
     return frac(magic.z * frac(dot(uv, magic.xy)));
+}
+
+#define BBS_PRIME24 4093
+float RandBBSfloat(float seed)
+{
+    float s = frac(seed / BBS_PRIME24);
+    s = frac(s * s * BBS_PRIME24);
+    s = frac(s * s * BBS_PRIME24);
+    return s;
 }
 
 float2 ViewportUVToScreenPos(float2 ViewportUV)
@@ -1122,7 +1135,17 @@ float CalculateDirectionalLightShadow(float3 WorldPosition, float Depth, Directi
     return Shadow;
 }
 
-float3 CalculateLightingForTranslucency(ViewBuffer View, LightGridData LightGrid, GBufferData Gbuffer, float3 WorldPos)
+uint ComputeLightGridCellIndex(LightGridData LightGrid, uint2 PixelPos, float SceneDepth)
+{
+    uint ZSlice = (uint) (max(0, log2(SceneDepth * LightGrid.LightGridZParams.x + LightGrid.LightGridZParams.y) * LightGrid.LightGridZParams.z));
+    ZSlice = min(ZSlice, (uint) (LightGrid.CulledGridSize.z - 1));
+    
+    uint3 GridCoordinate = uint3(PixelPos >> LightGrid.LightGridPixelSizeShift, ZSlice);
+    uint GridIndex = (GridCoordinate.z * LightGrid.CulledGridSize.y + GridCoordinate.y) * LightGrid.CulledGridSize.x + GridCoordinate.x;
+    return GridIndex;
+}
+
+float3 CalculateLightingForTranslucency(ViewBuffer View, LightGridData LightGrid, GBufferData Gbuffer, float3 WorldPos, uint2 PixelPosition, float PixelDepth)
 {
     float3 Result = float3(0, 0, 0);
     float3 CameraVector = View.CameraPos - WorldPos.xyz;
@@ -1140,10 +1163,20 @@ float3 CalculateLightingForTranslucency(ViewBuffer View, LightGridData LightGrid
     }
     
     ConstantBuffer<LightGridPackedLocalLightData> PackedLocalLights = ResourceDescriptorHeap[LightGrid.LocalLightBufferIndex];
+    Buffer<uint> NumCulledLightGrid = ResourceDescriptorHeap[LightGrid.NumCulledLightsGridIndex];
+    Buffer<uint> CulledLightGrid = ResourceDescriptorHeap[LightGrid.CulledLightsGridIndex];
+
+    uint GridIndex = ComputeLightGridCellIndex(LightGrid, PixelPosition, PixelDepth);
+    
+    //float R = RandBBSfloat(float(GridIndex));
+    //float G = RandBBSfloat(float(GridIndex * 12513 + 123142));
+    //float B = RandBBSfloat(float(GridIndex * 5123 + 61236));
     
     [loop]
-    for (uint LightIndex = 0; LightIndex < LightGrid.NumCulledLights; LightIndex++)
+    for (uint Index = 0; Index < NumCulledLightGrid[GridIndex]; Index++)
     {
+        uint LightIndex = CulledLightGrid[GridIndex * LightGrid.MaxCulledLightsPerCell + Index];
+        
         LightGridLocalLightData LocalLightData = GetLocalLightData(PackedLocalLights, LightIndex);
         uint LightType = asuint(LocalLightData.LightDirectionAndLightType.w);
 

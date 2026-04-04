@@ -6,6 +6,8 @@ namespace Drn
 {
 	struct SceneRendererView
 	{
+	public:
+
 		SceneRendererView()
 		{
 		}
@@ -43,6 +45,9 @@ namespace Drn
 
 		Matrix ClipToPreviousClip;
 		Matrix PrevWorldToProjection;
+
+		float ConvertFromDeviceZ(float DeviceZ) const;
+		float ConvertToDeviceZ(float SceneDepth) const;
 
 		Vector4 PixelToScreen(float InX, float InY, float InZ) const;
 		Vector PixelToWorld(float InX, float InY, float InZ) const;

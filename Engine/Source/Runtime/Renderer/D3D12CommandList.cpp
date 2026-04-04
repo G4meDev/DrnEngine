@@ -168,6 +168,43 @@ namespace Drn
 		ClearColorTexture(InTexture, MipIndex, SliceIndex, InTexture->GetClearColor());
 	}
 
+	void D3D12CommandList::ClearUnorderedViewUInt( class UnorderedAccessView* InView, uint32 InClearValue )
+	{
+		//uint32 ClearValue[] = {InClearValue, InClearValue, InClearValue, InClearValue};
+		//m_CommandList->ClearUnorderedAccessViewUint(InView->GetDescriptor().GetGpuHandle(), InView->GetDescriptor().GetCpuHandle(),
+		//	InView->GetResource()->GetResource(), ClearValue, 0, nullptr );
+
+		const uint32 NumEntries = InView->GetDesc().Buffer.NumElements;
+		drn_check(NumEntries > 0);
+
+		std::string msg = std::format("ClearBfufer({}, {} bytes)", InView->GetResource()->GetName(), NumEntries * 4);
+		PIXBeginEvent(m_CommandList.Get(), 1, msg.c_str());
+
+		//CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::UAV(InView->GetResource()->GetResource());
+		//GetD3D12CommandList()->ResourceBarrier(1, &Barrier);
+
+		SetComputePipelineState(CommonResources::Get()->m_ClearUAVPSO->m_PSO);
+
+		uint32 ClearValue = 0;
+		uint32 BufferIndex = InView->GetDescriptorHeapIndex();
+
+		SetComputeRootConstant(NumEntries, 0);
+		SetComputeRootConstant(ClearValue, 1);
+		SetComputeRootConstant(BufferIndex, 2);
+
+		FlushBarriers();
+		DispatchComputeShader(Math::DivideAndRoundUp((int32)NumEntries, 64), 1, 1);
+
+		PIXEndEvent(m_CommandList.Get());
+	}
+
+	void D3D12CommandList::ClearUnorderedViewFloat( class UnorderedAccessView* InView, float InClearValue )
+	{
+		//float ClearValue[] = {InClearValue, InClearValue, InClearValue, InClearValue};
+		//m_CommandList->ClearUnorderedAccessViewFloat(InView->GetDescriptor().GetGpuHandle(), InView->GetDescriptor().GetCpuHandle(),
+		//	InView->GetResource()->GetResource(), ClearValue, 0, nullptr );
+	}
+
 	void D3D12CommandList::CopyTextureRegion( RenderTextureBase* SourceTexture, RenderTextureBase* DestTexture, const D3D12_BOX& SourceBox, uint32 DestX, uint32 DestY, uint32 DestZ )
 	{
 		CD3DX12_TEXTURE_COPY_LOCATION DestCopyLocation(DestTexture->GetResource()->GetResource(), 0);

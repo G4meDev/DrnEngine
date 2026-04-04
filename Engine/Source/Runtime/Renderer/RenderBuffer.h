@@ -152,6 +152,116 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------
 
+	class RenderStructuredBuffer : public SimpleRenderResource, public RenderBufferBase
+	{
+	public:
+		RenderStructuredBuffer(Device* InParent, uint32 InStride, uint32 InSize, uint32 InUsage)
+			: SimpleRenderResource()
+			, RenderBufferBase(InParent)
+			, Stride(InStride)
+			, Size(InSize)
+			, Usage(InUsage)
+		{}
+
+		virtual ~RenderStructuredBuffer();
+
+		void ReleaseUnderlyingResource();
+
+		static RenderStructuredBuffer* Create(class Device* InParent, D3D12CommandList* CmdList, uint32 Stride, uint32 Size, uint32 InUsage, D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo);
+
+		uint32 GetStride() const { return Stride; }
+		uint32 GetSize() const { return Size; }
+		uint32 GetUsage() const { return Usage; }
+
+		virtual uint32 AddRef() const
+		{
+			return SimpleRenderResource::AddRef();
+		}
+		virtual uint32 Release() const
+		{
+			return SimpleRenderResource::Release();
+		}
+		virtual uint32 GetRefCount() const
+		{
+			return SimpleRenderResource::GetRefCount();
+		}
+
+		uint32 GetSrvIndex() const;
+		uint32 GetUavIndex() const;
+
+	private:
+		uint32 Stride;
+		uint32 Size;
+		uint32 Usage;
+
+		TRefCountPtr<class ShaderResourceView> SRV;
+		TRefCountPtr<class UnorderedAccessView> UAV;
+	};
+
+// ---------------------------------------------------------------------------------------
+
+	class RenderRawBuffer : public SimpleRenderResource, public RenderBufferBase
+	{
+	public:
+		//RenderRawBuffer(Device* InParent, uint32 InNumElements, uint32 InBytesPerElement, DXGI_FORMAT InFormat, uint32 InUsage)
+		//	: SimpleRenderResource()
+		//	, RenderBufferBase(InParent)
+		//	, NumElements(InNumElements)
+		//	, BytesPerElement(InBytesPerElement)
+		//	, Format(InFormat)
+		//	, Size(InNumElements * InBytesPerElement)
+		//	, Usage(InUsage)
+		//{}
+
+		RenderRawBuffer(Device* InParent, uint32 InStride, uint32 InSize, uint32 InUsage)
+			: SimpleRenderResource()
+			, RenderBufferBase(InParent)
+			, Size(InSize)
+			, Usage(InUsage)
+		{}
+
+		virtual ~RenderRawBuffer();
+
+		void ReleaseUnderlyingResource();
+
+		static RenderRawBuffer* Create( class Device* InParent, D3D12CommandList* CmdList, uint32 BytesPerElement, uint32 NumElements, DXGI_FORMAT Foramt,
+			uint32 InUsage, D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo );
+
+		uint32 GetSize() const { return Size; }
+		uint32 GetUsage() const { return Usage; }
+
+		virtual uint32 AddRef() const
+		{
+			return SimpleRenderResource::AddRef();
+		}
+		virtual uint32 Release() const
+		{
+			return SimpleRenderResource::Release();
+		}
+		virtual uint32 GetRefCount() const
+		{
+			return SimpleRenderResource::GetRefCount();
+		}
+
+		inline class ShaderResourceView* GetSrv() const { return SRV; };
+		inline class UnorderedAccessView* GetUav() const { return UAV; };
+
+		uint32 GetSrvIndex() const;
+		uint32 GetUavIndex() const;
+
+	private:
+		uint32 BytesPerElement;
+		uint32 NumElements;
+		DXGI_FORMAT Format;
+		uint32 Usage;
+		uint32 Size;
+
+		TRefCountPtr<class ShaderResourceView> SRV;
+		TRefCountPtr<class UnorderedAccessView> UAV;
+	};
+
+// ---------------------------------------------------------------------------------------
+
 	class BufferStats
 	{
 	public:
@@ -164,6 +274,7 @@ namespace Drn
 			Vertex,
 			Constant,
 			Structured,
+			Buffer,
 
 			Max
 		};

@@ -307,6 +307,14 @@ namespace Drn
 		TRefCountPtr<ComputePipelineState> m_Compact_PSO;
 	};
 
+	class ClearUAVPSO : public RefCountedObject
+	{
+	public:
+		ClearUAVPSO( D3D12CommandList* CommandList );
+		
+		TRefCountPtr<ComputePipelineState> m_PSO;
+	};
+
 	class CubemapDownsamplePSO : public RefCountedObject
 	{
 	public:
@@ -399,6 +407,7 @@ namespace Drn
 
 		TRefCountPtr<HZBPSO> m_HZBPSO;
 		TRefCountPtr<LightGridPSO> m_LightGridPSO;
+		TRefCountPtr<ClearUAVPSO> m_ClearUAVPSO;
 		TRefCountPtr<CubemapDownsamplePSO> m_CubemapDownsamplePSO;
 
 		TRefCountPtr<ResizeSkycubemapPSO> m_ResizeSkycubemapPSO;

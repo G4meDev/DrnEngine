@@ -149,7 +149,7 @@ namespace Drn
 			SetCastShadow(m_CastShadow);
 		}
 
-		if ( ImGui::SliderFloat( "Attenuation", &m_Attenuation, 0.05, 100 ) )
+		if ( ImGui::SliderFloat( "Attenuation", &m_Attenuation, 0.05, 1000 ) )
 		{
 			m_Attenuation = std::max(m_Attenuation, 0.0f);
 			SetAttenuation(m_Attenuation);

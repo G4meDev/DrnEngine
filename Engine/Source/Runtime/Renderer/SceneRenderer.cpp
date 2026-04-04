@@ -587,6 +587,9 @@ namespace Drn
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Translucency" );
 
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_SeparateTranslucencyTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		m_CommandList->TransitionResourceWithTracking(m_LightGrid.RWNumCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->TransitionResourceWithTracking(m_LightGrid.RWCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		//m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
 		m_GBuffer->TransitionTexturesToRead(m_CommandList);
 		m_CommandList->FlushBarriers();
@@ -1148,6 +1151,8 @@ namespace Drn
 
 		m_CachedRenderSize = IntPoint::ComponentWiseMax(InSize, IntPoint(1));
 		m_RenderSize = m_CachedRenderSize;
+
+		m_LightGrid.MarkDirtyScreenSize();
 
 		m_GBuffer->Resize( GetViewportSize() );
 		m_HZBBuffer->Resize( GetViewportSize() );

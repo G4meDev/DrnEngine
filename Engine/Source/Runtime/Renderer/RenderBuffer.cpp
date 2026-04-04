@@ -44,6 +44,40 @@ namespace Drn
 		return Desc;
 	}
 
+	D3D12_RESOURCE_DESC CreateStructuredBufferResourceDesc(uint32 Size, uint32 InUsage)
+	{
+		D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Buffer(Size);
+
+		if (InUsage & (uint32)EBufferUsageFlags::UnorderedAccess)
+		{
+			Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
+
+		if ((InUsage & (uint32)EBufferUsageFlags::ShaderResource) == 0)
+		{
+			Desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+		}
+
+		return Desc;
+	}
+
+	D3D12_RESOURCE_DESC CreateRawBufferResourceDesc(uint32 Size, uint32 InUsage)
+	{
+		D3D12_RESOURCE_DESC Desc = CD3DX12_RESOURCE_DESC::Buffer(Size);
+
+		if (InUsage & (uint32)EBufferUsageFlags::UnorderedAccess)
+		{
+			Desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
+
+		if ((InUsage & (uint32)EBufferUsageFlags::ShaderResource) == 0)
+		{
+			Desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
+		}
+
+		return Desc;
+	}
+
 	void RenderBufferBase::ReleaseUnderlyingResource()
 	{
 		m_ResourceLocation.Clear();
@@ -171,6 +205,152 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------------------------
 
+	RenderStructuredBuffer::~RenderStructuredBuffer()
+	{
+		if (m_ResourceLocation.IsValid())
+		{
+			BufferStats::UpdateBufferStats(&m_ResourceLocation, false, BufferStats::EBufferMemoryStatGroups::Structured);
+		}
+	}
+
+	void RenderStructuredBuffer::ReleaseUnderlyingResource()
+	{
+		BufferStats::UpdateBufferStats(&m_ResourceLocation, false, BufferStats::EBufferMemoryStatGroups::Structured);
+		RenderBufferBase::ReleaseUnderlyingResource();
+		Stride = Size = Usage = 0;
+	}
+
+	RenderStructuredBuffer* RenderStructuredBuffer::Create(Device* InParent, D3D12CommandList* CmdList, uint32 Stride, uint32 Size, uint32 InUsage,
+		D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo)
+	{
+		drn_check(Size / Stride > 0 && Size % Stride == 0);
+
+		const D3D12_RESOURCE_DESC ResourceDesc = CreateStructuredBufferResourceDesc( Size, InUsage );
+		const uint32 Alignment = Stride;
+
+		RenderStructuredBuffer* Buffer = InParent->CreateRenderBuffer<RenderStructuredBuffer>(
+			CmdList, ResourceDesc, Alignment, 0, Size, InUsage, bNeedsStateTracking, CreateInfo );
+
+		if ((InUsage & (uint32)EBufferUsageFlags::ShaderResource))
+		{
+			D3D12_SHADER_RESOURCE_VIEW_DESC Desc;
+			Desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+			Desc.Format = DXGI_FORMAT_UNKNOWN;
+			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			Desc.Buffer.StructureByteStride = Stride;
+			Desc.Buffer.FirstElement = 0;
+			Desc.Buffer.NumElements = Size / Stride;
+			Desc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+			Buffer->SRV = new ShaderResourceView(InParent, Desc, Buffer->m_ResourceLocation, Stride);
+		}
+		
+		if ((InUsage & (uint32)EBufferUsageFlags::UnorderedAccess))
+		{
+			D3D12_UNORDERED_ACCESS_VIEW_DESC Desc;
+			Desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+			Desc.Format = DXGI_FORMAT_UNKNOWN;
+			Desc.Buffer.CounterOffsetInBytes = 0;
+			Desc.Buffer.FirstElement = 0;
+			Desc.Buffer.StructureByteStride = Stride;
+			Desc.Buffer.NumElements = Size / Stride;
+			Desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+			Buffer->UAV = new UnorderedAccessView(InParent, Desc, Buffer->m_ResourceLocation);
+		}
+
+		return Buffer;
+	}
+
+	uint32 RenderStructuredBuffer::GetSrvIndex() const
+	{
+		return SRV ? SRV->GetDescriptorHeapIndex() : 0;
+	}
+
+	uint32 RenderStructuredBuffer::GetUavIndex() const
+	{
+		return UAV ? UAV->GetDescriptorHeapIndex() : 0;
+	}
+
+// --------------------------------------------------------------------------------------------------------
+
+	RenderRawBuffer::~RenderRawBuffer()
+	{
+		if (m_ResourceLocation.IsValid())
+		{
+			BufferStats::UpdateBufferStats(&m_ResourceLocation, false, BufferStats::EBufferMemoryStatGroups::Buffer);
+		}
+	}
+
+	void RenderRawBuffer::ReleaseUnderlyingResource()
+	{
+		BufferStats::UpdateBufferStats(&m_ResourceLocation, false, BufferStats::EBufferMemoryStatGroups::Buffer);
+		RenderBufferBase::ReleaseUnderlyingResource();
+		NumElements = BytesPerElement = Size = Usage = 0;
+	}
+
+	RenderRawBuffer* RenderRawBuffer::Create(Device* InParent, D3D12CommandList* CmdList, uint32 BytesPerElement, uint32 NumElements, DXGI_FORMAT Foramt, uint32 InUsage,
+		D3D12_RESOURCE_STATES InResourceState, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo)
+	{
+		drn_check(NumElements > 0 && BytesPerElement > 0);
+
+		drn_check((InUsage & (uint32)EBufferUsageFlags::AnyDynamic) == 0); // no support yet
+		drn_check(!CreateInfo.ResourceArray); // no support yet
+
+		uint32 Size = BytesPerElement * NumElements;
+		const uint32 Alignment = BytesPerElement;
+
+		RenderRawBuffer* Buffer = new RenderRawBuffer(InParent, 0, Size, InUsage);
+		Buffer->NumElements = NumElements;
+		Buffer->BytesPerElement = BytesPerElement;
+		Buffer->Format = Foramt;
+
+		RenderResource* NewResource = nullptr;
+		const D3D12_RESOURCE_DESC ResourceDesc = CreateRawBufferResourceDesc( Size, InUsage );
+		InParent->CreateCommittedResource(ResourceDesc, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), InResourceState, bNeedsStateTracking, nullptr, &NewResource, CreateInfo.DebugName);
+		Buffer->m_ResourceLocation.AsStandAlone(NewResource);
+
+		if ((InUsage & (uint32)EBufferUsageFlags::ShaderResource))
+		{
+			D3D12_SHADER_RESOURCE_VIEW_DESC Desc;
+			Desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+			Desc.Format = Buffer->Format;
+			Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			Desc.Buffer.StructureByteStride = 0;
+			Desc.Buffer.FirstElement = 0;
+			Desc.Buffer.NumElements = NumElements;
+			Desc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+			Buffer->SRV = new ShaderResourceView(InParent, Desc, Buffer->m_ResourceLocation, 0);
+		}
+		
+		if ((InUsage & (uint32)EBufferUsageFlags::UnorderedAccess))
+		{
+			D3D12_UNORDERED_ACCESS_VIEW_DESC Desc;
+			Desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+			Desc.Format = Buffer->Format;
+			Desc.Buffer.CounterOffsetInBytes = 0;
+			Desc.Buffer.FirstElement = 0;
+			Desc.Buffer.StructureByteStride = 0;
+			Desc.Buffer.NumElements = NumElements;
+			Desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+			Buffer->UAV = new UnorderedAccessView(InParent, Desc, Buffer->m_ResourceLocation);
+		}
+
+		return Buffer;
+	}
+
+	uint32 RenderRawBuffer::GetSrvIndex() const
+	{
+		return SRV ? SRV->GetDescriptorHeapIndex() : 0;
+	}
+
+	uint32 RenderRawBuffer::GetUavIndex() const
+	{
+		return UAV ? UAV->GetDescriptorHeapIndex() : 0;
+	}
+
+// --------------------------------------------------------------------------------------------------------
+
 #if RENDER_STATS
 	std::atomic<int32> BufferStats::BufferMemoryStats[(uint8)EBufferMemoryStatGroups::Max];
 #endif
@@ -195,6 +375,7 @@ namespace Drn
 		case BufferStats::EBufferMemoryStatGroups::Vertex:		return "Vertex";
 		case BufferStats::EBufferMemoryStatGroups::Constant:	return "Constant";
 		case BufferStats::EBufferMemoryStatGroups::Structured:	return "Structured";
+		case BufferStats::EBufferMemoryStatGroups::Buffer:		return "Buffer";
 		default: drn_check(false); return "invalid";
 		}
 	}
@@ -209,4 +390,4 @@ namespace Drn
 	}
 
 
-        }  // namespace Drn
+ }  // namespace Drn

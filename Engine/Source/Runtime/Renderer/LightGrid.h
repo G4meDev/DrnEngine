@@ -47,6 +47,9 @@ namespace Drn
 		uint32 LightViewSpaceDirAndPreprocAngleIndex;
 
 		uint32 RWNumCulledLightsGridIndex;
+		uint32 RWCulledLightsGridIndex;
+		uint32 NumCulledLightsGridIndex;
+		uint32 CulledLightsGridIndex;
 	};
 
 	// update data stride if changed
@@ -67,6 +70,7 @@ namespace Drn
 		~LightGrid() {}
 
 		void ComputeLightGrid();
+		inline void MarkDirtyScreenSize() { bDirtyScreenSize = true; }
 
 		inline class RenderUniformBuffer* GetBuffer() const { return LightGridBuffer; }
 
@@ -84,6 +88,15 @@ namespace Drn
 		std::vector<Vector4> ViewSpaceDirAndPreprocAngleData;
 		TRefCountPtr<class RenderUniformBuffer> ViewSpaceDirAndPreprocAngleBuffer;
 
-		TRefCountPtr<class RenderUniformBuffer> RWNumCulledLightsGridBuffer;
+		TRefCountPtr<class RenderRawBuffer> RWNumCulledLightsGridBuffer;
+		TRefCountPtr<class RenderRawBuffer> RWCulledLightsGridBuffer;
+
+		TRefCountPtr<class RenderRawBuffer> DebugReadBuffer;
+		uint64 DebugFenceValue;
+		LightGridData DebugCachedData;
+
+		bool bDirtyScreenSize = true;
+
+		friend class SceneRenderer;
 	};
 }

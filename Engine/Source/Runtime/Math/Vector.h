@@ -116,6 +116,11 @@ namespace Drn
 			return A ^ B;
 		}
 
+		static inline Vector Lerp(const Vector& A, const Vector& B, float Alpha)
+		{
+			Vector Delta = B - A;
+			return (Delta * Alpha) + A;
+		}
 
 		static Vector FromU32(uint32_t Value)
 		{

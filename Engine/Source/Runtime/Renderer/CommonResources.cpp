@@ -145,6 +145,7 @@ namespace Drn
 		m_DebugLinePSO = new DebugLinePSO(CommandList, this);
 		m_HZBPSO = new HZBPSO(CommandList);
 		m_LightGridPSO = new LightGridPSO(CommandList);
+		m_ClearUAVPSO = new ClearUAVPSO(CommandList);
 		m_CubemapDownsamplePSO = new CubemapDownsamplePSO(CommandList);
 		m_ResizeSkycubemapPSO = new ResizeSkycubemapPSO(CommandList);
 		m_ApplyLowerHemisphereColorPSO = new ApplyLowerHemisphereColorPSO(CommandList);
@@ -1624,6 +1625,23 @@ namespace Drn
 			m_Compact_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
 			SetName(m_Compact_PSO->PipelineState, "PSO_LightGridCompact");
 		}
+	}
+
+// --------------------------------------------------------------------------------------
+
+	ClearUAVPSO::ClearUAVPSO( D3D12CommandList* CommandList )
+	{
+		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\ClearUAV.hlsl" ) );
+		ID3DBlob* ComputeShaderBlob;
+		const std::vector<const wchar_t*> Macros = {};
+		CompileShader( ShaderPath, L"Main_CS", L"cs_6_6", Macros, &ComputeShaderBlob);
+
+		ComputeShader* CShader = new ComputeShader();
+		CShader->ByteCode.pShaderBytecode = ComputeShaderBlob->GetBufferPointer();
+		CShader->ByteCode.BytecodeLength = ComputeShaderBlob->GetBufferSize();
+
+		m_PSO = ComputePipelineState::Create(CommandList->GetParentDevice(), CShader, Renderer::Get()->m_BindlessRootSinature.Get());
+		SetName(m_PSO->PipelineState, "PSO_ClearUAV");
 	}
 
 // --------------------------------------------------------------------------------------

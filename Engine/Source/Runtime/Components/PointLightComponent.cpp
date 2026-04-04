@@ -165,7 +165,7 @@ namespace Drn
 			SetCastShadow(m_CastShadow);
 		}
 
-		if ( ImGui::SliderFloat( "Radius", &m_Radius, 0.05, 100 ) )
+		if ( ImGui::SliderFloat( "Radius", &m_Radius, 0.05, 1000 ) )
 		{
 			SetRadius(m_Radius);
 		}

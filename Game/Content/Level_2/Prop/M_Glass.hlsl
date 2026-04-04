@@ -72,7 +72,7 @@ VertexShaderOutput Main_VS(
     OUT.WorldPosition = WorldPosition.xyz;
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
     OUT.UV1 = IN.UV1;
-    
+        
     return OUT;
 }
 
@@ -160,9 +160,12 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     //GBuffer.ShadingModel = SHADING_MODEL_LIT;
     GBuffer.ShadingModel = SHADING_MODEL_FOLIAGE;
     
+    float2 PixelPosition = IN.Position.xy;
+    float PixelDepth = ConvertFromDeviceZ(IN.Position.z, View.InvDeviceZToWorldZTransform);
+    
     ConstantBuffer<LightGridData> LightGrid = ResourceDescriptorHeap[BindlessResources.LightGridIndex];
-    float4 OutColor = float4(CalculateLightingForTranslucency(View, LightGrid, GBuffer, IN.WorldPosition), Opacity);
-    //float4 OutColor = float4(BaseColor, Opacity);
+    float4 OutColor = float4(CalculateLightingForTranslucency(View, LightGrid, GBuffer, IN.WorldPosition, PixelPosition, PixelDepth), Opacity);
+    //float4 OutColor = float4(PixelPosition/IN.Position.w, 0, Opacity);
     
 // -------------------------------------------------------------------------------------------------------------
     

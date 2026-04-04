@@ -15,17 +15,17 @@ ConstantBuffer<Resources> BindlessResources : register(b0);
 float ComputeCellNearViewDepthFromZSlice(LightGridData LightGrid, uint ZSlice)
 {
     float SliceDepth = (exp2(ZSlice / LightGrid.LightGridZParams.z) - LightGrid.LightGridZParams.y) / LightGrid.LightGridZParams.x;
-
+    
     if (ZSlice == (uint) LightGrid.CulledGridSize.z)
     {
         SliceDepth = 2000000.0f;
     }
-
+    
     if (ZSlice == 0)
     {
         SliceDepth = 0.0f;
     }
-
+    
     return SliceDepth;
 }
 
@@ -37,7 +37,7 @@ float ComputeSquaredDistanceFromBoxToPoint(float3 BoxCenter, float3 BoxExtent, f
 
 void ComputeCellViewAABB(ViewBuffer View, LightGridData LightGrid, uint3 GridCoordinate, out float3 ViewTileMin, out float3 ViewTileMax)
 {
-    const float2 InvCulledGridSizeF = (float)(1u << LightGrid.LightGridPixelSizeShift) * View.InvSize;
+    const float2 InvCulledGridSizeF = (1u << LightGrid.LightGridPixelSizeShift) * View.InvSize;
     const float2 TileSize = float2(2.0f, -2.0f) * InvCulledGridSizeF.xy;
     const float2 UnitPlaneMin = float2(-1.0f, 1.0f);
 
@@ -48,12 +48,16 @@ void ComputeCellViewAABB(ViewBuffer View, LightGridData LightGrid, uint3 GridCoo
     float MaxTileZ = ComputeCellNearViewDepthFromZSlice(LightGrid, GridCoordinate.z + 1);
 
     float MinTileDeviceZ = ConvertToDeviceZ(MinTileZ, View);
+    //float4 p1 = mul(View.ViewToProjection, float4(0, 0, MinTileZ, 1));
+    //float MinTileDeviceZ = p1.z / p1.w;
     float4 MinDepthCorner0 = mul(View.ProjectionToView, float4(UnitPlaneTileMin.x, UnitPlaneTileMin.y, MinTileDeviceZ, 1));
     float4 MinDepthCorner1 = mul(View.ProjectionToView, float4(UnitPlaneTileMax.x, UnitPlaneTileMax.y, MinTileDeviceZ, 1));
     float4 MinDepthCorner2 = mul(View.ProjectionToView, float4(UnitPlaneTileMin.x, UnitPlaneTileMax.y, MinTileDeviceZ, 1));
     float4 MinDepthCorner3 = mul(View.ProjectionToView, float4(UnitPlaneTileMax.x, UnitPlaneTileMin.y, MinTileDeviceZ, 1));
 
     float MaxTileDeviceZ = ConvertToDeviceZ(MaxTileZ, View);
+    //float4 p2 = mul(View.ViewToProjection, float4(0, 0, MaxTileZ, 1));
+    //float MaxTileDeviceZ = p2.z / p2.w;
     float4 MaxDepthCorner0 = mul(View.ProjectionToView, float4(UnitPlaneTileMin.x, UnitPlaneTileMin.y, MaxTileDeviceZ, 1));
     float4 MaxDepthCorner1 = mul(View.ProjectionToView, float4(UnitPlaneTileMax.x, UnitPlaneTileMax.y, MaxTileDeviceZ, 1));
     float4 MaxDepthCorner2 = mul(View.ProjectionToView, float4(UnitPlaneTileMin.x, UnitPlaneTileMax.y, MaxTileDeviceZ, 1));
@@ -114,13 +118,12 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
     ConstantBuffer<LightGridData> LightGrid = ResourceDescriptorHeap[BindlessResources.LightGridIndex];
     
     uint3 GridCoordinate = DispatchThreadId;
-
+    
     if (all(GridCoordinate < (uint3) LightGrid.CulledGridSize))
     {
         uint GridIndex = (GridCoordinate.z * LightGrid.CulledGridSize.y + GridCoordinate.y) * LightGrid.CulledGridSize.x + GridCoordinate.x;
 
-#define CULL_LIGHTS 1
-#if CULL_LIGHTS
+#define DISABLE_CULLS 0
         
         float3 ViewTileMin;
         float3 ViewTileMax;
@@ -131,13 +134,14 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
         float3 WorldTileCenter = mul(View.ViewToWorld, float4(ViewTileCenter, 1)).xyz;
         float4 WorldTileBoundingSphere = float4(WorldTileCenter, length(ViewTileExtent));
         
-        uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES;
+        //uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES;
 
         ConstantBuffer<LightGridPackedLocalLightData> PackedLocalLights = ResourceDescriptorHeap[LightGrid.LocalLightBufferIndex];
         ConstantBuffer<LightGridViewSpacePositionAndRadius> ViewSpacePositionAndRadiusBuffer = ResourceDescriptorHeap[LightGrid.ViewSpacePositionAndRadiusIndex];
         ConstantBuffer<LightGridViewSpaceDirAndPreprocAngle> ViewSpaceDirAndPreprocAngleBuffer = ResourceDescriptorHeap[LightGrid.ViewSpaceDirAndPreprocAngleIndex];
         
-        //RWBuffer<uint> RWNumCulledLightsGrid = ResourceDescriptorHeap[LightGrid.RWNumCulledLightsGridIndex];
+        RWBuffer<uint> RWNumCulledLightsGrid = ResourceDescriptorHeap[LightGrid.RWNumCulledLightsGridIndex];
+        RWBuffer<uint> RWCulledLightsGrid = ResourceDescriptorHeap[LightGrid.RWCulledLightsGridIndex];
         
         [loop]
         for (uint LocalLightIndex = 0; LocalLightIndex < LightGrid.NumCulledLights; LocalLightIndex++)
@@ -147,31 +151,38 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
             float4 LightPositionAndInvRadius = LocalLightData.LightPositionAndInvRadius;
             float3 ViewSpaceLightPosition = ViewSpacePositionAndRadiusBuffer.PackedData[LocalLightIndex].xyz;
             float LightRadius = ViewSpacePositionAndRadiusBuffer.PackedData[LocalLightIndex].w;
+
+            //float3 ViewSpaceLightPosition = mul(View.WorldToView, float4(LocalLightData.LightPositionAndInvRadius.xyz, 1)).xyz;
             
             float BoxDistanceSq = ComputeSquaredDistanceFromBoxToPoint(ViewTileCenter, ViewTileExtent, ViewSpaceLightPosition);
+#if DISABLE_CULLS
+            BoxDistanceSq = 0;
+#endif
             if (BoxDistanceSq < LightRadius * LightRadius)
             {
 				bool bPassSpotlightTest = true;
-				{
-                    float4 ViewSpaceDirAndPreprocAngle = ViewSpaceDirAndPreprocAngleBuffer.PackedData[LocalLightIndex];
-					float TanConeAngle = ViewSpaceDirAndPreprocAngle.w;
-
-					if (TanConeAngle > 0.0f)
-					{
-						float3 ViewSpaceLightDirection = -ViewSpaceDirAndPreprocAngle.xyz;
-						bPassSpotlightTest = !IsAabbOutsideInfiniteAcuteConeApprox(ViewSpaceLightPosition, ViewSpaceLightDirection, TanConeAngle, ViewTileCenter, ViewTileExtent);
-					}
-				}
-                
+				//{
+                //    float4 ViewSpaceDirAndPreprocAngle = ViewSpaceDirAndPreprocAngleBuffer.PackedData[LocalLightIndex];
+				//	float TanConeAngle = ViewSpaceDirAndPreprocAngle.w;
+                //
+				//	if (TanConeAngle > 0.0f)
+				//	{
+				//		float3 ViewSpaceLightDirection = -ViewSpaceDirAndPreprocAngle.xyz;
+				//		bPassSpotlightTest = !IsAabbOutsideInfiniteAcuteConeApprox(ViewSpaceLightPosition, ViewSpaceLightDirection, TanConeAngle, ViewTileCenter, ViewTileExtent);
+				//	}
+				//}
+#if DISABLE_CULLS
+                bPassSpotlightTest = true;
+#endif
                 if (bPassSpotlightTest)
 				{
 					uint CulledLightIndex;
-					//InterlockedAdd(RWNumCulledLightsGrid[GridIndex], 1U, CulledLightIndex);
+					InterlockedAdd(RWNumCulledLightsGrid[GridIndex], 1U, CulledLightIndex);
 
-					//if (CulledLightIndex < LightGrid.MaxCulledLightsPerCell)
-					//{
-					//	RWCulledLightDataGrid[GridIndex * ForwardLightData.MaxCulledLightsPerCell + CulledLightIndex] = LocalLightIndex;
-					//}
+					if (CulledLightIndex < LightGrid.MaxCulledLightsPerCell)
+					{
+                        RWCulledLightsGrid[GridIndex * LightGrid.MaxCulledLightsPerCell + CulledLightIndex] = LocalLightIndex;
+                    }
 				}
 //              if (bPassSpotlightTest)
 //				{
@@ -203,6 +214,5 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
 //				}
             }
         }
-#endif
     }
 }

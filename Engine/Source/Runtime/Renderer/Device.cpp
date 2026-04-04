@@ -355,6 +355,12 @@ namespace Drn
 	template RenderVertexBuffer* Device::CreateRenderBuffer<RenderVertexBuffer>( D3D12CommandList* CmdList, const D3D12_RESOURCE_DESC& Desc, uint32 Alignment,
 		uint32 Stride, uint32 Size, uint32 InUsage, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo );
 
+	template RenderStructuredBuffer* Device::CreateRenderBuffer<RenderStructuredBuffer>( D3D12CommandList* CmdList, const D3D12_RESOURCE_DESC& Desc, uint32 Alignment,
+		uint32 Stride, uint32 Size, uint32 InUsage, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo );
+
+	//template RenderRawBuffer* Device::CreateRenderBuffer<RenderRawBuffer>( D3D12CommandList* CmdList, const D3D12_RESOURCE_DESC& Desc, uint32 Alignment,
+	//	uint32 Stride, uint32 Size, uint32 InUsage, bool bNeedsStateTracking, RenderResourceCreateInfo& CreateInfo );
+
 	template<>
 	void Device::UpdateBufferStats<RenderIndexBuffer>( ResourceLocation* Location, bool bAllocating )
 	{
@@ -365,6 +371,18 @@ namespace Drn
 	void Device::UpdateBufferStats<RenderVertexBuffer>( ResourceLocation* Location, bool bAllocating )
 	{
 		BufferStats::UpdateBufferStats(Location, true, BufferStats::EBufferMemoryStatGroups::Vertex);
+	}
+
+	template<>
+	void Device::UpdateBufferStats<RenderStructuredBuffer>( ResourceLocation* Location, bool bAllocating )
+	{
+		BufferStats::UpdateBufferStats(Location, true, BufferStats::EBufferMemoryStatGroups::Structured);
+	}
+
+	template<>
+	void Device::UpdateBufferStats<RenderRawBuffer>( ResourceLocation* Location, bool bAllocating )
+	{
+		BufferStats::UpdateBufferStats(Location, true, BufferStats::EBufferMemoryStatGroups::Buffer);
 	}
 
 // -----------------------------------------------------------------------------------------------------------
