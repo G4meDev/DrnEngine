@@ -1369,7 +1369,7 @@ float3 GetLookupVectorForSphereCapture(float3 ReflectionVector, float3 WorldPosi
     return ProjectedCaptureVector;
 }
 
-float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBufferData Gbuffer, float3 WorldPosition, uint2 PixelPosition, float PixelDepth, SamplerState LinearClampSampler)
+float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBufferData Gbuffer, float4 SSR, float3 WorldPosition, uint2 PixelPosition, float PixelDepth, SamplerState LinearClampSampler)
 {
     Texture2D PreintegeratedGFImage = ResourceDescriptorHeap[LightGrid.PreintegeratedGFImageIndex];
     
@@ -1387,10 +1387,8 @@ float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBuffe
     //R = GetOffSpecularPeakReflectionDir(N, R, Roughness);
         
     //float4 SSR = SSRImage.Sample(PointClampSampler, UV);
-    //float3 SpecularTerm = SSR.rgb;
-    float3 SpecularTerm = 0;
+    float3 SpecularTerm = SSR.rgb;
 
-    //float CombinedAO = AO * SSAO;
     float RoughnessSq = Square(Gbuffer.Roughness);
     float SpecularOcclusion = GetSpecularOcclusion(NoV, RoughnessSq, Gbuffer.AmbientOcclusion);
 
@@ -1433,6 +1431,7 @@ float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBuffe
         float CaptureVectorLength = sqrt(dot(CaptureVector, CaptureVector));
         float NormalizedDistanceToCapture = saturate(CaptureVectorLength / CapturePositionAndRadius.w);
         
+        // just use first. already sorted in increasing size
         [branch]
         if (CaptureVectorLength < CapturePositionAndRadius.w)
         {

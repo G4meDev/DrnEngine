@@ -130,10 +130,12 @@ namespace Drn
 		TRefCountPtr<class RenderRawBuffer> RWLightGridNumOffsetBuffer;
 		TRefCountPtr<class RenderRawBuffer> RWLightGridLinkListBuffer;
 
+#if WITH_EDITOR
 		TRefCountPtr<class RenderRawBuffer> DebugReadNumOffsetBuffer;
 		TRefCountPtr<class RenderRawBuffer> DebugReadListBuffer;
 		uint64 DebugFenceValue;
 		LightGridData DebugCachedData;
+#endif
 
 		bool bDirtyScreenSize = true;
 

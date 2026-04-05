@@ -564,6 +564,7 @@ namespace Drn
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_WorldNormalTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_MasksTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_LightGrid.TransitionResourcesToRead(m_CommandList);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE DeferredColorHandle = m_GBuffer->m_ColorDeferredTarget->GetRenderTargetView( 0, 0 )->GetView();
 		m_CommandList->GetD3D12CommandList()->OMSetRenderTargets(1, &DeferredColorHandle, true, NULL);
@@ -573,6 +574,7 @@ namespace Drn
 		m_CommandList->SetGraphicRootConstant(ViewBuffer->GetViewIndex(), 0);
 		m_CommandList->SetGraphicRootConstant(m_ReflectionEnvironmentBuffer->Buffer->GetViewIndex(), 1);
 		m_CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		m_CommandList->SetGraphicRootConstant(m_LightGrid.GetBuffer()->GetViewIndex(), 3);
 
 		CommonResources::Get()->m_ScreenTriangle->BindAndDraw(m_CommandList);
 
@@ -587,11 +589,9 @@ namespace Drn
 		PIXBeginEvent( m_CommandList->GetD3D12CommandList(), 1, "Translucency" );
 
 		m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_SeparateTranslucencyTarget->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
-
 		m_LightGrid.TransitionResourcesToRead(m_CommandList);
-
-		//m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
 		m_GBuffer->TransitionTexturesToRead(m_CommandList);
+		//m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
 		m_CommandList->FlushBarriers();
 
 		m_CommandList->ClearColorTexture(m_GBuffer->m_SeparateTranslucencyTarget);

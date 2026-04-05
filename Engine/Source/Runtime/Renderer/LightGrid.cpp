@@ -320,6 +320,7 @@ namespace Drn
 
 		PIXEndEvent(CmdList->GetD3D12CommandList());
 
+#if WITH_EDITOR
 		bool bDebug = true;
 		if (bDebug)
 		{
@@ -470,8 +471,8 @@ namespace Drn
 				}
 
 			}
-	
 		}
+#endif
 
 
 	}

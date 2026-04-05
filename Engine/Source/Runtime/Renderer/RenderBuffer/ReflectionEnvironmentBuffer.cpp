@@ -253,42 +253,6 @@ namespace Drn
 
 	void ReflectionEnvironmentBuffer::MapBuffer( D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
-		{
-			SCOPE_STAT("ReflectionCaptureSort");
-
-			std::vector<ReflectionCaptureProxy*> VisibleReflectionProxies;
-			for (ReflectionCaptureProxy* Proxy : Renderer->GetScene()->GetReflectionCaptureProxies())
-			{
-				drn_check(Proxy);
-
-				bool bIsVisible = Renderer->ViewFrustum.Contains(Sphere(Proxy->Position, Proxy->InfluenceRadius));
-				if (bIsVisible)
-				{
-					VisibleReflectionProxies.push_back(Proxy);
-				}
-			}
-
-			// TODO: add lighting grid for clustered rendering
-			std::sort(VisibleReflectionProxies.begin(), VisibleReflectionProxies.end(),
-			[](const ReflectionCaptureProxy* A, const ReflectionCaptureProxy* B)
-			{
-				return A->InfluenceRadius < B->InfluenceRadius;
-			});
-
-			uint32 ReflectionCaptureIndex = 0;
-			for (ReflectionCaptureProxy* Proxy : VisibleReflectionProxies)
-			{
-				drn_check(ReflectionCaptureIndex < MAX_REFLECTION_CAPTURE_COUNT);
-
-				m_Data.CaptureData[ReflectionCaptureIndex].ReflectionTexture = Proxy->CubemapIndex;
-				m_Data.CaptureData[ReflectionCaptureIndex].PositionRadius = Vector4(Proxy->Position, Proxy->InfluenceRadius);
-				m_Data.CaptureData[ReflectionCaptureIndex].OffsetBrightness = Vector4(Proxy->CaptureOffset, Proxy->Brightness);
-
-				ReflectionCaptureIndex++;
-			}
-			m_Data.NumReflectionCaptures = ReflectionCaptureIndex;
-		}
-
 		RenderTexture2D* TargetSSAOTexture = CommonResources::Get()->m_WhiteTexture;
 		if (Renderer->ShouldRenderAmbientOcclusion())
 		{
@@ -306,16 +270,7 @@ namespace Drn
 		m_Data.MasksTexture = Renderer->m_GBuffer->m_MasksTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.DepthTexture = Renderer->m_GBuffer->m_DepthTarget->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.SSRTexture = TargetSSRTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
-		m_Data.PreintegratedGFTexture = CommonResources::Get()->m_PreintegratedGF->GetShaderResourceView()->GetDescriptorHeapIndex();
 		m_Data.AOTexture = TargetSSAOTexture->GetShaderResourceView()->GetDescriptorHeapIndex();
-
-		SkyLightSceneProxy* SkyProxy = Renderer->GetScene()->m_SkyLightProxies.size() > 0 ? *Renderer->GetScene()->m_SkyLightProxies.begin() : nullptr;
-		AssetHandle<TextureCube> SkyCubemap = SkyProxy ? SkyProxy->GetCubemap() : AssetHandle<TextureCube>();
-		m_Data.SkyCubemapTexture = GeneratedCubemap.IsValid() ? GeneratedCubemap->GetShaderResourceView()->GetDescriptorHeapIndex() : 0;
-		m_Data.SkyLightMipCount = GeneratedCubemap.IsValid() ? GeneratedCubemap->GetNumMips(): 0;
-		m_Data.SkyLightColor = SkyProxy ? SkyProxy->GetColor() : Vector::ZeroVector;
-
-		m_Data.SkyIradianceCubemapTexture = GeneratedCubemapIradiance.IsValid() ? GeneratedCubemapIradiance->GetShaderResourceView()->GetDescriptorHeapIndex() : 0;
 
 		Buffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ReflectionEnvironmentData), EUniformBufferUsage::SingleFrame, &m_Data);
 	}
