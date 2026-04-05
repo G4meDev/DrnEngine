@@ -148,15 +148,15 @@ namespace Drn
 			{
 				RenderResourceCreateInfo BufferInfo("RWLightGridNumOffsetBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
-				RWLightGridNumOffsetBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
-					NumGridCells * LIGHT_GRID_LIGHT_LINK_STRIDE, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+				RWLightGridNumOffsetBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, LIGHT_GRID_DATA_TYPE_SIZE,
+					NumGridCells * LIGHT_GRID_LIGHT_LINK_STRIDE, LIGHT_GRID_DATA_TYPE_SIZE == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
 			}
 
 			{
 				RenderResourceCreateInfo BufferInfo("RWLightGridLinkListBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
-				RWLightGridLinkListBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
-					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+				RWLightGridLinkListBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, LIGHT_GRID_DATA_TYPE_SIZE,
+					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL, LIGHT_GRID_DATA_TYPE_SIZE == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
 			}
 
 			bDirtyScreenSize = false;
@@ -301,14 +301,14 @@ namespace Drn
 				std::vector<uint32> NumOffset;
 				{
 					uint64 Size = DebugReadNumOffsetBuffer->GetResource()->GetDesc().Width;
-					NumOffset.resize(Size / 4);
+					NumOffset.resize(Size / LIGHT_GRID_DATA_TYPE_SIZE);
 					memcpy(NumOffset.data(), DebugReadNumOffsetBuffer->GetResource()->Map(), Size);
 				}
 
 				std::vector<uint32> LightList;
 				{
 					uint64 Size = DebugReadListBuffer->GetResource()->GetDesc().Width;
-					LightList.resize(Size / 4);
+					LightList.resize(Size / LIGHT_GRID_DATA_TYPE_SIZE);
 					memcpy(LightList.data(), DebugReadListBuffer->GetResource()->Map(), Size);
 				}
 
@@ -330,7 +330,9 @@ namespace Drn
 					};
 
 					int32 GridIndex = (GridZ * DebugCachedData.CulledGridSize.GetY() + GridY) * DebugCachedData.CulledGridSize.GetX() + GridX;
-					int32 NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
+					int32 NumCulledLights = LIGHT_GRID_DATA_TYPE_SIZE == 2
+						? ((uint16*)NumOffset.data())[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0]
+						: NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
 
 					if (NumCulledLights > 0)
 					{

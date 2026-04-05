@@ -20,6 +20,8 @@
 #define LIGHT_GRID_SIZE_Z 32
 #define LIGHT_GRID_INJECTION_GROUP_SIZE 4
 
+#define LIGHT_GRID_DATA_TYPE_SIZE 2
+
 namespace Drn
 {
 	class SceneRenderer;
