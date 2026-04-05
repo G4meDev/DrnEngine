@@ -14,7 +14,7 @@ namespace Drn
 		, m_OrthoWidth(1.0f)
 		, m_ClipMin(0.1f)
 		//, m_ClipMax(10000.0f)
-		, m_ClipMax(FLT_MAX)
+		, m_ClipMax(999999999.9f)
 	{
 	}
 

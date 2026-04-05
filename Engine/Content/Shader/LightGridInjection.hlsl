@@ -161,16 +161,17 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
             if (BoxDistanceSq < LightRadius * LightRadius)
             {
 				bool bPassSpotlightTest = true;
-				//{
-                //    float4 ViewSpaceDirAndPreprocAngle = ViewSpaceDirAndPreprocAngleBuffer.PackedData[LocalLightIndex];
-				//	float TanConeAngle = ViewSpaceDirAndPreprocAngle.w;
-                //
-				//	if (TanConeAngle > 0.0f)
-				//	{
-				//		float3 ViewSpaceLightDirection = -ViewSpaceDirAndPreprocAngle.xyz;
-				//		bPassSpotlightTest = !IsAabbOutsideInfiniteAcuteConeApprox(ViewSpaceLightPosition, ViewSpaceLightDirection, TanConeAngle, ViewTileCenter, ViewTileExtent);
-				//	}
-				//}
+				{
+                    float4 ViewSpaceDirAndPreprocAngle = ViewSpaceDirAndPreprocAngleBuffer.PackedData[LocalLightIndex];
+					float TanConeAngle = ViewSpaceDirAndPreprocAngle.w;
+                
+					if (TanConeAngle > 0.0f)
+					{
+						//float3 ViewSpaceLightDirection = -ViewSpaceDirAndPreprocAngle.xyz;
+						float3 ViewSpaceLightDirection = ViewSpaceDirAndPreprocAngle.xyz;
+						bPassSpotlightTest = !IsAabbOutsideInfiniteAcuteConeApprox(ViewSpaceLightPosition, ViewSpaceLightDirection, TanConeAngle, ViewTileCenter, ViewTileExtent);
+					}
+				}
 #if DISABLE_CULLS
                 bPassSpotlightTest = true;
 #endif
