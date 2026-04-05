@@ -44,6 +44,8 @@ namespace Drn
 		inline const BitArray& GetStaticPrimitiveProxiesMap() { return StaticPrimitiveMap; };
 		inline const BitArray& GetDynamicPrimitiveProxiesMap() { return DynamicPrimitiveMap; };
 
+		inline SkyLightSceneProxy* GetSkyLightProxy() const { return m_SkyLightProxies.size() > 0 ? m_SkyLightProxies[0] : nullptr; }
+
 	protected:
 
 		World* m_World;

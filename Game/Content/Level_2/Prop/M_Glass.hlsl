@@ -112,8 +112,8 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     ConstantBuffer<GBufferTextures> GbufferTextures = ResourceDescriptorHeap[BindlessResources.GbufferTextureIndex];
     
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
-    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
-    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
+    SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearClampIndex];
+    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointClampIndex];
     
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
 
@@ -165,7 +165,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     
     ConstantBuffer<LightGridData> LightGrid = ResourceDescriptorHeap[BindlessResources.LightGridIndex];
     float4 OutColor = float4(CalculateLightingForTranslucency(View, LightGrid, GBuffer, IN.WorldPosition, PixelPosition, PixelDepth), Opacity);
-    //float4 OutColor = float4(PixelPosition/IN.Position.w, 0, Opacity);
+    OutColor.xyz += GetEnvironemntReflection(View, LightGrid, GBuffer, IN.WorldPosition, LinearSampler);
     
 // -------------------------------------------------------------------------------------------------------------
     

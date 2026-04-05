@@ -290,6 +290,8 @@ namespace Drn
 
 
 		std::vector<QueryScope> Queries;
+
+		friend class LightGrid;
 	};
 
 #if WITH_EDITOR

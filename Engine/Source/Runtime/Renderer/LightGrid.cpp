@@ -4,6 +4,9 @@
 #include "Runtime/Engine/DirectionalLightSceneProxy.h"
 #include "Runtime/Engine/PointLightSceneProxy.h"
 #include "Runtime/Engine/SpotLightSceneProxy.h"
+#include "Runtime/Engine/SkyLightSceneProxy.h"
+
+#include "Runtime/Renderer/RenderBuffer/ReflectionEnvironmentBuffer.h"
 
 namespace Drn
 {
@@ -96,6 +99,21 @@ namespace Drn
 			}
 		}
 
+		{
+			View->m_ReflectionEnvironmentBuffer->GenerateSkycubemap(CmdList, View);
+
+			Data.HasSkyLight = View->m_ReflectionEnvironmentBuffer->GeneratedCubemap.IsValid();
+			Data.PreintegeratedGFImageIndex = CommonResources::Get()->m_PreintegratedGF->GetShaderResourceView()->GetDescriptorHeapIndex();
+			if (Data.HasSkyLight)
+			{
+				Data.SkyLightConvolutionIndex = View->m_ReflectionEnvironmentBuffer->GeneratedCubemap->GetShaderResourceView()->GetDescriptorHeapIndex();
+				SkyLightSceneProxy* SkyProxy = View->GetScene()->GetSkyLightProxy();
+				Data.SkyLightColor = SkyProxy ? SkyProxy->GetColor() : Vector::ZeroVector;
+				Data.SkyLightIrradianceIndex = View->m_ReflectionEnvironmentBuffer->GeneratedCubemapIradiance->GetShaderResourceView()->GetDescriptorHeapIndex();
+				Data.SkyLightMipCount = View->m_ReflectionEnvironmentBuffer->GeneratedCubemap->GetNumMips();
+			}
+		}
+
 		uint32 ActualNumLights = LocalLightData.size();
 		drn_check(ActualNumLights < LIGHT_GRID_MAX_LOCAL_LIGHTS); // TODO: calculate tight fit for 65kb constant buffer target and clamp extra ones
 
@@ -109,7 +127,6 @@ namespace Drn
 		IntPoint ViewportSize = View->GetViewportSize();
 		IntVector LightGridSize = IntVector(Math::DivideAndRoundUp(ViewportSize.X, LIGHT_GRID_PIXEL_SIZE), Math::DivideAndRoundUp(ViewportSize.Y, LIGHT_GRID_PIXEL_SIZE), LIGHT_GRID_SIZE_Z);
 		uint32 NumGridCells = LightGridSize.GetX() * LightGridSize.GetY() * LightGridSize.GetZ();
-
 
 		LocalLightBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridLocalLightData) * LocalLightData.size(), EUniformBufferUsage::SingleFrame, LocalLightData.data());
 		ViewSpacePosAndRadiusBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(Vector4) * ViewSpacePosAndRadiusData.size(), EUniformBufferUsage::SingleFrame, ViewSpacePosAndRadiusData.data());
@@ -148,15 +165,15 @@ namespace Drn
 			{
 				RenderResourceCreateInfo BufferInfo("RWLightGridNumOffsetBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
-				RWLightGridNumOffsetBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, LIGHT_GRID_DATA_TYPE_SIZE,
-					NumGridCells * LIGHT_GRID_LIGHT_LINK_STRIDE, LIGHT_GRID_DATA_TYPE_SIZE == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+				RWLightGridNumOffsetBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, 4,
+					NumGridCells * LIGHT_GRID_LIGHT_LINK_STRIDE, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
 			}
 
 			{
 				RenderResourceCreateInfo BufferInfo("RWLightGridLinkListBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
-				RWLightGridLinkListBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, LIGHT_GRID_DATA_TYPE_SIZE,
-					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL, LIGHT_GRID_DATA_TYPE_SIZE == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+				RWLightGridLinkListBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, LIGHT_GRID_INDEX_TYPE_SIZE,
+					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL, LIGHT_GRID_INDEX_TYPE_SIZE == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
 			}
 
 			bDirtyScreenSize = false;
@@ -301,14 +318,14 @@ namespace Drn
 				std::vector<uint32> NumOffset;
 				{
 					uint64 Size = DebugReadNumOffsetBuffer->GetResource()->GetDesc().Width;
-					NumOffset.resize(Size / LIGHT_GRID_DATA_TYPE_SIZE);
+					NumOffset.resize(Size / 4);
 					memcpy(NumOffset.data(), DebugReadNumOffsetBuffer->GetResource()->Map(), Size);
 				}
 
 				std::vector<uint32> LightList;
 				{
 					uint64 Size = DebugReadListBuffer->GetResource()->GetDesc().Width;
-					LightList.resize(Size / LIGHT_GRID_DATA_TYPE_SIZE);
+					LightList.resize(Size / LIGHT_GRID_INDEX_TYPE_SIZE);
 					memcpy(LightList.data(), DebugReadListBuffer->GetResource()->Map(), Size);
 				}
 
@@ -330,9 +347,11 @@ namespace Drn
 					};
 
 					int32 GridIndex = (GridZ * DebugCachedData.CulledGridSize.GetY() + GridY) * DebugCachedData.CulledGridSize.GetX() + GridX;
-					int32 NumCulledLights = LIGHT_GRID_DATA_TYPE_SIZE == 2
-						? ((uint16*)NumOffset.data())[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0]
-						: NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
+					int32 NumCulledLights = NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
+
+					//int32 NumCulledLights = LIGHT_GRID_DATA_TYPE_SIZE == 2
+					//	? ((uint16*)NumOffset.data())[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0]
+					//	: NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
 
 					if (NumCulledLights > 0)
 					{
@@ -407,4 +426,10 @@ namespace Drn
 
 	}
 
-}
+	void LightGrid::TransitionResourcesToRead( class D3D12CommandList* CmdList )
+	{
+		CmdList->TransitionResourceWithTracking(RWLightGridNumOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		CmdList->TransitionResourceWithTracking(RWLightGridLinkListBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	}
+
+        }

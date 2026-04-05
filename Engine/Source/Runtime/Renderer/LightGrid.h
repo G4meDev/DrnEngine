@@ -20,7 +20,7 @@
 #define LIGHT_GRID_SIZE_Z 32
 #define LIGHT_GRID_INJECTION_GROUP_SIZE 4
 
-#define LIGHT_GRID_DATA_TYPE_SIZE 2
+#define LIGHT_GRID_INDEX_TYPE_SIZE 2
 
 namespace Drn
 {
@@ -60,6 +60,15 @@ namespace Drn
 
 		uint32 LightGridNumOffsetIndex;
 		uint32 LightGridLinkListIndex;
+// --------------------------------------------------------------------
+		uint32 HasSkyLight;
+		uint32 SkyLightConvolutionIndex;
+
+		Vector SkyLightColor;
+		uint32 SkyLightIrradianceIndex;
+
+		uint32 SkyLightMipCount;
+		uint32 PreintegeratedGFImageIndex;
 	};
 
 	// update data stride if changed
@@ -83,6 +92,7 @@ namespace Drn
 		inline void MarkDirtyScreenSize() { bDirtyScreenSize = true; }
 
 		inline class RenderUniformBuffer* GetBuffer() const { return LightGridBuffer; }
+		void TransitionResourcesToRead(class D3D12CommandList* CmdList);
 
 	private:
 		class SceneRenderer* View;

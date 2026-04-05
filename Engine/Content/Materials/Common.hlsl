@@ -299,6 +299,15 @@ struct LightGridData
     
     uint LightGridNumOffsetIndex;
     uint LightGridLinkListIndex;
+// ------------------------------------------
+    uint HasSkyLight;
+    uint SkyLightConvolutionIndex;
+    
+    float3 SkyLightColor;
+    uint SkyLightIrradianceIndex;
+    
+    uint SkyLightMipCount;
+    uint PreintegeratedGFImageIndex;
 };
 
 struct LightGridPackedLocalLightData
@@ -1225,4 +1234,137 @@ float3 CalculateLightingForTranslucency(ViewBuffer View, LightGridData LightGrid
     }
     
     return Result;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+
+float3 ComputeF0(float3 BaseColor, float Metallic)
+{
+    //float3 F0 = float3(0.04, 0.04, 0.04);
+    float3 F0 = 0.04;
+    F0 = lerp(F0, BaseColor, Metallic);
+    return F0;
+}
+
+float3 GetOffSpecularPeakReflectionDir(float3 Normal, float3 ReflectionVector, float Roughness)
+{
+    float a = Square(Roughness);
+    return lerp(Normal, ReflectionVector, (1 - a) * (sqrt(1 - a) + a));
+}
+
+float GetSpecularOcclusion(float NoV, float RoughnessSq, float AO)
+{
+    return saturate(pow(NoV + AO, RoughnessSq) - 1 + AO);
+}
+
+float3 EnvBRDF(float3 SpecularColor, float Roughness, float NoV, Texture2D PreIntegratedGF, SamplerState State)
+{
+    float2 AB = PreIntegratedGF.Sample(State, float2(NoV, Roughness)).rg;
+    float3 GF = SpecularColor * AB.x + saturate(50.0 * SpecularColor.g) * AB.y;
+    return GF;
+}
+
+half2 EnvBRDFApproxLazarov(half Roughness, half NoV)
+{
+    const half4 c0 = { -1, -0.0275, -0.572, 0.022 };
+    const half4 c1 = { 1, 0.0425, 1.04, -0.04 };
+    half4 r = Roughness * c0 + c1;
+    half a004 = min(r.x * r.x, exp2(-9.28 * NoV)) * r.x + r.y;
+    half2 AB = half2(-1.04, 1.04) * a004 + r.zw;
+    return AB;
+}
+
+half3 EnvBRDFApprox(half3 SpecularColor, half Roughness, half NoV)
+{
+    half2 AB = EnvBRDFApproxLazarov(Roughness, NoV);
+    float F90 = saturate(50.0 * SpecularColor.g);
+
+    return SpecularColor * AB.x + F90 * AB.y;
+}
+
+half EnvBRDFApproxNonmetal(half Roughness, half NoV)
+{
+    const half2 c0 = { -1, -0.0275 };
+    const half2 c1 = { 1, 0.0425 };
+    half2 r = Roughness * c0 + c1;
+    return min(r.x * r.x, exp2(-9.28 * NoV)) * r.x + r.y;
+}
+
+void EnvBRDFApproxFullyRough(inout half3 DiffuseColor, inout half3 SpecularColor)
+{
+    DiffuseColor += SpecularColor * 0.45;
+    SpecularColor = 0;
+}
+void EnvBRDFApproxFullyRough(inout half3 DiffuseColor, inout half SpecularColor)
+{
+    DiffuseColor += SpecularColor * 0.45;
+    SpecularColor = 0;
+}
+
+float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
+{
+    float a = 1.0 - roughness;
+    return F0 + (max(float3(a.xxx), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBufferData Gbuffer, float3 WorldPosition, SamplerState LinearClampSampler)
+{
+    Texture2D PreintegeratedGFImage = ResourceDescriptorHeap[LightGrid.PreintegeratedGFImageIndex];
+    
+    float3 DiffueColor = Gbuffer.BaseColor - Gbuffer.BaseColor * Gbuffer.Matallic;
+    float3 SpecularColor = ComputeF0(Gbuffer.BaseColor, Gbuffer.Matallic);
+    
+    float3 CameraToPixel = normalize(WorldPosition - View.CameraPos);
+    float3 ReflectionVector = reflect(CameraToPixel, Gbuffer.WorldNormal);
+        
+    float3 N = Gbuffer.WorldNormal;
+    float3 V = -CameraToPixel;
+    float NoV = saturate(dot(N, V));
+        
+    //float3 R = 2 * dot(V, N) * N - V;
+    //R = GetOffSpecularPeakReflectionDir(N, R, Roughness);
+        
+    //float4 SSR = SSRImage.Sample(PointClampSampler, UV);
+    //float3 SpecularTerm = SSR.rgb;
+    float3 SpecularTerm = 0;
+
+    //float CombinedAO = AO * SSAO;
+    float RoughnessSq = Square(Gbuffer.Roughness);
+    float SpecularOcclusion = GetSpecularOcclusion(NoV, RoughnessSq, Gbuffer.AmbientOcclusion);
+
+    float3 LightDiffuse = LightGrid.SkyLightColor;
+        
+    float3 F = fresnelSchlickRoughness(max(dot(Gbuffer.WorldNormal, -CameraToPixel), 0.0), SpecularColor, Gbuffer.Roughness);
+    float3 kS = F;
+    float3 kD = 1 - kS;
+    kD *= 1.0f - Gbuffer.Matallic;
+    
+    half Mip = ComputeReflectionCaptureMipFromRoughness(Gbuffer.Roughness, 8); // TODO: pass mip count as constant
+    //float Mip = ComputeReflectionCaptureMipFromRoughness(RoughnessSq, 8);
+    float4 ImageBasedReflections = float4(0, 0, 0, 1.0f);
+    float3 RayDirection = ReflectionVector;
+    
+    [branch]
+    if (LightGrid.HasSkyLight)
+    {
+        TextureCube SkyConvolution = ResourceDescriptorHeap[LightGrid.SkyLightConvolutionIndex];
+        TextureCube SkyIrradiance = ResourceDescriptorHeap[LightGrid.SkyLightIrradianceIndex];
+        
+        half MipLevel = ComputeReflectionCaptureMipFromRoughness(Gbuffer.Roughness, LightGrid.SkyLightMipCount);
+        //half MipLevel = ComputeReflectionCaptureMipFromRoughness(RoughnessSq, SSRBuffer.SkyLightMipCount);
+        ImageBasedReflections.rgb += ImageBasedReflections.a * LightGrid.SkyLightColor * SkyConvolution.SampleLevel(LinearClampSampler, ReflectionVector, MipLevel).xyz;
+        
+        LightDiffuse *= SkyIrradiance.SampleLevel(LinearClampSampler, Gbuffer.WorldNormal, 0).rgb;
+    }
+    
+    float3 DiffuseTerm = LightDiffuse * kD * DiffueColor;
+
+    ImageBasedReflections.rgb *= SpecularOcclusion;
+    SpecularTerm += ImageBasedReflections.rgb;
+    float3 BRDF = EnvBRDF(SpecularColor, Gbuffer.Roughness, NoV, PreintegeratedGFImage, LinearClampSampler);
+    
+    SpecularTerm *= BRDF;
+    //return float4(SpecularTerm, 1);
+    //return float4( DiffuseTerm * CombinedAO, 1);
+    return SpecularTerm + DiffuseTerm * Gbuffer.AmbientOcclusion;
 }
