@@ -13,7 +13,8 @@ namespace Drn
 {
 	Vector GetLightGridZParams(float NearPlane, float FarPlane)
 	{
-		double NearOffset = .095 * 100;
+		//double NearOffset = .095 * 100;
+		double NearOffset = .095;
 		double S = 4.05;
 
 		double N = NearPlane + NearOffset;
