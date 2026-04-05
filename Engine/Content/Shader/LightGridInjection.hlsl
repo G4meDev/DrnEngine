@@ -135,6 +135,7 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
         float4 WorldTileBoundingSphere = float4(WorldTileCenter, length(ViewTileExtent));
         
         //uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES;
+        uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell;
 
         ConstantBuffer<LightGridPackedLocalLightData> PackedLocalLights = ResourceDescriptorHeap[LightGrid.LocalLightBufferIndex];
         ConstantBuffer<LightGridViewSpacePositionAndRadius> ViewSpacePositionAndRadiusBuffer = ResourceDescriptorHeap[LightGrid.ViewSpacePositionAndRadiusIndex];
@@ -142,6 +143,10 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
         
         RWBuffer<uint> RWNumCulledLightsGrid = ResourceDescriptorHeap[LightGrid.RWNumCulledLightsGridIndex];
         RWBuffer<uint> RWCulledLightsGrid = ResourceDescriptorHeap[LightGrid.RWCulledLightsGridIndex];
+        
+        RWBuffer<uint> RWNextCulledLightLink = ResourceDescriptorHeap[LightGrid.RWNextCulledLightLinkIndex];
+        RWBuffer<uint> RWCulledLightLink = ResourceDescriptorHeap[LightGrid.RWCulledLightLinkIndex];
+        RWBuffer<uint> RWStartGridOffset = ResourceDescriptorHeap[LightGrid.RWStartGridOffsetIndex];
         
         [loop]
         for (uint LocalLightIndex = 0; LocalLightIndex < LightGrid.NumCulledLights; LocalLightIndex++)
@@ -177,9 +182,20 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
 #endif
                 if (bPassSpotlightTest)
 				{
+					uint NextLink;
+					InterlockedAdd(RWNextCulledLightLink[0], 1U, NextLink);
+
+					if (NextLink < NumAvailableLinks)
+					{
+						uint PreviousLink;
+                        InterlockedExchange(RWStartGridOffset[GridIndex], NextLink, PreviousLink);
+                        RWCulledLightLink[NextLink * LIGHT_GRID_LINK_STRIDE + 0] = LocalLightIndex;
+                        RWCulledLightLink[NextLink * LIGHT_GRID_LINK_STRIDE + 1] = PreviousLink;
+                    }
+
 					uint CulledLightIndex;
 					InterlockedAdd(RWNumCulledLightsGrid[GridIndex], 1U, CulledLightIndex);
-
+                    
 					if (CulledLightIndex < LightGrid.MaxCulledLightsPerCell)
 					{
                         RWCulledLightsGrid[GridIndex * LightGrid.MaxCulledLightsPerCell + CulledLightIndex] = LocalLightIndex;

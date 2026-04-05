@@ -127,6 +127,48 @@ namespace Drn
 			RWCulledLightsGridBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
 				NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL, DXGI_FORMAT_R32_UINT, RWCulledLightsGridBufferFlags, D3D12_RESOURCE_STATE_COMMON, true, RWCulledLightsGridBufferInfo);
 
+			{
+				RenderResourceCreateInfo BufferInfo("RWNextCulledLightLinkBuffer");
+				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
+				RWNextCulledLightLinkBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
+					1, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+			}
+
+			{
+				RenderResourceCreateInfo BufferInfo("RWCulledLightLinkBuffer");
+				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
+				RWCulledLightLinkBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
+					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL * LIGHT_GRID_LIGHT_LINK_STRIDE , DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+			}
+
+			{
+				RenderResourceCreateInfo BufferInfo("RWStartGridOffsetBuffer");
+				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
+				RWStartGridOffsetBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
+					NumGridCells , DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+			}
+
+			{
+				RenderResourceCreateInfo BufferInfo("RWNextCulledLightDataBuffer");
+				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
+				RWNextCulledLightDataBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
+					1, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+			}
+
+			{
+				RenderResourceCreateInfo BufferInfo("RWLightGridNumOffsetBuffer");
+				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
+				RWLightGridNumOffsetBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
+					NumGridCells * LIGHT_GRID_LIGHT_LINK_STRIDE, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+			}
+
+			{
+				RenderResourceCreateInfo BufferInfo("RWLightGridLinkListBuffer");
+				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
+				RWLightGridLinkListBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
+					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+			}
+
 			bDirtyScreenSize = false;
 		}
 
@@ -150,6 +192,19 @@ namespace Drn
 		Data.NumCulledLightsGridIndex = RWNumCulledLightsGridBuffer->GetSrvIndex();
 		Data.CulledLightsGridIndex = RWCulledLightsGridBuffer->GetSrvIndex();
 
+		Data.RWNextCulledLightLinkIndex = RWNextCulledLightLinkBuffer->GetUavIndex();
+		Data.RWCulledLightLinkIndex = RWCulledLightLinkBuffer->GetUavIndex();
+		Data.RWStartGridOffsetIndex = RWStartGridOffsetBuffer->GetUavIndex();
+		Data.RWNextCulledLightDataIndex = RWNextCulledLightDataBuffer->GetUavIndex();
+
+		Data.CulledLightLinkIndex = RWCulledLightLinkBuffer->GetSrvIndex();
+		Data.StartGridOffsetIndex = RWStartGridOffsetBuffer->GetSrvIndex();
+		Data.RWLightGridNumOffsetIndex = RWLightGridNumOffsetBuffer->GetUavIndex();
+		Data.RWLightGridLinkListIndex = RWLightGridLinkListBuffer->GetUavIndex();
+
+		Data.LightGridNumOffsetIndex = RWLightGridNumOffsetBuffer->GetSrvIndex();
+		Data.LightGridLinkListIndex = RWLightGridLinkListBuffer->GetSrvIndex();
+
 		LightGridBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridData), EUniformBufferUsage::SingleFrame, &Data);
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
@@ -158,8 +213,21 @@ namespace Drn
 		{
 			CmdList->TransitionResourceWithTracking(RWNumCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->ClearUnorderedViewUInt(RWNumCulledLightsGridBuffer->GetUav(), 0);
+
+			CmdList->TransitionResourceWithTracking(RWNextCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->ClearUnorderedViewUInt(RWNextCulledLightLinkBuffer->GetUav(), 0);
+
+			//CmdList->TransitionResourceWithTracking(RWCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			//CmdList->ClearUnorderedViewUInt(RWCulledLightLinkBuffer->GetUav(), 0);
+
+			CmdList->TransitionResourceWithTracking(RWStartGridOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->ClearUnorderedViewUInt(RWStartGridOffsetBuffer->GetUav(), UINT32_MAX);
+
+			CmdList->TransitionResourceWithTracking(RWNextCulledLightDataBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->ClearUnorderedViewUInt(RWNextCulledLightDataBuffer->GetUav(), 0);
 		}
 
+		IntVector NumGroups = IntVector::DivideAndRoundUp(LightGridSize, LIGHT_GRID_INJECTION_GROUP_SIZE);
 		{
 			SCOPED_GPU_STAT(CmdList, "LightGridInjection");
 			SCOPE_STAT();
@@ -167,9 +235,11 @@ namespace Drn
 
 			CmdList->TransitionResourceWithTracking(RWNumCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->TransitionResourceWithTracking(RWCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->TransitionResourceWithTracking(RWNextCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->TransitionResourceWithTracking(RWCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->TransitionResourceWithTracking(RWStartGridOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->TransitionResourceWithTracking(RWNextCulledLightDataBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->FlushBarriers();
-
-			IntVector NumGroups = IntVector::DivideAndRoundUp(LightGridSize, LIGHT_GRID_INJECTION_GROUP_SIZE);
 
 			CmdList->SetComputePipelineState(CommonResources::Get()->m_LightGridPSO->m_Injection_PSO);
 
@@ -180,6 +250,29 @@ namespace Drn
 
 			PIXEndEvent(CmdList->GetD3D12CommandList());
 		}
+		{
+			SCOPED_GPU_STAT(CmdList, "LightGridCompact");
+			SCOPE_STAT();
+			PIXBeginEvent( CmdList->GetD3D12CommandList(), 1, "Compact" );
+
+			CmdList->TransitionResourceWithTracking(RWStartGridOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+			CmdList->TransitionResourceWithTracking(RWCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+
+			CmdList->TransitionResourceWithTracking(RWLightGridNumOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->TransitionResourceWithTracking(RWLightGridLinkListBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->TransitionResourceWithTracking(RWNextCulledLightDataBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			CmdList->FlushBarriers();
+
+			CmdList->SetComputePipelineState(CommonResources::Get()->m_LightGridPSO->m_Compact_PSO);
+
+			CmdList->SetComputeRootConstant(View->ViewBuffer->GetViewIndex(), 0);
+			CmdList->SetComputeRootConstant(LightGridBuffer->GetViewIndex(), 1);
+
+			CmdList->DispatchComputeShader(NumGroups.X, NumGroups.Y, NumGroups.Z);
+
+			PIXEndEvent(CmdList->GetD3D12CommandList());
+		}
+
 		PIXEndEvent(CmdList->GetD3D12CommandList());
 
 		bool bDebug = true;

@@ -590,6 +590,9 @@ namespace Drn
 
 		m_CommandList->TransitionResourceWithTracking(m_LightGrid.RWNumCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 		m_CommandList->TransitionResourceWithTracking(m_LightGrid.RWCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->TransitionResourceWithTracking(m_LightGrid.RWLightGridNumOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		m_CommandList->TransitionResourceWithTracking(m_LightGrid.RWLightGridLinkListBuffer->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+
 		//m_CommandList->TransitionResourceWithTracking(m_GBuffer->m_DepthTarget->GetResource(), D3D12_RESOURCE_STATE_DEPTH_READ);
 		m_GBuffer->TransitionTexturesToRead(m_CommandList);
 		m_CommandList->FlushBarriers();

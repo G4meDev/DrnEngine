@@ -50,6 +50,19 @@ namespace Drn
 		uint32 RWCulledLightsGridIndex;
 		uint32 NumCulledLightsGridIndex;
 		uint32 CulledLightsGridIndex;
+
+		uint32 RWNextCulledLightLinkIndex;
+		uint32 RWCulledLightLinkIndex;
+		uint32 RWStartGridOffsetIndex;
+		uint32 RWNextCulledLightDataIndex;
+
+		uint32 CulledLightLinkIndex;
+		uint32 StartGridOffsetIndex;
+		uint32 RWLightGridNumOffsetIndex;
+		uint32 RWLightGridLinkListIndex;
+
+		uint32 LightGridNumOffsetIndex;
+		uint32 LightGridLinkListIndex;
 	};
 
 	// update data stride if changed
@@ -90,6 +103,14 @@ namespace Drn
 
 		TRefCountPtr<class RenderRawBuffer> RWNumCulledLightsGridBuffer;
 		TRefCountPtr<class RenderRawBuffer> RWCulledLightsGridBuffer;
+
+		TRefCountPtr<class RenderRawBuffer> RWNextCulledLightLinkBuffer;
+		TRefCountPtr<class RenderRawBuffer> RWCulledLightLinkBuffer;
+		TRefCountPtr<class RenderRawBuffer> RWStartGridOffsetBuffer;
+		TRefCountPtr<class RenderRawBuffer> RWNextCulledLightDataBuffer;
+
+		TRefCountPtr<class RenderRawBuffer> RWLightGridNumOffsetBuffer;
+		TRefCountPtr<class RenderRawBuffer> RWLightGridLinkListBuffer;
 
 		TRefCountPtr<class RenderRawBuffer> DebugReadBuffer;
 		uint64 DebugFenceValue;

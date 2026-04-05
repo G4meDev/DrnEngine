@@ -250,6 +250,9 @@ struct BasePassPixelShaderOutput
 #define LIGHT_GRID_LIGHT_TYPE_SPOT			2
 #define LIGHT_GRID_LIGHT_TYPE_MAX			3
 
+// num lights, startoffset
+#define LIGHT_GRID_LINK_STRIDE 2
+
 struct LightGridDirectionalLightData
 {
     uint HasDirectionalLight;
@@ -288,6 +291,19 @@ struct LightGridData
     uint RWCulledLightsGridIndex;
     uint NumCulledLightsGridIndex;
     uint CulledLightsGridIndex;
+    
+    uint RWNextCulledLightLinkIndex;
+    uint RWCulledLightLinkIndex;
+    uint RWStartGridOffsetIndex;
+    uint RWNextCulledLightDataIndex;
+    
+    uint CulledLightLinkIndex;
+    uint StartGridOffsetIndex;
+    uint RWLightGridNumOffsetIndex;
+    uint RWLightGridLinkListIndex;
+    
+    uint LightGridNumOffsetIndex;
+    uint LightGridLinkListIndex;
 };
 
 struct LightGridPackedLocalLightData
@@ -1166,16 +1182,23 @@ float3 CalculateLightingForTranslucency(ViewBuffer View, LightGridData LightGrid
     Buffer<uint> NumCulledLightGrid = ResourceDescriptorHeap[LightGrid.NumCulledLightsGridIndex];
     Buffer<uint> CulledLightGrid = ResourceDescriptorHeap[LightGrid.CulledLightsGridIndex];
 
+    Buffer<uint> LightGridNumOffset = ResourceDescriptorHeap[LightGrid.LightGridNumOffsetIndex];
+    Buffer<uint> LightGridLinkList = ResourceDescriptorHeap[LightGrid.LightGridLinkListIndex];
+
     uint GridIndex = ComputeLightGridCellIndex(LightGrid, PixelPosition, PixelDepth);
-    
-    //float R = RandBBSfloat(float(GridIndex));
-    //float G = RandBBSfloat(float(GridIndex * 12513 + 123142));
-    //float B = RandBBSfloat(float(GridIndex * 5123 + 61236));
+    uint NumCulledLights = LightGridNumOffset[GridIndex * LIGHT_GRID_LINK_STRIDE + 0];
+    uint LinkStart = LightGridNumOffset[GridIndex * LIGHT_GRID_LINK_STRIDE + 1];
+    uint LinkEnd = LinkStart + NumCulledLights;
     
     [loop]
-    for (uint Index = 0; Index < NumCulledLightGrid[GridIndex]; Index++)
+    for (uint Index = LinkStart; Index < LinkEnd; Index++)
     {
-        uint LightIndex = CulledLightGrid[GridIndex * LightGrid.MaxCulledLightsPerCell + Index];
+        uint LightIndex = LightGridLinkList[Index];
+    
+    //[loop]
+    //for (uint Index = 0; Index < NumCulledLightGrid[GridIndex]; Index++)
+    //{
+    //    uint LightIndex = CulledLightGrid[GridIndex * LightGrid.MaxCulledLightsPerCell + Index];
         
         LightGridLocalLightData LocalLightData = GetLocalLightData(PackedLocalLights, LightIndex);
         uint LightType = asuint(LocalLightData.LightDirectionAndLightType.w);
