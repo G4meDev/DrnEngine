@@ -185,11 +185,10 @@ namespace Drn
 
 		SetComputePipelineState(CommonResources::Get()->m_ClearUAVPSO->m_PSO);
 
-		uint32 ClearValue = 0;
 		uint32 BufferIndex = InView->GetDescriptorHeapIndex();
 
 		SetComputeRootConstant(NumEntries, 0);
-		SetComputeRootConstant(ClearValue, 1);
+		SetComputeRootConstant(InClearValue, 1);
 		SetComputeRootConstant(BufferIndex, 2);
 
 		FlushBarriers();

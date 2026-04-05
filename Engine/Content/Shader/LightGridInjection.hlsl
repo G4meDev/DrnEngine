@@ -141,9 +141,6 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
         ConstantBuffer<LightGridViewSpacePositionAndRadius> ViewSpacePositionAndRadiusBuffer = ResourceDescriptorHeap[LightGrid.ViewSpacePositionAndRadiusIndex];
         ConstantBuffer<LightGridViewSpaceDirAndPreprocAngle> ViewSpaceDirAndPreprocAngleBuffer = ResourceDescriptorHeap[LightGrid.ViewSpaceDirAndPreprocAngleIndex];
         
-        RWBuffer<uint> RWNumCulledLightsGrid = ResourceDescriptorHeap[LightGrid.RWNumCulledLightsGridIndex];
-        RWBuffer<uint> RWCulledLightsGrid = ResourceDescriptorHeap[LightGrid.RWCulledLightsGridIndex];
-        
         RWBuffer<uint> RWNextCulledLightLink = ResourceDescriptorHeap[LightGrid.RWNextCulledLightLinkIndex];
         RWBuffer<uint> RWCulledLightLink = ResourceDescriptorHeap[LightGrid.RWCulledLightLinkIndex];
         RWBuffer<uint> RWStartGridOffset = ResourceDescriptorHeap[LightGrid.RWStartGridOffsetIndex];
@@ -192,44 +189,11 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
                         RWCulledLightLink[NextLink * LIGHT_GRID_LINK_STRIDE + 0] = LocalLightIndex;
                         RWCulledLightLink[NextLink * LIGHT_GRID_LINK_STRIDE + 1] = PreviousLink;
                     }
-
-					uint CulledLightIndex;
-					InterlockedAdd(RWNumCulledLightsGrid[GridIndex], 1U, CulledLightIndex);
-                    
-					if (CulledLightIndex < LightGrid.MaxCulledLightsPerCell)
-					{
-                        RWCulledLightsGrid[GridIndex * LightGrid.MaxCulledLightsPerCell + CulledLightIndex] = LocalLightIndex;
-                    }
 				}
-//              if (bPassSpotlightTest)
-//				{
-//
-//#if USE_LINKED_CULL_LIST
-//					uint NextLink;
-//					InterlockedAdd(RWNextCulledLightLink[0], 1U, NextLink);
-//
-//					if (NextLink < NumAvailableLinks)
-//					{
-//						uint PreviousLink;
-//						InterlockedExchange(RWStartOffsetGrid[GridIndex], NextLink, PreviousLink);
-//						RWCulledLightLinks[NextLink * LIGHT_LINK_STRIDE + 0] = LocalLightIndex;
-//						RWCulledLightLinks[NextLink * LIGHT_LINK_STRIDE + 1] = PreviousLink;
-//					}
-//
-//#else
-//                    InterlockedExchange()
-//                    
-//					uint CulledLightIndex;
-//					InterlockedAdd(RWNumCulledLightsGrid[GridIndex * NUM_CULLED_LIGHTS_GRID_STRIDE + 0], 1U, CulledLightIndex);
-//					RWNumCulledLightsGrid[GridIndex * NUM_CULLED_LIGHTS_GRID_STRIDE + 1] = GridIndex * ForwardLightData.MaxCulledLightsPerCell;
-//
-//					if (CulledLightIndex < ForwardLightData.MaxCulledLightsPerCell)
-//					{
-//						RWCulledLightDataGrid[GridIndex * ForwardLightData.MaxCulledLightsPerCell + CulledLightIndex] = LocalLightIndex;
-//					}
-//#endif
-//				}
             }
         }
+        
+        
+        
     }
 }

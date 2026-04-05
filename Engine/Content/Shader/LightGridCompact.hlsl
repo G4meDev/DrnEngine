@@ -12,10 +12,10 @@ ConstantBuffer<Resources> BindlessResources : register(b0);
 
 void CompactReverseLinkedList(uint GridIndex, bool bThreadValid, uint SceneMax, Buffer<uint> CulledLightLink, Buffer<uint> StartGridOffset, RWBuffer<uint> RWNextCulledLightData, RWBuffer<uint> RWNumCulledLightsGrid, RWBuffer<uint> RWCulledLightDataGrid)
 {
-    uint NumCulledLights = 0;
-    uint StartLinkOffset = 0;
-    uint LinkOffset = 0;
-    uint CulledLightDataStart = 0;
+    uint NumCulledLights        = 0;
+    uint StartLinkOffset        = 0;
+    uint LinkOffset             = 0;
+    uint CulledLightDataStart   = 0;
 
     if (bThreadValid)
     {

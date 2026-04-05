@@ -46,11 +46,6 @@ namespace Drn
 		Vector LightGridZParams;
 		uint32 LightViewSpaceDirAndPreprocAngleIndex;
 
-		uint32 RWNumCulledLightsGridIndex;
-		uint32 RWCulledLightsGridIndex;
-		uint32 NumCulledLightsGridIndex;
-		uint32 CulledLightsGridIndex;
-
 		uint32 RWNextCulledLightLinkIndex;
 		uint32 RWCulledLightLinkIndex;
 		uint32 RWStartGridOffsetIndex;
@@ -101,9 +96,6 @@ namespace Drn
 		std::vector<Vector4> ViewSpaceDirAndPreprocAngleData;
 		TRefCountPtr<class RenderUniformBuffer> ViewSpaceDirAndPreprocAngleBuffer;
 
-		TRefCountPtr<class RenderRawBuffer> RWNumCulledLightsGridBuffer;
-		TRefCountPtr<class RenderRawBuffer> RWCulledLightsGridBuffer;
-
 		TRefCountPtr<class RenderRawBuffer> RWNextCulledLightLinkBuffer;
 		TRefCountPtr<class RenderRawBuffer> RWCulledLightLinkBuffer;
 		TRefCountPtr<class RenderRawBuffer> RWStartGridOffsetBuffer;
@@ -112,7 +104,8 @@ namespace Drn
 		TRefCountPtr<class RenderRawBuffer> RWLightGridNumOffsetBuffer;
 		TRefCountPtr<class RenderRawBuffer> RWLightGridLinkListBuffer;
 
-		TRefCountPtr<class RenderRawBuffer> DebugReadBuffer;
+		TRefCountPtr<class RenderRawBuffer> DebugReadNumOffsetBuffer;
+		TRefCountPtr<class RenderRawBuffer> DebugReadListBuffer;
 		uint64 DebugFenceValue;
 		LightGridData DebugCachedData;
 

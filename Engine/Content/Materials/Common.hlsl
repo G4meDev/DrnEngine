@@ -287,11 +287,6 @@ struct LightGridData
     float3 LightGridZParams;
     uint ViewSpaceDirAndPreprocAngleIndex;
     
-    uint RWNumCulledLightsGridIndex;
-    uint RWCulledLightsGridIndex;
-    uint NumCulledLightsGridIndex;
-    uint CulledLightsGridIndex;
-    
     uint RWNextCulledLightLinkIndex;
     uint RWCulledLightLinkIndex;
     uint RWStartGridOffsetIndex;
@@ -1179,8 +1174,6 @@ float3 CalculateLightingForTranslucency(ViewBuffer View, LightGridData LightGrid
     }
     
     ConstantBuffer<LightGridPackedLocalLightData> PackedLocalLights = ResourceDescriptorHeap[LightGrid.LocalLightBufferIndex];
-    Buffer<uint> NumCulledLightGrid = ResourceDescriptorHeap[LightGrid.NumCulledLightsGridIndex];
-    Buffer<uint> CulledLightGrid = ResourceDescriptorHeap[LightGrid.CulledLightsGridIndex];
 
     Buffer<uint> LightGridNumOffset = ResourceDescriptorHeap[LightGrid.LightGridNumOffsetIndex];
     Buffer<uint> LightGridLinkList = ResourceDescriptorHeap[LightGrid.LightGridLinkListIndex];
@@ -1195,11 +1188,6 @@ float3 CalculateLightingForTranslucency(ViewBuffer View, LightGridData LightGrid
     {
         uint LightIndex = LightGridLinkList[Index];
     
-    //[loop]
-    //for (uint Index = 0; Index < NumCulledLightGrid[GridIndex]; Index++)
-    //{
-    //    uint LightIndex = CulledLightGrid[GridIndex * LightGrid.MaxCulledLightsPerCell + Index];
-        
         LightGridLocalLightData LocalLightData = GetLocalLightData(PackedLocalLights, LightIndex);
         uint LightType = asuint(LocalLightData.LightDirectionAndLightType.w);
 

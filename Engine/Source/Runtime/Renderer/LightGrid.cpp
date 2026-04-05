@@ -117,16 +117,6 @@ namespace Drn
 
 		if (bDirtyScreenSize)
 		{
-			RenderResourceCreateInfo RWNumCulledLightsGridBufferInfo("RWNumCulledLightsGridBuffer");
-			uint32 RWNumCulledLightsGridBufferFlags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
-			RWNumCulledLightsGridBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
-				NumGridCells, DXGI_FORMAT_R32_UINT, RWNumCulledLightsGridBufferFlags, D3D12_RESOURCE_STATE_COMMON, true, RWNumCulledLightsGridBufferInfo);
-
-			RenderResourceCreateInfo RWCulledLightsGridBufferInfo("RWCulledLightsGridBuffer");
-			uint32 RWCulledLightsGridBufferFlags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
-			RWCulledLightsGridBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
-				NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL, DXGI_FORMAT_R32_UINT, RWCulledLightsGridBufferFlags, D3D12_RESOURCE_STATE_COMMON, true, RWCulledLightsGridBufferInfo);
-
 			{
 				RenderResourceCreateInfo BufferInfo("RWNextCulledLightLinkBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
@@ -187,11 +177,6 @@ namespace Drn
 		//float FarPlane = VInfo.FarClipPlane;
 		Data.LightGridZParams = GetLightGridZParams(VInfo.NearClipPlane, FarPlane);
 
-		Data.RWNumCulledLightsGridIndex = RWNumCulledLightsGridBuffer->GetUavIndex();
-		Data.RWCulledLightsGridIndex = RWCulledLightsGridBuffer->GetUavIndex();
-		Data.NumCulledLightsGridIndex = RWNumCulledLightsGridBuffer->GetSrvIndex();
-		Data.CulledLightsGridIndex = RWCulledLightsGridBuffer->GetSrvIndex();
-
 		Data.RWNextCulledLightLinkIndex = RWNextCulledLightLinkBuffer->GetUavIndex();
 		Data.RWCulledLightLinkIndex = RWCulledLightLinkBuffer->GetUavIndex();
 		Data.RWStartGridOffsetIndex = RWStartGridOffsetBuffer->GetUavIndex();
@@ -211,17 +196,11 @@ namespace Drn
 
 		PIXBeginEvent(CmdList->GetD3D12CommandList(), 1, "LightGrid");
 		{
-			CmdList->TransitionResourceWithTracking(RWNumCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-			CmdList->ClearUnorderedViewUInt(RWNumCulledLightsGridBuffer->GetUav(), 0);
-
 			CmdList->TransitionResourceWithTracking(RWNextCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->ClearUnorderedViewUInt(RWNextCulledLightLinkBuffer->GetUav(), 0);
 
-			//CmdList->TransitionResourceWithTracking(RWCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-			//CmdList->ClearUnorderedViewUInt(RWCulledLightLinkBuffer->GetUav(), 0);
-
 			CmdList->TransitionResourceWithTracking(RWStartGridOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-			CmdList->ClearUnorderedViewUInt(RWStartGridOffsetBuffer->GetUav(), UINT32_MAX);
+			CmdList->ClearUnorderedViewUInt(RWStartGridOffsetBuffer->GetUav(), 0xFFFFFFFF);
 
 			CmdList->TransitionResourceWithTracking(RWNextCulledLightDataBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->ClearUnorderedViewUInt(RWNextCulledLightDataBuffer->GetUav(), 0);
@@ -233,12 +212,9 @@ namespace Drn
 			SCOPE_STAT();
 			PIXBeginEvent( CmdList->GetD3D12CommandList(), 1, "Injection" );
 
-			CmdList->TransitionResourceWithTracking(RWNumCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-			CmdList->TransitionResourceWithTracking(RWCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->TransitionResourceWithTracking(RWNextCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->TransitionResourceWithTracking(RWCulledLightLinkBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->TransitionResourceWithTracking(RWStartGridOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-			CmdList->TransitionResourceWithTracking(RWNextCulledLightDataBuffer->GetResource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 			CmdList->FlushBarriers();
 
 			CmdList->SetComputePipelineState(CommonResources::Get()->m_LightGridPSO->m_Injection_PSO);
@@ -280,21 +256,39 @@ namespace Drn
 		{
 			World* OwningWorld = View->GetScene()->GetWorld();
 
-			if (!DebugReadBuffer && OwningWorld->HasViewFlag(EWorldViewFlag::LightGrid))
+			if (!DebugReadNumOffsetBuffer && OwningWorld->HasViewFlag(EWorldViewFlag::LightGrid))
 			{
-				uint64 Size = RWNumCulledLightsGridBuffer->GetResource()->GetDesc().Width;
-				DebugReadBuffer = new RenderRawBuffer(CmdList->GetParentDevice(), 0, Size, 0);
+				{
+					uint64 Size = RWLightGridNumOffsetBuffer->GetResource()->GetDesc().Width;
+					DebugReadNumOffsetBuffer = new RenderRawBuffer(CmdList->GetParentDevice(), 0, Size, 0);
 
-				RenderResource* NewResource = nullptr;
-				CmdList->GetParentDevice()->CreateBuffer(D3D12_HEAP_TYPE_READBACK, Size, D3D12_RESOURCE_STATE_COMMON, false, &NewResource, "eawr", D3D12_RESOURCE_FLAG_NONE);
+					RenderResource* NewResource = nullptr;
+					CmdList->GetParentDevice()->CreateBuffer(D3D12_HEAP_TYPE_READBACK, Size, D3D12_RESOURCE_STATE_COMMON, false, &NewResource, "DebugReadNumOffsetBuffer", D3D12_RESOURCE_FLAG_NONE);
 
-				DebugReadBuffer->m_ResourceLocation.AsStandAlone(NewResource);
-				//OutTexture2D->SetMappedBaseAddress(NewResource->Map());
+					DebugReadNumOffsetBuffer->m_ResourceLocation.AsStandAlone( NewResource );
+					//OutTexture2D->SetMappedBaseAddress(NewResource->Map());
 
 
-				CmdList->TransitionResourceWithTracking(RWNumCulledLightsGridBuffer->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
-				CmdList->FlushBarriers();
-				CmdList->GetD3D12CommandList()->CopyResource(DebugReadBuffer->GetResource()->GetResource(), RWNumCulledLightsGridBuffer->GetResource()->GetResource());
+					CmdList->TransitionResourceWithTracking(RWLightGridNumOffsetBuffer->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+					CmdList->FlushBarriers();
+					CmdList->GetD3D12CommandList()->CopyResource(DebugReadNumOffsetBuffer->GetResource()->GetResource(), RWLightGridNumOffsetBuffer->GetResource()->GetResource());
+				}
+
+				{
+					uint64 Size = RWLightGridLinkListBuffer->GetResource()->GetDesc().Width;
+					DebugReadListBuffer = new RenderRawBuffer(CmdList->GetParentDevice(), 0, Size, 0);
+
+					RenderResource* NewResource = nullptr;
+					CmdList->GetParentDevice()->CreateBuffer(D3D12_HEAP_TYPE_READBACK, Size, D3D12_RESOURCE_STATE_COMMON, false, &NewResource, "DebugReadListBuffer", D3D12_RESOURCE_FLAG_NONE);
+
+					DebugReadListBuffer->m_ResourceLocation.AsStandAlone( NewResource );
+					//OutTexture2D->SetMappedBaseAddress(NewResource->Map());
+
+
+					CmdList->TransitionResourceWithTracking(RWLightGridLinkListBuffer->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+					CmdList->FlushBarriers();
+					CmdList->GetD3D12CommandList()->CopyResource(DebugReadListBuffer->GetResource()->GetResource(), RWLightGridLinkListBuffer->GetResource()->GetResource());
+				}
 
 				DebugFenceValue = Renderer::Get()->GetFence()->Signal();
 				DebugCachedData = Data;
@@ -302,13 +296,24 @@ namespace Drn
 				OwningWorld->SetViewFlag(EWorldViewFlag::LightGrid, false);
 			}
 
-			else if (DebugReadBuffer && Renderer::Get()->GetFence()->IsFenceComplete(DebugFenceValue))
+			else if (DebugReadNumOffsetBuffer && Renderer::Get()->GetFence()->IsFenceComplete(DebugFenceValue))
 			{
-				std::vector<uint32> GridCullSize;
-				GridCullSize.resize(DebugCachedData.NumGridCells);
+				std::vector<uint32> NumOffset;
+				{
+					uint64 Size = DebugReadNumOffsetBuffer->GetResource()->GetDesc().Width;
+					NumOffset.resize(Size / 4);
+					memcpy(NumOffset.data(), DebugReadNumOffsetBuffer->GetResource()->Map(), Size);
+				}
 
-				memcpy(GridCullSize.data(), DebugReadBuffer->GetResource()->Map(), DebugCachedData.NumGridCells * 4);
-				DebugReadBuffer = nullptr;
+				std::vector<uint32> LightList;
+				{
+					uint64 Size = DebugReadListBuffer->GetResource()->GetDesc().Width;
+					LightList.resize(Size / 4);
+					memcpy(LightList.data(), DebugReadListBuffer->GetResource()->Map(), Size);
+				}
+
+				DebugReadNumOffsetBuffer = nullptr;
+				DebugReadListBuffer = nullptr;
 
 				Matrix ProjetcionToWorld = View->GetSceneView().ProjectionToWorld;
 				Matrix ViewToWorld = View->GetSceneView().ViewToWorld;
@@ -325,7 +330,9 @@ namespace Drn
 					};
 
 					int32 GridIndex = (GridZ * DebugCachedData.CulledGridSize.GetY() + GridY) * DebugCachedData.CulledGridSize.GetX() + GridX;
-					if (GridCullSize[GridIndex] > 0)
+					int32 NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
+
+					if (NumCulledLights > 0)
 					{
 						NumDrawed++;
 
@@ -394,6 +401,8 @@ namespace Drn
 			}
 	
 		}
+
+
 	}
 
 }
