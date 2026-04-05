@@ -5,6 +5,7 @@
 #include "Runtime/Engine/PointLightSceneProxy.h"
 #include "Runtime/Engine/SpotLightSceneProxy.h"
 #include "Runtime/Engine/SkyLightSceneProxy.h"
+#include "Runtime/Engine/ReflectionCaptureProxy.h"
 
 #include "Runtime/Renderer/RenderBuffer/ReflectionEnvironmentBuffer.h"
 
@@ -44,7 +45,10 @@ namespace Drn
 		ViewSpacePosAndRadiusData.clear();
 		ViewSpaceDirAndPreprocAngleData.clear();
 
+		ReflectionCaptureData.clear();
+
 		float FurthestLight = 1000;
+		float FurthestReflectionCapture = 1000;
 
 		for (BitArray::ConstSetBitIterator It(View->GetVisibleLights()); It; ++It)
 		{
@@ -80,9 +84,12 @@ namespace Drn
 				LocalLightData.back().LightDirectionAndLightType = Vector4(SpotLight->GetDirection(), *((float*)&LightType));
 				LocalLightData.back().SpotAnglesAndSourceRadiusPacked = Vector4(SpotLight->GetCosOuterCone(), SpotLight->GetInvCosConeDifference(), SpotLight->GetAttenuation(), 0.0f);
 
-				// @TODO: maybe use a tight bound sphere
 				ViewSpacePosAndRadiusData.push_back(Vector4(View->GetSceneView().WorldToView.TransformPosition(SpotLight->GetWorldPosition()), SpotLight->GetAttenuation()));
 				ViewSpaceDirAndPreprocAngleData.push_back((Vector4(View->GetSceneView().WorldToView.TransformVector(SpotLight->GetDirection()), GetTanRadAngleOrZero(SpotLight->GetOuterRadius()))));
+
+				Sphere Bound = SpotLight->GetBoundingSphere();
+				float Distance = View->GetSceneView().WorldToView.TransformPosition(Bound.Center).GetZ() + Bound.Radius;
+				FurthestLight = std::max(FurthestLight, Distance);
 			}
 
 			else if (Proxy->GetLightType() == ELightType::DirectionalLight)
@@ -112,6 +119,41 @@ namespace Drn
 				Data.SkyLightIrradianceIndex = View->m_ReflectionEnvironmentBuffer->GeneratedCubemapIradiance->GetShaderResourceView()->GetDescriptorHeapIndex();
 				Data.SkyLightMipCount = View->m_ReflectionEnvironmentBuffer->GeneratedCubemap->GetNumMips();
 			}
+
+			{
+				SCOPE_STAT("ReflectionCaptureSort");
+
+				std::vector<ReflectionCaptureProxy*> VisibleReflectionProxies;
+				for (ReflectionCaptureProxy* Proxy : View->GetScene()->GetReflectionCaptureProxies())
+				{
+					drn_check(Proxy);
+
+					if (Proxy->HasValidCubemap() && View->ViewFrustum.Contains(Sphere(Proxy->Position, Proxy->InfluenceRadius)))
+					{
+						VisibleReflectionProxies.push_back(Proxy);
+					}
+				}
+
+				std::sort(VisibleReflectionProxies.begin(), VisibleReflectionProxies.end(),
+				[](const ReflectionCaptureProxy* A, const ReflectionCaptureProxy* B)
+				{
+					return A->InfluenceRadius < B->InfluenceRadius;
+				});
+
+				for (ReflectionCaptureProxy* Proxy : VisibleReflectionProxies)
+				{
+					uint32 CubemapIndex = Proxy->GetCubemap()->GetShaderResourceView()->GetDescriptorHeapIndex();
+
+					ReflectionCaptureData.push_back({});
+					ReflectionCaptureData.back().PositionRadius = Vector4(Proxy->GetPosition(), Proxy->GetRadius());
+					ReflectionCaptureData.back().CaptureOffsetBrightness = Vector4(Proxy->GetCaptureOffset(), Proxy->GetBrightness());
+					ReflectionCaptureData.back().CubemapIndex = Vector4(*((float*)&CubemapIndex), 0, 0, 0);
+
+					Sphere Bound = Sphere(Proxy->Position, Proxy->InfluenceRadius);
+					float Distance = View->GetSceneView().WorldToView.TransformPosition(Bound.Center).GetZ() + Bound.Radius;
+					FurthestReflectionCapture = std::max(FurthestLight, Distance);
+				}
+			}
 		}
 
 		uint32 ActualNumLights = LocalLightData.size();
@@ -124,6 +166,10 @@ namespace Drn
 		if (ViewSpaceDirAndPreprocAngleData.empty())
 			ViewSpaceDirAndPreprocAngleData.push_back({});
 
+		uint32 NumReflectionCaptures = ReflectionCaptureData.size();
+		if (ReflectionCaptureData.empty())
+			ReflectionCaptureData.push_back({});
+
 		IntPoint ViewportSize = View->GetViewportSize();
 		IntVector LightGridSize = IntVector(Math::DivideAndRoundUp(ViewportSize.X, LIGHT_GRID_PIXEL_SIZE), Math::DivideAndRoundUp(ViewportSize.Y, LIGHT_GRID_PIXEL_SIZE), LIGHT_GRID_SIZE_Z);
 		uint32 NumGridCells = LightGridSize.GetX() * LightGridSize.GetY() * LightGridSize.GetZ();
@@ -131,6 +177,8 @@ namespace Drn
 		LocalLightBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridLocalLightData) * LocalLightData.size(), EUniformBufferUsage::SingleFrame, LocalLightData.data());
 		ViewSpacePosAndRadiusBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(Vector4) * ViewSpacePosAndRadiusData.size(), EUniformBufferUsage::SingleFrame, ViewSpacePosAndRadiusData.data());
 		ViewSpaceDirAndPreprocAngleBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(Vector4) * ViewSpaceDirAndPreprocAngleData.size(), EUniformBufferUsage::SingleFrame, ViewSpaceDirAndPreprocAngleData.data());
+
+		ReflectionCaptureBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridReflectionCaptureData) * ReflectionCaptureData.size(), EUniformBufferUsage::SingleFrame, ReflectionCaptureData.data());
 
 		if (bDirtyScreenSize)
 		{
@@ -145,14 +193,14 @@ namespace Drn
 				RenderResourceCreateInfo BufferInfo("RWCulledLightLinkBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
 				RWCulledLightLinkBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
-					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL * LIGHT_GRID_LIGHT_LINK_STRIDE , DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL * LIGHT_GRID_LIGHT_LINK_STRIDE * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES , DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
 			}
 
 			{
 				RenderResourceCreateInfo BufferInfo("RWStartGridOffsetBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
 				RWStartGridOffsetBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, sizeof(uint32),
-					NumGridCells , DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+					NumGridCells * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES , DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
 			}
 
 			{
@@ -166,14 +214,14 @@ namespace Drn
 				RenderResourceCreateInfo BufferInfo("RWLightGridNumOffsetBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
 				RWLightGridNumOffsetBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, 4,
-					NumGridCells * LIGHT_GRID_LIGHT_LINK_STRIDE, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+					NumGridCells * LIGHT_GRID_LIGHT_LINK_STRIDE * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES, DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
 			}
 
 			{
 				RenderResourceCreateInfo BufferInfo("RWLightGridLinkListBuffer");
 				uint32 Flags = (uint32)EBufferUsageFlags::UnorderedAccess | (uint32)EBufferUsageFlags::ShaderResource;
 				RWLightGridLinkListBuffer = RenderRawBuffer::Create(CmdList->GetParentDevice(), CmdList, LIGHT_GRID_INDEX_TYPE_SIZE,
-					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL, LIGHT_GRID_INDEX_TYPE_SIZE == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
+					NumGridCells * LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES, LIGHT_GRID_INDEX_TYPE_SIZE == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, Flags, D3D12_RESOURCE_STATE_COMMON, true, BufferInfo);
 			}
 
 			bDirtyScreenSize = false;
@@ -190,7 +238,7 @@ namespace Drn
 		
 		ViewInfo VInfo;
 		View->GetViewInfo(VInfo); // @TODO: cache in scene renderer
-		float FarPlane = FurthestLight + 10.0f;
+		float FarPlane = std::max(FurthestLight, FurthestReflectionCapture) + 10.0f;
 		//float FarPlane = VInfo.FarClipPlane;
 		Data.LightGridZParams = GetLightGridZParams(VInfo.NearClipPlane, FarPlane);
 
@@ -206,6 +254,9 @@ namespace Drn
 
 		Data.LightGridNumOffsetIndex = RWLightGridNumOffsetBuffer->GetSrvIndex();
 		Data.LightGridLinkListIndex = RWLightGridLinkListBuffer->GetSrvIndex();
+
+		Data.NumReflectionCaptures = NumReflectionCaptures;
+		Data.ReflectionCaptureBufferIndex = ReflectionCaptureBuffer->GetViewIndex();
 
 		LightGridBuffer = RenderUniformBuffer::Create(View->GetCommandList()->GetParentDevice(), sizeof(LightGridData), EUniformBufferUsage::SingleFrame, &Data);
 
@@ -335,28 +386,25 @@ namespace Drn
 				Matrix ProjetcionToWorld = View->GetSceneView().ProjectionToWorld;
 				Matrix ViewToWorld = View->GetSceneView().ViewToWorld;
 
-				int32 NumDrawed = 0;
-
 				for (int32 GridX = 0; GridX < DebugCachedData.CulledGridSize.GetX(); GridX++)
 					for (int32 GridY = 0; GridY < DebugCachedData.CulledGridSize.GetY(); GridY++)
 						for (int32 GridZ = 0; GridZ < DebugCachedData.CulledGridSize.GetZ(); GridZ++)
 				{
-					auto DrawLine = [](World* W, const Vector& Start, const Vector& End)
+					auto DrawLine = [](World* W, const Vector& Start, const Vector& End, Color InColor)
 					{
-						W->DrawDebugLine(Start, End, Color::White, 0, 60);
+						W->DrawDebugLine(Start, End, InColor, 0, 60);
 					};
 
 					int32 GridIndex = (GridZ * DebugCachedData.CulledGridSize.GetY() + GridY) * DebugCachedData.CulledGridSize.GetX() + GridX;
-					int32 NumCulledLights = NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
+					int32 NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
+					int32 NumCulledReflections = NumOffset[(DebugCachedData.NumGridCells + GridIndex) * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
 
 					//int32 NumCulledLights = LIGHT_GRID_DATA_TYPE_SIZE == 2
 					//	? ((uint16*)NumOffset.data())[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0]
 					//	: NumCulledLights = NumOffset[GridIndex * LIGHT_GRID_LIGHT_LINK_STRIDE + 0];
 
-					if (NumCulledLights > 0)
+					if (NumCulledLights || NumCulledReflections)
 					{
-						NumDrawed++;
-
 						Vector Vertices[2][2][2];
 						for (uint32 Z = 0; Z < 2; Z++)
 						{
@@ -401,24 +449,25 @@ namespace Drn
 							}
 						}
 
-						DrawLine(OwningWorld, Vertices[0][0][0], Vertices[0][0][1]);
-						DrawLine(OwningWorld, Vertices[1][0][0], Vertices[1][0][1]);
-						DrawLine(OwningWorld, Vertices[0][1][0], Vertices[0][1][1]);
-						DrawLine(OwningWorld, Vertices[1][1][0], Vertices[1][1][1]);
+						Color DrawColor = (NumCulledLights && NumCulledReflections) ? Color::White : (NumCulledLights ? Color::Green : Color::Blue);
+
+						DrawLine(OwningWorld, Vertices[0][0][0], Vertices[0][0][1], DrawColor);
+						DrawLine(OwningWorld, Vertices[1][0][0], Vertices[1][0][1], DrawColor);
+						DrawLine(OwningWorld, Vertices[0][1][0], Vertices[0][1][1], DrawColor);
+						DrawLine(OwningWorld, Vertices[1][1][0], Vertices[1][1][1], DrawColor);
 						
-						DrawLine(OwningWorld, Vertices[0][0][0], Vertices[0][1][0]);
-						DrawLine(OwningWorld, Vertices[1][0][0], Vertices[1][1][0]);
-						DrawLine(OwningWorld, Vertices[0][0][1], Vertices[0][1][1]);
-						DrawLine(OwningWorld, Vertices[1][0][1], Vertices[1][1][1]);
+						DrawLine(OwningWorld, Vertices[0][0][0], Vertices[0][1][0], DrawColor);
+						DrawLine(OwningWorld, Vertices[1][0][0], Vertices[1][1][0], DrawColor);
+						DrawLine(OwningWorld, Vertices[0][0][1], Vertices[0][1][1], DrawColor);
+						DrawLine(OwningWorld, Vertices[1][0][1], Vertices[1][1][1], DrawColor);
 						
-						DrawLine(OwningWorld, Vertices[0][0][0], Vertices[1][0][0]);
-						DrawLine(OwningWorld, Vertices[0][1][0], Vertices[1][1][0]);
-						DrawLine(OwningWorld, Vertices[0][0][1], Vertices[1][0][1]);
-						DrawLine(OwningWorld, Vertices[0][1][1], Vertices[1][1][1]);
+						DrawLine(OwningWorld, Vertices[0][0][0], Vertices[1][0][0], DrawColor);
+						DrawLine(OwningWorld, Vertices[0][1][0], Vertices[1][1][0], DrawColor);
+						DrawLine(OwningWorld, Vertices[0][0][1], Vertices[1][0][1], DrawColor);
+						DrawLine(OwningWorld, Vertices[0][1][1], Vertices[1][1][1], DrawColor);
 					}
 				}
 
-				std::cout << "Grid Cells: " << NumDrawed << "\n";
 			}
 	
 		}

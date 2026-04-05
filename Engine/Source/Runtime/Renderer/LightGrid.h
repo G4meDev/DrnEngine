@@ -2,7 +2,8 @@
 
 #include "ForwardTypes.h"
 
-#define LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE	5
+#define LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE			5
+#define LIGHT_GRID_REFLECTION_CAPTURE_DATA_STRIDE	3
 #define LIGHT_GRID_MAX_LOCAL_LIGHTS			D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT / LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE
 
 #define LIGHT_GRID_LIGHT_TYPE_DIRECTIONAL	0
@@ -13,6 +14,7 @@
 #define LIGHT_GRID_MAX_CULLED_LIGHT_PER_CELL 32
 
 #define LIGHT_GRID_STRIDE_CULLED_LIGHT			2
+// light, reflection
 #define LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES	2
 #define LIGHT_GRID_LIGHT_LINK_STRIDE			2
 
@@ -69,6 +71,8 @@ namespace Drn
 
 		uint32 SkyLightMipCount;
 		uint32 PreintegeratedGFImageIndex;
+		uint32 NumReflectionCaptures;
+		uint32 ReflectionCaptureBufferIndex;
 	};
 
 	// update data stride if changed
@@ -79,6 +83,13 @@ namespace Drn
 		Vector4 LightDirectionAndLightType;
 		Vector4 SpotAnglesAndSourceRadiusPacked;
 		Vector4 LightTangentAndSoftSourceRadius;
+	};
+
+	struct LightGridReflectionCaptureData
+	{
+		Vector4 PositionRadius;
+		Vector4 CaptureOffsetBrightness;
+		Vector4 CubemapIndex;
 	};
 	
 	class LightGrid
@@ -107,6 +118,9 @@ namespace Drn
 
 		std::vector<Vector4> ViewSpaceDirAndPreprocAngleData;
 		TRefCountPtr<class RenderUniformBuffer> ViewSpaceDirAndPreprocAngleBuffer;
+
+		std::vector<LightGridReflectionCaptureData> ReflectionCaptureData;
+		TRefCountPtr<class RenderUniformBuffer> ReflectionCaptureBuffer;
 
 		TRefCountPtr<class RenderRawBuffer> RWNextCulledLightLinkBuffer;
 		TRefCountPtr<class RenderRawBuffer> RWCulledLightLinkBuffer;

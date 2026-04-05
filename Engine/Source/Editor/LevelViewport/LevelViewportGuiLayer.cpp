@@ -216,6 +216,8 @@ namespace Drn
 					Editor::Get()->OpenTaskGraphVisualizer();
 				}
 
+				DrawBufferVisualizationMenu();
+
 				ImGui::EndMenu();
 			}
 

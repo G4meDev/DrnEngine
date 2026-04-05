@@ -165,7 +165,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
     
     ConstantBuffer<LightGridData> LightGrid = ResourceDescriptorHeap[BindlessResources.LightGridIndex];
     float4 OutColor = float4(CalculateLightingForTranslucency(View, LightGrid, GBuffer, IN.WorldPosition, PixelPosition, PixelDepth), Opacity);
-    OutColor.xyz += GetEnvironemntReflection(View, LightGrid, GBuffer, IN.WorldPosition, LinearSampler);
+    OutColor.xyz += GetEnvironemntReflection(View, LightGrid, GBuffer, IN.WorldPosition, PixelPosition, PixelDepth, LinearSampler);
     
 // -------------------------------------------------------------------------------------------------------------
     

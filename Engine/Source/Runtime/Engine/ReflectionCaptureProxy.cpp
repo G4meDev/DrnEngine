@@ -23,4 +23,34 @@ namespace Drn
 		Brightness = OwningReflectionComponent->Brightness;
 	}
 
-}
+	bool ReflectionCaptureProxy::HasValidCubemap() const
+	{
+		return OwningReflectionComponent->GetCachedCubemap().IsValid();
+	}
+
+	RenderTextureCube* ReflectionCaptureProxy::GetCubemap() const
+	{
+		return OwningReflectionComponent->GetCachedCubemap() ? OwningReflectionComponent->GetCachedCubemap() : CommonResources::Get()->m_BlackCubemap;
+	}
+
+	Vector ReflectionCaptureProxy::GetPosition() const
+	{
+		return OwningReflectionComponent->GetWorldLocation();
+	}
+
+	float ReflectionCaptureProxy::GetRadius() const
+	{
+		return OwningReflectionComponent->GetInfluenceBoundingRadius();
+	}
+
+	Vector ReflectionCaptureProxy::GetCaptureOffset() const
+	{
+		return OwningReflectionComponent->CaptureOffset;
+	}
+
+	float ReflectionCaptureProxy::GetBrightness() const
+	{
+		return OwningReflectionComponent->Brightness;
+	}
+
+}  // namespace Drn

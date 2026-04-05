@@ -73,40 +73,6 @@ struct PixelShaderInput
     float4 Position : SV_Position;
 };
 
-float3 GetLookupVectorForSphereCapture(float3 ReflectionVector, float3 WorldPosition, float4 SphereCapturePositionAndRadius, float NormalizedDistanceToCapture, float3 LocalCaptureOffset, inout float DistanceAlpha)
-{
-	float3 ProjectedCaptureVector = ReflectionVector;
-	float ProjectionSphereRadius = SphereCapturePositionAndRadius.w;
-	float SphereRadiusSquared = ProjectionSphereRadius * ProjectionSphereRadius;
-
-	float3 LocalPosition = WorldPosition - SphereCapturePositionAndRadius.xyz;
-	float LocalPositionSqr = dot(LocalPosition, LocalPosition);
-
-	// Find the intersection between the ray along the reflection vector and the capture's sphere
-	float3 QuadraticCoef;
-	QuadraticCoef.x = 1;
-	QuadraticCoef.y = dot(ReflectionVector, LocalPosition);
-	QuadraticCoef.z = LocalPositionSqr - SphereRadiusSquared;
-
-	float Determinant = QuadraticCoef.y * QuadraticCoef.y - QuadraticCoef.z;
-
-	// Only continue if the ray intersects the sphere
-	[flatten]
-	if (Determinant >= 0)
-	{
-		float FarIntersection = sqrt(Determinant) - QuadraticCoef.y;
-
-		float3 LocalIntersectionPosition = LocalPosition + FarIntersection * ReflectionVector;
-		ProjectedCaptureVector = LocalIntersectionPosition - LocalCaptureOffset;
-		// Note: some compilers don't handle smoothstep min > max (this was 1, .6)
-		//DistanceAlpha = 1.0 - smoothstep(.6, 1, NormalizedDistanceToCapture);
-
-		float x = saturate( 2.5 * NormalizedDistanceToCapture - 1.5 );
-		DistanceAlpha = 1 - x*x*(3 - 2*x);
-	}
-	return ProjectedCaptureVector;
-}
-
 float4 Main_PS(PixelShaderInput IN) : SV_Target
 {
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewBufferIndex];

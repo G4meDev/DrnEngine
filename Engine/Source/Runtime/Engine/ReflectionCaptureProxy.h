@@ -22,6 +22,14 @@ namespace Drn
 		inline bool IsMarkedPendingDestroy() const { return bPendingDestory; };
 		inline void MarkPendingDestroy() { bPendingDestory = true; };
 
+		bool HasValidCubemap() const;
+		class RenderTextureCube* GetCubemap() const;
+
+		Vector GetPosition() const;
+		float GetRadius() const;
+		Vector GetCaptureOffset() const;
+		float GetBrightness() const;
+
 	protected:
 
 		bool bPendingDestory;

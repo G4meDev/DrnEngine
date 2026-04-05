@@ -243,7 +243,9 @@ struct BasePassPixelShaderOutput
 };
 
 #define LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE 5
+#define LIGHT_GRID_REFLECTION_CAPTURE_DATA_STRIDE 3
 #define LIGHT_GRID_MAX_LOCAL_LIGHTS D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT / LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE
+#define LIGHT_GRID_MAX_REFLECTION_CAPTURES D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT / LIGHT_GRID_LOCAL_LIGHT_DATA_STRIDE
 
 #define LIGHT_GRID_LIGHT_TYPE_DIRECTIONAL	0
 #define LIGHT_GRID_LIGHT_TYPE_POINT			1
@@ -267,6 +269,13 @@ struct LightGridLocalLightData
     float4 LightDirectionAndLightType;
 	float4 SpotAnglesAndSourceRadiusPacked;
     float4 LightTangentAndSoftSourceRadius;
+};
+
+struct LightGridReflectionCaptureData
+{
+    float4 PositionAndRadius;
+    float4 CaptureOffsetBrightness;
+    uint CubemapIndex;
 };
 
 struct LightGridData
@@ -308,6 +317,8 @@ struct LightGridData
     
     uint SkyLightMipCount;
     uint PreintegeratedGFImageIndex;
+    uint NumReflectionCaptures;
+    uint ReflectionCaptureBufferIndex;
 };
 
 struct LightGridPackedLocalLightData
@@ -323,6 +334,11 @@ struct LightGridViewSpacePositionAndRadius
 struct LightGridViewSpaceDirAndPreprocAngle
 {
     float4 PackedData[LIGHT_GRID_MAX_LOCAL_LIGHTS];
+};
+
+struct LightGridPackedReflectionCaptureData
+{
+    float4 LocalLightBuffer[LIGHT_GRID_MAX_REFLECTION_CAPTURES * LIGHT_GRID_REFLECTION_CAPTURE_DATA_STRIDE];
 };
 
 LightGridDirectionalLightData GetDirectionalLightData(LightGridData LightGrid)
@@ -346,6 +362,18 @@ LightGridLocalLightData GetLocalLightData(LightGridPackedLocalLightData PackedLo
     Result.LightDirectionAndLightType = PackedLocalLights.LocalLightBuffer[LocalLightBaseIndex + 2];
     Result.SpotAnglesAndSourceRadiusPacked = PackedLocalLights.LocalLightBuffer[LocalLightBaseIndex + 3];
     Result.LightTangentAndSoftSourceRadius = PackedLocalLights.LocalLightBuffer[LocalLightBaseIndex + 4];
+    
+    return Result;
+}
+
+LightGridReflectionCaptureData GetReflectionCaptureData(LightGridPackedReflectionCaptureData PackedReflectionCaptures, uint ReflectionCaptureIndex)
+{
+    LightGridReflectionCaptureData Result;
+    
+    uint ReflectionCaptureBaseIndex = ReflectionCaptureIndex * LIGHT_GRID_REFLECTION_CAPTURE_DATA_STRIDE;
+    Result.PositionAndRadius = PackedReflectionCaptures.LocalLightBuffer[ReflectionCaptureBaseIndex + 0];
+    Result.CaptureOffsetBrightness = PackedReflectionCaptures.LocalLightBuffer[ReflectionCaptureBaseIndex + 1];
+    Result.CubemapIndex = asuint(PackedReflectionCaptures.LocalLightBuffer[ReflectionCaptureBaseIndex + 2].x);
     
     return Result;
 }
@@ -1307,7 +1335,41 @@ float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
     return F0 + (max(float3(a.xxx), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
-float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBufferData Gbuffer, float3 WorldPosition, SamplerState LinearClampSampler)
+float3 GetLookupVectorForSphereCapture(float3 ReflectionVector, float3 WorldPosition, float4 SphereCapturePositionAndRadius, float NormalizedDistanceToCapture, float3 LocalCaptureOffset, inout float DistanceAlpha)
+{
+    float3 ProjectedCaptureVector = ReflectionVector;
+    float ProjectionSphereRadius = SphereCapturePositionAndRadius.w;
+    float SphereRadiusSquared = ProjectionSphereRadius * ProjectionSphereRadius;
+
+    float3 LocalPosition = WorldPosition - SphereCapturePositionAndRadius.xyz;
+    float LocalPositionSqr = dot(LocalPosition, LocalPosition);
+
+	// Find the intersection between the ray along the reflection vector and the capture's sphere
+    float3 QuadraticCoef;
+    QuadraticCoef.x = 1;
+    QuadraticCoef.y = dot(ReflectionVector, LocalPosition);
+    QuadraticCoef.z = LocalPositionSqr - SphereRadiusSquared;
+
+    float Determinant = QuadraticCoef.y * QuadraticCoef.y - QuadraticCoef.z;
+
+	// Only continue if the ray intersects the sphere
+	[flatten]
+    if (Determinant >= 0)
+    {
+        float FarIntersection = sqrt(Determinant) - QuadraticCoef.y;
+
+        float3 LocalIntersectionPosition = LocalPosition + FarIntersection * ReflectionVector;
+        ProjectedCaptureVector = LocalIntersectionPosition - LocalCaptureOffset;
+		// Note: some compilers don't handle smoothstep min > max (this was 1, .6)
+		//DistanceAlpha = 1.0 - smoothstep(.6, 1, NormalizedDistanceToCapture);
+
+        float x = saturate(2.5 * NormalizedDistanceToCapture - 1.5);
+        DistanceAlpha = 1 - x * x * (3 - 2 * x);
+    }
+    return ProjectedCaptureVector;
+}
+
+float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBufferData Gbuffer, float3 WorldPosition, uint2 PixelPosition, float PixelDepth, SamplerState LinearClampSampler)
 {
     Texture2D PreintegeratedGFImage = ResourceDescriptorHeap[LightGrid.PreintegeratedGFImageIndex];
     
@@ -1339,10 +1401,66 @@ float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBuffe
     float3 kD = 1 - kS;
     kD *= 1.0f - Gbuffer.Matallic;
     
-    half Mip = ComputeReflectionCaptureMipFromRoughness(Gbuffer.Roughness, 8); // TODO: pass mip count as constant
-    //float Mip = ComputeReflectionCaptureMipFromRoughness(RoughnessSq, 8);
+    //half Mip = ComputeReflectionCaptureMipFromRoughness(Gbuffer.Roughness, 8); // TODO: pass mip count as constant
+    half Mip = ComputeReflectionCaptureMipFromRoughness(RoughnessSq, 8);
     float4 ImageBasedReflections = float4(0, 0, 0, 1.0f);
     float3 RayDirection = ReflectionVector;
+    
+    
+    ConstantBuffer<LightGridPackedReflectionCaptureData> PackedReflectionCaptures = ResourceDescriptorHeap[LightGrid.ReflectionCaptureBufferIndex];
+
+    Buffer<uint> LightGridNumOffset = ResourceDescriptorHeap[LightGrid.LightGridNumOffsetIndex];
+    Buffer<uint> LightGridLinkList = ResourceDescriptorHeap[LightGrid.LightGridLinkListIndex];
+
+    uint GridIndex = ComputeLightGridCellIndex(LightGrid, PixelPosition, PixelDepth);
+    uint NumCulledLights = LightGridNumOffset[(LightGrid.NumGridCells + GridIndex) * LIGHT_GRID_LINK_STRIDE + 0];
+    uint LinkStart = LightGridNumOffset[(LightGrid.NumGridCells + GridIndex) * LIGHT_GRID_LINK_STRIDE + 1];
+    uint LinkEnd = LinkStart + NumCulledLights;
+    
+    [loop]
+    for (uint Index = LinkStart; Index < LinkEnd; Index++)
+    {
+        uint ReflectionCaptureIndex = LightGridLinkList[Index];
+        LightGridReflectionCaptureData ReflectionCaptureData = GetReflectionCaptureData(PackedReflectionCaptures, ReflectionCaptureIndex);
+
+        if (ImageBasedReflections.a < 0.001f)
+        {
+            break;
+        }
+        
+        float4 CapturePositionAndRadius = ReflectionCaptureData.PositionAndRadius;
+        float3 CaptureVector = WorldPosition - CapturePositionAndRadius.xyz;
+        float CaptureVectorLength = sqrt(dot(CaptureVector, CaptureVector));
+        float NormalizedDistanceToCapture = saturate(CaptureVectorLength / CapturePositionAndRadius.w);
+        
+        [branch]
+        if (CaptureVectorLength < CapturePositionAndRadius.w)
+        {
+            float3 ProjectedCaptureVector = RayDirection;
+            float4 CaptureOffsetAndAverageBrightness = ReflectionCaptureData.CaptureOffsetBrightness;
+            uint CubemapIndex = ReflectionCaptureData.CubemapIndex;
+
+            float DistanceAlpha = 0;
+			
+            ProjectedCaptureVector = GetLookupVectorForSphereCapture(RayDirection, WorldPosition, CapturePositionAndRadius, NormalizedDistanceToCapture, CaptureOffsetAndAverageBrightness.xyz, DistanceAlpha);
+
+			{
+                TextureCube ReflectionCubemap = ResourceDescriptorHeap[CubemapIndex];
+                float4 Sample = ReflectionCubemap.SampleLevel(LinearClampSampler, ProjectedCaptureVector, Mip);
+                
+				//Sample.rgb *= CaptureProperties.r;
+                Sample *= DistanceAlpha;
+                
+				// Under operator (back to front)
+                ImageBasedReflections.rgb += Sample.rgb * ImageBasedReflections.a * SpecularOcclusion;
+                ImageBasedReflections.a *= 1 - Sample.a;
+
+				//float AverageBrightness = CaptureOffsetAndAverageBrightness.w;
+				//CompositedAverageBrightness.x += AverageBrightness * DistanceAlpha * CompositedAverageBrightness.y;
+				//CompositedAverageBrightness.y *= 1 - DistanceAlpha;
+            }
+        }
+    }
     
     [branch]
     if (LightGrid.HasSkyLight)

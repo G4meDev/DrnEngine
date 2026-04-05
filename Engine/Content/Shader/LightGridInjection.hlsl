@@ -134,12 +134,14 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
         float3 WorldTileCenter = mul(View.ViewToWorld, float4(ViewTileCenter, 1)).xyz;
         float4 WorldTileBoundingSphere = float4(WorldTileCenter, length(ViewTileExtent));
         
-        //uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES;
-        uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell;
+        uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell * LIGHT_GRID_NUM_CULLED_PRIMITIVE_TYPES;
+        //uint NumAvailableLinks = LightGrid.NumGridCells * LightGrid.MaxCulledLightsPerCell;
 
         ConstantBuffer<LightGridPackedLocalLightData> PackedLocalLights = ResourceDescriptorHeap[LightGrid.LocalLightBufferIndex];
         ConstantBuffer<LightGridViewSpacePositionAndRadius> ViewSpacePositionAndRadiusBuffer = ResourceDescriptorHeap[LightGrid.ViewSpacePositionAndRadiusIndex];
         ConstantBuffer<LightGridViewSpaceDirAndPreprocAngle> ViewSpaceDirAndPreprocAngleBuffer = ResourceDescriptorHeap[LightGrid.ViewSpaceDirAndPreprocAngleIndex];
+        
+        ConstantBuffer<LightGridPackedReflectionCaptureData> PackedReflectionCaptures = ResourceDescriptorHeap[LightGrid.ReflectionCaptureBufferIndex];
         
         RWBuffer<uint> RWNextCulledLightLink = ResourceDescriptorHeap[LightGrid.RWNextCulledLightLinkIndex];
         RWBuffer<uint> RWCulledLightLink = ResourceDescriptorHeap[LightGrid.RWCulledLightLinkIndex];
@@ -193,7 +195,30 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
             }
         }
         
-        
+        [loop]
+		for (uint ReflectionCaptureIndex = 0; ReflectionCaptureIndex < LightGrid.NumReflectionCaptures; ReflectionCaptureIndex++)
+		{
+            LightGridReflectionCaptureData ReflectionCaptureData = GetReflectionCaptureData(PackedReflectionCaptures, ReflectionCaptureIndex);
+            
+			float4 CapturePositionAndRadius = ReflectionCaptureData.PositionAndRadius;
+            float3 ViewSpaceCapturePosition = mul(View.WorldToView, float4(CapturePositionAndRadius.xyz, 1)).xyz;
+
+			float BoxDistanceSq = ComputeSquaredDistanceFromBoxToPoint(ViewTileCenter, ViewTileExtent, ViewSpaceCapturePosition);
+
+			if (BoxDistanceSq < CapturePositionAndRadius.w * CapturePositionAndRadius.w)
+			{
+				uint NextLink;
+				InterlockedAdd(RWNextCulledLightLink[0], 1U, NextLink);
+
+				if (NextLink < NumAvailableLinks)
+				{
+					uint PreviousLink;
+                    InterlockedExchange(RWStartGridOffset[LightGrid.NumGridCells + GridIndex], NextLink, PreviousLink);
+                    RWCulledLightLink[NextLink * LIGHT_GRID_LINK_STRIDE + 0] = ReflectionCaptureIndex;
+                    RWCulledLightLink[NextLink * LIGHT_GRID_LINK_STRIDE + 1] = PreviousLink;
+				}
+			}
+		}
         
     }
 }

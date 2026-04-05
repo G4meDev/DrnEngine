@@ -71,5 +71,5 @@ void Main_CS(uint3 GroupId : SV_GroupID, uint3 DispatchThreadId : SV_DispatchThr
     CompactReverseLinkedList(GridIndex, bThreadValid, LightGrid.NumCulledLights, CulledLightLink, StartGridOffset, RWNextCulledLightData, RWNumCulledLightsGrid, RWCulledLightDataGrid);
 
 	// Compact reflection captures
-    //CompactReverseLinkedList(ForwardLightData.NumGridCells + GridIndex, ForwardLightData.NumReflectionCaptures, bThreadValid);
+    CompactReverseLinkedList(LightGrid.NumGridCells + GridIndex, bThreadValid, LightGrid.NumReflectionCaptures, CulledLightLink, StartGridOffset, RWNextCulledLightData, RWNumCulledLightsGrid, RWCulledLightDataGrid);
 }
