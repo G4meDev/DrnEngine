@@ -19,6 +19,13 @@ namespace Drn
 		
 	}
 
+	void DirectionalLightActor::Serialize( Archive& Ar )
+	{
+		LightActor::Serialize(Ar);
+
+		m_DirectionalLightComponent->Serialize(Ar);
+	}
+
 #if WITH_EDITOR
 	void DirectionalLightActor::DrawEditorSelected()
 	{

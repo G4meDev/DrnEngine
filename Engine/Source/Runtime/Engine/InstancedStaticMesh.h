@@ -17,7 +17,7 @@ namespace Drn
 
 		inline virtual EActorType GetActorType() override { return EActorType::InstancedStaticMeshActor; }
 
-		//virtual void Serialize(Archive& Ar) override;
+		virtual void Serialize(Archive& Ar) override;
 
 	protected:
 

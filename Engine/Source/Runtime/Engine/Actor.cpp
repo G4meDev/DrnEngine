@@ -165,8 +165,6 @@ namespace Drn
 			{
 				Ar >> Tags[TagIndex];
 			}
-
-			Root->Serialize(Ar);
 		}
 
 #if WITH_EDITOR
@@ -183,8 +181,6 @@ namespace Drn
 			{
 				Ar << Tags[TagIndex];
 			}
-
-			Root->Serialize(Ar);
 		}
 
 #endif

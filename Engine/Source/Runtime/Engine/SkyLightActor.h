@@ -11,6 +11,8 @@ namespace Drn
 		SkyLightActor();
 		virtual ~SkyLightActor();
 
+		virtual void Serialize(Archive& Ar) override;
+
 	protected:
 		virtual EActorType GetActorType() override
 		{

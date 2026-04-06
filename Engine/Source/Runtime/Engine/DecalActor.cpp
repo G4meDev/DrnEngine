@@ -19,5 +19,7 @@ namespace Drn
 	void DecalActor::Serialize( Archive& Ar )
 	{
 		Actor::Serialize(Ar);
+
+		m_DecalComponent->Serialize(Ar);
 	}
 }

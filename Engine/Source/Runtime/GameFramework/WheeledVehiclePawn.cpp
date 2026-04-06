@@ -11,7 +11,10 @@ namespace Drn
 		VehicleMesh = std::make_unique<StaticMeshComponent>();
 		VehicleMesh->SetComponentLabel( "VehicleBody" );
 		VehicleMesh->SetStatic(false);
+
+		SceneComponent* OldRoot = GetRoot();
 		SetRootComponent(VehicleMesh.get());
+		OldRoot->DestroyComponent();
 
 		AssetHandle<StaticMesh> DefaultVehicleBody("Engine\\Content\\DefaultVehicle\\SM_DefaultVehicle_Body.drn");
 		DefaultVehicleBody.Load();

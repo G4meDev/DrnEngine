@@ -1431,7 +1431,7 @@ float3 GetEnvironemntReflection(ViewBuffer View, LightGridData LightGrid, GBuffe
         float CaptureVectorLength = sqrt(dot(CaptureVector, CaptureVector));
         float NormalizedDistanceToCapture = saturate(CaptureVectorLength / CapturePositionAndRadius.w);
         
-        // just use first. already sorted in increasing size
+        // apply smaller first. already sorted in increasing size
         [branch]
         if (CaptureVectorLength < CapturePositionAndRadius.w)
         {

@@ -13,4 +13,9 @@ namespace Drn
 		
 	}
 
+	void LightActor::Serialize( Archive& Ar )
+	{
+		Actor::Serialize(Ar);
+
+	}
 }

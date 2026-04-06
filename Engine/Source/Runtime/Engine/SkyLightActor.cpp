@@ -21,4 +21,11 @@ namespace Drn
 		
 	}
 
-}
+	void SkyLightActor::Serialize( Archive& Ar )
+	{
+		LightActor::Serialize(Ar);
+
+		m_SkyLightComponent->Serialize(Ar);
+	}
+
+        }

@@ -16,6 +16,8 @@ namespace Drn
 		ReflectionCapture() : Actor(), m_CaptureComponent(nullptr) {};
 		virtual ~ReflectionCapture() {};
 
+		virtual void Serialize(Archive& Ar) override;
+
 		ReflectionCaptureComponent* m_CaptureComponent;
 	};
 }

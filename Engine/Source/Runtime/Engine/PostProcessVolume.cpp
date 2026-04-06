@@ -85,6 +85,8 @@ namespace Drn
 	void PostProcessVolume::Serialize( Archive& Ar )
 	{
 		Actor::Serialize(Ar);
+
+		m_PostProcessVolumeComponent->Serialize(Ar);
 	}
 
 

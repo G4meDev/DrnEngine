@@ -138,6 +138,7 @@ namespace Drn
 				std::sort(VisibleReflectionProxies.begin(), VisibleReflectionProxies.end(),
 				[](const ReflectionCaptureProxy* A, const ReflectionCaptureProxy* B)
 				{
+					// Increasing order
 					return A->InfluenceRadius < B->InfluenceRadius;
 				});
 

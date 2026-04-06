@@ -13,6 +13,8 @@ namespace Drn
 		CameraActor();
 		virtual ~CameraActor();
 
+		virtual void Serialize(Archive& Ar) override;
+
 		virtual void Tick(float DeltaTime) override;
 
 		inline CameraComponent* GetCameraComponent() { return m_CameraComponenet.get(); }

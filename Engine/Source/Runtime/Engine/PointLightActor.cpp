@@ -21,6 +21,13 @@ namespace Drn
 		
 	}
 
+	void PointLightActor::Serialize( Archive& Ar )
+	{
+		LightActor::Serialize(Ar);
+
+		m_PointLightComponent->Serialize(Ar);
+	}
+
 #if WITH_EDITOR
 	void PointLightActor::DrawEditorSelected()
 	{

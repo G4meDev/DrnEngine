@@ -12,6 +12,8 @@ namespace Drn
 		PointLightActor();
 		virtual ~PointLightActor();
 
+		virtual void Serialize(Archive& Ar) override;
+
 		inline float GetRadius() const { return m_PointLightComponent ? m_PointLightComponent->GetRadius() : 1.0f; }
 		inline void SetRadius(float InRadius) 
 		{

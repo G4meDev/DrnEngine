@@ -10,6 +10,8 @@ namespace Drn
 	{
 	public:
 
+		virtual void Serialize(Archive& Ar) override;
+
 		inline const Vector& GetLightColor() const { return m_LightComponent ? m_LightComponent->GetLightColor() : Vector::OneVector; }
 		inline void SetLightColor(const Vector& InColor) 
 		{

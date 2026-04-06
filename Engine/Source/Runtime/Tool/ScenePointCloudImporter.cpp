@@ -29,7 +29,7 @@ namespace Drn
 	{
 		Actor::Serialize(Ar);
 
-		//m_RootComponent->Serialize(Ar);
+		m_RootComponent->Serialize(Ar);
 
 		if (Ar.IsLoading())
 		{

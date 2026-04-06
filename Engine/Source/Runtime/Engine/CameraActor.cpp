@@ -19,6 +19,13 @@ namespace Drn
 		
 	}
 
+	void CameraActor::Serialize( Archive& Ar )
+	{
+		Actor::Serialize(Ar);
+		m_CameraComponenet->Serialize(Ar);
+
+	}
+
 	void CameraActor::Tick( float DeltaTime )
 	{
 		Actor::Tick(DeltaTime);

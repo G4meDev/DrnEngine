@@ -11,6 +11,8 @@ namespace Drn
 		SpotLightActor();
 		virtual ~SpotLightActor();
 
+		virtual void Serialize(Archive& Ar) override;
+
 		virtual EActorType GetActorType() override { return EActorType::SpotLight; }
 		inline static EActorType GetActorTypeStatic() { return EActorType::SpotLight; };
 

@@ -12,6 +12,8 @@ namespace Drn
 		DirectionalLightActor();
 		virtual ~DirectionalLightActor();
 
+		virtual void Serialize(Archive& Ar) override;
+
 #if WITH_EDITOR
 		virtual void DrawEditorSelected() override;
 #endif

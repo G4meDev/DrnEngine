@@ -3,5 +3,10 @@
 
 namespace Drn
 {
+	void ReflectionCapture::Serialize( Archive& Ar )
+	{
+		Actor::Serialize(Ar);
+
+	}
 
 }

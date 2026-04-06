@@ -13,6 +13,8 @@ namespace Drn
 		SphereReflectionCapture();
 		virtual ~SphereReflectionCapture();
 
+		virtual void Serialize( Archive& Ar ) override;
+
 		inline SphereReflectionCaptureComponent* GetSphereReflectionCapture() const { return m_SphereReflectionCaptureComponent.get(); }
 
 		virtual EActorType GetActorType() override { return EActorType::SphereReflectionCapture; }

@@ -18,4 +18,11 @@ namespace Drn
 		
 	}
 
-}
+	void SphereReflectionCapture::Serialize( Archive& Ar )
+	{
+		ReflectionCapture::Serialize(Ar);
+
+		m_SphereReflectionCaptureComponent->Serialize(Ar);
+	}
+
+        }

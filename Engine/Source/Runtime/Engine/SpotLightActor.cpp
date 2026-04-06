@@ -21,6 +21,13 @@ namespace Drn
 		
 	}
 
+	void SpotLightActor::Serialize( Archive& Ar )
+	{
+		LightActor::Serialize(Ar);
+
+		m_SpotLightComponent->Serialize(Ar);
+	}
+
 #if WITH_EDITOR
 	void SpotLightActor::DrawEditorSelected()
 	{
