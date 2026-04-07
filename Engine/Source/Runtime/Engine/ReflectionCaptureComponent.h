@@ -8,6 +8,8 @@ namespace Drn
 	class RenderTextureCube;
 	class ReflectionCaptureProxy;
 
+	class D3D12CommandList;
+
 	class ReflectionCaptureComponent : public SceneComponent
 	{
 	public:
@@ -18,6 +20,8 @@ namespace Drn
 
 		inline TRefCountPtr<RenderTextureCube>& GetCachedCubemap() { return CachedCubemap; }
 		inline ReflectionCaptureData& GetCachedData() { return CachedData; }
+
+		void UploadCachedReflectionCapture(D3D12CommandList* CmdList);
 
 		inline float GetMaxCaptureDistance() const { return MaxCaptureDistance; }
 		inline void SetMaxCaptureDistance(float InMaxCaptureDistance) { MaxCaptureDistance = MaxCaptureDistance; }

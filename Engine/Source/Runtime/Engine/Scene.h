@@ -92,6 +92,14 @@ namespace Drn
 			class CameraActor* CaptureCameras[6];
 		};
 		std::vector<ReflectionCaptureEvent> ReflectionCaptureEvents;
+
+		struct ReflectionCaptureReadbackEvent
+		{
+			uint64 FenceValue;
+			class ReflectionCaptureComponent* TargetComponent;
+			TRefCountPtr<class RenderTextureCube> ReadbackBuffer;
+		};
+		std::vector<ReflectionCaptureReadbackEvent> ReflectionCaptureReadbackEvents;
 #endif
 	};
 }

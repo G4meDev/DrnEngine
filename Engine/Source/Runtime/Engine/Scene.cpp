@@ -454,20 +454,80 @@ namespace Drn
 					}
 				}
 
-				RenderResourceCreateInfo ReflectionCaptureCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "ReflectionCaptureCube" );
-				Event.TargetComponent->GetCachedCubemap() = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, NumMips, 1, false,
-					(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), ReflectionCaptureCreateInfo);
+				// copy to target
+				{
+					RenderResourceCreateInfo ReflectionCaptureCreateInfo( nullptr, nullptr, ClearValueBinding::BlackZeroAlpha, "ReflectionCaptureCube" );
+					Event.TargetComponent->GetCachedCubemap() = RenderTextureCube::Create(CommandList, CaptureSize, GBUFFER_COLOR_DEFERRED_FORMAT, NumMips, 1, false,
+						(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource), ReflectionCaptureCreateInfo);
 
-				CommandList->AddTransitionBarrier(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
-				CommandList->TransitionResourceWithTracking(CaptureCubemapConvluted->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
-				CommandList->FlushBarriers();
-				CommandList->GetD3D12CommandList()->CopyResource(Event.TargetComponent->GetCachedCubemap()->GetResource()->GetResource(), CaptureCubemapConvluted->GetResource()->GetResource());
-				CommandList->AddTransitionBarrier(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+					CommandList->AddTransitionBarrier(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+					CommandList->TransitionResourceWithTracking(CaptureCubemapConvluted->GetResource(), D3D12_RESOURCE_STATE_COPY_SOURCE);
+					CommandList->FlushBarriers();
+					CommandList->GetD3D12CommandList()->CopyResource(Event.TargetComponent->GetCachedCubemap()->GetResource()->GetResource(), CaptureCubemapConvluted->GetResource()->GetResource());
+					CommandList->AddTransitionBarrier(Event.TargetComponent->GetCachedCubemap()->GetResource(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+				}
+
+				// read back cached data to serialize
+				{
+					ReflectionCaptureComponent* TargetComponent = Event.TargetComponent;
+
+					ReflectionCaptureReadbackEvents.push_back({});
+					ReflectionCaptureReadbackEvent& ReadBackEvent = ReflectionCaptureReadbackEvents.back();
+					ReadBackEvent.TargetComponent = TargetComponent;
+					ReadBackEvent.TargetComponent->GetCachedData().CubemapSize = CaptureSize;
+					ReadBackEvent.FenceValue = Renderer::Get()->GetFence()->GetCurrentFence();
+
+					RenderResourceCreateInfo CreateInfo( "ReflectionCaptureReadbackBuffer" );
+					ReadBackEvent.ReadbackBuffer = RenderTextureCube::Create(CommandList, CaptureSize,
+						GBUFFER_COLOR_DEFERRED_FORMAT, NumMips, 1, false, ETextureCreateFlags::CPUReadback, CreateInfo);
+
+					CopyTextureInfo CopyInfo;
+					for (int32 MipIndex = 0; MipIndex < NumMips; MipIndex++)
+					{
+						for (int32 FaceIndex = 0; FaceIndex < 6; FaceIndex++)
+						{
+							CopyInfo.SourceSliceIndex = CopyInfo.DestSliceIndex = FaceIndex;
+							CopyInfo.SourceMipIndex = CopyInfo.DestMipIndex = MipIndex;
+							const int32 MipSize = CaptureSize / (1 << MipIndex);
+							CopyInfo.Size = IntVector(MipSize, MipSize, 1);
+							CommandList->CopyTexture(TargetComponent->GetCachedCubemap(), ReadBackEvent.ReadbackBuffer, CopyInfo);
+						}
+					}
+				}
 			}
 		}
 		if (NumResolvedCaptureEvents > 0)
 		{
 			ReflectionCaptureEvents.erase(ReflectionCaptureEvents.begin(), ReflectionCaptureEvents.begin() + NumResolvedCaptureEvents);
+		}
+
+		// process read back events
+		{
+			int32 EventIndex = 0;
+			while (EventIndex < ReflectionCaptureReadbackEvents.size()
+				&& Renderer::Get()->GetFence()->IsFenceComplete(ReflectionCaptureReadbackEvents[EventIndex].FenceValue))
+			{
+				ReflectionCaptureReadbackEvent& ReadbackEvent = ReflectionCaptureReadbackEvents[EventIndex];
+				ReflectionCaptureComponent* Target = ReadbackEvent.TargetComponent;
+				const int32 CaptureSize = Target->GetCachedCubemap()->GetSizeX();
+				const int32 MipCount = std::log2(CaptureSize) + 1;
+
+				uint64 TotalBytes;
+				// @TODO: cache read back buffer size in render resource
+				CommandList->GetParentDevice()->GetD3D12Device()->GetCopyableFootprints(&Target->GetCachedCubemap()->GetResource()->GetDesc(), 0, MipCount * 6, 0, NULL, NULL, NULL, &TotalBytes);
+
+				ReadbackEvent.TargetComponent->GetCachedData().Empty();
+				ReadbackEvent.TargetComponent->GetCachedData().CubemapSize = CaptureSize;
+				ReadbackEvent.TargetComponent->GetCachedData().SamplesData.resize(TotalBytes);
+				memcpy(ReadbackEvent.TargetComponent->GetCachedData().SamplesData.data(), ReadbackEvent.ReadbackBuffer->m_ResourceLocation.GetMappedBaseAddress(), TotalBytes);
+
+				EventIndex++;
+			}
+
+			if (EventIndex > 0)
+			{
+				ReflectionCaptureReadbackEvents.erase(ReflectionCaptureReadbackEvents.begin(), ReflectionCaptureReadbackEvents.begin() + EventIndex);
+			}
 		}
 
 		std::set<ReflectionCaptureComponent*>& ReflectionCaptures = ReflectionCaptureComponent::GetReflectionCapturesToUpdate();

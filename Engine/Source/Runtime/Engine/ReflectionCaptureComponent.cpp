@@ -69,6 +69,19 @@ namespace Drn
 
 	}
 
+	void ReflectionCaptureComponent::UploadCachedReflectionCapture( D3D12CommandList* CmdList )
+	{
+		if (!CachedCubemap && !CachedData.SamplesData.empty())
+		{
+			drn_check(CachedData.CubemapSize > 0);
+			const int32 NumMips = std::log2(CachedData.CubemapSize) + 1;
+
+			RenderResourceCreateInfo CreateInfo(CachedData.SamplesData.data(), nullptr, ClearValueBinding::Black, "CachedReflectionCapture" );
+			CachedCubemap = RenderTextureCube::Create(CmdList, CachedData.CubemapSize, GBUFFER_COLOR_DEFERRED_FORMAT, NumMips, 1, true,
+				(ETextureCreateFlags)(ETextureCreateFlags::ShaderResource | ETextureCreateFlags::NoFastClear), CreateInfo);
+		}
+	}
+
 #if WITH_EDITOR
 	void ReflectionCaptureComponent::DrawDetailPanel( float DeltaTime )
 	{

@@ -15,6 +15,9 @@ namespace Drn
 	{
 		drn_check(OwningReflectionComponent);
 
+		// @TODO: update on state dirty
+		OwningReflectionComponent->UploadCachedReflectionCapture(CommandList);
+
 		RenderTextureCube* TargetCubemap = OwningReflectionComponent->GetCachedCubemap() ? OwningReflectionComponent->GetCachedCubemap() : CommonResources::Get()->m_BlackCubemap;
 		CubemapIndex = TargetCubemap->GetShaderResourceView()->GetDescriptorHeapIndex();
 		Position = OwningReflectionComponent->GetWorldLocation();
