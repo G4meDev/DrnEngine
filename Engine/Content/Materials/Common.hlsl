@@ -483,6 +483,30 @@ float Luma4(float3 Color)
     return (Color.g * 2.0) + (Color.r + Color.b);
 }
 
+float3 RGBToYCoCg(float3 RGB)
+{
+    float Y = dot(RGB, float3(1, 2, 1));
+    float Co = dot(RGB, float3(2, 0, -2));
+    float Cg = dot(RGB, float3(-1, 2, -1));
+
+    float3 YCoCg = float3(Y, Co, Cg);
+    return YCoCg;
+}
+
+float3 YCoCgToRGB(float3 YCoCg)
+{
+    float Y = YCoCg.x * float(0.25);
+    float Co = YCoCg.y * float(0.25);
+    float Cg = YCoCg.z * float(0.25);
+
+    float R = Y + Co - Cg;
+    float G = Y + Cg;
+    float B = Y - Co - Cg;
+
+    float3 RGB = float3(R, G, B);
+    return RGB;
+}
+
 float2 EncodeNormal(float3 N)
 {
     N.xy /= dot(1, abs(N));

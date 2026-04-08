@@ -8,6 +8,7 @@
 
 // SUPPORT_MAIN_PASS
 // SUPPORT_PRE_PASS
+// SUPPORT_VELOCITY
 // SUPPORT_HIT_PROXY_PASS
 // SUPPORT_EDITOR_SELECTION_PASS
 // SUPPORT_SHADOW_PASS
@@ -33,6 +34,10 @@ struct VertexShaderOutput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
+#if VELOCITY_PASS
+    float4 PackedVelocityA : VELOCITY_A;
+    float4 PackedVelocityC : VELOCITY_C;
+#endif
     float4 Position : SV_Position;
 };
 
@@ -80,6 +85,17 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 
 #endif
     
+#if VELOCITY_PASS
+    matrix PrevLocalToWorld = Primitive.PrevLocalToWorld;
+    matrix PrevWorldToProjection = View.PrevWorldToProjection;
+    
+    float4 PrevWorldPosition = mul(PrevLocalToWorld, float4(IN.Position, 1.0f));
+    float4 PrevScreen = mul(PrevWorldToProjection, PrevWorldPosition);
+        
+    OUT.PackedVelocityA = OUT.Position;
+    OUT.PackedVelocityC = PrevScreen;
+#endif
+    
     return OUT;
 }
 
@@ -94,6 +110,10 @@ struct PixelShaderInput
     float3 Normal : NORMAL;
     float3x3 TBN : TBN;
     float2 UV : TEXCOORD;
+#if VELOCITY_PASS
+    float4 PackedVelocityA : VELOCITY_A;
+    float4 PackedVelocityC : VELOCITY_C;
+#endif
     float4 Position : SV_Position;
 #endif
 };
@@ -110,6 +130,8 @@ struct PixelShaderOutput
     uint4 Guid;
 #elif EDITOR_PRIMITIVE_PASS
     float4 Color;
+#elif VELOCITY_PASS
+    float2 Velocity;
 #elif SHADOW_PASS
 #endif
 };
@@ -119,6 +141,8 @@ struct PixelShaderOutput
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     PixelShaderOutput OUT;
+    
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
  
 #if MAIN_PASS
 
@@ -137,7 +161,6 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D MasksTexture = ResourceDescriptorHeap[Parameters.Masks_Texture];
     SamplerState MasksSampler = ResourceDescriptorHeap[Parameters.Masks_Sampler];
     
-    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     Texture2D DecalBaseColorTexture = ResourceDescriptorHeap[BindlessResources.DecalBaseColor];
     Texture2D DecalNormalTexture = ResourceDescriptorHeap[BindlessResources.DecalNormal];
     Texture2D DecalMasksTexture = ResourceDescriptorHeap[BindlessResources.DecalMasks];
@@ -172,6 +195,10 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     OUT.BaseColor.xyz = lerp(DecalBaseColor.xyz, OUT.BaseColor.xyz, DecalBaseColor.w);
     OUT.Masks.xyz = lerp(DecalMasks.xyz, OUT.Masks.xyz, DecalMasks.w);
+    
+#elif VELOCITY_PASS
+    float3 Velocity3D = Calculate3DVelocity(IN.PackedVelocityA, IN.PackedVelocityC, View.JitterOffset, View.PrevJitterOffset);
+    OUT.Velocity = EncodeVelocityToTexture(Velocity3D.xy);
     
 #elif HITPROXY_PASS
     ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
