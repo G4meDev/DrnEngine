@@ -645,6 +645,15 @@ float CheapContrast(float Value, float Contrast)
     return saturate(lerp(-Contrast, Contrast, Value));
 }
 
+float Dither(ViewBuffer View, int2 PixelPosition, float Treshold)
+{
+    uint2 A = View.FrameIndexMod8 + PixelPosition;
+    float B = fmod(A.x + 2 * A.y, 5);
+    float C = B / 5;
+    
+    return C + Treshold - 0.5f;
+}
+
 float4 WorldAlignedTexture(float3 WorldPosition, float3 TextureSize, Texture2D Texture, SamplerState Sampler, float3 WorldNormal, float TransitionContrast)
 {
     float3 ScaledPosition = WorldPosition / TextureSize;

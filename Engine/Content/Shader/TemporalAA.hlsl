@@ -361,20 +361,21 @@ void Main_CS(uint2 DispatchThreadId : SV_DispatchThreadID, uint2 GroupId : SV_Gr
 #if AA_CLAMP
     HistoryColor = clamp(HistoryColor, BoundsMin, BoundsMax);
 #elif AA_CLIP
-    float3 TargetColor = 0.5 * (BoundsMin + BoundsMax);
+    //float3 TargetColor = 0.5 * (BoundsMin + BoundsMax);
+    float3 TargetColor = IntermediaryResult.Filtered.rgb;
     float ClipBlend = HistoryClip(HistoryColor, TargetColor, BoundsMin, BoundsMax);
 	ClipBlend = saturate( ClipBlend );
 	HistoryColor = lerp(HistoryColor, TargetColor, ClipBlend);
 #endif
 #endif
     
-    //{
-    //    float AddAliasing = saturate(HistoryBlur) * 0.5;
-    //    float LumaContrastFactor = 32.0;
-    //    float LumaContrast = LumaMax - LumaMin;
-    //    AddAliasing = saturate(AddAliasing + rcp(1.0 + LumaContrast * LumaContrastFactor));
-    //    IntermediaryResult.Filtered = lerp(IntermediaryResult.Filtered, SampleCachedSceneColorTexture(DeferredTexture, ScreenPixel, int2(0, 0)), AddAliasing);
-    //}
+    {
+        float AddAliasing = saturate(HistoryBlur) * 0.5;
+        float LumaContrastFactor = 32.0;
+        float LumaContrast = LumaMax - LumaMin;
+        AddAliasing = saturate(AddAliasing + rcp(1.0 + LumaContrast * LumaContrastFactor));
+        IntermediaryResult.Filtered = lerp(IntermediaryResult.Filtered, SampleCachedSceneColorTexture(DeferredTexture, ScreenPixel, int2(0, 0)), AddAliasing);
+    }
     
     //float BlendFactor = lerp(0.04, 0.2f, saturate(VeloLen * 0.025f));
     float BlendFactor = lerp(TAABuffer.CcurrentFrameWeight, TAABuffer.CcurrentFrameVelocityWeight, saturate(VeloLen * TAABuffer.CcurrentFrameVelocityMultiplier));

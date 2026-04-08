@@ -85,7 +85,7 @@ namespace Drn
 	{
 		// @TODO: make parameter
 		const bool bUseSubstepping = true;
-		const float CameraLagMaxTimeStep = 1.f / 120.f;
+		const float CameraLagMaxTimeStep = 1.f / 360.f;
 		const float CameraLagMaxDistance = 0.0f;
 
 		Quat DesireRotation = GetWorldRotation();

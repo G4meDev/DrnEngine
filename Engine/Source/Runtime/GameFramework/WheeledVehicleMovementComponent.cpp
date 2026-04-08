@@ -563,9 +563,17 @@ namespace Drn
 			//PxTransform BodyPose = VehicleState.rigidBodyState.pose;
 			PxTransform BodyPose = PhysxActor.rigidBody->getGlobalPose();
 
-			return P2Transform(PxVehicleComputeWheelPose(SimulationContext.frame, VehicleParams.suspensionParams[WheelIndex], VehicleState.suspensionStates[WheelIndex],
+			Transform WheelTransform = P2Transform(PxVehicleComputeWheelPose(SimulationContext.frame, VehicleParams.suspensionParams[WheelIndex], VehicleState.suspensionStates[WheelIndex],
 				VehicleState.suspensionComplianceStates[WheelIndex], VehicleState.steerCommandResponseStates[WheelIndex],
 				BodyPose, VehicleState.wheelRigidBody1dStates[WheelIndex]));
+
+			// left wheel
+			if (WheelIndex == 0 || WheelIndex == 2)
+			{
+				WheelTransform = Transform(Vector::ZeroVector, Quat(GetOwningActor()->GetActorUpVector(), XM_PI)) * WheelTransform;
+			}
+
+			return WheelTransform;
 		}
 
 		return Transform::Identity;

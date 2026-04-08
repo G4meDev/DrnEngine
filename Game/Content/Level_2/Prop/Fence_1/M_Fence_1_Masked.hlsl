@@ -132,12 +132,15 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
 {
     PixelShaderOutput OUT;
  
+    ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
     
     Texture2D OpacityTexture = ResourceDescriptorHeap[Parameters.Opacity_Texture];
     SamplerState OpacitySampler = ResourceDescriptorHeap[Parameters.Opacity_Sampler];
     
     float Opacity = OpacityTexture.Sample(OpacitySampler, IN.UV1).r;
+    Opacity = Dither(View, IN.Position.xy, Opacity);
+    
     clip(Opacity - 0.33f);
     
 #if MAIN_PASS
