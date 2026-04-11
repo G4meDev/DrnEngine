@@ -534,6 +534,7 @@ float3 ReconstructNormal(float2 xz)
 
 float3 ReconstructTextureNormal(float2 xy, bool bInvertY = true)
 {
+    [branch]
     if(bInvertY)
     {
         xy.y = 1 - xy.y;
