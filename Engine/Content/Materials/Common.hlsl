@@ -549,10 +549,21 @@ float3x3 GetTBN(float3 WorldNormal, float3 WorldTangent)
     return float3x3(WorldTangent, WorldNormal, WorldBinormal);
 }
 
+float Pow2(float x)
+{
+    return x * x;
+}
+
 float Pow4( float x )
 {
 	float xx = x*x;
 	return xx * xx;
+}
+
+float Pow5(float x)
+{
+    float xx = x * x;
+    return x * xx * xx;
 }
 
 float Square(float x) { return x * x; }
@@ -903,25 +914,181 @@ static const float2 DiscSamples29[] =
 	float2(-0.082476, 0.654088),
 };
 
+struct BxDFContext
+{
+    float NoV;
+    float NoL;
+    float VoL;
+    float NoH;
+    float VoH;
+    float XoV;
+    float XoL;
+    float XoH;
+    float YoV;
+    float YoL;
+    float YoH;
+};
+
+void Init(inout BxDFContext Context, half3 N, half3 V, half3 L)
+{
+    Context.NoL = dot(N, L);
+    Context.NoV = dot(N, V);
+    Context.VoL = dot(V, L);
+    float InvLenH = rsqrt(2 + 2 * Context.VoL);
+    Context.NoH = saturate((Context.NoL + Context.NoV) * InvLenH);
+    Context.VoH = saturate(InvLenH + InvLenH * Context.VoL);
+
+    Context.XoV = 0.0f;
+    Context.XoL = 0.0f;
+    Context.XoH = 0.0f;
+    Context.YoV = 0.0f;
+    Context.YoL = 0.0f;
+    Context.YoH = 0.0f;
+}
+
+void SphereMaxNoH(inout BxDFContext Context, float SinAlpha, bool bNewtonIteration)
+{
+    //if (SinAlpha > 0)
+    //{
+    //    float CosAlpha = sqrt(1 - Pow2(SinAlpha));
+	//
+    //    float RoL = 2 * Context.NoL * Context.NoV - Context.VoL;
+    //    if (RoL >= CosAlpha)
+    //    {
+    //        Context.NoH = 1;
+    //        Context.XoH = 0;
+    //        Context.YoH = 0;
+    //        Context.VoH = abs(Context.NoV);
+    //    }
+    //    else
+    //    {
+    //        float rInvLengthT = SinAlpha * rsqrt(1 - RoL * RoL);
+    //        float NoTr = rInvLengthT * (Context.NoV - RoL * Context.NoL);
+    //        float VoTr = rInvLengthT * (2 * Context.NoV * Context.NoV - 1 - RoL * Context.VoL);
+    //
+    //        if (bNewtonIteration)
+    //        {
+	//			// dot( cross(N,L), V )
+    //            float NxLoV = sqrt(saturate(1 - Pow2(Context.NoL) - Pow2(Context.NoV) - Pow2(Context.VoL) + 2 * Context.NoL * Context.NoV * Context.VoL));
+    //
+    //            float NoBr = rInvLengthT * NxLoV;
+    //            float VoBr = rInvLengthT * NxLoV * 2 * Context.NoV;
+    //
+    //            float NoLVTr = Context.NoL * CosAlpha + Context.NoV + NoTr;
+    //            float VoLVTr = Context.VoL * CosAlpha + 1 + VoTr;
+    //
+    //            float p = NoBr * VoLVTr;
+    //            float q = NoLVTr * VoLVTr;
+    //            float s = VoBr * NoLVTr;
+    //
+    //            float xNum = q * (-0.5 * p + 0.25 * VoBr * NoLVTr);
+    //            float xDenom = p * p + s * (s - 2 * p) + NoLVTr * ((Context.NoL * CosAlpha + Context.NoV) * Pow2(VoLVTr) + q * (-0.5 * (VoLVTr + Context.VoL * CosAlpha) - 0.5));
+    //            float TwoX1 = 2 * xNum / (Pow2(xDenom) + Pow2(xNum));
+    //            float SinTheta = TwoX1 * xDenom;
+    //            float CosTheta = 1.0 - TwoX1 * xNum;
+    //            NoTr = CosTheta * NoTr + SinTheta * NoBr;
+    //            VoTr = CosTheta * VoTr + SinTheta * VoBr;
+    //        }
+    //
+    //        Context.NoL = Context.NoL * CosAlpha + NoTr; // dot( N, L * CosAlpha + T * SinAlpha )
+    //        Context.VoL = Context.VoL * CosAlpha + VoTr;
+    //
+    //        float InvLenH = rsqrt(2 + 2 * Context.VoL);
+    //        Context.NoH = saturate((Context.NoL + Context.NoV) * InvLenH);
+    //        Context.VoH = saturate(InvLenH + InvLenH * Context.VoL);
+    //    }
+    //}
+}
+
+float3 Diffuse_Lambert(float3 DiffuseColor)
+{
+    return DiffuseColor * (1.0f / PI);
+}
+
+float Vis_SmithJointApprox(float a2, float NoV, float NoL)
+{
+    float a = sqrt(a2);
+    float Vis_SmithV = NoL * (NoV * (1 - a) + a);
+    float Vis_SmithL = NoV * (NoL * (1 - a) + a);
+    return 0.5 * rcp(Vis_SmithV + Vis_SmithL);
+}
+
+float3 F_Schlick(float3 SpecularColor, float VoH)
+{
+    float Fc = Pow5(1 - VoH);
+    return saturate(50.0 * SpecularColor.g) * Fc + (1 - Fc) * SpecularColor;
+}
+
+float3 SpecularGGX(float Roughness, float3 SpecularColor, BxDFContext Context, float NoL)
+{
+    float a2 = Pow4(Roughness);
+    //float Energy = EnergyNormalization(a2, Context.VoH, AreaLight);
+    float Energy = 1;
+	
+    float D = D_GGX(a2, Context.NoH) * Energy;
+    float Vis = Vis_SmithJointApprox(a2, Context.NoV, NoL);
+    float3 F = F_Schlick(SpecularColor, Context.VoH);
+
+    return (D * Vis) * F;
+}
+
 float3 CalculateLighting(float3 L, float3 N, float3 NormalizedCameraVector, float3 LightColor, float3 BaseColor, float Metallic, float Roughness)
 {
-    float3 H = normalize(NormalizedCameraVector + L);
-    float3 NoL = saturate(dot(N, L));
+    //float3 H = normalize(NormalizedCameraVector + L);
+    //float3 NoL = saturate(dot(N, L));
+    //
+    //float3 F0 = float3(0.04, 0.04, 0.04);
+    //F0 = lerp(F0, BaseColor, Metallic);
+    //
+    //float NDF = DistributionGGX(N, H, Roughness);
+    //float G = GeometrySmith(N, NormalizedCameraVector, L, Roughness);
+    //float3 F = fresnelSchlick(max(dot(H, NormalizedCameraVector), 0.0), F0);
+    //
+    //float3 kS = F;
+    //float3 kD = float3(1, 1, 1) - kS;
+    //kD *= 1.0 - Metallic;
+    //
+    //float3 Specular = NDF * G * F / (max(dot(N, NormalizedCameraVector), 0) * NoL + 0.0001);
+    //
+    //return (kD * BaseColor / PI + Specular) * NoL * LightColor;
     
+// --------------------------
+    
+    //float3 F0 = float3(0.04, 0.04, 0.04);
+    //F0 = lerp(F0, BaseColor, Metallic);
+    //
+    //float3 H = normalize(NormalizedCameraVector + L);
+    //float NoH = saturate(dot(N, H));
+    //
+    //float D = D_GGX(Pow4(Roughness), NoH);
+    //float Vis = 0.25;
+    //float3 F = F0;
+    //
+    //return Diffuse_Lambert(BaseColor) + D * Vis * F;
+
+// --------------------------
+
+    float3 V = NormalizedCameraVector;
+    float SphereSinAlpha = 0;
+    
+    BxDFContext Context;
+    Init(Context, N, V, L);
+    //SphereMaxNoH(Context, SphereSinAlpha, true);
+    //Context.NoV = saturate(abs(Context.NoV) + 1e-5);
+    Context.NoV = clamp(Context.NoV, 0.001, 1.0f);
+
+    //float3 DiffuseColor = saturate(BaseColor) + 0.00001f;
+    float3 DiffuseColor = BaseColor;
     float3 F0 = float3(0.04, 0.04, 0.04);
-    F0 = lerp(F0, BaseColor, Metallic);
+    float3 SpecularColor = lerp(F0, DiffuseColor, Metallic);
     
-    float NDF = DistributionGGX(N, H, Roughness);
-    float G = GeometrySmith(N, NormalizedCameraVector, L, Roughness);
-    float3 F = fresnelSchlick(max(dot(H, NormalizedCameraVector), 0.0), F0);
+    float3 H = normalize(NormalizedCameraVector + L);
+    float NoL = clamp(dot(N, L), 0.001f, 1.0f);
     
-    float3 kS = F;
-    float3 kD = float3(1, 1, 1) - kS;
-    kD *= 1.0 - Metallic;
+    float3 Diffuse = LightColor * NoL * Diffuse_Lambert(DiffuseColor);
+    float3 Specular = LightColor * NoL * SpecularGGX(Roughness, SpecularColor, Context, NoL);
     
-    float3 Specular = NDF * G * F / (max(dot(N, NormalizedCameraVector), 0) * NoL + 0.0001);
-    
-    return (kD * BaseColor / PI + Specular) * NoL * LightColor;
+    return Diffuse + Specular;
 }
 
 float3 CalculatePointLightRadiance(float3 WorldPosition, float3 LightPosition, float3 LightColor, float3 CameraVector, GBufferData Gbuffer)
