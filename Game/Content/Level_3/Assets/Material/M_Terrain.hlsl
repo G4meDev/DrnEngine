@@ -16,27 +16,23 @@ ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
 struct ParametersBuffers
 {
-    VECTOR(PebblesStoneColor, PebblesStoneColor)
-    VECTOR(PebblesDirtColor, PebblesDirtColor)
-    VECTOR(TrackColor, TrackColor)
-    VECTOR(TireColor, TireColor)
+    VECTOR(SandColor1, SandColor1)
+    VECTOR(SandColor2, SandColor2)
+    VECTOR(SandColor3, SandColor3)
     
-    SCALAR(PebblesUvScale, PebblesUvScale)
-    SCALAR(RoadTrackUvScale, RoadTrackUvScale)
-    SCALAR(DistortionUvScale, DistortionUvScale)
-    SCALAR(DistortionXScale, DistortionXScale)
-    SCALAR(DistortionYScale, DistortionYScale)
-    SCALAR(TrackEdgeNoiseUvScale, TrackEdgeNoiseUvScale)
-    SCALAR(TrackEdgeNoiseDark, TrackEdgeNoiseDark)
-    SCALAR(TrackEdgeNoiseBright, TrackEdgeNoiseBright)
-    SCALAR(TrackNormalIntensity, TrackNormalIntensity)
-    SCALAR(Roughness, Roughness)
+    SCALAR(SandZBlend, SandZBlend)
+    SCALAR(SandZBlendOffset, SandZBlendOffset)
+    SCALAR(DunesBlendPower, DunesBlendPower)
+    SCALAR(DunesBlendBrighness, DunesBlendBrighness)
+    SCALAR(SandAlbedoUvScale, SandAlbedoUvScale)
+    SCALAR(SandNormalUvScale, SandNormalUvScale)
+    SCALAR(SandNormalIntensity, SandNormalIntensity)
+    SCALAR(SandRoughness, SandRoughness)
     
-    TEX2D(PebblesBaseColor, PebblesBaseColorTexture)
-    TEX2D(PebblesNormal, PebblesNormalTexture)
-    TEX2D(RoadTrackMasks, RoadTrackMasksTexture)
-    TEX2D(RoadTrackNormal, RoadTrackNormalTexture)
-    TEX2D(Distortion, DistortionTexture)
+    TEX2D(SandBaseColor, SandBaseColorTexture)
+    TEX2D(SandNormal, SandNormalTexture)
+    TEX2D(SandMasks, SandMasksTexture)
+    TEX2D(SandDunesNormal, SandDunesNormalTexture)
 };
 
 //#define MAIN_PASS 1
@@ -47,7 +43,6 @@ struct VertexShaderOutput
 #if MAIN_PASS
     float3x3 TBN : TBN;
     float3 WorldPostion : POS0;
-    float2 UV0 : TEXCOORD0;
 #endif
 };
 
@@ -83,7 +78,6 @@ VertexShaderOutput Main_VS(VertexInput IN)
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
     OUT.WorldPostion = WorldPosition.xyz;
-    OUT.UV0 = IN.UV1;
 #endif
     
     return OUT;
@@ -97,7 +91,6 @@ struct PixelShaderInput
 #if MAIN_PASS
     float3x3 TBN : TBN;
     float3 WorldPostion : POS0;
-    float2 UV0 : TEXCOORD0;
 #endif
 };
 
@@ -129,55 +122,44 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    Texture2D PebblesBaseColorTexture = ResourceDescriptorHeap[Parameters.PebblesBaseColor_Texture];
-    SamplerState PebblesBaseColorSampler = ResourceDescriptorHeap[Parameters.PebblesBaseColor_Sampler];
+    Texture2D SandBaseColorTexture = ResourceDescriptorHeap[Parameters.SandBaseColor_Texture];
+    SamplerState SandBaseColorSampler = ResourceDescriptorHeap[Parameters.SandBaseColor_Sampler];
     
-    Texture2D PebblesNormalTexture = ResourceDescriptorHeap[Parameters.PebblesNormal_Texture];
-    SamplerState PebblesNormalSampler = ResourceDescriptorHeap[Parameters.PebblesNormal_Sampler];
+    Texture2D SandNormalTexture = ResourceDescriptorHeap[Parameters.SandNormal_Texture];
+    SamplerState SandNormalSampler = ResourceDescriptorHeap[Parameters.SandNormal_Sampler];
     
-    Texture2D RoadTrackMasksTexture = ResourceDescriptorHeap[Parameters.RoadTrackMasks_Texture];
-    SamplerState RoadTrackMasksSampler = ResourceDescriptorHeap[Parameters.RoadTrackMasks_Sampler];
+    Texture2D SandMasksTexture = ResourceDescriptorHeap[Parameters.SandMasks_Texture];
+    SamplerState SandMasksSampler = ResourceDescriptorHeap[Parameters.SandMasks_Sampler];
     
-    Texture2D RoadTrackNormalTexture = ResourceDescriptorHeap[Parameters.RoadTrackNormal_Texture];
-    SamplerState RoadTrackNormalSampler = ResourceDescriptorHeap[Parameters.RoadTrackNormal_Sampler];
+    Texture2D SandDunesNormalTexture = ResourceDescriptorHeap[Parameters.SandDunesNormal_Texture];
+    SamplerState SandDunesNormalSampler = ResourceDescriptorHeap[Parameters.SandDunesNormal_Sampler];
     
-    Texture2D DistortionTexture = ResourceDescriptorHeap[Parameters.Distortion_Texture];
-    SamplerState DistortionSampler = ResourceDescriptorHeap[Parameters.Distortion_Sampler];
-    
-    float2 UV0 = IN.UV0;;
-    
+    float3 UpVector = float3(0, 1, 0);
     float3 VertexNormal = IN.TBN[1];
     
-    float2 PebblesUV = UV0 * Parameters.PebblesUvScale;
-    float4 PebblesTexture = PebblesBaseColorTexture.Sample(PebblesBaseColorSampler, PebblesUV);
-    float StoneMask = PebblesTexture.a;
-    float3 PebblesColorTint = lerp(Parameters.PebblesDirtColor.rgb, Parameters.PebblesStoneColor.rgb, StoneMask);
-    float3 PebblesColor = PebblesTexture.rgb * PebblesColorTint;
+    float DunesAngleMask = saturate(pow(dot(VertexNormal, UpVector), Parameters.DunesBlendPower) * Parameters.DunesBlendBrighness);
     
-    float2 UvDistortion = DistortionTexture.Sample(DistortionSampler, IN.WorldPostion.xz / Parameters.DistortionUvScale).rg;
-    UvDistortion *= float2(Parameters.DistortionXScale, Parameters.DistortionYScale);
-    float2 RoadTrackUv = UV0 * Parameters.RoadTrackUvScale + UvDistortion;
+    float ZBlend = saturate(IN.WorldPostion.y / Parameters.SandZBlend + Parameters.SandZBlendOffset);
 
-    float TireTrackMask = RoadTrackMasksTexture.Sample(RoadTrackMasksSampler, RoadTrackUv).r;
-    float3 TrackColor = lerp(Parameters.TrackColor.rgb, Parameters.TireColor.rgb, TireTrackMask);
+    float3 SandColor = lerp(Parameters.SandColor1.rgb, Parameters.SandColor2.rgb, ZBlend);
+    SandColor = lerp(Parameters.SandColor3.rgb, SandColor, DunesAngleMask);
+    SandColor *= SandBaseColorTexture.Sample(SandBaseColorSampler, IN.WorldPostion.xz * Parameters.SandAlbedoUvScale).rgb;
+    float2 SandNormalUv = IN.WorldPostion.xz * Parameters.SandNormalUvScale;
+    SandColor *= SandNormalTexture.Sample(SandNormalSampler, SandNormalUv).r;
     
-    float TrackEdgeNoise = RoadTrackMasksTexture.Sample(RoadTrackMasksSampler, IN.WorldPostion.xz / Parameters.TrackEdgeNoiseUvScale).g;
-    TrackEdgeNoise = saturate(lerp(Parameters.TrackEdgeNoiseDark, Parameters.TrackEdgeNoiseBright, TrackEdgeNoise));
+    float3 SandNormal = ReconstructTextureNormal(SandNormalTexture.Sample(SandNormalSampler, SandNormalUv).rg, true);
+    SandNormal.xz *= Parameters.SandNormalIntensity;
+    SandNormal.y = 1;
     
-    float TrackEdgeMask = RoadTrackMasksTexture.Sample(RoadTrackMasksSampler, UV0).b;
-    TrackEdgeMask = saturate(TrackEdgeMask * TrackEdgeNoise * (1 - StoneMask));
+    float SandRoughness = Parameters.SandRoughness;
+
+// --------------------------------------------
     
-    float3 BaseColor = lerp(PebblesColor, TrackColor, TrackEdgeMask);
-    
-    float3 TrackNormal = ReconstructTextureNormal(RoadTrackNormalTexture.Sample(RoadTrackNormalSampler, RoadTrackUv).rg, true);
-    TrackNormal *= Parameters.TrackNormalIntensity;
-    float3 PebblesNormal = ReconstructTextureNormal(PebblesNormalTexture.Sample(PebblesNormalSampler, PebblesUV).rg, true);
-    float3 TangentNormal = lerp(PebblesNormal, TrackNormal, TrackEdgeMask);
+    float3 TangentNormal = SandNormal;
     float3 WorldNormal = normalize(mul(TangentNormal, IN.TBN));
     
-    float Roughness = Parameters.Roughness + (1 - TireTrackMask);
-    
-    float3 Masks = float3(0, Roughness, 1.0f);
+    float3 BaseColor = SandColor;
+    float3 Masks = float3(0, SandRoughness, 1);
     
     OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
     OUT.BaseColor = float4(BaseColor, 1);
