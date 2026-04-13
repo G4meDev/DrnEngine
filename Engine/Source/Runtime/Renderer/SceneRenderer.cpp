@@ -1242,6 +1242,11 @@ namespace Drn
 		m_SceneView.FrameIndex = ++m_FrameIndex;
 		m_SceneView.FrameIndexMod8 = m_FrameIndex % 8;
 
+		m_SceneView.PrevGameTime = m_SceneView.GameTime;
+		m_SceneView.PrevRealTime = m_SceneView.RealTime;
+		m_SceneView.GameTime = GetScene()->GetWorld()->GetTimeSeconds();
+		m_SceneView.RealTime = Time::GetSeconds();
+
 		m_SceneView.Size = GetViewportSize();
 		m_SceneView.InvSizeX = 1.0f / m_SceneView.Size.X;
 		m_SceneView.InvSizeY = 1.0f / m_SceneView.Size.Y;

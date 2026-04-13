@@ -134,6 +134,12 @@ struct ViewBuffer
     
     matrix ClipToPreviousClip;
     matrix PrevWorldToProjection;
+    
+    
+    float GameTime; // can be paused
+    float RealTime;
+    float PrevGameTime;
+    float PrevRealTime;
 };
 
 struct PrimitiveBuffer
@@ -548,6 +554,16 @@ float3x3 GetTBN(float3 WorldNormal, float3 WorldTangent)
     float3 WorldBinormal = normalize(cross(WorldTangent, WorldNormal));
     return float3x3(WorldTangent, WorldNormal, WorldBinormal);
 }
+
+float3 BlendAngleCorrectedNormals(float3 BaseNormal, float3 AddtiveNormal)
+{
+    float3 A = BaseNormal + float3(0, 1, 0);
+    float3 B = AddtiveNormal * float3(-1, 1, -1);
+    float C = dot(A, B);
+    
+    return (C * A) - (BaseNormal.y + 1) * B;
+}
+
 
 float Pow2(float x)
 {

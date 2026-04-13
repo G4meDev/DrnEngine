@@ -148,7 +148,8 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 VertexNormal = IN.TBN[1];
     
-    float2 PebblesUV = UV0 * Parameters.PebblesUvScale;
+    //float2 PebblesUV = UV0 * Parameters.PebblesUvScale;
+    float2 PebblesUV = IN.WorldPostion.xz * Parameters.PebblesUvScale;
     float4 PebblesTexture = PebblesBaseColorTexture.Sample(PebblesBaseColorSampler, PebblesUV);
     float StoneMask = PebblesTexture.a;
     float3 PebblesColorTint = lerp(Parameters.PebblesDirtColor.rgb, Parameters.PebblesStoneColor.rgb, StoneMask);

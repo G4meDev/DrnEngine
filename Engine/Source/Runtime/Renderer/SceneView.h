@@ -46,6 +46,11 @@ namespace Drn
 		Matrix ClipToPreviousClip;
 		Matrix PrevWorldToProjection;
 
+		float GameTime; // can be paused
+		float RealTime;
+		float PrevGameTime;
+		float PrevRealTime;
+
 		float ConvertFromDeviceZ(float DeviceZ) const;
 		float ConvertToDeviceZ(float SceneDepth) const;
 
