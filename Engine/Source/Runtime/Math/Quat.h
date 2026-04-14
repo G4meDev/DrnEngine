@@ -6,6 +6,7 @@
 
 #include "Vector.h"
 #include "Runtime/Math/Rotator.h"
+#include "Editor/EditorTypes.h"
 
 using namespace DirectX;
 
@@ -87,19 +88,15 @@ namespace Drn
 		inline Vector GetUpAxis() const { return GetAxisY(); }
 		inline Vector GetVector() const { return GetAxisZ(); }
 
-		inline std::string ToString()
-		{
-			std::stringstream ss;
-			ss << "(X: " << GetX() << ", Y: " << GetY() << ", Z: " << GetZ() << ", W: " << GetW() << ")";
+		std::string ToString();
+		bool FromString(const std::string& Str);
 
-			return ss.str();
-		}
 
 		static Quat Identity;
 		static Quat CubeFaceOrientation[6];
 
 #if WITH_EDITOR
-		bool Draw(const std::string& id, const std::string& Label = "");
+		bool Draw(const std::string& id, const std::string& Label = "", EParameterPopupContext PopupOptions = EParameterPopupContext::CopyPaste);
 #endif
 
 	private:

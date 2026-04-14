@@ -375,43 +375,21 @@ namespace Drn
 	{
 		Component::DrawDetailPanel(DeltaTime);
 
-// location
-// -------------------------------------------------------------------------------------------
+		bool bDirty = false;
 
-		float TempVector[4];
-		TempVector[0] = RelativeTransform.GetLocation().GetX();
-		TempVector[1] = RelativeTransform.GetLocation().GetY();
-		TempVector[2] = RelativeTransform.GetLocation().GetZ();
+		Vector NewLocation = RelativeTransform.GetLocation();
+		bDirty |= NewLocation.Draw("Location", "Location");
 
-		ImGui::DragFloat3( "Location", TempVector );
-		Vector NewLocation = Vector( TempVector[0], TempVector[1], TempVector[2]);
+		Quat NewRotation = RelativeTransform.GetRotation();
+		bDirty |= NewRotation.Draw("Rotation", "Rotation");
 
-// rotation
-// -------------------------------------------------------------------------------------------
-		
-		TempVector[0] = RelativeTransform.GetRotation().GetX();
-		TempVector[1] = RelativeTransform.GetRotation().GetY();
-		TempVector[2] = RelativeTransform.GetRotation().GetZ();
-		TempVector[3] = RelativeTransform.GetRotation().GetW();
+		Vector NewScale = RelativeTransform.GetScale();
+		bDirty |= NewScale.Draw("Scale", "Scale");
 
-		ImGui::DragFloat4( "Rotation", TempVector, 0.01f);
-		Quat NewRotation = Quat( TempVector[0], TempVector[1], TempVector[2], TempVector[3]);
-
-		NewRotation = NewRotation.GetNormalized();
-
-// scale
-// -------------------------------------------------------------------------------------------
-
-		TempVector[0] = RelativeTransform.GetScale().GetX();
-		TempVector[1] = RelativeTransform.GetScale().GetY();
-		TempVector[2] = RelativeTransform.GetScale().GetZ();
-
-		ImGui::DragFloat3( "Scale", TempVector );
-		Vector NewScale = Vector( TempVector[0], TempVector[1], TempVector[2] );
-	
-// -------------------------------------------------------------------------------------------
-
-		SetRelativeTransform( Transform(NewLocation, NewRotation, NewScale) );
+		if (bDirty)
+		{
+			SetRelativeTransform( Transform(NewLocation, NewRotation, NewScale) );
+		}
 
 		ImGui::Separator();
 	}

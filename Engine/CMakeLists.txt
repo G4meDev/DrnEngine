@@ -5,6 +5,7 @@ cmake_minimum_required( VERSION 3.18.3 ) # Latest version of CMake when this fil
 set( HEADER_FILES
 	Source/Runtime/Core/Drn.h
 	Source/Runtime/Core/Application.h
+	Source/Runtime/Core/ApplicationMisc.h
 	Source/Runtime/Core/Taskflow.h
 	Source/Runtime/Core/Asset.h
 	Source/Runtime/Core/AssetManager.h
@@ -189,6 +190,7 @@ set( HEADER_FILES
 	Source/Runtime/Misc/Path.h
 	Source/Runtime/Misc/StatsMisc.h
 	Source/Runtime/Misc/DebugHelper.h
+	Source/Runtime/Misc/Parse.h
 
 	Source/Runtime/Tool/ScenePointCloudImporter.h
 	
@@ -197,6 +199,7 @@ set( HEADER_FILES
 
 	Source/Editor/Editor.h
 	Source/Editor/EditorConfig.h
+	Source/Editor/EditorTypes.h
 	
 	Source/Editor/EditorPanels/ViewportPanel.h
 	Source/Editor/EditorPanels/ActorDetailPanel.h
@@ -246,6 +249,7 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Asset.cpp
 	Source/Runtime/Core/AssetManager.cpp
 	Source/Runtime/Core/Application.cpp
+	Source/Runtime/Core/ApplicationMisc.cpp
 	Source/Runtime/Core/Archive.cpp
 	Source/Runtime/Core/FileArchive.cpp
 	Source/Runtime/Core/BufferArchive.cpp
@@ -426,11 +430,13 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/Path.cpp
 	Source/Runtime/Misc/StatsMisc.cpp
 	Source/Runtime/Misc/DebugHelper.cpp
+	Source/Runtime/Misc/Parse.cpp
 
 	Source/Runtime/Tool/ScenePointCloudImporter.cpp
 	
 	Source/Editor/Editor.cpp
 	Source/Editor/EditorConfig.cpp
+	Source/Editor/EditorTypes.cpp
 
 	Source/Editor/EditorPanels/ViewportPanel.cpp
 	Source/Editor/EditorPanels/ActorDetailPanel.cpp

@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "Quat.h"
+#include "Runtime/Misc/Parse.h"
 
 #if WITH_EDITOR
 #include <imgui.h>
@@ -57,7 +58,7 @@ namespace Drn
 	};
 
 #if WITH_EDITOR
-	bool Quat::Draw(const std::string& id, const std::string& Label)
+	bool Quat::Draw(const std::string& id, const std::string& Label, EParameterPopupContext PopupOptions)
 	{
 		bool bDirty = false;
 
@@ -68,9 +69,60 @@ namespace Drn
 			XMStoreFloat4(&m_Vector, XMQuaternionNormalize( XMVectorSet( Value[0], Value[1], Value[2], Value[3] ) ));
 			bDirty = true;
 		}
+
+		if (EnumHasAnyFlags(PopupOptions, EParameterPopupContext::CopyPaste))
+		{
+			if (ImGui::BeginPopupContextItem(id.c_str()))
+			{
+				if (EnumHasAnyFlags(PopupOptions, EParameterPopupContext::Copy))
+				{
+					if (ImGui::Button("Copy"))
+					{
+						std::wstring Clipboard = StringHelper::s2ws(ToString());
+						ApplicationMisc::ClipboardCopy(Clipboard);
+					}
+				}
+
+				if ( EnumHasAnyFlags( PopupOptions, EParameterPopupContext::Paste ) )
+				{
+					if (ImGui::Button("Paste"))
+					{
+						std::wstring Clipboard = L"";
+						ApplicationMisc::ClipboardPaste(Clipboard);
+						bDirty |= FromString(StringHelper::ws2s(Clipboard));
+					}
+				}
+
+				ImGui::EndPopup();
+			}
+		}
+
 		ImGui::PopID();
+
+		if (bDirty)
+		{
+			*this = GetNormalized();
+		}
 
 		return bDirty;
 	}
+
+	std::string Quat::ToString()
+	{
+		return std::format("(X={:.6f},Y={:.6f},Z={:.6f},W={:.6f})", m_Vector.x, m_Vector.y, m_Vector.z, m_Vector.w);
+	}
+
+	bool Quat::FromString(const std::string& Str)
+	{
+		float X, Y, Z, W;
+		const bool Successful = Parse::Value(Str, "X=", X) && Parse::Value(Str, "Y=", Y) && Parse::Value(Str, "Z=", Z) && Parse::Value(Str, "W=", W); 
+		if (Successful)
+		{
+			*this = Quat(X, Y, Z, W);
+		}
+
+		return Successful;
+	}
+
 #endif
 }

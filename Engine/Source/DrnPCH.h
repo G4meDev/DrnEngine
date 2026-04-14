@@ -7,6 +7,7 @@
 #include "Runtime/Core/BufferArchive.h"
 #include "Runtime/Core/Time.h"
 #include "Runtime/Core/Taskflow.h"
+#include "Runtime/Core/ApplicationMisc.h"
 
 #include "Runtime/Engine/WorldManager.h"
 #include "Runtime/Engine/InputManager.h"

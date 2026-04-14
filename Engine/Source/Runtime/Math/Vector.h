@@ -2,7 +2,7 @@
 
 #include <DirectXMath.h>
 #include <string>
-#include <sstream>
+#include "Editor/EditorTypes.h"
 
 using namespace DirectX;
 
@@ -234,14 +234,8 @@ namespace Drn
 			}	
 		}
 
-		inline std::string ToString()
-		{
-			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
-			std::stringstream ss;
-			ss << "(X: " << XMVectorGetX(Vec) << ", Y: " << XMVectorGetY(Vec) << ", Z: " << XMVectorGetZ(Vec) << ")";
-
-			return ss.str();
-		}
+		std::string ToString();
+		bool FromString(const std::string& Str);
 
 		static Vector ZeroVector;
 		static Vector OneVector;
@@ -253,7 +247,7 @@ namespace Drn
 		static Vector BackwardVector;
 
 #if WITH_EDITOR
-		bool Draw(const std::string& id, const std::string& Label = "");
+		bool Draw(const std::string& id, const std::string& Label = "", EParameterPopupContext PopupOptions = EParameterPopupContext::CopyPaste);
 #endif
 
 	private:
