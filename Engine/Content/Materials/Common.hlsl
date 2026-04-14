@@ -421,6 +421,11 @@ uint ReverseBits32( uint bits )
 #endif
 }
 
+float CheapContrast(float Value, float Contrast)
+{
+    return saturate(lerp(-Contrast, Contrast, Value));
+}
+
 float ConvertFromDeviceZ(float DeviceZ, float4 InvDeviceZToWorldZTransform)
 {
     return DeviceZ * InvDeviceZToWorldZTransform[0] + InvDeviceZToWorldZTransform[1] + 1.0f / (DeviceZ * InvDeviceZToWorldZTransform[2] - InvDeviceZToWorldZTransform[3]);
@@ -564,6 +569,10 @@ float3 BlendAngleCorrectedNormals(float3 BaseNormal, float3 AddtiveNormal)
     return (C * A) - (BaseNormal.y + 1) * B;
 }
 
+float HeightLerp(float Height, float TransitionPhase, float Contrast)
+{
+    return CheapContrast(saturate(Height - 1 + 2 * TransitionPhase), Contrast);
+}
 
 float Pow2(float x)
 {
@@ -666,11 +675,6 @@ float CameraDepthFade(float3 WorldPosition, float3 CameraPosition, float3 Camera
 float CameraDepthFade(float PixelDepth, float DepthOffset, float DepthLength)
 {
     return saturate((PixelDepth - DepthOffset) / DepthLength);
-}
-
-float CheapContrast(float Value, float Contrast)
-{
-    return saturate(lerp(-Contrast, Contrast, Value));
 }
 
 float Dither(ViewBuffer View, int2 PixelPosition, float Treshold)
