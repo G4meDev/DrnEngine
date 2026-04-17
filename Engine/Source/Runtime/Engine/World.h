@@ -58,6 +58,7 @@ namespace Drn
 		inline class PlayerController* GetPlayerController() const { return m_PlayerController; }
 
 		inline double GetTimeSeconds() const { return m_TimeSeconds; }
+		inline double GetRealTimeSeconds() const { return m_UnpausedSeconds; }
 
 		void DrawDebugLine(const Vector& Start, const Vector& End, const Color& Color, float Thickness, float Duration);
 		void DrawDebugCircle(const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);

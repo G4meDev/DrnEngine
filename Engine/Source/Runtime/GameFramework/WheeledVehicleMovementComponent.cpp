@@ -570,7 +570,7 @@ namespace Drn
 			// left wheel
 			if (WheelIndex == 0 || WheelIndex == 2)
 			{
-				WheelTransform = Transform(Vector::ZeroVector, Quat(GetOwningActor()->GetActorUpVector(), XM_PI)) * WheelTransform;
+				WheelTransform = Transform(Vector::ZeroVector, Quat(Vector::UpVector, XM_PI)) * WheelTransform;
 			}
 
 			return WheelTransform;
