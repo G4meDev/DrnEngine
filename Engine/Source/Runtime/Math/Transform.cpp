@@ -102,9 +102,9 @@ namespace Drn
 	{
 		bool bDirty = false;
 
-		bDirty |= Location.Draw(id, "Location");
-		bDirty |= Rotation.Draw(id, "Rotation");
-		bDirty |= Scale.Draw(id, "Scale");
+		bDirty |= Location.Draw(id + "_Location", "Location");
+		bDirty |= Rotation.Draw(id + "_Rotation", "Rotation");
+		bDirty |= Scale.Draw(id + "_Scale", "Scale");
 
 		return bDirty;
 	}

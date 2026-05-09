@@ -114,14 +114,31 @@ namespace Drn
 
 	bool Quat::FromString(const std::string& Str)
 	{
-		float X, Y, Z, W;
-		const bool Successful = Parse::Value(Str, "X=", X) && Parse::Value(Str, "Y=", Y) && Parse::Value(Str, "Z=", Z) && Parse::Value(Str, "W=", W); 
-		if (Successful)
 		{
-			*this = Quat(X, Y, Z, W);
+			float X, Y, Z, W;
+			const bool Successful = Parse::Value(Str, "X=", X) && Parse::Value(Str, "Y=", Y) && Parse::Value(Str, "Z=", Z) && Parse::Value(Str, "W=", W);
+			if (Successful)
+			{
+				*this = Quat(X, Y, Z, W);
+				return true;
+			}
 		}
 
-		return Successful;
+		{
+			float Pitch, Roll, Yaw;
+			const bool Successful = Parse::Value(Str, "Pitch=", Pitch) && Parse::Value(Str, "Roll=", Roll) && Parse::Value(Str, "Yaw=", Yaw);
+			if (Successful)
+			{
+				Roll = Math::DegreesToRadians(Roll);
+				Pitch = Math::DegreesToRadians(Pitch);
+				Yaw = Math::DegreesToRadians(Yaw);
+
+				*this = Quat(Pitch, -Roll, Yaw);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 #endif

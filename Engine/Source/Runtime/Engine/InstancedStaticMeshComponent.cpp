@@ -540,7 +540,7 @@ namespace Drn
 				}
 			}
 
-			if (InstanceBodies[InstanceIndex])
+			if (InstanceIndex < InstanceBodies.size() && InstanceBodies[InstanceIndex])
 			{
 				InstanceBodies[InstanceIndex]->TermBody();
 				delete InstanceBodies[InstanceIndex];

@@ -78,6 +78,12 @@ namespace Drn
 					}
 				}
 
+				if (ImGui::Button("ConvertFromUe"))
+				{
+					*this = Vector(m_Vector.x, m_Vector.z, -m_Vector.y) * 0.01f;
+					bDirty = true;
+				}
+
 				ImGui::EndPopup();
 			}
 		}
