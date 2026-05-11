@@ -569,6 +569,11 @@ float3 BlendAngleCorrectedNormals(float3 BaseNormal, float3 AddtiveNormal)
     return (C * A) - (BaseNormal.y + 1) * B;
 }
 
+float3 Desaturation(float3 Input, float3 LuminanceFactors, float Fraction)
+{
+    return lerp(Input, dot(Input, LuminanceFactors), Fraction);
+}
+
 float HeightLerp(float Height, float TransitionPhase, float Contrast)
 {
     return CheapContrast(saturate(Height - 1 + 2 * TransitionPhase), Contrast);

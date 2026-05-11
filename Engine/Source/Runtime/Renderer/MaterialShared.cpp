@@ -132,8 +132,11 @@ namespace Drn
 
 		for (int i = 0; i < m_TextureCubeSlots.size(); i++)
 		{
-			Parameters[i * 2 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetTextureIndex() : 0;
-			Parameters[i * 2 + 1 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetSamplerIndex() : 0;
+			uint32 TargetTexture = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetTextureIndex() : CommonResources::Get()->m_BlackCubemap->GetShaderResourceView()->GetDescriptorHeapIndex();
+			uint32 TargetSampler = m_TextureCubeSlots[i].m_TextureCube.IsValid() ? m_TextureCubeSlots[i].m_TextureCube->GetSamplerIndex() : Renderer::Get()->LinearSampler->GetIndex();
+
+			Parameters[i * 2 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = TargetTexture;
+			Parameters[i * 2 + 1 + Vector4SlotCount + ScalarSlotCount + Texture2DSlotCount] = TargetSampler;
 		}
 
 		if ( Parameters.size() > 0 )
