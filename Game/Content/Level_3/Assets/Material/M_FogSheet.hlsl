@@ -119,8 +119,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) 
 
     float Mask_1 = MaskTexture.Sample(MaskSampler, Panner(IN.UV1 * Parameters.Scale, Parameters.Speed * float2(-0.7f, -0.1f), View.GameTime)).r;
     float Mask_2 = MaskTexture.Sample(MaskSampler, Rotator(IN.UV1 * Parameters.Scale, Parameters.Speed, 1, View.GameTime)).r;
-    //float Mask = Mask_1 * 2 + Mask_2;
-    float Mask = Mask_1 * 2;
+    float Mask = Mask_1 * 2 + Mask_2;
     
     float3 BaseColor = Parameters.FogColor.rgb * (Mask + IN.UV1.g);
     
