@@ -669,6 +669,31 @@ float D_GGX(float a2, float NoH)
     return a2 / (PI * d * d);
 }
 
+float2 Panner(float2 UV, float2 Speed, float Time)
+{
+    return UV + Time * Speed;
+}
+
+float2 Rotator(float2 UV, float Speed, float2 Center, float Time)
+{
+    float RotationAngle = Time * Speed;
+    float S = sin(RotationAngle);
+    float C = cos(RotationAngle);
+    
+    float2 Result = UV - Center;
+    
+    float A = dot(Result, float2(C, -S));
+    float B = dot(Result, float2(S, C));
+
+    return Center + float2(A, B);
+}
+
+float DepthFade(float SceneDepth, float PixelDepth, float Opacity, float FadeDistance)
+{
+    float Fade = saturate((SceneDepth - PixelDepth) / FadeDistance);
+    return lerp(0, Opacity, Fade);
+}
+
 float CameraDepthFade(float3 WorldPosition, float3 CameraPosition, float3 CameraDirection, float DepthOffset, float DepthLength)
 {
     float3 CameraToWorldPosition = WorldPosition - CameraPosition;
