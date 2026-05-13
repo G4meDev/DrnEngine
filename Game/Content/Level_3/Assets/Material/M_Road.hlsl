@@ -39,7 +39,7 @@ struct ParametersBuffers
     TEX2D(Distortion, DistortionTexture)
 };
 
-//#define MAIN_PASS 1
+#define MAIN_PASS 1
 
 struct VertexShaderOutput
 {
@@ -128,6 +128,16 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
+    SamplerState PointSampler = ResourceDescriptorHeap[StaticSamplers.PointSamplerIndex];
+    
+    Texture2D DecalBaseColorTexture = ResourceDescriptorHeap[BindlessResources.DecalBaseColor];
+    Texture2D DecalNormalTexture = ResourceDescriptorHeap[BindlessResources.DecalNormal];
+    Texture2D DecalMasksTexture = ResourceDescriptorHeap[BindlessResources.DecalMasks];
+    
+    float2 ScreenUV = SvPositionToViewportUV(IN.Position.xy, View.InvSize);
+    float4 DecalBaseColor = DecalBaseColorTexture.Sample(PointSampler, ScreenUV);
+    float4 DecalNormal = DecalNormalTexture.Sample(PointSampler, ScreenUV);
+    float4 DecalMasks = DecalMasksTexture.Sample(PointSampler, ScreenUV);
     
     Texture2D PebblesBaseColorTexture = ResourceDescriptorHeap[Parameters.PebblesBaseColor_Texture];
     SamplerState PebblesBaseColorSampler = ResourceDescriptorHeap[Parameters.PebblesBaseColor_Sampler];
@@ -175,6 +185,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float3 PebblesNormal = ReconstructTextureNormal(PebblesNormalTexture.Sample(PebblesNormalSampler, PebblesUV).rg, true);
     float3 TangentNormal = lerp(PebblesNormal, TrackNormal, TrackEdgeMask);
     float3 WorldNormal = normalize(mul(TangentNormal, IN.TBN));
+    WorldNormal = lerp(DecalNormal.xyz, WorldNormal, DecalNormal.w);
     
     float Roughness = Parameters.Roughness + (1 - TireTrackMask);
     
@@ -184,6 +195,9 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     OUT.BaseColor = float4(BaseColor, 1);
     OUT.WorldNormal = EncodeNormal(WorldNormal);
     OUT.Masks = float4(Masks, Uint8ToFloat(SHADING_MODEL_LIT));
+    
+    OUT.BaseColor.xyz = lerp(DecalBaseColor.xyz, OUT.BaseColor.xyz, DecalBaseColor.w);
+    OUT.Masks.xyz = lerp(DecalMasks.xyz, OUT.Masks.xyz, DecalMasks.w);
     
 #elif HITPROXY_PASS
     ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
