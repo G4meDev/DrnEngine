@@ -83,7 +83,8 @@ namespace Drn
 
 		//AssetHandle<Level> DefaultLevel("Game\\Content\\Level_04.drn");
 		//AssetHandle<Level> DefaultLevel("Game\\Content\\Level_1\\Level_01.drn");
-		AssetHandle<Level> DefaultLevel("Game\\Content\\Level_2\\Level_02.drn");
+		//AssetHandle<Level> DefaultLevel("Game\\Content\\Level_2\\Level_02.drn");
+		AssetHandle<Level> DefaultLevel("Game\\Content\\Level_3\\Level_03.drn");
 		DefaultLevel.Load();
 
 		m_MainWorld = AllocateWorld();
