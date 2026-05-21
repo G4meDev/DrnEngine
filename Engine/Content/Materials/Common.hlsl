@@ -569,6 +569,8 @@ float3 BlendAngleCorrectedNormals(float3 BaseNormal, float3 AddtiveNormal)
     return (C * A) - (BaseNormal.y + 1) * B;
 }
 
+static float3 DefaultLuminanceFactors = float3(0.3f, 0.59f, 0.11f);
+
 float3 Desaturation(float3 Input, float3 LuminanceFactors, float Fraction)
 {
     return lerp(Input, dot(Input, LuminanceFactors), Fraction);
