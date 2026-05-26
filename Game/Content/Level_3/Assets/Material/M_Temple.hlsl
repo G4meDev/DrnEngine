@@ -19,23 +19,20 @@ struct ParametersBuffers
 {
     VECTOR(ColorCleanBricks1, ColorCleanBricks1)
     VECTOR(ColorCleanBricks2, ColorCleanBricks2)
-    VECTOR(ColorPaintedBricks, ColorPaintedBricks)
-    VECTOR(ColorTip, ColorTip)
     
     SCALAR(RandomDarkening, RandomDarkening)
-    SCALAR(AOIntensity, AOIntensity)
     SCALAR(RoughnessCleanBrickLow, RoughnessCleanBrickLow)
     SCALAR(RoughnessCleanBrickHigh, RoughnessCleanBrickHigh)
-    SCALAR(RoughnessPaint, RoughnessPaint)
-    SCALAR(RoughnessTip, RoughnessTip)
     SCALAR(DetailNormalScale2CleanBricks, DetailNormalScale2CleanBricks)
     SCALAR(DetailNormalInt2CleanBricks, DetailNormalInt2CleanBricks)
     SCALAR(DetailNormalScaleCleanBricks, DetailNormalScaleCleanBricks)
     SCALAR(DetailNormalIntCleanBricks, DetailNormalIntCleanBricks)
     
+    SCALAR(MaskRWeight, MaskRWeight)
+    SCALAR(MaskGWeight, MaskGWeight)
+    
     TEX2D(Masks, MasksTexture)
     TEX2D(WallMasks, WallMasksTexture)
-    TEX2D(WallAO, WallAOTexture)
     TEX2D(BaseColor, BaseColorTexture)
     TEX2D(SandNormal, SandNormalTexture)
     TEX2D(RockNormal, RockNormalTexture)
@@ -138,9 +135,6 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     Texture2D WallMasksTexture = ResourceDescriptorHeap[Parameters.WallMasks_Texture];
     SamplerState WallMasksSampler = ResourceDescriptorHeap[Parameters.WallMasks_Sampler];
     
-    Texture2D WallAOTexture = ResourceDescriptorHeap[Parameters.WallAO_Texture];
-    SamplerState WallAOSampler = ResourceDescriptorHeap[Parameters.WallAO_Sampler];
-    
     Texture2D BaseColorTexture = ResourceDescriptorHeap[Parameters.BaseColor_Texture];
     SamplerState BaseColorSampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
     
@@ -158,23 +152,17 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 VertexNormal = IN.TBN[1];
 
-    float4 PyrmaidMasks = MasksTexture.Sample(MasksSampler, UV1);
+    float4 TempleMasks = MasksTexture.Sample(MasksSampler, UV1);
+    float TempleMask = TempleMasks.r * Parameters.MaskRWeight + TempleMasks.g * Parameters.MaskGWeight;
     float4 WallMasks = WallMasksTexture.Sample(WallMasksSampler, UV0);
-    float4 WallAO = WallAOTexture.Sample(WallAOSampler, UV0).r;
     
-    float3 BaseColor = lerp(Parameters.ColorCleanBricks1.rgb, Parameters.ColorCleanBricks2.rgb, PyrmaidMasks.b);
-    BaseColor = lerp(BaseColor, Parameters.ColorPaintedBricks.rgb, PyrmaidMasks.r);
+    float3 BaseColor = lerp(Parameters.ColorCleanBricks1.rgb, Parameters.ColorCleanBricks2.rgb, TempleMask);
     BaseColor *= BaseColorTexture.Sample(BaseColorSampler, UV0).rgb;
     float3 CachedColor = BaseColor;
     BaseColor *= saturate(Desaturation(WallMasks.rgb, DefaultLuminanceFactors, 1.0f) + Parameters.RandomDarkening);
-    BaseColor = lerp(BaseColor, Parameters.ColorTip.rgb, PyrmaidMasks.ggg);
-    BaseColor *= saturate(WallAO + Parameters.AOIntensity).rrr;
     
     float Roughness = lerp(Parameters.RoughnessCleanBrickHigh, Parameters.RoughnessCleanBrickLow, Desaturation(CachedColor, DefaultLuminanceFactors, 1.0f).r);
-    Roughness = lerp(Roughness, Parameters.RoughnessPaint, PyrmaidMasks.r);
-    Roughness = lerp(Roughness, Parameters.RoughnessTip, PyrmaidMasks.g);
-    Roughness = saturate(Roughness);
-    float3 Masks = float3(PyrmaidMasks.g, Roughness, 1.0f);
+    float3 Masks = float3(0, Roughness, 1.0f);
     
     float3 WallNormal = ReconstructTextureNormal(WallNormalTexture.Sample(WallNormalSampler, UV0).rg, true);
     
