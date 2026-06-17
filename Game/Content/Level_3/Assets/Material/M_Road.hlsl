@@ -39,7 +39,7 @@ struct ParametersBuffers
     TEX2D(Distortion, DistortionTexture)
 };
 
-#define MAIN_PASS 1
+//#define MAIN_PASS 1
 
 struct VertexShaderOutput
 {
