@@ -63,6 +63,20 @@ namespace Drn
 		bool m_SimulatePhysic;
 		float m_Mass;
 
+		bool bEnableGravity;
+		float LinearDamping;
+		float AngularDamping;
+
+		bool bNotifyOverlap;
+		bool bNotifyHit;
+		bool bUseCCD;
+
+		std::string CollisionProfileName;
+		ECollisionEnabled CollisionEnabled;
+		ECollisionChannel ObjectType;
+		CollisionResponseContainer ResponseToChannels;
+		uint8 MaskFilter;
+
 	private:
 		
 	};

@@ -16,6 +16,16 @@ namespace Drn
 		, m_OwnerComponent(nullptr)
 		, m_SimulatePhysic(false)
 		, m_Mass(10.0f)
+		, bEnableGravity(true)
+		, LinearDamping(0.0f)
+		, AngularDamping(0.01f)
+		, bNotifyOverlap(false)
+		, bNotifyHit(false)
+		, bUseCCD(false)
+		, ObjectType(ECC_WorldStatic)
+		, CollisionEnabled(ECollisionEnabled::QueryAndPhysics)
+		, CollisionProfileName("BlockAll")
+		, MaskFilter(0)
 	{
 		
 	}
@@ -305,8 +315,32 @@ namespace Drn
 #if WITH_EDITOR
 	void BodyInstance::DrawDetailPanel( float DeltaTime )
 	{
-		ImGui::Checkbox( "Simulate Physic", &m_SimulatePhysic );
-		ImGui::InputFloat( "Mass", &m_Mass);
+		if (ImGui::CollapsingHeader("Physic"))
+		{
+			ImGui::Checkbox( "Simulate Physic", &m_SimulatePhysic );
+			ImGui::InputFloat( "Mass", &m_Mass);
+			ImGui::InputFloat( "LinearDamping", &LinearDamping);
+			ImGui::InputFloat( "AngularDamping", &AngularDamping);
+			ImGui::Checkbox( "Enable Gravity", &bEnableGravity);
+		}
+
+		if (ImGui::CollapsingHeader("Collision"))
+		{
+			ImGui::Checkbox( "Generate Hit Event", &bNotifyHit);
+			ImGui::Checkbox( "Generate Overlap Event", &bNotifyOverlap);
+			ImGui::Checkbox( "Use CCD", &bUseCCD);
+
+			DrawCollisionProfile("Profile", CollisionProfileName);
+
+			if (CollisionProfileName == CUSTOM_COLLISION_PROFILE_NAME)
+			{
+				DrawCollisionProfileCustom(CollisionEnabled, ObjectType, ResponseToChannels);
+			}
+			else
+			{
+				DrawCollisionProfilePreset(CollisionProfileName);
+			}
+		}
 
 		ImGui::Separator();
 	}

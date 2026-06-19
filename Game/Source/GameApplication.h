@@ -4,6 +4,13 @@
 
 namespace Drn
 {
+	enum EGameCollisionChannel
+	{
+		ECC_GameTestChannel = NUM_ENGINE_COLLISION_CHANNELS,
+
+		ECC_GAME_MAX,
+	};
+
 	class GameApplication : public Application
 	{
 	public:

@@ -8,7 +8,7 @@
 
 namespace Drn
 {
-	void GameApplication::Startup()
+	void RegisterGameTypes()
 	{
 		REGISTER_LEVEL_SPAWNABLE_CLASS( TestPlayerCharacter, Game );
 		REGISTER_SERIALIZABLE_ACTOR( EGameActorType::TestPlayerCharacter , TestPlayerCharacter );
@@ -16,6 +16,16 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( RaceVehiclePawn, Game );
 		REGISTER_SERIALIZABLE_ACTOR( EGameActorType::RaceVehiclePawn , RaceVehiclePawn);
 
+		EngineTypes::Get()->CollisionChannelDisplayNames[ECC_GameTestChannel] = "GameTest";
+
+		CollisionResponseTemplate GameTestProfile("GameTest", ECollisionEnabled::QueryAndPhysics, static_cast<ECollisionChannel>(ECC_GameTestChannel));
+		GameTestProfile.ResponseToChannels.SetAllChannels(ECR_Block);
+		CollisionProfile::Get()->AddProfile(GameTestProfile);
+		CollisionProfile::Get()->UpdateProfileChannelResponse("BlockAll", static_cast<ECollisionChannel>(ECC_GameTestChannel), ECR_Ignore);
+	}
+
+	void GameApplication::Startup()
+	{
 		Application::Startup();
 
 	}
