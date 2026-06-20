@@ -17,7 +17,7 @@
 #include <d3dcommon.h>
 
 LOG_DECLARE_CATEGORY( LogArchive );
-#define ARCHIVE_VERSION ( (uint8)1 )
+#define ARCHIVE_VERSION ( (uint8)2 )
 
 namespace Drn
 {

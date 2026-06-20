@@ -331,6 +331,31 @@ namespace Drn
 		return Result;
 	}
 
+	Archive& operator<<( Archive& Ar, CollisionResponseContainer& Container )
+	{
+		uint64 PackedData = 0;
+		for (int32 i = 0; i < 32; i++)
+		{
+			PackedData |= ((uint64)Container.EnumArray[i] & 0x0003) << (i * 2);
+		}
+
+		Ar << PackedData;
+		return Ar;
+	}
+
+	Archive& operator>>( Archive& Ar, CollisionResponseContainer& Container )
+	{
+		uint64 PackedData = 0;
+		Ar >> PackedData;
+
+		for (int32 i = 0; i < 32; i++)
+		{
+			Container.EnumArray[i] = (PackedData >> (i * 2)) & 0x0003;
+		}
+
+		return Ar;
+	}
+
 	CollisionResponseTemplate::CollisionResponseTemplate()
 		: Name("NoName")
 		, CollisionEnabled(ECollisionEnabled::NoCollision)

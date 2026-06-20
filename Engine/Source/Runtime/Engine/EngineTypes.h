@@ -319,6 +319,9 @@ namespace Drn
 			return std::memcmp(EnumArray, Other.EnumArray, sizeof(Other.EnumArray)) != 0;
 		}
 
+		friend Archive& operator<<(Archive& Ar, CollisionResponseContainer& Container);
+		friend Archive& operator>>(Archive& Ar, CollisionResponseContainer& Container);
+
 #if WITH_EDITOR
 		bool Draw();
 #endif

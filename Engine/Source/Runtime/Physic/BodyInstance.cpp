@@ -41,11 +41,51 @@ namespace Drn
 		{
 			Ar >> m_SimulatePhysic;
 			Ar >> m_Mass;
+
+			if (Ar.GetVersion() == 2)
+			{
+				uint8 CompactFlags = 0;
+				Ar >> CompactFlags;
+
+				bEnableGravity	= CompactFlags & (1 << 0);
+				bNotifyOverlap	= CompactFlags & (1 << 1);
+				bNotifyHit		= CompactFlags & (1 << 2);
+				bUseCCD			= CompactFlags & (1 << 3);
+
+				Ar >> LinearDamping;
+				Ar >> AngularDamping;
+
+				Ar >> CollisionProfileName;
+				if (CollisionProfileName == CUSTOM_COLLISION_PROFILE_NAME)
+				{
+					Ar >> *(uint8*)&CollisionEnabled;
+					Ar >> *(uint32*)&ObjectType;
+					Ar >> ResponseToChannels;
+				}
+			}
 		}
 		else
 		{
 			Ar << m_SimulatePhysic;
 			Ar << m_Mass;
+
+			uint8 CompactFlags = 0;
+			CompactFlags |= (bEnableGravity << 0);
+			CompactFlags |= (bNotifyOverlap << 1);
+			CompactFlags |= (bNotifyHit		<< 2);
+			CompactFlags |= (bUseCCD		<< 3);
+			Ar << CompactFlags;
+
+			Ar << LinearDamping;
+			Ar << AngularDamping;
+
+			Ar << CollisionProfileName;
+			if (CollisionProfileName == CUSTOM_COLLISION_PROFILE_NAME)
+			{
+				Ar << (uint8)CollisionEnabled;
+				Ar << ObjectType;
+				Ar << ResponseToChannels;
+			}
 		}
 	}
 
