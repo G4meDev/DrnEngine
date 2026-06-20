@@ -5,6 +5,9 @@
 #define REFLECTION_CAPTURE_SIZE 128
 #define CUSTOM_COLLISION_PROFILE_NAME "Custom"
 
+#define ECC_TO_BITFIELD( x ) ( 1 << ( x ) )
+#define CRC_TO_BITFIELD( x ) ( 1 << ( x ) )
+
 namespace Drn
 {
 	extern void RegisterGameTypes();
@@ -376,6 +379,89 @@ namespace Drn
 
 		static CollisionProfile* SingletonInstance;
 	};
+
+	enum EPhysXFilterDataFlags
+	{
+		EPDF_SimpleCollision	=	0x0001,
+		EPDF_ComplexCollision	=	0x0002,
+		EPDF_CCD				=	0x0004,
+		EPDF_ContactNotify		=	0x0008,
+		EPDF_StaticShape		=	0x0010,
+		EPDF_ModifyContacts		=   0x0020,
+		EPDF_KinematicKinematicPairs = 0x0040,
+	};
+
+	struct PhysicsFilterBuilder
+	{
+		PhysicsFilterBuilder(ECollisionChannel InObjectType, uint8 MaskFilter, const CollisionResponseContainer& ResponseToChannels);
+
+		inline void ConditionalSetFlags(EPhysXFilterDataFlags Flag, bool bEnabled)
+		{
+			if (bEnabled)
+			{
+				Word3 |= Flag;
+			}
+		}
+
+		inline void GetQueryData(uint32 ActorID, uint32& OutWord0, uint32& OutWord1, uint32& OutWord2, uint32& OutWord3) const
+		{
+			OutWord0 = ActorID;
+			OutWord1 = BlockingBits;
+			OutWord2 = TouchingBits;
+			OutWord3 = Word3;
+		}
+
+		inline void GetSimData(uint32 BodyIndex, uint32 ComponentID, uint32& OutWord0, uint32& OutWord1, uint32& OutWord2, uint32& OutWord3) const
+		{
+			OutWord0 = BodyIndex;
+			OutWord1 = BlockingBits;
+			OutWord2 = ComponentID;
+			OutWord3 = Word3;
+		}
+
+		inline void GetCombinedData(uint32& OutBlockingBits, uint32& OutTouchingBits, uint32& OutObjectTypeAndFlags) const
+		{
+			OutBlockingBits = BlockingBits;
+			OutTouchingBits = TouchingBits;
+			OutObjectTypeAndFlags = Word3;
+		}
+
+	private:
+		uint32 BlockingBits;
+		uint32 TouchingBits;
+		uint32 Word3;
+	};
+
+	inline uint32 CreateChannelAndFilter(ECollisionChannel CollisionChannel, uint8 MaskFilter)
+	{
+		uint32 ResultMask = (uint32(MaskFilter) << 5) | (uint32)CollisionChannel;
+		return ResultMask << 21;
+	}
+
+	inline ECollisionChannel GetCollisionChannel(uint32 Word3)
+	{
+		uint32 ChannelMask = (Word3 << 6) >> (32 - 5);
+		return (ECollisionChannel)ChannelMask;
+	}
+
+	struct CollisionFilterData
+	{
+		uint32 Word0;
+		uint32 Word1;
+		uint32 Word2;
+		uint32 Word3;
+
+		inline CollisionFilterData()
+			: Word0(0)
+			, Word1(0)
+			, Word2(0)
+			, Word3(0)
+		{}
+	};
+
+	void CreateShapeFilterData( const uint8 MyChannel, const uint8 MaskFilter, const int32 ActorID, const CollisionResponseContainer& ResponseToChannels,
+		uint32 ComponentID, uint16 BodyIndex, CollisionFilterData& OutQueryData, CollisionFilterData& OutSimData,
+		bool bEnableCCD, bool bEnableContactNotify, bool bStaticShape, bool bModifyContacts = false);
 
 #if WITH_EDITOR
 

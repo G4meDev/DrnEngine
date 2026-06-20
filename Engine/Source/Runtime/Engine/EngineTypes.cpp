@@ -415,6 +415,44 @@ namespace Drn
 		return true;
 	}
 
+	PhysicsFilterBuilder::PhysicsFilterBuilder( ECollisionChannel InObjectType, uint8 MaskFilter, const CollisionResponseContainer& ResponseToChannels )
+		: BlockingBits(0)
+		, TouchingBits(0)
+		, Word3(0)
+	{
+		for (int32 i = 0; i < _countof(ResponseToChannels.EnumArray); i++)
+		{
+			if (ResponseToChannels.EnumArray[i] == ECR_Block)
+			{
+				const uint32 ChannelBit = ( 1 << i );
+				BlockingBits |= ChannelBit;
+			}
+			else if (ResponseToChannels.EnumArray[i] == ECR_Overlap)
+			{
+				const uint32 ChannelBit = ( 1 << i );
+				TouchingBits |= ChannelBit;
+			}
+		}
+
+		Word3 = CreateChannelAndFilter(InObjectType, MaskFilter);
+	}
+
+	void CreateShapeFilterData( const uint8 MyChannel, const uint8 MaskFilter, const int32 ActorID, const CollisionResponseContainer& ResponseToChannels, uint32 ComponentID,
+		uint16 BodyIndex, CollisionFilterData& OutQueryData, CollisionFilterData& OutSimData, bool bEnableCCD, bool bEnableContactNotify,
+		bool bStaticShape, bool bModifyContacts )
+	{
+		PhysicsFilterBuilder Builder((ECollisionChannel)MyChannel, MaskFilter, ResponseToChannels);
+		Builder.ConditionalSetFlags(EPDF_CCD, bEnableCCD);
+		Builder.ConditionalSetFlags(EPDF_ContactNotify, bEnableContactNotify);
+		Builder.ConditionalSetFlags(EPDF_StaticShape, bStaticShape);
+		Builder.ConditionalSetFlags(EPDF_ModifyContacts, bModifyContacts);
+
+		OutQueryData = CollisionFilterData();
+		OutSimData = CollisionFilterData();
+		Builder.GetQueryData(ActorID, OutQueryData.Word0, OutQueryData.Word1, OutQueryData.Word2, OutQueryData.Word3);
+		Builder.GetSimData(BodyIndex, ComponentID, OutSimData.Word0, OutSimData.Word1, OutSimData.Word2, OutSimData.Word3);
+	}
+
 #if WITH_EDITOR
 
 	bool DrawCollisionProfile( const std::string& Label, std::string& ProfileName )
@@ -579,4 +617,6 @@ namespace Drn
 // --------------------------------------------------------------------------------
 
 
-}  // namespace Drn
+
+
+        }  // namespace Drn

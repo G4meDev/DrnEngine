@@ -105,6 +105,7 @@ namespace Drn
 		if (m_SimulatePhysic)
 		{
 			physx::PxRigidDynamic* DynamicActor = Physics->createRigidDynamic( Transform2P(BodyTransform) );
+			DynamicActor->setRigidBodyFlag( PxRigidBodyFlag::eENABLE_CCD, true );
 			m_RigidActor = DynamicActor;
 
 			DynamicActor->setSolverIterationCounts(8, 2);
@@ -118,12 +119,35 @@ namespace Drn
 			m_RigidActor = Physics->createRigidStatic( Transform2P(BodyTransform) );
 		}
 
+		CollisionFilterData SimData;
+		CollisionFilterData QueryData;
+
+		int32 ActorID = 0; // @TODO: add
+		int32 ComponentID = 0; // @TODO: add
+		int32 BodyIndex = 0; // @TODO: add
+		bool bStaticShape = false; // @TODO: add
+		bool bModifyContacts = false; // @TODO: add
+
+		if (CollisionProfileName == CUSTOM_COLLISION_PROFILE_NAME)
+		{
+			CreateShapeFilterData(ObjectType, MaskFilter, ActorID, ResponseToChannels, ComponentID, BodyIndex, QueryData, SimData, bUseCCD, bNotifyHit, bStaticShape, bModifyContacts);
+		}
+		else
+		{
+			CollisionResponseTemplate CollisionPreset;
+			CollisionProfile::Get()->GetProfile(CollisionProfileName, CollisionPreset);
+
+			CreateShapeFilterData(CollisionPreset.ObjectType, MaskFilter, ActorID, CollisionPreset.ResponseToChannels, ComponentID, BodyIndex, QueryData, SimData, bUseCCD, bNotifyHit, bStaticShape, bModifyContacts);
+		}
+
 		if (Setup->m_UseTriMesh)
 		{
 			for (int32 i = 0; i < Setup->m_TriMeshes.size(); i++)
 			{
 				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(BodyTransform.GetScale())), *m_Material);
 				shape->userData = &Setup->m_TriMeshes[i].GetUserData();
+				shape->setSimulationFilterData( *(PxFilterData*)&SimData );
+				shape->setQueryFilterData( *(PxFilterData*)&QueryData );
 
 				m_RigidActor->attachShape( *shape );
 				PX_RELEASE(shape);
@@ -136,13 +160,9 @@ namespace Drn
 			{
 				ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
 
-				//PxFilterData filterData;
-				//filterData.setToDefault();
-				//filterData.word0 = UINT32_MAX;
-				//filterData.word1 = UINT32_MAX;
-
 				physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(BodyTransform.GetScale()).get()), *m_Material );
-				//shape->setSimulationFilterData( filterData );
+				shape->setSimulationFilterData( *(PxFilterData*)&SimData );
+				shape->setQueryFilterData( *(PxFilterData*)&QueryData );
 
 				shape->userData = &Element->GetUserData();
 
