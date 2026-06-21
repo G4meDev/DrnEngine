@@ -39,9 +39,7 @@ namespace Drn
 		inline physx::PxPhysics* GetPhysics() { return m_Physics; }
 
 		inline physx::vehicle2::PxVehicleFrame& GetDefaultVehicleFrame() const { return VehicleFrame; };
-
-		// TODO: remove
-		physx::PxMaterial* TempMaterial;
+		inline PhysicalMaterial* GetDefaultMaterial() const { return DefaultMaterial.Get(); };
 
 	protected:
 
@@ -60,6 +58,9 @@ namespace Drn
 		std::set<PhysicScene*> m_AllocatedScenes;
 
 		static physx::vehicle2::PxVehicleFrame VehicleFrame;
+
+		AssetHandle<PhysicalMaterial> DefaultMaterial;
+
 	private:
 	};
 }

@@ -3,6 +3,9 @@
 
 #include "Editor/AssetPreview/AssetPreviewPhysicalMaterialGuiLayer.h"
 
+#define DEFAULT_FRICTION_COMBO EFrictionCombineMode::Average
+#define DEFAULT_RESTITUTION_COMBO EFrictionCombineMode::Average
+
 namespace Drn
 {
 	PhysicalMaterial::PhysicalMaterial( const std::string& Path )
@@ -12,8 +15,12 @@ namespace Drn
 		, Restitution(0.3f)
 		, bOverrideFrictionCombineMode(false)
 		, bOverrideRestitutionCombineMode(false)
+		, MaterialHandle(nullptr)
 	{
 		Load();
+
+		MaterialHandle = PhysicManager::Get()->GetPhysics()->createMaterial(0, 0, 0);
+		UpdatePhysicParams();
 	}
 
 #if WITH_EDITOR
@@ -24,6 +31,7 @@ namespace Drn
 		, Restitution(0.3f)
 		, bOverrideFrictionCombineMode(false)
 		, bOverrideRestitutionCombineMode(false)
+		, MaterialHandle(nullptr)
 	{
 		Save();
 	}
@@ -31,7 +39,10 @@ namespace Drn
 
 	PhysicalMaterial::~PhysicalMaterial()
 	{
-		
+		if (MaterialHandle)
+		{
+			MaterialHandle->release();
+		}
 	}
 
 	void PhysicalMaterial::Serialize( Archive& Ar )
@@ -68,6 +79,19 @@ namespace Drn
 	}
 
 	EAssetType PhysicalMaterial::GetAssetType() { return EAssetType::PhysicalMaterial; }
+
+	void PhysicalMaterial::UpdatePhysicParams()
+	{
+		if (MaterialHandle)
+		{
+			MaterialHandle->setStaticFriction(StaticFriction);
+			MaterialHandle->setDynamicFriction(Friction);
+			MaterialHandle->setRestitution(std::clamp(Restitution, 0.0f, 1.0f));
+
+			MaterialHandle->setFrictionCombineMode((physx::PxCombineMode::Enum)(bOverrideFrictionCombineMode ? FrictionCombineMode : DEFAULT_FRICTION_COMBO));
+			MaterialHandle->setRestitutionCombineMode((physx::PxCombineMode::Enum)(bOverrideRestitutionCombineMode ? RestitutionCombineMode : DEFAULT_RESTITUTION_COMBO));
+		}
+	}
 
 #if WITH_EDITOR
 

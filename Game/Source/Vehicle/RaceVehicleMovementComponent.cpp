@@ -8,7 +8,7 @@ namespace Drn
 	{
 		// TODO: remove
 		gPhysXMaterialFrictions[0].friction = 1.0f;
-		gPhysXMaterialFrictions[0].material = PhysicManager::Get()->TempMaterial;
+		gPhysXMaterialFrictions[0].material = PhysicManager::Get()->GetDefaultMaterial()->GetMaterial();
 
 		Vector FrontSocketOffset = Vector(2, 0.75f, 2.7);
 		Vector RearSocketOffset = Vector(2, 0.75f, 2.6);

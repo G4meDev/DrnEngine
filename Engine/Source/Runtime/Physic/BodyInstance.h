@@ -46,8 +46,11 @@ namespace Drn
 		void AddForceAtPosition(const Vector& Force, const Vector& Position, bool AccelChange);
 		//void AddForceAtLocalPosition(const Vector& Force, const Vector& Position, bool AccelChange);
 
+		void SetPhysicalMaterial(AssetHandle<PhysicalMaterial> InMaterial);
+
 #if WITH_EDITOR
 		void DrawDetailPanel(float DeltaTime);
+		void DrawPhysicalMaterial();
 #endif
 
 	protected:
@@ -57,7 +60,6 @@ namespace Drn
 		PhysicUserData m_PhysicUserData;
 		PxRigidActor* m_RigidActor;
 		PrimitiveComponent* m_OwnerComponent;
-		PxMaterial* m_Material;
 		BodySetup* m_BodySetup;
 
 		bool m_SimulatePhysic;
@@ -76,6 +78,7 @@ namespace Drn
 		ECollisionChannel ObjectType;
 		CollisionResponseContainer ResponseToChannels;
 		uint8 MaskFilter;
+		AssetHandle<PhysicalMaterial> PhysicMaterial;
 
 	private:
 		

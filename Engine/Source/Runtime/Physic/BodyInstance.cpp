@@ -5,6 +5,7 @@
 
 #if WITH_EDITOR
 #include <imgui.h>
+#include "Editor/EditorConfig.h"
 #endif
 
 LOG_DEFINE_CATEGORY( LogBodyInstance, "BodyInstance" )
@@ -60,6 +61,12 @@ namespace Drn
 				Ar >> *(uint32*)&ObjectType;
 				Ar >> ResponseToChannels;
 			}
+
+			std::string Path;
+			Ar >> Path;
+			AssetHandle<PhysicalMaterial> M = AssetHandle<PhysicalMaterial>(Path);
+			M.Load();
+			SetPhysicalMaterial(M);
 		}
 		else
 		{
@@ -83,6 +90,8 @@ namespace Drn
 				Ar << ObjectType;
 				Ar << ResponseToChannels;
 			}
+
+			Ar << PhysicMaterial.GetPath();
 		}
 	}
 
@@ -97,10 +106,6 @@ namespace Drn
 		}
 
 		physx::PxPhysics* Physics = PhysicManager::Get()->GetPhysics();
-
-		// TODO: cleanup memory
-		//m_Material = Physics->createMaterial( 0.5f, 0.5f, 0.6f );
-		m_Material = Physics->createMaterial( 1.0f, 1.0f, 0.0f );
 
 		if (m_SimulatePhysic)
 		{
@@ -117,6 +122,17 @@ namespace Drn
 		else
 		{
 			m_RigidActor = Physics->createRigidStatic( Transform2P(BodyTransform) );
+		}
+
+		PhysicalMaterial* TargetMat;
+		if (PhysicMaterial.GetPath() == "")
+		{
+			TargetMat = PhysicManager::Get()->GetDefaultMaterial();
+		}
+		else
+		{
+			PhysicMaterial.Load();
+			TargetMat = PhysicMaterial.Get();
 		}
 
 		CollisionFilterData SimData;
@@ -144,7 +160,7 @@ namespace Drn
 		{
 			for (int32 i = 0; i < Setup->m_TriMeshes.size(); i++)
 			{
-				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(BodyTransform.GetScale())), *m_Material);
+				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(BodyTransform.GetScale())), *TargetMat->GetMaterial());
 				shape->userData = &Setup->m_TriMeshes[i].GetUserData();
 				shape->setSimulationFilterData( *(PxFilterData*)&SimData );
 				shape->setQueryFilterData( *(PxFilterData*)&QueryData );
@@ -160,7 +176,7 @@ namespace Drn
 			{
 				ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
 
-				physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(BodyTransform.GetScale()).get()), *m_Material );
+				physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(BodyTransform.GetScale()).get()), *TargetMat->GetMaterial() );
 				shape->setSimulationFilterData( *(PxFilterData*)&SimData );
 				shape->setQueryFilterData( *(PxFilterData*)&QueryData );
 
@@ -354,6 +370,30 @@ namespace Drn
 		}
 	}
 
+	void BodyInstance::SetPhysicalMaterial( AssetHandle<PhysicalMaterial> InMaterial )
+	{
+		PhysicMaterial = InMaterial;
+
+		PhysicalMaterial* TargetMat;
+		if (PhysicMaterial.GetPath() == "")
+		{
+			TargetMat = PhysicManager::Get()->GetDefaultMaterial();
+		}
+		else
+		{
+			PhysicMaterial.Load();
+			TargetMat = PhysicMaterial.Get();
+		}
+
+		std::vector<PxShape*> Shapes;
+		GetAllShapes(Shapes);
+		for (PxShape* Shape : Shapes)
+		{
+			PxMaterial* Materials[] = { TargetMat->GetMaterial() };
+			Shape->setMaterials(Materials, 1);
+		}
+	}
+
 	int32 BodyInstance::GetAllShapes( std::vector<PxShape*>& Result )
 	{
 		uint32 NumShapes = 0;
@@ -387,6 +427,8 @@ namespace Drn
 			ImGui::Checkbox( "Generate Overlap Event", &bNotifyOverlap);
 			ImGui::Checkbox( "Use CCD", &bUseCCD);
 
+			DrawPhysicalMaterial();
+
 			DrawCollisionProfile("Profile", CollisionProfileName);
 
 			if (CollisionProfileName == CUSTOM_COLLISION_PROFILE_NAME)
@@ -402,6 +444,42 @@ namespace Drn
 		ImGui::Separator();
 	}
 
+	void BodyInstance::DrawPhysicalMaterial()
+	{
+		std::string AssetPath	= PhysicMaterial.GetPath();
+		std::string AssetName	= Path::ConvertShortPath(AssetPath);
+		AssetName				= Path::RemoveFileExtension(AssetName);
+		AssetName				= AssetName == "" ? "None" : AssetName;
+
+		ImGui::PushStyleColor(ImGuiCol_::ImGuiCol_Text, EditorConfig::AssetInputColor);
+		ImGui::Text( "%s", AssetName.c_str() );
+		ImGui::PopStyleColor();
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
+			{
+				auto AssetPath = static_cast<const char*>(payload->Data);
+				
+				AssetHandle<Asset> NewMaterial(AssetPath);
+				EAssetType Type = NewMaterial.LoadGeneric();
+
+				if (NewMaterial.IsValid() && Type == EAssetType::PhysicalMaterial)
+				{
+					AssetHandle<PhysicalMaterial> MatAsset(AssetPath);
+					MatAsset.Load();
+
+					SetPhysicalMaterial(MatAsset);
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::Separator();
+		ImGui::TextWrapped(PhysicMaterial.GetPath().c_str());
+		ImGui::Separator();
+	}
 
 #endif
 }

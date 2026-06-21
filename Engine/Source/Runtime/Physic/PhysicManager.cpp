@@ -16,12 +16,17 @@ namespace Drn
 
 		m_SingletonInstance = new PhysicManager();
 		m_SingletonInstance->InitalizePhysx();
+
+		m_SingletonInstance->DefaultMaterial = AssetHandle<PhysicalMaterial>("Engine\\Content\\PhysicalMaterial\\PM_Default.drn");
+		m_SingletonInstance->DefaultMaterial.Load();
 	}
 
 	void PhysicManager::Shutdown()
 	{
 		if (m_SingletonInstance)
 		{
+			m_SingletonInstance->DefaultMaterial.Release();
+
 			m_SingletonInstance->ShutdownPhysx();
 
 			delete m_SingletonInstance;
@@ -58,7 +63,6 @@ namespace Drn
 		m_Physics = PxCreatePhysics( PX_PHYSICS_VERSION, *m_Foundation, physx::PxTolerancesScale(), true, nullptr );
 #endif
 
-		TempMaterial = m_Physics->createMaterial( 0.5f, 0.5f, 0.6f );
 		physx::vehicle2::PxInitVehicleExtension( *m_Foundation );
 
 		VehicleFrame.lngAxis = physx::vehicle2::PxVehicleAxes::ePosZ;
@@ -69,7 +73,6 @@ namespace Drn
 	void PhysicManager::ShutdownPhysx()
 	{
 		physx::vehicle2::PxCloseVehicleExtension();
-		PX_RELEASE(TempMaterial);
 		PX_RELEASE(m_Physics);
 
 #if WITH_PVD

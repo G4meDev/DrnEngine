@@ -20,7 +20,7 @@ namespace Drn
 
 		// TODO: remove
 		gPhysXMaterialFrictions[0].friction = 1.0f;
-		gPhysXMaterialFrictions[0].material = PhysicManager::Get()->TempMaterial;
+		gPhysXMaterialFrictions[0].material = PhysicManager::Get()->GetDefaultMaterial()->GetMaterial();
 
 		//Vector SocketOffset = Vector(2.25, 0.98f, 2.5);
 		//Vector SocketOffset = Vector(2.25, -1.8f, 2.5);
@@ -204,7 +204,7 @@ namespace Drn
 				}
 
 				PxConvexMeshGeometry convexMeshGeom(convexMesh);
-				PxShape* wheelShape = PhysicManager::Get()->GetPhysics()->createShape(convexMeshGeom, *PhysicManager::Get()->TempMaterial, true);
+				PxShape* wheelShape = PhysicManager::Get()->GetPhysics()->createShape(convexMeshGeom, *PhysicManager::Get()->GetDefaultMaterial()->GetMaterial(), true);
 				wheelShape->setFlags(PxShapeFlag::eTRIGGER_SHAPE);
 
 				//wheelShape->setFlags(wheelShapeParams.flags);

@@ -95,6 +95,10 @@ namespace Drn
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::PhysicalMaterial; }
 
+		inline physx::PxMaterial* const GetMaterial() { return MaterialHandle; }
+
+		void UpdatePhysicParams();
+
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;
@@ -114,6 +118,8 @@ namespace Drn
 
 		// 6bit
 		EPhysicalSurface SurfaceType;
+
+		physx::PxMaterial* MaterialHandle;
 
 		friend class AssetPreviewPhysicalMaterialGuiLayer;
 	};
