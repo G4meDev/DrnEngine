@@ -16,6 +16,8 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( RaceVehiclePawn, Game );
 		REGISTER_SERIALIZABLE_ACTOR( EGameActorType::RaceVehiclePawn , RaceVehiclePawn);
 
+		EngineTypes::Get()->SurfaceTypesDisplayNames[(int32)EGamePhysicalSurface::SurfaceType_Grass] = "Grass";
+
 		EngineTypes::Get()->CollisionChannelDisplayNames[ECC_GameTestChannel] = "GameTest";
 
 		CollisionResponseTemplate GameTestProfile("GameTest", ECollisionEnabled::QueryAndPhysics, static_cast<ECollisionChannel>(ECC_GameTestChannel));

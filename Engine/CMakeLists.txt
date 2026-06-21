@@ -157,6 +157,7 @@ set( HEADER_FILES
 	Source/Runtime/Physic/BoxElem.h
 	Source/Runtime/Physic/CapsuleElem.h
 	Source/Runtime/Physic/PhysicUserData.h
+	Source/Runtime/Physic/PhysicalMaterial.h
 	
 	Source/Runtime/Containers/List.h
 	Source/Runtime/Containers/BitArray.h
@@ -226,6 +227,7 @@ set( HEADER_FILES
 	Source/Editor/AssetPreview/AssetPreviewMaterialInstanceGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.h
+	Source/Editor/AssetPreview/AssetPreviewPhysicalMaterialGuiLayer.h
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.h
 	Source/Editor/AssetImporter/AssetImporterMaterial.h
@@ -397,6 +399,7 @@ set( SOURCE_FILES
 	Source/Runtime/Physic/BoxElem.cpp
 	Source/Runtime/Physic/CapsuleElem.cpp
 	Source/Runtime/Physic/PhysicUserData.cpp
+	Source/Runtime/Physic/PhysicalMaterial.cpp
 	
 	Source/Runtime/Containers/List.cpp
 	Source/Runtime/Containers/BitArray.cpp
@@ -466,6 +469,7 @@ set( SOURCE_FILES
 	Source/Editor/AssetPreview/AssetPreviewMaterialInstanceGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.cpp
+	Source/Editor/AssetPreview/AssetPreviewPhysicalMaterialGuiLayer.cpp
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.cpp
 	Source/Editor/AssetImporter/AssetImporterMaterial.cpp

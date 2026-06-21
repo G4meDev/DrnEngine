@@ -76,6 +76,8 @@ namespace Drn
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::WheeledVehiclePawn			, WheeledVehiclePawn );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::ScenePointCloudImporter	, ScenePointCloudImporter );
 
+		SurfaceTypesDisplayNames[0]						= "Default";
+
 		CollisionChannelDisplayNames[ECC_WorldStatic]	= "WorldStatic";
 		CollisionChannelDisplayNames[ECC_WorldDynamic]	= "WorldDynamic";
 		CollisionChannelDisplayNames[ECC_Pawn]			= "Pawn";

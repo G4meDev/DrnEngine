@@ -8,6 +8,8 @@
 #include "Runtime/Core/Archive.h"
 #include "Runtime/Core/FileArchive.h"
 
+#include "Runtime/Physic/PhysicalMaterial.h"
+
 LOG_DECLARE_CATEGORY(LogAssetManager)
 
 namespace Drn
@@ -134,6 +136,11 @@ namespace Drn
 			else if (Type == EAssetType::TextureCube)
 			{
 				m_Asset = AssetManager::Get()->Load<TextureCube>(m_Path);
+			}
+
+			else if (Type == EAssetType::PhysicalMaterial)
+			{
+				m_Asset = AssetManager::Get()->Load<PhysicalMaterial>(m_Path);
 			}
 
 			else

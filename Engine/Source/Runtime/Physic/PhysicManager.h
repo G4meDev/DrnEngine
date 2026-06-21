@@ -47,7 +47,6 @@ namespace Drn
 
 		static PhysicManager* m_SingletonInstance;
 
-		//physx::PxDefaultErrorCallback m_DefaultErrorCallback;
 		PxCustomErrorCallback m_DefaultErrorCallback;
 		physx::PxDefaultAllocator m_DefaultAllocatorCallback;
 

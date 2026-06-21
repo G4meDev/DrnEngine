@@ -11,6 +11,12 @@ namespace Drn
 		ECC_GAME_MAX,
 	};
 
+	enum class EGamePhysicalSurface : uint8
+	{
+		SurfaceType_Default = 0,
+		SurfaceType_Grass
+	};
+
 	class GameApplication : public Application
 	{
 	public:

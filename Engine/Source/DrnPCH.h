@@ -79,6 +79,7 @@
 #include "Runtime/Physic/BodySetup.h"
 #include "Runtime/Physic/AggregateGeom.h"
 #include "Runtime/Physic/PhysicUserData.h"
+#include "Runtime/Physic/PhysicalMaterial.h"
 
 
 #include "Runtime/Misc/StringHelper.h"

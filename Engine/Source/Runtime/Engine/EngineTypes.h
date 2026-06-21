@@ -517,7 +517,9 @@ namespace Drn
 		static EngineTypes* m_SingletonInstance;
 		std::unordered_map<EActorType, std::function<Actor*(World* InWorld, Archive& Ar)>> m_ActorSerializationMap;
 
+		// @TODO: make editor only
 		std::string CollisionChannelDisplayNames[32];
+		std::string SurfaceTypesDisplayNames[64];
 	};
 
 #define REGISTER_SERIALIZABLE_ACTOR( type , class )																		\

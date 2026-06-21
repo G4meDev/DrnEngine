@@ -395,6 +395,19 @@ namespace Drn
 				ImGui::EndPopup();
 			}
 
+			if (ImGui::Button("Physical Material"))
+			{
+				if (!SelectedFolder)
+				{
+					LOG(LogContentBrowser, Warning, "Cloudn`t add asset. there is no folder selected.");
+					return;
+				}
+
+				AssetManager::Get()->Create<PhysicalMaterial>(SelectedFolder->File.m_FullPath, "PhysicalMaterial_", 1);
+
+				OnRefresh();
+			}
+
 			ImGui::EndPopup();
 		}
 	}
