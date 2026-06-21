@@ -11,7 +11,8 @@ namespace Drn
 		AggShape,
 		ShapeElem,
 		TriangleMesh,
-		CharacterMovementProxy
+		CharacterMovementProxy,
+		PhysicalMaterial
 	};
 
 	class PhysicUserData
@@ -40,6 +41,10 @@ namespace Drn
 		PhysicUserData(class CharacterMovementComponent* InComponent)
 			: Type(EPhysicUserDataType::CharacterMovementProxy)
 			, Payload(InComponent) {}
+
+		PhysicUserData(class PhysicalMaterial* InMaterial)
+			: Type(EPhysicUserDataType::PhysicalMaterial)
+			, Payload(InMaterial) {}
 
 		template<typename T>
 		static T* Get(void* UserData);
@@ -88,6 +93,16 @@ namespace Drn
 		return nullptr;
 	}
 
+	template<>
+	inline PhysicalMaterial* PhysicUserData::Get( void* UserData )
+	{
+		if (UserData && ((PhysicUserData*)UserData)->Type == EPhysicUserDataType::PhysicalMaterial)
+		{
+			return (PhysicalMaterial*)((PhysicUserData*)UserData)->Payload;
+		}
+		return nullptr;
+	}
+
 	//template<>
 	//inline BodyInstance* PhysicUserData::Get( void* UserData )
 	//{
@@ -116,6 +131,13 @@ namespace Drn
 	inline void PhysicUserData::Set( void* UserData, class CharacterMovementComponent* Payload )
 	{
 		((PhysicUserData*)UserData)->Type = EPhysicUserDataType::CharacterMovementProxy;
+		((PhysicUserData*)UserData)->Payload = Payload;
+	}
+
+	template<>
+	inline void PhysicUserData::Set( void* UserData, class PhysicalMaterial* Payload )
+	{
+		((PhysicUserData*)UserData)->Type = EPhysicUserDataType::PhysicalMaterial;
 		((PhysicUserData*)UserData)->Payload = Payload;
 	}
 }

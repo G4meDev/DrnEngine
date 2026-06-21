@@ -52,6 +52,7 @@ namespace Drn
 	void RigidBodyContactInfo::SwapOrder()
 	{
 		ContactNormal = ContactNormal * -1;
+		std::swap(PhysMaterial[0], PhysMaterial[1]);
 	}
 
 

@@ -13,13 +13,19 @@ namespace Drn
 		, Friction(0.7f)
 		, StaticFriction(0.0f)
 		, Restitution(0.3f)
+		, FrictionCombineMode(EFrictionCombineMode::Average)
+		, RestitutionCombineMode(EFrictionCombineMode::Average)
 		, bOverrideFrictionCombineMode(false)
 		, bOverrideRestitutionCombineMode(false)
+		, SurfaceType(EPhysicalSurface::SurfaceType_Default)
 		, MaterialHandle(nullptr)
 	{
 		Load();
 
 		MaterialHandle = PhysicManager::Get()->GetPhysics()->createMaterial(0, 0, 0);
+		PhysicUserData::Set<PhysicalMaterial>((void*)&UserData, const_cast<PhysicalMaterial*>(this));
+		MaterialHandle->userData = &UserData;
+
 		UpdatePhysicParams();
 	}
 
@@ -29,8 +35,11 @@ namespace Drn
 		, Friction(0.7f)
 		, StaticFriction(0.0f)
 		, Restitution(0.3f)
+		, FrictionCombineMode(EFrictionCombineMode::Average)
+		, RestitutionCombineMode(EFrictionCombineMode::Average)
 		, bOverrideFrictionCombineMode(false)
 		, bOverrideRestitutionCombineMode(false)
+		, SurfaceType(EPhysicalSurface::SurfaceType_Default)
 		, MaterialHandle(nullptr)
 	{
 		Save();

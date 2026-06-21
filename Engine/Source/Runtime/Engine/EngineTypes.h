@@ -142,16 +142,22 @@ namespace Drn
 			: ContactPosition(Vector::ZeroVector)
 			, ContactNormal(Vector::ZeroVector)
 		{
+			PhysMaterial[0] = nullptr;
+			PhysMaterial[1] = nullptr;
 		}
 
-		RigidBodyContactInfo(const Vector& InContactPosition, const Vector& InContactNormal) 
+		RigidBodyContactInfo(const Vector& InContactPosition, const Vector& InContactNormal, class PhysicalMaterial* InPhysMat0, class PhysicalMaterial* InPhysMat1)
 			: ContactPosition(InContactPosition)
 			, ContactNormal(InContactNormal)
 		{
+			PhysMaterial[0] = InPhysMat0;
+			PhysMaterial[1] = InPhysMat1;
 		}
 
 		Vector ContactPosition;
 		Vector ContactNormal;
+
+		class PhysicalMaterial* PhysMaterial[2];
 
 		void SwapOrder();
 	};

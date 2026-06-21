@@ -99,6 +99,8 @@ namespace Drn
 
 		void UpdatePhysicParams();
 
+		inline EPhysicalSurface GetSurfaceType() const { return SurfaceType; }
+
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;
@@ -120,6 +122,7 @@ namespace Drn
 		EPhysicalSurface SurfaceType;
 
 		physx::PxMaterial* MaterialHandle;
+		PhysicUserData UserData;
 
 		friend class AssetPreviewPhysicalMaterialGuiLayer;
 	};

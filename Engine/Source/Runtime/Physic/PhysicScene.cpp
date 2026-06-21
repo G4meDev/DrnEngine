@@ -565,6 +565,23 @@ namespace Drn
 				PxContactPairPoint ContactPointBuffer[16];
 				int NumContactPoints = Pairs->extractContacts(ContactPointBuffer, 16);
 
+
+				PxMaterial* Material0 = nullptr;
+				PhysicalMaterial* PhysMat0  = nullptr;
+				if(Shape0->getNbMaterials() == 1)	//If we have simple geometry or only 1 material we set it here. Otherwise do it per face
+				{
+					Shape0->getMaterials(&Material0, 1);
+					PhysMat0 = Material0 ? PhysicUserData::Get<PhysicalMaterial>(Material0->userData) : nullptr;
+				}
+
+				PxMaterial* Material1 = nullptr;
+				PhysicalMaterial* PhysMat1  = nullptr;
+				if (Shape1->getNbMaterials() == 1)	//If we have simple geometry or only 1 material we set it here. Otherwise do it per face
+				{
+					Shape1->getMaterials(&Material1, 1);
+					PhysMat1 = Material1 ? PhysicUserData::Get<PhysicalMaterial>(Material1->userData) : nullptr;
+				}
+
 				RigidBodyContactInfo ContactInfo;
 				for (int i = 0; i < NumContactPoints; i++)
 				{
@@ -572,6 +589,9 @@ namespace Drn
 
 					ContactInfo.ContactPosition = P2Vector( Point.position );
 					ContactInfo.ContactNormal = P2Vector( Point.normal );
+
+					ContactInfo.PhysMaterial[0] = PhysMat0;
+					ContactInfo.PhysMaterial[1] = PhysMat1;
 
 					NotifyInfo.RigidCollisionData.ContactInfos.push_back(ContactInfo);
 				}
