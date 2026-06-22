@@ -332,6 +332,33 @@ namespace Drn
 			Root->GetWorld()->DrawDebugSphere( ContactInfo.ContactPosition, Quat::Identity, Color::Blue, 0.8f, 8, 0.05, 0 );
 			Root->GetWorld()->DrawDebugLine( ContactInfo.ContactPosition, ContactInfo.ContactPosition + ContactInfo.ContactNormal * 0.5, Color::Blue, 0.05f, 0 );
 		}
+
+		//std::cout << (uint32)RigidCollisionData.ContactInfos[0].PhysMaterial[1]->GetSurfaceType() << "\n";
+
+		const RigidBodyContactInfo& ContactInfo = RigidCollisionData.ContactInfos[0];
+		
+		HitResult Result;
+		Result.Location = ContactInfo.ContactPosition;
+		Result.Normal = ContactInfo.ContactNormal;
+		Result.PhysMaterial = ContactInfo.PhysMaterial[1];
+		Result.HitActor = OtherInfo.m_Actor;
+		Result.HitComponent = OtherInfo.m_Component;
+		//Result.Item = OtherInfo.BodyIndex;
+		//Result.BoneName = OtherInfo.BoneName;
+		//Result.MyBoneName = MyInfo.BoneName;
+		Result.bBlockingHit = true;
+		
+		if (OnActorHitDel.IsBound())
+		{
+			OnActorHitDel.Braodcast(this, OtherInfo.m_Actor, RigidCollisionData.TotalNormalImpulse, Result);
+		}
+		
+		PrimitiveComponent* MyInfoComponent = MyInfo.m_Component;
+		if (MyInfoComponent && MyInfoComponent->OnComponentHitDel.IsBound())
+		{
+			MyInfoComponent->OnComponentHitDel.Braodcast(MyInfoComponent, OtherInfo.m_Actor, OtherInfo.m_Component, RigidCollisionData.TotalNormalImpulse, Result);
+		}
+
 	}
 
 	bool Actor::ActorHasTag( const std::string& Tag ) const

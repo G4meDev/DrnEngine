@@ -7,6 +7,8 @@
 
 namespace Drn
 {
+	DECLARE_MULTICAST_DELEGATE_FiveParams(OnComponentHitDelegate, PrimitiveComponent*, Actor*, PrimitiveComponent*, Vector, const HitResult&);
+
 	class PrimitiveComponent : public SceneComponent
 	{
 	public:
@@ -39,6 +41,8 @@ namespace Drn
 		inline void SetEditorPrimitive(bool EditorPrimitive) { m_EditorPrimitive = EditorPrimitive; }
 
 		virtual void SetStatic(bool bInStatic) override;
+
+		OnComponentHitDelegate OnComponentHitDel;
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;

@@ -526,11 +526,86 @@ namespace Drn
 			return;
 		}
 
-		AddCollisionNotifyInfo(BodyInst0, BodyInst1, Pairs, NumPairs, m_OwningScene->m_PendingCollisionNotifies);
+		auto& PendingCollisionNotifies = m_OwningScene->m_PendingCollisionNotifies;
+		uint32 PreAddingCollisionNotify = PendingCollisionNotifies.size() - 1;
+		std::vector<int32> PairNotifyMapping = AddCollisionNotifyInfo(BodyInst0, BodyInst1, Pairs, NumPairs, PendingCollisionNotifies);
 
 		for(uint32 PairIdx=0; PairIdx<NumPairs; PairIdx++)
 		{
-			// @TODO: update physic mat in m_PendingCollisionNotifies
+			int32 NotifyIdx = PairNotifyMapping[PairIdx];
+			if (NotifyIdx == -1)	//the body instance this pair belongs to is not listening for events
+			{
+				continue;
+			}
+
+			CollisionNotifyInfo * NotifyInfo = &PendingCollisionNotifies[NotifyIdx];
+			CollisionImpactData* ImpactInfo = &(NotifyInfo->RigidCollisionData);
+
+			const PxContactPair* Pair = Pairs + PairIdx;
+
+			const PxShape* Shape0 = Pair->shapes[0];
+			drn_check(Shape0);
+			const PxShape* Shape1 = Pair->shapes[1];
+			drn_check(Shape1);
+
+			PxMaterial* Material0 = nullptr;
+			PhysicalMaterial* PhysMat0  = nullptr;
+			if(Shape0->getNbMaterials() == 1)	//If we have simple geometry or only 1 material we set it here. Otherwise do it per face
+			{
+				Shape0->getMaterials(&Material0, 1);
+				PhysMat0 = Material0 ? PhysicUserData::Get<PhysicalMaterial>(Material0->userData) : nullptr;
+			}
+
+			PxMaterial* Material1 = nullptr;
+			PhysicalMaterial* PhysMat1  = nullptr;
+			if (Shape1->getNbMaterials() == 1)	//If we have simple geometry or only 1 material we set it here. Otherwise do it per face
+			{
+				Shape1->getMaterials(&Material1, 1);
+				PhysMat1 = Material1 ? PhysicUserData::Get<PhysicalMaterial>(Material1->userData) : nullptr;
+			}
+
+			PxContactPairPoint ContactPointBuffer[16];
+			int32 NumContactPoints = Pair->extractContacts(ContactPointBuffer, 16);
+			for(int32 PointIdx=0; PointIdx<NumContactPoints; PointIdx++)
+			{
+				const PxContactPairPoint& Point = ContactPointBuffer[PointIdx];
+
+				const PxVec3 NormalImpulse = Point.impulse.dot(Point.normal) * Point.normal; // project impulse along normal
+				ImpactInfo->TotalNormalImpulse = ImpactInfo->TotalNormalImpulse + P2Vector(NormalImpulse);
+				ImpactInfo->TotalFrictionImpulse = ImpactInfo->TotalFrictionImpulse + P2Vector(Point.impulse - NormalImpulse); // friction is component not along contact normal
+
+				// Get per face materials
+				//if(!Material0)	//there is complex geometry or multiple materials so resolve the physical material here
+				//{
+				//	if(PxMaterial* Material0PerFace = Shape0->getMaterialFromInternalFaceIndex(Point.internalFaceIndex0))
+				//	{
+				//		PhysMat0 = FPhysxUserData::Get<UPhysicalMaterial>(Material0PerFace->userData);
+				//	}
+				//}
+				//
+				//if (!Material1)	//there is complex geometry or multiple materials so resolve the physical material here
+				//{
+				//	if(PxMaterial* Material1PerFace = Shape1->getMaterialFromInternalFaceIndex(Point.internalFaceIndex1))
+				//	{
+				//		PhysMat1 = FPhysxUserData::Get<UPhysicalMaterial>(Material1PerFace->userData);
+				//	}
+				//
+				//}
+			
+				ImpactInfo->ContactInfos.push_back( RigidBodyContactInfo(P2Vector(Point.position), P2Vector(Point.normal), -1.f * Point.separation, PhysMat0, PhysMat1));
+			}	
+		}
+
+		for (int32 NotifyIdx = PreAddingCollisionNotify + 1; NotifyIdx < PendingCollisionNotifies.size(); NotifyIdx++)
+		{
+			CollisionNotifyInfo * NotifyInfo = &PendingCollisionNotifies[NotifyIdx];
+			CollisionImpactData* ImpactInfo = &(NotifyInfo->RigidCollisionData);
+			// Discard pairs that don't generate any force (eg. have been rejected through a modify contact callback).
+			if (ImpactInfo->TotalNormalImpulse.SizeSquared() < KINDA_SMALL_NUMBER)
+			{
+				PendingCollisionNotifies.erase(PendingCollisionNotifies.begin() + NotifyIdx);
+				NotifyIdx--;
+			}
 		}
 	}
 
@@ -539,12 +614,17 @@ namespace Drn
 		return (Info0.m_Component && Info1.m_Component);
 	}
 
-	void PhysXSimEventCallback::AddCollisionNotifyInfo( const BodyInstance* Body0, const BodyInstance* Body1,
+	std::vector<int32> PhysXSimEventCallback::AddCollisionNotifyInfo( const BodyInstance* Body0, const BodyInstance* Body1,
 		const physx::PxContactPair * Pairs, uint32 NumPairs, std::vector<CollisionNotifyInfo>& PendingNotifyInfos)
 	{
+		std::vector<int32> PairNotifyMapping;
+		PairNotifyMapping.reserve(NumPairs);
+
+		std::map<const BodyInstance*, std::map<const BodyInstance*, int32>> BodyPairNotifyMap;
 		for(uint32 PairIdx = 0; PairIdx < NumPairs; ++PairIdx)
 		{
 			const PxContactPair* Pair = Pairs + PairIdx;
+			PairNotifyMapping.push_back(-1);	//start as -1 because we can have collisions that we don't want to actually record collision
 
 			if(!Pair->events.isSet(PxPairFlag::eNOTIFY_TOUCH_LOST) &&
 				!Pair->events.isSet(PxPairFlag::eNOTIFY_THRESHOLD_FORCE_LOST) &&
@@ -556,49 +636,53 @@ namespace Drn
 				const PxShape* Shape1 = Pair->shapes[1];
 				if ( !Shape1 ) __debugbreak();
 
-				CollisionNotifyInfo NotifyInfo;
-				NotifyInfo.bCallEvent0 = true;
-				NotifyInfo.Info0.SetFrom(Body0);
-				NotifyInfo.bCallEvent1 = true;
-				NotifyInfo.Info1.SetFrom(Body1);
+				PxU32 FilterFlags0 = Shape0->getSimulationFilterData().word3 & 0xFFFFFF;
+				PxU32 FilterFlags1 = Shape1->getSimulationFilterData().word3 & 0xFFFFFF;
 
-				PxContactPairPoint ContactPointBuffer[16];
-				int NumContactPoints = Pairs->extractContacts(ContactPointBuffer, 16);
+				const bool bBody0Notify = (FilterFlags0 & EPDF_ContactNotify) != 0;
+				const bool bBody1Notify = (FilterFlags1 & EPDF_ContactNotify) != 0;
 
-
-				PxMaterial* Material0 = nullptr;
-				PhysicalMaterial* PhysMat0  = nullptr;
-				if(Shape0->getNbMaterials() == 1)	//If we have simple geometry or only 1 material we set it here. Otherwise do it per face
+				if (bBody0Notify || bBody1Notify)
 				{
-					Shape0->getMaterials(&Material0, 1);
-					PhysMat0 = Material0 ? PhysicUserData::Get<PhysicalMaterial>(Material0->userData) : nullptr;
+					//const BodyInstance* SubBody0 = FPhysicsInterface_PhysX::ShapeToOriginalBodyInstance(Body0, Shape0);
+					//const BodyInstance* SubBody1 = FPhysicsInterface_PhysX::ShapeToOriginalBodyInstance(Body1, Shape1);
+
+					const BodyInstance* SubBody0 = Body0;
+					const BodyInstance* SubBody1 = Body1;
+
+					//std::unordered_map<const BodyInstance *, int32> & SubBodyNotifyMap = BodyPairNotifyMap.FindOrAdd(SubBody0);
+					//int32* NotifyInfoIndex = SubBodyNotifyMap.find(SubBody1);
+
+					auto It = BodyPairNotifyMap.find(SubBody0);
+					if (It == BodyPairNotifyMap.end())
+					{
+						BodyPairNotifyMap[SubBody0] = {};
+					}
+					std::map<const BodyInstance*, int32>& SubBodyNotifyMap = BodyPairNotifyMap[SubBody0];
+					int32 NotifyInfoIndex = SubBodyNotifyMap.contains(SubBody1) ? SubBodyNotifyMap.find(SubBody1)->second : -1;
+
+					if(NotifyInfoIndex == -1)
+					{
+						CollisionNotifyInfo NotifyInfo;
+						NotifyInfo.bCallEvent0 = true;
+						NotifyInfo.Info0.SetFrom(Body0);
+						NotifyInfo.bCallEvent1 = true;
+						NotifyInfo.Info1.SetFrom(Body1);
+
+						PendingNotifyInfos.emplace_back(NotifyInfo);
+
+						//NotifyInfoIndex = &SubBodyNotifyMap.Add(SubBody0, PendingNotifyInfos.Num() - 1);
+						int32 Value = PendingNotifyInfos.size() - 1;
+						NotifyInfoIndex = SubBodyNotifyMap[SubBody0] = Value;
+					}
+
+					//PairNotifyMapping[PairIdx] = *NotifyInfoIndex;
+					PairNotifyMapping[PairIdx] = NotifyInfoIndex;
 				}
-
-				PxMaterial* Material1 = nullptr;
-				PhysicalMaterial* PhysMat1  = nullptr;
-				if (Shape1->getNbMaterials() == 1)	//If we have simple geometry or only 1 material we set it here. Otherwise do it per face
-				{
-					Shape1->getMaterials(&Material1, 1);
-					PhysMat1 = Material1 ? PhysicUserData::Get<PhysicalMaterial>(Material1->userData) : nullptr;
-				}
-
-				RigidBodyContactInfo ContactInfo;
-				for (int i = 0; i < NumContactPoints; i++)
-				{
-					const PxContactPairPoint& Point = ContactPointBuffer[i];
-
-					ContactInfo.ContactPosition = P2Vector( Point.position );
-					ContactInfo.ContactNormal = P2Vector( Point.normal );
-
-					ContactInfo.PhysMaterial[0] = PhysMat0;
-					ContactInfo.PhysMaterial[1] = PhysMat1;
-
-					NotifyInfo.RigidCollisionData.ContactInfos.push_back(ContactInfo);
-				}
-
-				PendingNotifyInfos.push_back(NotifyInfo);
 			}
 		}
+
+		return PairNotifyMapping;
 	}
 
 }

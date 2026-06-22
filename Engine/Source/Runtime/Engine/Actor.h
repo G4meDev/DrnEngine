@@ -9,6 +9,7 @@ LOG_DECLARE_CATEGORY( LogActor );
 namespace Drn
 {
 	DECLARE_MULTICAST_DELEGATE_OneParam(OnActorDestroyedDelegate, Actor*);
+	DECLARE_MULTICAST_DELEGATE_FourParams(OnActorHitDelegate, Actor*, Actor*, Vector, const HitResult&);
 
 	class Actor : public Serializable
 	{
@@ -69,6 +70,7 @@ namespace Drn
 		virtual void CalcCamera( struct ViewInfo& OutResult );
 
 		OnActorDestroyedDelegate OnActorKilled;
+		OnActorHitDelegate OnActorHitDel;
 
 #if WITH_EDITOR
 		virtual bool IsVisibleInWorldOutliner() const { return true; };

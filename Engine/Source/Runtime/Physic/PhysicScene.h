@@ -23,7 +23,7 @@ namespace Drn
 		virtual void onContact(const PxContactPairHeader& PairHeader, const PxContactPair* Pairs, PxU32 NumPairs) override;
 		virtual void onAdvance(const PxRigidBody*const* bodyBuffer, const PxTransform* poseBuffer, const PxU32 count) override {}
 
-		void AddCollisionNotifyInfo(const BodyInstance* Body0, const BodyInstance* Body1,
+		std::vector<int32> AddCollisionNotifyInfo( const BodyInstance* Body0, const BodyInstance* Body1,
 			const physx::PxContactPair * Pairs, uint32 NumPairs, std::vector<CollisionNotifyInfo>& PendingNotifyInfos);
 
 	private:	

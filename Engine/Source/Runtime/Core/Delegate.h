@@ -31,8 +31,17 @@
 #define DECLARE_MULTICAST_DELEGATE_OneParam( DelegateName, Param1Type )					\
 	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type )
 
-#define DECLARE_MULTICAST_DELEGATE_TwoParams( DelegateName, Param1Type, Param2Type )					\
+#define DECLARE_MULTICAST_DELEGATE_TwoParams( DelegateName, Param1Type, Param2Type )							\
 	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type, Param2Type )
+
+#define DECLARE_MULTICAST_DELEGATE_ThreeParams( DelegateName, Param1Type, Param2Type, Param3Type )				\
+	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type, Param2Type, Param3Type )
+
+#define DECLARE_MULTICAST_DELEGATE_FourParams( DelegateName, Param1Type, Param2Type, Param3Type, Param4Type )	\
+	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type, Param2Type, Param3Type, Param4Type )
+
+#define DECLARE_MULTICAST_DELEGATE_FiveParams( DelegateName, Param1Type, Param2Type, Param3Type, Param4Type, Param5Type )	\
+	FUNC_DECLARE_MULTICAST_DELEGATE( DelegateName, void, Param1Type, Param2Type, Param3Type, Param4Type, Param5Type )
 
 namespace Drn
 {
@@ -98,6 +107,11 @@ namespace Drn
 			{
 				Element = InvocationElement( UClass, std::bind( F, UClass, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 ) );
 			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 4)
+			{
+				Element = InvocationElement( UClass, std::bind( F, UClass, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ) );
+			}
 		}
 
 		template<class Func>
@@ -121,6 +135,11 @@ namespace Drn
 			if constexpr ( sizeof...( DelegateSignature ) == 3)
 			{
 				Element = InvocationElement( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 ) );
+			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 4)
+			{
+				Element = InvocationElement( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ) );
 			}
 		}
 
@@ -182,6 +201,16 @@ namespace Drn
 			{
 				InvokationList.emplace_back( UClass, std::bind( F, UClass, std::placeholders::_1, std::placeholders::_2 ) );
 			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 3)
+			{
+				InvokationList.emplace_back( UClass, std::bind( F, UClass, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 ) );
+			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 4)
+			{
+				InvokationList.emplace_back( UClass, std::bind( F, UClass, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ) );
+			}
 		}
 
 		template<class Func>
@@ -200,6 +229,16 @@ namespace Drn
 			if constexpr ( sizeof...( DelegateSignature ) == 2)
 			{
 				InvokationList.emplace_back( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1, std::placeholders::_2 ) );
+			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 3)
+			{
+				InvokationList.emplace_back( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3 ) );
+			}
+
+			if constexpr ( sizeof...( DelegateSignature ) == 4)
+			{
+				InvokationList.emplace_back( (void*)&DummyLambdaObj, std::bind( F, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4 ) );
 			}
 		}
 

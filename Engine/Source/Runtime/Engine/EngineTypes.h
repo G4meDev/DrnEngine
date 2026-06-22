@@ -126,6 +126,8 @@ namespace Drn
 		{
 		}
 
+		bool bBlockingHit;
+
 		Vector TraceStart;
 		Vector TraceEnd;
 
@@ -134,6 +136,8 @@ namespace Drn
 
 		Actor* HitActor;
 		PrimitiveComponent* HitComponent;
+
+		class PhysicalMaterial* PhysMaterial;
 	};
 
 	struct RigidBodyContactInfo
@@ -146,9 +150,10 @@ namespace Drn
 			PhysMaterial[1] = nullptr;
 		}
 
-		RigidBodyContactInfo(const Vector& InContactPosition, const Vector& InContactNormal, class PhysicalMaterial* InPhysMat0, class PhysicalMaterial* InPhysMat1)
+		RigidBodyContactInfo(const Vector& InContactPosition, const Vector& InContactNormal, float InPenetration, class PhysicalMaterial* InPhysMat0, class PhysicalMaterial* InPhysMat1)
 			: ContactPosition(InContactPosition)
 			, ContactNormal(InContactNormal)
+			, ContactPenetration(InPenetration)
 		{
 			PhysMaterial[0] = InPhysMat0;
 			PhysMaterial[1] = InPhysMat1;
@@ -156,6 +161,7 @@ namespace Drn
 
 		Vector ContactPosition;
 		Vector ContactNormal;
+		float ContactPenetration;
 
 		class PhysicalMaterial* PhysMaterial[2];
 
@@ -169,6 +175,9 @@ namespace Drn
 		{}
 
 		std::vector<RigidBodyContactInfo> ContactInfos;
+		Vector TotalNormalImpulse;
+		Vector TotalFrictionImpulse;
+
 		void SwapContactOrders();
 	};
 
