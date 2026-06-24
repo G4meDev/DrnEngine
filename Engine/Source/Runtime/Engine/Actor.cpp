@@ -25,10 +25,7 @@ namespace Drn
 			Comp->Tick(DeltaTime);
 		}
 
-		for (auto SceneComp : Root->GetChilds())
-		{
-			SceneComp->Tick(DeltaTime);
-		}
+		Root->Tick(DeltaTime);
 	}
 
 	void Actor::GetComponentsInline( std::vector<Component*>& Comps )

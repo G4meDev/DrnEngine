@@ -26,6 +26,7 @@ namespace Drn
 		void LoadInitalWorld();
 
 		inline World* GetMainWorld() { return m_MainWorld; }
+		inline const std::set<World*>& GetWorlds() { return m_AllocatedWorlds; }
 
 		void LoadLevel(const std::string& LevelPath );
 

@@ -134,6 +134,14 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/MaterialShared.h
 	Source/Runtime/Renderer/LightGrid.h
 
+	Source/Runtime/Particle/ParticleSystem.h
+	Source/Runtime/Particle/ParticleEmitter.h
+	Source/Runtime/Particle/ParticleModule.h
+	Source/Runtime/Particle/ParticleEmitterInstance.h
+	Source/Runtime/Particle/ParticleSystemComponent.h
+	Source/Runtime/Particle/ParticleHelper.h
+	Source/Runtime/Particle/Particle.h
+
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
 	Source/Runtime/Components/PointLightComponent.h
@@ -228,6 +236,7 @@ set( HEADER_FILES
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewPhysicalMaterialGuiLayer.h
+	Source/Editor/AssetPreview/AssetPreviewParticleSystemGuiLayer.h
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.h
 	Source/Editor/AssetImporter/AssetImporterMaterial.h
@@ -376,6 +385,14 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/MaterialShared.cpp
 	Source/Runtime/Renderer/LightGrid.cpp
 
+	Source/Runtime/Particle/ParticleSystem.cpp
+	Source/Runtime/Particle/ParticleEmitter.cpp
+	Source/Runtime/Particle/ParticleModule.cpp
+	Source/Runtime/Particle/ParticleEmitterInstance.cpp
+	Source/Runtime/Particle/ParticleSystemComponent.cpp
+	Source/Runtime/Particle/ParticleHelper.cpp
+	Source/Runtime/Particle/Particle.cpp
+
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp
 	Source/Runtime/Components/PointLightComponent.cpp
@@ -470,6 +487,7 @@ set( SOURCE_FILES
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewTextureCubeGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewPhysicalMaterialGuiLayer.cpp
+	Source/Editor/AssetPreview/AssetPreviewParticleSystemGuiLayer.cpp
 
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.cpp
 	Source/Editor/AssetImporter/AssetImporterMaterial.cpp

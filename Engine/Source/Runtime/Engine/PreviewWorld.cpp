@@ -27,7 +27,8 @@ namespace Drn
 
 		if (m_World)
 		{
-			WorldManager::Get()->ReleaseWorld(m_World);
+			//WorldManager::Get()->ReleaseWorld(m_World);
+			m_World->Destroy();
 		}
 	}
 

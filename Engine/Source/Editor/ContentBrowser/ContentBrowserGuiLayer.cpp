@@ -408,6 +408,19 @@ namespace Drn
 				OnRefresh();
 			}
 
+			if (ImGui::Button("Particle System"))
+			{
+				if (!SelectedFolder)
+				{
+					LOG(LogContentBrowser, Warning, "Cloudn`t add asset. there is no folder selected.");
+					return;
+				}
+
+				AssetManager::Get()->Create<ParticleSystem>(SelectedFolder->File.m_FullPath, "ParticleSystem_", 1);
+
+				OnRefresh();
+			}
+
 			ImGui::EndPopup();
 		}
 	}

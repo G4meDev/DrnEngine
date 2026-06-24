@@ -9,6 +9,7 @@
 #include "Runtime/Core/FileArchive.h"
 
 #include "Runtime/Physic/PhysicalMaterial.h"
+#include "Runtime/Particle/ParticleSystem.h"
 
 LOG_DECLARE_CATEGORY(LogAssetManager)
 
@@ -141,6 +142,11 @@ namespace Drn
 			else if (Type == EAssetType::PhysicalMaterial)
 			{
 				m_Asset = AssetManager::Get()->Load<PhysicalMaterial>(m_Path);
+			}
+
+			else if (Type == EAssetType::ParticleSystem)
+			{
+				m_Asset = AssetManager::Get()->Load<ParticleSystem>(m_Path);
 			}
 
 			else

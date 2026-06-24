@@ -31,6 +31,7 @@ namespace Drn
 		WheeledVehiclePawn,
 		InstancedStaticMeshActor,
 		ScenePointCloudImporter,
+		Particle,
 	};
 
 	enum class EComponentType : uint32
@@ -45,6 +46,7 @@ namespace Drn
 		SphereReflectionCaptureComponent,
 		WheeledVehicleMovementComponent,
 		InstancedStaticMeshComponent,
+		ParticleSystemComponent,
 	};
 
 	enum class ELightType : uint8

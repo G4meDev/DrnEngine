@@ -67,6 +67,11 @@
 #include "Runtime/Renderer/GpuFence.h"
 #include "Runtime/Renderer/GpuProfiler.h"
 
+#include "Runtime/Particle/Particle.h"
+#include "Runtime/Particle/ParticleSystemComponent.h"
+#include "Runtime/Particle/ParticleSystem.h"
+#include "Runtime/Particle/ParticleHelper.h"
+
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/Box.h"
 #include "Runtime/Math/Sphere.h"
