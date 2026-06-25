@@ -2,11 +2,13 @@
 
 #include "ForwardTypes.h"
 #include "Runtime/Particle/ParticleHelper.h"
+#include "Runtime/Particle/ParticleModule.h"
 
 namespace Drn
 {
 	class ParticleSystemComponent;
 	class ParticleEmitter;
+	//class ParticleModule;
 	class BaseParticle;
 
 	class ParticleEmitterInstance : public RefCountedObject
@@ -16,7 +18,7 @@ namespace Drn
 		virtual ~ParticleEmitterInstance();
 
 		ParticleEmitter* Emitter;
-		ParticleSystemComponent* Compponent;
+		ParticleSystemComponent* Component;
 		EEmitterType EmitterType;
 		Vector Location;
 		Vector OldLocation;
@@ -55,6 +57,10 @@ namespace Drn
 		float CurrentDelay;
 		bool bEmitterIsDone;
 
+		std::vector<TRefCountPtr<ParticleModuleSpawnBase>> SpawningModules;
+		std::vector<TRefCountPtr<ParticleModule>> SpawnModules;
+		std::vector<TRefCountPtr<ParticleModule>> UpdateModules;
+
 		virtual void InitParameters(ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent);
 		virtual void Init();
 		World* GetWorld() const;
@@ -65,30 +71,29 @@ namespace Drn
 		virtual bool Resize(int32 NewMaxActiveParticles);
 		virtual void Tick(float DeltaTime);
 		//void CheckEmitterFinished();
-		//
-		//virtual float Tick_EmitterTimeSetup(float DeltaTime);
-		//virtual float Tick_SpawnParticles(float DeltaTime, bool bFirstTime);
-		//virtual void Tick_ModuleUpdate(float DeltaTime);
+		
+		virtual float Tick_EmitterTimeSetup(float DeltaTime);
+		virtual float Tick_SpawnParticles(float DeltaTime, bool bFirstTime);
+		virtual void Tick_ModuleUpdate(float DeltaTime);
 		//virtual void Tick_ModulePostUpdate(float DeltaTime);
 		//virtual void Tick_ModuleFinalUpdate(float DeltaTime);
-		//
+		
 		//virtual Box GetBoundingBox();
 		//virtual void UpdateBoundingBox(float DeltaTime);
-		//
+		
 		//virtual uint32 CalculateParticleStride(uint32 ParticleSize);
-		//virtual void ResetParticleParameters(float DeltaTime);
-		//
-		//
-		//virtual float Spawn(float DeltaTime);
-		//void SpawnParticles( int32 Count, float StartTime, float Increment, const Vector& InitialLocation, const Vector& InitialVelocity, struct FParticleEventInstancePayload* EventPayload );
+		virtual void ResetParticleParameters(float DeltaTime);
+
+		virtual float Spawn(float DeltaTime);
+		void SpawnParticles( int32 Count, float StartTime, float Increment, const Vector& InitialLocation, const Vector& InitialVelocity );
 		//virtual void ForceSpawn(float DeltaTime, int32 InSpawnCount, int32 InBurstCount, Vector& InLocation, Vector& InVelocity);
 		//void CheckSpawnCount(int32 InNewCount, int32 InMaxCount);
-		//virtual void PreSpawn(BaseParticle* Particle, const Vector& InitialLocation, const Vector& InitialVelocity);
-		//virtual void PostSpawn(BaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
-		//
+		virtual void PreSpawn(BaseParticle* Particle, const Vector& InitialLocation, const Vector& InitialVelocity);
+		virtual void PostSpawn(BaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
+		
 		//virtual bool HasCompleted();
 		virtual void KillParticles();
-		//virtual void KillParticle(int32 Index);
+		virtual void KillParticle(int32 Index);
 		//virtual void KillParticlesForced(bool bFireEvents = false);
 		//
 		//virtual void SetHaltSpawning(bool bInHaltSpawning)
@@ -143,6 +148,7 @@ namespace Drn
 		int32 MeshRotationOffset;
 
 		virtual void Tick(float DeltaTime) override;
+		virtual void PostSpawn(BaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
 
 		virtual uint32 RequiredBytes() override;
 		virtual bool Resize(int32 NewMaxActiveParticles) override;

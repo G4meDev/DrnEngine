@@ -28,6 +28,11 @@ namespace Drn
 
 		Transform operator*(const Transform& Other) const;
 
+		inline Matrix ToMatrixNoScale() const
+		{
+			return Transform(Location, Rotation);
+		}
+
 		Transform GetRelativeTransform(const Transform& RelativeTo) const;
 		Vector InverseTransformPosition( const Vector& InVector ) const;
 		inline static Vector SubtractTranslations( const Transform& A, const Transform& B) { return A.Location - B.Location; }
