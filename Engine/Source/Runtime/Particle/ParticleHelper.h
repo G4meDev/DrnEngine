@@ -13,6 +13,12 @@ namespace Drn
 #define DECLARE_PARTICLE_PTR(Name,Address)		\
 	BaseParticle* Name = (BaseParticle*) (Address);
 
+#define SPAWN_INIT																										\
+	drn_check((Owner != NULL) && (Owner->Component != NULL));																\
+	const int32			ActiveParticles	= Owner->ActiveParticles;															\
+	const uint32		ParticleStride	= Owner->ParticleStride;															\
+	BaseParticle&	Particle			= *(ParticleBase);
+
 	enum class EEmitterType : uint8
 	{
 		Sprite_Cpu,

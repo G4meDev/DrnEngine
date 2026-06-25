@@ -29,6 +29,14 @@ namespace Drn
 			return;
 		}
 
+		{
+			std::string msg = std::format("Active Particles: {}", ParticleStats::GetParticleCounter());
+			ImGui::Text( msg.c_str() );
+			ParticleStats::ResetParticleCounter();
+		}
+
+		ImGui::Separator();
+
 #if RENDER_STATS
 
 		typedef std::pair<std::string, double> TimingPair;

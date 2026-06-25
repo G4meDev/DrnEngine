@@ -3,6 +3,7 @@
 #include "ForwardTypes.h"
 #include "Runtime/Particle/ParticleHelper.h"
 #include "Runtime/Particle/ParticleModule.h"
+#include "Runtime/Particle/ParticleModuleSpawn.h"
 
 namespace Drn
 {
@@ -56,6 +57,12 @@ namespace Drn
 		float EmitterDuration;
 		float CurrentDelay;
 		bool bEmitterIsDone;
+
+		bool bUseLocalSpace = false;
+		Vector Origin = Vector::ZeroVector;
+		Quat Rotation = Quat::Identity;
+
+		RandomStream EmitterRandomStream;
 
 		std::vector<TRefCountPtr<ParticleModuleSpawnBase>> SpawningModules;
 		std::vector<TRefCountPtr<ParticleModule>> SpawnModules;
@@ -157,5 +164,21 @@ namespace Drn
 
 	};
 
+	// ---------------------------------------------------------------------------------------
 
-        }
+#if WITH_EDITOR
+	class ParticleStats
+	{
+	public:
+
+		static void AddParticleCounter(int32 Amount) { ParticleCounter += Amount; }
+		static void ResetParticleCounter() { ParticleCounter = 0; }
+
+		inline static int32 GetParticleCounter() { return ParticleCounter; }
+
+	private:
+		static std::atomic<int32> ParticleCounter;
+#endif
+	};
+
+}

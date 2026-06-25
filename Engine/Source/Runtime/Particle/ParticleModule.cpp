@@ -3,12 +3,9 @@
 
 namespace Drn
 {
-	bool ParticleModuleSpawn::GetSpawnAmount( ParticleEmitterInstance* Owner, float OldLeftover, float DeltaTime, float& Rate )
+	RandomStream& ParticleModule::GetRandomStream( ParticleEmitterInstance* Owner )
 	{
-		drn_check(Owner);
-
-		Rate = SpawnRate;
-		return true;
+		return Owner->EmitterRandomStream;
 	}
 
 }

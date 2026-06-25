@@ -1,10 +1,16 @@
 #include "DrnPCH.h"
 #include "ParticleEmitterInstance.h"
 
+#include "Runtime/Particle/ParticleModuleLocation.h"
+
 #define MAX_PARTICLE_COUNT 2048
 
 namespace Drn
 {
+#if WITH_EDITOR
+	std::atomic<int32> ParticleStats::ParticleCounter;
+#endif
+
 	ParticleEmitterInstance::ParticleEmitterInstance()
 		: Emitter(nullptr)
 		, Component(nullptr)
@@ -48,12 +54,13 @@ namespace Drn
 		Component = InComponent;
 		//SetupEmitterDuration();
 
+		EmitterRandomStream.GenerateNewSeed();
 		SpawningModules.push_back(new ParticleModuleSpawn());
+		SpawnModules.push_back(new ParticleModuleLocationPrimitiveSphere());
 	}
 
 	void ParticleEmitterInstance::Init()
 	{
-		
 
 		ParticleSize = RequiredBytes();
 		ParticleSize = Align(ParticleSize, 16);
@@ -89,12 +96,9 @@ namespace Drn
 
 	void ParticleEmitterInstance::UpdateTransforms()
 	{
-		bool bUseLocalSpace = true;
-
 		Matrix ComponentToWorld = Component != nullptr ?
 			Component->GetWorldTransform().ToMatrixNoScale() : Matrix::MatrixIdentity;
-		//Matrix EmitterToComponent = Transform(Emitter->EmitterOrigin, Emitter->EmitterRotation);
-		Matrix EmitterToComponent = Matrix::MatrixIdentity;
+		Matrix EmitterToComponent = Transform(Origin, Rotation);
 
 		if (bUseLocalSpace)
 		{
@@ -183,10 +187,16 @@ namespace Drn
 
 			// Invalidate the contents of the vertex/index buffer.
 			bRenderDataDirty = 1;
+
+
 		}
 
 		EmitterTime += DeltaTime;
 		LastDeltaTime = DeltaTime;
+
+#if WITH_EDITOR
+		ParticleStats::AddParticleCounter(ActiveParticles);
+#endif
 	}
 
 	float ParticleEmitterInstance::Tick_EmitterTimeSetup( float DeltaTime )
@@ -590,7 +600,7 @@ namespace Drn
 			Particle.Velocity = Particle.Velocity + Vector(0.0, -0.5, 0.0);
 			Particle.Location = Particle.Location + Particle.Velocity * DeltaTime;
 
-			GetWorld()->DrawDebugSphere(Component->GetWorldTransform().TransformPosition(Particle.Location), Quat::Identity, Color::White, 1 - Particle.RelativeTime, 32, 0.01, 0);
+			GetWorld()->DrawDebugSphere(SimulationToWorld.TransformPosition(Particle.Location), Quat::Identity, Color::White, 1 - Particle.RelativeTime, 32, 0.01, 0);
 		}
 	}
 
@@ -598,9 +608,9 @@ namespace Drn
 	{
 		ParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
 
-		Particle->Location = RandStream.GetUnitVector() * RandStream.FRandRange(-5, 5);
+		//Particle->Location = EmitterToSimulation.TransformPosition(RandStream.GetUnitVector() * RandStream.FRandRange(-5, 5));
 		Particle->OneOverMaxLifetime = 1.0f / RandStream.FRandRange(0.3f, 0.7f);
-		Particle->Velocity = RandStream.GetUnitVector() * RandStream.FRandRange(3, 5);
+		//Particle->Velocity = RandStream.GetUnitVector() * RandStream.FRandRange(3, 5);
 	}
 
 	uint32 ParticleMeshEmitterInstance::RequiredBytes()
