@@ -36,6 +36,7 @@ namespace Drn
 			, m_Thickness(false)
 			, m_LineBatchSceneProxy(nullptr)
 		{
+			bTickInEditor = true;
 			SetEditorPrimitive(true);
 		}
 		virtual ~LineBatchComponent() {};

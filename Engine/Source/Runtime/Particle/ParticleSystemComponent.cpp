@@ -5,6 +5,7 @@ namespace Drn
 {
 	ParticleSystemComponent::ParticleSystemComponent()
 	{
+		bTickInEditor = true;
 		
 	}
 

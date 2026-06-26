@@ -20,12 +20,7 @@ namespace Drn
 
 	void Actor::Tick(float DeltaTime)
 	{
-		for (auto Comp : Components)
-		{
-			Comp->Tick(DeltaTime);
-		}
-
-		Root->Tick(DeltaTime);
+		
 	}
 
 	void Actor::GetComponentsInline( std::vector<Component*>& Comps )

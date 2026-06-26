@@ -27,10 +27,6 @@ namespace Drn
 	{
 		Component::Tick(DeltaTime);
 
-		for (auto SceneComp : Childs)
-		{
-			SceneComp->Tick(DeltaTime);
-		}
 	}
 
 	void SceneComponent::AttachSceneComponent(SceneComponent* InComponent)

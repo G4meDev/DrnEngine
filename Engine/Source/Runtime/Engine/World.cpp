@@ -152,8 +152,38 @@ namespace Drn
 			for (Actor* actor : m_Actors)
 			{
 				actor->Tick(DeltaTime);
+
+				std::vector<Component*> Childs;
+				actor->GetComponentsInline(Childs);
+
+				for (Component* Child : Childs)
+				{
+					Child->Tick(DeltaTime);
+				}
 			}
 		}
+
+#if WITH_EDITOR
+		// explicitly tick some components in editor e.g. line batch, particle system, ...
+
+		if (IsEditorWorld())
+		{
+			for (Actor* actor : m_Actors)
+			{
+				std::vector<Component*> Childs;
+				actor->GetComponentsInline(Childs);
+
+				for (Component* Child : Childs)
+				{
+					if (Child->CanTickInEditor())
+					{
+						Child->Tick(DeltaTime);
+					}
+				}
+			}
+		}
+#endif
+
 	}
 
 	Component* World::GetComponentWithGuid( const Guid& ID )

@@ -25,6 +25,9 @@ namespace Drn
 		Quat CameraRotation(0, Math::PI / 4, Math::PI * 5 / 4);
 		m_World->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
 
+		ParticlePreview = m_World->GetWorld()->SpawnActor<Particle>();
+		ParticlePreview->GetParticleSystemComponenet()->SetTemplate(AssetHandle<ParticleSystem>(""));
+
 		//Vector CameraPosition = StaticMeshAsset->GetBounds().Origin + CameraRotation.GetAxisZ() * StaticMeshAsset->GetBounds().SphereRadius * -7;
 		//TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
 

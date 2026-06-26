@@ -83,7 +83,14 @@ namespace Drn
 		inline void SetGameWorld() { m_WorldType = EWorldType::Game; }
 		inline void SetPaused(bool Paused) { m_Paused = Paused; }
 
-		inline bool IsEditorWorld() const { return m_WorldType == EWorldType::Editor; }
+		inline bool IsEditorWorld() const
+		{
+#if WITH_EDITOR
+			return m_WorldType == EWorldType::Editor;
+#else
+			return false;
+#endif
+		}
 		inline bool IsPlayInEditorWorld() const { return m_WorldType == EWorldType::PlayInEditor; }
 		inline bool IsGameWorld() const { return m_WorldType == EWorldType::Game; }
 

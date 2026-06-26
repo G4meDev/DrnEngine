@@ -28,6 +28,8 @@ namespace Drn
 		TRefCountPtr<class PreviewWorld> m_World;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 
+		class Particle* ParticlePreview;
+
 		AssetHandle<ParticleSystem> m_OwningAsset;
 	};
 }

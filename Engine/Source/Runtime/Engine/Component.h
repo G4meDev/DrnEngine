@@ -46,6 +46,8 @@ namespace Drn
 		inline bool IsRegistered() const { return m_Registered; }
 		inline bool IsPendingKill() const { return m_PendingKill; }
 
+		inline bool CanTickInEditor() const { return bTickInEditor; }
+
 #if WITH_EDITOR
 		inline bool IsSelectedInEditor() const { return m_SelectedInEditor; }
 		virtual void SetSelectedInEditor( bool SelectedInEditor );
@@ -57,6 +59,7 @@ namespace Drn
 		void MarkPendingKill();
 
 		Guid m_Guid;
+		bool bTickInEditor;
 
 #if WITH_EDITOR
 		bool m_SelectedInEditor = false;

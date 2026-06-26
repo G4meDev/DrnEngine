@@ -7,6 +7,7 @@ namespace Drn
 		: m_Guid(Guid::NewGuid())
 		, m_Registered(false)
 		, m_PendingKill(false)
+		, bTickInEditor(false)
 	{
 		
 	}
