@@ -70,6 +70,7 @@
 #include "Runtime/Particle/Particle.h"
 #include "Runtime/Particle/ParticleSystemComponent.h"
 #include "Runtime/Particle/ParticleSystem.h"
+#include "Runtime/Particle/ParticleEmitter.h"
 #include "Runtime/Particle/ParticleHelper.h"
 
 #include "Runtime/Math/Math.h"

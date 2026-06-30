@@ -31,12 +31,24 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			Ar >> Unused;
+			uint8 EmitterCount = 0;
+			Ar >> EmitterCount;
+			Emitters.resize(EmitterCount);
+			for (int32 EmitterIndex = 0; EmitterIndex < EmitterCount; EmitterIndex++)
+			{
+				Emitters[EmitterIndex] = new ParticleEmitter();
+				Emitters[EmitterIndex]->Serialize(Ar);
+			}
 		}
 
 		else
 		{
-			Ar << Unused;
+			const uint8 EmitterCount = std::min(Emitters.size(), (size_t)UINT8_MAX);
+			Ar << EmitterCount;
+			for (int32 EmitterIndex = 0; EmitterIndex < EmitterCount; EmitterIndex++)
+			{
+				Emitters[EmitterIndex]->Serialize(Ar);
+			}
 		}
 	}
 

@@ -10,7 +10,7 @@ namespace Drn
 		//uint32 bProcessSpawnRate:1;
 		//uint32 bProcessBurstList:1;
 
-		virtual EModuleType	GetModuleType() const override { return EPMT_Spawn; }
+		//virtual EModuleType	GetModuleType() const override { return EPMT_Spawn; }
 
 		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, float OldLeftover, 
 			float DeltaTime, float& Rate)
@@ -61,6 +61,13 @@ namespace Drn
 
 		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, float OldLeftover, 
 			float DeltaTime, float& Rate) override;
+		
+		virtual EParticleModule	GetModuleType() const override { return EParticleModule::Spawn; }
+
+#if WITH_EDITOR
+		inline virtual std::string GetName() const override { return "Spawn"; }
+		virtual bool Draw(ParticleEmitterInstance* Owner) override;
+#endif
 
 		//virtual float GetMaximumSpawnRate() override;
 		//virtual float GetEstimatedSpawnRate() override;

@@ -130,5 +130,63 @@ namespace Drn
 		Vector4 PrevTransform2;
 	};
 
+	enum class EParticleModuleStage : uint32
+	{
+		None			= 0 << 0,
+		EmitterUpdate	= 1 << 0,
+		ParticleSpawn	= 1 << 1,
+		ParticleUpdate	= 1 << 2,
+
+		NumBits = 3
+	};
+
+	struct ParticleModuleMetaData
+	{
+		ParticleModuleMetaData(const std::string InDisplayName, EParticleModuleStage InSupportedStages)
+			: DisplayName(InDisplayName)
+			, SupportedStages(InSupportedStages)
+		{}
+
+		ParticleModuleMetaData() : ParticleModuleMetaData("Invalid", EParticleModuleStage::None)
+		{}
+
+		std::string DisplayName;
+		EParticleModuleStage SupportedStages;
+
+		inline bool IsParticleModuleSupportingStage( EParticleModuleStage Stage )
+		{
+			return EnumHasAnyFlags(SupportedStages, Stage);
+		}
+	};
+
+	struct ParticleModuleCategory
+	{
+		ParticleModuleCategory(const std::string& InCategoryName)
+			: CategoryName(InCategoryName)
+			, ModulesSupportedStages(EParticleModuleStage::None)
+		{}
+
+		std::string CategoryName;
+		std::vector<EParticleModule> Modules;
+		EParticleModuleStage ModulesSupportedStages;
+	};
+
+	class ParticleTypes
+	{
+	public:
+		static void RegisterParticleModules();
+
+		template<typename T>
+		static void RegisterParticleModule(EParticleModule Module, const std::string& DisplayName, EParticleModuleStage Stage, const std::string& CategoryName);
+
+		static std::function<ParticleModule*()> ParticleModuleFactory[(int32)EParticleModule::Max];
+		static inline ParticleModule* CreateParticleModule(EParticleModule Module) { return ParticleModuleFactory[int32(Module)](); }
+
+#if WITH_EDITOR
+
+		static ParticleModuleMetaData ParticleModulesMetaData[(int32)EParticleModule::Max];
+		static std::vector<ParticleModuleCategory> ParticleModuleCategories;
+#endif
+	};
 
 }

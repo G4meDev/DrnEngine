@@ -10,6 +10,8 @@
 
 namespace Drn
 {
+	class ParticleModule;
+
 	extern void RegisterGameTypes();
 
 	enum class EActorType : uint16
@@ -55,6 +57,13 @@ namespace Drn
 		SpotLight,
 		DirectionalLight,
 		SkyLight,
+	};
+
+	enum class EParticleModule : uint32
+	{
+		Spawn,
+		LocationSphere,
+		Max
 	};
 
 	enum class ERenderBufferCopySource

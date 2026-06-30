@@ -33,8 +33,6 @@ namespace Drn
 
 	private:
 
-		float Unused = 10;
-
 		friend class AssetPreviewParticleSystemGuiLayer;
 	};
 }

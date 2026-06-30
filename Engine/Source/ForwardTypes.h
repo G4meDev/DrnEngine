@@ -24,6 +24,8 @@ private:
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
 
+#include "Runtime/Misc/EnumClassFlags.h"
+
 #include "Runtime/Core/CriticalSection.h"
 #include "Runtime/Misc/DebugHelper.h"
 #include "Runtime/Misc/StatsMisc.h"

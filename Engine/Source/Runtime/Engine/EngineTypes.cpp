@@ -78,6 +78,8 @@ namespace Drn
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::ScenePointCloudImporter	, ScenePointCloudImporter );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::Particle					, Particle );
 
+		ParticleTypes::RegisterParticleModules();
+
 		SurfaceTypesDisplayNames[0]						= "Default";
 
 		CollisionChannelDisplayNames[ECC_WorldStatic]	= "WorldStatic";

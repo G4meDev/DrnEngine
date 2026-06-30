@@ -7,20 +7,6 @@ namespace Drn
 	class ParticleEmitter;
 	class ParticleEmitterInstance;
 
-	enum EModuleType
-	{
-		EPMT_General,
-		EPMT_TypeData,
-		EPMT_Beam,
-		EPMT_Trail,
-		EPMT_Spawn,
-		EPMT_Required,
-		EPMT_Event,
-		EPMT_Light,
-		EPMT_SubUV,
-		EPMT_MAX,
-	};
-
 	class ParticleModule : public RefCountedObject
 	{
 	public:
@@ -48,9 +34,18 @@ namespace Drn
 		virtual void Update(ParticleEmitterInstance* EmitterInstance, float DeltaTime) {};
 		virtual void FinalUpdate(ParticleEmitterInstance* EmitterInstance, float DeltaTime) {};
 
-		virtual EModuleType	GetModuleType() const {	return EPMT_General; }
+		//virtual EModuleType	GetModuleType() const {	return EPMT_General; }
+		virtual EParticleModule	GetModuleType() const {	return EParticleModule::Spawn; }
 
 		RandomStream& GetRandomStream( ParticleEmitterInstance* Owner );
+
+		inline bool IsEnabled() const { return bEnabled; }
+		inline void SetEnabled(bool bInEnabled) { bEnabled = bInEnabled; }
+
+#if WITH_EDITOR
+		inline virtual std::string GetName() const { return "Invalid"; }
+		virtual bool Draw(ParticleEmitterInstance* Owner) { return false; };
+#endif
 	};
 
 }

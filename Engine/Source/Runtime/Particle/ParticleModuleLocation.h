@@ -51,5 +51,7 @@ namespace Drn
 		float StartRadius = 5.0f;
 
 		virtual void Spawn(ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase) override;
+
+		virtual EParticleModule	GetModuleType() const override { return EParticleModule::LocationSphere; }
 	};
 }
