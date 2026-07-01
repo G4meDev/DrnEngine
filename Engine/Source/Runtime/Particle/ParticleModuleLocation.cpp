@@ -3,6 +3,35 @@
 
 namespace Drn
 {
+	void ParticleModuleLocationPrimitiveBase::Serialize( Archive& Ar )
+	{
+		ParticleModuleLocationBase::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> Positive_X;
+			Ar >> Positive_Y;
+			Ar >> Positive_Z;
+			Ar >> Negative_X;
+			Ar >> Negative_Y;
+			Ar >> Negative_Z;
+			Ar >> SurfaceOnly;
+			Ar >> Velocity;
+		}
+
+		else
+		{
+			Ar << Positive_X;
+			Ar << Positive_Y;
+			Ar << Positive_Z;
+			Ar << Negative_X;
+			Ar << Negative_Y;
+			Ar << Negative_Z;
+			Ar << SurfaceOnly;
+			Ar << Velocity;
+		}
+	}
+
 	void ParticleModuleLocationPrimitiveBase::DetermineUnitDirection( ParticleEmitterInstance* Owner, Vector& vUnitDir, RandomStream* InRandomStream )
 	{
 		Vector vRand = Vector(InRandomStream->GetFraction(), InRandomStream->GetFraction(), InRandomStream->GetFraction());
@@ -127,4 +156,46 @@ namespace Drn
 		//}
 	}
 
-        }
+	void ParticleModuleLocationPrimitiveSphere::Serialize( Archive& Ar )
+	{
+		ParticleModuleLocationPrimitiveBase::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> StartRadius;
+		}
+
+		else
+		{
+			Ar << StartRadius;
+		}
+	}
+
+#if WITH_EDITOR
+	bool ParticleModuleLocationPrimitiveBase::Draw( ParticleEmitter* Owner )
+	{
+		bool bDirty = ParticleModuleLocationBase::Draw(Owner);
+
+		bDirty |= ImGui::Checkbox("Positive X",		&Positive_X);
+		bDirty |= ImGui::Checkbox("Positive Y",		&Positive_Y);
+		bDirty |= ImGui::Checkbox("Positive Z",		&Positive_Z);
+		bDirty |= ImGui::Checkbox("Negative X",		&Negative_X);
+		bDirty |= ImGui::Checkbox("Negative Y",		&Negative_Y);
+		bDirty |= ImGui::Checkbox("Negative Z",		&Negative_Z);
+		bDirty |= ImGui::Checkbox("Surface Only",	&SurfaceOnly);
+		bDirty |= ImGui::Checkbox("Velocity",		&Velocity);
+
+		return bDirty;
+	}
+
+	bool ParticleModuleLocationPrimitiveSphere::Draw( ParticleEmitter* Owner )
+	{
+		bool bDirty = ParticleModuleLocationPrimitiveBase::Draw(Owner);
+
+		bDirty |= ImGui::InputFloat("Radius", &StartRadius);
+
+		return bDirty;
+	}
+#endif
+
+        }  // namespace Drn

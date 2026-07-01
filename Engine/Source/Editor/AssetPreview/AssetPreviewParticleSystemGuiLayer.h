@@ -23,6 +23,7 @@ namespace Drn
 		void DrawViewport(float DeltaTime);
 		void DrawParticleParams();
 		void DrawEmitterParams();
+		void DrawModuleParams();
 
 		void DrawEmitters();
 		void DrawEmitterHeader(int32 Index);

@@ -64,9 +64,10 @@ namespace Drn
 		
 		virtual EParticleModule	GetModuleType() const override { return EParticleModule::Spawn; }
 
+		virtual void Serialize( Archive& Ar ) override;
+
 #if WITH_EDITOR
-		inline virtual std::string GetName() const override { return "Spawn"; }
-		virtual bool Draw(ParticleEmitterInstance* Owner) override;
+		virtual bool Draw(ParticleEmitter* Owner) override;
 #endif
 
 		//virtual float GetMaximumSpawnRate() override;

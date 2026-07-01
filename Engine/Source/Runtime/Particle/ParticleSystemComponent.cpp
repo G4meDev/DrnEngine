@@ -72,8 +72,8 @@ namespace Drn
 
 	void ParticleSystemComponent::SetTemplate( AssetHandle<ParticleSystem> InTemplate )
 	{
-		//Template = InTemplate;
-		//Template.Load();
+		Template = InTemplate;
+		Template.Load();
 
 		ResetEmitters();
 	}
@@ -81,6 +81,22 @@ namespace Drn
 	void ParticleSystemComponent::ResetEmitters()
 	{
 		Emitters.clear();
+
+		//if (Template.IsValid())
+		//{
+		//	for (int32 i = 0; i < Template->Emitters.size(); i++)
+		//	{
+		//		ParticleEmitter* Emitter = Template->Emitters[i];
+		//		if (Emitter->IsEnabled())
+		//		{
+		//			TRefCountPtr<ParticleMeshEmitterInstance> MeshEmitter = new ParticleMeshEmitterInstance();
+		//			Emitters.push_back((ParticleEmitterInstance*)MeshEmitter);
+		//
+		//			MeshEmitter->InitParameters(Emitter, this);
+		//			MeshEmitter->Init();
+		//		}
+		//	}
+		//}
 
 		TRefCountPtr<ParticleMeshEmitterInstance> MeshEmitter = new ParticleMeshEmitterInstance();
 		Emitters.push_back((ParticleEmitterInstance*)MeshEmitter);

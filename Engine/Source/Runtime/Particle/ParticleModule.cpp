@@ -3,7 +3,20 @@
 
 namespace Drn
 {
-	RandomStream& ParticleModule::GetRandomStream( ParticleEmitterInstance* Owner )
+	void ParticleModule::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			Ar >> bEnabled;
+		}
+
+		else
+		{
+			Ar << bEnabled;
+		}
+	}
+
+RandomStream& ParticleModule::GetRandomStream( ParticleEmitterInstance* Owner )
 	{
 		return Owner->EmitterRandomStream;
 	}

@@ -31,7 +31,8 @@ namespace Drn
 		m_World->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
 
 		ParticlePreview = m_World->GetWorld()->SpawnActor<Particle>();
-		ParticlePreview->GetParticleSystemComponenet()->SetTemplate(AssetHandle<ParticleSystem>(""));
+		//ParticlePreview->GetParticleSystemComponenet()->SetTemplate(AssetHandle<ParticleSystem>(""));
+		ParticlePreview->GetParticleSystemComponenet()->SetTemplate(m_OwningAsset);
 
 		//Vector CameraPosition = StaticMeshAsset->GetBounds().Origin + CameraRotation.GetAxisZ() * StaticMeshAsset->GetBounds().SphereRadius * -7;
 		//TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
@@ -130,6 +131,12 @@ namespace Drn
 					ImGui::EndTabItem();
 				}
 
+				if (ImGui::BeginTabItem("Module"))
+				{
+					DrawModuleParams();
+					ImGui::EndTabItem();
+				}
+
 				ImGui::EndTabBar();
 			}
 		}
@@ -176,10 +183,40 @@ namespace Drn
 		}
 	}
 
+	void AssetPreviewParticleSystemGuiLayer::DrawModuleParams()
+	{
+		if (SelectedEmitterIndex >= 0 && SelectedModuleIndex >= 0)
+		{
+			ParticleEmitter* Emitter = m_OwningAsset->Emitters[SelectedEmitterIndex];
+
+			int32 InternalIndex = 0;
+			EParticleModuleStage Stage = EParticleModuleStage::None;
+			GetModuleInternalIndex(Emitter, SelectedModuleIndex, Stage, InternalIndex);
+
+			if (Stage == EParticleModuleStage::EmitterUpdate)
+			{
+				Emitter->SpawningModules[InternalIndex]->Draw(Emitter);
+			}
+
+			else if (Stage == EParticleModuleStage::ParticleSpawn)
+			{
+				Emitter->SpawnModules[InternalIndex]->Draw(Emitter);
+			}
+
+			else if (Stage == EParticleModuleStage::ParticleUpdate)
+			{
+				Emitter->UpdateModules[InternalIndex]->Draw(Emitter);
+			}
+
+			else
+			{
+				drn_check(false);
+			}
+		}
+	}
+
 	void AssetPreviewParticleSystemGuiLayer::DrawEmitters()
 	{
-		ImGui::ShowDemoWindow();
-
 		for (int32 EmitterIndex = 0; EmitterIndex < m_OwningAsset->Emitters.size(); EmitterIndex++)
 		{
 			ParticleEmitter* Emitter = m_OwningAsset->Emitters[EmitterIndex];
@@ -220,27 +257,17 @@ namespace Drn
 			Emitter->SetEnabled(!Emitter->IsEnabled());
 		} ImGui::SameLine();
 
-		if (ImGui::Button("Add Module"))
-		{
-			ImGui::OpenPopup("Add Popup");
-		} ImGui::SameLine();
-
 		ImGui::Text( Emitter->GetName().c_str() );
 
 		ImGui::Separator();
 
 		const char* StageDisplayNames[] = { "EmitterUpdate", "ParticleSpawn", "ParticleUpdate" };
 
-		if (ImGui::BeginPopup("Add Popup"))
+		if (ImGui::BeginMenu("Add Module"))
 		{
 			for (int32 ParticleStageIndex = 0; ParticleStageIndex < (int32)EParticleModuleStage::NumBits; ParticleStageIndex++)
 			{
-				if (ImGui::Button(StageDisplayNames[ParticleStageIndex]))
-				{
-					ImGui::OpenPopup(StageDisplayNames[ParticleStageIndex]);
-				}
-
-				if (ImGui::BeginPopup(StageDisplayNames[ParticleStageIndex]))
+				if (ImGui::BeginMenu(StageDisplayNames[ParticleStageIndex]))
 				{
 					for (int32 CategoryIndex = 0; CategoryIndex < ParticleTypes::ParticleModuleCategories.size(); CategoryIndex++)
 					{
@@ -249,12 +276,7 @@ namespace Drn
 						ParticleModuleCategory& Category = ParticleTypes::ParticleModuleCategories[CategoryIndex];
 						std::string CategoryPopupStr = std::format("{}-{}", StageDisplayNames[ParticleStageIndex], Category.CategoryName);
 
-						if (EnumHasAnyFlags(Category.ModulesSupportedStages, Stage) && ImGui::Button(Category.CategoryName.c_str()))
-						{
-							ImGui::OpenPopup(CategoryPopupStr.c_str());
-						}
-
-						if (ImGui::BeginPopup(CategoryPopupStr.c_str()))
+						if (EnumHasAnyFlags(Category.ModulesSupportedStages, Stage) && ImGui::BeginMenu(Category.CategoryName.c_str()))
 						{
 							for (int32 ParticleModuleIndex = 0; ParticleModuleIndex < (int32)EParticleModule::Max; ParticleModuleIndex++)
 							{
@@ -268,7 +290,7 @@ namespace Drn
 										ParticleModule* CreateddModule = ParticleTypes::CreateParticleModule((EParticleModule)ParticleModuleIndex);
 										if (Stage == EParticleModuleStage::EmitterUpdate)
 										{
-											Emitter->SpawningModules.push_back((ParticleModuleSpawn*)CreateddModule);
+											Emitter->SpawningModules.push_back((ParticleModuleSpawnBase*)CreateddModule);
 										}
 										else if (Stage == EParticleModuleStage::ParticleSpawn)
 										{
@@ -282,21 +304,19 @@ namespace Drn
 										{
 											drn_check(false);
 										}
-							
-										ImGui::CloseCurrentPopup();
 									}
 								}
 							}
 
-							ImGui::EndPopup();
+							ImGui::EndMenu();
 						}
 					}
 
-					ImGui::EndPopup();
+					ImGui::EndMenu();
 				}
 			}
 
-			ImGui::EndPopup();
+			ImGui::EndMenu();
 		}
 	}
 

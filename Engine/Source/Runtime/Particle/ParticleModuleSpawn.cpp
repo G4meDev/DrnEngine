@@ -15,12 +15,29 @@ namespace Drn
 		return true;
 	}
 
-#if WITH_EDITOR
-	bool ParticleModuleSpawn::Draw( ParticleEmitterInstance* Owner )
+	void ParticleModuleSpawn::Serialize( Archive& Ar )
 	{
-		ImGui::Text("Test");
+		ParticleModule::Serialize(Ar);
 
-		return false;
+		if (Ar.IsLoading())
+		{
+			Ar >> SpawnRate;
+		}
+
+		else
+		{
+			Ar << SpawnRate;
+		}
+	}
+
+#if WITH_EDITOR
+	bool ParticleModuleSpawn::Draw( ParticleEmitter* Owner )
+	{
+		bool bDirty = ParticleModuleSpawnBase::Draw(Owner);
+
+		bDirty |= ImGui::InputFloat("Spawn Rate", &SpawnRate);
+
+		return bDirty;
 	}
 #endif
         }

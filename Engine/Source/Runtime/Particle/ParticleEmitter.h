@@ -18,7 +18,7 @@ namespace Drn
 		inline bool IsEnabled() const { return bEnabled; }
 		inline void SetEnabled(bool bInEnabled) { bEnabled = bInEnabled; }
 
-		std::vector<TRefCountPtr<ParticleModuleSpawn>> SpawningModules;
+		std::vector<TRefCountPtr<ParticleModuleSpawnBase>> SpawningModules;
 		std::vector<TRefCountPtr<ParticleModule>> SpawnModules;
 		std::vector<TRefCountPtr<ParticleModule>> UpdateModules;
 

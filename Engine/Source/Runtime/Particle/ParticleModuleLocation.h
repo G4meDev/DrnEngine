@@ -23,17 +23,17 @@ namespace Drn
 			, Velocity(0)
 		{}
 
-		uint32 Positive_X:1;
-		uint32 Positive_Y:1;
-		uint32 Positive_Z:1;
-		uint32 Negative_X:1;
-		uint32 Negative_Y:1;
-		uint32 Negative_Z:1;
-		uint32 SurfaceOnly:1;
-		uint32 Velocity:1;
+		bool Positive_X;
+		bool Positive_Y;
+		bool Positive_Z;
+		bool Negative_X;
+		bool Negative_Y;
+		bool Negative_Z;
+		bool SurfaceOnly;
+		bool Velocity;
 
 		//struct FRawDistributionFloat VelocityScale;
-		float VelocityScale;
+		//float VelocityScale;
 
 		//struct FRawDistributionVector StartLocation;
 		Vector StartLocation = Vector::ZeroVector;
@@ -41,7 +41,13 @@ namespace Drn
 		/** Initializes the default values for this property */
 		///void InitializeDefaults();
 
+		virtual void Serialize( Archive& Ar ) override;
+
 		virtual void DetermineUnitDirection(ParticleEmitterInstance* Owner, Vector& vUnitDir, struct RandomStream* InRandomStream);
+
+#if WITH_EDITOR
+		virtual bool Draw(ParticleEmitter* Owner) override;
+#endif
 	};
 
 	class ParticleModuleLocationPrimitiveSphere : public ParticleModuleLocationPrimitiveBase
@@ -53,5 +59,11 @@ namespace Drn
 		virtual void Spawn(ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase) override;
 
 		virtual EParticleModule	GetModuleType() const override { return EParticleModule::LocationSphere; }
+
+		virtual void Serialize( Archive& Ar ) override;
+
+#if WITH_EDITOR
+		virtual bool Draw(ParticleEmitter* Owner) override;
+#endif
 	};
 }

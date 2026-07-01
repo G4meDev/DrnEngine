@@ -55,6 +55,17 @@ namespace Drn
 		//SetupEmitterDuration();
 
 		EmitterRandomStream.GenerateNewSeed();
+
+		//SpawningModules.resize(InTemplate->SpawningModules.size());
+		//for (int32 i = 0; i < InTemplate->SpawningModules.size(); i++)
+		//{
+		//	if (InTemplate->SpawningModules[i]->IsEnabled())
+		//	{
+		//		SpawningModules[i] = (ParticleModuleSpawnBase*)ParticleTypes::CreateParticleModule(InTemplate->SpawningModules[i]->GetModuleType());
+		//		*SpawningModules[i] = *InTemplate->SpawningModules[i];
+		//	}
+		//}
+
 		SpawningModules.push_back(new ParticleModuleSpawn());
 		SpawnModules.push_back(new ParticleModuleLocationPrimitiveSphere());
 	}
@@ -324,7 +335,9 @@ namespace Drn
 		for (int32 ModuleIndex = 0; ModuleIndex < UpdateModules.size(); ModuleIndex++)
 		{
 			ParticleModule* CurrentModule = UpdateModules[ModuleIndex];
-			if (CurrentModule && CurrentModule->bEnabled && CurrentModule->bUpdateModule)
+			drn_check(CurrentModule->bEnabled); // only enabled modules should be in emitter instance
+
+			if (CurrentModule)
 			{
 				CurrentModule->Update(this, DeltaTime);
 			}
