@@ -41,11 +41,14 @@ namespace Drn
 		static bool CreateDirectory(const std::string& Path);
 		static bool CreateDirectoryIfDoesntExist(const std::string& Path);
 		static bool FileExists(const std::string& Path);
+		static bool IsFileReadOnly(const std::string& Path);
 		static void GetFilesInDirectory(const std::string& Path, std::unique_ptr<SystemFileNode>& RootNode, const std::string& Filter = "*");
 
 		static std::string ReadFileAsString( const std::string& Path );
 
 		static void WriteStringToFile( const std::string& Path, const std::string& Str, bool ForceDirectory = true);
+
+		static bool CopyFile(const std::string& DestFilename, const std::string& SrcFilename, bool bReplace = true, bool bEvenIfReadOnly = false);
 
 	private:
 		static SystemFileNode* GetFilesInDirectory_Intern(const std::string& Path, const std::string& Filter);

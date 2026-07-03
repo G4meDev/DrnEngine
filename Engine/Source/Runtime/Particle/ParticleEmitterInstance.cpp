@@ -59,15 +59,32 @@ namespace Drn
 		//SpawningModules.resize(InTemplate->SpawningModules.size());
 		//for (int32 i = 0; i < InTemplate->SpawningModules.size(); i++)
 		//{
-		//	if (InTemplate->SpawningModules[i]->IsEnabled())
+		//	if (InTemplate->SpawningModules[i]->IsEffectiveModule())
 		//	{
-		//		SpawningModules[i] = (ParticleModuleSpawnBase*)ParticleTypes::CreateParticleModule(InTemplate->SpawningModules[i]->GetModuleType());
-		//		*SpawningModules[i] = *InTemplate->SpawningModules[i];
+		//		SpawningModules[i] = InTemplate->SpawningModules[i];
+		//	}
+		//}
+		//
+		//SpawnModules.resize(InTemplate->SpawnModules.size());
+		//for (int32 i = 0; i < InTemplate->SpawnModules.size(); i++)
+		//{
+		//	if (InTemplate->SpawnModules[i]->IsEffectiveModule())
+		//	{
+		//		SpawnModules[i] = InTemplate->SpawnModules[i];
+		//	}
+		//}
+		//
+		//UpdateModules.resize(InTemplate->UpdateModules.size());
+		//for (int32 i = 0; i < InTemplate->UpdateModules.size(); i++)
+		//{
+		//	if (InTemplate->UpdateModules[i]->IsEffectiveModule())
+		//	{
+		//		UpdateModules[i] = InTemplate->UpdateModules[i];
 		//	}
 		//}
 
-		SpawningModules.push_back(new ParticleModuleSpawn());
-		SpawnModules.push_back(new ParticleModuleLocationPrimitiveSphere());
+		//SpawningModules.push_back(new ParticleModuleSpawn());
+		//SpawnModules.push_back(new ParticleModuleLocationPrimitiveSphere());
 	}
 
 	void ParticleEmitterInstance::Init()
@@ -332,12 +349,12 @@ namespace Drn
 
 	void ParticleEmitterInstance::Tick_ModuleUpdate( float DeltaTime )
 	{
-		for (int32 ModuleIndex = 0; ModuleIndex < UpdateModules.size(); ModuleIndex++)
-		{
-			ParticleModule* CurrentModule = UpdateModules[ModuleIndex];
-			drn_check(CurrentModule->bEnabled); // only enabled modules should be in emitter instance
+		drn_check(Emitter);
 
-			if (CurrentModule)
+		for (int32 ModuleIndex = 0; ModuleIndex < Emitter->UpdateModules.size(); ModuleIndex++)
+		{
+			ParticleModule* CurrentModule = Emitter->UpdateModules[ModuleIndex];
+			if (CurrentModule && CurrentModule->IsEffectiveModule())
 			{
 				CurrentModule->Update(this, DeltaTime);
 			}
@@ -398,13 +415,15 @@ namespace Drn
 
 	float ParticleEmitterInstance::Spawn( float DeltaTime )
 	{
+		drn_check(Emitter);
+
 		float SpawnRate = 0.0f;
 		float OldLeftover = SpawnFraction;
 
-		for (int32 SpawnModIndex = 0; SpawnModIndex < SpawningModules.size(); SpawnModIndex++)
+		for (int32 SpawnModIndex = 0; SpawnModIndex < Emitter->SpawningModules.size(); SpawnModIndex++)
 		{
-			ParticleModuleSpawnBase* SpawnModule = SpawningModules[SpawnModIndex];
-			if (SpawnModule && SpawnModule->bEnabled)
+			ParticleModuleSpawnBase* SpawnModule = Emitter->SpawningModules[SpawnModIndex];
+			if (SpawnModule && SpawnModule->IsEffectiveModule())
 			{
 				float Rate = 0.0f;
 				SpawnModule->GetSpawnAmount(this, OldLeftover, DeltaTime, Rate);
@@ -449,6 +468,7 @@ namespace Drn
 	{
 		drn_check(ActiveParticles <= MaxActiveParticles);
 		drn_check(ActiveParticles + Count <= MaxActiveParticles);
+		drn_check(Emitter);
 
 		//Count = FMath::Min<int32>(Count, MaxActiveParticles - ActiveParticles);
 	
@@ -462,10 +482,10 @@ namespace Drn
 			const uint32 CurrentParticleIndex = ActiveParticles++;
 
 			PreSpawn(Particle, InitialLocation, InitialVelocity);
-			for (int32 ModuleIndex = 0; ModuleIndex < SpawnModules.size(); ModuleIndex++)
+			for (int32 ModuleIndex = 0; ModuleIndex < Emitter->SpawnModules.size(); ModuleIndex++)
 			{
-				ParticleModule* SpawnModule = SpawnModules[ModuleIndex];
-				if (SpawnModule->bEnabled)
+				ParticleModule* SpawnModule = Emitter->SpawnModules[ModuleIndex];
+				if (SpawnModule && SpawnModule->IsEffectiveModule())
 				{
 					SpawnModule->Spawn(this, SpawnTime, Particle);
 				}
@@ -568,7 +588,7 @@ namespace Drn
 		: bHasRotation(false)
 		, MeshRotationOffset(0)
 	{
-		RandStream.Initalize(std::rand());
+		
 	}
 
 	ParticleMeshEmitterInstance::~ParticleMeshEmitterInstance()
@@ -622,7 +642,7 @@ namespace Drn
 		ParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
 
 		//Particle->Location = EmitterToSimulation.TransformPosition(RandStream.GetUnitVector() * RandStream.FRandRange(-5, 5));
-		Particle->OneOverMaxLifetime = 1.0f / RandStream.FRandRange(0.3f, 0.7f);
+		Particle->OneOverMaxLifetime = 1.0f / EmitterRandomStream.FRandRange(0.3f, 0.7f);
 		//Particle->Velocity = RandStream.GetUnitVector() * RandStream.FRandRange(3, 5);
 	}
 

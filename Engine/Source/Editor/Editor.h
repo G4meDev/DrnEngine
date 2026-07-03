@@ -29,6 +29,7 @@ namespace Drn
 		float SidePanelSize = 300.0f;
 
 		void NotifyMaterialReimported(const AssetHandle<Material>& Mat);
+		void NotifyParticleReimported(const AssetHandle<ParticleSystem>& ParticleSystemAsset);
 
 		void OnOpenLevel( World* OpenedWorld );
 		void OnCloseLevel( World* ClosedWorld );

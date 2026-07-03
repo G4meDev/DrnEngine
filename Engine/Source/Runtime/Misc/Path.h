@@ -18,6 +18,10 @@ namespace Drn
 		static std::string ConvertShortPath(const std::string& FullPath);
 		static std::string GetDirectory(const std::string& FullPath);
 		
+		static bool IsTransientPath(const std::string& RelativePath);
+		static std::string ToTransientPath(const std::string& RelativePath);
+		static std::string FromTransientPath(const std::string& TransientPath);
+
 		static std::string GetCleanName(const std::string& FullPath);
 
 		static std::string GetFileExtension(const std::string& Path);

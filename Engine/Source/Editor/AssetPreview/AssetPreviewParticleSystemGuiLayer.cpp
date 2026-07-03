@@ -19,6 +19,12 @@ namespace Drn
 		m_OwningAsset = AssetHandle<ParticleSystem>( InOwningAsset->m_Path );
 		m_OwningAsset.Load();
 
+		const std::string TransientPath = Path::ToTransientPath(InOwningAsset->m_Path);
+		drn_check(FileSystem::CopyFile(Path::ConvertProjectPath(TransientPath), Path::ConvertProjectPath(InOwningAsset->m_Path), true, true));
+
+		TransientAsset = AssetHandle<ParticleSystem>( TransientPath );
+		TransientAsset.Load();
+
 		m_World = new PreviewWorld;
 		//m_World->GetWorld()->SetGameMode(true);
 
@@ -50,13 +56,13 @@ namespace Drn
 
 	void AssetPreviewParticleSystemGuiLayer::Draw( float DeltaTime )
 	{
-		std::string name = m_OwningAsset->m_Path;
+		std::string name = TransientAsset->m_Path;
 		name = Path::ConvertShortPath(name);
 		name = Path::RemoveFileExtension(name);
 
 		if (DeferrModuleDeleteIndex >= 0 && DeferrModuleEmitterDeleteIndex >= 0)
 		{
-			ParticleEmitter* Emitter = m_OwningAsset->Emitters[DeferrModuleEmitterDeleteIndex];
+			ParticleEmitter* Emitter = TransientAsset->Emitters[DeferrModuleEmitterDeleteIndex];
 
 			EParticleModuleStage Stage = EParticleModuleStage::None;
 			int32 InternalIndex = -1;
@@ -87,7 +93,7 @@ namespace Drn
 
 		if (DeferrEmitterDeleteIndex >= 0)
 		{
-			m_OwningAsset->Emitters.erase(m_OwningAsset->Emitters.begin() + DeferrEmitterDeleteIndex);
+			TransientAsset->Emitters.erase(TransientAsset->Emitters.begin() + DeferrEmitterDeleteIndex);
 
 			SelectedEmitterIndex = -1;
 			DeferrEmitterDeleteIndex = -1;
@@ -103,12 +109,12 @@ namespace Drn
 
 		if (ImGui::Button("Save"))
 		{
-			m_OwningAsset->Save();
+			OnSave();
 		} ImGui::SameLine();
 
 		if (ImGui::Button("Add Emitter"))
 		{
-			m_OwningAsset->Emitters.push_back(new ParticleEmitter());
+			TransientAsset->Emitters.push_back(new ParticleEmitter());
 		}
 
 		ImVec2 SidePanelSize = ImVec2( Editor::Get()->SidePanelSize, 0.0f );
@@ -168,7 +174,7 @@ namespace Drn
 	{
 		if (SelectedEmitterIndex >= 0)
 		{
-			ParticleEmitter* Emitter = m_OwningAsset->Emitters[SelectedEmitterIndex];
+			ParticleEmitter* Emitter = TransientAsset->Emitters[SelectedEmitterIndex];
 
 			const int32 EmitterNameCharacterLimit = 64;
 			char EmitterName[EmitterNameCharacterLimit];
@@ -187,7 +193,7 @@ namespace Drn
 	{
 		if (SelectedEmitterIndex >= 0 && SelectedModuleIndex >= 0)
 		{
-			ParticleEmitter* Emitter = m_OwningAsset->Emitters[SelectedEmitterIndex];
+			ParticleEmitter* Emitter = TransientAsset->Emitters[SelectedEmitterIndex];
 
 			int32 InternalIndex = 0;
 			EParticleModuleStage Stage = EParticleModuleStage::None;
@@ -217,9 +223,9 @@ namespace Drn
 
 	void AssetPreviewParticleSystemGuiLayer::DrawEmitters()
 	{
-		for (int32 EmitterIndex = 0; EmitterIndex < m_OwningAsset->Emitters.size(); EmitterIndex++)
+		for (int32 EmitterIndex = 0; EmitterIndex < TransientAsset->Emitters.size(); EmitterIndex++)
 		{
-			ParticleEmitter* Emitter = m_OwningAsset->Emitters[EmitterIndex];
+			ParticleEmitter* Emitter = TransientAsset->Emitters[EmitterIndex];
 
 			const bool bEmitterSelected = SelectedEmitterIndex == EmitterIndex;
 			if (bEmitterSelected) { ImGui::PushStyleColor( ImGuiCol_ChildBg, ImVec4( 0.2f, 0.3f, 0.4f, 1.0f ) ); }
@@ -244,8 +250,8 @@ namespace Drn
 
 	void AssetPreviewParticleSystemGuiLayer::DrawEmitterHeader( int32 Index )
 	{
-		auto& Emitters = m_OwningAsset->Emitters;
-		ParticleEmitter* Emitter = m_OwningAsset->Emitters[Index];
+		auto& Emitters = TransientAsset->Emitters;
+		ParticleEmitter* Emitter = TransientAsset->Emitters[Index];
 
 		if (ImGui::Button("X"))
 		{
@@ -322,7 +328,7 @@ namespace Drn
 
 	void AssetPreviewParticleSystemGuiLayer::DrawEmitterModules( int32 Index, bool EmitterSelected )
 	{
-		ParticleEmitter* Emitter = m_OwningAsset->Emitters[Index];
+		ParticleEmitter* Emitter = TransientAsset->Emitters[Index];
 
 		auto DrawModule = [&](ParticleModule* Module, int32 StackIndex)
 		{
@@ -422,6 +428,15 @@ namespace Drn
 		}
 	}
 
-}  // namespace Drn
+	void AssetPreviewParticleSystemGuiLayer::OnSave()
+	{
+		TransientAsset->Save();
+		drn_check(FileSystem::CopyFile(Path::ConvertProjectPath(m_OwningAsset->m_Path), Path::ConvertProjectPath(TransientAsset->m_Path), true, true));
+
+		m_OwningAsset->Load();
+		Editor::Get()->NotifyParticleReimported(m_OwningAsset);
+	}
+
+        }  // namespace Drn
 
 #endif

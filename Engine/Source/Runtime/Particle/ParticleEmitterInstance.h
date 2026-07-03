@@ -64,9 +64,13 @@ namespace Drn
 
 		RandomStream EmitterRandomStream;
 
-		std::vector<TRefCountPtr<ParticleModuleSpawnBase>> SpawningModules;
-		std::vector<TRefCountPtr<ParticleModule>> SpawnModules;
-		std::vector<TRefCountPtr<ParticleModule>> UpdateModules;
+		//std::vector<TRefCountPtr<ParticleModuleSpawnBase>> SpawningModules;
+		//std::vector<TRefCountPtr<ParticleModule>> SpawnModules;
+		//std::vector<TRefCountPtr<ParticleModule>> UpdateModules;
+
+		//std::vector<ParticleModuleSpawnBase*> SpawningModules;
+		//std::vector<ParticleModule*> SpawnModules;
+		//std::vector<ParticleModule*> UpdateModules;
 
 		virtual void InitParameters(ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent);
 		virtual void Init();
@@ -160,9 +164,8 @@ namespace Drn
 		virtual uint32 RequiredBytes() override;
 		virtual bool Resize(int32 NewMaxActiveParticles) override;
 
-		RandomStream RandStream;
-
 	};
+
 
 	// ---------------------------------------------------------------------------------------
 

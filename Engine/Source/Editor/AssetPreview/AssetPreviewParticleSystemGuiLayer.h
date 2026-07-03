@@ -32,6 +32,8 @@ namespace Drn
 		int32 GetModuleStackIndex(ParticleEmitter* Emitter, EParticleModuleStage Stage, int32 InternalIndex);
 		void GetModuleInternalIndex(ParticleEmitter* Emitter, int32 StackIndex, EParticleModuleStage& Stage, int32& InternalIndex);
 
+		void OnSave();
+
 	private:
 
 		int32 SelectedEmitterIndex;
@@ -47,6 +49,7 @@ namespace Drn
 		class Particle* ParticlePreview;
 
 		AssetHandle<ParticleSystem> m_OwningAsset;
+		AssetHandle<ParticleSystem> TransientAsset;
 	};
 
 

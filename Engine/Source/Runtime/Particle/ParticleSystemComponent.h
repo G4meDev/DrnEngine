@@ -24,9 +24,8 @@ namespace Drn
 		virtual void UnRegisterComponent() override;
 
 		void SetTemplate(AssetHandle<ParticleSystem> InTemplate);
+		bool IsUsingTemplate(AssetHandle<ParticleSystem> InTemplate);
 		void ResetEmitters();
-
-		float TestParam = 0;
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;

@@ -79,6 +79,26 @@ namespace Drn
 		return NAME_NULL;
 	}
 
+	bool Path::IsTransientPath( const std::string& RelativePath )
+	{
+		const std::string IntermediatePath = "Intermediate\\";
+		size_t IntermediatePos = RelativePath.find_first_of(IntermediatePath, 0);
+
+		return IntermediatePos == 0;
+	}
+
+	std::string Path::ToTransientPath( const std::string& RelativePath )
+	{
+		drn_check(!IsTransientPath(RelativePath));
+		return "Intermediate\\" + RelativePath;
+	}
+
+	std::string Path::FromTransientPath( const std::string& TransientPath )
+	{
+		drn_check(IsTransientPath(TransientPath));
+		return TransientPath.substr(sizeof("Intermediate\\"));
+	}
+
 	std::string Path::GetCleanName( const std::string& FullPath )
 	{
 		return RemoveFileExtension(ConvertShortPath(FullPath));

@@ -11,9 +11,11 @@ namespace Drn
 	{
 	public:
 		uint8 bEnabled;
+		uint8 bValid;
 
 		ParticleModule()
 			: bEnabled(true)
+			, bValid(true)
 		{}
 
 		virtual void Serialize(Archive& Ar) override;
@@ -29,6 +31,11 @@ namespace Drn
 
 		inline bool IsEnabled() const { return bEnabled; }
 		inline void SetEnabled(bool bInEnabled) { bEnabled = bInEnabled; }
+
+		inline bool IsValid() const { return bValid; }
+		inline void SetValid(bool bInValid) { bValid = bInValid; }
+
+		inline bool IsEffectiveModule() const { return bEnabled && bValid; }
 
 #if WITH_EDITOR
 		virtual bool Draw(ParticleEmitter* Owner) { return false; };

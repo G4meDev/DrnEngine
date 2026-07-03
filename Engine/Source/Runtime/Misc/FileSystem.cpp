@@ -135,7 +135,12 @@ namespace Drn
 		return false;
 	}
 
-	void FileSystem::GetFilesInDirectory( const std::string& Path, std::unique_ptr<SystemFileNode>& RootNode, const std::string& Filter)
+	bool FileSystem::IsFileReadOnly( const std::string& Path )
+	{
+		return EnumHasAllFlags(std::filesystem::status(Path).permissions(), std::filesystem::perms::_File_attribute_readonly);
+	}
+
+	void FileSystem::GetFilesInDirectory( const std::string& Path, std::unique_ptr<SystemFileNode>& RootNode, const std::string& Filter )
 	{
 		RootNode.reset();
 		RootNode = std::unique_ptr<SystemFileNode>(GetFilesInDirectory_Intern(Path, Filter));
@@ -167,6 +172,33 @@ namespace Drn
 		{
 			LOG(LogFileSystem, Error, "failed to open file \"%s\" for writing.", Path.c_str());
 		}
+	}
+
+	bool FileSystem::CopyFile( const std::string& DestFilename, const std::string& SrcFilename, bool bReplace, bool bEvenIfReadOnly )
+	{
+		if (FileExists(DestFilename) && IsFileReadOnly(DestFilename) && !bEvenIfReadOnly)
+		{
+			return false;
+		}
+
+		const std::string DestDirectory = DirectoryFromFilePath(DestFilename);
+		if (!DirectoryExists(DestDirectory))
+		{
+			CreateDirectory(DestDirectory);
+		}
+
+		std::filesystem::copy_options Options = std::filesystem::copy_options::none;
+		EnumAddFlags(Options, bReplace ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing);
+
+		std::error_code Ec;
+		const bool Result = std::filesystem::copy_file(SrcFilename, DestFilename, Options, Ec);
+
+		if (!Result)
+		{
+			LOG(LogFileSystem, Error, "%s", Ec.message().c_str());
+		}
+
+		return Result;
 	}
 
 	SystemFileNode* FileSystem::GetFilesInDirectory_Intern( const std::string& Path, const std::string& Filter )

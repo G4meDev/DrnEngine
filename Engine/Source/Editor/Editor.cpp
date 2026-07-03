@@ -130,6 +130,26 @@ namespace Drn
 		}
 	}
 
+	void Editor::NotifyParticleReimported( const AssetHandle<ParticleSystem>& ParticleSystemAsset )
+	{
+		for (World* W : WorldManager::Get()->m_AllocatedWorlds)
+		{
+			for (Actor* actor : W->GetActorList())
+			{
+				std::vector<ParticleSystemComponent*> ParticleComponents;
+				actor->GetRoot()->GetComponents<ParticleSystemComponent>(ParticleComponents, EComponentType::ParticleSystemComponent, true);
+
+				for (ParticleSystemComponent* PC : ParticleComponents)
+				{
+					if (PC && !PC->GetOwningActor()->IsMarkedPendingKill() && PC->IsUsingTemplate(ParticleSystemAsset))
+					{
+						PC->SetTemplate(ParticleSystemAsset);
+					}
+				}
+			}
+		}
+	}
+
 	void Editor::OnOpenLevel( World* OpenedWorld )
 	{
 		LevelViewport::Init( OpenedWorld );
