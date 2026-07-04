@@ -135,45 +135,26 @@ namespace Drn
 		float	CurrentDistanceTravelled;
 	};
 
-	enum class EParticleModuleStage : uint32
-	{
-		None			= 0 << 0,
-		EmitterUpdate	= 1 << 0,
-		ParticleSpawn	= 1 << 1,
-		ParticleUpdate	= 1 << 2,
-
-		NumBits = 3
-	};
-
 	struct ParticleModuleMetaData
 	{
-		ParticleModuleMetaData(const std::string InDisplayName, EParticleModuleStage InSupportedStages)
+		ParticleModuleMetaData(const std::string InDisplayName)
 			: DisplayName(InDisplayName)
-			, SupportedStages(InSupportedStages)
 		{}
 
-		ParticleModuleMetaData() : ParticleModuleMetaData("Invalid", EParticleModuleStage::None)
+		ParticleModuleMetaData() : ParticleModuleMetaData("Invalid")
 		{}
 
 		std::string DisplayName;
-		EParticleModuleStage SupportedStages;
-
-		inline bool IsParticleModuleSupportingStage( EParticleModuleStage Stage )
-		{
-			return EnumHasAnyFlags(SupportedStages, Stage);
-		}
 	};
 
 	struct ParticleModuleCategory
 	{
 		ParticleModuleCategory(const std::string& InCategoryName)
 			: CategoryName(InCategoryName)
-			, ModulesSupportedStages(EParticleModuleStage::None)
 		{}
 
 		std::string CategoryName;
 		std::vector<EParticleModule> Modules;
-		EParticleModuleStage ModulesSupportedStages;
 	};
 
 	class ParticleTypes
@@ -182,7 +163,7 @@ namespace Drn
 		static void RegisterParticleModules();
 
 		template<typename T>
-		static void RegisterParticleModule(EParticleModule Module, const std::string& DisplayName, EParticleModuleStage Stage, const std::string& CategoryName);
+		static void RegisterParticleModule(EParticleModule Module, const std::string& DisplayName, const std::string& CategoryName);
 
 		static std::function<ParticleModule*()> ParticleModuleFactory[(int32)EParticleModule::Max];
 		static inline ParticleModule* CreateParticleModule(EParticleModule Module) { return ParticleModuleFactory[int32(Module)](); }

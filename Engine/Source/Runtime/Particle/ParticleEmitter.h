@@ -20,9 +20,11 @@ namespace Drn
 
 		void RegisterModule(ParticleModule* Module);
 
-		std::vector<TRefCountPtr<ParticleModuleSpawnBase>> SpawningModules;
-		std::vector<TRefCountPtr<ParticleModule>> SpawnModules;
-		std::vector<TRefCountPtr<ParticleModule>> UpdateModules;
+		std::vector<ParticleModuleSpawnBase*> SpawningModules;
+		std::vector<ParticleModule*> SpawnModules;
+		std::vector<ParticleModule*> UpdateModules;
+
+		std::vector<TRefCountPtr<ParticleModule>> Modules;
 
 		int32 ReqInstanceBytes;
 		std::unordered_map<ParticleModule*, uint32> ModuleInstanceOffsetMap;

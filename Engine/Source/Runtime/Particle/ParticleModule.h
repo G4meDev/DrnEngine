@@ -10,13 +10,20 @@ namespace Drn
 	class ParticleModule : public Serializable, public RefCountedObject
 	{
 	public:
-		uint8 bEnabled;
-		uint8 bValid;
-
 		ParticleModule()
 			: bEnabled(true)
 			, bValid(true)
+			, bSpawningModule(false)
+			, bSpawnModule(false)
+			, bUpdateModule(false)
 		{}
+
+		uint8 bEnabled;
+		uint8 bValid;
+
+		uint8 bSpawningModule	:1;
+		uint8 bSpawnModule		:1;
+		uint8 bUpdateModule		:1;
 
 		virtual void Serialize(Archive& Ar) override;
 

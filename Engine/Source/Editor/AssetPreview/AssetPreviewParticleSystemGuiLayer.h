@@ -29,9 +29,6 @@ namespace Drn
 		void DrawEmitterHeader(int32 Index);
 		void DrawEmitterModules(int32 Index, bool EmitterSelected);
 
-		int32 GetModuleStackIndex(ParticleEmitter* Emitter, EParticleModuleStage Stage, int32 InternalIndex);
-		void GetModuleInternalIndex(ParticleEmitter* Emitter, int32 StackIndex, EParticleModuleStage& Stage, int32& InternalIndex);
-
 		void OnSave();
 
 	private:

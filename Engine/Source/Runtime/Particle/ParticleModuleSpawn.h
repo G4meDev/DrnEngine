@@ -7,6 +7,10 @@ namespace Drn
 	class ParticleModuleSpawnBase : public ParticleModule
 	{
 	public:
+		ParticleModuleSpawnBase() : ParticleModule()
+		{
+			bSpawningModule = true;
+		}
 		//uint32 bProcessSpawnRate:1;
 		//uint32 bProcessBurstList:1;
 
@@ -33,6 +37,9 @@ namespace Drn
 	class ParticleModuleSpawn : public ParticleModuleSpawnBase
 	{
 	public:
+		ParticleModuleSpawn() : ParticleModuleSpawnBase()
+		{}
+
 		//struct FRawDistributionFloat Rate;
 		float SpawnRate = 50;
 
@@ -80,10 +87,10 @@ namespace Drn
 	class ParticleModuleSpawnPerUnit : public ParticleModuleSpawnBase
 	{
 	public:
-		ParticleModuleSpawnPerUnit()
-			: UnitScalar(5.0f)
+		ParticleModuleSpawnPerUnit() : ParticleModuleSpawnBase()
+			, UnitScalar(5.0f)
 			, MovementTolerance(0.1f)
-			, SpawnPerUnit(0.0f)
+			, SpawnPerUnit(1.0f)
 			, MaxFrameDistance(0.0f)
 			, bIgnoreSpawnRateWhenMoving(false)
 			, bIgnoreMovementAlongX(false)

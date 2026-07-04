@@ -6,14 +6,18 @@ namespace Drn
 {
 	class ParticleModuleLocationBase : public ParticleModule
 	{
-
+	public:
+		ParticleModuleLocationBase() : ParticleModule()
+		{
+			bSpawnModule = true;
+		}
 	};
 
 	class ParticleModuleLocationPrimitiveBase : public ParticleModuleLocationBase
 	{
 	public:
-		ParticleModuleLocationPrimitiveBase()
-			: Positive_X(1)
+		ParticleModuleLocationPrimitiveBase() : ParticleModuleLocationBase()
+			, Positive_X(1)
 			, Positive_Y(1)
 			, Positive_Z(1)
 			, Negative_X(1)
@@ -21,6 +25,7 @@ namespace Drn
 			, Negative_Z(1)
 			, SurfaceOnly(0)
 			, Velocity(0)
+			, VelocityScale(1)
 		{}
 
 		bool Positive_X;
@@ -33,7 +38,7 @@ namespace Drn
 		bool Velocity;
 
 		//struct FRawDistributionFloat VelocityScale;
-		//float VelocityScale;
+		float VelocityScale;
 
 		//struct FRawDistributionVector StartLocation;
 		Vector StartLocation = Vector::ZeroVector;
@@ -53,6 +58,9 @@ namespace Drn
 	class ParticleModuleLocationPrimitiveSphere : public ParticleModuleLocationPrimitiveBase
 	{
 	public:
+		ParticleModuleLocationPrimitiveSphere() : ParticleModuleLocationPrimitiveBase()
+		{}
+
 		//struct FRawDistributionFloat StartRadius;
 		float StartRadius = 5.0f;
 

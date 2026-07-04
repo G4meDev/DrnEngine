@@ -17,6 +17,7 @@ namespace Drn
 			Ar >> Negative_Z;
 			Ar >> SurfaceOnly;
 			Ar >> Velocity;
+			Ar >> VelocityScale;
 		}
 
 		else
@@ -29,6 +30,7 @@ namespace Drn
 			Ar << Negative_Z;
 			Ar << SurfaceOnly;
 			Ar << Velocity;
+			Ar << VelocityScale;
 		}
 	}
 
@@ -147,13 +149,14 @@ namespace Drn
 		vOffset = vOffset + vStartLoc;
 		Particle.Location = Particle.Location + Owner->EmitterToSimulation.TransformVector(vOffset);
 
-		//if (Velocity)
-		//{
-		//	FVector vVelocity		 = (vOffset - vStartLoc) * VelocityScale.GetValue(Owner->EmitterTime, Owner->Component, InRandomStream);
-		//	vVelocity = Owner->EmitterToSimulation.TransformVector(vVelocity);
-		//	Particle.Velocity		+= vVelocity;
-		//	Particle.BaseVelocity	+= vVelocity;
-		//}
+		if (Velocity)
+		{
+			//Vector vVelocity		= (vOffset - vStartLoc) * VelocityScale.GetValue(Owner->EmitterTime, Owner->Component, InRandomStream);
+			Vector vVelocity		= (vOffset - vStartLoc) * VelocityScale;
+			vVelocity				= Owner->EmitterToSimulation.TransformVector(vVelocity);
+			Particle.Velocity		= Particle.Velocity + vVelocity;
+			Particle.BaseVelocity	= Particle.BaseVelocity + vVelocity;
+		}
 	}
 
 	void ParticleModuleLocationPrimitiveSphere::Serialize( Archive& Ar )
@@ -176,14 +179,15 @@ namespace Drn
 	{
 		bool bDirty = ParticleModuleLocationBase::Draw(Owner);
 
-		bDirty |= ImGui::Checkbox("Positive X",		&Positive_X);
-		bDirty |= ImGui::Checkbox("Positive Y",		&Positive_Y);
-		bDirty |= ImGui::Checkbox("Positive Z",		&Positive_Z);
-		bDirty |= ImGui::Checkbox("Negative X",		&Negative_X);
-		bDirty |= ImGui::Checkbox("Negative Y",		&Negative_Y);
-		bDirty |= ImGui::Checkbox("Negative Z",		&Negative_Z);
-		bDirty |= ImGui::Checkbox("Surface Only",	&SurfaceOnly);
-		bDirty |= ImGui::Checkbox("Velocity",		&Velocity);
+		bDirty |= ImGui::Checkbox("Positive X",			&Positive_X);
+		bDirty |= ImGui::Checkbox("Positive Y",			&Positive_Y);
+		bDirty |= ImGui::Checkbox("Positive Z",			&Positive_Z);
+		bDirty |= ImGui::Checkbox("Negative X",			&Negative_X);
+		bDirty |= ImGui::Checkbox("Negative Y",			&Negative_Y);
+		bDirty |= ImGui::Checkbox("Negative Z",			&Negative_Z);
+		bDirty |= ImGui::Checkbox("Surface Only",		&SurfaceOnly);
+		bDirty |= ImGui::Checkbox("Velocity",			&Velocity);
+		bDirty |= ImGui::InputFloat("Velocity Scale",	&VelocityScale);
 
 		return bDirty;
 	}

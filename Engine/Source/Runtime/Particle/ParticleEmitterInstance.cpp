@@ -344,7 +344,7 @@ namespace Drn
 		for (int32 ModuleIndex = 0; ModuleIndex < Emitter->UpdateModules.size(); ModuleIndex++)
 		{
 			ParticleModule* CurrentModule = Emitter->UpdateModules[ModuleIndex];
-			if (CurrentModule && CurrentModule->IsEffectiveModule())
+			if (CurrentModule)
 			{
 				CurrentModule->Update(this, DeltaTime);
 			}
@@ -413,7 +413,7 @@ namespace Drn
 		for (int32 SpawnModIndex = 0; SpawnModIndex < Emitter->SpawningModules.size(); SpawnModIndex++)
 		{
 			ParticleModuleSpawnBase* SpawnModule = Emitter->SpawningModules[SpawnModIndex];
-			if (SpawnModule && SpawnModule->IsEffectiveModule())
+			if (SpawnModule)
 			{
 				float Rate = 0.0f;
 				int32 Number = 0;
@@ -477,7 +477,7 @@ namespace Drn
 			for (int32 ModuleIndex = 0; ModuleIndex < Emitter->SpawnModules.size(); ModuleIndex++)
 			{
 				ParticleModule* SpawnModule = Emitter->SpawnModules[ModuleIndex];
-				if (SpawnModule && SpawnModule->IsEffectiveModule())
+				if (SpawnModule)
 				{
 					SpawnModule->Spawn(this, SpawnTime, Particle);
 				}

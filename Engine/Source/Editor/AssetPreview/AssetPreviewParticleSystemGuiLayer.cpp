@@ -63,28 +63,8 @@ namespace Drn
 		if (DeferrModuleDeleteIndex >= 0 && DeferrModuleEmitterDeleteIndex >= 0)
 		{
 			ParticleEmitter* Emitter = TransientAsset->Emitters[DeferrModuleEmitterDeleteIndex];
-
-			EParticleModuleStage Stage = EParticleModuleStage::None;
-			int32 InternalIndex = -1;
-			GetModuleInternalIndex(Emitter, DeferrModuleDeleteIndex, Stage, InternalIndex);
-
-			if (Stage == EParticleModuleStage::EmitterUpdate)
-			{
-				auto& Modules = Emitter->SpawningModules;
-				Modules.erase(Modules.begin() + InternalIndex);
-			}
-
-			else if (Stage == EParticleModuleStage::ParticleSpawn)
-			{
-				auto& Modules = Emitter->SpawnModules;
-				Modules.erase(Modules.begin() + InternalIndex);
-			}
-
-			else if (Stage == EParticleModuleStage::ParticleUpdate)
-			{
-				auto& Modules = Emitter->UpdateModules;
-				Modules.erase(Modules.begin() + InternalIndex);
-			}
+			auto& Modules = Emitter->Modules;
+			Modules.erase(Modules.begin() + DeferrModuleDeleteIndex);
 
 			SelectedModuleIndex = -1;
 			DeferrModuleDeleteIndex = -1;
@@ -194,30 +174,7 @@ namespace Drn
 		if (SelectedEmitterIndex >= 0 && SelectedModuleIndex >= 0)
 		{
 			ParticleEmitter* Emitter = TransientAsset->Emitters[SelectedEmitterIndex];
-
-			int32 InternalIndex = 0;
-			EParticleModuleStage Stage = EParticleModuleStage::None;
-			GetModuleInternalIndex(Emitter, SelectedModuleIndex, Stage, InternalIndex);
-
-			if (Stage == EParticleModuleStage::EmitterUpdate)
-			{
-				Emitter->SpawningModules[InternalIndex]->Draw(Emitter);
-			}
-
-			else if (Stage == EParticleModuleStage::ParticleSpawn)
-			{
-				Emitter->SpawnModules[InternalIndex]->Draw(Emitter);
-			}
-
-			else if (Stage == EParticleModuleStage::ParticleUpdate)
-			{
-				Emitter->UpdateModules[InternalIndex]->Draw(Emitter);
-			}
-
-			else
-			{
-				drn_check(false);
-			}
+			Emitter->Modules[SelectedModuleIndex]->Draw(Emitter);
 		}
 	}
 
@@ -267,54 +224,23 @@ namespace Drn
 
 		ImGui::Separator();
 
-		const char* StageDisplayNames[] = { "EmitterUpdate", "ParticleSpawn", "ParticleUpdate" };
-
 		if (ImGui::BeginMenu("Add Module"))
 		{
-			for (int32 ParticleStageIndex = 0; ParticleStageIndex < (int32)EParticleModuleStage::NumBits; ParticleStageIndex++)
+			for (int32 CategoryIndex = 0; CategoryIndex < ParticleTypes::ParticleModuleCategories.size(); CategoryIndex++)
 			{
-				if (ImGui::BeginMenu(StageDisplayNames[ParticleStageIndex]))
+				ParticleModuleCategory& Category = ParticleTypes::ParticleModuleCategories[CategoryIndex];
+				std::string CategoryPopupStr = Category.CategoryName;
+
+				if (ImGui::BeginMenu(Category.CategoryName.c_str()))
 				{
-					for (int32 CategoryIndex = 0; CategoryIndex < ParticleTypes::ParticleModuleCategories.size(); CategoryIndex++)
+					for (EParticleModule SubCategoryModule : Category.Modules)
 					{
-						EParticleModuleStage Stage = EParticleModuleStage(1 << ParticleStageIndex);
-
-						ParticleModuleCategory& Category = ParticleTypes::ParticleModuleCategories[CategoryIndex];
-						std::string CategoryPopupStr = std::format("{}-{}", StageDisplayNames[ParticleStageIndex], Category.CategoryName);
-
-						if (EnumHasAnyFlags(Category.ModulesSupportedStages, Stage) && ImGui::BeginMenu(Category.CategoryName.c_str()))
+						uint32 ParticleModuleIndex = (uint32)SubCategoryModule;
+						ParticleModuleMetaData& ModuleMetaData = ParticleTypes::ParticleModulesMetaData[ParticleModuleIndex];
+						if (ImGui::Button(ModuleMetaData.DisplayName.c_str()))
 						{
-							for (int32 ParticleModuleIndex = 0; ParticleModuleIndex < (int32)EParticleModule::Max; ParticleModuleIndex++)
-							{
-								ParticleModuleMetaData& ModuleMetaData = ParticleTypes::ParticleModulesMetaData[ParticleModuleIndex];
-								EParticleModuleStage Stage = EParticleModuleStage(1 << ParticleStageIndex);
-							
-								if (ModuleMetaData.IsParticleModuleSupportingStage(Stage))
-								{
-									if (ImGui::Button(ModuleMetaData.DisplayName.c_str()))
-									{
-										ParticleModule* CreateddModule = ParticleTypes::CreateParticleModule((EParticleModule)ParticleModuleIndex);
-										if (Stage == EParticleModuleStage::EmitterUpdate)
-										{
-											Emitter->SpawningModules.push_back((ParticleModuleSpawnBase*)CreateddModule);
-										}
-										else if (Stage == EParticleModuleStage::ParticleSpawn)
-										{
-											Emitter->SpawnModules.push_back(CreateddModule);
-										}
-										else if (Stage == EParticleModuleStage::ParticleUpdate)
-										{
-											Emitter->UpdateModules.push_back(CreateddModule);
-										}
-										else
-										{
-											drn_check(false);
-										}
-									}
-								}
-							}
-
-							ImGui::EndMenu();
+							ParticleModule* CreateddModule = ParticleTypes::CreateParticleModule((EParticleModule)ParticleModuleIndex);
+							Emitter->Modules.push_back(CreateddModule);
 						}
 					}
 
@@ -330,18 +256,19 @@ namespace Drn
 	{
 		ParticleEmitter* Emitter = TransientAsset->Emitters[Index];
 
-		auto DrawModule = [&](ParticleModule* Module, int32 StackIndex)
+		for (int32 ModuleIndex = 0; ModuleIndex < Emitter->Modules.size(); ModuleIndex++)
 		{
+			ParticleModule* Module = Emitter->Modules[ModuleIndex];
 			ParticleModuleMetaData& ModuleMetaData = ParticleTypes::ParticleModulesMetaData[(int32)Module->GetModuleType()];
 
-			const bool bModuleSelected = EmitterSelected && (SelectedModuleIndex == StackIndex);
+			const bool bModuleSelected = EmitterSelected && (SelectedModuleIndex == ModuleIndex);
 			if (bModuleSelected) { ImGui::PushStyleColor( ImGuiCol_ChildBg, ImVec4( 0.2f, 0.8f, 0.4f, 1.0f ) ); }
 
-			if (ImGui::BeginChild(std::format("Module##{}", StackIndex).c_str(), ImVec2(320, 32)))
+			if (ImGui::BeginChild(std::format("Module##{}", ModuleIndex).c_str(), ImVec2(320, 32)))
 			{
 				if (ImGui::Button("x"))
 				{
-					DeferrModuleDeleteIndex = StackIndex;
+					DeferrModuleDeleteIndex = ModuleIndex;
 					DeferrModuleEmitterDeleteIndex = Index;
 				} ImGui::SameLine();
 
@@ -358,74 +285,12 @@ namespace Drn
 
 			if (ImGui::IsItemClicked())
 			{
-				SelectedModuleIndex = StackIndex;
+				SelectedModuleIndex = ModuleIndex;
 				SelectedEmitterIndex = Index;
 			}
-		};
-
-		for (int32 ModuleIndex = 0; ModuleIndex < Emitter->SpawningModules.size(); ModuleIndex++)
-		{
-			DrawModule(Emitter->SpawningModules[ModuleIndex], GetModuleStackIndex(Emitter, EParticleModuleStage::EmitterUpdate, ModuleIndex));
-		} ImGui::Separator();
-
-		for (int32 ModuleIndex = 0; ModuleIndex < Emitter->SpawnModules.size(); ModuleIndex++)
-		{
-			DrawModule(Emitter->SpawnModules[ModuleIndex], GetModuleStackIndex(Emitter, EParticleModuleStage::ParticleSpawn, ModuleIndex));
-		} ImGui::Separator();
-
-		for (int32 ModuleIndex = 0; ModuleIndex < Emitter->UpdateModules.size(); ModuleIndex++)
-		{
-			DrawModule(Emitter->UpdateModules[ModuleIndex], GetModuleStackIndex(Emitter, EParticleModuleStage::ParticleUpdate, ModuleIndex));
-		} ImGui::Separator();
+		}
 
 		ImGui::Separator();
-	}
-
-	int32 AssetPreviewParticleSystemGuiLayer::GetModuleStackIndex( ParticleEmitter* Emitter, EParticleModuleStage Stage, int32 InternalIndex )
-	{
-		int32 StackIndex = InternalIndex;
-
-		if (Stage >= EParticleModuleStage::ParticleSpawn)
-		{
-			StackIndex += Emitter->SpawningModules.size();
-		}
-
-		if (Stage >= EParticleModuleStage::ParticleUpdate)
-		{
-			StackIndex += Emitter->SpawnModules.size();
-		}
-
-		return StackIndex;
-	}
-
-	void AssetPreviewParticleSystemGuiLayer::GetModuleInternalIndex( ParticleEmitter* Emitter, int32 StackIndex, EParticleModuleStage& Stage, int32& InternalIndex )
-	{
-		const int32 SpawningSize = Emitter->SpawningModules.size();
-		const int32 SpawnSize = Emitter->SpawnModules.size();
-		const int32 UpdateSize = Emitter->UpdateModules.size();
-
-		if (StackIndex < SpawningSize)
-		{
-			InternalIndex = StackIndex;
-			Stage = EParticleModuleStage::EmitterUpdate;
-		}
-
-		else if (StackIndex < SpawningSize + SpawnSize)
-		{
-			InternalIndex = StackIndex - SpawningSize;
-			Stage = EParticleModuleStage::ParticleSpawn;
-		}
-
-		else if (StackIndex < SpawningSize + SpawnSize + UpdateSize)
-		{
-			InternalIndex = StackIndex - SpawningSize - SpawnSize;
-			Stage = EParticleModuleStage::ParticleUpdate;
-		}
-
-		else
-		{
-			drn_check(false);
-		}
 	}
 
 	void AssetPreviewParticleSystemGuiLayer::OnSave()

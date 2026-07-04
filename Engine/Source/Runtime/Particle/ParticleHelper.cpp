@@ -13,13 +13,13 @@ namespace Drn
 #endif
 
 	template<typename T>
-	void ParticleTypes::RegisterParticleModule(EParticleModule Module, const std::string& DisplayName, EParticleModuleStage Stage, const std::string& CategoryName)
+	void ParticleTypes::RegisterParticleModule(EParticleModule Module, const std::string& DisplayName, const std::string& CategoryName)
 	{
 		const int32 ModuleIndex = (int32)Module;
 		ParticleModuleFactory[ModuleIndex] = []() { return new T(); };
 
 #if WITH_EDITOR
-		ParticleModulesMetaData[ModuleIndex] = ParticleModuleMetaData(DisplayName, Stage);
+		ParticleModulesMetaData[ModuleIndex] = ParticleModuleMetaData(DisplayName);
 
 		ParticleModuleCategory* Category = nullptr;
 		for (ParticleModuleCategory& Cat : ParticleModuleCategories)
@@ -37,15 +37,14 @@ namespace Drn
 		}
 
 		Category->Modules.push_back(Module);
-		EnumAddFlags(Category->ModulesSupportedStages, Stage);
 #endif
 	}
 
 	void ParticleTypes::RegisterParticleModules()
 	{
-		RegisterParticleModule<ParticleModuleSpawn>(EParticleModule::Spawn, "Spawn", EParticleModuleStage::EmitterUpdate, "Spawn");
-		RegisterParticleModule<ParticleModuleSpawnPerUnit>(EParticleModule::SpawnPerUnit, "Spawn Per Unit", EParticleModuleStage::EmitterUpdate, "Spawn");
-		RegisterParticleModule<ParticleModuleLocationPrimitiveSphere>(EParticleModule::LocationSphere, "Sphere", EParticleModuleStage::ParticleSpawn, "Location");
+		RegisterParticleModule<ParticleModuleSpawn>(EParticleModule::Spawn, "Spawn", "Spawn");
+		RegisterParticleModule<ParticleModuleSpawnPerUnit>(EParticleModule::SpawnPerUnit, "Spawn Per Unit", "Spawn");
+		RegisterParticleModule<ParticleModuleLocationPrimitiveSphere>(EParticleModule::LocationSphere, "Sphere", "Location");
 
 
 	}

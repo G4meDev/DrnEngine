@@ -16,83 +16,64 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			ReqInstanceBytes = 0;
+			SpawningModules.clear();
+			SpawnModules.clear();
+			UpdateModules.clear();
 
 			Ar >> Name;
 
-			int32 SpawningModuleCount;
-			Ar >> SpawningModuleCount;
-			SpawningModules.resize(SpawningModuleCount);
-			for (int32 i = 0; i < SpawningModuleCount; i++)
+			int32 ModulesCount;
+			Ar >> ModulesCount;
+			Modules.resize(ModulesCount);
+			for (int32 i = 0; i < ModulesCount; i++)
 			{
 				EParticleModule ModuleType;
 				Ar >> *(uint32*)&ModuleType;
 
-				SpawningModules[i] = (ParticleModuleSpawnBase*)ParticleTypes::CreateParticleModule(ModuleType);
-				SpawningModules[i]->Serialize(Ar);
-				RegisterModule(SpawningModules[i]);
+				Modules[i] = (ParticleModuleSpawnBase*)ParticleTypes::CreateParticleModule(ModuleType);
+				Modules[i]->Serialize(Ar);
+				RegisterModule(Modules[i]);
 			}
-
-			int32 SpawnModuleCount;
-			Ar >> SpawnModuleCount;
-			SpawnModules.resize(SpawnModuleCount);
-			for (int32 i = 0; i < SpawnModuleCount; i++)
-			{
-				EParticleModule ModuleType;
-				Ar >> *(uint32*)&ModuleType;
-
-				SpawnModules[i] = ParticleTypes::CreateParticleModule(ModuleType);
-				SpawnModules[i]->Serialize(Ar);
-				RegisterModule(SpawnModules[i]);
-			}
-
-			int32 UpdateModuleCount;
-			Ar >> UpdateModuleCount;
-			UpdateModules.resize(UpdateModuleCount);
-			for (int32 i = 0; i < UpdateModuleCount; i++)
-			{
-				EParticleModule ModuleType;
-				Ar >> *(uint32*)&ModuleType;
-
-				UpdateModules[i] = ParticleTypes::CreateParticleModule(ModuleType);
-				UpdateModules[i]->Serialize(Ar);
-				RegisterModule(UpdateModules[i]);
-			}
-
-
 		}
 
 		else
 		{
 			Ar << Name;
 
-			const int32 SpawningModuleCount = SpawningModules.size();
-			Ar << SpawningModuleCount;
-			for (int32 i = 0; i < SpawningModuleCount; i++)
+			const int32 ModulesCount = Modules.size();
+			Ar << ModulesCount;
+			for (int32 i = 0; i < ModulesCount; i++)
 			{
-				Ar << (uint32)SpawningModules[i]->GetModuleType();
-				SpawningModules[i]->Serialize(Ar);
-			}
-
-			const int32 SpawnModuleCount = SpawnModules.size();
-			Ar << SpawnModuleCount;
-			for (int32 i = 0; i < SpawnModuleCount; i++)
-			{
-				Ar << (uint32)SpawnModules[i]->GetModuleType();
-				SpawnModules[i]->Serialize(Ar);
-			}
-
-			const int32 UpdateModuleCount = UpdateModules.size();
-			Ar << UpdateModuleCount;
-			for (int32 i = 0; i < UpdateModuleCount; i++)
-			{
-				Ar << (uint32)UpdateModules[i]->GetModuleType();
-				UpdateModules[i]->Serialize(Ar);
+				Ar << (uint32)Modules[i]->GetModuleType();
+				Modules[i]->Serialize(Ar);
 			}
 		}
 	}
 
 	void ParticleEmitter::RegisterModule( ParticleModule* Module )
 	{
+		drn_check(Module);
+
+		if (!Module->IsEffectiveModule())
+		{
+			return;
+		}
+
+		if (Module->bSpawningModule)
+		{
+			SpawningModules.push_back(static_cast<ParticleModuleSpawnBase*>(Module));
+		}
+
+		if (Module->bSpawnModule)
+		{
+			SpawnModules.push_back(Module);
+		}
+
+		if (Module->bUpdateModule)
+		{
+			UpdateModules.push_back(Module);
+		}
+
 		const int InstanceBytes = Module->RequiredBytesPerInstance();
 		if (InstanceBytes > 0)
 		{
