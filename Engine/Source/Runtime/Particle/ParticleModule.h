@@ -37,6 +37,8 @@ namespace Drn
 
 		inline bool IsEffectiveModule() const { return bEnabled && bValid; }
 
+		virtual uint32 RequiredBytesPerInstance() { return 0; };
+
 #if WITH_EDITOR
 		virtual bool Draw(ParticleEmitter* Owner) { return false; };
 #endif

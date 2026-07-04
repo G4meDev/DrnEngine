@@ -6,6 +6,7 @@ namespace Drn
 	ParticleEmitter::ParticleEmitter()
 		: Name("Emitter")
 		, bEnabled(true)
+		, ReqInstanceBytes(0)
 	{
 		
 	}
@@ -14,6 +15,8 @@ namespace Drn
 	{
 		if (Ar.IsLoading())
 		{
+			ReqInstanceBytes = 0;
+
 			Ar >> Name;
 
 			int32 SpawningModuleCount;
@@ -26,6 +29,7 @@ namespace Drn
 
 				SpawningModules[i] = (ParticleModuleSpawnBase*)ParticleTypes::CreateParticleModule(ModuleType);
 				SpawningModules[i]->Serialize(Ar);
+				RegisterModule(SpawningModules[i]);
 			}
 
 			int32 SpawnModuleCount;
@@ -38,6 +42,7 @@ namespace Drn
 
 				SpawnModules[i] = ParticleTypes::CreateParticleModule(ModuleType);
 				SpawnModules[i]->Serialize(Ar);
+				RegisterModule(SpawnModules[i]);
 			}
 
 			int32 UpdateModuleCount;
@@ -50,7 +55,10 @@ namespace Drn
 
 				UpdateModules[i] = ParticleTypes::CreateParticleModule(ModuleType);
 				UpdateModules[i]->Serialize(Ar);
+				RegisterModule(UpdateModules[i]);
 			}
+
+
 		}
 
 		else
@@ -83,4 +91,14 @@ namespace Drn
 		}
 	}
 
-}
+	void ParticleEmitter::RegisterModule( ParticleModule* Module )
+	{
+		const int InstanceBytes = Module->RequiredBytesPerInstance();
+		if (InstanceBytes > 0)
+		{
+			ModuleInstanceOffsetMap[Module] = ReqInstanceBytes;
+			ReqInstanceBytes += InstanceBytes;
+		}
+	}
+
+        }

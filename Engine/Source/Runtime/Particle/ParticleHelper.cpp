@@ -44,6 +44,7 @@ namespace Drn
 	void ParticleTypes::RegisterParticleModules()
 	{
 		RegisterParticleModule<ParticleModuleSpawn>(EParticleModule::Spawn, "Spawn", EParticleModuleStage::EmitterUpdate, "Spawn");
+		RegisterParticleModule<ParticleModuleSpawnPerUnit>(EParticleModule::SpawnPerUnit, "Spawn Per Unit", EParticleModuleStage::EmitterUpdate, "Spawn");
 		RegisterParticleModule<ParticleModuleLocationPrimitiveSphere>(EParticleModule::LocationSphere, "Sphere", EParticleModuleStage::ParticleSpawn, "Location");
 
 

@@ -130,6 +130,11 @@ namespace Drn
 		Vector4 PrevTransform2;
 	};
 
+	struct ParticleSpawnPerUnitInstancePayload
+	{
+		float	CurrentDistanceTravelled;
+	};
+
 	enum class EParticleModuleStage : uint32
 	{
 		None			= 0 << 0,

@@ -63,6 +63,7 @@ namespace Drn
 	{
 		Spawn,
 		LocationSphere,
+		SpawnPerUnit,
 		Max
 	};
 

@@ -18,9 +18,14 @@ namespace Drn
 		inline bool IsEnabled() const { return bEnabled; }
 		inline void SetEnabled(bool bInEnabled) { bEnabled = bInEnabled; }
 
+		void RegisterModule(ParticleModule* Module);
+
 		std::vector<TRefCountPtr<ParticleModuleSpawnBase>> SpawningModules;
 		std::vector<TRefCountPtr<ParticleModule>> SpawnModules;
 		std::vector<TRefCountPtr<ParticleModule>> UpdateModules;
+
+		int32 ReqInstanceBytes;
+		std::unordered_map<ParticleModule*, uint32> ModuleInstanceOffsetMap;
 
 	private:
 		std::string Name;

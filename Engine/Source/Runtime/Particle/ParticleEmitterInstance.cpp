@@ -24,8 +24,8 @@ namespace Drn
 		, bRenderDataDirty(0)
 		, ParticleData(nullptr)
 		, ParticleIndices(nullptr)
-		//, InstanceData(NULL)
-		//, InstancePayloadSize(0)
+		, InstanceData(nullptr)
+		, InstancePayloadSize(0)
 		//, PayloadOffset(0)
 		, ParticleSize(0)
 		, ParticleStride(0)
@@ -45,7 +45,7 @@ namespace Drn
 	{
 		free(ParticleData);
 		free(ParticleIndices);
-		//free(InstanceData);
+		free(InstanceData);
 	}
 
 	void ParticleEmitterInstance::InitParameters( ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent )
@@ -55,40 +55,15 @@ namespace Drn
 		//SetupEmitterDuration();
 
 		EmitterRandomStream.GenerateNewSeed();
-
-		//SpawningModules.resize(InTemplate->SpawningModules.size());
-		//for (int32 i = 0; i < InTemplate->SpawningModules.size(); i++)
-		//{
-		//	if (InTemplate->SpawningModules[i]->IsEffectiveModule())
-		//	{
-		//		SpawningModules[i] = InTemplate->SpawningModules[i];
-		//	}
-		//}
-		//
-		//SpawnModules.resize(InTemplate->SpawnModules.size());
-		//for (int32 i = 0; i < InTemplate->SpawnModules.size(); i++)
-		//{
-		//	if (InTemplate->SpawnModules[i]->IsEffectiveModule())
-		//	{
-		//		SpawnModules[i] = InTemplate->SpawnModules[i];
-		//	}
-		//}
-		//
-		//UpdateModules.resize(InTemplate->UpdateModules.size());
-		//for (int32 i = 0; i < InTemplate->UpdateModules.size(); i++)
-		//{
-		//	if (InTemplate->UpdateModules[i]->IsEffectiveModule())
-		//	{
-		//		UpdateModules[i] = InTemplate->UpdateModules[i];
-		//	}
-		//}
-
-		//SpawningModules.push_back(new ParticleModuleSpawn());
-		//SpawnModules.push_back(new ParticleModuleLocationPrimitiveSphere());
 	}
 
 	void ParticleEmitterInstance::Init()
 	{
+		drn_check(InstanceData == nullptr);
+
+		InstancePayloadSize = Emitter->ReqInstanceBytes;
+		InstanceData = (uint8*)(std::realloc(InstanceData, InstancePayloadSize));
+		std::memset(InstanceData, 0, InstancePayloadSize);
 
 		ParticleSize = RequiredBytes();
 		ParticleSize = Align(ParticleSize, 16);
@@ -138,6 +113,21 @@ namespace Drn
 			EmitterToSimulation = EmitterToComponent * ComponentToWorld;
 			SimulationToWorld = Matrix::MatrixIdentity;
 		}
+	}
+
+	uint8* ParticleEmitterInstance::GetModuleInstanceData( ParticleModule* Module )
+	{
+		if (InstanceData)
+		{
+			auto It = Emitter->ModuleInstanceOffsetMap.find(Module);
+			if (It != Emitter->ModuleInstanceOffsetMap.end())
+			{
+				const uint32 Offset = It->second;
+				drn_check(Offset < (uint32)InstancePayloadSize);
+				return &(InstanceData[Offset]);
+			}
+		}
+		return NULL;
 	}
 
 	uint32 ParticleEmitterInstance::RequiredBytes()
@@ -238,8 +228,8 @@ namespace Drn
 		//else
 		//{
 		//	// Keep track of location for world space interpolation and other effects.
-		//	OldLocation	= Location;
-		//	Location	= Component->GetWorldLocation();
+			OldLocation	= Location;
+			Location	= Component->GetWorldLocation();
 		//}
 
 		UpdateTransforms();
@@ -426,7 +416,9 @@ namespace Drn
 			if (SpawnModule && SpawnModule->IsEffectiveModule())
 			{
 				float Rate = 0.0f;
-				SpawnModule->GetSpawnAmount(this, OldLeftover, DeltaTime, Rate);
+				int32 Number = 0;
+				const int32 Offset = 0;
+				SpawnModule->GetSpawnAmount(this, Offset, OldLeftover, DeltaTime, Number, Rate);
 				Rate = std::max<float>(0.0f, Rate);
 				SpawnRate += Rate;
 			}
@@ -599,33 +591,6 @@ namespace Drn
 	void ParticleMeshEmitterInstance::Tick( float DeltaTime )
 	{
 		ParticleEmitterInstance::Tick(DeltaTime);
-
-		//int32 SpawnRate = 45;
-		//float SpawnInterval = 1.0f / SpawnRate;
-		//
-		//int32 SpawnCount = 0;
-		//SpawnFraction += DeltaTime;
-		//while (SpawnFraction > SpawnInterval)
-		//{
-		//	SpawnFraction -= SpawnInterval;
-		//	SpawnCount++;
-		//}
-		//
-		//int32 OldActiveParticles = ActiveParticles;
-		//ActiveParticles = std::min(OldActiveParticles + SpawnCount, MAX_PARTICLE_COUNT);
-		//Resize(ActiveParticles);
-		//
-		//for (int32 i = OldActiveParticles; i < ActiveParticles; i++)
-		//{
-		//	DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
-		//	Particle.OldLocation = Particle.Location = RandStream.GetUnitVector() * RandStream.FRandRange(-5, 5);
-		//	Particle.OneOverMaxLifetime = 1.0f / RandStream.FRandRange(0.3f, 0.7f);
-		//	Particle.RelativeTime = 0.0;
-		//	Particle.BaseVelocity = Vector::ZeroVector;
-		//	Particle.BaseRotationRate = 0.0f;
-		//	Particle.Velocity = RandStream.GetUnitVector() * RandStream.FRandRange(3, 5);
-		//	Particle.Rotation = 0.0f;
-		//}
 
 		for (int32 i = 0; i < ActiveParticles; i++)
 		{

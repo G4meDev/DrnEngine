@@ -12,8 +12,8 @@ namespace Drn
 
 		//virtual EModuleType	GetModuleType() const override { return EPMT_Spawn; }
 
-		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, float OldLeftover, 
-			float DeltaTime, float& Rate)
+		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, int32 Offset, float OldLeftover, 
+			float DeltaTime, int32& Number, float& Rate)
 		{
 			//return bProcessSpawnRate;
 			return true;
@@ -59,8 +59,8 @@ namespace Drn
 		///** Initializes the default values for this property */
 		//void InitializeDefaults();
 
-		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, float OldLeftover, 
-			float DeltaTime, float& Rate) override;
+		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, int32 Offset, float OldLeftover, 
+			float DeltaTime, int32& Number, float& Rate) override;
 		
 		virtual EParticleModule	GetModuleType() const override { return EParticleModule::Spawn; }
 
@@ -74,4 +74,48 @@ namespace Drn
 		//virtual float GetEstimatedSpawnRate() override;
 		//virtual int32 GetMaximumBurstCount() override;
 	};
+
+// ------------------------------------------------------------------------------------------------------
+
+	class ParticleModuleSpawnPerUnit : public ParticleModuleSpawnBase
+	{
+	public:
+		ParticleModuleSpawnPerUnit()
+			: UnitScalar(5.0f)
+			, MovementTolerance(0.1f)
+			, SpawnPerUnit(0.0f)
+			, MaxFrameDistance(0.0f)
+			, bIgnoreSpawnRateWhenMoving(false)
+			, bIgnoreMovementAlongX(false)
+			, bIgnoreMovementAlongY(false)
+			, bIgnoreMovementAlongZ(false)
+		{}
+
+		float UnitScalar;
+		float MovementTolerance;
+
+		//FRawDistributionFloat SpawnPerUnit;
+		float SpawnPerUnit;
+
+		float MaxFrameDistance;
+		bool bIgnoreSpawnRateWhenMoving;
+		bool bIgnoreMovementAlongX;
+		bool bIgnoreMovementAlongY;
+		bool bIgnoreMovementAlongZ;
+
+		virtual void Serialize( Archive& Ar ) override;
+		virtual EParticleModule	GetModuleType() const override { return EParticleModule::SpawnPerUnit; }
+
+		virtual uint32 RequiredBytesPerInstance() override;
+
+		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, int32 Offset, float OldLeftover, 
+			float DeltaTime, int32& Number, float& Rate) override;
+
+
+#if WITH_EDITOR
+		virtual bool Draw(ParticleEmitter* Owner) override;
+#endif
+
+	};
+
 }

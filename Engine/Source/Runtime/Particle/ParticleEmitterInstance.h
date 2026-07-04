@@ -37,9 +37,9 @@ namespace Drn
 		int32 SortMode;
 		uint8* ParticleData;
 		uint16* ParticleIndices;
-		//uint8* InstanceData;
+		uint8* InstanceData;
 
-		//int32 InstancePayloadSize;
+		int32 InstancePayloadSize;
 		//int32 PayloadOffset;
 		int32 ParticleSize;
 		int32 ParticleStride;
@@ -77,6 +77,8 @@ namespace Drn
 		World* GetWorld() const;
 
 		void UpdateTransforms();
+
+		uint8* GetModuleInstanceData( ParticleModule* Module );
 
 		virtual uint32 RequiredBytes();
 		virtual bool Resize(int32 NewMaxActiveParticles);
