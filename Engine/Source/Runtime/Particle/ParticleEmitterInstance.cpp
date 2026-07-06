@@ -17,8 +17,6 @@ namespace Drn
 		, EmitterType(EEmitterType::Mesh)
 		, Location(Vector::ZeroVector)
 		, bEnabled(1)
-		, bKillOnDeactivate(0)
-		, bKillOnCompleted(0)
 		, bHaltSpawning(0)
 		, bIgnoreComponentScale(0)
 		, bRenderDataDirty(0)
@@ -101,9 +99,9 @@ namespace Drn
 	{
 		Matrix ComponentToWorld = Component != nullptr ?
 			Component->GetWorldTransform().ToMatrixNoScale() : Matrix::MatrixIdentity;
-		Matrix EmitterToComponent = Transform(Origin, Rotation);
+		Matrix EmitterToComponent = Transform(Emitter->Origin, Emitter->Rotation);
 
-		if (bUseLocalSpace)
+		if (Emitter->bUseLocalSpace)
 		{
 			EmitterToSimulation = EmitterToComponent;
 			SimulationToWorld = ComponentToWorld;
@@ -235,30 +233,16 @@ namespace Drn
 		UpdateTransforms();
 		SecondsSinceCreation += DeltaTime;
 
-//		bool bLooped = false;
-//		if (InCurrentLODLevel->RequiredModule->bUseLegacyEmitterTime == false)
-//		{
-//			EmitterTime += DeltaTime;
-//			bLooped = (EmitterDuration > 0.0f) && (EmitterTime >= EmitterDuration);
-//		}
-//		else
-//		{
-//			EmitterTime = SecondsSinceCreation;
-//			if (EmitterDuration > KINDA_SMALL_NUMBER)
-//			{
-//				EmitterTime = FMath::Fmod(SecondsSinceCreation, EmitterDuration);
-//				bLooped = ((SecondsSinceCreation - (EmitterDuration * LoopCount)) >= EmitterDuration);
-//			}
-//		}
-//
-//		// Get the emitter delay time
-//		float EmitterDelay = CurrentDelay;
-//
-//		// Determine if the emitter has looped
-//		if (bLooped)
-//		{
-//			LoopCount++;
-//			ResetBurstList();
+		bool bLooped = false;
+		EmitterTime += DeltaTime;
+		bLooped = (EmitterDuration > 0.0f) && (EmitterTime >= EmitterDuration);
+
+		float EmitterDelay = CurrentDelay;
+
+		if (bLooped)
+		{
+			LoopCount++;
+			//ResetBurstList();
 //	#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 //			// Reset the event count each loop...
 //			if (EventCount > MaxEventCount)
@@ -267,19 +251,16 @@ namespace Drn
 //			}
 //			EventCount = 0;
 //	#endif	//#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-//
-//			if (InCurrentLODLevel->RequiredModule->bUseLegacyEmitterTime == false)
-//			{
-//				EmitterTime -= EmitterDuration;
-//			}
-//
-//			if ((InCurrentLODLevel->RequiredModule->bDurationRecalcEachLoop == true)
-//				|| ((InCurrentLODLevel->RequiredModule->bDelayFirstLoopOnly == true) && (LoopCount == 1))
-//				)
-//			{
-//				SetupEmitterDuration();
-//			}
-//
+
+			EmitterTime -= EmitterDuration;
+
+			//if ((InCurrentLODLevel->RequiredModule->bDurationRecalcEachLoop == true)
+			//	|| ((InCurrentLODLevel->RequiredModule->bDelayFirstLoopOnly == true) && (LoopCount == 1))
+			//	)
+			//{
+			//	SetupEmitterDuration();
+			//}
+
 //			if (bRequiresLoopNotification == true)
 //			{
 //				for (int32 ModuleIdx = -3; ModuleIdx < InCurrentLODLevel->Modules.Num(); ModuleIdx++)
@@ -303,8 +284,8 @@ namespace Drn
 //					}
 //				}
 //			}
-//		}
-//
+		}
+
 //		// Don't delay unless required
 //		if ((InCurrentLODLevel->RequiredModule->bDelayFirstLoopOnly == true) && (LoopCount > 0))
 //		{
@@ -314,7 +295,6 @@ namespace Drn
 //		// 'Reset' the emitter time so that the modules function correctly
 //		EmitterTime -= EmitterDelay;
 
-		float EmitterDelay = 0.0f;
 		return EmitterDelay;
 	}
 

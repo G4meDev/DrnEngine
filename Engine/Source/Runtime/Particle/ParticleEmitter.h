@@ -20,6 +20,10 @@ namespace Drn
 
 		void RegisterModule(ParticleModule* Module);
 
+#if WITH_EDITOR
+		bool Draw();
+#endif
+
 		std::vector<ParticleModuleSpawnBase*> SpawningModules;
 		std::vector<ParticleModule*> SpawnModules;
 		std::vector<ParticleModule*> UpdateModules;
@@ -28,6 +32,23 @@ namespace Drn
 
 		int32 ReqInstanceBytes;
 		std::unordered_map<ParticleModule*, uint32> ModuleInstanceOffsetMap;
+
+		Vector Origin;
+		Quat Rotation;
+		bool bUseLocalSpace;
+		bool bKillOnDeactivate;
+		bool bKillOnCompleted;
+
+		float EmitterDuration;
+		float EmitterDurationLow;
+		bool bEmitterDurationUseRange;
+		int32 EmitterLoops;
+		bool bDurationRecalcEachLoop;
+
+		float EmitterDelay;
+		float EmitterDelayLow;
+		bool bEmitterDelayUseRange;
+		bool bDelayFirstLoopOnly;
 
 	private:
 		std::string Name;

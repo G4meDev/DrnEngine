@@ -27,8 +27,6 @@ namespace Drn
 		Matrix SimulationToWorld;
 
 		uint32 bEnabled					: 1;
-		uint32 bKillOnDeactivate		: 1;
-		uint32 bKillOnCompleted			: 1;
 		uint32 bRequiresSorting			: 1;
 		uint32 bHaltSpawning			: 1;
 		uint32 bIgnoreComponentScale	: 1;
@@ -58,19 +56,7 @@ namespace Drn
 		float CurrentDelay;
 		bool bEmitterIsDone;
 
-		bool bUseLocalSpace = false;
-		Vector Origin = Vector::ZeroVector;
-		Quat Rotation = Quat::Identity;
-
 		RandomStream EmitterRandomStream;
-
-		//std::vector<TRefCountPtr<ParticleModuleSpawnBase>> SpawningModules;
-		//std::vector<TRefCountPtr<ParticleModule>> SpawnModules;
-		//std::vector<TRefCountPtr<ParticleModule>> UpdateModules;
-
-		//std::vector<ParticleModuleSpawnBase*> SpawningModules;
-		//std::vector<ParticleModule*> SpawnModules;
-		//std::vector<ParticleModule*> UpdateModules;
 
 		virtual void InitParameters(ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent);
 		virtual void Init();

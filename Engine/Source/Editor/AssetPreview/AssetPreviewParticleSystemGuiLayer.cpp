@@ -155,17 +155,7 @@ namespace Drn
 		if (SelectedEmitterIndex >= 0)
 		{
 			ParticleEmitter* Emitter = TransientAsset->Emitters[SelectedEmitterIndex];
-
-			const int32 EmitterNameCharacterLimit = 64;
-			char EmitterName[EmitterNameCharacterLimit];
-			strcpy_s(EmitterName, sizeof(EmitterName), Emitter->GetName().c_str());
-
-			if ( ImGui::InputText( "## ", EmitterName, EmitterNameCharacterLimit) )
-			{
-				Emitter->SetName(EmitterName);
-			}
-
-
+			Emitter->Draw();
 		}
 	}
 
