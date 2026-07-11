@@ -19,10 +19,6 @@ namespace Drn
 		, EmitterDuration(1.0f)
 		, EmitterDurationLow(0.0f)
 		, bEmitterDurationUseRange(false)
-		, EmitterDelay(0.0f)
-		, EmitterDelayLow(0.0f)
-		, bEmitterDelayUseRange(false)
-		, bDelayFirstLoopOnly(false)
 		, EmitterLoops(0)
 	{
 		
@@ -64,10 +60,6 @@ namespace Drn
 			Ar >> EmitterLoops;
 			Ar >> bDurationRecalcEachLoop;
 
-			Ar >> EmitterDelay;
-			Ar >> EmitterDelayLow;
-			Ar >> bEmitterDelayUseRange;
-			Ar >> bDelayFirstLoopOnly;
 		}
 
 		else
@@ -93,11 +85,6 @@ namespace Drn
 			Ar << bEmitterDurationUseRange;
 			Ar << EmitterLoops;
 			Ar << bDurationRecalcEachLoop;
-
-			Ar << EmitterDelay;
-			Ar << EmitterDelayLow;
-			Ar << bEmitterDelayUseRange;
-			Ar << bDelayFirstLoopOnly;
 		}
 	}
 
@@ -164,14 +151,6 @@ namespace Drn
 			bDirty |= ImGui::Checkbox("Emitter Duration Use Range", &bEmitterDurationUseRange);
 			bDirty |= ImGui::Checkbox("Duration Recalculate Each Loop", &bDurationRecalcEachLoop);
 			bDirty |= ImGui::InputInt("Emitter Loops", &EmitterLoops);
-		}
-
-		if (ImGui::CollapsingHeader("Delay", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			bDirty |= ImGui::InputFloat("Emitter Delay", &EmitterDelay);
-			bDirty |= ImGui::InputFloat("Emitter Delay Low", &EmitterDelayLow);
-			bDirty |= ImGui::Checkbox("Emitter Delay Use Range", &bEmitterDelayUseRange);
-			bDirty |= ImGui::Checkbox("Delay First Loop Only", &bDelayFirstLoopOnly);
 		}
 
 		return bDirty;

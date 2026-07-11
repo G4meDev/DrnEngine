@@ -45,11 +45,6 @@ namespace Drn
 		int32 EmitterLoops;
 		bool bDurationRecalcEachLoop;
 
-		float EmitterDelay;
-		float EmitterDelayLow;
-		bool bEmitterDelayUseRange;
-		bool bDelayFirstLoopOnly;
-
 	private:
 		std::string Name;
 		bool bEnabled;

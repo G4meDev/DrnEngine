@@ -25,11 +25,15 @@ namespace Drn
 		void DrawEmitterParams();
 		void DrawModuleParams();
 
+		void DrawStats();
+
 		void DrawEmitters();
 		void DrawEmitterHeader(int32 Index);
 		void DrawEmitterModules(int32 Index, bool EmitterSelected);
 
 		void OnSave();
+
+
 
 	private:
 

@@ -61,5 +61,6 @@ namespace Drn
 		int32 TotalActiveParticles;
 		uint32 NumSignificantEmitters;
 
+		friend class AssetPreviewParticleSystemGuiLayer;
 	};
 }

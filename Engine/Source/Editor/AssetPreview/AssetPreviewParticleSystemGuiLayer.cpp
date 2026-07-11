@@ -9,6 +9,12 @@
 
 namespace Drn
 {
+	ImVec4 GetSeededRandomColor(int32 Seed)
+	{
+		Vector RandomVector = RandomStream(Seed).GetUnitVector() * 0.5f + 0.5f;
+		return ImVec4(RandomVector.GetX(), RandomVector.GetY(), RandomVector.GetZ(), 1.0f);
+	}
+
 	AssetPreviewParticleSystemGuiLayer::AssetPreviewParticleSystemGuiLayer( ParticleSystem* InOwningAsset )
 		: SelectedEmitterIndex(-1)
 		, DeferrEmitterDeleteIndex(-1)
@@ -133,6 +139,12 @@ namespace Drn
 					ImGui::EndTabItem();
 				}
 
+				if (ImGui::BeginTabItem("Stats"))
+				{
+					DrawStats();
+					ImGui::EndTabItem();
+				}
+
 				ImGui::EndTabBar();
 			}
 		}
@@ -184,24 +196,36 @@ namespace Drn
 		{
 			ParticleEmitter* Emitter = TransientAsset->Emitters[EmitterIndex];
 
-			const bool bEmitterSelected = SelectedEmitterIndex == EmitterIndex;
-			if (bEmitterSelected) { ImGui::PushStyleColor( ImGuiCol_ChildBg, ImVec4( 0.2f, 0.3f, 0.4f, 1.0f ) ); }
-
-			const std::string DisplayLabel = std::format("Emitter##{}", EmitterIndex);
-			if (ImGui::BeginChild(DisplayLabel.c_str(), ImVec2(320, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
+			if (ImGui::BeginChild(std::format("Ab##{}", EmitterIndex).c_str(), ImVec2(320, 0), ImGuiChildFlags_NavFlattened))
 			{
-				DrawEmitterHeader(EmitterIndex);
-				DrawEmitterModules(EmitterIndex, bEmitterSelected);
+				{
+					ImGui::PushStyleColor( ImGuiCol_ChildBg, GetSeededRandomColor(EmitterIndex));
+					ImGui::BeginChild(std::format("Color##{}", EmitterIndex).c_str(), ImVec2(0, 10), ImGuiChildFlags_NavFlattened);
+					ImGui::EndChild();
+					ImGui::PopStyleColor();
+				}
+
+				const bool bEmitterSelected = SelectedEmitterIndex == EmitterIndex;
+				if (bEmitterSelected) { ImGui::PushStyleColor( ImGuiCol_ChildBg, ImVec4( 0.2f, 0.3f, 0.4f, 1.0f ) ); }
+
+				const std::string DisplayLabel = std::format("Emitter##{}", EmitterIndex);
+				if (ImGui::BeginChild(DisplayLabel.c_str(), ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened))
+				{
+					DrawEmitterHeader(EmitterIndex);
+					DrawEmitterModules(EmitterIndex, bEmitterSelected);
+				}
+				ImGui::EndChild();
+
+				if (bEmitterSelected) { ImGui::PopStyleColor(); }
+
+				if (ImGui::IsItemClicked() && (SelectedEmitterIndex != EmitterIndex))
+				{
+					SelectedEmitterIndex = EmitterIndex;
+					SelectedModuleIndex = -1;
+				}
 			}
+
 			ImGui::EndChild(); ImGui::SameLine();
-
-			if (bEmitterSelected) { ImGui::PopStyleColor(); }
-
-			if (ImGui::IsItemClicked() && (SelectedEmitterIndex != EmitterIndex))
-			{
-				SelectedEmitterIndex = EmitterIndex;
-				SelectedModuleIndex = -1;
-			}
 		}
 	}
 
@@ -250,6 +274,8 @@ namespace Drn
 
 			ImGui::EndMenu();
 		}
+
+		//draw_list->AddRectFilled(box_min, box_max, *(ImU32*)(&HeaderColor));
 	}
 
 	void AssetPreviewParticleSystemGuiLayer::DrawEmitterModules( int32 Index, bool EmitterSelected )
@@ -300,6 +326,40 @@ namespace Drn
 
 		m_OwningAsset->Load();
 		Editor::Get()->NotifyParticleReimported(m_OwningAsset);
+	}
+
+#define BEGIN_DRAW_PARTICLE_STAT()																								 	\
+	for (int32 EmitterIndex = 0; EmitterIndex < ParticlePreview->GetParticleSystemComponenet()->Emitters.size();EmitterIndex++) {	\
+		ParticleEmitterInstance* Instance = ParticlePreview->GetParticleSystemComponenet()->Emitters[EmitterIndex];					\
+		if (Instance && Instance->Emitter) {																						\
+			ImGui::PushID(EmitterIndex);ImGui::PushStyleColor(ImGuiCol_Text, GetSeededRandomColor(EmitterIndex));					
+
+#define END_DRAW_PARTICLE_STAT()																								 	\
+	ImGui::PopStyleColor(1); ImGui::PopID(); } }
+
+	void AssetPreviewParticleSystemGuiLayer::DrawStats()
+	{
+		const bool bCompleted = ParticlePreview->GetParticleSystemComponenet()->bWasCompleted;
+		ImGui::Text(bCompleted ? "Completed" : "Playing");
+		ImGui::Separator();
+
+		BEGIN_DRAW_PARTICLE_STAT();
+		ImGui::Text("%i/ %i", Instance->ActiveParticles, Instance->MaxActiveParticles);
+		END_DRAW_PARTICLE_STAT();
+
+		ImGui::Separator();
+
+		BEGIN_DRAW_PARTICLE_STAT();
+		ImGui::Text("%i/ %.2f/ %.2f", Instance->LoopCount, Instance->EmitterTime, Instance->SecondsSinceCreation);
+		END_DRAW_PARTICLE_STAT();
+
+		ImGui::Separator();
+
+		BEGIN_DRAW_PARTICLE_STAT();
+		int32 ParticleMemorySize = (Instance->ParticleStride + sizeof(uint16)) * Instance->MaxActiveParticles;
+		int32 InstanceMemorySize = Instance->InstancePayloadSize;
+		ImGui::Text("%i bytes/ %i bytes", ParticleMemorySize, InstanceMemorySize);
+		END_DRAW_PARTICLE_STAT();
 	}
 
         }  // namespace Drn
