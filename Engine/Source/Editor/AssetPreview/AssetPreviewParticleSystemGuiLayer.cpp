@@ -92,6 +92,16 @@ namespace Drn
 			OnSave();
 		} ImGui::SameLine();
 
+		if (ImGui::Button("Deactivate"))
+		{
+			ParticlePreview->GetParticleSystemComponenet()->Deactivate();
+		} ImGui::SameLine();
+
+		if (ImGui::Button("Activate"))
+		{
+			ParticlePreview->GetParticleSystemComponenet()->Activate();
+		} ImGui::SameLine();
+
 		if (ImGui::Button("Add Emitter"))
 		{
 			TransientAsset->Emitters.push_back(new ParticleEmitter());

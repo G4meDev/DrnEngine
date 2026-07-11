@@ -24,6 +24,8 @@ namespace Drn
 
 		std::vector<TRefCountPtr<ParticleEmitter>> Emitters;
 
+		bool bAutoDeactivate;
+
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;

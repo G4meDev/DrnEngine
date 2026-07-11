@@ -50,14 +50,14 @@ namespace Drn
 	{
 		Emitter = InTemplate;
 		Component = InComponent;
-		//SetupEmitterDuration();
+		SetupEmitterDuration();
 
 		EmitterRandomStream.GenerateNewSeed();
 	}
 
 	void ParticleEmitterInstance::Init()
 	{
-		drn_check(InstanceData == nullptr);
+		drn_check(Emitter);
 
 		InstancePayloadSize = Emitter->ReqInstanceBytes;
 		InstanceData = (uint8*)(std::realloc(InstanceData, InstancePayloadSize));
@@ -162,7 +162,7 @@ namespace Drn
 		return true;
 	}
 
-	void ParticleEmitterInstance::Tick( float DeltaTime )
+	void ParticleEmitterInstance::Tick( float DeltaTime, bool bSuppressSpawning )
 	{
 		bool bFirstTime = (SecondsSinceCreation > 0.0f) ? false : true;
 		Tick_EmitterTimeSetup(DeltaTime);
@@ -174,7 +174,7 @@ namespace Drn
 			ResetParticleParameters(DeltaTime);
 
 			Tick_ModuleUpdate(DeltaTime);
-			SpawnFraction = Tick_SpawnParticles(DeltaTime, bFirstTime);
+			SpawnFraction = Tick_SpawnParticles(DeltaTime, bSuppressSpawning, bFirstTime);
 
 			// PostUpdate (beams only)
 			//Tick_ModulePostUpdate(DeltaTime, LODLevel);
@@ -199,7 +199,7 @@ namespace Drn
 
 			//Tick_ModuleFinalUpdate(DeltaTime, LODLevel);
 
-			//CheckEmitterFinished();
+			CheckEmitterFinished();
 
 			// Invalidate the contents of the vertex/index buffer.
 			bRenderDataDirty = 1;
@@ -215,7 +215,42 @@ namespace Drn
 #endif
 	}
 
-	float ParticleEmitterInstance::Tick_EmitterTimeSetup( float DeltaTime )
+	void ParticleEmitterInstance::CheckEmitterFinished()
+	{
+		if (this->ActiveParticles == 0)
+		{
+			//FParticleBurst *LastBurst = nullptr;
+			//if (SpawnModule->BurstList.Num())
+			//{
+			//	LastBurst = &SpawnModule->BurstList.Last();
+			//}
+
+			//if (!LastBurst || LastBurst->Time < this->EmitterTime)
+			//{
+			//	const UParticleModuleRequired* RequiredModule = LODLevel->RequiredModule;
+			//	check(RequiredModule);
+			//
+			//	if (HasCompleted() || 
+			//		(SpawnModule->GetMaximumSpawnRate() == 0
+			//		&& RequiredModule->EmitterDuration == 0
+			//		&& RequiredModule->EmitterLoops == 0)
+			//		)
+			//	{
+			//		bEmitterIsDone = true;
+			//	}
+			//}
+
+			if (HasCompleted() || 
+				(Emitter->EmitterDuration == 0
+				&& Emitter->EmitterLoops == 0)
+				)
+			{
+				bEmitterIsDone = true;
+			}
+		}
+	}
+
+	void ParticleEmitterInstance::Tick_EmitterTimeSetup( float DeltaTime )
 	{
 		// Make sure we don't try and do any interpolation on the first frame we are attached (OldLocation is not valid in this circumstance)
 		//if (Component->bJustRegistered)
@@ -237,29 +272,17 @@ namespace Drn
 		EmitterTime += DeltaTime;
 		bLooped = (EmitterDuration > 0.0f) && (EmitterTime >= EmitterDuration);
 
-		float EmitterDelay = CurrentDelay;
-
 		if (bLooped)
 		{
 			LoopCount++;
 			//ResetBurstList();
-//	#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-//			// Reset the event count each loop...
-//			if (EventCount > MaxEventCount)
-//			{
-//				MaxEventCount = EventCount;
-//			}
-//			EventCount = 0;
-//	#endif	//#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
 
 			EmitterTime -= EmitterDuration;
 
-			//if ((InCurrentLODLevel->RequiredModule->bDurationRecalcEachLoop == true)
-			//	|| ((InCurrentLODLevel->RequiredModule->bDelayFirstLoopOnly == true) && (LoopCount == 1))
-			//	)
-			//{
-			//	SetupEmitterDuration();
-			//}
+			if (Emitter->bDurationRecalcEachLoop)
+			{
+				SetupEmitterDuration();
+			}
 
 //			if (bRequiresLoopNotification == true)
 //			{
@@ -285,22 +308,11 @@ namespace Drn
 //				}
 //			}
 		}
-
-//		// Don't delay unless required
-//		if ((InCurrentLODLevel->RequiredModule->bDelayFirstLoopOnly == true) && (LoopCount > 0))
-//		{
-//			EmitterDelay = 0;
-//		}
-//
-//		// 'Reset' the emitter time so that the modules function correctly
-//		EmitterTime -= EmitterDelay;
-
-		return EmitterDelay;
 	}
 
-	float ParticleEmitterInstance::Tick_SpawnParticles( float DeltaTime, bool bFirstTime )
+	float ParticleEmitterInstance::Tick_SpawnParticles( float DeltaTime, bool bSuppressSpawning, bool bFirstTime )
 	{
-		if (!bHaltSpawning && (EmitterTime >= 0.0f))
+		if (!bHaltSpawning && !bSuppressSpawning && (EmitterTime >= 0.0f))
 		{
 			// If emitter is not done - spawn at current rate.
 			// If EmitterLoops is 0, then we loop forever, so always spawn.
@@ -507,6 +519,22 @@ namespace Drn
 		Particle->Flags |= STATE_Particle_JustSpawned;
 	}
 
+	bool ParticleEmitterInstance::HasCompleted()
+	{
+		if ((Emitter->EmitterLoops == 0) || 
+			(SecondsSinceCreation < (EmitterDuration * Emitter->EmitterLoops)))
+		{
+			return false;
+		}
+
+		if (ActiveParticles > 0)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 	void ParticleEmitterInstance::KillParticles()
 	{
 		if (ActiveParticles > 0)
@@ -554,6 +582,35 @@ namespace Drn
 		}
 	}
 
+	void ParticleEmitterInstance::SetupEmitterDuration()
+	{
+		if (Emitter == nullptr)
+		{
+			return;
+		}
+
+		if (Emitter->bEmitterDurationUseRange)
+		{
+			const float	Rand		= EmitterRandomStream.GetFraction();
+			EmitterDuration	= Emitter->EmitterDurationLow + 
+				((Emitter->EmitterDuration - Emitter->EmitterDurationLow) * Rand);
+		}
+		else
+		{
+			EmitterDuration = Emitter->EmitterDuration;
+		}
+	}
+
+	void ParticleEmitterInstance::Rewind()
+	{
+		SecondsSinceCreation = 0;
+		EmitterTime = 0;
+		LoopCount = 0;
+		ParticleCounter = 0;
+		bEnabled = 1;
+		//ResetBurstList();
+	}
+
 // ----------------------------------------------------------------------------------------------------------------------
 
 	ParticleMeshEmitterInstance::ParticleMeshEmitterInstance()
@@ -568,9 +625,9 @@ namespace Drn
 		
 	}
 
-	void ParticleMeshEmitterInstance::Tick( float DeltaTime )
+	void ParticleMeshEmitterInstance::Tick( float DeltaTime, bool bSuppressSpawning )
 	{
-		ParticleEmitterInstance::Tick(DeltaTime);
+		ParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
 
 		for (int32 i = 0; i < ActiveParticles; i++)
 		{

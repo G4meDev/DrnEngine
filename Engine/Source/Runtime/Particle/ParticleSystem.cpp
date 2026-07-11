@@ -8,6 +8,7 @@ namespace Drn
 {
 	ParticleSystem::ParticleSystem( const std::string& Path )
 		: Asset( Path )
+		, bAutoDeactivate(true)
 	{
 		Load();
 	}
@@ -15,6 +16,7 @@ namespace Drn
 #if WITH_EDITOR
 	ParticleSystem::ParticleSystem( const std::string& InPath, const std::string& InSourcePath )
 		: Asset( InPath )
+		, bAutoDeactivate(true)
 	{
 		Save();
 	}

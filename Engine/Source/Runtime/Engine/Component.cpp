@@ -8,6 +8,8 @@ namespace Drn
 		, m_Registered(false)
 		, m_PendingKill(false)
 		, bTickInEditor(false)
+		, bActive(true)
+		, bAutoActivate(true)
 	{
 		
 	}

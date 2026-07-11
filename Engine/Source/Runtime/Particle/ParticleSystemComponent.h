@@ -25,7 +25,20 @@ namespace Drn
 
 		void SetTemplate(AssetHandle<ParticleSystem> InTemplate);
 		bool IsUsingTemplate(AssetHandle<ParticleSystem> InTemplate);
-		void ResetEmitters();
+		void InitParticles();
+
+		bool HasCompleted();
+		void Complete();
+		void ResetParticles( bool bEmptyInstances = false );
+
+		bool ShouldActivate();
+
+		void Deactivate();
+		void DeactivateSystem();
+
+		void Activate();
+		void ActivateSystem();
+
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
@@ -38,6 +51,15 @@ namespace Drn
 	private:
 		std::vector<TRefCountPtr<ParticleEmitterInstance>> Emitters;
 		AssetHandle<ParticleSystem> Template;
+
+		bool bWasCompleted;
+		bool bWasDeactivated;
+		bool bSuppressSpawning;
+		bool bDeactivateTriggered;
+		bool bWasActive;
+
+		int32 TotalActiveParticles;
+		uint32 NumSignificantEmitters;
 
 	};
 }

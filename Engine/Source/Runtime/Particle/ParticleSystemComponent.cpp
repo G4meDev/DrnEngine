@@ -8,6 +8,13 @@
 namespace Drn
 {
 	ParticleSystemComponent::ParticleSystemComponent()
+		: bDeactivateTriggered(false)
+		, bWasCompleted(false)
+		, bWasDeactivated(false)
+		, bSuppressSpawning(false)
+		, bWasActive(false)
+		, TotalActiveParticles(0)
+		, NumSignificantEmitters(0)
 	{
 		bTickInEditor = true;
 		
@@ -22,6 +29,14 @@ namespace Drn
 	{
 		SceneComponent::Tick(DeltaTime);
 
+		if (bDeactivateTriggered)
+		{
+			DeactivateSystem();
+		}
+
+		NumSignificantEmitters = 0;
+		TotalActiveParticles = 0;
+
 		for (int32 EmitterIndex = 0; EmitterIndex < Emitters.size(); EmitterIndex++)
 		{
 			ParticleEmitterInstance* Instance = Emitters[EmitterIndex];
@@ -32,11 +47,128 @@ namespace Drn
 				ApplicationMisc::Prefetch(NextInstance);
 			}
 
-			//if (Instance && Instance->Emitter)
+			if (Instance && Instance->Emitter)
 			{
-				Instance->Tick(DeltaTime);
+				if (Instance->bEnabled)
+				{
+					Instance->Tick(DeltaTime, bSuppressSpawning);
+
+					NumSignificantEmitters++;
+					TotalActiveParticles += Instance->ActiveParticles;
+				}
 			}
 		}
+
+		//if (FXConsoleVariables::bFreezeParticleSimulation == false)
+		//{
+		//	int32 EmitterIndex;
+		//	// Now, process any events that have occurred.
+		//	for (EmitterIndex = 0; EmitterIndex < EmitterInstances.Num(); EmitterIndex++)
+		//	{
+		//		FParticleEmitterInstance* Instance = EmitterInstances[EmitterIndex];
+		//		if (Instance && Instance->bEnabled)
+		//		{
+		//			if (EmitterIndex + 1 < EmitterInstances.Num())
+		//			{
+		//				FParticleEmitterInstance* NextInstance = EmitterInstances[EmitterIndex+1];
+		//				FPlatformMisc::Prefetch(NextInstance);
+		//			}
+		//
+		//			if (Instance->SpriteTemplate)
+		//			{
+		//				UParticleLODLevel* SpriteLODLevel = Instance->SpriteTemplate->GetCurrentLODLevel(Instance);
+		//				if (SpriteLODLevel && SpriteLODLevel->bEnabled)
+		//				{
+		//					Instance->ProcessParticleEvents(DeltaTimeTick, bSuppressSpawning);
+		//				}
+		//			}
+		//		}
+		//	}
+		//
+		//	UWorld* World = GetWorld();
+		//	AParticleEventManager* EventManager = (World ? World->MyParticleEventManager : NULL);
+		//	if (EventManager)
+		//	{
+		//		if (SpawnEvents.Num() > 0) EventManager->HandleParticleSpawnEvents(this, SpawnEvents);
+		//		if (DeathEvents.Num() > 0) EventManager->HandleParticleDeathEvents(this, DeathEvents);
+		//		if (CollisionEvents.Num() > 0) EventManager->HandleParticleCollisionEvents(this, CollisionEvents);
+		//		if (BurstEvents.Num() > 0) EventManager->HandleParticleBurstEvents(this, BurstEvents);
+		//	}
+		//}
+
+		const bool bIsCompleted = HasCompleted();
+		if (bIsCompleted && !bWasCompleted)
+		{
+			Complete();
+		}
+		bWasCompleted = bIsCompleted;
+
+		// Update bounding box.
+		//if (!bWarmingUp && !bWasCompleted && !Template->bUseFixedRelativeBoundingBox && !bIsTransformDirty)
+		//{
+		//	// Force an update every once in a while to shrink the bounds.
+		//	TimeSinceLastForceUpdateTransform += DeltaTimeTick;
+		//	if(TimeSinceLastForceUpdateTransform > MaxTimeBeforeForceUpdateTransform)
+		//	{
+		//		bIsTransformDirty = true;
+		//	}
+		//	else
+		//	{
+		//		// Compute the new system bounding box.
+		//		FBox BoundingBox;
+		//		BoundingBox.Init();
+		//
+		//		for (int32 i=0; i<EmitterInstances.Num(); i++)
+		//		{
+		//			FParticleEmitterInstance* Instance = EmitterInstances[i];
+		//			if (Instance && Instance->SpriteTemplate)
+		//			{
+		//				UParticleLODLevel* SpriteLODLevel = Instance->SpriteTemplate->GetCurrentLODLevel(Instance);
+		//				if (SpriteLODLevel && SpriteLODLevel->bEnabled)
+		//				{
+		//					BoundingBox += Instance->GetBoundingBox();
+		//				}
+		//			}
+		//		}
+		//
+		//		// Only update the primitive's bounding box in the octree if the system bounding box has gotten larger.
+		//		if(!Bounds.GetBox().IsInside(BoundingBox.Min) || !Bounds.GetBox().IsInside(BoundingBox.Max))
+		//		{
+		//			bIsTransformDirty = true;
+		//		}
+		//	}
+		//}
+		//
+		//// Update if the component transform has been dirtied.
+		//if(bIsTransformDirty)
+		//{
+		//	UpdateComponentToWorld();
+		//
+		//	TimeSinceLastForceUpdateTransform = 0.0f;
+		//	bIsTransformDirty = false;
+		//}
+		//
+		//if (bOldPositionValid)
+		//{
+		//	const float InvDeltaTime = (DeltaTimeTick > 0.0f) ? 1.0f / DeltaTimeTick : 0.0f;
+		//	PartSysVelocity = (GetComponentLocation() - OldPosition) * InvDeltaTime;
+		//}
+		//else
+		//{
+		//	PartSysVelocity = FVector::ZeroVector;
+		//}
+		//bOldPositionValid = true;
+		//OldPosition = GetComponentLocation();
+		//
+		//if (bIsViewRelevanceDirty)
+		//{
+		//	ConditionalCacheViewRelevanceFlags();
+		//}
+		//
+		//if (bSkipUpdateDynamicDataDuringTick == false)
+		//{
+		//	Super::MarkRenderDynamicDataDirty();
+		//}
 	}
 
 	void ParticleSystemComponent::Serialize( Archive& Ar )
@@ -79,7 +211,22 @@ namespace Drn
 		Template = InTemplate;
 		Template.Load();
 
-		ResetEmitters();
+		bWasCompleted = false;
+		bWasActive = IsActive() && !bWasDeactivated;
+
+		ResetParticles(true);
+
+		if (Template.IsValid())
+		{
+			if (ShouldAutoActivate() || bWasActive)
+			{
+				ActivateSystem();
+			}
+			else
+			{
+				InitParticles();
+			}
+		}
 	}
 
 	bool ParticleSystemComponent::IsUsingTemplate( AssetHandle<ParticleSystem> InTemplate )
@@ -87,31 +234,252 @@ namespace Drn
 		return Template.IsValid() && (Template.GetPath() == InTemplate.GetPath());
 	}
 
-	void ParticleSystemComponent::ResetEmitters()
+	void ParticleSystemComponent::InitParticles()
 	{
-		Emitters.clear();
+		//Emitters.clear();
 
 		if (Template.IsValid())
 		{
-			for (int32 i = 0; i < Template->Emitters.size(); i++)
+			int32 NumInstances = Emitters.size();
+			int32 NumEmitters = Template->Emitters.size();
+			const bool bIsFirstCreate = NumInstances == 0;
+			Emitters.resize(NumEmitters);
+
+			bWasCompleted = bIsFirstCreate ? false : bWasCompleted;
+
+			for (int32 i = 0; i < NumEmitters; i++)
 			{
 				ParticleEmitter* Emitter = Template->Emitters[i];
-				if (Emitter->IsEnabled())
+				if (Emitter && Emitter->IsEnabled())
 				{
-					TRefCountPtr<ParticleMeshEmitterInstance> MeshEmitter = new ParticleMeshEmitterInstance();
-					Emitters.push_back((ParticleEmitterInstance*)MeshEmitter);
-		
-					MeshEmitter->InitParameters(Emitter, this);
-					MeshEmitter->Init();
+					ParticleEmitterInstance* Instance = NumInstances == 0 ? NULL : Emitters[i];
+
+					if (Instance)
+					{
+						//Instance->SetHaltSpawning(false);
+					}
+					else
+					{
+						TRefCountPtr<ParticleMeshEmitterInstance> MeshEmitter = new ParticleMeshEmitterInstance();
+						Instance = Emitters[i] = ((ParticleEmitterInstance*)MeshEmitter);
+					}
+
+					if (Instance)
+					{
+						Instance->bEnabled = true;
+						Instance->InitParameters(Emitter, this);
+						Instance->Init();
+					}
+				}
+			}
+		}
+	}
+
+	bool ParticleSystemComponent::HasCompleted()
+	{
+		bool bHasCompleted = true;
+		bool bCanBeDeactivated = true;
+
+		bool bClearDynamicData = false;
+		for (int32 i=0; i<Emitters.size(); i++)
+		{
+			ParticleEmitterInstance* Instance = Emitters[i];
+
+			if (Instance && Instance->bEnabled)
+			{
+				if (!Instance->bEmitterIsDone)
+				{
+					bCanBeDeactivated = false;
+				}
+
+				if (Instance->Emitter->EmitterLoops > 0)
+				{
+					if (bWasDeactivated && bSuppressSpawning)
+					{
+						if (Instance->ActiveParticles != 0)
+						{
+							bHasCompleted = false;
+						}
+					}
+					else
+					{
+						if (Instance->HasCompleted())
+						{
+							if (Instance->Emitter->bKillOnCompleted)
+							{
+								// clean up other instances that may point to this one
+								for (int32 InnerIndex=0; InnerIndex < Emitters.size(); InnerIndex++)
+								{
+									if (InnerIndex != i && Emitters[InnerIndex] != NULL)
+									{
+										//Emitters[InnerIndex]->OnEmitterInstanceKilled(Instance);
+									}
+								}
+								Emitters[i] = nullptr;
+								bClearDynamicData = true;
+							}
+						}
+						else
+						{
+							bHasCompleted = false;
+						}
+					}
+				}
+				else
+				{
+					if (bWasDeactivated)
+					{
+						if (Instance->ActiveParticles != 0)
+						{
+							bHasCompleted = false;
+						}
+					}
+					else
+					{
+						bHasCompleted = false;
+					}
+				}
+
+			}
+		}
+
+		if (bCanBeDeactivated && Template.IsValid() && Template->bAutoDeactivate)
+		{
+			DeactivateSystem();
+		}
+
+		if (bClearDynamicData)
+		{
+			//ClearDynamicData();
+		}
+	
+		return bHasCompleted;
+	}
+
+	void ParticleSystemComponent::Complete()
+	{
+		ResetParticles();
+	}
+
+	void ParticleSystemComponent::ResetParticles(bool bEmptyInstances)
+	{
+		if (bEmptyInstances)
+		{
+			Emitters.clear();
+			//ClearDynamicData();
+		}
+		else
+		{
+			for (int32 EmitterIndex = 0; EmitterIndex < Emitters.size(); EmitterIndex++)
+			{
+				ParticleEmitterInstance* EmitInst = Emitters[EmitterIndex];
+				if (EmitInst)
+				{
+					EmitInst->Rewind();
 				}
 			}
 		}
 
-		//TRefCountPtr<ParticleMeshEmitterInstance> MeshEmitter = new ParticleMeshEmitterInstance();
-		//Emitters.push_back((ParticleEmitterInstance*)MeshEmitter);
-		//
-		//MeshEmitter->InitParameters(nullptr, this);
-		//MeshEmitter->Init();
+		//MarkRenderStateDirty();
+		SetActive(false);
+	}
+
+	bool ParticleSystemComponent::ShouldActivate()
+	{
+		return !IsActive() || bWasDeactivated || bWasCompleted;
+	}
+
+	void ParticleSystemComponent::Deactivate()
+	{
+		if (!ShouldActivate())
+		{
+			DeactivateSystem();
+
+			if (bWasDeactivated)
+			{
+				//OnComponentDeactivated.Broadcast(this);
+			}
+		}
+	}
+
+	void ParticleSystemComponent::DeactivateSystem()
+	{
+		bDeactivateTriggered = false;
+		bSuppressSpawning = true;
+		bWasDeactivated = true;
+
+		bool bShouldMarkRenderStateDirty = false;
+		for (int32 i = 0; i < Emitters.size(); i++)
+		{
+			ParticleEmitterInstance* Instance = Emitters[i];
+			if (Instance)
+			{
+				if (Instance->Emitter->bKillOnDeactivate)
+				{
+					// clean up other instances that may point to this one
+					for (int32 InnerIndex=0; InnerIndex < Emitters.size(); InnerIndex++)
+					{
+						if (InnerIndex != i && Emitters[InnerIndex] != NULL)
+						{
+							//Emitters[InnerIndex]->OnEmitterInstanceKilled(Instance);
+						}
+					}
+					Emitters[i] = nullptr;
+					bShouldMarkRenderStateDirty = true;
+				}
+				else
+				{
+					//Instance->OnDeactivateSystem();
+				}
+			}
+		}
+
+		if (bShouldMarkRenderStateDirty)
+		{
+			//ClearDynamicData();
+			//MarkRenderStateDirty();
+		}
+	}
+
+	void ParticleSystemComponent::Activate()
+	{
+		if (Template.IsValid())
+		{
+			bDeactivateTriggered = false;
+
+			if (ShouldActivate())
+			{
+				ActivateSystem();
+
+				if (IsActive())
+				{
+					//OnComponentActivated.Broadcast(this, bReset);
+				}
+			}
+		}
+	}
+
+	void ParticleSystemComponent::ActivateSystem()
+	{
+		//bOldPositionValid = false;
+		//OldPosition = FVector::ZeroVector;
+		//PartSysVelocity = FVector::ZeroVector;
+
+		if( Template.IsValid() )
+		{
+			bSuppressSpawning = false;
+
+			bool bNeedToUpdateTransform = bWasDeactivated;
+			bWasCompleted = false;
+			bWasDeactivated = false;
+			SetActive(true);
+			bWasActive = false;
+			//SetComponentTickEnabled(true);
+
+			InitParticles();
+		}
+
+		//MarkRenderStateDirty();
 	}
 
 #if WITH_EDITOR
@@ -153,6 +521,16 @@ namespace Drn
 
 		ImGui::Separator();
 		ImGui::TextWrapped(Template.GetPath().c_str());
+
+		if (ImGui::Button("Deactivate"))
+		{
+			Deactivate();
+		} ImGui::SameLine();
+
+		if (ImGui::Button("Activate"))
+		{
+			Activate();
+		} ImGui::SameLine();
 	}
 
 	void ParticleSystemComponent::DrawEditorDefault()

@@ -23,6 +23,7 @@ namespace Drn
 
 		bool IsActive() const;
 		void SetActive(bool Active);
+		inline bool ShouldAutoActivate() const { return bAutoActivate; }
 
 		virtual void Serialize( Archive& Ar );
 
@@ -71,7 +72,8 @@ namespace Drn
 		World* m_OwningWorld;
 		Actor* Owner = nullptr;
 
-		bool bActive = true;
+		bool bActive;
+		bool bAutoActivate;
 		bool m_PendingKill;
 		bool m_Registered;
 

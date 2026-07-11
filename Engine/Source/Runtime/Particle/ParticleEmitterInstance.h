@@ -53,7 +53,6 @@ namespace Drn
 		Box ParticleBoundingBox;
 		int32 LoopCount;
 		float EmitterDuration;
-		float CurrentDelay;
 		bool bEmitterIsDone;
 
 		RandomStream EmitterRandomStream;
@@ -68,11 +67,11 @@ namespace Drn
 
 		virtual uint32 RequiredBytes();
 		virtual bool Resize(int32 NewMaxActiveParticles);
-		virtual void Tick(float DeltaTime);
-		//void CheckEmitterFinished();
+		virtual void Tick(float DeltaTime, bool bSuppressSpawning);
+		void CheckEmitterFinished();
 		
-		virtual float Tick_EmitterTimeSetup(float DeltaTime);
-		virtual float Tick_SpawnParticles(float DeltaTime, bool bFirstTime);
+		virtual void Tick_EmitterTimeSetup(float DeltaTime);
+		virtual float Tick_SpawnParticles(float DeltaTime, bool bSuppressSpawning, bool bFirstTime);
 		virtual void Tick_ModuleUpdate(float DeltaTime);
 		//virtual void Tick_ModulePostUpdate(float DeltaTime);
 		//virtual void Tick_ModuleFinalUpdate(float DeltaTime);
@@ -90,7 +89,7 @@ namespace Drn
 		virtual void PreSpawn(BaseParticle* Particle, const Vector& InitialLocation, const Vector& InitialVelocity);
 		virtual void PostSpawn(BaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
 		
-		//virtual bool HasCompleted();
+		virtual bool HasCompleted();
 		virtual void KillParticles();
 		virtual void KillParticle(int32 Index);
 		//virtual void KillParticlesForced(bool bFireEvents = false);
@@ -110,13 +109,13 @@ namespace Drn
 		//	return -1;
 		//}
 		//virtual BaseParticle* GetParticleDirect(int32 InDirectIndex);
-		//
-		//void SetupEmitterDuration();
-		//bool HasActiveParticles()
-		//{
-		//	return ActiveParticles > 0;
-		//}
-		//
+		
+		void SetupEmitterDuration();
+		bool HasActiveParticles()
+		{
+			return ActiveParticles > 0;
+		}
+		
 		//virtual bool IsDynamicDataRequired();
 		//
 		//virtual int32 GetMeshRotationOffset() const
@@ -134,7 +133,7 @@ namespace Drn
 		//
 		//}
 
-
+		void Rewind();
 	};
 	
 	class ParticleMeshEmitterInstance : public ParticleEmitterInstance
@@ -146,7 +145,7 @@ namespace Drn
 		bool bHasRotation : 1;
 		int32 MeshRotationOffset;
 
-		virtual void Tick(float DeltaTime) override;
+		virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
 		virtual void PostSpawn(BaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
 
 		virtual uint32 RequiredBytes() override;
