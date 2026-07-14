@@ -26,9 +26,15 @@ namespace Drn
 
 		bool bAutoDeactivate;
 
+		bool bUseFixedBounds;
+		Vector FixedBoundsMin;
+		Vector FixedBoundsMax;
+
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;
+
+		bool Draw();
 
 		class AssetPreviewParticleSystemGuiLayer* GuiLayer = nullptr;
 #endif

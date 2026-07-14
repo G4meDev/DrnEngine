@@ -196,8 +196,8 @@ namespace Drn
 			{
 				// Update the orbit data...
 				//UpdateOrbitData(DeltaTime);
-				// Calculate bounding box and simulate velocity.
-				//UpdateBoundingBox(DeltaTime);
+
+				UpdateBoundingBox(DeltaTime);
 
 				for (int32 i=0; i<ActiveParticles; i++)
 				{
@@ -699,6 +699,124 @@ namespace Drn
 		}
 
 		return false;
+	}
+
+	void ParticleMeshEmitterInstance::UpdateBoundingBox( float DeltaTime )
+	{
+		if (Component && HasActiveParticles())
+		{
+			//bool bUpdateBox = ((Component->bWarmingUp == false) &&
+			//	(Component->Template != NULL) && (Component->Template->bUseFixedRelativeBoundingBox == false));
+
+			 bool bUpdateBox = Component->Template.IsValid() && !Component->Template->bUseFixedBounds;
+
+			Vector Scale = Component->GetWorldScale();
+
+			BoxSphereBounds MeshBound;
+			MeshBound = BoxSphereBounds(Box());
+			//if (Component->bWarmingUp == false)
+			//{	
+			//	if (MeshTypeData->Mesh)
+			//	{
+			//		MeshBound = MeshTypeData->Mesh->GetBounds();
+			//	}
+			//	else
+			//	{
+			//		//UE_LOG(LogParticles, Log, TEXT("MeshEmitter with no mesh set?? - %s"), Component->Template ? *(Component->Template->GetPathName()) : TEXT("??????"));
+			//		MeshBound = FBoxSphereBounds(FVector(0, 0, 0), FVector(0, 0, 0), 0);
+			//	}
+			//}
+			//else
+			//{
+			//	// This isn't used anywhere if the bWarmingUp flag is false, but GCC doesn't like it not touched.
+			//	FMemory::Memzero(&MeshBound, sizeof(FBoxSphereBounds));
+			//}
+
+			const bool bUseLocalSpace = Emitter->bUseLocalSpace;
+
+			const Matrix ComponentToWorld = bUseLocalSpace ? Matrix(Component->GetWorldTransform()) : Matrix::MatrixIdentity;
+
+			Vector	NewLocation;
+			float	NewRotation;
+			if (bUpdateBox)
+			{
+				ParticleBoundingBox.Init();
+			}
+
+			Vector MinVal(10000000.0f);
+			Vector MaxVal(-10000000.0f);
+		
+			ApplicationMisc::Prefetch(ParticleData, ParticleStride * ParticleIndices[0]);
+			ApplicationMisc::Prefetch(ParticleData, (ParticleIndices[0] * ParticleStride) + PLATFORM_CACHE_LINE_SIZE);
+
+			for (int32 i=0; i<ActiveParticles; i++)
+			{
+				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+				ApplicationMisc::Prefetch(ParticleData, ParticleStride * ParticleIndices[i+1]);
+				ApplicationMisc::Prefetch(ParticleData, (ParticleIndices[i+1] * ParticleStride) + PLATFORM_CACHE_LINE_SIZE);
+
+				Particle.OldLocation = Particle.Location;
+
+				bool bJustSpawned = (Particle.Flags & STATE_Particle_JustSpawned) != 0;
+				Particle.Flags &= ~STATE_Particle_JustSpawned;
+
+				bool bSkipUpdate = bJustSpawned;
+
+				if ((Particle.Flags & STATE_Particle_Freeze) == 0 && !bSkipUpdate)
+				{
+					if ((Particle.Flags & STATE_Particle_FreezeTranslation) == 0)
+					{
+						NewLocation	= Particle.Location + Particle.Velocity * DeltaTime;
+					}
+					else
+					{
+						NewLocation = Particle.Location;
+					}
+					if ((Particle.Flags & STATE_Particle_FreezeRotation) == 0)
+					{
+						NewRotation	= Particle.Rotation + DeltaTime * Particle.RotationRate;
+					}
+					else
+					{
+						NewRotation = Particle.Rotation;
+					}
+				}
+				else
+				{
+					// Don't move it...
+					NewLocation = Particle.Location;
+					NewRotation = Particle.Rotation;
+				}
+
+				Vector LocalExtent = MeshBound.GetBox().GetExtent() * Particle.Size * Scale;
+
+				Particle.Rotation = std::fmod(NewRotation, 2.f*(float)XM_PI);
+				Particle.Location = NewLocation;
+
+				if (bUpdateBox)
+				{	
+					Vector PositionForBounds = NewLocation;
+
+					if (bUseLocalSpace)
+					{
+						// Note: building the bounding box in world space as that gives tighter bounds than transforming a local space AABB into world space
+						PositionForBounds = ComponentToWorld.TransformPosition(NewLocation);
+					}
+
+					MinVal.SetX( std::min<float>(MinVal.GetX(), PositionForBounds.GetX() - LocalExtent.GetX()) );
+					MaxVal.SetX( std::max<float>(MaxVal.GetX(), PositionForBounds.GetX() + LocalExtent.GetX()) );
+					MinVal.SetY( std::min<float>(MinVal.GetY(), PositionForBounds.GetY() - LocalExtent.GetY()) );
+					MaxVal.SetY( std::max<float>(MaxVal.GetY(), PositionForBounds.GetY() + LocalExtent.GetY()) );
+					MinVal.SetZ( std::min<float>(MinVal.GetZ(), PositionForBounds.GetZ() - LocalExtent.GetZ()) );
+					MaxVal.SetZ( std::max<float>(MaxVal.GetZ(), PositionForBounds.GetZ() + LocalExtent.GetZ()) );
+				}
+			}
+
+			if (bUpdateBox)
+			{	
+				ParticleBoundingBox = Box(MinVal, MaxVal);
+			}
+		}
 	}
 
         }  // namespace Drn

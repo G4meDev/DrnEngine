@@ -38,5 +38,9 @@ namespace Drn
 			return Sphere(Origin, SphereRadius);
 		}
 
+		inline Box GetBox() const
+		{
+			return Box(Origin - BoxExtent, Origin + BoxExtent);
+		}
 	};
 }

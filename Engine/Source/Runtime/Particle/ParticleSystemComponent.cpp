@@ -487,6 +487,40 @@ namespace Drn
 		//MarkRenderStateDirty();
 	}
 
+	BoxSphereBounds ParticleSystemComponent::CalcBounds( const Transform& LocalToWorld ) const
+	{
+		Box BoundingBox;
+		BoundingBox.Init();
+
+		const bool bFixedBounds = Template.IsValid() && Template->bUseFixedBounds;
+		if(bFixedBounds)
+		{
+			BoundingBox	= Box(Template->FixedBoundsMin, Template->FixedBoundsMax);
+			return BoxSphereBounds(BoundingBox).TransformBy(LocalToWorld);
+		}
+		else
+		{
+			for (int32 i=0; i<Emitters.size(); i++)
+			{
+				ParticleEmitterInstance* EmitterInstance = Emitters[i];
+				if( EmitterInstance && EmitterInstance->HasActiveParticles() )
+				{
+					BoundingBox += EmitterInstance->GetBoundingBox();
+				}
+			}
+
+			if (!BoundingBox.bValid)
+			{
+				return BoxSphereBounds(LocalToWorld.GetLocation(), Vector(0.001f), 0.0f);
+			}
+
+			const Vector ExpandAmount = BoundingBox.GetExtent() * 0.1f;
+			BoundingBox = Box(BoundingBox.Min - ExpandAmount, BoundingBox.Max + ExpandAmount);
+
+			return BoxSphereBounds(BoundingBox);
+		}
+	}
+
 #if WITH_EDITOR
 	void ParticleSystemComponent::DrawDetailPanel( float DeltaTime )
 	{
@@ -545,7 +579,15 @@ namespace Drn
 
 	void ParticleSystemComponent::DrawEditorSelected()
 	{
-		
+		const bool bUseFixedBound = Template.IsValid() && Template->bUseFixedBounds;
+		if (bUseFixedBound)
+		{
+			Box LocalFixedBound = Box(Template->FixedBoundsMin, Template->FixedBoundsMax);
+			GetWorld()->DrawDebugBox(LocalFixedBound, GetWorldTransform(), Color::Blue, 0.0f, 0.0f);
+		}
+
+		BoxSphereBounds Bounds = CalcBounds(GetWorldTransform());
+		GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::White, 0.0f, 0.0f);
 	}
 #endif
 }  // namespace Drn

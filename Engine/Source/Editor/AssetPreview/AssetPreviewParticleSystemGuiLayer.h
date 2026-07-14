@@ -44,6 +44,8 @@ namespace Drn
 		int32 DeferrModuleDeleteIndex;
 		int32 DeferrModuleEmitterDeleteIndex;
 
+		bool bShowBounds = false;
+
 		TRefCountPtr<class PreviewWorld> m_World;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 

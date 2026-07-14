@@ -11,6 +11,7 @@ namespace Drn
 		Box(const Vector& InMin, const Vector& InMax)
 			: Min(InMin)
 			, Max(InMax)
+			, bValid(true)
 		{
 		}
 
@@ -32,10 +33,19 @@ namespace Drn
 			Center = Min + Extents;
 		}
 
+		inline void Init()
+		{
+			Min = Max = Vector::ZeroVector;
+			bValid = false;
+		}
+
 		Box& operator+=( const Vector& Other );
+		Box& operator+=( const Box& Other );
 
 		Vector Min;
 		Vector Max;
+
+		bool bValid;
 
 	private:
 	};

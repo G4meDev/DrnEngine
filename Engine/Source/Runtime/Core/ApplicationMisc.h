@@ -2,6 +2,8 @@
 
 #include "ForwardTypes.h"
 
+#define PLATFORM_CACHE_LINE_SIZE 64
+
 namespace Drn
 {
 	class ApplicationMisc

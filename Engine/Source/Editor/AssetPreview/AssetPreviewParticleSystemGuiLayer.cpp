@@ -9,6 +9,12 @@
 
 namespace Drn
 {
+	Vector4 GetSeededRandomColorVec4(int32 Seed)
+	{
+		Vector RandomVector = RandomStream(Seed).GetUnitVector() * 0.5f + 0.5f;
+		return Vector4(RandomVector, 1.0f);
+	}
+
 	ImVec4 GetSeededRandomColor(int32 Seed)
 	{
 		Vector RandomVector = RandomStream(Seed).GetUnitVector() * 0.5f + 0.5f;
@@ -93,6 +99,27 @@ namespace Drn
 			return;
 		}
 
+		ParticleSystemComponent* Comp = ParticlePreview->GetParticleSystemComponenet();
+		if (bShowBounds)
+		{
+			BoxSphereBounds Bounds = Comp->CalcBounds(Comp->GetWorldTransform());
+			Comp->GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::White, 0.0f, 0.0f);
+
+			const bool bFixedBounds = Comp->Template.IsValid() && Comp->Template->bUseFixedBounds;
+			if (!bFixedBounds)
+			{
+				for (int32 EmitterIndex = 0; EmitterIndex < Comp->Emitters.size(); EmitterIndex++)
+				{
+					ParticleEmitterInstance* Instance = Comp->Emitters[EmitterIndex];
+					if (Instance)
+					{
+						BoxSphereBounds EmitterBounds = Instance->GetBoundingBox();
+						Comp->GetWorld()->DrawDebugBox(Box(EmitterBounds.BoxExtent * -1, EmitterBounds.BoxExtent), Transform(EmitterBounds.Origin, Quat::Identity), GetSeededRandomColorVec4(EmitterIndex), 0.0f, 0.0f);
+					}
+				}
+			}
+		}
+
 		if (ImGui::Button("Save"))
 		{
 			OnSave();
@@ -170,7 +197,10 @@ namespace Drn
 		ImGui::EndChild();
 	}
 
-	void AssetPreviewParticleSystemGuiLayer::DrawParticleParams() {}
+	void AssetPreviewParticleSystemGuiLayer::DrawParticleParams()
+	{
+		TransientAsset->Draw();
+	}
 
 	void AssetPreviewParticleSystemGuiLayer::DrawEmitterParams()
 	{
@@ -337,6 +367,8 @@ namespace Drn
 
 	void AssetPreviewParticleSystemGuiLayer::DrawStats()
 	{
+		ImGui::Checkbox("Show Bounds", &bShowBounds);
+
 		const bool bCompleted = ParticlePreview->GetParticleSystemComponenet()->bWasCompleted;
 		ImGui::Text(bCompleted ? "Completed" : "Playing");
 		ImGui::Separator();

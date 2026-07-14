@@ -77,9 +77,9 @@ namespace Drn
 		//virtual void Tick_ModulePostUpdate(float DeltaTime);
 		//virtual void Tick_ModuleFinalUpdate(float DeltaTime);
 		
-		//virtual Box GetBoundingBox();
-		//virtual void UpdateBoundingBox(float DeltaTime);
-		
+		virtual Box GetBoundingBox() { return ParticleBoundingBox; };
+		virtual void UpdateBoundingBox(float DeltaTime) = 0;
+
 		//virtual uint32 CalculateParticleStride(uint32 ParticleSize);
 		virtual void ResetParticleParameters(float DeltaTime);
 		void ResetBurstList();
@@ -153,6 +153,7 @@ namespace Drn
 		virtual uint32 RequiredBytes() override;
 		virtual bool Resize(int32 NewMaxActiveParticles) override;
 
+		virtual void UpdateBoundingBox(float DeltaTime) override;
 	};
 
 

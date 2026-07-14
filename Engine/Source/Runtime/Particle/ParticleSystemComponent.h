@@ -39,6 +39,7 @@ namespace Drn
 		void Activate();
 		void ActivateSystem();
 
+		virtual BoxSphereBounds CalcBounds( const Transform& LocalToWorld ) const override;
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
@@ -61,6 +62,8 @@ namespace Drn
 		int32 TotalActiveParticles;
 		uint32 NumSignificantEmitters;
 
+		friend class ParticleEmitterInstance;
+		friend class ParticleMeshEmitterInstance;
 		friend class AssetPreviewParticleSystemGuiLayer;
 	};
 }
