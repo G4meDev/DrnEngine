@@ -86,6 +86,8 @@ namespace Drn
 
 		LoopCount = 0;
 
+		ResetBurstList();
+
 		bRenderDataDirty = true;
 		bEmitterIsDone = false;
 	}
@@ -111,6 +113,17 @@ namespace Drn
 			EmitterToSimulation = EmitterToComponent * ComponentToWorld;
 			SimulationToWorld = Matrix::MatrixIdentity;
 		}
+	}
+
+	uint32 ParticleEmitterInstance::GetModuleDataOffset( ParticleModule* Module )
+	{
+		auto It = Emitter->ModuleInstanceOffsetMap.find(Module);
+		if (It != Emitter->ModuleInstanceOffsetMap.end())
+		{
+			return It->second;
+		}
+
+		return 0;
 	}
 
 	uint8* ParticleEmitterInstance::GetModuleInstanceData( ParticleModule* Module )
@@ -207,7 +220,6 @@ namespace Drn
 
 		}
 
-		EmitterTime += DeltaTime;
 		LastDeltaTime = DeltaTime;
 
 #if WITH_EDITOR
@@ -219,33 +231,25 @@ namespace Drn
 	{
 		if (this->ActiveParticles == 0)
 		{
-			//FParticleBurst *LastBurst = nullptr;
-			//if (SpawnModule->BurstList.Num())
-			//{
-			//	LastBurst = &SpawnModule->BurstList.Last();
-			//}
-
-			//if (!LastBurst || LastBurst->Time < this->EmitterTime)
-			//{
-			//	const UParticleModuleRequired* RequiredModule = LODLevel->RequiredModule;
-			//	check(RequiredModule);
-			//
-			//	if (HasCompleted() || 
-			//		(SpawnModule->GetMaximumSpawnRate() == 0
-			//		&& RequiredModule->EmitterDuration == 0
-			//		&& RequiredModule->EmitterLoops == 0)
-			//		)
-			//	{
-			//		bEmitterIsDone = true;
-			//	}
-			//}
-
-			if (HasCompleted() || 
-				(Emitter->EmitterDuration == 0
-				&& Emitter->EmitterLoops == 0)
-				)
+			bool bSpawnFinished = true;
+			for (int32 SpawnModIndex = 0; SpawnModIndex < Emitter->SpawningModules.size(); SpawnModIndex++)
 			{
-				bEmitterIsDone = true;
+				ParticleModuleSpawnBase* SpawnModule = Emitter->SpawningModules[SpawnModIndex];
+				if (SpawnModule)
+				{
+					bSpawnFinished &= SpawnModule->CheckFinished(this);
+				}
+			}
+
+			if (bSpawnFinished)
+			{
+				if (HasCompleted() ||
+					(Emitter->EmitterDuration == 0
+					&& Emitter->EmitterLoops == 0)
+					)
+				{
+					bEmitterIsDone = true;
+				}
 			}
 		}
 	}
@@ -275,7 +279,7 @@ namespace Drn
 		if (bLooped)
 		{
 			LoopCount++;
-			//ResetBurstList();
+			ResetBurstList();
 
 			EmitterTime -= EmitterDuration;
 
@@ -314,12 +318,10 @@ namespace Drn
 	{
 		if (!bHaltSpawning && !bSuppressSpawning && (EmitterTime >= 0.0f))
 		{
-			// If emitter is not done - spawn at current rate.
-			// If EmitterLoops is 0, then we loop forever, so always spawn.
-			//if ((InCurrentLODLevel->RequiredModule->EmitterLoops == 0) ||
-			//	(LoopCount < InCurrentLODLevel->RequiredModule->EmitterLoops) ||
-			//	(SecondsSinceCreation < (EmitterDuration * InCurrentLODLevel->RequiredModule->EmitterLoops)) ||
-			//	bFirstTime)
+			if ((Emitter->EmitterLoops == 0) ||
+				(LoopCount < Emitter->EmitterLoops) ||
+				(SecondsSinceCreation < (EmitterDuration * Emitter->EmitterLoops)) ||
+				bFirstTime)
 			{
 				bFirstTime = false;
 				SpawnFraction = Spawn(DeltaTime);
@@ -395,11 +397,24 @@ namespace Drn
 		}
 	}
 
+	void ParticleEmitterInstance::ResetBurstList()
+	{
+		for (int32 SpawnModIndex = 0; SpawnModIndex < Emitter->SpawningModules.size(); SpawnModIndex++)
+		{
+			ParticleModuleSpawnBase* SpawnModule = Emitter->SpawningModules[SpawnModIndex];
+			if (SpawnModule)
+			{
+				SpawnModule->ResetBurstList(this);
+			}
+		}
+	}
+
 	float ParticleEmitterInstance::Spawn( float DeltaTime )
 	{
 		drn_check(Emitter);
 
 		float SpawnRate = 0.0f;
+		int32 BurstCount = 0;
 		float OldLeftover = SpawnFraction;
 
 		for (int32 SpawnModIndex = 0; SpawnModIndex < Emitter->SpawningModules.size(); SpawnModIndex++)
@@ -409,14 +424,17 @@ namespace Drn
 			{
 				float Rate = 0.0f;
 				int32 Number = 0;
-				const int32 Offset = 0;
-				SpawnModule->GetSpawnAmount(this, Offset, OldLeftover, DeltaTime, Number, Rate);
+				SpawnModule->GetSpawnAmount(this, OldLeftover, DeltaTime, Number, Rate);
 				Rate = std::max<float>(0.0f, Rate);
 				SpawnRate += Rate;
+
+				int32 BurstNumber = 0;
+				SpawnModule->GetBurstCount(this, OldLeftover, DeltaTime, BurstNumber);
+				BurstCount += BurstNumber;
 			}
 		}
 
-		if (SpawnRate > 0.f)
+		if (SpawnRate > 0.0f || BurstCount > 0)
 		{
 			float SafetyLeftover = OldLeftover;
 			// Ensure continuous spawning... lots of fiddling.
@@ -426,19 +444,19 @@ namespace Drn
 			float	StartTime	= DeltaTime + OldLeftover * Increment - Increment;
 			NewLeftover			= NewLeftover - Number;
 
-			// Handle growing arrays.
 			bool bProcessSpawn = true;
-			int32 NewCount = std::min(ActiveParticles + Number, MAX_PARTICLE_COUNT);
+			int32 NewCount = std::min(ActiveParticles + Number + BurstCount, MAX_PARTICLE_COUNT);
 
 			if (NewCount >= MaxActiveParticles)
 			{
 				bProcessSpawn = Resize((NewCount + Math::TruncToInt(std::sqrt(std::sqrt((float)NewCount)) + 1)));
 			}
 
-			if (bProcessSpawn == true)
+			if (bProcessSpawn)
 			{
 				const Vector InitialLocation = EmitterToSimulation.Location();
 				SpawnParticles( Number, StartTime, Increment, InitialLocation, Vector::ZeroVector );
+				SpawnParticles( BurstCount, 0.0f, 0.0f, InitialLocation, Vector::ZeroVector );
 
 				return NewLeftover;
 			}
@@ -608,7 +626,7 @@ namespace Drn
 		LoopCount = 0;
 		ParticleCounter = 0;
 		bEnabled = 1;
-		//ResetBurstList();
+		ResetBurstList();
 	}
 
 // ----------------------------------------------------------------------------------------------------------------------

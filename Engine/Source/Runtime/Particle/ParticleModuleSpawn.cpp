@@ -7,13 +7,72 @@
 
 namespace Drn
 {
-	bool ParticleModuleSpawn::GetSpawnAmount(ParticleEmitterInstance* Owner, int32 Offset,
+	uint32 ParticleModuleSpawn::RequiredBytesPerInstance()
+	{
+		return BurstList.size();
+	}
+
+	bool ParticleModuleSpawn::GetSpawnAmount( ParticleEmitterInstance* Owner,
 		float OldLeftover, float DeltaTime, int32& Number, float& Rate)
 	{
 		drn_check(Owner);
 
 		Rate = SpawnRate;
 		return true;
+	}
+
+	bool ParticleModuleSpawn::GetBurstCount( ParticleEmitterInstance* Owner, float OldLeftover, float DeltaTime, int32& Number )
+	{
+		Number = 0;
+		float SpawnRateInc = 0.0f;
+
+		uint8* InstData = Owner->GetModuleInstanceData(this);
+		if (BurstList.size() > 0 && InstData)
+		{
+			RandomStream& RStream = GetRandomStream(Owner);
+
+			for (int32 BurstIdx = 0; BurstIdx < BurstList.size(); BurstIdx++)
+			{
+				ParticleBurst* BurstEntry = &(BurstList[BurstIdx]);
+				uint8& LocalBurstFired = InstData[BurstIdx];
+
+				if (!LocalBurstFired && Owner->EmitterTime >= BurstEntry->Time)
+				{
+					if (DeltaTime < 0.00001f)
+					{
+						DeltaTime = 0.00001f;
+					}
+					int32 Count = BurstEntry->Count;
+					if (BurstEntry->CountLow > -1)
+					{
+						Count = RStream.RandRange(BurstEntry->CountLow, BurstEntry->Count);
+					}
+					SpawnRateInc += Count / DeltaTime;
+					Number += Count;
+					LocalBurstFired = true;
+				}
+			}
+		}
+
+		return SpawnRateInc;
+	}
+
+	bool ParticleModuleSpawn::CheckFinished( ParticleEmitterInstance* Owner )
+	{
+		const bool bBurstFinished = BurstList.size() > 0 ? BurstList.back().Time < Owner->EmitterTime : true;
+		return (SpawnRate == 0.0f) && bBurstFinished;
+	}
+
+	void ParticleModuleSpawn::ResetBurstList(ParticleEmitterInstance* Owner)
+	{
+		uint8* InstData = Owner->GetModuleInstanceData(this);
+		if (BurstList.size() > 0 && InstData)
+		{
+			for (int32 BurstIdx = 0; BurstIdx < BurstList.size(); BurstIdx++)
+			{
+				InstData[BurstIdx] = false;
+			}
+		}
 	}
 
 	void ParticleModuleSpawn::Serialize( Archive& Ar )
@@ -23,11 +82,28 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			Ar >> SpawnRate;
+
+			uint8 BurstCount;
+			Ar >> BurstCount;
+			BurstList.resize(BurstCount);
+
+			for (int32 i = 0; i < BurstCount; i++)
+			{
+				Ar >> BurstList[i];
+			}
 		}
 
 		else
 		{
 			Ar << SpawnRate;
+
+			const uint8 BurstCount = (uint8)BurstList.size();
+			Ar << BurstCount;
+
+			for (int32 i = 0; i < BurstCount; i++)
+			{
+				Ar << BurstList[i];
+			}
 		}
 	}
 
@@ -37,6 +113,23 @@ namespace Drn
 		bool bDirty = ParticleModuleSpawnBase::Draw(Owner);
 
 		bDirty |= ImGui::InputFloat("Spawn Rate", &SpawnRate);
+		if (ImGui::Button("Add Burst"))
+		{
+			BurstList.push_back({});
+			bDirty = true;
+		}
+		if (ImGui::Button("Remove Burst"))
+		{
+			BurstList.pop_back();
+			bDirty = true;
+		}
+
+		for (ParticleBurst& Burst : BurstList)
+		{
+			ImGui::PushID(&Burst);
+			bDirty |= Burst.Draw();
+			ImGui::PopID();
+		}
 
 		return bDirty;
 	}
@@ -78,7 +171,7 @@ namespace Drn
 		return sizeof(ParticleSpawnPerUnitInstancePayload);
 	}
 
-	bool ParticleModuleSpawnPerUnit::GetSpawnAmount( ParticleEmitterInstance* Owner, int32 Offset,
+	bool ParticleModuleSpawnPerUnit::GetSpawnAmount( ParticleEmitterInstance* Owner,
 		float OldLeftover, float DeltaTime, int32& Number, float& Rate )
 	{
 		drn_check(Owner);
@@ -163,6 +256,11 @@ namespace Drn
 		}
 
 		//return bProcessSpawnRate;
+		return true;
+	}
+
+	bool ParticleModuleSpawnPerUnit::CheckFinished( ParticleEmitterInstance* Owner )
+	{
 		return true;
 	}
 

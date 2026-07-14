@@ -63,6 +63,7 @@ namespace Drn
 
 		void UpdateTransforms();
 
+		uint32 GetModuleDataOffset(ParticleModule* Module);
 		uint8* GetModuleInstanceData( ParticleModule* Module );
 
 		virtual uint32 RequiredBytes();
@@ -81,6 +82,7 @@ namespace Drn
 		
 		//virtual uint32 CalculateParticleStride(uint32 ParticleSize);
 		virtual void ResetParticleParameters(float DeltaTime);
+		void ResetBurstList();
 
 		virtual float Spawn(float DeltaTime);
 		void SpawnParticles( int32 Count, float StartTime, float Increment, const Vector& InitialLocation, const Vector& InitialVelocity );

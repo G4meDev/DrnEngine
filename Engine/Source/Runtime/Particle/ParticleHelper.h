@@ -135,6 +135,23 @@ namespace Drn
 		float	CurrentDistanceTravelled;
 	};
 
+
+	struct ParticleBurst
+	{
+		int32 Count;
+		int32 CountLow;
+		float Time;
+
+		ParticleBurst() : Count(0), CountLow(-1), Time(0.0f) {}
+
+		friend Archive& operator<<(Archive& Ar, ParticleBurst& Data);
+		friend Archive& operator>>(Archive& Ar, ParticleBurst& Data);
+
+#if WITH_EDITOR
+		bool Draw();
+#endif
+	};
+
 	struct ParticleModuleMetaData
 	{
 		ParticleModuleMetaData(const std::string InDisplayName)

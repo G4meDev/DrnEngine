@@ -3,6 +3,10 @@
 
 #include "Runtime/Particle/ParticleModuleLocation.h"
 
+#if WITH_EDITOR
+#include "imgui.h"
+#endif
+
 namespace Drn
 {
 	std::function<ParticleModule*()> ParticleTypes::ParticleModuleFactory[(int32)EParticleModule::Max];
@@ -49,5 +53,35 @@ namespace Drn
 
 	}
 
+	Archive& operator<<(Archive& Ar, ParticleBurst& Data)
+	{
+		Ar << Data.Count;
+		Ar << Data.CountLow;
+		Ar << Data.Time;
 
-}
+		return Ar;
+	}
+
+	Archive& operator>>(Archive& Ar, ParticleBurst& Data)
+	{
+		Ar >> Data.Count;
+		Ar >> Data.CountLow;
+		Ar >> Data.Time;
+
+		return Ar;
+	}
+
+#if WITH_EDITOR
+	bool ParticleBurst::Draw()
+	{
+		bool bDirty = false;
+
+		bDirty |= ImGui::InputInt("Count", &Count);
+		bDirty |= ImGui::InputInt("Count Low", &CountLow);
+		bDirty |= ImGui::InputFloat("Time", &Time);
+
+		return bDirty;
+	}
+#endif
+
+        }

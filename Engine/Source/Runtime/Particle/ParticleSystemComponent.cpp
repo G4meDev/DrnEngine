@@ -34,6 +34,11 @@ namespace Drn
 			DeactivateSystem();
 		}
 
+		if (bWasCompleted)
+		{
+			return;
+		}
+
 		NumSignificantEmitters = 0;
 		TotalActiveParticles = 0;
 

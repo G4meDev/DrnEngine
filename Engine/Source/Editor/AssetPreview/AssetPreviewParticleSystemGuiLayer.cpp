@@ -274,8 +274,6 @@ namespace Drn
 
 			ImGui::EndMenu();
 		}
-
-		//draw_list->AddRectFilled(box_min, box_max, *(ImU32*)(&HeaderColor));
 	}
 
 	void AssetPreviewParticleSystemGuiLayer::DrawEmitterModules( int32 Index, bool EmitterSelected )
