@@ -660,9 +660,6 @@ namespace Drn
 	{
 		ParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
 
-		//Particle->Location = EmitterToSimulation.TransformPosition(RandStream.GetUnitVector() * RandStream.FRandRange(-5, 5));
-		//Particle->OneOverMaxLifetime = 1.0f / EmitterRandomStream.FRandRange(0.3f, 0.7f);
-		//Particle->Velocity = RandStream.GetUnitVector() * RandStream.FRandRange(3, 5);
 	}
 
 	uint32 ParticleMeshEmitterInstance::RequiredBytes()

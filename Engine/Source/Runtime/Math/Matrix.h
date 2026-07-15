@@ -48,6 +48,19 @@ namespace Drn
 			return Vector(Result.GetX(), Result.GetY(), Result.GetZ());
 		}
 
+		inline Vector4 InverseTransformVector(const Vector4& V) const
+		{
+			Matrix Mat = Inverse();
+			return Mat.TransformVector4(V);
+		}
+
+		inline Vector InverseTransformVector(const Vector& V) const
+		{
+			Matrix Mat = Inverse();
+			Vector4 Result = Mat.TransformVector4(Vector4(V, 0.0f));
+			return Vector(Result.GetX(), Result.GetY(), Result.GetZ());
+		}
+
 		inline Vector TransformPosition(const Vector& V) const
 		{
 			Vector4 Result = TransformVector4(Vector4(V, 1.0f));
@@ -78,11 +91,13 @@ namespace Drn
 
 		inline Vector Location() const
 		{
-			Vector Location;
-			Quat Rotation;
-			Vector Scale;
-			Decompose(Location, Rotation, Scale);
-			return Location;
+			return XMLoadFloat4x4(&m_Matrix).r[3];
+
+			//Vector Location;
+			//Quat Rotation;
+			//Vector Scale;
+			//Decompose(Location, Rotation, Scale);
+			//return Location;
 		}
 
 		inline Quat Rotation() const

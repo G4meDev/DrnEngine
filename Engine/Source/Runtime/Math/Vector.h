@@ -36,10 +36,28 @@ namespace Drn
 				XMLoadFloat3(&m_Vector), XMLoadFloat3(&other.m_Vector)) );
 		}
 
+		inline Vector operator-=(const Vector& Other)
+		{
+			m_Vector.x -= Other.m_Vector.x;
+			m_Vector.y -= Other.m_Vector.y;
+			m_Vector.z -= Other.m_Vector.z;
+
+			return *this;
+		}
+
 		inline Vector operator+( const Vector& other ) const
 		{
 			return Vector( XMVectorAdd(
 				XMLoadFloat3(&m_Vector), XMLoadFloat3(&other.m_Vector)) );
+		}
+
+		inline Vector operator+=(const Vector& Other)
+		{
+			m_Vector.x += Other.m_Vector.x;
+			m_Vector.y += Other.m_Vector.y;
+			m_Vector.z += Other.m_Vector.z;
+
+			return *this;
 		}
 
 		inline Vector operator*( const Vector& other )
@@ -60,12 +78,50 @@ namespace Drn
 				XMLoadFloat3(&m_Vector), XMVectorSet(Other, Other, Other, 0)) );
 		}
 
+		inline Vector operator*=(const Vector& Other)
+		{
+			m_Vector.x *= Other.m_Vector.x;
+			m_Vector.y *= Other.m_Vector.y;
+			m_Vector.z *= Other.m_Vector.z;
+
+			return *this;
+		}
+
+		inline Vector operator*=(float Other)
+		{
+			m_Vector.x *= Other;
+			m_Vector.y *= Other;
+			m_Vector.z *= Other;
+
+			return *this;
+		}
+
 		inline Vector operator/( float Other )
 		{
 			return Vector( XMVectorDivide(
 				XMLoadFloat3(&m_Vector), XMVectorSet(Other, Other, Other, 0)) );
 		}
-		
+
+		inline Vector operator/=(const Vector& Other)
+		{
+			m_Vector.x /= Other.m_Vector.x;
+			m_Vector.y /= Other.m_Vector.y;
+			m_Vector.z /= Other.m_Vector.z;
+
+			return *this;
+		}
+
+		inline Vector operator/=(float Other)
+		{
+			const float RV = 1.f/Other;
+
+			m_Vector.x *= RV;
+			m_Vector.y *= RV;
+			m_Vector.z *= RV;
+
+			return *this;
+		}
+
 		inline bool Equals( const Vector& Other ) 
 		{
 			uint32_t Result;

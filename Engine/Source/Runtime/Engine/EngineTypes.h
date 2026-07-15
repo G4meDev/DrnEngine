@@ -65,6 +65,7 @@ namespace Drn
 		LocationSphere,
 		SpawnPerUnit,
 		Lifetime,
+		Velocity,
 		Max
 	};
 
