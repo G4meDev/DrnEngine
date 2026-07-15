@@ -2,6 +2,7 @@
 #include "ParticleHelper.h"
 
 #include "Runtime/Particle/ParticleModuleLocation.h"
+#include "Runtime/Particle/ParticleModuleLifetime.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -49,6 +50,7 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleSpawn>(EParticleModule::Spawn, "Spawn", "Spawn");
 		RegisterParticleModule<ParticleModuleSpawnPerUnit>(EParticleModule::SpawnPerUnit, "Spawn Per Unit", "Spawn");
 		RegisterParticleModule<ParticleModuleLocationPrimitiveSphere>(EParticleModule::LocationSphere, "Sphere", "Location");
+		RegisterParticleModule<ParticleModuleLifetime>(EParticleModule::Lifetime, "Lifetime", "Lifetime");
 
 
 	}
