@@ -10,9 +10,7 @@ namespace Drn
 	ParticleModuleSpawn::ParticleModuleSpawn()
 		: ParticleModuleSpawnBase()
 	{
-		ParticleDistributionFloatConstant* InitalSpawnRate = new ParticleDistributionFloatConstant();
-		InitalSpawnRate->Constant = 5.0f;
-		SpawnRate = InitalSpawnRate;
+		SpawnRate = new ParticleDistributionFloatConstant(5.0f);
 	}
 
 	uint32 ParticleModuleSpawn::RequiredBytesPerInstance()
@@ -124,12 +122,10 @@ namespace Drn
 #if WITH_EDITOR
 	bool ParticleModuleSpawn::Draw( ParticleEmitter* Owner )
 	{
-		bool bDirty = ParticleModuleSpawnBase::Draw(Owner);
+		drn_check(SpawnRate);
 
-		if (SpawnRate && ImGui::CollapsingHeader("Spawn Rate", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			bDirty |= SpawnRate->Draw(SpawnRate);
-		}
+		bool bDirty = ParticleModuleSpawnBase::Draw(Owner);
+		bDirty |= SpawnRate->Draw(SpawnRate, "Spawn Rate");
 
 		if (ImGui::Button("Add Burst"))
 		{
@@ -165,9 +161,7 @@ namespace Drn
 		, bIgnoreMovementAlongY(false)
 		, bIgnoreMovementAlongZ(false)
 	{
-		ParticleDistributionFloatConstant* InitalSpawnPerUnit = new ParticleDistributionFloatConstant();
-		InitalSpawnPerUnit->Constant = 1.0f;
-		SpawnPerUnit = InitalSpawnPerUnit;
+		SpawnPerUnit = new ParticleDistributionFloatConstant(1.0f);
 	}
 
 	void ParticleModuleSpawnPerUnit::Serialize( Archive& Ar )
@@ -214,7 +208,7 @@ namespace Drn
 		ParticleSpawnPerUnitInstancePayload* SPUPayload = NULL;
 		float NewTravelLeftover = 0.0f;
 
-		float ParticlesPerUnit = SpawnPerUnit->GetValue(Owner) / UnitScalar;
+		float ParticlesPerUnit = SpawnPerUnit->GetValue(Owner, &GetRandomStream(Owner)) / UnitScalar;
 
 		if (ParticlesPerUnit >= 0.0f)
 		{
@@ -300,16 +294,13 @@ namespace Drn
 #if WITH_EDITOR
 	bool ParticleModuleSpawnPerUnit::Draw( ParticleEmitter* Owner )
 	{
+		drn_check(SpawnPerUnit);
+
 		bool bDirty = ParticleModuleSpawnBase::Draw(Owner);
 
 		bDirty |= ImGui::InputFloat("Unit Scalar", &UnitScalar);
 		bDirty |= ImGui::InputFloat("Movement Tolerance", &MovementTolerance);
-
-		if (SpawnPerUnit && ImGui::CollapsingHeader("Spawn Per Unit", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			bDirty |= SpawnPerUnit->Draw(SpawnPerUnit);
-		}
-
+		bDirty |= SpawnPerUnit->Draw(SpawnPerUnit, "Spawn Per Unit");
 		bDirty |= ImGui::InputFloat("Max Frame Distance", &MaxFrameDistance);
 		bDirty |= ImGui::Checkbox("Ignore Spawn Rate When Moving", &bIgnoreSpawnRateWhenMoving);
 		bDirty |= ImGui::Checkbox("Ignore Movement Along X", &bIgnoreMovementAlongX);

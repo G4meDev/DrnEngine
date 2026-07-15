@@ -27,7 +27,7 @@ namespace Drn
 		virtual void GetOutRange(float& MinOut, float& MaxOut) const = 0;
 
 #if WITH_EDITOR
-		virtual bool Draw(TRefCountPtr<ParticleDistributionFloat>& Ptr);
+		virtual bool Draw(TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel);
 #endif
 	};
 
@@ -36,6 +36,10 @@ namespace Drn
 	public:
 		ParticleDistributionFloatConstant()
 			: Constant(0)
+		{}
+
+		ParticleDistributionFloatConstant(float InValue)
+			: Constant(InValue)
 		{}
 
 		float Constant;
@@ -50,7 +54,7 @@ namespace Drn
 		}
 
 #if WITH_EDITOR
-		virtual bool Draw(TRefCountPtr<ParticleDistributionFloat>& Ptr) override;
+		virtual bool Draw(TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel) override;
 #endif
 	};
 
@@ -76,7 +80,7 @@ namespace Drn
 		}
 
 #if WITH_EDITOR
-		virtual bool Draw(TRefCountPtr<ParticleDistributionFloat>& Ptr) override;
+		virtual bool Draw(TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel) override;
 #endif
 	};
 }

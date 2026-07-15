@@ -53,7 +53,7 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
-	bool ParticleDistributionFloat::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr )
+	bool ParticleDistributionFloat::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel )
 	{
 		const char* const Options[] = { "Constant", "Uniform" };
 		int32 Selected = (uint8)GetType();
@@ -89,15 +89,24 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
-	bool ParticleDistributionFloatConstant::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr )
+	bool ParticleDistributionFloatConstant::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel )
 	{
-		bool bDirty = ParticleDistributionFloat::Draw(Ptr);
-		if (!bDirty)
+		if (ImGui::CollapsingHeader(DisplayLabel.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			bDirty |= ImGui::InputFloat("Value", &Constant);
+			ImGui::PushID(DisplayLabel.c_str());
+
+			bool bDirty = ParticleDistributionFloat::Draw(Ptr, DisplayLabel);
+			if (!bDirty)
+			{
+				bDirty |= ImGui::InputFloat("Value", &Constant);
+			}
+
+			ImGui::PopID();
+
+			return bDirty;
 		}
 
-		return bDirty;
+		return false;
 	}
 #endif
 
@@ -125,25 +134,34 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
-	bool ParticleDistributionFloatUniform::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr )
+	bool ParticleDistributionFloatUniform::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel )
 	{
-		bool bDirty = ParticleDistributionFloat::Draw(Ptr);
-		if (!bDirty)
+		if (ImGui::CollapsingHeader(DisplayLabel.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (ImGui::InputFloat("Min", &Min))
+			ImGui::PushID(DisplayLabel.c_str());
+
+			bool bDirty = ParticleDistributionFloat::Draw(Ptr, DisplayLabel);
+			if (!bDirty)
 			{
-				bDirty = true;
-				Min = std::min(Min, Max);
+				if (ImGui::InputFloat("Min", &Min))
+				{
+					bDirty = true;
+					Min = std::min(Min, Max);
+				}
+
+				if (ImGui::InputFloat("Max", &Max))
+				{
+					bDirty = true;
+					Max = std::max(Min, Max);
+				}
 			}
 
-			if (ImGui::InputFloat("Max", &Max))
-			{
-				bDirty = true;
-				Max = std::max(Min, Max);
-			}
+			ImGui::PopID();
+
+			return bDirty;
 		}
 
-		return bDirty;
+		return false;
 	}
 #endif
 

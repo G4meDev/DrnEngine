@@ -3,6 +3,19 @@
 
 namespace Drn
 {
+	ParticleModuleLocationPrimitiveBase::ParticleModuleLocationPrimitiveBase()
+		: ParticleModuleLocationBase()
+		, Positive_X(1)
+		, Positive_Y(1)
+		, Positive_Z(1)
+		, Negative_X(1)
+		, Negative_Y(1)
+		, Negative_Z(1)
+		, SurfaceOnly(0)
+		, Velocity(0)
+		, VelocityScale(new ParticleDistributionFloatConstant(1.0f))
+	{}
+
 	void ParticleModuleLocationPrimitiveBase::Serialize( Archive& Ar )
 	{
 		ParticleModuleLocationBase::Serialize(Ar);
@@ -17,7 +30,7 @@ namespace Drn
 			Ar >> Negative_Z;
 			Ar >> SurfaceOnly;
 			Ar >> Velocity;
-			Ar >> VelocityScale;
+			VelocityScale = ParticleDistributionFloat::Create(Ar);
 		}
 
 		else
@@ -30,7 +43,7 @@ namespace Drn
 			Ar << Negative_Z;
 			Ar << SurfaceOnly;
 			Ar << Velocity;
-			Ar << VelocityScale;
+			VelocityScale->Serialize(Ar);
 		}
 	}
 
@@ -91,6 +104,11 @@ namespace Drn
 		}
 	}
 
+	ParticleModuleLocationPrimitiveSphere::ParticleModuleLocationPrimitiveSphere()
+		: ParticleModuleLocationPrimitiveBase()
+		, StartRadius(new ParticleDistributionFloatConstant(5.0f))
+	{}
+
 	void ParticleModuleLocationPrimitiveSphere::Spawn( ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase )
 	{
 		SPAWN_INIT;
@@ -110,8 +128,7 @@ namespace Drn
 			vUnitDir = vUnitDir.GetUnsafeNormal();
 		}
 
-		//float	fStartRadius	= StartRadius.GetValue(Owner->EmitterTime, Owner->Component, InRandomStream);
-		float	fStartRadius	= StartRadius;
+		float	fStartRadius	= StartRadius->GetValue(Owner, &GetRandomStream(Owner));
 		Vector	vStartRadius	= Vector(fStartRadius);
 		Vector	vOffset			= vUnitDir * vStartRadius;
 
@@ -151,8 +168,7 @@ namespace Drn
 
 		if (Velocity)
 		{
-			//Vector vVelocity		= (vOffset - vStartLoc) * VelocityScale.GetValue(Owner->EmitterTime, Owner->Component, InRandomStream);
-			Vector vVelocity		= (vOffset - vStartLoc) * VelocityScale;
+			Vector vVelocity		= (vOffset - vStartLoc) * VelocityScale->GetValue(Owner, &GetRandomStream(Owner));
 			vVelocity				= Owner->EmitterToSimulation.TransformVector(vVelocity);
 			Particle.Velocity		= Particle.Velocity + vVelocity;
 			Particle.BaseVelocity	= Particle.BaseVelocity + vVelocity;
@@ -165,12 +181,12 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			Ar >> StartRadius;
+			StartRadius = ParticleDistributionFloat::Create(Ar);
 		}
 
 		else
 		{
-			Ar << StartRadius;
+			StartRadius->Serialize(Ar);
 		}
 	}
 
@@ -187,7 +203,7 @@ namespace Drn
 		bDirty |= ImGui::Checkbox("Negative Z",			&Negative_Z);
 		bDirty |= ImGui::Checkbox("Surface Only",		&SurfaceOnly);
 		bDirty |= ImGui::Checkbox("Velocity",			&Velocity);
-		bDirty |= ImGui::InputFloat("Velocity Scale",	&VelocityScale);
+		bDirty |= VelocityScale->Draw(VelocityScale, "Velocity Scale");
 
 		return bDirty;
 	}
@@ -196,7 +212,7 @@ namespace Drn
 	{
 		bool bDirty = ParticleModuleLocationPrimitiveBase::Draw(Owner);
 
-		bDirty |= ImGui::InputFloat("Radius", &StartRadius);
+		bDirty |= StartRadius->Draw(StartRadius, "Radius");
 
 		return bDirty;
 	}

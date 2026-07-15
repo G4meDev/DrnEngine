@@ -4,6 +4,8 @@
 
 namespace Drn
 {
+	class ParticleDistributionFloat;
+
 	class ParticleModuleLocationBase : public ParticleModule
 	{
 	public:
@@ -16,17 +18,7 @@ namespace Drn
 	class ParticleModuleLocationPrimitiveBase : public ParticleModuleLocationBase
 	{
 	public:
-		ParticleModuleLocationPrimitiveBase() : ParticleModuleLocationBase()
-			, Positive_X(1)
-			, Positive_Y(1)
-			, Positive_Z(1)
-			, Negative_X(1)
-			, Negative_Y(1)
-			, Negative_Z(1)
-			, SurfaceOnly(0)
-			, Velocity(0)
-			, VelocityScale(1)
-		{}
+		ParticleModuleLocationPrimitiveBase();
 
 		bool Positive_X;
 		bool Positive_Y;
@@ -37,14 +29,10 @@ namespace Drn
 		bool SurfaceOnly;
 		bool Velocity;
 
-		//struct FRawDistributionFloat VelocityScale;
-		float VelocityScale;
+		TRefCountPtr<ParticleDistributionFloat> VelocityScale;
 
 		//struct FRawDistributionVector StartLocation;
 		Vector StartLocation = Vector::ZeroVector;
-
-		/** Initializes the default values for this property */
-		///void InitializeDefaults();
 
 		virtual void Serialize( Archive& Ar ) override;
 
@@ -58,11 +46,9 @@ namespace Drn
 	class ParticleModuleLocationPrimitiveSphere : public ParticleModuleLocationPrimitiveBase
 	{
 	public:
-		ParticleModuleLocationPrimitiveSphere() : ParticleModuleLocationPrimitiveBase()
-		{}
+		ParticleModuleLocationPrimitiveSphere();
 
-		//struct FRawDistributionFloat StartRadius;
-		float StartRadius = 5.0f;
+		TRefCountPtr<ParticleDistributionFloat> StartRadius;
 
 		virtual void Spawn(ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase) override;
 
