@@ -73,6 +73,7 @@
 #include "Runtime/Particle/ParticleEmitter.h"
 #include "Runtime/Particle/ParticleHelper.h"
 #include "Runtime/Particle/ParticleDistributionFloat.h"
+#include "Runtime/Particle/ParticleDistributionVector.h"
 
 #include "Runtime/Math/Math.h"
 #include "Runtime/Math/Box.h"

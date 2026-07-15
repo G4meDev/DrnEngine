@@ -520,13 +520,13 @@ namespace Drn
 
 	void ParticleEmitterInstance::PostSpawn( BaseParticle* Particle, float InterpolationPercentage, float SpawnTime )
 	{
-		//if (LODLevel->RequiredModule->bUseLocalSpace == false)
-		//{
-		//	if (FVector::DistSquared(OldLocation, Location) > 1.f)
-		//	{
-		//		Particle->Location += InterpolationPercentage * (OldLocation - Location);	
-		//	}
-		//}
+		if (!Emitter->bUseLocalSpace)
+		{
+			if (Vector::DistSquared(OldLocation, Location) > 0.01f)
+			{
+				Particle->Location = Particle->Location + (OldLocation - Location) * InterpolationPercentage;
+			}
+		}
 
 		// Offset caused by any velocity
 		Particle->OldLocation = Particle->Location;

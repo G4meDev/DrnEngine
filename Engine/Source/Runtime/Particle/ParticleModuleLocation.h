@@ -5,6 +5,7 @@
 namespace Drn
 {
 	class ParticleDistributionFloat;
+	class ParticleDistributionVector;
 
 	class ParticleModuleLocationBase : public ParticleModule
 	{
@@ -30,9 +31,7 @@ namespace Drn
 		bool Velocity;
 
 		TRefCountPtr<ParticleDistributionFloat> VelocityScale;
-
-		//struct FRawDistributionVector StartLocation;
-		Vector StartLocation = Vector::ZeroVector;
+		TRefCountPtr<ParticleDistributionVector> StartLocation;
 
 		virtual void Serialize( Archive& Ar ) override;
 

@@ -93,6 +93,16 @@ namespace Drn
 			return XMMin(XMMin(XMVectorGetX(Vec), XMVectorGetY(Vec)), XMVectorGetZ(Vec));
 		}
 
+		inline Vector ComponentMax(const Vector& Other) const 
+		{
+			return Vector(XMMax(m_Vector.x, Other.m_Vector.x), XMMax(m_Vector.y, Other.m_Vector.y), XMMax(m_Vector.z, Other.m_Vector.z));
+		}
+
+		inline Vector ComponentMin(const Vector& Other) const 
+		{
+			return Vector(XMMin(m_Vector.x, Other.m_Vector.x), XMMin(m_Vector.y, Other.m_Vector.y), XMMin(m_Vector.z, Other.m_Vector.z));
+		}
+
 		inline float operator|( const Vector& V ) const
 		{
 			XMVECTOR Result = XMVector3Dot(XMLoadFloat3(Get()), XMLoadFloat3(V.Get()));

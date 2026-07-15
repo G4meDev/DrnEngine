@@ -14,6 +14,7 @@ namespace Drn
 		, SurfaceOnly(0)
 		, Velocity(0)
 		, VelocityScale(new ParticleDistributionFloatConstant(1.0f))
+		, StartLocation(new ParticleDistributionVectorConstant(Vector::ZeroVector))
 	{}
 
 	void ParticleModuleLocationPrimitiveBase::Serialize( Archive& Ar )
@@ -31,6 +32,7 @@ namespace Drn
 			Ar >> SurfaceOnly;
 			Ar >> Velocity;
 			VelocityScale = ParticleDistributionFloat::Create(Ar);
+			StartLocation = ParticleDistributionVector::Create(Ar);
 		}
 
 		else
@@ -44,6 +46,7 @@ namespace Drn
 			Ar << SurfaceOnly;
 			Ar << Velocity;
 			VelocityScale->Serialize(Ar);
+			StartLocation->Serialize(Ar);
 		}
 	}
 
@@ -113,9 +116,7 @@ namespace Drn
 	{
 		SPAWN_INIT;
 
-		// Determine the start location for the sphere
-		//Vector vStartLoc = StartLocation.GetValue(Owner->EmitterTime, Owner->Component, 0, InRandomStream);
-		Vector vStartLoc = StartLocation;
+		Vector vStartLoc = StartLocation->GetValue(Owner, &GetRandomStream(Owner));
 
 		Vector vUnitDir;
 		DetermineUnitDirection(Owner, vUnitDir, &GetRandomStream(Owner));
@@ -204,6 +205,7 @@ namespace Drn
 		bDirty |= ImGui::Checkbox("Surface Only",		&SurfaceOnly);
 		bDirty |= ImGui::Checkbox("Velocity",			&Velocity);
 		bDirty |= VelocityScale->Draw(VelocityScale, "Velocity Scale");
+		bDirty |= StartLocation->Draw(StartLocation, "Start Location");
 
 		return bDirty;
 	}
