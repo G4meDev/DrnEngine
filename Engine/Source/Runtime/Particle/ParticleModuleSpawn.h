@@ -4,6 +4,8 @@
 
 namespace Drn
 {
+	class ParticleDistributionFloat;
+
 	class ParticleModuleSpawnBase : public ParticleModule
 	{
 	public:
@@ -11,15 +13,10 @@ namespace Drn
 		{
 			bSpawningModule = true;
 		}
-		//uint32 bProcessSpawnRate:1;
-		//uint32 bProcessBurstList:1;
-
-		//virtual EModuleType	GetModuleType() const override { return EPMT_Spawn; }
 
 		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, float OldLeftover, 
 			float DeltaTime, int32& Number, float& Rate)
 		{
-			//return bProcessSpawnRate;
 			return true;
 		}
 
@@ -36,35 +33,16 @@ namespace Drn
 		}
 
 		virtual void ResetBurstList(ParticleEmitterInstance* Owner) {};
-
-		//virtual bool GetBurstCount(FParticleEmitterInstance* Owner, int32 Offset, float OldLeftover, 
-		//	float DeltaTime, int32& Number)
-		//{
-		//	Number = 0;
-		//	return bProcessBurstList;
-		//}
-
-		//virtual float GetEstimatedSpawnRate() { return 0.0f; }
-		//virtual int32 GetMaximumBurstCount() { return 0; }
 	};
 
 	class ParticleModuleSpawn : public ParticleModuleSpawnBase
 	{
 	public:
-		ParticleModuleSpawn() : ParticleModuleSpawnBase()
-		{}
+		ParticleModuleSpawn();
 
-		//struct FRawDistributionFloat Rate;
-		float SpawnRate = 50;
-
-		///** The method to utilize when burst-emitting particles. */
-		//UPROPERTY(EditAnywhere, Category=Burst)
-		//TEnumAsByte<EParticleBurstMethod> ParticleBurstMethod;
+		TRefCountPtr<ParticleDistributionFloat> SpawnRate;
 
 		std::vector<ParticleBurst> BurstList;
-
-		///** Initializes the default values for this property */
-		//void InitializeDefaults();
 
 		virtual uint32 RequiredBytesPerInstance() override;
 
@@ -85,10 +63,6 @@ namespace Drn
 #if WITH_EDITOR
 		virtual bool Draw(ParticleEmitter* Owner) override;
 #endif
-
-		//virtual float GetMaximumSpawnRate() override;
-		//virtual float GetEstimatedSpawnRate() override;
-		//virtual int32 GetMaximumBurstCount() override;
 	};
 
 // ------------------------------------------------------------------------------------------------------
@@ -96,22 +70,12 @@ namespace Drn
 	class ParticleModuleSpawnPerUnit : public ParticleModuleSpawnBase
 	{
 	public:
-		ParticleModuleSpawnPerUnit() : ParticleModuleSpawnBase()
-			, UnitScalar(5.0f)
-			, MovementTolerance(0.1f)
-			, SpawnPerUnit(1.0f)
-			, MaxFrameDistance(0.0f)
-			, bIgnoreSpawnRateWhenMoving(false)
-			, bIgnoreMovementAlongX(false)
-			, bIgnoreMovementAlongY(false)
-			, bIgnoreMovementAlongZ(false)
-		{}
+		ParticleModuleSpawnPerUnit();
 
 		float UnitScalar;
 		float MovementTolerance;
 
-		//FRawDistributionFloat SpawnPerUnit;
-		float SpawnPerUnit;
+		TRefCountPtr<ParticleDistributionFloat> SpawnPerUnit;
 
 		float MaxFrameDistance;
 		bool bIgnoreSpawnRateWhenMoving;

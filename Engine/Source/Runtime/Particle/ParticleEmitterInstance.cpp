@@ -651,7 +651,6 @@ namespace Drn
 		{
 			DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
 			Particle.Velocity = Particle.Velocity + Vector(0.0, -0.5, 0.0);
-			Particle.Location = Particle.Location + Particle.Velocity * DeltaTime;
 
 			GetWorld()->DrawDebugSphere(SimulationToWorld.TransformPosition(Particle.Location), Quat::Identity, Color::White, 1 - Particle.RelativeTime, 32, 0.01, 0);
 		}

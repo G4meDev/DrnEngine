@@ -114,6 +114,7 @@ namespace Drn
 		}
 
 		static int32 Rand() { return std::rand(); }
+		static float SRand();
 		static inline float InvSqrt(float F) {  return 1.0f / std::sqrt(F); }
 		static inline float TruncToInt(float F) { return std::trunc(F); }
 

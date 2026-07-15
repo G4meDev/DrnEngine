@@ -44,6 +44,11 @@ namespace Drn
 		return Delta > -Telorance && Delta < Telorance;
 	}
 
+	float Math::SRand()
+	{
+		return ((double)std::rand()) / RAND_MAX;
+	}
+
 	float Math::FInterpTo( float Current, float Target, float DeltaTime, float InterpSpeed )
 	{
 		if( InterpSpeed <= 0.f )

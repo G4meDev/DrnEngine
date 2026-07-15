@@ -143,6 +143,7 @@ set( HEADER_FILES
 	Source/Runtime/Particle/ParticleSystemComponent.h
 	Source/Runtime/Particle/ParticleHelper.h
 	Source/Runtime/Particle/Particle.h
+	Source/Runtime/Particle/ParticleDistributionFloat.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -396,6 +397,7 @@ set( SOURCE_FILES
 	Source/Runtime/Particle/ParticleSystemComponent.cpp
 	Source/Runtime/Particle/ParticleHelper.cpp
 	Source/Runtime/Particle/Particle.cpp
+	Source/Runtime/Particle/ParticleDistributionFloat.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp
