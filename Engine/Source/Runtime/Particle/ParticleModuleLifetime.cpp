@@ -14,7 +14,7 @@ namespace Drn
 	{
 		SPAWN_INIT;
 		{
-			float MaxLifetime = Lifetime->GetValue(Owner, &GetRandomStream(Owner));
+			float MaxLifetime = Lifetime->GetValue(Owner->EmitterTime, Owner, &GetRandomStream(Owner));
 			if(Particle.OneOverMaxLifetime > 0.f)
 			{
 				// Another module already modified lifetime.

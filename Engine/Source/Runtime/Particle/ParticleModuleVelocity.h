@@ -26,6 +26,8 @@ namespace Drn
 #endif
 	};
 
+// ------------------------------------------------------------------------------------------------------
+
 	class ParticleModuleVelocity : public ParticleModuleVelocityBase
 	{
 	public:
@@ -46,5 +48,22 @@ namespace Drn
 
 // ------------------------------------------------------------------------------------------------------
 
-
+//	class ParticleModuleVelocityOverLifetime : public ParticleModuleVelocityBase
+//	{
+//	public:
+//		ParticleModuleVelocityOverLifetime();
+//
+//		TRefCountPtr<ParticleDistributionVector> VelocityOverLifetime;
+//		bool bAbsolute;
+//
+//		virtual EParticleModule	GetModuleType() const override { return EParticleModule::VelocityOverLifetime; }
+//		virtual void Spawn(ParticleEmitterInstance* EmitterInstance, float SpawnTime, BaseParticle* Particle) override;
+//		virtual void Update(ParticleEmitterInstance* EmitterInstance, float DeltaTime) override;
+//
+//		virtual void Serialize( Archive& Ar ) override;
+//
+//#if WITH_EDITOR
+//		virtual bool Draw(ParticleEmitter* Owner) override;
+//#endif
+//	};
 }

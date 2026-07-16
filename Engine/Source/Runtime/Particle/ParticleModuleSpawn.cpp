@@ -24,7 +24,7 @@ namespace Drn
 		drn_check(Owner);
 		drn_check(SpawnRate);
 
-		Rate = SpawnRate->GetValue(Owner, &GetRandomStream(Owner));
+		Rate = SpawnRate->GetValue(Owner->EmitterTime, Owner, &GetRandomStream(Owner));
 		return true;
 	}
 
@@ -208,7 +208,7 @@ namespace Drn
 		ParticleSpawnPerUnitInstancePayload* SPUPayload = NULL;
 		float NewTravelLeftover = 0.0f;
 
-		float ParticlesPerUnit = SpawnPerUnit->GetValue(Owner, &GetRandomStream(Owner)) / UnitScalar;
+		float ParticlesPerUnit = SpawnPerUnit->GetValue(Owner->EmitterTime, Owner, &GetRandomStream(Owner)) / UnitScalar;
 
 		if (ParticlesPerUnit >= 0.0f)
 		{

@@ -21,7 +21,7 @@ namespace Drn
 		static ParticleDistributionFloat* Create(Archive& Ar);
 		static ParticleDistributionFloat* Create(EParticleDistributionFloatType Type);
 
-		virtual float GetValue( ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) = 0;
+		virtual float GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) = 0;
 		inline virtual EParticleDistributionFloatType GetType() const = 0;
 
 		virtual void GetOutRange(float& MinOut, float& MaxOut) const = 0;
@@ -45,7 +45,7 @@ namespace Drn
 		float Constant;
 
 		virtual void Serialize(Archive& Ar) override;
-		virtual float GetValue( ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
+		virtual float GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
 		inline virtual EParticleDistributionFloatType GetType() const override { return EParticleDistributionFloatType::Constant; };
 
 		virtual void GetOutRange(float& MinOut, float& MaxOut) const override
@@ -70,7 +70,7 @@ namespace Drn
 		float Max;
 
 		virtual void Serialize(Archive& Ar) override;
-		virtual float GetValue( ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
+		virtual float GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
 		inline virtual EParticleDistributionFloatType GetType() const override { return EParticleDistributionFloatType::Uniform; };
 
 		virtual void GetOutRange(float& MinOut, float& MaxOut) const override

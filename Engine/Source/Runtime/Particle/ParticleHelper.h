@@ -14,10 +14,32 @@ namespace Drn
 	BaseParticle* Name = (BaseParticle*) (Address);
 
 #define SPAWN_INIT																										\
-	drn_check((Owner != NULL) && (Owner->Component != NULL));																\
-	const int32			ActiveParticles	= Owner->ActiveParticles;															\
-	const uint32		ParticleStride	= Owner->ParticleStride;															\
+	drn_check((Owner != NULL) && (Owner->Component != NULL));															\
+	const int32			ActiveParticles	= Owner->ActiveParticles;														\
+	const uint32		ParticleStride	= Owner->ParticleStride;														\
 	BaseParticle&	Particle			= *(ParticleBase);
+
+#define BEGIN_UPDATE_LOOP																								\
+	{																													\
+		drn_check((Owner) && (Owner->Component));																		\
+		int32&				ActiveParticles = Owner->ActiveParticles;													\
+		uint32				CurrentOffset	= Offset;																	\
+		const uint8*		ParticleData	= Owner->ParticleData;														\
+		const uint32		ParticleStride	= Owner->ParticleStride;													\
+		uint16*				ParticleIndices	= Owner->ParticleIndices;													\
+		for(int32 i=ActiveParticles-1; i>=0; i--)																		\
+		{																												\
+			const int32	CurrentIndex	= ParticleIndices[i];															\
+			const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;									\
+			BaseParticle& Particle		= *((BaseParticle*) ParticleBase);												\
+			if ((Particle.Flags & STATE_Particle_Freeze) == 0)															\
+			{																											\
+
+#define END_UPDATE_LOOP																									\
+			}																											\
+			CurrentOffset				= Offset;																		\
+		}																												\
+	}
 
 	enum class EEmitterType : uint8
 	{

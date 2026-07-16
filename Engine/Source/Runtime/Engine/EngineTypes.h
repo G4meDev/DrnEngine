@@ -66,6 +66,8 @@ namespace Drn
 		SpawnPerUnit,
 		Lifetime,
 		Velocity,
+		VelocityOverLifetime,
+		AccelerationConstant,
 		Max
 	};
 

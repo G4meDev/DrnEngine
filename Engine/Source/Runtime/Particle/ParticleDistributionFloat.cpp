@@ -83,7 +83,7 @@ namespace Drn
 		}
 	}
 
-	float ParticleDistributionFloatConstant::GetValue( ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
+	float ParticleDistributionFloatConstant::GetValue( float F,ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
 	{
 		return Constant;
 	}
@@ -128,7 +128,7 @@ namespace Drn
 		}
 	}
 
-	float ParticleDistributionFloatUniform::GetValue( ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
+	float ParticleDistributionFloatUniform::GetValue( float F,ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
 	{
 		return Max + (Min - Max) * DIST_GET_RANDOM_VALUE(InRandomStream);
 	}

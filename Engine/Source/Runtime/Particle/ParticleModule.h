@@ -28,8 +28,8 @@ namespace Drn
 		virtual void Serialize(Archive& Ar) override;
 
 		virtual void CompileModule(ParticleEmitter* Emitter) {};
-		virtual void Spawn(ParticleEmitterInstance* EmitterInstance, float SpawnTime, BaseParticle* Particle) {};
-		virtual void Update(ParticleEmitterInstance* EmitterInstance, float DeltaTime) {};
+		virtual void Spawn(ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase) {};
+		virtual void Update(ParticleEmitterInstance* Owner, int32 Offset, float DeltaTime) {};
 		virtual void FinalUpdate(ParticleEmitterInstance* EmitterInstance, float DeltaTime) {};
 
 		virtual EParticleModule	GetModuleType() const {	return EParticleModule::Spawn; }

@@ -141,6 +141,7 @@ set( HEADER_FILES
 	Source/Runtime/Particle/ParticleModuleLocation.h
 	Source/Runtime/Particle/ParticleModuleLifetime.h
 	Source/Runtime/Particle/ParticleModuleVelocity.h
+	Source/Runtime/Particle/ParticleModuleAcceleration.h
 	Source/Runtime/Particle/ParticleEmitterInstance.h
 	Source/Runtime/Particle/ParticleSystemComponent.h
 	Source/Runtime/Particle/ParticleHelper.h
@@ -398,6 +399,7 @@ set( SOURCE_FILES
 	Source/Runtime/Particle/ParticleModuleLocation.cpp
 	Source/Runtime/Particle/ParticleModuleLifetime.cpp
 	Source/Runtime/Particle/ParticleModuleVelocity.cpp
+	Source/Runtime/Particle/ParticleModuleAcceleration.cpp
 	Source/Runtime/Particle/ParticleEmitterInstance.cpp
 	Source/Runtime/Particle/ParticleSystemComponent.cpp
 	Source/Runtime/Particle/ParticleHelper.cpp

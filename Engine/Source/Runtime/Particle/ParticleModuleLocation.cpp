@@ -116,7 +116,7 @@ namespace Drn
 	{
 		SPAWN_INIT;
 
-		Vector vStartLoc = StartLocation->GetValue(Owner, &GetRandomStream(Owner));
+		Vector vStartLoc = StartLocation->GetValue(Owner->EmitterTime, Owner, &GetRandomStream(Owner));
 
 		Vector vUnitDir;
 		DetermineUnitDirection(Owner, vUnitDir, &GetRandomStream(Owner));
@@ -129,7 +129,7 @@ namespace Drn
 			vUnitDir = vUnitDir.GetUnsafeNormal();
 		}
 
-		float	fStartRadius	= StartRadius->GetValue(Owner, &GetRandomStream(Owner));
+		float	fStartRadius	= StartRadius->GetValue(Owner->EmitterTime, Owner, &GetRandomStream(Owner));
 		Vector	vStartRadius	= Vector(fStartRadius);
 		Vector	vOffset			= vUnitDir * vStartRadius;
 
@@ -169,7 +169,7 @@ namespace Drn
 
 		if (Velocity)
 		{
-			Vector vVelocity		= (vOffset - vStartLoc) * VelocityScale->GetValue(Owner, &GetRandomStream(Owner));
+			Vector vVelocity		= (vOffset - vStartLoc) * VelocityScale->GetValue(Owner->EmitterTime, Owner, &GetRandomStream(Owner));
 			vVelocity				= Owner->EmitterToSimulation.TransformVector(vVelocity);
 			Particle.Velocity		= Particle.Velocity + vVelocity;
 			Particle.BaseVelocity	= Particle.BaseVelocity + vVelocity;

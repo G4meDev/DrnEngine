@@ -340,7 +340,8 @@ namespace Drn
 			ParticleModule* CurrentModule = Emitter->UpdateModules[ModuleIndex];
 			if (CurrentModule)
 			{
-				CurrentModule->Update(this, DeltaTime);
+				//CurrentModule->Update(this, DeltaTime);
+				CurrentModule->Update(this, 0, DeltaTime);
 			}
 		}
 	}
@@ -650,7 +651,7 @@ namespace Drn
 		for (int32 i = 0; i < ActiveParticles; i++)
 		{
 			DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
-			Particle.Velocity = Particle.Velocity + Vector(0.0, -0.5, 0.0);
+			//Particle.Velocity = Particle.Velocity + Vector(0.0, -0.5, 0.0);
 
 			GetWorld()->DrawDebugSphere(SimulationToWorld.TransformPosition(Particle.Location), Quat::Identity, Color::White, 1 - Particle.RelativeTime, 32, 0.01, 0);
 		}
