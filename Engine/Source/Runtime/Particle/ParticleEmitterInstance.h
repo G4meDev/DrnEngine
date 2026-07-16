@@ -66,7 +66,7 @@ namespace Drn
 		uint32 GetModuleDataOffset(ParticleModule* Module);
 		uint8* GetModuleInstanceData( ParticleModule* Module );
 
-		virtual uint32 RequiredBytes();
+		//virtual uint32 RequiredBytes();
 		virtual bool Resize(int32 NewMaxActiveParticles);
 		virtual void Tick(float DeltaTime, bool bSuppressSpawning);
 		void CheckEmitterFinished();
@@ -144,13 +144,10 @@ namespace Drn
 		ParticleMeshEmitterInstance();
 		virtual ~ParticleMeshEmitterInstance();
 
-		bool bHasRotation : 1;
-		int32 MeshRotationOffset;
-
 		virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
 		virtual void PostSpawn(BaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
 
-		virtual uint32 RequiredBytes() override;
+		//virtual uint32 RequiredBytes() override;
 		virtual bool Resize(int32 NewMaxActiveParticles) override;
 
 		virtual void UpdateBoundingBox(float DeltaTime) override;

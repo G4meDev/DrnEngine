@@ -37,7 +37,7 @@ namespace Drn
 		TRefCountPtr<ParticleDistributionFloat> StartVelocityRadial;
 
 		virtual EParticleModule	GetModuleType() const override { return EParticleModule::Velocity; }
-		virtual void Spawn(ParticleEmitterInstance* EmitterInstance, float SpawnTime, BaseParticle* Particle) override;
+		virtual void Spawn(ParticleEmitterInstance* EmitterInstance, int32 Offset, float SpawnTime, BaseParticle* Particle) override;
 
 		virtual void Serialize( Archive& Ar ) override;
 
@@ -57,8 +57,8 @@ namespace Drn
 //		bool bAbsolute;
 //
 //		virtual EParticleModule	GetModuleType() const override { return EParticleModule::VelocityOverLifetime; }
-//		virtual void Spawn(ParticleEmitterInstance* EmitterInstance, float SpawnTime, BaseParticle* Particle) override;
-//		virtual void Update(ParticleEmitterInstance* EmitterInstance, float DeltaTime) override;
+//		virtual void Spawn(ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* Particle) override;
+//		virtual void Update(ParticleEmitterInstance* Owner, int32 Offset, float DeltaTime) override;
 //
 //		virtual void Serialize( Archive& Ar ) override;
 //

@@ -10,7 +10,7 @@ namespace Drn
 		bSpawnModule = true;
 	}
 
-	void ParticleModuleLifetime::Spawn( ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase )
+	void ParticleModuleLifetime::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
 	{
 		SPAWN_INIT;
 		{

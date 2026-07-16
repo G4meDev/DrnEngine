@@ -68,6 +68,7 @@ namespace Drn
 		Velocity,
 		VelocityOverLifetime,
 		AccelerationConstant,
+		Acceleration,
 		Max
 	};
 

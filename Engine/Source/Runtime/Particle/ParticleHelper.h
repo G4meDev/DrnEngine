@@ -17,7 +17,12 @@ namespace Drn
 	drn_check((Owner != NULL) && (Owner->Component != NULL));															\
 	const int32			ActiveParticles	= Owner->ActiveParticles;														\
 	const uint32		ParticleStride	= Owner->ParticleStride;														\
+	uint32				CurrentOffset	= Offset;																		\
 	BaseParticle&	Particle			= *(ParticleBase);
+
+#define PARTICLE_ELEMENT(Type,Name)																						\
+	Type& Name = *((Type*)((uint8*)ParticleBase + CurrentOffset));														\
+	CurrentOffset += sizeof(Type);
 
 #define BEGIN_UPDATE_LOOP																								\
 	{																													\

@@ -20,6 +20,8 @@ namespace Drn
 
 		void RegisterModule(ParticleModule* Module);
 
+		void CalculateRequiredBytesAndOffset();
+
 #if WITH_EDITOR
 		bool Draw();
 #endif
@@ -31,6 +33,7 @@ namespace Drn
 		std::vector<TRefCountPtr<ParticleModule>> Modules;
 
 		int32 ReqInstanceBytes;
+		std::unordered_map<ParticleModule*, uint32> ModuleOffsetMap;
 		std::unordered_map<ParticleModule*, uint32> ModuleInstanceOffsetMap;
 
 		Vector Origin;
@@ -44,6 +47,11 @@ namespace Drn
 		bool bEmitterDurationUseRange;
 		int32 EmitterLoops;
 		bool bDurationRecalcEachLoop;
+
+		bool bHasMeshRotation;
+
+		int32 ParticleSize;
+		int32 MeshRotationOffset;
 
 	private:
 		std::string Name;

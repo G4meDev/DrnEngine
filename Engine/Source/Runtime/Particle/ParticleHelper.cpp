@@ -56,6 +56,7 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleVelocity>(EParticleModule::Velocity, "Initial Velocity", "Velocity");
 		//RegisterParticleModule<ParticleModuleVelocityOverLifetime>(EParticleModule::VelocityOverLifetime, "Velocity Over Lifetime", "Velocity");
 		RegisterParticleModule<ParticleModuleAccelerationConstant>(EParticleModule::AccelerationConstant, "Acceleration Constant", "Acceleration");
+		RegisterParticleModule<ParticleModuleAcceleration>(EParticleModule::Acceleration, "Acceleration", "Acceleration");
 
 
 	}

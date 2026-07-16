@@ -28,9 +28,9 @@ namespace Drn
 		virtual void Serialize(Archive& Ar) override;
 
 		virtual void CompileModule(ParticleEmitter* Emitter) {};
-		virtual void Spawn(ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase) {};
+		virtual void Spawn(ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase) {};
 		virtual void Update(ParticleEmitterInstance* Owner, int32 Offset, float DeltaTime) {};
-		virtual void FinalUpdate(ParticleEmitterInstance* EmitterInstance, float DeltaTime) {};
+		virtual void FinalUpdate(ParticleEmitterInstance* Owner, int32 Offset, float DeltaTime) {};
 
 		virtual EParticleModule	GetModuleType() const {	return EParticleModule::Spawn; }
 
@@ -45,6 +45,7 @@ namespace Drn
 		inline bool IsEffectiveModule() const { return bEnabled && bValid; }
 
 		virtual uint32 RequiredBytesPerInstance() { return 0; };
+		virtual uint32 RequiredBytes() { return 0; };
 
 #if WITH_EDITOR
 		virtual bool Draw(ParticleEmitter* Owner) { return false; };

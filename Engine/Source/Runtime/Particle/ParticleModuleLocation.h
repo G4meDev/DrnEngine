@@ -49,7 +49,7 @@ namespace Drn
 
 		TRefCountPtr<ParticleDistributionFloat> StartRadius;
 
-		virtual void Spawn(ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase) override;
+		virtual void Spawn(ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase) override;
 
 		virtual EParticleModule	GetModuleType() const override { return EParticleModule::LocationSphere; }
 

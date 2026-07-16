@@ -20,8 +20,9 @@ namespace Drn
 		, EmitterDurationLow(0.0f)
 		, bEmitterDurationUseRange(false)
 		, EmitterLoops(0)
+		, bHasMeshRotation(false)
+		, MeshRotationOffset(0)
 	{
-		
 	}
 
 	void ParticleEmitter::Serialize( Archive& Ar )
@@ -45,7 +46,6 @@ namespace Drn
 
 				Modules[i] = (ParticleModuleSpawnBase*)ParticleTypes::CreateParticleModule(ModuleType);
 				Modules[i]->Serialize(Ar);
-				RegisterModule(Modules[i]);
 			}
 
 			Ar >> Origin;
@@ -60,6 +60,13 @@ namespace Drn
 			Ar >> EmitterLoops;
 			Ar >> bDurationRecalcEachLoop;
 
+			Ar >> bHasMeshRotation;
+
+			CalculateRequiredBytesAndOffset();
+			for (int32 i = 0; i < ModulesCount; i++)
+			{
+				RegisterModule(Modules[i]);
+			}
 		}
 
 		else
@@ -85,6 +92,8 @@ namespace Drn
 			Ar << bEmitterDurationUseRange;
 			Ar << EmitterLoops;
 			Ar << bDurationRecalcEachLoop;
+
+			Ar << bHasMeshRotation;
 		}
 	}
 
@@ -117,6 +126,24 @@ namespace Drn
 		{
 			ModuleInstanceOffsetMap[Module] = ReqInstanceBytes;
 			ReqInstanceBytes += InstanceBytes;
+		}
+
+		const int Bytes = Module->RequiredBytes();
+		if (Bytes > 0)
+		{
+			ModuleOffsetMap[Module] = ParticleSize;
+			ParticleSize += Bytes;
+		}
+	}
+
+	void ParticleEmitter::CalculateRequiredBytesAndOffset()
+	{
+		ParticleSize = sizeof(BaseParticle);
+
+		if (bHasMeshRotation)
+		{
+			MeshRotationOffset = ParticleSize;
+			ParticleSize += sizeof(MeshRotationPayloadData);
 		}
 	}
 

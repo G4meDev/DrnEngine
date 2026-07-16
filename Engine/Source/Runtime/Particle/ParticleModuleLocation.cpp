@@ -112,7 +112,7 @@ namespace Drn
 		, StartRadius(new ParticleDistributionFloatConstant(5.0f))
 	{}
 
-	void ParticleModuleLocationPrimitiveSphere::Spawn( ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase )
+	void ParticleModuleLocationPrimitiveSphere::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
 	{
 		SPAWN_INIT;
 

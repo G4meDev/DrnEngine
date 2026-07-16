@@ -32,7 +32,7 @@ namespace Drn
 		bUpdateModule = true;
 	}
 
-	void ParticleModuleAccelerationConstant::Spawn( ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase )
+	void ParticleModuleAccelerationConstant::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
 	{
 		SPAWN_INIT;
 		if (bWorldSpace && Owner->Emitter->bUseLocalSpace)
@@ -120,5 +120,107 @@ namespace Drn
 
 // -----------------------------------------------------------------------------------------
 
+	ParticleModuleAcceleration::ParticleModuleAcceleration()
+		: ParticleModuleAccelerationBase()
+		, bApplyOwnerScale(false)
+		, Acceleration(new ParticleDistributionVectorConstant(Vector::ZeroVector))
+	{
+		bSpawnModule = true;
+		bUpdateModule = true;
+	}
+
+	void ParticleModuleAcceleration::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
+	{
+		SPAWN_INIT;
+		PARTICLE_ELEMENT(Vector, UsedAcceleration);
+		UsedAcceleration = Acceleration->GetValue(Owner->EmitterTime, Owner);
+		if ((bApplyOwnerScale == true) && Owner && Owner->Component)
+		{
+			Vector Scale = Owner->Component->GetWorldTransform().GetScale();
+			UsedAcceleration *= Scale;
+		}
+
+		if (bWorldSpace && Owner->Emitter->bUseLocalSpace)
+		{
+			Vector TempUsedAcceleration = Owner->Component->GetWorldTransform().InverseTransformVector(UsedAcceleration);
+			Particle.Velocity		+= TempUsedAcceleration * SpawnTime;
+			Particle.BaseVelocity	+= TempUsedAcceleration * SpawnTime;
+		}
+		else
+		{
+			if (Owner->Emitter->bUseLocalSpace)
+			{
+				UsedAcceleration = Owner->EmitterToSimulation.TransformVector(UsedAcceleration);
+			}
+			Particle.Velocity		+= UsedAcceleration * SpawnTime;
+			Particle.BaseVelocity	+= UsedAcceleration * SpawnTime;
+		}
+	}
+
+	void ParticleModuleAcceleration::Update( ParticleEmitterInstance* Owner, int32 Offset, float DeltaTime )
+	{
+		if (!Owner || !Owner->HasActiveParticles() || !Owner->ParticleData || !Owner->ParticleIndices)
+		{
+			return;
+		}
+
+		ApplicationMisc::Prefetch(Owner->ParticleData, (Owner->ParticleIndices[0] * Owner->ParticleStride));
+		ApplicationMisc::Prefetch(Owner->ParticleData, (Owner->ParticleIndices[0] * Owner->ParticleStride) + PLATFORM_CACHE_LINE_SIZE);
+		if (bWorldSpace && Owner->Emitter->bUseLocalSpace)
+		{
+			Transform Mat = Owner->Component->GetWorldTransform();
+			BEGIN_UPDATE_LOOP;
+			{
+				Vector& UsedAcceleration = *((Vector*)(ParticleBase + CurrentOffset));																\
+				Vector TransformedUsedAcceleration = Mat.InverseTransformVector(UsedAcceleration);
+				ApplicationMisc::Prefetch(ParticleData, (ParticleIndices[i+1] * ParticleStride));
+				ApplicationMisc::Prefetch(ParticleData, (ParticleIndices[i+1] * ParticleStride) + PLATFORM_CACHE_LINE_SIZE);
+				Particle.Velocity		+= TransformedUsedAcceleration * DeltaTime;
+				Particle.BaseVelocity	+= TransformedUsedAcceleration * DeltaTime;
+			}
+			END_UPDATE_LOOP;
+		}
+		else
+		{
+			BEGIN_UPDATE_LOOP;
+			{
+				Vector& UsedAcceleration = *((Vector*)(ParticleBase + CurrentOffset));																\
+				ApplicationMisc::Prefetch(ParticleData, (ParticleIndices[i+1] * ParticleStride));
+				ApplicationMisc::Prefetch(ParticleData, (ParticleIndices[i+1] * ParticleStride) + PLATFORM_CACHE_LINE_SIZE);
+				Particle.Velocity		+= UsedAcceleration * DeltaTime;
+				Particle.BaseVelocity	+= UsedAcceleration * DeltaTime;
+			}
+			END_UPDATE_LOOP;
+		}
+	}
+
+	void ParticleModuleAcceleration::Serialize( Archive& Ar )
+	{
+		ParticleModuleAccelerationBase::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> bApplyOwnerScale;
+			Acceleration = ParticleDistributionVector::Create(Ar);
+		}
+		else
+		{
+			Ar << bApplyOwnerScale;
+			Acceleration->Serialize(Ar);
+		}
+	}
+
+#if WITH_EDITOR
+	bool ParticleModuleAcceleration::Draw( ParticleEmitter* Owner )
+	{
+		bool bDirty = ParticleModuleAccelerationBase::Draw(Owner);
+		bDirty |= ImGui::Checkbox("Apply Owner Scale", &bApplyOwnerScale);
+		bDirty |= Acceleration->Draw(Acceleration, "Acceleration");
+
+		return bDirty;
+	}
+#endif
+
+// -----------------------------------------------------------------------------------------
 
 }  // namespace Drn

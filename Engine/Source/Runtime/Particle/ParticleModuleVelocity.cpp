@@ -41,7 +41,7 @@ namespace Drn
 		bSpawnModule = true;
 	}
 
-	void ParticleModuleVelocity::Spawn( ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase )
+	void ParticleModuleVelocity::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
 	{
 		SPAWN_INIT;
 		{
@@ -118,7 +118,7 @@ namespace Drn
 //		bUpdateModule = true;
 //	}
 //
-//	void ParticleModuleVelocityOverLifetime::Spawn( ParticleEmitterInstance* Owner, float SpawnTime, BaseParticle* ParticleBase )
+//	void ParticleModuleVelocityOverLifetime::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
 //	{
 //		if (bAbsolute)
 //		{
@@ -134,7 +134,7 @@ namespace Drn
 //		}
 //	}
 //
-//	void ParticleModuleVelocityOverLifetime::Update( ParticleEmitterInstance* Owner, float DeltaTime )
+//	void ParticleModuleVelocityOverLifetime::Update( ParticleEmitterInstance* Owner, int32 Offset, float DeltaTime )
 //	{
 //		Vector OwnerScale(1.0f);
 //		const Transform& OwnerTM = Owner->Component->GetWorldTransform();
@@ -152,7 +152,7 @@ namespace Drn
 //					const Matrix LocalToWorld = OwnerTM.ToMatrixNoScale();
 //					BEGIN_UPDATE_LOOP;
 //					{
-//						Vel = VelOverLife.GetValue(Particle.RelativeTime, Owner->Component);
+//						Vel = VelocityOverLifetime->GetValue(Particle.RelativeTime, Owner, &GetRandomStream(Owner));
 //						Particle.Velocity = LocalToWorld.TransformVector(Vel) * OwnerScale;
 //					}
 //					END_UPDATE_LOOP;
@@ -161,7 +161,7 @@ namespace Drn
 //				{
 //					BEGIN_UPDATE_LOOP;
 //					{
-//						Particle.Velocity = VelOverLife.GetValue(Particle.RelativeTime, Owner->Component) * OwnerScale;
+//						Particle.Velocity = VelocityOverLifetime->GetValue(Particle.RelativeTime, Owner, &GetRandomStream(Owner)) * OwnerScale;
 //					}
 //					END_UPDATE_LOOP;
 //				}
@@ -172,7 +172,7 @@ namespace Drn
 //				{
 //					BEGIN_UPDATE_LOOP;
 //					{
-//						Particle.Velocity = VelOverLife.GetValue(Particle.RelativeTime, Owner->Component) * OwnerScale;
+//						Particle.Velocity = VelocityOverLifetime->GetValue(Particle.RelativeTime, Owner, &GetRandomStream(Owner)) * OwnerScale;
 //					}
 //					END_UPDATE_LOOP;
 //				}
@@ -183,7 +183,7 @@ namespace Drn
 //					const Matrix InvMat = LocalToWorld.Inverse();
 //					BEGIN_UPDATE_LOOP;
 //					{
-//						Vel = VelOverLife.GetValue(Particle.RelativeTime, Owner->Component);
+//						Vel = VelocityOverLifetime->GetValue(Particle.RelativeTime, Owner, &GetRandomStream(Owner));
 //						Particle.Velocity = InvMat.TransformVector(Vel) * OwnerScale;
 //					}
 //					END_UPDATE_LOOP;
@@ -192,15 +192,15 @@ namespace Drn
 //		}
 //		else
 //		{
-//			if (LODLevel->RequiredModule->bUseLocalSpace == false)
+//			if (Owner->Emitter->bUseLocalSpace == false)
 //			{
-//				FVector Vel;
-//				if (bInWorldSpace == false)
+//				Vector Vel;
+//				if (bWorldSpace == false)
 //				{
-//					const FMatrix LocalToWorld = OwnerTM.ToMatrixNoScale();
+//					const Matrix LocalToWorld = OwnerTM.ToMatrixNoScale();
 //					BEGIN_UPDATE_LOOP;
 //					{
-//						Vel = VelOverLife.GetValue(Particle.RelativeTime, Owner->Component);
+//						Vel = VelocityOverLifetime->GetValue(Particle.RelativeTime, Owner, &GetRandomStream(Owner));
 //						Particle.Velocity *= LocalToWorld.TransformVector(Vel) * OwnerScale;
 //					}
 //					END_UPDATE_LOOP;
@@ -209,29 +209,29 @@ namespace Drn
 //				{
 //					BEGIN_UPDATE_LOOP;
 //					{
-//						Particle.Velocity *= VelOverLife.GetValue(Particle.RelativeTime, Owner->Component) * OwnerScale;
+//						Particle.Velocity *= VelocityOverLifetime->GetValue(Particle.RelativeTime, Owner, &GetRandomStream(Owner)) * OwnerScale;
 //					}
 //					END_UPDATE_LOOP;
 //				}
 //			}
 //			else
 //			{
-//				if (bInWorldSpace == false)
+//				if (bWorldSpace == false)
 //				{
 //					BEGIN_UPDATE_LOOP;
 //					{
-//						Particle.Velocity *= VelOverLife.GetValue(Particle.RelativeTime, Owner->Component) * OwnerScale;
+//						Particle.Velocity *= VelocityOverLifetime->GetValue(Particle.RelativeTime, Owner, &GetRandomStream(Owner)) * OwnerScale;
 //					}
 //					END_UPDATE_LOOP;
 //				}
 //				else
 //				{
-//					FVector Vel;
-//					const FMatrix LocalToWorld = OwnerTM.ToMatrixNoScale();
-//					const FMatrix InvMat = LocalToWorld.InverseFast();
+//					Vector Vel;
+//					const Matrix LocalToWorld = OwnerTM.ToMatrixNoScale();
+//					const Matrix InvMat = LocalToWorld.Inverse();
 //					BEGIN_UPDATE_LOOP;
 //					{
-//						Vel = VelOverLife.GetValue(Particle.RelativeTime, Owner->Component);
+//						Vel = VelocityOverLifetime->GetValue(Particle.RelativeTime, Owner, &GetRandomStream(Owner));
 //						Particle.Velocity *= InvMat.TransformVector(Vel) * OwnerScale;
 //					}
 //					END_UPDATE_LOOP;

@@ -63,7 +63,8 @@ namespace Drn
 		InstanceData = (uint8*)(std::realloc(InstanceData, InstancePayloadSize));
 		std::memset(InstanceData, 0, InstancePayloadSize);
 
-		ParticleSize = RequiredBytes();
+		ParticleSize = Emitter->ParticleSize;
+		//ParticleSize += RequiredBytes();
 		ParticleSize = Align(ParticleSize, 16);
 		ParticleStride = ParticleSize;
 
@@ -117,12 +118,12 @@ namespace Drn
 
 	uint32 ParticleEmitterInstance::GetModuleDataOffset( ParticleModule* Module )
 	{
-		auto It = Emitter->ModuleInstanceOffsetMap.find(Module);
-		if (It != Emitter->ModuleInstanceOffsetMap.end())
+		auto It = Emitter->ModuleOffsetMap.find(Module);
+		if (It != Emitter->ModuleOffsetMap.end())
 		{
 			return It->second;
 		}
-
+	
 		return 0;
 	}
 
@@ -141,10 +142,10 @@ namespace Drn
 		return NULL;
 	}
 
-	uint32 ParticleEmitterInstance::RequiredBytes()
-	{
-		return sizeof(BaseParticle);
-	}
+	//uint32 ParticleEmitterInstance::RequiredBytes()
+	//{
+	//	return sizeof(BaseParticle);
+	//}
 
 	bool ParticleEmitterInstance::Resize( int32 NewMaxActiveParticles )
 	{
@@ -340,8 +341,7 @@ namespace Drn
 			ParticleModule* CurrentModule = Emitter->UpdateModules[ModuleIndex];
 			if (CurrentModule)
 			{
-				//CurrentModule->Update(this, DeltaTime);
-				CurrentModule->Update(this, 0, DeltaTime);
+				CurrentModule->Update(this, GetModuleDataOffset(CurrentModule), DeltaTime);
 			}
 		}
 	}
@@ -490,7 +490,7 @@ namespace Drn
 				ParticleModule* SpawnModule = Emitter->SpawnModules[ModuleIndex];
 				if (SpawnModule)
 				{
-					SpawnModule->Spawn(this, SpawnTime, Particle);
+					SpawnModule->Spawn(this, SpawnTime, GetModuleDataOffset(SpawnModule), Particle);
 				}
 			}
 			PostSpawn(Particle, Interp, SpawnTime);
@@ -633,8 +633,8 @@ namespace Drn
 // ----------------------------------------------------------------------------------------------------------------------
 
 	ParticleMeshEmitterInstance::ParticleMeshEmitterInstance()
-		: bHasRotation(false)
-		, MeshRotationOffset(0)
+		//: bHasRotation(false)
+		//, MeshRotationOffset(0)
 	{
 		
 	}
@@ -663,18 +663,18 @@ namespace Drn
 
 	}
 
-	uint32 ParticleMeshEmitterInstance::RequiredBytes()
-	{
-		uint32 Bytes = ParticleEmitterInstance::RequiredBytes();
-
-		if (bHasRotation)
-		{
-			MeshRotationOffset = Bytes;
-			Bytes += sizeof(MeshRotationPayloadData);
-		}
-
-		return Bytes;
-	}
+	//uint32 ParticleMeshEmitterInstance::RequiredBytes()
+	//{
+	//	uint32 Bytes = ParticleEmitterInstance::RequiredBytes();
+	//
+	//	if (bHasRotation)
+	//	{
+	//		MeshRotationOffset = Bytes;
+	//		Bytes += sizeof(MeshRotationPayloadData);
+	//	}
+	//
+	//	return Bytes;
+	//}
 
 	bool ParticleMeshEmitterInstance::Resize( int32 NewMaxActiveParticles )
 	{
@@ -682,12 +682,12 @@ namespace Drn
 
 		if (ParticleEmitterInstance::Resize(NewMaxActiveParticles))
 		{
-			if (bHasRotation)
+			if (Emitter->bHasMeshRotation)
 			{
 				for (int32 i = OldMaxActiveParticles; i < NewMaxActiveParticles; i++)
 				{
 					DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
-					MeshRotationPayloadData* PayloadData	= (MeshRotationPayloadData*)((uint8*)&Particle + MeshRotationOffset);
+					MeshRotationPayloadData* PayloadData	= (MeshRotationPayloadData*)((uint8*)&Particle + Emitter->MeshRotationOffset);
 					PayloadData->RotationRateBase			= Vector::ZeroVector;
 				}
 			}
