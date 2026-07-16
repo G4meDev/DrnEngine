@@ -14,6 +14,8 @@ namespace Drn
 			bSpawningModule = true;
 		}
 
+		virtual void Serialize( Archive& Ar ) override;
+
 		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, float OldLeftover, 
 			float DeltaTime, int32& Number, float& Rate)
 		{

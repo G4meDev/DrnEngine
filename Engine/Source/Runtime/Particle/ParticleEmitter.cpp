@@ -71,9 +71,18 @@ namespace Drn
 
 		else
 		{
-			Ar << Name;
+			bHasMeshRotation = false;
 
 			const int32 ModulesCount = Modules.size();
+			for (int32 i = 0; i < ModulesCount; i++)
+			{
+				Modules[i]->CompileModule(this);
+			}
+
+// ------------------------------------------------------------------------------------
+
+			Ar << Name;
+
 			Ar << ModulesCount;
 			for (int32 i = 0; i < ModulesCount; i++)
 			{

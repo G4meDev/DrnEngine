@@ -7,6 +7,11 @@
 
 namespace Drn
 {
+	void ParticleModuleSpawnBase::Serialize( Archive& Ar )
+	{
+		ParticleModule::Serialize(Ar);
+	}
+
 	ParticleModuleSpawn::ParticleModuleSpawn()
 		: ParticleModuleSpawnBase()
 	{

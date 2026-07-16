@@ -10,6 +10,8 @@ namespace Drn
 	class ParticleModuleLocationBase : public ParticleModule
 	{
 	public:
+		virtual void Serialize( Archive& Ar ) override;
+
 		ParticleModuleLocationBase() : ParticleModule()
 		{
 			bSpawnModule = true;

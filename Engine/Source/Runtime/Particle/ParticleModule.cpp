@@ -8,11 +8,13 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			Ar >> bEnabled;
+			Ar >> bValid;
 		}
 
 		else
 		{
 			Ar << bEnabled;
+			Ar << bValid;
 		}
 	}
 

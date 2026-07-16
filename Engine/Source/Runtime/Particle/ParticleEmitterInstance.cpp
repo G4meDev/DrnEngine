@@ -367,10 +367,10 @@ namespace Drn
 		for (int32 ParticleIndex = 0; ParticleIndex < ActiveParticles; ParticleIndex++)
 		{
 			DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[ParticleIndex]);
-			//Particle.Velocity = Particle.BaseVelocity;
-			//Particle.Size = Particle.BaseSize;
-			//Particle.RotationRate = Particle.BaseRotationRate;
-			//Particle.Color = Particle.BaseColor;
+			Particle.Velocity = Particle.BaseVelocity;
+			Particle.Size = Particle.BaseSize;
+			Particle.RotationRate = Particle.BaseRotationRate;
+			Particle.Color = Particle.BaseColor;
 
 			bool bJustSpawned = (Particle.Flags & STATE_Particle_JustSpawned) != 0;
 
@@ -646,14 +646,47 @@ namespace Drn
 
 	void ParticleMeshEmitterInstance::Tick( float DeltaTime, bool bSuppressSpawning )
 	{
+		if (Emitter->bHasMeshRotation && bEnabled)
+		{
+			for (int32 i = 0; i < ActiveParticles; i++)
+			{
+				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+				MeshRotationPayloadData* PayloadData	= (MeshRotationPayloadData*)((uint8*)&Particle + Emitter->GetMeshRotationOffset());
+				PayloadData->RotationRate				= PayloadData->RotationRateBase;
+
+				if ((Particle.Flags & STATE_Particle_FreezeRotation) == 0)
+				{
+					PayloadData->Rotation = PayloadData->InitRotation + PayloadData->CurContinuousRotation;
+				}
+			}
+		}
+
 		ParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
 
-		for (int32 i = 0; i < ActiveParticles; i++)
+		if (Emitter->bHasMeshRotation && bEnabled)
 		{
-			DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
-			//Particle.Velocity = Particle.Velocity + Vector(0.0, -0.5, 0.0);
+			for (int32 i = 0; i < ActiveParticles; i++)
+			{
+				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+				//Particle.Velocity = Particle.Velocity + Vector(0.0, -0.5, 0.0);
+	
+				MeshRotationPayloadData* PayloadData = (MeshRotationPayloadData*)((uint8*)&Particle + Emitter->GetMeshRotationOffset());
+				PayloadData->CurContinuousRotation += PayloadData->RotationRate * DeltaTime;
+			}
+		}
 
-			GetWorld()->DrawDebugSphere(SimulationToWorld.TransformPosition(Particle.Location), Quat::Identity, Color::White, 1 - Particle.RelativeTime, 32, 0.01, 0);
+		if (bEnabled)
+		{
+			for (int32 i = 0; i < ActiveParticles; i++)
+			{
+				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+				MeshRotationPayloadData* PayloadData = (MeshRotationPayloadData*)((uint8*)&Particle + Emitter->GetMeshRotationOffset());
+
+				Quat ParticleRotation = Emitter->bHasMeshRotation ? Quat(Math::DegreesToRadians(PayloadData->Rotation.GetX()),
+					Math::DegreesToRadians(PayloadData->Rotation.GetY()), Math::DegreesToRadians(PayloadData->Rotation.GetZ())) : Quat::Identity;
+
+				GetWorld()->DrawDebugSphere(SimulationToWorld.TransformPosition(Particle.Location), ParticleRotation, Color::White, 1 - Particle.RelativeTime, 32, 0.01, 0);
+			}
 		}
 	}
 
@@ -687,7 +720,7 @@ namespace Drn
 				for (int32 i = OldMaxActiveParticles; i < NewMaxActiveParticles; i++)
 				{
 					DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
-					MeshRotationPayloadData* PayloadData	= (MeshRotationPayloadData*)((uint8*)&Particle + Emitter->MeshRotationOffset);
+					MeshRotationPayloadData* PayloadData	= (MeshRotationPayloadData*)((uint8*)&Particle + Emitter->GetMeshRotationOffset());
 					PayloadData->RotationRateBase			= Vector::ZeroVector;
 				}
 			}

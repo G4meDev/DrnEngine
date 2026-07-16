@@ -22,6 +22,8 @@ namespace Drn
 
 		void CalculateRequiredBytesAndOffset();
 
+		inline int32 GetMeshRotationOffset() const { return MeshRotationOffset; }
+
 #if WITH_EDITOR
 		bool Draw();
 #endif

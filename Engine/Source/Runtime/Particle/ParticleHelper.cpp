@@ -5,6 +5,7 @@
 #include "Runtime/Particle/ParticleModuleLifetime.h"
 #include "Runtime/Particle/ParticleModuleVelocity.h"
 #include "Runtime/Particle/ParticleModuleAcceleration.h"
+#include "Runtime/Particle/ParticleModuleMeshRotation.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -57,6 +58,8 @@ namespace Drn
 		//RegisterParticleModule<ParticleModuleVelocityOverLifetime>(EParticleModule::VelocityOverLifetime, "Velocity Over Lifetime", "Velocity");
 		RegisterParticleModule<ParticleModuleAccelerationConstant>(EParticleModule::AccelerationConstant, "Acceleration Constant", "Acceleration");
 		RegisterParticleModule<ParticleModuleAcceleration>(EParticleModule::Acceleration, "Acceleration", "Acceleration");
+		RegisterParticleModule<ParticleModuleMeshRotation>(EParticleModule::MeshRotation, "Mesh Rotation", "Mesh Rotation");
+		RegisterParticleModule<ParticleModuleMeshRotationRate>(EParticleModule::MeshRotationRate, "Mesh Rotation Rate", "Mesh Rotation");
 
 
 	}

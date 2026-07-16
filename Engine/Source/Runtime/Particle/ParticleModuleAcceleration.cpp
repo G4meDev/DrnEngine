@@ -5,6 +5,8 @@ namespace Drn
 {
 	void ParticleModuleAccelerationBase::Serialize( Archive& Ar )
 	{
+		ParticleModule::Serialize(Ar);
+
 		if (Ar.IsLoading())
 		{
 			Ar >> bWorldSpace;

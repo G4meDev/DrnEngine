@@ -22,6 +22,7 @@ namespace Drn
 		inline Quat() { XMStoreFloat4(&m_Vector, XMQuaternionIdentity()); }
 
 		inline Quat( const XMVECTOR& InVector ) { XMStoreFloat4(&m_Vector, InVector); }
+		inline Quat( const Vector& InVector ) : Quat(InVector.GetX(), InVector.GetY(), InVector.GetZ()) {};
 
 		//Rotator ToRotator() const;
 

@@ -69,6 +69,8 @@ namespace Drn
 		VelocityOverLifetime,
 		AccelerationConstant,
 		Acceleration,
+		MeshRotation,
+		MeshRotationRate,
 		Max
 	};
 

@@ -3,6 +3,11 @@
 
 namespace Drn
 {
+	void ParticleModuleLocationBase::Serialize( Archive& Ar )
+	{
+		ParticleModule::Serialize(Ar);
+	}
+
 	ParticleModuleLocationPrimitiveBase::ParticleModuleLocationPrimitiveBase()
 		: ParticleModuleLocationBase()
 		, Positive_X(1)

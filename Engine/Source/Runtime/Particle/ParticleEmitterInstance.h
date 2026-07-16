@@ -168,7 +168,7 @@ namespace Drn
 
 	private:
 		static std::atomic<int32> ParticleCounter;
-#endif
 	};
+#endif
 
 }
