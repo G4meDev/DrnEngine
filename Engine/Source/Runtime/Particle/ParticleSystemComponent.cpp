@@ -17,7 +17,7 @@ namespace Drn
 		, NumSignificantEmitters(0)
 	{
 		bTickInEditor = true;
-		
+		RandStream.Initalize(Time::Cycles());
 	}
 
 	ParticleSystemComponent::~ParticleSystemComponent()
@@ -185,11 +185,49 @@ namespace Drn
 			std::string TemplatePath = "";
 			Ar >> TemplatePath;
 			SetTemplate(AssetHandle<ParticleSystem>(TemplatePath));
+
+			{
+				uint8 FloatParamtersCount;
+				Ar >> FloatParamtersCount;
+				FloatParams.resize(FloatParamtersCount);
+				for (int32 Index = 0; Index < FloatParamtersCount; Index++)
+				{
+					FloatParams[Index].Serialize(Ar);
+				}
+			}
+
+			{
+				uint8 VectorParamtersCount;
+				Ar >> VectorParamtersCount;
+				VectorParams.resize(VectorParamtersCount);
+				for (int32 Index = 0; Index < VectorParamtersCount; Index++)
+				{
+					VectorParams[Index].Serialize(Ar);
+				}
+			}
 		}
 
 		else
 		{
 			Ar << Template.GetPath();
+
+			{
+				const uint8 FloatParamtersCount = FloatParams.size();
+				Ar << FloatParamtersCount;
+				for (int32 Index = 0; Index < FloatParamtersCount; Index++)
+				{
+					FloatParams[Index].Serialize(Ar);
+				}
+			}
+
+			{
+				const uint8 VectorParamtersCount = VectorParams.size();
+				Ar << VectorParamtersCount;
+				for (int32 Index = 0; Index < VectorParamtersCount; Index++)
+				{
+					VectorParams[Index].Serialize(Ar);
+				}
+			}
 		}
 
 	}
@@ -521,6 +559,108 @@ namespace Drn
 		}
 	}
 
+	void ParticleSystemComponent::SetFloatParameter( const std::string& InName, const ParticleSysParamFloat& InParam )
+	{
+		if(InName.empty())
+		{
+			return;
+		}
+
+		for (int32 i = 0; i < FloatParams.size(); i++)
+		{
+			ParticleSysParamFloat& Param = FloatParams[i];
+			if (Param.Name == InName)
+			{
+				Param.bUseLowRange	= InParam.bUseLowRange;
+				Param.Scalar		= InParam.Scalar;
+				Param.Scalar_Low	= InParam.Scalar_Low;
+				return;
+			}
+		}
+
+		FloatParams.push_back(InParam);
+	}
+
+	bool ParticleSystemComponent::GetFloatParameter( const std::string& InName, float& OutFloat )
+	{
+		if(InName.empty())
+		{
+			return false;
+		}
+
+		for (int32 i = 0; i < FloatParams.size(); i++)
+		{
+			const ParticleSysParamFloat& Param = FloatParams[i];
+			if (Param.Name == InName)
+			{
+				if (Param.bUseLowRange)
+				{
+					OutFloat = Param.Scalar + (Param.Scalar_Low - Param.Scalar) * RandStream.GetFraction();
+					return true;
+				}
+
+				else
+				{
+					OutFloat = Param.Scalar;
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	void ParticleSystemComponent::SetVectorParameter( const std::string& InName, const ParticleSysParamVector& InParam )
+	{
+		if(InName.empty())
+		{
+			return;
+		}
+
+		for (int32 i = 0; i < VectorParams.size(); i++)
+		{
+			ParticleSysParamVector& Param = VectorParams[i];
+			if (Param.Name == InName)
+			{
+				Param.bUseLowRange	= InParam.bUseLowRange;
+				Param.Value			= InParam.Value;
+				Param.Value_Low		= InParam.Value_Low;
+				return;
+			}
+		}
+
+		VectorParams.push_back(InParam);
+	}
+
+	bool ParticleSystemComponent::GetVectorParameter( const std::string& InName, Vector& OutVector )
+	{
+		if(InName.empty())
+		{
+			return false;
+		}
+
+		for (int32 i = 0; i < VectorParams.size(); i++)
+		{
+			const ParticleSysParamVector& Param = VectorParams[i];
+			if (Param.Name == InName)
+			{
+				if (Param.bUseLowRange)
+				{
+					OutVector = Param.Value + (Param.Value_Low - Param.Value) * RandStream.GetFraction();
+					return true;
+				}
+
+				else
+				{
+					OutVector = Param.Value;
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 #if WITH_EDITOR
 	void ParticleSystemComponent::DrawDetailPanel( float DeltaTime )
 	{
@@ -569,7 +709,61 @@ namespace Drn
 		if (ImGui::Button("Activate"))
 		{
 			Activate();
-		} ImGui::SameLine();
+		}
+
+		if (ImGui::CollapsingHeader("Float Parameters", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID("Float Params");
+
+			if (ImGui::Button("Add"))
+			{
+				FloatParams.push_back( {} );
+			}
+
+			if (ImGui::Button("Clear"))
+			{
+				FloatParams.clear();
+			}
+
+			for (int32 i = 0; i < FloatParams.size(); i++)
+			{
+				ImGui::PushID(i);
+
+				FloatParams[i].Draw();
+				ImGui::Separator();
+
+				ImGui::PopID();
+			}
+
+			ImGui::PopID();
+		}
+
+		if (ImGui::CollapsingHeader("Vector Parameters", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID("Vector Params");
+
+			if (ImGui::Button("Add"))
+			{
+				VectorParams.push_back( {} );
+			}
+
+			if (ImGui::Button("Clear"))
+			{
+				VectorParams.clear();
+			}
+
+			for (int32 i = 0; i < VectorParams.size(); i++)
+			{
+				ImGui::PushID(i);
+
+				VectorParams[i].Draw();
+				ImGui::Separator();
+
+				ImGui::PopID();
+			}
+
+			ImGui::PopID();
+		}
 	}
 
 	void ParticleSystemComponent::DrawEditorDefault()
@@ -590,4 +784,100 @@ namespace Drn
 		GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::White, 0.0f, 0.0f);
 	}
 #endif
+
+// ------------------------------------------------------------------------------------------
+
+	void ParticleSysParam::Serialize( Archive& Ar )
+	{
+		if (Ar.IsLoading())
+		{
+			Ar >> Name;
+		}
+		else
+		{
+			Ar << Name;
+		}
+	}
+
+#if WITH_EDITOR
+	bool ParticleSysParam::Draw()
+	{
+		bool bDirty = false;
+
+		const int32 TextCharLimit = 64;
+		char InputText[TextCharLimit];
+		strcpy_s(InputText, sizeof(InputText), Name.c_str());
+
+		if ( ImGui::InputText( "Parameter Name", InputText, TextCharLimit ) )
+		{
+			Name = InputText;
+			bDirty = true;
+		}
+
+		return bDirty;
+	}
+#endif
+
+	void ParticleSysParamFloat::Serialize( Archive& Ar )
+	{
+		ParticleSysParam::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> bUseLowRange;
+			Ar >> Scalar;
+			Ar >> Scalar_Low;
+		}
+		else
+		{
+			Ar << bUseLowRange;
+			Ar << Scalar;
+			Ar << Scalar_Low;
+		}
+	}
+
+#if WITH_EDITOR
+	bool ParticleSysParamFloat::Draw()
+	{
+		bool bDirty = ParticleSysParam::Draw();
+
+		bDirty |= ImGui::Checkbox("Use Low Range", &bUseLowRange);
+		bDirty |= ImGui::InputFloat("Scalar", &Scalar);
+		bDirty |= ImGui::InputFloat("Scalar Low", &Scalar_Low);
+
+		return bDirty;
+	}
+#endif
+
+	void ParticleSysParamVector::Serialize( Archive& Ar )
+	{
+		ParticleSysParam::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> bUseLowRange;
+			Ar >> Value;
+			Ar >> Value_Low;
+		}
+		else
+		{
+			Ar << bUseLowRange;
+			Ar << Value;
+			Ar << Value_Low;
+		}
+	}
+
+#if WITH_EDITOR
+	bool ParticleSysParamVector::Draw()
+	{
+		bool bDirty = ParticleSysParam::Draw();
+
+		bDirty |= ImGui::Checkbox("Use Low Range", &bUseLowRange);
+		bDirty |= Value.Draw("Vector", "Vector");
+		bDirty |= Value_Low.Draw("Vector Low", "Vector Low");
+
+		return bDirty;
+	}
+#endif
+
 }  // namespace Drn

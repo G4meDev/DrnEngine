@@ -320,6 +320,16 @@ namespace Drn
 			NewActor->GetMeshComponent()->SetMesh(MeshAsset);
 			NewActor->SetActorLocation(WorldPosition);
 		}
+
+		else if (asset.IsValid() && Type == EAssetType::ParticleSystem)
+		{
+			Particle* NewActor = WorldManager::Get()->GetMainWorld()->SpawnActor<Particle>();
+
+			AssetHandle<ParticleSystem> ParticleAsset(AssetPath);
+			ParticleAsset.Load();
+			NewActor->GetParticleSystemComponenet()->SetTemplate(ParticleAsset);
+			NewActor->SetActorLocation(WorldPosition);
+		}
 	}
 
 	void LevelViewportGuiLayer::HandleViewportInputs()

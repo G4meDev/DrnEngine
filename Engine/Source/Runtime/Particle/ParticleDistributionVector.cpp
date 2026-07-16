@@ -48,6 +48,11 @@ namespace Drn
 			Out = new ParticleDistributionVectorUniform();
 		}
 
+		else if (Type == EParticleDistributionVectorType::Parameter)
+		{
+			Out = new ParticleDistributionVectorParameter();
+		}
+
 		drn_check(Out);
 		return Out;
 	}
@@ -55,7 +60,7 @@ namespace Drn
 #if WITH_EDITOR
 	bool ParticleDistributionVector::Draw( TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel )
 	{
-		const char* const Options[] = { "Constant", "Uniform" };
+		const char* const Options[] = { "Constant", "Uniform", "Parameter" };
 		int32 Selected = (uint8)GetType();
 		bool bDirty = ImGui::Combo("Distribution Type", &Selected, Options, _countof(Options));
 		if (bDirty)
@@ -166,5 +171,174 @@ namespace Drn
 #endif
 
 // ---------------------------------------------------------------------------------------------
+
+	void ParticleDistributionVectorParameter::Serialize( Archive& Ar )
+	{
+		ParticleDistributionVector::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> MinInput;
+			Ar >> MaxInput;
+			Ar >> MinOutput;
+			Ar >> MaxOutput;
+			Ar >> Constant;
+
+			Ar >> ParameterName;
+			Ar >> *(uint8*)&ParamModes[0];
+			Ar >> *(uint8*)&ParamModes[1];
+			Ar >> *(uint8*)&ParamModes[2];
+		}
+		else
+		{
+			Ar << MinInput;
+			Ar << MaxInput;
+			Ar << MinOutput;
+			Ar << MaxOutput;
+			Ar << Constant;
+
+			Ar << ParameterName;
+			Ar << *(uint8*)&ParamModes[0];
+			Ar << *(uint8*)&ParamModes[1];
+			Ar << *(uint8*)&ParamModes[2];
+		}
+	}
+
+	Vector ParticleDistributionVectorParameter::GetValue( float F, ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
+	{
+		Vector ParamVector(0.f);
+		bool bFoundParam = Emitter->Component->GetVectorParameter(ParameterName, ParamVector);
+		if(!bFoundParam)
+		{
+			ParamVector = Constant;
+		}
+
+		if(ParamModes[0] == EDistributionVectorParamMode::Abs)
+		{
+			ParamVector.SetX(std::abs(ParamVector.GetX()));
+		}
+
+		if(ParamModes[1] == EDistributionVectorParamMode::Abs)
+		{
+			ParamVector.SetY(std::abs(ParamVector.GetY()));
+		}
+
+		if(ParamModes[2] == EDistributionVectorParamMode::Abs)
+		{
+			ParamVector.SetZ(std::abs(ParamVector.GetZ()));
+		}
+
+		Vector Gradient;
+		if(MaxInput.GetX() <= MinInput.GetX())
+			Gradient.SetX(0.f);
+		else
+			Gradient.SetX((MaxOutput.GetX() - MinOutput.GetX())/(MaxInput.GetX() - MinInput.GetX()));
+
+		if(MaxInput.GetY() <= MinInput.GetY())
+			Gradient.SetY(0.f);
+		else
+			Gradient.SetY((MaxOutput.GetY() - MinOutput.GetY())/(MaxInput.GetY() - MinInput.GetY()));
+
+		if(MaxInput.GetZ() <= MinInput.GetZ())
+			Gradient.SetZ(0.f);
+		else
+			Gradient.SetZ((MaxOutput.GetZ() - MinOutput.GetZ())/(MaxInput.GetZ() - MinInput.GetZ()));
+
+		Vector ClampedParam;
+		ClampedParam.SetX(std::clamp(ParamVector.GetX(), MinInput.GetX(), MaxInput.GetX()));
+		ClampedParam.SetY(std::clamp(ParamVector.GetY(), MinInput.GetY(), MaxInput.GetY()));
+		ClampedParam.SetZ(std::clamp(ParamVector.GetZ(), MinInput.GetZ(), MaxInput.GetZ()));
+
+		Vector Output = MinOutput + ((ClampedParam - MinInput) * Gradient);
+
+		if(ParamModes[0] == EDistributionVectorParamMode::Direct)
+		{
+			Output.SetX(ParamVector.GetX());
+		}
+
+		if(ParamModes[1] == EDistributionVectorParamMode::Direct)
+		{
+			Output.SetY(ParamVector.GetY());
+		}
+
+		if(ParamModes[2] == EDistributionVectorParamMode::Direct)
+		{
+			Output.SetZ(ParamVector.GetZ());
+		}
+
+		return Output;
+	}
+
+#if WITH_EDITOR
+	bool ParticleDistributionVectorParameter::Draw( TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel )
+	{
+		if (ImGui::CollapsingHeader(DisplayLabel.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID(DisplayLabel.c_str());
+
+			bool bDirty = ParticleDistributionVector::Draw(Ptr, DisplayLabel);
+			if (!bDirty)
+			{
+				if (MinInput.Draw(DisplayLabel, "Min Input", EParameterPopupContext::None))
+				{
+					bDirty = true;
+					MinInput = MinInput.ComponentMin(MaxInput);
+				}
+
+				if (MaxInput.Draw(DisplayLabel, "Max Input", EParameterPopupContext::None))
+				{
+					bDirty = true;
+					MaxInput = MaxInput.ComponentMax(MinInput);
+				}
+
+				if (MinOutput.Draw(DisplayLabel, "Min Output", EParameterPopupContext::None))
+				{
+					bDirty = true;
+					MinOutput = MinOutput.ComponentMin(MaxOutput);
+				}
+
+				if (MaxOutput.Draw(DisplayLabel, "Max Output", EParameterPopupContext::None))
+				{
+					bDirty = true;
+					MaxOutput = MaxOutput.ComponentMax(MinOutput);
+				}
+
+				bDirty |= Constant.Draw(DisplayLabel, "Constant", EParameterPopupContext::None);
+
+				const int32 TextCharLimit = 64;
+				char InputText[TextCharLimit];
+				strcpy_s(InputText, sizeof(InputText), ParameterName.c_str());
+
+				if ( ImGui::InputText( "Parameter Name", InputText, TextCharLimit ) )
+				{
+					ParameterName = InputText;
+					bDirty = true;
+				}
+
+				const char* const Options[] = { "Normal", "Abs", "Direct" };
+				const char* const Axes[] = { "X", "Y", "Z" };
+
+				for (int32 i = 0; i < 3; i++)
+				{
+					int32 Selected = (uint8)ParamModes[i];
+					bDirty |= ImGui::Combo(std::format("Parameter Type {}", Axes[i]).c_str(), &Selected, Options, _countof(Options));
+					if (bDirty)
+					{
+						ParamModes[i] = (EDistributionVectorParamMode)Selected;
+					}
+				}
+			}
+
+			ImGui::PopID();
+
+			return bDirty;
+		}
+
+		return false;
+	}
+#endif
+
+// ---------------------------------------------------------------------------------------------
+
 
 }  // namespace Drn

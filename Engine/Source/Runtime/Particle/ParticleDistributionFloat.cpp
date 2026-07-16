@@ -48,6 +48,11 @@ namespace Drn
 			Out = new ParticleDistributionFloatUniform();
 		}
 
+		else if (Type == EParticleDistributionFloatType::Parameter)
+		{
+			Out = new ParticleDistributionFloatParameter();
+		}
+
 		drn_check(Out);
 		return Out;
 	}
@@ -55,7 +60,7 @@ namespace Drn
 #if WITH_EDITOR
 	bool ParticleDistributionFloat::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel )
 	{
-		const char* const Options[] = { "Constant", "Uniform" };
+		const char* const Options[] = { "Constant", "Uniform", "Parameter" };
 		int32 Selected = (uint8)GetType();
 		bool bDirty = ImGui::Combo("Distribution Type", &Selected, Options, _countof(Options));
 		if (bDirty)
@@ -153,6 +158,130 @@ namespace Drn
 				{
 					bDirty = true;
 					Max = std::max(Min, Max);
+				}
+			}
+
+			ImGui::PopID();
+
+			return bDirty;
+		}
+
+		return false;
+	}
+#endif
+
+// ---------------------------------------------------------------------------------------------
+
+	void ParticleDistributionFloatParameter::Serialize( Archive& Ar )
+	{
+		ParticleDistributionFloat::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> MinInput;
+			Ar >> MaxInput;
+			Ar >> MinOutput;
+			Ar >> MaxOutput;
+			Ar >> Constant;
+
+			Ar >> ParameterName;
+			Ar >> *(uint8*)&ParamMode;
+		}
+		else
+		{
+			Ar << MinInput;
+			Ar << MaxInput;
+			Ar << MinOutput;
+			Ar << MaxOutput;
+			Ar << Constant;
+
+			Ar << ParameterName;
+			Ar << (uint8)ParamMode;
+		}
+	}
+
+	float ParticleDistributionFloatParameter::GetValue( float F, ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
+	{
+		float ParamFloat = 0.f;
+		bool bFoundParam = Emitter->Component->GetFloatParameter(ParameterName, ParamFloat);
+		if(!bFoundParam)
+		{
+			ParamFloat = Constant;
+		}
+
+		if(ParamMode == EDistributionFloatParamMode::Direct)
+		{
+			return ParamFloat;
+		}
+		else if(ParamMode == EDistributionFloatParamMode::Abs)
+		{
+			ParamFloat = std::abs(ParamFloat);
+		}
+
+		float Gradient;
+		if(MaxInput <= MinInput)
+			Gradient = 0.f;
+		else
+			Gradient = (MaxOutput - MinOutput)/(MaxInput - MinInput);
+
+		float ClampedParam = std::clamp(ParamFloat, MinInput, MaxInput);
+		float Output = MinOutput + ((ClampedParam - MinInput) * Gradient);
+
+		return Output;
+	}
+
+#if WITH_EDITOR
+	bool ParticleDistributionFloatParameter::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel )
+	{
+		if (ImGui::CollapsingHeader(DisplayLabel.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID(DisplayLabel.c_str());
+
+			bool bDirty = ParticleDistributionFloat::Draw(Ptr, DisplayLabel);
+			if (!bDirty)
+			{
+				if (ImGui::InputFloat("Min Input", &MinInput))
+				{
+					bDirty = true;
+					MinInput = std::min(MinInput, MaxInput);
+				}
+
+				if (ImGui::InputFloat("Max Input", &MaxInput))
+				{
+					bDirty = true;
+					MaxInput = std::max(MinInput, MaxInput);
+				}
+
+				if (ImGui::InputFloat("Min Output", &MinOutput))
+				{
+					bDirty = true;
+					MinOutput = std::min(MinOutput, MaxOutput);
+				}
+
+				if (ImGui::InputFloat("Max Output", &MaxOutput))
+				{
+					bDirty = true;
+					MaxOutput = std::max(MinOutput, MaxOutput);
+				}
+
+				bDirty |= ImGui::InputFloat( "Constant", &Constant );
+
+				const int32 TextCharLimit = 64;
+				char InputText[TextCharLimit];
+				strcpy_s(InputText, sizeof(InputText), ParameterName.c_str());
+
+				if ( ImGui::InputText( "Parameter Name", InputText, TextCharLimit ) )
+				{
+					ParameterName = InputText;
+					bDirty = true;
+				}
+
+				const char* const Options[] = { "Normal", "Abs", "Direct" };
+				int32 Selected = (uint8)ParamMode;
+				bDirty |= ImGui::Combo("Parameter Type", &Selected, Options, _countof(Options));
+				if (bDirty)
+				{
+					ParamMode = (EDistributionFloatParamMode)Selected;
 				}
 			}
 

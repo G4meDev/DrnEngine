@@ -9,6 +9,69 @@ namespace Drn
 	class ParticleEmitterInstance;
 	class ParticleSystem;
 
+	//enum class EParticleSysParamType : uint8
+	//{
+	//	PSPT_None,
+	//	PSPT_Scalar,
+	//	PSPT_ScalarRand,
+	//	PSPT_Vector,
+	//	PSPT_VectorRand,
+	//	PSPT_MAX,
+	//};
+
+	struct ParticleSysParam : public Serializable
+	{
+		ParticleSysParam() : Name("None") {};
+
+		virtual void Serialize(Archive& Ar) override;
+
+		std::string Name;
+
+#if WITH_EDITOR
+		virtual bool Draw();
+#endif
+	};
+
+	struct ParticleSysParamFloat : ParticleSysParam
+	{
+		ParticleSysParamFloat()
+			: ParticleSysParam()
+			, bUseLowRange(false)
+			, Scalar(1.0f)
+			, Scalar_Low(0.0f)
+		{}
+
+		virtual void Serialize(Archive& Ar) override;
+
+		bool bUseLowRange;
+		float Scalar;
+		float Scalar_Low;
+
+#if WITH_EDITOR
+		virtual bool Draw() override;
+#endif
+	};
+
+	struct ParticleSysParamVector : ParticleSysParam
+	{
+		ParticleSysParamVector()
+			: ParticleSysParam()
+			, bUseLowRange(false)
+			, Value(Vector::ZeroVector)
+			, Value_Low(Vector::ZeroVector)
+		{}
+
+		virtual void Serialize(Archive& Ar) override;
+
+		bool bUseLowRange;
+		Vector Value;
+		Vector Value_Low;
+
+#if WITH_EDITOR
+		virtual bool Draw() override;
+#endif
+	};
+
 	class ParticleSystemComponent : public SceneComponent
 	{
 	public:
@@ -41,6 +104,12 @@ namespace Drn
 
 		virtual BoxSphereBounds CalcBounds( const Transform& LocalToWorld ) const override;
 
+		void SetFloatParameter( const std::string& InName, const ParticleSysParamFloat& InParam );
+		bool GetFloatParameter( const std::string& InName, float& OutFloat );
+
+		void SetVectorParameter( const std::string& InName, const ParticleSysParamVector& InParam );
+		bool GetVectorParameter( const std::string& InName, Vector& OutVector );
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 
@@ -61,6 +130,11 @@ namespace Drn
 
 		int32 TotalActiveParticles;
 		uint32 NumSignificantEmitters;
+
+		RandomStream RandStream;
+
+		std::vector<ParticleSysParamFloat> FloatParams;
+		std::vector<ParticleSysParamVector> VectorParams;
 
 		friend class ParticleEmitterInstance;
 		friend class ParticleMeshEmitterInstance;

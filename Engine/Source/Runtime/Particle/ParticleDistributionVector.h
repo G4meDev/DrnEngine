@@ -10,7 +10,16 @@ namespace Drn
 	{
 		Constant,
 		Uniform,
+		Parameter,
 		Max
+	};
+
+	enum class EDistributionVectorParamMode : uint8 
+	{
+		Normal,
+		Abs,
+		Direct,
+		MAX,
 	};
 
 	class ParticleDistributionVector : public RefCountedObject, public Serializable
@@ -23,8 +32,6 @@ namespace Drn
 
 		virtual Vector GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) = 0;
 		inline virtual EParticleDistributionVectorType GetType() const = 0;
-
-		//virtual void GetOutRange(float& MinOut, float& MaxOut) const = 0;
 
 #if WITH_EDITOR
 		virtual bool Draw(TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel);
@@ -48,11 +55,6 @@ namespace Drn
 		virtual Vector GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
 		inline virtual EParticleDistributionVectorType GetType() const override { return EParticleDistributionVectorType::Constant; };
 
-		//virtual void GetOutRange(float& MinOut, float& MaxOut) const override
-		//{
-		//	MinOut = MaxOut = Constant;
-		//}
-
 #if WITH_EDITOR
 		virtual bool Draw(TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel) override;
 #endif
@@ -73,11 +75,36 @@ namespace Drn
 		virtual Vector GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
 		inline virtual EParticleDistributionVectorType GetType() const override { return EParticleDistributionVectorType::Uniform; };
 
-		//virtual void GetOutRange(float& MinOut, float& MaxOut) const override
-		//{
-		//	MinOut = Min;
-		//	MaxOut = Max;
-		//}
+#if WITH_EDITOR
+		virtual bool Draw(TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel) override;
+#endif
+	};
+
+	class ParticleDistributionVectorParameter : public ParticleDistributionVector
+	{
+	public:
+		ParticleDistributionVectorParameter()
+			: MinInput(Vector::ZeroVector)
+			, MaxInput(Vector::OneVector)
+			, MinOutput(Vector::ZeroVector)
+			, MaxOutput(Vector::OneVector)
+			, Constant(Vector::OneVector)
+			, ParameterName("None")
+			, ParamModes{EDistributionVectorParamMode::Normal, EDistributionVectorParamMode::Normal, EDistributionVectorParamMode::Normal}
+		{}
+
+		Vector MinInput;
+		Vector MaxInput;
+		Vector MinOutput;
+		Vector MaxOutput;
+		Vector Constant;
+
+		std::string ParameterName;
+		EDistributionVectorParamMode ParamModes[3];
+
+		virtual void Serialize(Archive& Ar) override;
+		virtual Vector GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
+		inline virtual EParticleDistributionVectorType GetType() const override { return EParticleDistributionVectorType::Parameter; };
 
 #if WITH_EDITOR
 		virtual bool Draw(TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel) override;

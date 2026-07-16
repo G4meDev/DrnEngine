@@ -20,6 +20,13 @@ namespace Drn
 			return Cycles.QuadPart / SecondsPerCycle;
 		}
 
+		static inline uint32 Cycles()
+		{
+			LARGE_INTEGER Cycles;
+			QueryPerformanceCounter(&Cycles);
+			return (uint32)Cycles.QuadPart;
+		}
+
 		static inline float GetApplicationDeltaTime() { return m_ApplicationDeltaTime; }
 
 	private:
