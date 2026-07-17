@@ -56,6 +56,38 @@ namespace Drn
 		AnimTrail
 	};
 
+	enum EParticleEventType
+	{
+		EPET_Any,
+		EPET_Spawn,
+		EPET_Death,
+		EPET_Collision,
+		EPET_Burst,
+		EPET_Blueprint,
+		EPET_MAX,
+	};
+
+	struct ParticleEventInstancePayload
+	{
+		uint32 bSpawnEventsPresent:1;
+		uint32 bDeathEventsPresent:1;
+		uint32 bCollisionEventsPresent:1;
+		uint32 bBurstEventsPresent:1;
+
+		int32 SpawnTrackingCount;
+		int32 DeathTrackingCount;
+		int32 CollisionTrackingCount;
+		int32 BurstTrackingCount;
+	};
+
+	struct ParticleCollisionPayload
+	{
+		Vector	UsedDampingFactor;
+		Vector	UsedDampingFactorRotation;
+		int32	UsedCollisions;
+		float	Delay;
+	};
+
 	enum EParticleStates
 	{
 		/** Ignore updates to the particle						*/
@@ -177,6 +209,23 @@ namespace Drn
 #if WITH_EDITOR
 		bool Draw();
 #endif
+	};
+
+	struct ParticleEventData
+	{
+		int32 Type;
+		std::string EventName;
+		float EmitterTime;
+		Vector Location;
+		Vector Velocity;
+
+		//TArray<class UParticleModuleEventSendToGame*> EventData;
+
+		ParticleEventData()
+			: Type(0)
+			, EmitterTime(0)
+		{
+		}
 	};
 
 	struct ParticleModuleMetaData

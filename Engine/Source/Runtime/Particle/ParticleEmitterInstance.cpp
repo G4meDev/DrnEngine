@@ -63,6 +63,13 @@ namespace Drn
 		InstanceData = (uint8*)(std::realloc(InstanceData, InstancePayloadSize));
 		std::memset(InstanceData, 0, InstancePayloadSize);
 
+		for (ParticleModule* ParticleModule : Emitter->Modules)
+		{
+			drn_check(ParticleModule);
+			uint8* PrepInstData = GetModuleInstanceData(ParticleModule);
+			ParticleModule->PrepPerInstanceBlock(this, (void*)PrepInstData);
+		}
+
 		ParticleSize = Emitter->ParticleSize;
 		//ParticleSize += RequiredBytes();
 		ParticleSize = Align(ParticleSize, 16);

@@ -32,6 +32,9 @@ namespace Drn
 		std::vector<ParticleModule*> SpawnModules;
 		std::vector<ParticleModule*> UpdateModules;
 
+		class ParticleModuleEventGenerator* EventGenerator;
+		std::vector<class ParticleModuleEventReceiverBase*> EventReceiverModules;
+
 		std::vector<TRefCountPtr<ParticleModule>> Modules;
 
 		int32 ReqInstanceBytes;

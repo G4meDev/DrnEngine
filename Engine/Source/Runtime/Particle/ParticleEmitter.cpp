@@ -1,6 +1,9 @@
 #include "DrnPCH.h"
 #include "ParticleEmitter.h"
 
+#include "Runtime/Particle/ParticleModuleEventGenerator.h"
+#include "Runtime/Particle/ParticleModuleEventReceiver.h"
+
 #if WITH_EDITOR
 #include "imgui.h"
 #endif
@@ -22,6 +25,7 @@ namespace Drn
 		, EmitterLoops(0)
 		, bHasMeshRotation(false)
 		, MeshRotationOffset(0)
+		, EventGenerator(nullptr)
 	{
 	}
 
@@ -128,6 +132,16 @@ namespace Drn
 		if (Module->bUpdateModule)
 		{
 			UpdateModules.push_back(Module);
+		}
+
+		if (Module->bEventGenerateModule)
+		{
+			EventGenerator = static_cast<ParticleModuleEventGenerator*>(Module);
+		}
+
+		if (Module->bEventReciverModule)
+		{
+			EventReceiverModules.push_back(static_cast<ParticleModuleEventReceiverBase*>(Module));
 		}
 
 		const int InstanceBytes = Module->RequiredBytesPerInstance();

@@ -16,6 +16,8 @@ namespace Drn
 			, bSpawningModule(false)
 			, bSpawnModule(false)
 			, bUpdateModule(false)
+			, bEventGenerateModule(false)
+			, bEventReciverModule(false)
 		{}
 
 		uint8 bEnabled;
@@ -24,6 +26,9 @@ namespace Drn
 		uint8 bSpawningModule	:1;
 		uint8 bSpawnModule		:1;
 		uint8 bUpdateModule		:1;
+
+		uint8 bEventGenerateModule		:1;
+		uint8 bEventReciverModule		:1;
 
 		virtual void Serialize(Archive& Ar) override;
 
@@ -44,6 +49,7 @@ namespace Drn
 
 		inline bool IsEffectiveModule() const { return bEnabled && bValid; }
 
+		virtual uint32 PrepPerInstanceBlock(ParticleEmitterInstance* Owner, void* InstData) { return 0; };
 		virtual uint32 RequiredBytesPerInstance() { return 0; };
 		virtual uint32 RequiredBytes() { return 0; };
 

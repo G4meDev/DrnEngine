@@ -6,6 +6,8 @@
 #include "Runtime/Particle/ParticleModuleVelocity.h"
 #include "Runtime/Particle/ParticleModuleAcceleration.h"
 #include "Runtime/Particle/ParticleModuleMeshRotation.h"
+#include "Runtime/Particle/ParticleModuleEventGenerator.h"
+#include "Runtime/Particle/ParticleModuleEventReceiver.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -60,6 +62,8 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleAcceleration>(EParticleModule::Acceleration, "Acceleration", "Acceleration");
 		RegisterParticleModule<ParticleModuleMeshRotation>(EParticleModule::MeshRotation, "Mesh Rotation", "Mesh Rotation");
 		RegisterParticleModule<ParticleModuleMeshRotationRate>(EParticleModule::MeshRotationRate, "Mesh Rotation Rate", "Mesh Rotation");
+		RegisterParticleModule<ParticleModuleEventGenerator>(EParticleModule::EventGenerator, "Event Generator", "Event");
+		RegisterParticleModule<ParticleModuleEventReceiverKillParticles>(EParticleModule::EventReceiverKillParticles, "Event Receiver Kill Particles", "Event");
 
 
 	}
