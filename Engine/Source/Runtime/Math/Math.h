@@ -191,5 +191,20 @@ namespace Drn
 			long Mask = -long(_BitScanReverse(&Log2, Value) != 0);
 			return ((31 - Log2) & Mask) | (32 & ~Mask);
 		}
+
+		template<class T, class U>
+		static inline T Lerp( const T& A, const T& B, const U& Alpha )
+		{
+			return (T)(A + (B-A) * Alpha);
+		}
+
+		template< class T, class U > 
+		static inline T CubicInterp( const T& P0, const T& T0, const T& P1, const T& T1, const U& A )
+		{
+			const float A2 = A  * A;
+			const float A3 = A2 * A;
+
+			return (T)(P0 * ((2*A3)-(3*A2)+1)) + (T0 * (A3-(2*A2)+A)) + (T1 * (A3-A2)) + (P1 * ((-2*A3)+(3*A2)));
+		}
 	};
 }
