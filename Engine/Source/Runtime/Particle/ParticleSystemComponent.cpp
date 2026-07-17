@@ -40,6 +40,12 @@ namespace Drn
 			return;
 		}
 
+		SpawnEvents.clear();
+		DeathEvents.clear();
+		CollisionEvents.clear();
+		BurstEvents.clear();
+		KismetEvents.clear();
+
 		NumSignificantEmitters = 0;
 		TotalActiveParticles = 0;
 
@@ -66,41 +72,27 @@ namespace Drn
 		}
 
 		//if (FXConsoleVariables::bFreezeParticleSimulation == false)
-		//{
-		//	int32 EmitterIndex;
-		//	// Now, process any events that have occurred.
-		//	for (EmitterIndex = 0; EmitterIndex < EmitterInstances.Num(); EmitterIndex++)
-		//	{
-		//		FParticleEmitterInstance* Instance = EmitterInstances[EmitterIndex];
-		//		if (Instance && Instance->bEnabled)
-		//		{
-		//			if (EmitterIndex + 1 < EmitterInstances.Num())
-		//			{
-		//				FParticleEmitterInstance* NextInstance = EmitterInstances[EmitterIndex+1];
-		//				FPlatformMisc::Prefetch(NextInstance);
-		//			}
-		//
-		//			if (Instance->SpriteTemplate)
-		//			{
-		//				UParticleLODLevel* SpriteLODLevel = Instance->SpriteTemplate->GetCurrentLODLevel(Instance);
-		//				if (SpriteLODLevel && SpriteLODLevel->bEnabled)
-		//				{
-		//					Instance->ProcessParticleEvents(DeltaTimeTick, bSuppressSpawning);
-		//				}
-		//			}
-		//		}
-		//	}
-		//
-		//	UWorld* World = GetWorld();
-		//	AParticleEventManager* EventManager = (World ? World->MyParticleEventManager : NULL);
-		//	if (EventManager)
-		//	{
-		//		if (SpawnEvents.Num() > 0) EventManager->HandleParticleSpawnEvents(this, SpawnEvents);
-		//		if (DeathEvents.Num() > 0) EventManager->HandleParticleDeathEvents(this, DeathEvents);
-		//		if (CollisionEvents.Num() > 0) EventManager->HandleParticleCollisionEvents(this, CollisionEvents);
-		//		if (BurstEvents.Num() > 0) EventManager->HandleParticleBurstEvents(this, BurstEvents);
-		//	}
-		//}
+		{
+			int32 EmitterIndex;
+			// Now, process any events that have occurred.
+			for (EmitterIndex = 0; EmitterIndex < Emitters.size(); EmitterIndex++)
+			{
+				ParticleEmitterInstance* Instance = Emitters[EmitterIndex];
+				if (Instance && Instance->bEnabled)
+				{
+					if (EmitterIndex + 1 < Emitters.size())
+					{
+						ParticleEmitterInstance* NextInstance = Emitters[EmitterIndex+1];
+						ApplicationMisc::Prefetch(NextInstance);
+					}
+		
+					if (Instance->Emitter && Instance->Emitter->IsEnabled())
+					{
+						Instance->ProcessParticleEvents(DeltaTime, bSuppressSpawning);
+					}
+				}
+			}
+		}
 
 		const bool bIsCompleted = HasCompleted();
 		if (bIsCompleted && !bWasCompleted)
@@ -690,6 +682,78 @@ namespace Drn
 		}
 
 		return false;
+	}
+
+	void ParticleSystemComponent::ReportEventSpawn( const std::string& InEventName, const float InEmitterTime, const Vector& InLocation,
+		const Vector& InVelocity /*, const TArray<class UParticleModuleEventSendToGame*>& InEventData*/ )
+	{
+		SpawnEvents.push_back({});
+		ParticleEventSpawnData* SpawnData = &SpawnEvents.back();
+		SpawnData->Type = EPET_Spawn;
+		SpawnData->EventName = InEventName;
+		SpawnData->EmitterTime = InEmitterTime;
+		SpawnData->Location = InLocation;
+		SpawnData->Velocity = InVelocity;
+		//SpawnData->EventData = InEventData;
+	}
+
+	void ParticleSystemComponent::ReportEventDeath( const std::string& InEventName, const float InEmitterTime, const Vector& InLocation,
+		const Vector& InVelocity /*, const TArray<class UParticleModuleEventSendToGame*>& InEventData*/, const float   InParticleTime )
+	{
+		DeathEvents.push_back({});
+		ParticleEventDeathData* DeathData = &DeathEvents.back();
+		DeathData->Type = EPET_Death;
+		DeathData->EventName = InEventName;
+		DeathData->EmitterTime = InEmitterTime;
+		DeathData->Location = InLocation;
+		DeathData->Velocity = InVelocity;
+		//DeathData->EventData = InEventData;
+		DeathData->ParticleTime = InParticleTime;
+	}
+
+	void ParticleSystemComponent::ReportEventCollision( const std::string& InEventName, const float InEmitterTime, const Vector& InLocation,
+		const Vector& InDirection, const Vector& InVelocity /*, const TArray<class UParticleModuleEventSendToGame*>& InEventData*/,
+		const float InParticleTime, const Vector& InNormal, const float InTime, const int32 InItem, const std::string& InBoneName, class PhysicalMaterial* PhysMat )
+	{
+		CollisionEvents.push_back({});
+		ParticleEventCollideData* CollideData = &CollisionEvents.back();
+		CollideData->Type = EPET_Collision;
+		CollideData->EventName = InEventName;
+		CollideData->EmitterTime = InEmitterTime;
+		CollideData->Location = InLocation;
+		CollideData->Direction = InDirection;
+		CollideData->Velocity = InVelocity;
+		//CollideData->EventData = InEventData;
+		CollideData->ParticleTime = InParticleTime;
+		CollideData->Normal = InNormal;
+		CollideData->Time = InTime;
+		CollideData->Item = InItem;
+		CollideData->BoneName = InBoneName;
+		CollideData->PhysMat = PhysMat;
+	}
+
+	void ParticleSystemComponent::ReportEventBurst( const std::string& InEventName, const float InEmitterTime, const int32 InParticleCount,
+		const Vector& InLocation /*, const TArray<class UParticleModuleEventSendToGame*>& InEventData*/ )
+	{
+		BurstEvents.push_back({});
+		ParticleEventBurstData* BurstData = &BurstEvents.back();
+		BurstData->Type = EPET_Burst;
+		BurstData->EventName = InEventName;
+		BurstData->EmitterTime = InEmitterTime;
+		BurstData->ParticleCount = InParticleCount;
+		BurstData->Location = InLocation;
+		//BurstData->EventData = InEventData;
+	}
+
+	void ParticleSystemComponent::GenerateParticleEvent( const std::string& InEventName, const float InEmitterTime, const Vector& InLocation, const Vector& InDirection, const Vector& InVelocity )
+	{
+		KismetEvents.push_back({});
+		ParticleEventKismetData* KismetData = &KismetEvents.back();
+		KismetData->Type = EPET_Blueprint;
+		KismetData->EventName = InEventName;
+		KismetData->EmitterTime = InEmitterTime;
+		KismetData->Location = InLocation;
+		KismetData->Velocity = InVelocity;
 	}
 
 #if WITH_EDITOR

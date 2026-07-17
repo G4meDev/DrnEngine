@@ -31,6 +31,7 @@ namespace Drn
 
 		friend Archive& operator>>( Archive& Ar, ParticleEvent_GenerateInfo& Event )
 		{
+			Ar >> *(uint32*)&Event.Type;
 			Ar >> Event.Frequency;
 			Ar >> Event.ParticleFrequency;
 			Ar >> Event.FirstTimeOnly;
@@ -44,6 +45,7 @@ namespace Drn
 
 		friend Archive& operator<<( Archive& Ar, ParticleEvent_GenerateInfo& Event )
 		{
+			Ar << (uint32)Event.Type;
 			Ar << Event.Frequency;
 			Ar << Event.ParticleFrequency;
 			Ar << Event.FirstTimeOnly;

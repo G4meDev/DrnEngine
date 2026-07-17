@@ -52,7 +52,7 @@ namespace Drn
 	{
 		if ((InEvent.EventName == EventName) && ((EventGeneratorType == EPET_Any) || (EventGeneratorType == InEvent.Type)))
 		{
-			//Owner->KillParticlesForced(true);
+			Owner->KillParticlesForced(true);
 			if (bStopSpawning == true)
 			{
 				Owner->bHaltSpawning = true;

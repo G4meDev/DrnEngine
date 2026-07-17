@@ -85,7 +85,7 @@ namespace Drn
 		void ResetBurstList();
 
 		virtual float Spawn(float DeltaTime);
-		void SpawnParticles( int32 Count, float StartTime, float Increment, const Vector& InitialLocation, const Vector& InitialVelocity );
+		void SpawnParticles( int32 Count, float StartTime, float Increment, const Vector& InitialLocation, const Vector& InitialVelocity, struct ParticleEventInstancePayload* EventPayload );
 		//virtual void ForceSpawn(float DeltaTime, int32 InSpawnCount, int32 InBurstCount, Vector& InLocation, Vector& InVelocity);
 		//void CheckSpawnCount(int32 InNewCount, int32 InMaxCount);
 		virtual void PreSpawn(BaseParticle* Particle, const Vector& InitialLocation, const Vector& InitialVelocity);
@@ -94,8 +94,8 @@ namespace Drn
 		virtual bool HasCompleted();
 		virtual void KillParticles();
 		virtual void KillParticle(int32 Index);
-		//virtual void KillParticlesForced(bool bFireEvents = false);
-		//
+		virtual void KillParticlesForced(bool bFireEvents = false);
+		
 		//virtual void SetHaltSpawning(bool bInHaltSpawning)
 		//{
 		//	bHaltSpawning = bInHaltSpawning;
@@ -136,6 +136,9 @@ namespace Drn
 		//}
 
 		void Rewind();
+
+		virtual void ProcessParticleEvents(float DeltaTime, bool bSuppressSpawning);
+
 	};
 	
 	class ParticleMeshEmitterInstance : public ParticleEmitterInstance

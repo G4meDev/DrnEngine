@@ -2,6 +2,8 @@
 #include "ParticleEmitterInstance.h"
 
 #include "Runtime/Particle/ParticleModuleLocation.h"
+#include "Runtime/Particle/ParticleModuleEventGenerator.h"
+#include "Runtime/Particle/ParticleModuleEventReceiver.h"
 
 #define MAX_PARTICLE_COUNT 2048
 
@@ -462,9 +464,19 @@ namespace Drn
 
 			if (bProcessSpawn)
 			{
+				ParticleEventInstancePayload* EventPayload = nullptr;
+				if (Emitter->EventGenerator)
+				{
+					EventPayload = (ParticleEventInstancePayload*)GetModuleInstanceData(Emitter->EventGenerator);
+					if (EventPayload && !EventPayload->bSpawnEventsPresent && !EventPayload->bBurstEventsPresent)
+					{
+						EventPayload = nullptr;
+					}
+				}
+
 				const Vector InitialLocation = EmitterToSimulation.Location();
-				SpawnParticles( Number, StartTime, Increment, InitialLocation, Vector::ZeroVector );
-				SpawnParticles( BurstCount, 0.0f, 0.0f, InitialLocation, Vector::ZeroVector );
+				SpawnParticles( Number, StartTime, Increment, InitialLocation, Vector::ZeroVector, EventPayload );
+				SpawnParticles( BurstCount, 0.0f, 0.0f, InitialLocation, Vector::ZeroVector, EventPayload );
 
 				return NewLeftover;
 			}
@@ -474,14 +486,19 @@ namespace Drn
 		return SpawnFraction;
 	}
 
-	void ParticleEmitterInstance::SpawnParticles( int32 Count, float StartTime, float Increment, const Vector& InitialLocation, const Vector& InitialVelocity)
+	void ParticleEmitterInstance::SpawnParticles( int32 Count, float StartTime, float Increment, const Vector& InitialLocation, const Vector& InitialVelocity, ParticleEventInstancePayload* EventPayload)
 	{
 		drn_check(ActiveParticles <= MaxActiveParticles);
 		drn_check(ActiveParticles + Count <= MaxActiveParticles);
 		drn_check(Emitter);
 
 		//Count = FMath::Min<int32>(Count, MaxActiveParticles - ActiveParticles);
-	
+
+		if (EventPayload && EventPayload->bBurstEventsPresent && Count > 0)
+		{
+			Emitter->EventGenerator->HandleParticleBurst(this, EventPayload, Count);
+		}
+
 		float SpawnTime = StartTime;
 		float Interp = 1.0f;
 		const float InterpIncrement = (Count > 0 && Increment > 0.0f) ? (1.0f / (float)Count) : 0.0f;
@@ -506,6 +523,14 @@ namespace Drn
 			{
 				KillParticle(CurrentParticleIndex);
 				continue;
+			}
+
+			if (EventPayload)
+			{
+				if (EventPayload->bSpawnEventsPresent)
+				{
+					Emitter->EventGenerator->HandleParticleSpawned(this, EventPayload, Particle);
+				}
 			}
 
 			SpawnTime -= Increment;
@@ -565,6 +590,16 @@ namespace Drn
 	{
 		if (ActiveParticles > 0)
 		{
+			ParticleEventInstancePayload* EventPayload = nullptr;
+			if (Emitter->EventGenerator)
+			{
+				EventPayload = (ParticleEventInstancePayload*)GetModuleInstanceData(Emitter->EventGenerator);
+				if (EventPayload && (EventPayload->bDeathEventsPresent == false))
+				{
+					EventPayload = nullptr;
+				}
+			}
+
 			bool bFoundCorruptIndices = false;
 			// Loop over the active particles... If their RelativeTime is > 1.0f (indicating they are dead),
 			// move them to the 'end' of the active particle list.
@@ -578,10 +613,10 @@ namespace Drn
 
 				if (Particle.RelativeTime > 1.0f)
 				{
-					//if (EventPayload)
-					//{
-					//	LODLevel->EventGenerator->HandleParticleKilled(this, EventPayload, &Particle);
-					//}
+					if (EventPayload)
+					{
+						Emitter->EventGenerator->HandleParticleKilled(this, EventPayload, &Particle);
+					}
 
 					// Move it to the 'back' of the list
 					ParticleIndices[i] = ParticleIndices[ActiveParticles-1];
@@ -596,7 +631,24 @@ namespace Drn
 	{
 		if (Index < ActiveParticles)
 		{
+			ParticleEventInstancePayload* EventPayload = nullptr;
+			if (Emitter->EventGenerator)
+			{
+				EventPayload = (ParticleEventInstancePayload*)GetModuleInstanceData(Emitter->EventGenerator);
+				if (EventPayload && (EventPayload->bDeathEventsPresent == false))
+				{
+					EventPayload = nullptr;
+				}
+			}
+
 			int32 KillIndex = ParticleIndices[Index];
+
+			if (EventPayload)
+			{
+				const uint8* ParticleBase	= ParticleData + KillIndex * ParticleStride;
+				BaseParticle& Particle		= *((BaseParticle*) ParticleBase);
+				Emitter->EventGenerator->HandleParticleKilled(this, EventPayload, &Particle);
+			}
 
 			// Move it to the 'back' of the list
 			for (int32 i=Index; i < ActiveParticles - 1; i++)
@@ -606,6 +658,38 @@ namespace Drn
 			ParticleIndices[ActiveParticles-1] = KillIndex;
 			ActiveParticles--;
 		}
+	}
+
+	void ParticleEmitterInstance::KillParticlesForced( bool bFireEvents )
+	{
+		ParticleEventInstancePayload* EventPayload = nullptr;
+		if (bFireEvents == true)
+		{
+			if (Emitter->EventGenerator)
+			{
+				EventPayload = (ParticleEventInstancePayload*)GetModuleInstanceData(Emitter->EventGenerator);
+				if (EventPayload && (EventPayload->bDeathEventsPresent == false))
+				{
+					EventPayload = nullptr;
+				}
+			}
+		}
+
+		for (int32 KillIdx = ActiveParticles - 1; KillIdx >= 0; KillIdx--)
+		{
+			const int32 CurrentIndex = ParticleIndices[KillIdx];
+			if (EventPayload)
+			{
+				const uint8* ParticleBase = ParticleData + CurrentIndex * ParticleStride;
+				BaseParticle& Particle = *((BaseParticle*) ParticleBase);
+				Emitter->EventGenerator->HandleParticleKilled(this, EventPayload, &Particle);
+			}
+			ParticleIndices[KillIdx] = ParticleIndices[ActiveParticles - 1];
+			ParticleIndices[ActiveParticles - 1] = CurrentIndex;
+			ActiveParticles--;
+		}
+
+		ParticleCounter = 0;
 	}
 
 	void ParticleEmitterInstance::SetupEmitterDuration()
@@ -635,6 +719,59 @@ namespace Drn
 		ParticleCounter = 0;
 		bEnabled = 1;
 		ResetBurstList();
+	}
+
+	void ParticleEmitterInstance::ProcessParticleEvents( float DeltaTime, bool bSuppressSpawning )
+	{
+		if (Emitter->EventReceiverModules.size() > 0)
+		{
+			for (int32 EventModIndex = 0; EventModIndex < Emitter->EventReceiverModules.size(); EventModIndex++)
+			{
+				int32 EventIndex;
+				ParticleModuleEventReceiverBase* EventRcvr = Emitter->EventReceiverModules[EventModIndex];
+				drn_check(EventRcvr);
+
+				if (EventRcvr->WillProcessParticleEvent(EPET_Spawn) && (Component->SpawnEvents.size() > 0))
+				{
+					for (EventIndex = 0; EventIndex < Component->SpawnEvents.size(); EventIndex++)
+					{
+						EventRcvr->ProcessParticleEvent(this, Component->SpawnEvents[EventIndex], DeltaTime);
+					}
+				}
+
+				if (EventRcvr->WillProcessParticleEvent(EPET_Death) && (Component->DeathEvents.size() > 0))
+				{
+					for (EventIndex = 0; EventIndex < Component->DeathEvents.size(); EventIndex++)
+					{
+						EventRcvr->ProcessParticleEvent(this, Component->DeathEvents[EventIndex], DeltaTime);
+					}
+				}
+
+				if (EventRcvr->WillProcessParticleEvent(EPET_Collision) && (Component->CollisionEvents.size() > 0))
+				{
+					for (EventIndex = 0; EventIndex < Component->CollisionEvents.size(); EventIndex++)
+					{
+						EventRcvr->ProcessParticleEvent(this, Component->CollisionEvents[EventIndex], DeltaTime);
+					}
+				}
+
+				if (EventRcvr->WillProcessParticleEvent(EPET_Burst) && (Component->BurstEvents.size() > 0))
+				{
+					for (EventIndex = 0; EventIndex < Component->BurstEvents.size(); EventIndex++)
+					{
+						EventRcvr->ProcessParticleEvent(this, Component->BurstEvents[EventIndex], DeltaTime);
+					}
+				}
+
+				if (EventRcvr->WillProcessParticleEvent(EPET_Blueprint) && (Component->KismetEvents.size() > 0))
+				{
+					for (EventIndex = 0; EventIndex < Component->KismetEvents.size(); EventIndex++)
+					{
+						EventRcvr->ProcessParticleEvent(this, Component->KismetEvents[EventIndex], DeltaTime);
+					}
+				}
+			}
+		}
 	}
 
 // ----------------------------------------------------------------------------------------------------------------------

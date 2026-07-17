@@ -224,8 +224,56 @@ namespace Drn
 		ParticleEventData()
 			: Type(0)
 			, EmitterTime(0)
-		{
-		}
+		{}
+	};
+
+	struct ParticleExistingData : ParticleEventData
+	{
+		float ParticleTime;
+		Vector Direction;
+
+		ParticleExistingData()
+			: ParticleTime(0)
+			, Direction(Vector::ZeroVector)
+		{}
+	};
+
+	struct ParticleEventSpawnData : public ParticleEventData
+	{
+	};
+
+	struct ParticleEventDeathData : public ParticleExistingData
+	{
+
+	};
+
+	struct ParticleEventCollideData : public ParticleExistingData
+	{
+		Vector Normal;
+		float Time;
+		int32 Item;
+		std::string BoneName;
+		class PhysicalMaterial* PhysMat;
+
+		ParticleEventCollideData()
+			: Normal(Vector::ZeroVector)
+			, Time(0)
+			, Item(0)
+		{}
+
+	};
+
+	struct ParticleEventBurstData : public ParticleEventData
+	{
+		int32 ParticleCount;
+
+		ParticleEventBurstData()
+			: ParticleCount(0)
+		{}
+	};
+
+	struct ParticleEventKismetData : public ParticleEventData
+	{
 	};
 
 	struct ParticleModuleMetaData
