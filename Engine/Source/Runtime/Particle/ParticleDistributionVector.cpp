@@ -53,6 +53,11 @@ namespace Drn
 			Out = new ParticleDistributionVectorParameter();
 		}
 
+		else if (Type == EParticleDistributionVectorType::ConstantCurve)
+		{
+			Out = new ParticleDistributionVectorConstantCurve();
+		}
+
 		drn_check(Out);
 		return Out;
 	}
@@ -60,7 +65,7 @@ namespace Drn
 #if WITH_EDITOR
 	bool ParticleDistributionVector::Draw( TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel )
 	{
-		const char* const Options[] = { "Constant", "Uniform", "Parameter" };
+		const char* const Options[] = { "Constant", "Uniform", "Parameter", "Constant Curve" };
 		int32 Selected = (uint8)GetType();
 		bool bDirty = ImGui::Combo("Distribution Type", &Selected, Options, _countof(Options));
 		if (bDirty)
@@ -135,7 +140,7 @@ namespace Drn
 
 	Vector ParticleDistributionVectorUniform::GetValue( float F, ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
 	{
-		return Max + (Min - Max) * DIST_GET_RANDOM_VALUE(InRandomStream);
+		return Max + (Min - Max) * Vector(DIST_GET_RANDOM_VALUE(InRandomStream), DIST_GET_RANDOM_VALUE(InRandomStream), DIST_GET_RANDOM_VALUE(InRandomStream));
 	}
 
 #if WITH_EDITOR
@@ -340,5 +345,45 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------------
 
+	void ParticleDistributionVectorConstantCurve::Serialize( Archive& Ar )
+	{
+		ParticleDistributionVector::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> ConstantCurve;
+		}
+		else
+		{
+			Ar << ConstantCurve;
+		}
+	}
+
+	Vector ParticleDistributionVectorConstantCurve::GetValue( float F, ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
+	{
+		return ConstantCurve.Eval(F, Vector::ZeroVector);
+	}
+
+#if WITH_EDITOR
+	bool ParticleDistributionVectorConstantCurve::Draw( TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel )
+	{
+		if (ImGui::CollapsingHeader(DisplayLabel.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID(DisplayLabel.c_str());
+
+			bool bDirty = ParticleDistributionVector::Draw(Ptr, DisplayLabel);
+			if (!bDirty)
+			{
+				bDirty = ConstantCurve.Draw(DisplayLabel);
+			}
+
+			ImGui::PopID();
+
+			return bDirty;
+		}
+
+		return false;
+	}
+#endif
 
 }  // namespace Drn

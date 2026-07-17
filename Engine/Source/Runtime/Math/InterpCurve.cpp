@@ -3,23 +3,6 @@
 
 namespace Drn
 {
-	//template<class T>
-	//Archive& InterpCurve<T>::operator>>(Archive& Ar, InterpCurve<T>& Curve)
-	//{
-	//	int32 PointsCount = 0;
-	//	Ar >> PointsCount;
-	//	Curve.Points.resize(PointsCount);
-	//	for (int32 i = 0; i < PointsCount; i++)
-	//	{
-	//		Ar >> Curve.Points[i];
-	//	}
-	//	
-	//	Ar >> Curve.bIsLooped;
-	//	Ar >> Curve.LoopKeyOffset;
-	//	
-	//	return Ar;
-	//}
-
 #if WITH_EDITOR
 	template<>
 	bool InterpCurve<float>::Draw(const std::string DisplayName)
@@ -69,16 +52,23 @@ namespace Drn
 		{
 			ImGui::PushID(DisplayName.c_str());
 
-			const int32 DisplayCurvePoints = 50;
-			float DisplayCurveValues[DisplayCurvePoints];
-			for (int32 i = 0; i < DisplayCurvePoints; i++)
+			for (int32 Axis = 0; Axis < 3; Axis++)
 			{
-				float NormalizedTime = (float)i / (DisplayCurvePoints - 1);
+				ImGui::PushID(Axis);
 
-				Vector Sample = Eval(NormalizedTime, 0.0);
-				DisplayCurveValues[i] = Sample.GetX();
+				const int32 DisplayCurvePoints = 50;
+				float DisplayCurveValues[DisplayCurvePoints];
+				for (int32 i = 0; i < DisplayCurvePoints; i++)
+				{
+					float NormalizedTime = (float)i / (DisplayCurvePoints - 1);
+
+					Vector Sample = Eval(NormalizedTime, 0.0);
+					DisplayCurveValues[i] = Sample[Axis];
+				}
+				ImGui::PlotLines("Curve", DisplayCurveValues, DisplayCurvePoints);
+
+				ImGui::PopID();
 			}
-			ImGui::PlotLines("Curve", DisplayCurveValues, DisplayCurvePoints);
 
 			if (ImGui::Button("Add"))
 			{

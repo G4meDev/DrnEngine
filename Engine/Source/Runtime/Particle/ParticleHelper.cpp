@@ -55,7 +55,7 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleLocationPrimitiveSphere>(EParticleModule::LocationSphere, "Sphere", "Location");
 		RegisterParticleModule<ParticleModuleLifetime>(EParticleModule::Lifetime, "Lifetime", "Lifetime");
 		RegisterParticleModule<ParticleModuleVelocity>(EParticleModule::Velocity, "Initial Velocity", "Velocity");
-		//RegisterParticleModule<ParticleModuleVelocityOverLifetime>(EParticleModule::VelocityOverLifetime, "Velocity Over Lifetime", "Velocity");
+		RegisterParticleModule<ParticleModuleVelocityOverLifetime>(EParticleModule::VelocityOverLifetime, "Velocity Over Lifetime", "Velocity");
 		RegisterParticleModule<ParticleModuleAccelerationConstant>(EParticleModule::AccelerationConstant, "Acceleration Constant", "Acceleration");
 		RegisterParticleModule<ParticleModuleAcceleration>(EParticleModule::Acceleration, "Acceleration", "Acceleration");
 		RegisterParticleModule<ParticleModuleMeshRotation>(EParticleModule::MeshRotation, "Mesh Rotation", "Mesh Rotation");

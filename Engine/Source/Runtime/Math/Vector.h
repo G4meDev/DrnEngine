@@ -122,6 +122,18 @@ namespace Drn
 			return *this;
 		}
 
+		inline float& operator[](int32 Index)
+		{
+			drn_check(Index >= 0 && Index < 3);
+			return (&m_Vector.x)[Index];
+		}
+
+		inline float operator[](int32 Index) const
+		{
+			drn_check(Index >= 0 && Index < 3);
+			return (&m_Vector.x)[Index];
+		}
+
 		inline bool Equals( const Vector& Other ) 
 		{
 			uint32_t Result;

@@ -11,6 +11,7 @@ namespace Drn
 		Constant,
 		Uniform,
 		Parameter,
+		ConstantCurve,
 		Max
 	};
 
@@ -105,6 +106,24 @@ namespace Drn
 		virtual void Serialize(Archive& Ar) override;
 		virtual Vector GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
 		inline virtual EParticleDistributionVectorType GetType() const override { return EParticleDistributionVectorType::Parameter; };
+
+#if WITH_EDITOR
+		virtual bool Draw(TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel) override;
+#endif
+	};
+
+	class ParticleDistributionVectorConstantCurve : public ParticleDistributionVector
+	{
+	public:
+		ParticleDistributionVectorConstantCurve()
+			: ConstantCurve()
+		{}
+
+		InterpCurveVector ConstantCurve;
+
+		virtual void Serialize(Archive& Ar) override;
+		virtual Vector GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
+		inline virtual EParticleDistributionVectorType GetType() const override { return EParticleDistributionVectorType::ConstantCurve; };
 
 #if WITH_EDITOR
 		virtual bool Draw(TRefCountPtr<ParticleDistributionVector>& Ptr, const std::string& DisplayLabel) override;

@@ -53,6 +53,11 @@ namespace Drn
 			Out = new ParticleDistributionFloatParameter();
 		}
 
+		else if (Type == EParticleDistributionFloatType::ConstantCurve)
+		{
+			Out = new ParticleDistributionFloatConstantCurve();
+		}
+
 		drn_check(Out);
 		return Out;
 	}
@@ -60,7 +65,7 @@ namespace Drn
 #if WITH_EDITOR
 	bool ParticleDistributionFloat::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel )
 	{
-		const char* const Options[] = { "Constant", "Uniform", "Parameter" };
+		const char* const Options[] = { "Constant", "Uniform", "Parameter", "Constant Curve" };
 		int32 Selected = (uint8)GetType();
 		bool bDirty = ImGui::Combo("Distribution Type", &Selected, Options, _countof(Options));
 		if (bDirty)
@@ -295,5 +300,46 @@ namespace Drn
 #endif
 
 // ---------------------------------------------------------------------------------------------
+
+	void ParticleDistributionFloatConstantCurve::Serialize( Archive& Ar )
+	{
+		ParticleDistributionFloat::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			Ar >> ConstantCurve;
+		}
+		else
+		{
+			Ar << ConstantCurve;
+		}
+	}
+
+	float ParticleDistributionFloatConstantCurve::GetValue( float F, ParticleEmitterInstance* Emitter, RandomStream* InRandomStream )
+	{
+		return ConstantCurve.Eval(F, 0.0f);
+	}
+
+#if WITH_EDITOR
+	bool ParticleDistributionFloatConstantCurve::Draw( TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel )
+	{
+		if (ImGui::CollapsingHeader(DisplayLabel.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID(DisplayLabel.c_str());
+
+			bool bDirty = ParticleDistributionFloat::Draw(Ptr, DisplayLabel);
+			if (!bDirty)
+			{
+				bDirty |= ConstantCurve.Draw(DisplayLabel);
+			}
+
+			ImGui::PopID();
+
+			return bDirty;
+		}
+
+		return false;
+	}
+#endif
 
 }  // namespace Drn

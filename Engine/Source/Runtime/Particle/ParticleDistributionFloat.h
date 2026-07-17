@@ -11,6 +11,7 @@ namespace Drn
 		Constant,
 		Uniform,
 		Parameter,
+		ConstantCurve,
 		Max
 	};
 
@@ -123,6 +124,30 @@ namespace Drn
 		{
 			MinOut = MinOutput;
 			MaxOut = MaxInput;
+		}
+
+#if WITH_EDITOR
+		virtual bool Draw(TRefCountPtr<ParticleDistributionFloat>& Ptr, const std::string& DisplayLabel) override;
+#endif
+	};
+
+	class ParticleDistributionFloatConstantCurve : public ParticleDistributionFloat
+	{
+	public:
+		ParticleDistributionFloatConstantCurve()
+			: ConstantCurve()
+		{}
+
+		InterpCurveFloat ConstantCurve;
+
+		virtual void Serialize(Archive& Ar) override;
+		virtual float GetValue( float F, ParticleEmitterInstance* Emitter = nullptr, RandomStream* InRandomStream = nullptr ) override;
+		inline virtual EParticleDistributionFloatType GetType() const override { return EParticleDistributionFloatType::ConstantCurve; };
+
+		virtual void GetOutRange(float& MinOut, float& MaxOut) const override
+		{
+			//MinOut = MinOutput;
+			//MaxOut = MaxInput;
 		}
 
 #if WITH_EDITOR
