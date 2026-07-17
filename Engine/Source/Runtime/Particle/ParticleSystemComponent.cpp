@@ -13,6 +13,7 @@ namespace Drn
 		, bWasDeactivated(false)
 		, bSuppressSpawning(false)
 		, bWasActive(false)
+		, bWarmingUp(false)
 		, TotalActiveParticles(0)
 		, NumSignificantEmitters(0)
 	{
@@ -520,6 +521,36 @@ namespace Drn
 			//SetComponentTickEnabled(true);
 
 			InitParticles();
+
+			if (Template->WarmupTime > 0.0f)
+			{
+				//bool bSaveSkipUpdate = bSkipUpdateDynamicDataDuringTick;
+				//bSkipUpdateDynamicDataDuringTick = true;
+				bWarmingUp = true;
+				for (int32 i=0; i<Emitters.size(); i++)
+				{
+					if (Emitters[i])
+					{
+						Emitters[i]->ResetBurstList();
+					}
+				}
+
+				float WarmupElapsed = 0.f;
+				float WarmupTimestep = 0.032f;
+				if (Template->WarmupTickRate > 0)
+				{
+					WarmupTimestep = (Template->WarmupTickRate <= Template->WarmupTime) ? Template->WarmupTickRate : Template->WarmupTime;
+				}
+
+				while (WarmupElapsed < Template->WarmupTime)
+				{
+					Tick(WarmupTimestep);
+					WarmupElapsed += WarmupTimestep;
+				}
+
+				bWarmingUp = false;
+				//bSkipUpdateDynamicDataDuringTick = bSaveSkipUpdate;
+			}
 		}
 
 		//MarkRenderStateDirty();

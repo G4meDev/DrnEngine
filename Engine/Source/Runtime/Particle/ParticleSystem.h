@@ -30,6 +30,12 @@ namespace Drn
 		Vector FixedBoundsMin;
 		Vector FixedBoundsMax;
 
+		float WarmupTime;
+		float WarmupTickRate;
+
+		float ThumbnailDistance;
+		float ThumbnailWarmup;
+
 #if WITH_EDITOR
 		virtual void OpenAssetPreview() override;
 		virtual void CloseAssetPreview() override;

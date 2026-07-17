@@ -12,6 +12,10 @@ namespace Drn
 		, bUseFixedBounds(false)
 		, FixedBoundsMin(-1.0f)
 		, FixedBoundsMax(1.0f)
+		, WarmupTime(0.0f)
+		, WarmupTickRate(0.0f)
+		, ThumbnailWarmup(1.0f)
+		, ThumbnailDistance(2.0f)
 	{
 		Load();
 	}
@@ -23,6 +27,10 @@ namespace Drn
 		, bUseFixedBounds(false)
 		, FixedBoundsMin(-1.0f)
 		, FixedBoundsMax(1.0f)
+		, WarmupTime(0.0f)
+		, WarmupTickRate(0.0f)
+		, ThumbnailWarmup(1.0f)
+		, ThumbnailDistance(2.0f)
 	{
 		Save();
 	}
@@ -44,6 +52,11 @@ namespace Drn
 			Ar >> FixedBoundsMin;
 			Ar >> FixedBoundsMax;
 
+			Ar >> WarmupTime;
+			Ar >> WarmupTickRate;
+			Ar >> ThumbnailWarmup;
+			Ar >> ThumbnailDistance;
+
 			uint8 EmitterCount = 0;
 			Ar >> EmitterCount;
 			Emitters.resize(EmitterCount);
@@ -60,6 +73,11 @@ namespace Drn
 			Ar << bUseFixedBounds;
 			Ar << FixedBoundsMin;
 			Ar << FixedBoundsMax;
+
+			Ar << WarmupTime;
+			Ar << WarmupTickRate;
+			Ar << ThumbnailWarmup;
+			Ar << ThumbnailDistance;
 
 			const uint8 EmitterCount = std::min(Emitters.size(), (size_t)UINT8_MAX);
 			Ar << EmitterCount;
@@ -110,6 +128,27 @@ namespace Drn
 			bDirty |= ImGui::Checkbox("Use Fixed Bounds", &bUseFixedBounds);
 			bDirty |= FixedBoundsMin.Draw("Fixed Bounds Min", "Fixed Bounds Min", EParameterPopupContext::None);
 			bDirty |= FixedBoundsMax.Draw("Fixed Bounds Max", "Fixed Bounds Max", EParameterPopupContext::None);
+		}
+
+		if (ImGui::CollapsingHeader("Warmup", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			if (ImGui::InputFloat("Warmup Time", &WarmupTime))
+			{
+				WarmupTime = std::max(WarmupTime, 0.0f);
+				bDirty = true;
+			}
+
+			if (ImGui::InputFloat("Warmup Tick Rate", &WarmupTickRate))
+			{
+				WarmupTickRate = std::min(WarmupTickRate, WarmupTime);
+				bDirty = true;
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Thumbnail", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			bDirty |= ImGui::InputFloat("Thumbnail Warmup", &ThumbnailWarmup);
+			bDirty |= ImGui::InputFloat("Thumbnail Distance", &ThumbnailDistance);
 		}
 
 		return bDirty;

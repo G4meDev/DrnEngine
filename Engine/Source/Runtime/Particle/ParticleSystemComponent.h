@@ -127,6 +127,7 @@ namespace Drn
 		bool bSuppressSpawning;
 		bool bDeactivateTriggered;
 		bool bWasActive;
+		bool bWarmingUp;
 
 		int32 TotalActiveParticles;
 		uint32 NumSignificantEmitters;

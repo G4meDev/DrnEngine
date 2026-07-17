@@ -675,7 +675,7 @@ namespace Drn
 			}
 		}
 
-		if (bEnabled)
+		if (bEnabled && !Component->bWarmingUp)
 		{
 			for (int32 i = 0; i < ActiveParticles; i++)
 			{
@@ -735,10 +735,7 @@ namespace Drn
 	{
 		if (Component && HasActiveParticles())
 		{
-			//bool bUpdateBox = ((Component->bWarmingUp == false) &&
-			//	(Component->Template != NULL) && (Component->Template->bUseFixedRelativeBoundingBox == false));
-
-			 bool bUpdateBox = Component->Template.IsValid() && !Component->Template->bUseFixedBounds;
+			 bool bUpdateBox = Component->bWarmingUp && Component->Template.IsValid() && !Component->Template->bUseFixedBounds;
 
 			Vector Scale = Component->GetWorldScale();
 
