@@ -73,6 +73,7 @@ namespace Drn
 		MeshRotationRate,
 		EventGenerator,
 		EventReceiverKillParticles,
+		EventReceiverSpawn,
 		Max
 	};
 

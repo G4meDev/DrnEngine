@@ -539,6 +539,41 @@ namespace Drn
 
 	}
 
+	void ParticleEmitterInstance::ForceSpawn( float DeltaTime, int32 InSpawnCount, int32 InBurstCount, Vector& InLocation, Vector& InVelocity )
+	{
+		int32 SpawnCount = InSpawnCount;
+		int32 BurstCount = InBurstCount;
+		float SpawnRateDivisor = 0.0f;
+		float OldLeftover = 0.0f;
+
+		bool bProcessSpawnRate = true;
+		bool bProcessBurstList = true;
+
+		if ((SpawnCount > 0) || (BurstCount > 0))
+		{
+			int32		Number		= SpawnCount;
+			float	Increment	= (SpawnCount > 0) ? (DeltaTime / SpawnCount) : 0;
+			float	StartTime	= DeltaTime;
+		
+			bool bProcessSpawn = true;
+			int32 NewCount = ActiveParticles + Number + BurstCount;
+			if (NewCount >= MaxActiveParticles)
+			{
+				bProcessSpawn = Resize(NewCount + Math::TruncToInt(std::sqrt(std::sqrt((float)NewCount)) + 1));
+			}
+
+			if (bProcessSpawn == true)
+			{
+				const bool bUseLocalSpace = Emitter->bUseLocalSpace;
+				Vector SpawnLocation = bUseLocalSpace ? Vector::ZeroVector : InLocation;
+				Vector SpawnVelocity = bUseLocalSpace ? Vector::ZeroVector : InVelocity;
+
+				SpawnParticles( Number, StartTime, Increment, InLocation, InVelocity, nullptr );
+				SpawnParticles( BurstCount, StartTime, 0.0f, InLocation, InVelocity, nullptr );
+			}
+		}
+	}
+
 	void ParticleEmitterInstance::PreSpawn( BaseParticle* Particle, const Vector& InitialLocation, const Vector& InitialVelocity )
 	{
 		drn_check(Particle);

@@ -206,5 +206,15 @@ namespace Drn
 
 			return (T)(P0 * ((2*A3)-(3*A2)+1)) + (T0 * (A3-(2*A2)+A)) + (T1 * (A3-A2)) + (P1 * ((-2*A3)+(3*A2)));
 		}
+
+		static inline int32 FloorToInt(float F)
+		{
+			return TruncToInt(floorf(F));
+		}
+
+		static inline int32 RoundToInt(float F)
+		{
+			return FloorToInt(F + 0.5f);
+		}
 	};
 }

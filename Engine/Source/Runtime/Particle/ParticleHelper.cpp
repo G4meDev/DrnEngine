@@ -64,6 +64,7 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleMeshRotationRate>(EParticleModule::MeshRotationRate, "Mesh Rotation Rate", "Mesh Rotation");
 		RegisterParticleModule<ParticleModuleEventGenerator>(EParticleModule::EventGenerator, "Event Generator", "Event");
 		RegisterParticleModule<ParticleModuleEventReceiverKillParticles>(EParticleModule::EventReceiverKillParticles, "Event Receiver Kill Particles", "Event");
+		RegisterParticleModule<ParticleModuleEventReceiverSpawn>(EParticleModule::EventReceiverSpawn, "Event Receiver Spawn", "Event");
 
 
 	}

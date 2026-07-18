@@ -4,6 +4,9 @@
 
 namespace Drn
 {
+	class ParticleDistributionFloat;
+	class ParticleDistributionVector;
+
 	class ParticleModuleEventReceiverBase : public ParticleModule
 	{
 	public:
@@ -43,6 +46,30 @@ namespace Drn
 
 		virtual void Serialize( Archive& Ar ) override;
 		virtual EParticleModule	GetModuleType() const override { return EParticleModule::EventReceiverKillParticles; }
+
+		virtual bool ProcessParticleEvent(ParticleEmitterInstance* Owner, ParticleEventData& InEvent, float DeltaTime) override;
+
+#if WITH_EDITOR
+		virtual bool Draw(ParticleEmitter* Owner) override;
+#endif
+	};
+
+	class ParticleModuleEventReceiverSpawn : public ParticleModuleEventReceiverBase
+	{
+	public:
+		ParticleModuleEventReceiverSpawn();
+
+		TRefCountPtr<ParticleDistributionFloat> SpawnCount;
+		bool bUseParticleTime;
+		bool bUsePSysLocation;
+		bool bInheritVelocity;
+
+		TRefCountPtr<ParticleDistributionVector> InheritVelocityScale;
+		std::vector<AssetHandle<PhysicalMaterial>> PhysicalMaterials;
+		bool bBanPhysicalMaterials;
+
+		virtual void Serialize( Archive& Ar ) override;
+		virtual EParticleModule	GetModuleType() const override { return EParticleModule::EventReceiverSpawn; }
 
 		virtual bool ProcessParticleEvent(ParticleEmitterInstance* Owner, ParticleEventData& InEvent, float DeltaTime) override;
 
