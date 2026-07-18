@@ -216,5 +216,10 @@ namespace Drn
 		{
 			return FloorToInt(F + 0.5f);
 		}
+
+		static inline bool IsNearlyZero(float Value, float ErrorTolerance = SMALL_NUMBER)
+		{
+			return std::abs(Value) <= ErrorTolerance;
+		}
 	};
 }

@@ -8,6 +8,7 @@
 #include "Runtime/Particle/ParticleModuleMeshRotation.h"
 #include "Runtime/Particle/ParticleModuleEventGenerator.h"
 #include "Runtime/Particle/ParticleModuleEventReceiver.h"
+#include "Runtime/Particle/ParticleModuleCollision.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -65,6 +66,7 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleEventGenerator>(EParticleModule::EventGenerator, "Event Generator", "Event");
 		RegisterParticleModule<ParticleModuleEventReceiverKillParticles>(EParticleModule::EventReceiverKillParticles, "Event Receiver Kill Particles", "Event");
 		RegisterParticleModule<ParticleModuleEventReceiverSpawn>(EParticleModule::EventReceiverSpawn, "Event Receiver Spawn", "Event");
+		RegisterParticleModule<ParticleModuleCollision>(EParticleModule::Collision, "Collision", "Collision");
 
 
 	}

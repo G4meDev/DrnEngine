@@ -74,6 +74,7 @@ namespace Drn
 		EventGenerator,
 		EventReceiverKillParticles,
 		EventReceiverSpawn,
+		Collision,
 		Max
 	};
 
@@ -140,6 +141,8 @@ namespace Drn
 			, Normal(InNormal)
 			, HitActor(InHitActor)
 			, HitComponent(InHitComponent)
+			, Time(1.0f)
+			, BoneName("")
 		{
 		}
 
@@ -158,6 +161,9 @@ namespace Drn
 
 		Actor* HitActor;
 		PrimitiveComponent* HitComponent;
+
+		float Time;
+		std::string BoneName;
 
 		class PhysicalMaterial* PhysMaterial;
 	};

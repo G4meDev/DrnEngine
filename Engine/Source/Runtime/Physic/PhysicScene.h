@@ -56,6 +56,9 @@ namespace Drn
 		void RaycastSingle( HitResult& Result, const Vector& Start, const Vector& Dir, float MaxDistance );
 		void RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance );
 
+		//bool RaycastSingle(const World* InWorld, HitResult& OutHit, const Vector Start, const Vector End, ECollisionChannel TraceChannel, const CollisionQueryParams& Params,
+		//	const CollisionResponseParams& ResponseParams, const CollisionObjectQueryParams& ObjectParams = FCollisionObjectQueryParams::DefaultObjectQueryParam);
+
 	private:
 
 		void StepSimulation(float DeltaTime);

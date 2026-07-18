@@ -46,6 +46,17 @@ namespace Drn
 		}																												\
 	}
 
+#define CONTINUE_UPDATE_LOOP																							\
+	CurrentOffset = Offset;																								\
+	continue;
+
+#define KILL_CURRENT_PARTICLE																							\
+	{																													\
+		ParticleIndices[i]					= ParticleIndices[ActiveParticles-1];										\
+		ParticleIndices[ActiveParticles-1]	= CurrentIndex;																\
+		ActiveParticles--;																								\
+	}
+
 	enum class EEmitterType : uint8
 	{
 		Sprite_Cpu,
@@ -83,8 +94,8 @@ namespace Drn
 	struct ParticleCollisionPayload
 	{
 		Vector	UsedDampingFactor;
-		Vector	UsedDampingFactorRotation;
 		int32	UsedCollisions;
+		Vector	UsedDampingFactorRotation;
 		float	Delay;
 	};
 

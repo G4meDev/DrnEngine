@@ -81,6 +81,11 @@ namespace Drn
 		return GetRotation().RotateVector(V);
 	}
 
+	Vector Transform::TransformVector( const Vector& V ) const
+	{
+		return Rotation.RotateVector(V * GetScale());
+	}
+
 	Vector Transform::InverseTransformVector( const Vector& InVector ) const
 	{
 		Vector VR = Rotation.InverseRotateVector(InVector);

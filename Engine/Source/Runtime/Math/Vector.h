@@ -60,7 +60,7 @@ namespace Drn
 			return *this;
 		}
 
-		inline Vector operator*( const Vector& other )
+		inline Vector operator*( const Vector& other ) const
 		{
 			return Vector( XMVectorMultiply(
 				XMLoadFloat3(&m_Vector), XMLoadFloat3(&other.m_Vector)) );
@@ -312,6 +312,11 @@ namespace Drn
 			}	
 		}
 
+		inline Vector MirrorByVector(const Vector& MirrorNormal) const
+		{
+			return *this - MirrorNormal * (2.f * (*this | MirrorNormal));
+		}
+
 		std::string ToString();
 		bool FromString(const std::string& Str);
 
@@ -328,8 +333,13 @@ namespace Drn
 		bool Draw(const std::string& id, const std::string& Label = "", EParameterPopupContext PopupOptions = EParameterPopupContext::CopyPaste);
 #endif
 
-	private:
-		XMFLOAT3 m_Vector;
+	//private:
+
+		union
+		{
+			struct { float X, Y, Z; };
+			XMFLOAT3 m_Vector;
+		};
 
 		friend class Vector4;
 		friend class Quat;

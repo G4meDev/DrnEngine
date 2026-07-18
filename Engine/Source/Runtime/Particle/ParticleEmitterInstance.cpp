@@ -68,8 +68,11 @@ namespace Drn
 		for (ParticleModule* ParticleModule : Emitter->Modules)
 		{
 			drn_check(ParticleModule);
-			uint8* PrepInstData = GetModuleInstanceData(ParticleModule);
-			ParticleModule->PrepPerInstanceBlock(this, (void*)PrepInstData);
+			if (ParticleModule->IsEffectiveModule())
+			{
+				uint8* PrepInstData = GetModuleInstanceData(ParticleModule);
+				ParticleModule->PrepPerInstanceBlock(this, (void*)PrepInstData);
+			}
 		}
 
 		ParticleSize = Emitter->ParticleSize;
@@ -514,7 +517,7 @@ namespace Drn
 				ParticleModule* SpawnModule = Emitter->SpawnModules[ModuleIndex];
 				if (SpawnModule)
 				{
-					SpawnModule->Spawn(this, SpawnTime, GetModuleDataOffset(SpawnModule), Particle);
+					SpawnModule->Spawn(this, GetModuleDataOffset(SpawnModule), SpawnTime, Particle);
 				}
 			}
 			PostSpawn(Particle, Interp, SpawnTime);
@@ -914,7 +917,7 @@ namespace Drn
 	{
 		if (Component && HasActiveParticles())
 		{
-			 bool bUpdateBox = Component->bWarmingUp && Component->Template.IsValid() && !Component->Template->bUseFixedBounds;
+			 bool bUpdateBox = !Component->bWarmingUp && Component->Template.IsValid() && !Component->Template->bUseFixedBounds;
 
 			Vector Scale = Component->GetWorldScale();
 

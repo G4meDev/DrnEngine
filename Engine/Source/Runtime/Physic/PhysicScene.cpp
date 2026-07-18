@@ -472,6 +472,63 @@ namespace Drn
 		}
 	}
 
+	//bool PhysicScene::RaycastSingle( const World* InWorld, HitResult& OutHit, const Vector Start, const Vector End, ECollisionChannel TraceChannel, const CollisionQueryParams& Params,
+	//	const CollisionResponseParams& ResponseParams, const CollisionObjectQueryParams& ObjectParams /*= FCollisionObjectQueryParams::DefaultObjectQueryParam*/ )
+	//{
+	//	bool bHaveBlockingHit = false;
+	//
+	//	Vector Delta = End - Start;
+	//	float DeltaSize = Delta.Length();
+	//	float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
+	//	float MinBlockingDistance = DeltaMag;
+	//	if (DeltaMag > 0.f)
+	//	{
+	//		FCollisionFilterData Filter = CreateQueryFilterData(TraceChannel, Params.bTraceComplex, ResponseParams.CollisionResponse, Params, ObjectParams, Traits::SingleMultiOrTest == ESingleMultiOrTest::Multi);		
+	//
+	//		FCollisionQueryFilterCallback QueryCallback(Params, Traits::GeometryQuery == ESweepOrRay::Sweep);
+	//		QueryCallback.bIgnoreTouches = true;
+	//
+	//		bool bBlockingHit = false;
+	//		const Vector Dir = DeltaMag > 0.f ? (Delta / DeltaMag) : Vector(1, 0, 0);
+	//		//const Transform StartTM = Transform(Start, Quat::Identity);
+	//
+	//		->raycast(U2PVector(Start), U2PVector(Dir), DeltaMag, HitBuffer, U2PHitFlags(OutputFlags), QueryFilterData, QueryCallback);
+	//
+	//		PxRaycastBuffer RaycastBuffer;
+	//		const EHitFlags HitFlags = (EHitFlags)((uint16)EHitFlags::Position | (uint16)EHitFlags::Normal | (uint16)EHitFlags::MTD | (uint16)EHitFlags::FaceIndex);
+	//		PxQueryFilterData QueryFilterData(U2PFilterData(FilterData), U2PQueryFlags(EQueryFlags::PreFilter) | StaticDynamicQueryFlags(Params));
+	//		bool Hit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), DeltaMag, RaycastBuffer, U2PHitFlags(HitFlags), QueryFilterData, );
+	//
+	//		FScopedSceneReadLock SceneLocks(PhysScene);
+	//		{
+	//			FScopedSQHitchRepeater<decltype(HitBufferSync)> HitchRepeater(HitBufferSync, QueryCallback, FHitchDetectionInfo(Start, End, TraceChannel, Params));
+	//			do
+	//			{
+	//				Traits::SceneTrace(PhysScene, GeomInputs, Dir, DeltaMag, StartTM, HitchRepeater.GetBuffer(), Traits::GetHitFlags(), Traits::GetQueryFlags(), Filter, Params, &QueryCallback);
+	//			} while (HitchRepeater.RepeatOnHitch());
+	//		}
+	//
+	//
+	//		const int32 NumHits = Traits::GetNumHits(HitBufferSync);
+	//
+	//		if(NumHits > 0 && GetHasBlock(HitBufferSync))
+	//		{
+	//			bBlockingHit = true;
+	//			MinBlockingDistance = GetDistance(Traits::GetHits(HitBufferSync)[NumHits - 1]);
+	//		}
+	//
+	//		if (NumHits > 0 && !Traits::IsTest())
+	//		{
+	//			bool bSuccess = ConvertTraceResults(bBlockingHit, World, NumHits, Traits::GetHits(HitBufferSync), DeltaMag, Filter, OutHits, Start, End, *GeomInputs.GetGeometry(), StartTM, MinBlockingDistance, Params.bReturnFaceIndex, Params.bReturnPhysicalMaterial) == //EConvertQueryResult::Valid;
+	//		}
+	//
+	//		bHaveBlockingHit = bBlockingHit;
+	//
+	//	}
+	//
+	//	return bHaveBlockingHit;
+	//}
+
 	void PhysicScene::RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance )
 	{
 		const PxU32 bufferSize = 256;

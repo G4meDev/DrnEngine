@@ -22,6 +22,7 @@ namespace Drn
 
 		void CalculateRequiredBytesAndOffset();
 
+		inline bool IsMeshRotationActive() const { return bHasMeshRotation; }
 		inline int32 GetMeshRotationOffset() const { return MeshRotationOffset; }
 
 #if WITH_EDITOR
