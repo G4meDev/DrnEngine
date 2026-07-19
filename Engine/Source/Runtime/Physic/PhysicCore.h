@@ -142,4 +142,166 @@ namespace Drn
 
 		return (PxQueryFlags)Result;
 	}
+
+	struct CollisionObjectQueryParams
+	{
+		int32 ObjectTypesToQuery;
+		uint8 IgnoreMask;
+
+		CollisionObjectQueryParams()
+			: ObjectTypesToQuery(0)
+			, IgnoreMask(0)
+		{
+		}
+
+		CollisionObjectQueryParams(ECollisionChannel QueryChannel)
+		{
+			ObjectTypesToQuery = ECC_TO_BITFIELD(QueryChannel);
+			IgnoreMask = 0;
+		}
+
+		CollisionObjectQueryParams(const std::vector<ECollisionChannel>& ObjectTypes)
+		{
+			ObjectTypesToQuery = 0;
+
+			for ( const ECollisionChannel& Iter : ObjectTypes )
+			{
+				AddObjectTypesToQuery(Iter);
+			}
+
+			IgnoreMask = 0;
+		}
+
+		CollisionObjectQueryParams(int32 InObjectTypesToQuery)
+		{
+			ObjectTypesToQuery = InObjectTypesToQuery;
+			IgnoreMask = 0;
+		}
+
+		void AddObjectTypesToQuery(ECollisionChannel QueryChannel)
+		{
+			ObjectTypesToQuery |= ECC_TO_BITFIELD(QueryChannel);
+		}
+
+		void RemoveObjectTypesToQuery(ECollisionChannel QueryChannel)
+		{
+			ObjectTypesToQuery &= ~ECC_TO_BITFIELD(QueryChannel);
+		}
+
+		int32 GetQueryBitfield() const
+		{
+			drn_check(IsValid());
+
+			return ObjectTypesToQuery;
+		}
+
+		bool IsValid() const
+		{ 
+			return (ObjectTypesToQuery != 0); 
+		}
+	};
+
+	CollisionFilterData CreateObjectQueryFilterData(const int32 MultiTrace, const CollisionObjectQueryParams& ObjectParam);
+
+	PxFilterData U2PFilterData(const CollisionFilterData& FilterData);
+	CollisionFilterData P2UFilterData(const PxFilterData& PFilterData);
+
+// -----------------------------------------------------------------------------------------------------------------------------------------
+
+	enum class EQueryMobilityType
+	{
+		Any,
+		Static,
+		Dynamic
+	};
+
+	struct CollisionQueryParams
+	{
+		std::string OwnerTag;
+
+		bool bFindInitialOverlaps;
+		bool bReturnFaceIndex;
+		bool bReturnPhysicalMaterial;
+		bool bIgnoreBlocks;
+		bool bIgnoreTouches;
+		bool bSkipNarrowPhase;
+		EQueryMobilityType MobilityType;
+
+		typedef std::vector<uint32> IgnoreComponentsArrayType;
+		typedef std::vector<uint32> IgnoreActorsArrayType;
+		uint8 IgnoreMask;
+
+	private:
+
+		mutable IgnoreComponentsArrayType IgnoreComponents;
+		IgnoreActorsArrayType IgnoreActors;
+
+		void Internal_AddIgnoredComponent(const PrimitiveComponent* InIgnoreComponent);
+
+	public:
+
+		const IgnoreComponentsArrayType& GetIgnoredComponents() const;
+
+		const IgnoreActorsArrayType& GetIgnoredActors() const
+		{
+			return IgnoreActors;
+		}
+
+		void ClearIgnoredComponents()
+		{
+			IgnoreComponents.clear();
+		}
+
+		void ClearIgnoredActors()
+		{
+			IgnoreActors.clear();
+		}
+
+		void SetNumIgnoredComponents(int32 NewNum);
+
+		CollisionQueryParams(const Actor* InIgnoreActor = NULL);
+
+		void AddIgnoredActor(const Actor* InIgnoreActor);
+		void AddIgnoredActor(const uint32 InIgnoreActorID);
+
+		void AddIgnoredActors(const std::vector<Actor*>& InIgnoreActors);
+		void AddIgnoredActors(const std::vector<const Actor*>& InIgnoreActors);
+
+		void AddIgnoredComponent(const PrimitiveComponent* InIgnoreComponent);
+		void AddIgnoredComponents(const std::vector<PrimitiveComponent*>& InIgnoreComponents);
+
+		static CollisionQueryParams DefaultQueryParam;
+	};
+
+	inline PxQueryFlags StaticDynamicQueryFlags(const CollisionQueryParams& Params)
+	{
+		switch (Params.MobilityType)
+		{
+		case EQueryMobilityType::Any: return  PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC;
+		case EQueryMobilityType::Static: return  PxQueryFlag::eSTATIC;
+		case EQueryMobilityType::Dynamic: return  PxQueryFlag::eDYNAMIC;
+		default: drn_check(false);
+		}
+
+		drn_check(false);
+		return PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC;
+	}
+
+	enum class ECollisionQueryHitType : uint8
+	{
+		None = 0,
+		Touch = 1,
+		Block = 2
+	};
+
+	inline ECollisionChannel GetCollisionChannelAndExtraFilter(uint32 Word3, uint8& OutMaskFilter)
+	{
+		uint32 ChannelMask = GetCollisionChannel(Word3);
+		OutMaskFilter = Word3 >> (32 - 6);
+		return (ECollisionChannel)ChannelMask;
+	}
+
+	ECollisionQueryHitType CalcQueryHitType(const CollisionFilterData& QueryFilter, const CollisionFilterData& ShapeFilter, bool bPreFilter = false);
+
+	void SetHitResultFromShapeAndFaceIndex(const PxShape& Shape,  const PxActor& Actor, const uint32 FaceIndex, const Vector& HitLocation, HitResult& OutResult, bool bReturnPhysMat);
 }

@@ -3,6 +3,8 @@
 
 namespace Drn
 {
+	uint32 ApplicationMisc::LastGrabedId = 0;
+
 	void ApplicationMisc::ClipboardCopy(const std::wstring& Str)
 	{
 		if( OpenClipboard(GetActiveWindow()) )

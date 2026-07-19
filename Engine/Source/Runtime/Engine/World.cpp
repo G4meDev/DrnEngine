@@ -421,6 +421,34 @@ namespace Drn
 		}
 	}
 
+	bool World::LineTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		bool bHit = m_PhysicScene->RaycastSingle(this, OutHit, Start, End, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugLine(Start, End, TraceColor, 0.0f, DrawDuration);
+			if (bHit)
+			{
+				DrawDebugSphere(OutHit.Location, Quat::Identity, TraceHitColor, 0.1f, 8, 0.0f, DrawDuration);
+			}
+		}
+#endif
+
+		return bHit;
+	}
+
 	ViewInfo World::GetPlayerWorldView() const
 	{
 #if WITH_EDITOR

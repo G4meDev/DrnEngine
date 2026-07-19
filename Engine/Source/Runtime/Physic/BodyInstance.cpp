@@ -138,10 +138,10 @@ namespace Drn
 		CollisionFilterData SimData;
 		CollisionFilterData QueryData;
 
-		int32 ActorID = 0; // @TODO: add
-		int32 ComponentID = 0; // @TODO: add
+		int32 ActorID = InOwnerComponent->GetOwningActor()->GetUniqueID();
+		int32 ComponentID = InOwnerComponent->GetUniqueID();
 		int32 BodyIndex = 0; // @TODO: add
-		bool bStaticShape = false; // @TODO: add
+		bool bStaticShape = !m_SimulatePhysic;
 		bool bModifyContacts = false; // @TODO: add
 
 		if (CollisionProfileName == CUSTOM_COLLISION_PROFILE_NAME)

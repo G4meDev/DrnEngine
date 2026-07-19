@@ -69,6 +69,8 @@ namespace Drn
 		virtual void GetActorEyesViewPoint( Vector& OutLocation, Quat& OutRotation ) const;
 		virtual void CalcCamera( struct ViewInfo& OutResult );
 
+		uint32 GetUniqueID() const { return ActorId; };
+
 		OnActorDestroyedDelegate OnActorKilled;
 		OnActorHitDelegate OnActorHitDel;
 
@@ -120,6 +122,7 @@ namespace Drn
 		World* m_World;
 
 		std::vector<std::string> Tags;
+		uint32 ActorId;
 
 #if WITH_EDITOR
 		std::string ActorLabel = "Actor_00";

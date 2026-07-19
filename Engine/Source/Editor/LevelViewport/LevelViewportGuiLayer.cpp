@@ -421,16 +421,14 @@ namespace Drn
 		SceneComponent* SelectedSceneComponent = static_cast<SceneComponent*>( m_OwningLevelViewport->GetSelectedComponent() );
 		if ( SelectedSceneComponent )
 		{
-			std::vector<HitResult> Results;
-			SelectedSceneComponent->GetWorld()->GetPhysicScene()->RaycastMulti(Results, SelectedSceneComponent->GetWorldLocation(), Vector::DownVector, 10000);
+			HitResult Hit;
+			Vector Start = SelectedSceneComponent->GetWorldLocation();
+			Vector End = Start + Vector::DownVector * 10000;
 
-			for (uint32 i = 0; i < Results.size(); i++)
+			bool bHit = SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()} );
+			if (bHit)
 			{
-				if ( Results[i].HitActor != SelectedSceneComponent->GetOwningActor() )
-				{
-					SelectedSceneComponent->SetWorldLocation(Results[i].Location);
-					return;
-				}
+				SelectedSceneComponent->SetWorldLocation(Hit.Location);
 			}
 		}
 	}

@@ -74,6 +74,9 @@ namespace Drn
 		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
 
+		bool LineTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
 		inline bool IsPendingDestroy() const { return m_PendingDestory; }
 
 		ViewInfo GetPlayerWorldView() const;

@@ -30,6 +30,37 @@ namespace Drn
 		PhysicScene* m_OwningScene;
 	};
 
+	class CollisionQueryFilterCallback : public PxQueryFilterCallback
+	{
+	public:
+		ECollisionQueryHitType PreFilterReturnValue;
+
+		const std::vector<uint32>& IgnoreComponents;
+		const std::vector<uint32>& IgnoreActors;
+
+		bool bIsOverlapQuery;
+		bool bIgnoreTouches;
+		bool bIgnoreBlocks;
+
+		bool bDiscardInitialOverlaps;
+		bool bIsSweep;
+
+		CollisionQueryFilterCallback(const CollisionQueryParams& InQueryParams, bool bInIsSweep)
+			: IgnoreComponents(InQueryParams.GetIgnoredComponents())
+			, IgnoreActors(InQueryParams.GetIgnoredActors())
+			, bIsSweep(bInIsSweep)
+		{
+			PreFilterReturnValue = ECollisionQueryHitType::None;
+			bIsOverlapQuery = false;
+			bIgnoreTouches = InQueryParams.bIgnoreTouches;
+			bIgnoreBlocks = InQueryParams.bIgnoreBlocks;
+			bDiscardInitialOverlaps = !InQueryParams.bFindInitialOverlaps;
+		}
+
+		virtual PxQueryHitType::Enum preFilter(const PxFilterData& filterData, const PxShape* shape, const PxRigidActor* actor, PxHitFlags& queryFlags) override;
+		virtual PxQueryHitType::Enum postFilter(const PxFilterData& filterData, const PxQueryHit& hit, const PxShape* shape, const PxRigidActor* actor) override;
+	};
+
 	class PhysicScene
 	{
 	public:
@@ -56,8 +87,13 @@ namespace Drn
 		void RaycastSingle( HitResult& Result, const Vector& Start, const Vector& Dir, float MaxDistance );
 		void RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance );
 
-		//bool RaycastSingle(const World* InWorld, HitResult& OutHit, const Vector Start, const Vector End, ECollisionChannel TraceChannel, const CollisionQueryParams& Params,
-		//	const CollisionResponseParams& ResponseParams, const CollisionObjectQueryParams& ObjectParams = FCollisionObjectQueryParams::DefaultObjectQueryParam);
+		bool RaycastSingle(const World* InWorld, HitResult& OutHit, const Vector Start, const Vector End, const CollisionQueryParams& Params
+			, const CollisionObjectQueryParams& ObjectParams);
+
+		void ConvertTraceResults(bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, PxRaycastBuffer* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHits, const Vector& StartLoc, const Vector& EndLoc,
+			PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat);
+
+		void ConvertQueryImpactHit(const World* InWorld, const PxRaycastHit& PHit, HitResult& OutResult, float CheckLength, const CollisionFilterData& QueryFilter, const Vector& StartLoc, const Vector& EndLoc, const PxGeometry* Geom, const Transform& QueryTM, bool bReturnFaceIndex, bool bReturnPhysMat);
 
 	private:
 

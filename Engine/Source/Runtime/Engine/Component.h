@@ -49,6 +49,8 @@ namespace Drn
 
 		inline bool CanTickInEditor() const { return bTickInEditor; }
 
+		uint32 GetUniqueID() const { return ComponentId; };
+
 #if WITH_EDITOR
 		inline bool IsSelectedInEditor() const { return m_SelectedInEditor; }
 		virtual void SetSelectedInEditor( bool SelectedInEditor );
@@ -60,6 +62,7 @@ namespace Drn
 		void MarkPendingKill();
 
 		Guid m_Guid;
+		uint32 ComponentId;
 		bool bTickInEditor;
 
 #if WITH_EDITOR

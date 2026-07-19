@@ -16,5 +16,10 @@ namespace Drn
 		{
 			 _mm_prefetch( (char const*)(x) + offset, _MM_HINT_T0 );
 		}
+
+		static uint32 GetUniqueId() { return LastGrabedId++; }
+
+	private:
+		static uint32 LastGrabedId; // only for runtime
 	};
 }

@@ -11,7 +11,7 @@ namespace Drn
 		, bActive(true)
 		, bAutoActivate(true)
 	{
-		
+		ComponentId = ApplicationMisc::GetUniqueId();
 	}
 
 	Component::~Component()

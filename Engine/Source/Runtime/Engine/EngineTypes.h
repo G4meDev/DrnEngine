@@ -143,6 +143,10 @@ namespace Drn
 			, HitComponent(InHitComponent)
 			, Time(1.0f)
 			, BoneName("")
+			, Distance(0.0f)
+			, bStartPenetrating(false)
+			, ImpactPoint(Vector::ZeroVector)
+			, ImpactNormal(Vector::ZeroVector)
 		{
 		}
 
@@ -152,6 +156,7 @@ namespace Drn
 		}
 
 		bool bBlockingHit;
+		bool bStartPenetrating;
 
 		Vector TraceStart;
 		Vector TraceEnd;
@@ -159,9 +164,13 @@ namespace Drn
 		Vector Location;
 		Vector Normal;
 
+		Vector ImpactPoint;
+		Vector ImpactNormal;
+
 		Actor* HitActor;
 		PrimitiveComponent* HitComponent;
 
+		float Distance;
 		float Time;
 		std::string BoneName;
 

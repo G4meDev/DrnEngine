@@ -10,7 +10,7 @@ namespace Drn
 		, m_World(nullptr)
 		, m_PendingKill(false)
 	{
-
+		ActorId = ApplicationMisc::GetUniqueId();
 	}
 
 	Actor::~Actor()

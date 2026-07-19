@@ -472,62 +472,173 @@ namespace Drn
 		}
 	}
 
-	//bool PhysicScene::RaycastSingle( const World* InWorld, HitResult& OutHit, const Vector Start, const Vector End, ECollisionChannel TraceChannel, const CollisionQueryParams& Params,
-	//	const CollisionResponseParams& ResponseParams, const CollisionObjectQueryParams& ObjectParams /*= FCollisionObjectQueryParams::DefaultObjectQueryParam*/ )
-	//{
-	//	bool bHaveBlockingHit = false;
-	//
-	//	Vector Delta = End - Start;
-	//	float DeltaSize = Delta.Length();
-	//	float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
-	//	float MinBlockingDistance = DeltaMag;
-	//	if (DeltaMag > 0.f)
-	//	{
-	//		FCollisionFilterData Filter = CreateQueryFilterData(TraceChannel, Params.bTraceComplex, ResponseParams.CollisionResponse, Params, ObjectParams, Traits::SingleMultiOrTest == ESingleMultiOrTest::Multi);		
-	//
-	//		FCollisionQueryFilterCallback QueryCallback(Params, Traits::GeometryQuery == ESweepOrRay::Sweep);
-	//		QueryCallback.bIgnoreTouches = true;
-	//
-	//		bool bBlockingHit = false;
-	//		const Vector Dir = DeltaMag > 0.f ? (Delta / DeltaMag) : Vector(1, 0, 0);
-	//		//const Transform StartTM = Transform(Start, Quat::Identity);
-	//
-	//		->raycast(U2PVector(Start), U2PVector(Dir), DeltaMag, HitBuffer, U2PHitFlags(OutputFlags), QueryFilterData, QueryCallback);
-	//
-	//		PxRaycastBuffer RaycastBuffer;
-	//		const EHitFlags HitFlags = (EHitFlags)((uint16)EHitFlags::Position | (uint16)EHitFlags::Normal | (uint16)EHitFlags::MTD | (uint16)EHitFlags::FaceIndex);
-	//		PxQueryFilterData QueryFilterData(U2PFilterData(FilterData), U2PQueryFlags(EQueryFlags::PreFilter) | StaticDynamicQueryFlags(Params));
-	//		bool Hit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), DeltaMag, RaycastBuffer, U2PHitFlags(HitFlags), QueryFilterData, );
-	//
-	//		FScopedSceneReadLock SceneLocks(PhysScene);
-	//		{
-	//			FScopedSQHitchRepeater<decltype(HitBufferSync)> HitchRepeater(HitBufferSync, QueryCallback, FHitchDetectionInfo(Start, End, TraceChannel, Params));
-	//			do
-	//			{
-	//				Traits::SceneTrace(PhysScene, GeomInputs, Dir, DeltaMag, StartTM, HitchRepeater.GetBuffer(), Traits::GetHitFlags(), Traits::GetQueryFlags(), Filter, Params, &QueryCallback);
-	//			} while (HitchRepeater.RepeatOnHitch());
-	//		}
-	//
-	//
-	//		const int32 NumHits = Traits::GetNumHits(HitBufferSync);
-	//
-	//		if(NumHits > 0 && GetHasBlock(HitBufferSync))
-	//		{
-	//			bBlockingHit = true;
-	//			MinBlockingDistance = GetDistance(Traits::GetHits(HitBufferSync)[NumHits - 1]);
-	//		}
-	//
-	//		if (NumHits > 0 && !Traits::IsTest())
-	//		{
-	//			bool bSuccess = ConvertTraceResults(bBlockingHit, World, NumHits, Traits::GetHits(HitBufferSync), DeltaMag, Filter, OutHits, Start, End, *GeomInputs.GetGeometry(), StartTM, MinBlockingDistance, Params.bReturnFaceIndex, Params.bReturnPhysicalMaterial) == //EConvertQueryResult::Valid;
-	//		}
-	//
-	//		bHaveBlockingHit = bBlockingHit;
-	//
-	//	}
-	//
-	//	return bHaveBlockingHit;
-	//}
+	bool PhysicScene::RaycastSingle( const World* InWorld, HitResult& OutHit, const Vector Start, const Vector End, const CollisionQueryParams& Params,
+		const CollisionObjectQueryParams& ObjectParams )
+	{
+		bool bHaveBlockingHit = false;
+
+		Vector Delta = End - Start;
+		float DeltaSize = Delta.Length();
+		float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
+		float MinBlockingDistance = DeltaMag;
+		if (DeltaMag > 0.f)
+		{
+			CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+
+			CollisionQueryFilterCallback QueryCallback(Params, false);
+			QueryCallback.bIgnoreTouches = true;
+
+			bool bBlockingHit = false;
+			const Vector Dir = DeltaMag > 0.f ? (Delta / DeltaMag) : Vector(1, 0, 0);
+				
+			PxRaycastBuffer RaycastBuffer;
+			const EHitFlags HitFlags = (EHitFlags)((uint16)EHitFlags::Position | (uint16)EHitFlags::Normal | (uint16)EHitFlags::MTD | (uint16)EHitFlags::FaceIndex);
+			PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(EQueryFlags::PreFilter) | StaticDynamicQueryFlags(Params));
+			bool bHit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), DeltaMag, RaycastBuffer, U2PHitFlags(HitFlags), QueryFilterData, &QueryCallback);
+
+			const int32 NumHits = RaycastBuffer.getNbAnyHits();
+
+			if(NumHits > 0 && RaycastBuffer.hasBlock)
+			{
+				bBlockingHit = true;
+				MinBlockingDistance = RaycastBuffer.getAnyHit(NumHits - 1).distance;
+			}
+
+			if (NumHits > 0)
+			{
+				ConvertTraceResults(bBlockingHit, InWorld, NumHits, &RaycastBuffer, DeltaMag, Filter, OutHit, Start, End, nullptr, Transform(Start, Quat::Identity)
+					, MinBlockingDistance, Params.bReturnFaceIndex, Params.bReturnPhysicalMaterial);
+			}
+
+			bHaveBlockingHit = bBlockingHit;
+		}
+
+		return bHaveBlockingHit;
+	}
+
+	void PhysicScene::ConvertTraceResults( bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, PxRaycastBuffer* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHit,
+		const Vector& StartLoc, const Vector& EndLoc, PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat )
+	{
+		const Vector Dir = (EndLoc - StartLoc).GetSafeNormal();
+		//if (TIsSame<Hit, FHitSweep>::Value)
+		//{
+		//	if (!HadInitialOverlap(Hits[0]))
+		//	{
+		//		SetInternalFaceIndex(Hits[0], FindFaceIndex(Hits[0], Dir));
+		//	}
+		//}
+
+		ConvertQueryImpactHit(InWorld, Hits->getAnyHit(0), OutHit, CheckLength, QueryFilter, StartLoc, EndLoc, Geom, QueryTM, bReturnFaceIndex, bReturnPhysMat);
+	}
+
+	void PhysicScene::ConvertQueryImpactHit( const World* InWorld, const PxRaycastHit& Hit, HitResult& OutResult, float CheckLength, const CollisionFilterData& QueryFilter,
+		const Vector& StartLoc, const Vector& EndLoc, const PxGeometry* Geom, const Transform& QueryTM, bool bReturnFaceIndex, bool bReturnPhysMat )
+	{
+		EHitFlags Flags = P2UHitFlags(Hit.flags);
+
+		const bool bInitialOverlap = Hit.hadInitialOverlap();
+		if (bInitialOverlap && Geom)
+		{
+			//ConvertOverlappedShapeToImpactHit(InWorld, Hit, StartLoc, EndLoc, OutResult, *Geom, QueryTM, QueryFilter, bReturnPhysMat);
+			drn_check(false);
+			return;
+		}
+
+		const PxShape* pHitShape = Hit.shape;
+		const PxActor* pHitActor = Hit.actor;
+		if ((pHitShape == nullptr) || (pHitActor == nullptr))
+		{
+			//OutResult.Reset();
+			drn_check(false);
+			return;
+		}
+
+		const PxShape& HitShape = *pHitShape;
+		const PxActor& HitActor = *pHitActor;
+
+		//const uint32 InternalFaceIndex = GetInternalFaceIndex(Hit);
+
+		// See if this is a 'blocking' hit
+		const CollisionFilterData ShapeFilter = P2UFilterData(HitShape.getQueryFilterData());
+		const ECollisionQueryHitType HitType = CalcQueryHitType(QueryFilter, ShapeFilter);
+		OutResult.bBlockingHit = (HitType == ECollisionQueryHitType::Block);
+		OutResult.bStartPenetrating = bInitialOverlap;
+
+		// calculate the hit time
+		const float HitTime = Hit.distance/CheckLength;
+		OutResult.Time = HitTime;
+		OutResult.Distance = Hit.distance;
+
+		// figure out where the the "safe" location for this shape is by moving from the startLoc toward the ImpactPoint
+		const Vector TraceStartToEnd = EndLoc - StartLoc;
+		const Vector SafeLocationToFitShape = StartLoc + (TraceStartToEnd * HitTime);
+		OutResult.Location = SafeLocationToFitShape;
+
+		const bool bUseReturnedPoint = (EnumHasAnyFlags(Flags, EHitFlags::Position) && !bInitialOverlap);
+		Vector Position = StartLoc;
+		if (bUseReturnedPoint)
+		{
+			Position = P2Vector(Hit.position);
+			//if (Position.ContainsNaN())
+			//{
+			//	OutResult.Reset();
+			//	logOrEnsureNanError(TEXT("ConvertQueryImpactHit() received NaN/Inf for position: %s"), *Position.ToString());
+			//	return EConvertQueryResult::Invalid;
+			//}
+		}
+		OutResult.ImpactPoint = Position;
+
+		// Caution: we may still have an initial overlap, but with null Geom. This is the case for RayCast results.
+		const bool bUseReturnedNormal = (EnumHasAnyFlags(Flags, EHitFlags::Normal) && !bInitialOverlap);
+		const Vector HitNormal = P2Vector(Hit.normal);
+		//if (bUseReturnedNormal && HitNormal.ContainsNaN())
+		//{
+		//	OutResult.Reset();
+		//	logOrEnsureNanError(TEXT("ConvertQueryImpactHit() received NaN/Inf for normal: %s"), *HitNormal.ToString());
+		//	return EConvertQueryResult::Invalid;
+		//}
+
+		Vector OriginalNormal = bUseReturnedNormal ? HitNormal : TraceStartToEnd * -1;
+		Vector Normal = OriginalNormal.GetSafeNormal();
+		OutResult.Normal = Normal;
+		OutResult.ImpactNormal = Normal;
+
+		OutResult.TraceStart = StartLoc;
+		OutResult.TraceEnd = EndLoc;
+
+		// Fill in Actor, Component, material, etc.
+		//SetHitResultFromShapeAndFaceIndex(HitShape, HitActor, InternalFaceIndex, OutResult.ImpactPoint, OutResult, bReturnPhysMat);
+		SetHitResultFromShapeAndFaceIndex(HitShape, HitActor, 0, OutResult.ImpactPoint, OutResult, bReturnPhysMat);
+
+		if (bUseReturnedNormal && !Normal.IsNormalized())
+		{
+			// TraceStartToEnd should never be zero, because of the length restriction in the raycast and sweep tests.
+			Normal = TraceStartToEnd.GetSafeNormal() * -1;
+			OutResult.Normal = Normal;
+			OutResult.ImpactNormal = Normal;
+		}
+
+		//const ECollisionShapeType SweptGeometryType = Geom ? GetType(*Geom) : ECollisionShapeType::None;
+		//OutResult.ImpactNormal = FindGeomOpposingNormal(SweptGeometryType, Hit, TraceStartToEnd, Normal);
+
+		//ECollisionShapeType GeomType = GetGeometryType(HitShape);
+
+		//if(GeomType == ECollisionShapeType::Heightfield)
+		//{
+		//	// Lookup physical material for heightfields
+		//	if (bReturnPhysMat && InternalFaceIndex != GetInvalidPhysicsFaceIndex())
+		//	{
+		//		if (const FPhysicsMaterial* Material = GetMaterialFromInternalFaceIndex(HitShape, HitActor, InternalFaceIndex))
+		//		{
+		//			OutResult.PhysMaterial = GetUserData(*Material);
+		//		}
+		//	}
+		//}
+		//else if (bReturnFaceIndex && GeomType == ECollisionShapeType::Trimesh && InternalFaceIndex != GetInvalidPhysicsFaceIndex())
+		//{
+		//	OutResult.FaceIndex = GetTriangleMeshExternalFaceIndex(HitShape, InternalFaceIndex);
+		//}
+	}
 
 	void PhysicScene::RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance )
 	{
@@ -742,4 +853,97 @@ namespace Drn
 		return PairNotifyMapping;
 	}
 
-}
+	PxQueryHitType::Enum CollisionQueryFilterCallback::preFilter( const PxFilterData& filterData, const PxShape* shape, const PxRigidActor* actor, PxHitFlags& queryFlags )
+	{
+		if (!shape)
+		{
+			// Early out to avoid crashing.
+			PreFilterReturnValue = ECollisionQueryHitType::None;
+			return PxQueryHitType::eNONE;
+		}
+
+		CollisionFilterData FilterData = P2UFilterData(filterData);
+		CollisionFilterData ShapeFilter = P2UFilterData(shape->getQueryFilterData());
+
+		// We usually don't have ignore components so we try to avoid the virtual getSimulationFilterData() call below. 'word2' of shape sim filter data is componentID.
+		uint32 ComponentID = 0;
+		if (IgnoreComponents.size() > 0)
+		{
+			ComponentID = shape->getSimulationFilterData().word2;
+		}
+
+		uint32 ShapeFlags = ShapeFilter.Word3 & 0xFFFFFF;
+		uint32 QuerierFlags = FilterData.Word3 & 0xFFFFFF;
+		uint32 CommonFlags = ShapeFlags & QuerierFlags;
+
+		ECollisionQueryHitType Result = CalcQueryHitType(FilterData, ShapeFilter, true);
+
+		if (Result == ECollisionQueryHitType::Touch && bIgnoreTouches)
+		{
+			Result = ECollisionQueryHitType::None;
+		}
+
+		if (Result == ECollisionQueryHitType::Block && bIgnoreBlocks)
+		{
+			Result = ECollisionQueryHitType::None;
+		}
+
+		if (Result != ECollisionQueryHitType::None)
+		{
+			if (std::find(IgnoreActors.begin(), IgnoreActors.end(), ShapeFilter.Word0) != IgnoreActors.end())
+			{
+				Result = ECollisionQueryHitType::None;
+			}
+
+			if (std::find(IgnoreComponents.begin(), IgnoreComponents.end(), ComponentID) != IgnoreComponents.end())
+			{
+				Result = ECollisionQueryHitType::None;
+			}
+		}
+
+		if (bIsOverlapQuery && Result == ECollisionQueryHitType::Block)
+		{
+			Result = ECollisionQueryHitType::Touch;	//In the case of overlaps, physx only understands touches. We do this at the end to ensure all filtering logic based on block vs overlap is correct
+		}
+
+		return (PxQueryHitType::Enum)Result;
+	}
+
+	PxQueryHitType::Enum CollisionQueryFilterCallback::postFilter( const PxFilterData& filterData, const PxQueryHit& hit, const PxShape* shape, const PxRigidActor* actor )
+	{
+		if (!bIsSweep)
+		{
+			return PxQueryHitType::eNONE;
+		}
+
+		CollisionFilterData FilterData = P2UFilterData(filterData);
+
+		PxSweepHit& SweepHit = (PxSweepHit&)hit;
+		const bool bIsOverlap = SweepHit.hadInitialOverlap();
+
+		ECollisionQueryHitType Result;
+
+		if (!bIsSweep)
+		{
+			Result = ECollisionQueryHitType::Block;
+		}
+		else if (bIsOverlap && bDiscardInitialOverlaps)
+		{
+			Result = ECollisionQueryHitType::None;
+		}
+		else
+		{
+			if (bIsOverlap && PreFilterReturnValue == ECollisionQueryHitType::Block)
+			{
+				// We want to keep initial blocking overlaps and continue the sweep until a non-overlapping blocking hit.
+				// We will later report this hit as a blocking hit when we compute the hit type (using CalcQueryHitType).
+				Result = ECollisionQueryHitType::Touch;
+			}
+
+			Result = PreFilterReturnValue;
+		}
+
+		return (PxQueryHitType::Enum)Result;
+	}
+
+        }  // namespace Drn
