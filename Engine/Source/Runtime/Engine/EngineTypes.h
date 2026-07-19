@@ -147,6 +147,7 @@ namespace Drn
 			, bStartPenetrating(false)
 			, ImpactPoint(Vector::ZeroVector)
 			, ImpactNormal(Vector::ZeroVector)
+			, PenetrationDepth(0.0f)
 		{
 		}
 
@@ -166,6 +167,7 @@ namespace Drn
 
 		Vector ImpactPoint;
 		Vector ImpactNormal;
+		float PenetrationDepth;
 
 		Actor* HitActor;
 		PrimitiveComponent* HitComponent;

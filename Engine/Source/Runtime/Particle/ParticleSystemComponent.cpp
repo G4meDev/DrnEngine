@@ -756,23 +756,23 @@ namespace Drn
 		KismetData->Velocity = InVelocity;
 	}
 
-	//bool ParticleSystemComponent::ParticleLineCheck( HitResult& Hit, Actor* SourceActor, const Vector& End, const Vector& Start, const Vector& HalfExtent, const CollisionObjectQueryParams& ObjectParams )
-	//{
-	//	drn_check(GetWorld());
-	//	//if ( HalfExtent.IsZero() )
-	//	{
-	//		//FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(ParticleCollision), true, SourceActor);
-	//		//QueryParams.bReturnPhysicalMaterial = true;
-	//		//return GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectParams, QueryParams);
-	//	}
-	//	//else
-	//	//{
-	//	//	FCollisionQueryParams BoxParams(SCENE_QUERY_STAT(ParticleCollision));
-	//	//	BoxParams.AddIgnoredActor(SourceActor);
-	//	//	BoxParams.bReturnPhysicalMaterial = true;
-	//	//	return GetWorld()->SweepSingleByObjectType(Hit, Start, End, FQuat::Identity, ObjectParams, FCollisionShape::MakeBox(HalfExtent), BoxParams);
-	//	//}
-	//}
+	bool ParticleSystemComponent::ParticleLineCheck( HitResult& Hit, Actor* SourceActor, const Vector& End, const Vector& Start, const Vector& HalfExtent, const std::vector<ECollisionChannel>& ObjectTypes )
+	{
+		drn_check(GetWorld());
+		//if ( HalfExtent.IsZero() )
+		{
+			CollisionQueryParams QueryParams(SourceActor);
+			QueryParams.bReturnPhysicalMaterial = true;
+			return GetWorld()->GetPhysicScene()->RaycastSingle(GetWorld(), Hit, Start, End, QueryParams, ObjectTypes);
+		}
+		//else
+		//{
+		//	FCollisionQueryParams BoxParams(SCENE_QUERY_STAT(ParticleCollision));
+		//	BoxParams.AddIgnoredActor(SourceActor);
+		//	BoxParams.bReturnPhysicalMaterial = true;
+		//	return GetWorld()->SweepSingleByObjectType(Hit, Start, End, FQuat::Identity, ObjectParams, FCollisionShape::MakeBox(HalfExtent), BoxParams);
+		//}
+	}
 
 #if WITH_EDITOR
 	void ParticleSystemComponent::DrawDetailPanel( float DeltaTime )

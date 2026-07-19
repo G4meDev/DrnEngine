@@ -30,6 +30,12 @@ namespace Drn
 		inline void SetY(float Value) { m_Vector.y = Value; }
 		inline void SetZ(float Value) { m_Vector.z = Value; }
 
+		inline bool ContainsNaN() const
+		{
+			Vector Nan = XMVectorIsNaN(XMLoadFloat3(&m_Vector));
+			return !Nan.IsNearlyZero();
+		}
+
 		inline Vector operator-( const Vector& other ) const
 		{
 			return Vector( XMVectorSubtract(

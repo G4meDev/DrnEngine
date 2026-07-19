@@ -126,7 +126,7 @@ namespace Drn
 		void GenerateParticleEvent(const std::string& InEventName, const float InEmitterTime,
 			const Vector& InLocation, const Vector& InDirection, const Vector& InVelocity);
 
-		//virtual bool ParticleLineCheck(HitResult& Hit, Actor* SourceActor, const Vector& End, const Vector& Start, const Vector& HalfExtent, const CollisionObjectQueryParams& ObjectParams);
+		virtual bool ParticleLineCheck(HitResult& Hit, Actor* SourceActor, const Vector& End, const Vector& Start, const Vector& HalfExtent, const std::vector<ECollisionChannel>& ObjectTypes);
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;

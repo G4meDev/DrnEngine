@@ -84,16 +84,36 @@ namespace Drn
 		void DrawDebugCollisions();
 		void DrawDebugForRigidActor(PxRigidActor* RigidActor);
 
-		void RaycastSingle( HitResult& Result, const Vector& Start, const Vector& Dir, float MaxDistance );
-		void RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance );
-
 		bool RaycastSingle(const World* InWorld, HitResult& OutHit, const Vector Start, const Vector End, const CollisionQueryParams& Params
 			, const CollisionObjectQueryParams& ObjectParams);
 
-		void ConvertTraceResults(bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, PxRaycastBuffer* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHits, const Vector& StartLoc, const Vector& EndLoc,
-			PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat);
+		bool RaycastMulti(const World* InWorld, std::vector<HitResult>& OutHits, const Vector Start, const Vector End, const CollisionQueryParams& Params
+			, const CollisionObjectQueryParams& ObjectParams);
 
-		void ConvertQueryImpactHit(const World* InWorld, const PxRaycastHit& PHit, HitResult& OutResult, float CheckLength, const CollisionFilterData& QueryFilter, const Vector& StartLoc, const Vector& EndLoc, const PxGeometry* Geom, const Transform& QueryTM, bool bReturnFaceIndex, bool bReturnPhysMat);
+		bool RaycastTest(const World* InWorld, const Vector Start, const Vector End, const CollisionQueryParams& Params
+			, const CollisionObjectQueryParams& ObjectParams);
+
+		bool GeomSweepSingle(const World* InWorld, HitResult& OutHit, const PxGeometry& GeomInputs, const Vector Start, const Vector End, const Quat& Rotation, const CollisionQueryParams& Params
+			, const CollisionObjectQueryParams& ObjectParams);
+
+		//bool GeomSweepMulti(const World* InWorld, std::vector<HitResult>& OutHits, const Vector Start, const Vector End, const CollisionQueryParams& Params
+		//	, const CollisionObjectQueryParams& ObjectParams);
+		//
+		//bool GeomSweepTest(const World* InWorld, const Vector Start, const Vector End, const CollisionQueryParams& Params
+		//	, const CollisionObjectQueryParams& ObjectParams);
+
+		template <typename BufferType, typename ElementType>
+		void ConvertTraceResults(bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, BufferType* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHits, const Vector& StartLoc, const Vector& EndLoc,
+			const PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat);
+
+		template <typename BufferType, typename ElementType>
+		void ConvertTraceResults(bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, BufferType* Hits, float CheckLength, const CollisionFilterData& QueryFilter, std::vector<HitResult>& OutHits, const Vector& StartLoc, const Vector& EndLoc,
+			const PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat);
+
+		void ConvertQueryImpactHit(const World* InWorld, const PxLocationHit& PHit, const PxActorShape& PActorShape, HitResult& OutResult, float CheckLength, const CollisionFilterData& QueryFilter, const Vector& StartLoc, const Vector& EndLoc, const PxGeometry* Geom, const Transform& QueryTM, bool bReturnFaceIndex, bool bReturnPhysMat);
+
+		bool ConvertOverlappedShapeToImpactHit(const World* InWorld, const PxLocationHit& PHit, const PxActorShape& PActorShape, const Vector& StartLoc, const Vector& EndLoc,
+			HitResult& OutResult, const Transform& QueryTM, const CollisionFilterData& QueryFilter, bool bReturnPhysMat);
 
 	private:
 

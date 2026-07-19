@@ -57,7 +57,7 @@ namespace Drn
 			CollisionTypes.resize(CollisionTypesCount);
 			for (int32 CollisionIndex = 0; CollisionIndex < CollisionTypesCount; CollisionIndex++)
 			{
-				Ar >> *(uint32*)&CollisionIndex;
+				Ar >> *(uint32*)&CollisionTypes[CollisionIndex];
 			}
 		}
 		else
@@ -83,7 +83,7 @@ namespace Drn
 			Ar << CollisionTypesCount;
 			for (int32 CollisionIndex = 0; CollisionIndex < CollisionTypesCount; CollisionIndex++)
 			{
-				Ar << (uint32)CollisionIndex;
+				Ar << (uint32)CollisionTypes[CollisionIndex];
 			}
 		}
 	}
@@ -370,11 +370,7 @@ namespace Drn
 		const Vector& Start, const Vector& Extent )
 	{
 		drn_check(Owner && Owner->Component);
-		//return Owner->Component->ParticleLineCheck(Hit, SourceActor, End, Start, Extent, ObjectParams);
-
-		Vector Direction = (End - Start).GetSafeNormal();
-		Owner->Component->GetWorld()->GetPhysicScene()->RaycastSingle(Hit, Start, Direction, (End - Start).Length());
-		return Hit.HitActor;
+		return Owner->Component->ParticleLineCheck(Hit, SourceActor, End, Start, Extent, CollisionTypes);
 	}
 
 #if WITH_EDITOR

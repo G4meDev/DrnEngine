@@ -6,6 +6,8 @@
 LOG_DEFINE_CATEGORY( LogPhysicScene, "PhysicScene" )
 #define MAX_PHYSIC_TIMESTEP 0.033333f // 30fps
 
+#define MAX_MULTIHIT_COUNT 32
+
 namespace Drn
 {
 	PhysicScene::PhysicScene(World* InWorld)
@@ -453,25 +455,6 @@ namespace Drn
 		}
 	}
 
-	void PhysicScene::RaycastSingle( HitResult& Result, const Vector& Start, const Vector& Dir, float MaxDistance )
-	{
-		PxRaycastBuffer RaycastBuffer;
-		bool Hit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), MaxDistance, RaycastBuffer);
-
-		if (Hit)
-		{
-			BodyInstance* Body = PhysicUserData::Get<BodyInstance>( RaycastBuffer.block.actor->userData );
-			PrimitiveComponent* HitPrimitive = Body ? Body->GetOwnerComponent() : nullptr;
-			Actor* HitActor     = HitPrimitive ? HitPrimitive->GetOwningActor() : nullptr;
-
-			if ( HitActor && !HitActor->IsMarkedPendingKill() )
-			{
-				Result = HitResult( Vector::ZeroVector, Vector::ZeroVector, P2Vector( RaycastBuffer.block.position ),
-					P2Vector( RaycastBuffer.block.normal ), HitActor, HitPrimitive );
-			}
-		}
-	}
-
 	bool PhysicScene::RaycastSingle( const World* InWorld, HitResult& OutHit, const Vector Start, const Vector End, const CollisionQueryParams& Params,
 		const CollisionObjectQueryParams& ObjectParams )
 	{
@@ -493,7 +476,8 @@ namespace Drn
 				
 			PxRaycastBuffer RaycastBuffer;
 			const EHitFlags HitFlags = (EHitFlags)((uint16)EHitFlags::Position | (uint16)EHitFlags::Normal | (uint16)EHitFlags::MTD | (uint16)EHitFlags::FaceIndex);
-			PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(EQueryFlags::PreFilter) | StaticDynamicQueryFlags(Params));
+			const EQueryFlags QueryFlags = EQueryFlags::PreFilter;
+			PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(QueryFlags) | StaticDynamicQueryFlags(Params));
 			bool bHit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), DeltaMag, RaycastBuffer, U2PHitFlags(HitFlags), QueryFilterData, &QueryCallback);
 
 			const int32 NumHits = RaycastBuffer.getNbAnyHits();
@@ -506,7 +490,7 @@ namespace Drn
 
 			if (NumHits > 0)
 			{
-				ConvertTraceResults(bBlockingHit, InWorld, NumHits, &RaycastBuffer, DeltaMag, Filter, OutHit, Start, End, nullptr, Transform(Start, Quat::Identity)
+				ConvertTraceResults<PxRaycastBuffer, PxRaycastHit>(bBlockingHit, InWorld, NumHits, &RaycastBuffer, DeltaMag, Filter, OutHit, Start, End, nullptr, Transform(Start, Quat::Identity)
 					, MinBlockingDistance, Params.bReturnFaceIndex, Params.bReturnPhysicalMaterial);
 			}
 
@@ -516,8 +500,139 @@ namespace Drn
 		return bHaveBlockingHit;
 	}
 
-	void PhysicScene::ConvertTraceResults( bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, PxRaycastBuffer* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHit,
-		const Vector& StartLoc, const Vector& EndLoc, PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat )
+	bool PhysicScene::RaycastTest( const World* InWorld, const Vector Start, const Vector End, const CollisionQueryParams& Params,
+		const CollisionObjectQueryParams& ObjectParams )
+	{
+		bool bHaveBlockingHit = false;
+
+		Vector Delta = End - Start;
+		float DeltaSize = Delta.Length();
+		float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
+		float MinBlockingDistance = DeltaMag;
+		if (DeltaMag > 0.f)
+		{
+			CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+			CollisionQueryFilterCallback QueryCallback(Params, false);
+			QueryCallback.bIgnoreTouches = true;
+
+			const Vector Dir = DeltaMag > 0.f ? (Delta / DeltaMag) : Vector(1, 0, 0);
+				
+			PxRaycastBuffer RaycastBuffer;
+			const EHitFlags HitFlags = EHitFlags::None;
+			const EQueryFlags QueryFlags = (EQueryFlags)((uint16)EQueryFlags::PreFilter | (uint16)EQueryFlags::AnyHit);
+			PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(QueryFlags) | StaticDynamicQueryFlags(Params));
+			bool bHit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), DeltaMag, RaycastBuffer, U2PHitFlags(HitFlags), QueryFilterData, &QueryCallback);
+
+			const int32 NumHits = RaycastBuffer.getNbAnyHits();
+			bHaveBlockingHit = (NumHits > 0) && RaycastBuffer.hasBlock;
+		}
+
+		return bHaveBlockingHit;
+	}
+
+	bool PhysicScene::RaycastMulti( const World* InWorld, std::vector<HitResult>& OutHits, const Vector Start, const Vector End, const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams )
+	{
+		bool bHaveBlockingHit = false;
+
+		Vector Delta = End - Start;
+		float DeltaSize = Delta.Length();
+		float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
+		float MinBlockingDistance = DeltaMag;
+		if (DeltaMag > 0.f)
+		{
+			CollisionFilterData Filter = CreateObjectQueryFilterData(true, ObjectParams);
+			CollisionQueryFilterCallback QueryCallback(Params, false);
+
+			bool bBlockingHit = false;
+			const Vector Dir = DeltaMag > 0.f ? (Delta / DeltaMag) : Vector(1, 0, 0);
+
+			const PxU32 bufferSize = MAX_MULTIHIT_COUNT;
+			PxRaycastHit hitBuffer[bufferSize];
+			PxRaycastBuffer RaycastBuffer(hitBuffer, bufferSize);
+
+			const EHitFlags HitFlags = (EHitFlags)((uint16)EHitFlags::Position | (uint16)EHitFlags::Normal | (uint16)EHitFlags::MTD | (uint16)EHitFlags::FaceIndex);
+			const EQueryFlags QueryFlags = EQueryFlags::PreFilter;
+			PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(QueryFlags) | StaticDynamicQueryFlags(Params));
+			bool bHit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), DeltaMag, RaycastBuffer, U2PHitFlags(HitFlags), QueryFilterData, &QueryCallback);
+
+			const int32 NumHits = RaycastBuffer.getNbAnyHits();
+
+			if(NumHits > 0 && RaycastBuffer.hasBlock)
+			{
+				bBlockingHit = true;
+				MinBlockingDistance = RaycastBuffer.getAnyHit(NumHits - 1).distance;
+			}
+
+			if (NumHits > 0)
+			{
+				ConvertTraceResults<PxRaycastBuffer, PxRaycastHit>(bBlockingHit, InWorld, NumHits, &RaycastBuffer, DeltaMag, Filter, OutHits, Start, End, nullptr, Transform(Start, Quat::Identity)
+					, MinBlockingDistance, Params.bReturnFaceIndex, Params.bReturnPhysicalMaterial);
+			}
+
+			bHaveBlockingHit = bBlockingHit;
+		}
+
+		return bHaveBlockingHit;
+	}
+
+	bool PhysicScene::GeomSweepSingle( const World* InWorld, HitResult& OutHit, const PxGeometry& GeomInput, const Vector Start, const Vector End, const Quat& Rotation, const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams )
+	{
+		bool bHaveBlockingHit = false;
+
+		Vector Delta = End - Start;
+		float DeltaSize = Delta.Length();
+		float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
+		float MinBlockingDistance = DeltaMag;
+
+		{
+			CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+
+			CollisionQueryFilterCallback QueryCallback(Params, true);
+			QueryCallback.bIgnoreTouches = true;
+
+			bool bBlockingHit = false;
+			const Vector Dir = DeltaMag > 0.f ? (Delta / DeltaMag) : Vector(1, 0, 0);
+			const Transform StartTM = Transform(Start, Rotation);
+
+			PxSweepBuffer SweepBuffer;
+			const EHitFlags HitFlags = (EHitFlags)((uint16)EHitFlags::Position | (uint16)EHitFlags::Normal | (uint16)EHitFlags::MTD);
+			const EQueryFlags QueryFlags = EQueryFlags::PreFilter;
+			PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(QueryFlags) | StaticDynamicQueryFlags(Params));
+			bool bHit = m_PhysxScene->sweep(GeomInput, Transform2P(StartTM), Vector2P(Dir), DeltaMag, SweepBuffer, U2PHitFlags(HitFlags), QueryFilterData, &QueryCallback);
+
+			const int32 NumHits = SweepBuffer.getNbAnyHits();
+
+			if(NumHits > 0 && SweepBuffer.hasBlock)
+			{
+				bBlockingHit = true;
+				MinBlockingDistance = SweepBuffer.getAnyHit(NumHits - 1).distance;
+			}
+
+			if (NumHits > 0)
+			{
+				ConvertTraceResults<PxSweepBuffer, PxSweepHit>(bBlockingHit, InWorld, NumHits, &SweepBuffer, DeltaMag, Filter, OutHit, Start, End, &GeomInput, StartTM
+					, MinBlockingDistance, Params.bReturnFaceIndex, Params.bReturnPhysicalMaterial);
+			}
+
+			bHaveBlockingHit = bBlockingHit;
+		}
+
+		return bHaveBlockingHit;
+	}
+
+	//bool PhysicScene::GeomSweepMulti( const World* InWorld, std::vector<HitResult>& OutHits, const Vector Start, const Vector End, const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams )
+	//{
+	//	
+	//}
+	//
+	//bool PhysicScene::GeomSweepTest( const World* InWorld, const Vector Start, const Vector End, const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams )
+	//{
+	//	
+	//}
+
+	template <typename BufferType, typename ElementType>
+	void PhysicScene::ConvertTraceResults( bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, BufferType* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHit,
+		const Vector& StartLoc, const Vector& EndLoc, const PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat )
 	{
 		const Vector Dir = (EndLoc - StartLoc).GetSafeNormal();
 		//if (TIsSame<Hit, FHitSweep>::Value)
@@ -528,10 +643,44 @@ namespace Drn
 		//	}
 		//}
 
-		ConvertQueryImpactHit(InWorld, Hits->getAnyHit(0), OutHit, CheckLength, QueryFilter, StartLoc, EndLoc, Geom, QueryTM, bReturnFaceIndex, bReturnPhysMat);
+		const ElementType& Hit = Hits->getAnyHit( 0 );
+		ConvertQueryImpactHit(InWorld, Hit, Hit, OutHit, CheckLength, QueryFilter, StartLoc, EndLoc, Geom, QueryTM, bReturnFaceIndex, bReturnPhysMat);
 	}
 
-	void PhysicScene::ConvertQueryImpactHit( const World* InWorld, const PxRaycastHit& Hit, HitResult& OutResult, float CheckLength, const CollisionFilterData& QueryFilter,
+	template <typename BufferType, typename ElementType>
+	void PhysicScene::ConvertTraceResults( bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, BufferType* Hits, float CheckLength, const CollisionFilterData& QueryFilter, std::vector<HitResult>& OutHits,
+		const Vector& StartLoc, const Vector& EndLoc, const PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat )
+	{
+		OutHits.reserve(OutHits.size() + NumHits);
+		bool bHadBlockingHit = false;
+		const Vector Dir = (EndLoc - StartLoc).GetSafeNormal();
+
+		for(int32 i=0; i<NumHits; i++)
+		{
+			const ElementType& Hit = Hits->getAnyHit(i);
+			if(Hit.distance <= MaxDistance)
+			{
+				//if (TIsSame<HitType, FHitSweep>::Value)
+				//{
+				//	if (!HadInitialOverlap(Hit))
+				//	{
+				//		SetInternalFaceIndex(Hit, FindFaceIndex(Hit, Dir));
+				//	}
+				//}
+
+				OutHits.push_back( {} );
+				HitResult& NewResult = OutHits.back();
+				ConvertQueryImpactHit(InWorld, Hit, Hit, NewResult, CheckLength, QueryFilter, StartLoc, EndLoc, Geom, QueryTM, bReturnFaceIndex, bReturnPhysMat);
+				bHadBlockingHit |= NewResult.bBlockingHit;
+			}
+		}
+
+		// Sort results from first to last hit
+		std::sort(OutHits.begin(), OutHits.end(), [](const HitResult& A, const HitResult& B) { return A.Distance < B.Distance; });
+		OutHasValidBlockingHit = bHadBlockingHit;
+	}
+
+	void PhysicScene::ConvertQueryImpactHit( const World* InWorld, const PxLocationHit& Hit, const PxActorShape& PActorShape, HitResult& OutResult, float CheckLength, const CollisionFilterData& QueryFilter,
 		const Vector& StartLoc, const Vector& EndLoc, const PxGeometry* Geom, const Transform& QueryTM, bool bReturnFaceIndex, bool bReturnPhysMat )
 	{
 		EHitFlags Flags = P2UHitFlags(Hit.flags);
@@ -539,13 +688,13 @@ namespace Drn
 		const bool bInitialOverlap = Hit.hadInitialOverlap();
 		if (bInitialOverlap && Geom)
 		{
-			//ConvertOverlappedShapeToImpactHit(InWorld, Hit, StartLoc, EndLoc, OutResult, *Geom, QueryTM, QueryFilter, bReturnPhysMat);
+			ConvertOverlappedShapeToImpactHit(InWorld, Hit, PActorShape, StartLoc, EndLoc, OutResult, QueryTM, QueryFilter, bReturnPhysMat);
 			drn_check(false);
 			return;
 		}
 
-		const PxShape* pHitShape = Hit.shape;
-		const PxActor* pHitActor = Hit.actor;
+		const PxShape* pHitShape = PActorShape.shape;
+		const PxActor* pHitActor = PActorShape.actor;
 		if ((pHitShape == nullptr) || (pHitActor == nullptr))
 		{
 			//OutResult.Reset();
@@ -640,31 +789,140 @@ namespace Drn
 		//}
 	}
 
-	void PhysicScene::RaycastMulti( std::vector<HitResult>& Results, const Vector& Start, const Vector& Dir, float MaxDistance )
+	//void ComputeZeroDistanceImpactNormalAndPenetration(const World* InWorld, const PxLocationHit& Hit, const PxActorShape& PActorShape, const PxGeometry& Geom, const Transform& QueryTM, HitResult& OutResult)
+	//{
+	//	const PxTransform PQueryTM = Transform2P(QueryTM);
+	//	const PxShape* PShape = PActorShape.shape;
+	//	const PxRigidActor* PActor = PActorShape.actor;
+	//	const PxTransform PShapeWorldPose = PxShapeExt::getGlobalPose(*PShape, *PActor);
+	//
+	//	static const float SmallMtdInflation = 0.250f;
+	//	static const float LargeMtdInflation = 1.750f;
+	//
+	//	if (ComputeInflatedMTD(SmallMtdInflation, Hit, OutResult, PQueryTM, Geom, PShapeWorldPose) ||
+	//		ComputeInflatedMTD(LargeMtdInflation, Hit, OutResult, PQueryTM, Geom, PShapeWorldPose))
+	//	{
+	//		// Success
+	//	}
+	//	else
+	//	{
+	//		static const float SmallOverlapInflation = 0.250f;
+	//		if (FindOverlappedTriangleNormal(InWorld, Geom, PQueryTM, PShape, PShapeWorldPose, OutResult.ImpactNormal, 0.f, false) ||
+	//			FindOverlappedTriangleNormal(InWorld, Geom, PQueryTM, PShape, PShapeWorldPose, OutResult.ImpactNormal, SmallOverlapInflation, false))
+	//		{
+	//			// Success
+	//		}
+	//		else
+	//		{
+	//			// MTD failed, use point distance. This is not ideal.
+	//			// Note: faceIndex seems to be unreliable for convex meshes in these cases, so not using FindGeomOpposingNormal() for them here.
+	//			PxGeometryHolder Holder = PShape->getGeometry();
+	//			PxGeometry& PGeom = Holder.any();
+	//			PxVec3 PClosestPoint;
+	//			const float Distance = PxGeometryQuery::pointDistance(PQueryTM.p, PGeom, PShapeWorldPose, &PClosestPoint);
+	//
+	//			if (Distance < KINDA_SMALL_NUMBER)
+	//			{
+	//				//UE_LOG(LogCollision, Verbose, TEXT("Warning: ConvertOverlappedShapeToImpactHit: Query origin inside shape, giving poor MTD."));
+	//				PClosestPoint = PxShapeExt::getWorldBounds(*PShape, *PActor).getCenter();
+	//			}
+	//
+	//			OutResult.ImpactNormal = (OutResult.Location - P2Vector(PClosestPoint)).GetSafeNormal();
+	//		}
+	//	}
+	//}
+
+	bool PhysicScene::ConvertOverlappedShapeToImpactHit( const World* InWorld, const PxLocationHit& Hit, const PxActorShape& PActorShape, const Vector& StartLoc,
+		const Vector& EndLoc, HitResult& OutResult, const Transform& QueryTM, const CollisionFilterData& QueryFilter, bool bReturnPhysMat )
 	{
-		const PxU32 bufferSize = 256;
-		PxRaycastHit hitBuffer[bufferSize];
-		PxRaycastBuffer buf(hitBuffer, bufferSize);
-
-		bool Hit = m_PhysxScene->raycast( Vector2P( Start ), Vector2P(Dir), MaxDistance, buf );
-		Results.clear();
-		Results.reserve( buf.getNbAnyHits() );
-
-		if ( Hit )
+		const PxShape* pHitShape = PActorShape.shape;
+		const PxActor* pHitActor = PActorShape.actor;
+		if ((pHitShape == nullptr) || (pHitActor == nullptr))
 		{
-			for (uint32 i = 0; i < buf.getNbTouches(); i++)
-			{
-				BodyInstance* Body = PhysicUserData::Get<BodyInstance>(buf.touches[i].actor->userData);
-				PrimitiveComponent* HitPrimitive = Body ? Body->GetOwnerComponent() : nullptr;
-				Actor* HitActor = HitPrimitive ? HitPrimitive->GetOwningActor() : nullptr;
+			drn_check(false);
+			return false;
+		}
 
-				if ( HitActor && !HitActor->IsMarkedPendingKill() )
-				{
-					Results.emplace_back( Vector::ZeroVector, Vector::ZeroVector, P2Vector( buf.touches[i].position ),
-						P2Vector( buf.touches[i].normal ), HitActor, HitPrimitive );
-				}
+		const PxShape& HitShape = *pHitShape;
+		const PxActor& HitActor = *pHitActor;
+
+		// See if this is a 'blocking' hit
+		CollisionFilterData ShapeFilter = P2UFilterData(HitShape.getQueryFilterData());
+		const ECollisionQueryHitType HitType = CalcQueryHitType(QueryFilter, ShapeFilter);
+		const bool bBlockingHit = (HitType == ECollisionQueryHitType::Block);
+		OutResult.bBlockingHit = bBlockingHit;
+
+		OutResult.bStartPenetrating = true;
+		OutResult.Time = 0.f;
+		OutResult.Distance = 0.f;
+
+		OutResult.Location = QueryTM.GetLocation();
+
+		const bool bValidPosition = EnumHasAnyFlags(P2UHitFlags(Hit.flags), EHitFlags::Position);
+		if (bValidPosition)
+		{
+			const Vector HitPosition = P2Vector(Hit.position);
+			const bool bFinitePosition = !HitPosition.ContainsNaN();
+			if (bFinitePosition)
+			{
+				OutResult.ImpactPoint = HitPosition;
+			}
+			else
+			{
+				OutResult.ImpactPoint = StartLoc;
 			}
 		}
+		else
+		{
+			OutResult.ImpactPoint = StartLoc;
+		}
+		OutResult.TraceStart = StartLoc;
+		OutResult.TraceEnd = EndLoc;
+
+		const Vector HitNormal = P2Vector(Hit.normal);
+		const bool bFiniteNormal = !HitNormal.ContainsNaN();
+		const bool bValidNormal = EnumHasAnyFlags(P2UHitFlags(Hit.flags), EHitFlags::Normal) && bFiniteNormal;
+
+		// Use MTD result if possible. We interpret the MTD vector as both the direction to move and the opposing normal.
+		if (bValidNormal)
+		{
+			OutResult.ImpactNormal = HitNormal;
+			OutResult.PenetrationDepth = std::abs(Hit.distance);
+		}
+		else
+		{
+			// Fallback normal if we can't find it with MTD or otherwise.
+			OutResult.ImpactNormal = Vector::UpVector;
+			OutResult.PenetrationDepth = 0.f;
+			if (!bFiniteNormal)
+			{
+				drn_check(false);
+			}
+		}
+
+		//if (bBlockingHit)
+		//{
+		//	if (Hit.distance == 0.f || !bValidNormal)
+		//	{
+		//		ComputeZeroDistanceImpactNormalAndPenetration(InWorld, Hit, PActorShape, Geom, QueryTM, OutResult);
+		//	}
+		//}
+		//else
+		{
+			// non blocking hit (overlap).
+			if (!bValidNormal)
+			{
+				OutResult.ImpactNormal = (StartLoc - EndLoc).GetSafeNormal();
+				drn_check(OutResult.ImpactNormal.IsNormalized());
+			}
+		}
+
+		OutResult.Normal = OutResult.ImpactNormal;
+
+		SetHitResultFromShapeAndFaceIndex(HitShape, HitActor, 0, OutResult.ImpactPoint, OutResult, bReturnPhysMat);
+		//SetHitResultFromShapeAndFaceIndex(HitShape, HitActor, GetInternalFaceIndex(Hit), OutResult.ImpactPoint, OutResult, bReturnPhysMat);
+
+		return bBlockingHit;
 	}
 
 // ------------------------------------------------------------------------------------------------------------

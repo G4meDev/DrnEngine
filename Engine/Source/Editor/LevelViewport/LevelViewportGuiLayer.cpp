@@ -415,7 +415,6 @@ namespace Drn
 		}
 	}
 
-
 	void LevelViewportGuiLayer::AlignSelectedComponentToSurfaceBelow()
 	{
 		SceneComponent* SelectedSceneComponent = static_cast<SceneComponent*>( m_OwningLevelViewport->GetSelectedComponent() );
@@ -423,13 +422,20 @@ namespace Drn
 		{
 			HitResult Hit;
 			Vector Start = SelectedSceneComponent->GetWorldLocation();
-			Vector End = Start + Vector::DownVector * 10000;
+			//Vector End = Start + Vector::DownVector * 10000;
+			Vector End = Start + SelectedSceneComponent->GetWorldRotation().GetAxisY() * -5;
 
-			bool bHit = SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()} );
-			if (bHit)
-			{
-				SelectedSceneComponent->SetWorldLocation(Hit.Location);
-			}
+			SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f);
+			//bool bHit = SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()} );
+			//if (bHit)
+			//{
+			//	SelectedSceneComponent->SetWorldLocation(Hit.Location);
+			//}
+
+			//bool bHit = SelectedSceneComponent->GetWorld()->LineTraceTest( Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
+			//std::vector<HitResult> Hits; bool bHit = SelectedSceneComponent->GetWorld()->LineTraceMulti( Hits, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
+			HitResult Hits; bool bHit = SelectedSceneComponent->GetWorld()->SphereTrace( Hits, Start, End, 0.5f, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
+
 		}
 	}
 
