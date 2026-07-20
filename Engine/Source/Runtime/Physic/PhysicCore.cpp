@@ -43,6 +43,17 @@ namespace Drn
 		return PxTransform(Vector2P(T.GetLocation()), Quat2P(T.GetRotation()));
 	}
 
+	Quat CapsuleRotation2P( const Quat& Rotation )
+	{
+		// convert default y-axis capsule to physx x-axis aligned capsule
+		return Rotation * Quat(Vector::ForwardVector, XM_PIDIV2);
+	}
+
+	Quat P2CapsuleRotation( const Quat& Rotation )
+	{
+		return Rotation * Quat(Vector::ForwardVector, XM_PIDIV2);
+	}
+
 	CollisionFilterData CreateObjectQueryFilterData( const int32 MultiTrace, const CollisionObjectQueryParams& ObjectParam )
 	{
 		CollisionFilterData NewData;

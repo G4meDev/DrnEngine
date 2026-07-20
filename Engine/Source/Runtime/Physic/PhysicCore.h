@@ -39,6 +39,9 @@ namespace Drn
 	Transform P2Transform(const PxTransform& T);
 	PxTransform Transform2P(const Transform& T);
 
+	Quat CapsuleRotation2P(const Quat& Rotation);
+	Quat P2CapsuleRotation(const Quat& Rotation);
+
 	inline PxHitFlags U2PHitFlags(const EHitFlags& Flags)
 	{
 		uint32 Result = 0;

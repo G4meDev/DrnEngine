@@ -70,9 +70,13 @@ namespace Drn
 		void DrawDebugFrustum(const Matrix& Frustum, const Color& Color, float Thickness, float Lifetime);
 
 		void DrawDebugCapsule(const Vector& Center, float HalfHeight, float Radius, const Quat& Rotation, const Color& Color, float Thickness, float Lifetime);
+		void DrawDebugSweptBox(const Vector& Start, const Vector& End, const Quat& Rotation, const Vector& HalfSize, const Color& Color, float Thickness, float Lifetime);
+		void DrawDebugSweptCapsule(const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const Color& Color, float Thickness, float Lifetime);
 
 		inline Scene* GetScene() { return m_Scene; }
 		inline PhysicScene* GetPhysicScene() { return m_PhysicScene; }
+
+// ---------------------------------------------------------------------------------------------------------
 
 		bool LineTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
@@ -86,6 +90,31 @@ namespace Drn
 		bool SphereTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
+		bool SphereTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool SphereTraceTest( const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool BoxTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool BoxTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool BoxTraceTest( const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool CapsuleTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool CapsuleTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool CapsuleTraceTest( const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+// ---------------------------------------------------------------------------------------------------------
 
 		inline bool IsPendingDestroy() const { return m_PendingDestory; }
 

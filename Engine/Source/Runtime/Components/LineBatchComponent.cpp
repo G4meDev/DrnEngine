@@ -145,7 +145,8 @@ namespace Drn
 		Vector AxisY = Axes.Rotation().GetAxisY();
 		Vector AxisZ = Axes.Rotation().GetAxisZ();
 
-		float HalfAxis = std::max(HalfHeight - Radius, 0.01f);
+		//float HalfAxis = std::max(HalfHeight - Radius, 0.01f);
+		float HalfAxis = std::max(HalfHeight, 0.01f); // physx capsule half height is separate from radius
 		Vector TopEnd = Center + AxisY * HalfAxis;
 		Vector ButtomEnd = Center - AxisY * HalfAxis;
 

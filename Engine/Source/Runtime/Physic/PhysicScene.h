@@ -96,11 +96,11 @@ namespace Drn
 		bool GeomSweepSingle(const World* InWorld, HitResult& OutHit, const PxGeometry& GeomInputs, const Vector Start, const Vector End, const Quat& Rotation, const CollisionQueryParams& Params
 			, const CollisionObjectQueryParams& ObjectParams);
 
-		//bool GeomSweepMulti(const World* InWorld, std::vector<HitResult>& OutHits, const Vector Start, const Vector End, const CollisionQueryParams& Params
-		//	, const CollisionObjectQueryParams& ObjectParams);
-		//
-		//bool GeomSweepTest(const World* InWorld, const Vector Start, const Vector End, const CollisionQueryParams& Params
-		//	, const CollisionObjectQueryParams& ObjectParams);
+		bool GeomSweepMulti(const World* InWorld, std::vector<HitResult>& OutHits, const PxGeometry& GeomInputs, const Vector Start, const Vector End, const Quat& Rotation, const CollisionQueryParams& Params
+			, const CollisionObjectQueryParams& ObjectParams);
+		
+		bool GeomSweepTest(const World* InWorld, const PxGeometry& GeomInputs, const Vector Start, const Vector End, const Quat& Rotation, const CollisionQueryParams& Params
+			, const CollisionObjectQueryParams& ObjectParams);
 
 		template <typename BufferType, typename ElementType>
 		void ConvertTraceResults(bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, BufferType* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHits, const Vector& StartLoc, const Vector& EndLoc,

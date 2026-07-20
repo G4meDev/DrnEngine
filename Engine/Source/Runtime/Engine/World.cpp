@@ -421,6 +421,41 @@ namespace Drn
 		}
 	}
 
+	void World::DrawDebugSweptBox( const Vector& Start, const Vector& End, const Quat& Rotation, const Vector& HalfSize, const Color& Color, float Thickness, float Lifetime )
+	{
+		Vector const TraceVec = End - Start;
+		float const Dist = TraceVec.Length();
+
+		Vector const Center = Start + TraceVec * 0.5f;
+
+		DrawDebugBox(Box(HalfSize, HalfSize * -1), Transform(Start, Rotation), Color, Thickness, Lifetime);
+
+		Vector Vertices[8];
+		Vertices[0] = Start + Rotation.RotateVector(Vector(-HalfSize.X, -HalfSize.Y, -HalfSize.Z));
+		Vertices[1] = Start + Rotation.RotateVector(Vector(-HalfSize.X, HalfSize.Y, -HalfSize.Z));
+		Vertices[2] = Start + Rotation.RotateVector(Vector(-HalfSize.X, -HalfSize.Y, HalfSize.Z));
+		Vertices[3] = Start + Rotation.RotateVector(Vector(-HalfSize.X, HalfSize.Y, HalfSize.Z));
+		Vertices[4] = Start + Rotation.RotateVector(Vector(HalfSize.X, -HalfSize.Y, -HalfSize.Z));
+		Vertices[5] = Start + Rotation.RotateVector(Vector(HalfSize.X, HalfSize.Y, -HalfSize.Z));
+		Vertices[6] = Start + Rotation.RotateVector(Vector(HalfSize.X, -HalfSize.Y, HalfSize.Z));
+		Vertices[7] = Start + Rotation.RotateVector(Vector(HalfSize.X, HalfSize.Y, HalfSize.Z));
+		for (int32 VertexIdx = 0; VertexIdx < 8; ++VertexIdx)
+		{
+			DrawDebugLine(Vertices[VertexIdx], Vertices[VertexIdx] + TraceVec, Color, Thickness, Lifetime);
+		}
+
+		DrawDebugBox(Box(HalfSize, HalfSize * -1), Transform(End, Rotation), Color, Thickness, Lifetime);
+	}
+
+	void World::DrawDebugSweptCapsule( const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const Color& Color, float Thickness, float Lifetime )
+	{
+		DrawDebugCapsule(Start, HalfHeight, Radius, Rotation, Color, Thickness, Lifetime);
+		DrawDebugCapsule(End, HalfHeight, Radius, Rotation, Color, Thickness, Lifetime);
+		DrawDebugLine(Start, End, Color, Thickness, Lifetime);
+	}
+
+// ------------------------------------------------------------------------------------------------------
+
 	bool World::LineTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 		float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
@@ -525,13 +560,236 @@ namespace Drn
 			DrawDebugCapsule((Start + End) / 2, Radius + Vector::Distance(Start, End) / 2, Radius, Quat::FromY(End - Start), TraceColor, 0.0f, DrawDuration);
 			if (bHit)
 			{
-				DrawDebugSphere(OutHit.Location, Quat::Identity, TraceHitColor, 0.1f, 8, 0.0f, DrawDuration);
+				DrawDebugSphere(OutHit.ImpactPoint, Quat::Identity, TraceHitColor, 0.1f, 8, 0.0f, DrawDuration);
 			}
 		}
 #endif
 
 		return bHit;
 	}
+
+	bool World::SphereTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxSphereGeometry SphereGeo(Radius);
+		bool bHit = m_PhysicScene->GeomSweepMulti(this, OutHits, SphereGeo, Start, End, Quat::Identity, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugCapsule((Start + End) / 2, Radius + Vector::Distance(Start, End) / 2, Radius, Quat::FromY(End - Start), TraceColor, 0.0f, DrawDuration);
+			for (HitResult& Hit : OutHits)
+			{
+				DrawDebugSphere(Hit.ImpactPoint, Quat::Identity, TraceHitColor, 0.1f, 8, 0.0f, DrawDuration);
+			}
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::SphereTraceTest( const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxSphereGeometry SphereGeo(Radius);
+		bool bHit = m_PhysicScene->GeomSweepTest(this, SphereGeo, Start, End, Quat::Identity, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugCapsule((Start + End) / 2, Radius + Vector::Distance(Start, End) / 2, Radius, Quat::FromY(End - Start), bHit ? TraceHitColor : TraceColor, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
+
+	bool World::BoxTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxBoxGeometry BoxGeo(Vector2P(HalfSize));
+		bool bHit = m_PhysicScene->GeomSweepSingle(this, OutHit, BoxGeo, Start, End, Rotation, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugSweptBox(Start, End, Rotation, HalfSize, TraceColor, 0.0f, DrawDuration);
+			if (bHit)
+			{
+				DrawDebugSphere(OutHit.ImpactPoint, Quat::Identity, TraceHitColor, 0.1f, 8, 0.0f, DrawDuration);
+			}
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::BoxTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxBoxGeometry BoxGeo(Vector2P(HalfSize));
+		bool bHit = m_PhysicScene->GeomSweepMulti(this, OutHits, BoxGeo, Start, End, Rotation, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugSweptBox(Start, End, Rotation, HalfSize, TraceColor, 0.0f, DrawDuration);
+			for (HitResult& Hit : OutHits)
+			{
+				DrawDebugSphere(Hit.ImpactPoint, Quat::Identity, TraceHitColor, 0.1f, 8, 0.0f, DrawDuration);
+			}
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::BoxTraceTest( const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxBoxGeometry BoxGeo(Vector2P(HalfSize));
+		bool bHit = m_PhysicScene->GeomSweepTest(this, BoxGeo, Start, End, Rotation, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugSweptBox(Start, End, Rotation, HalfSize, bHit ? TraceHitColor : TraceColor, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::CapsuleTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxCapsuleGeometry CapsuleGeo(Radius, HalfHeight);
+		bool bHit = m_PhysicScene->GeomSweepSingle(this, OutHit, CapsuleGeo, Start, End, CapsuleRotation2P(Rotation), QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugSweptCapsule(Start, End, Radius, HalfHeight, Rotation, TraceColor, 0.0f, DrawDuration);
+			if (bHit)
+			{
+				DrawDebugSphere(OutHit.ImpactPoint, Quat::Identity, TraceHitColor, 0.1f, 8, 0.0f, DrawDuration);
+			}
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::CapsuleTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxCapsuleGeometry CapsuleGeo(Radius, HalfHeight);
+		bool bHit = m_PhysicScene->GeomSweepMulti(this, OutHits, CapsuleGeo, Start, End, CapsuleRotation2P(Rotation), QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugSweptCapsule(Start, End, Radius, HalfHeight, Rotation, TraceColor, 0.0f, DrawDuration);
+			for (HitResult& Hit : OutHits)
+			{
+				DrawDebugSphere(Hit.ImpactPoint, Quat::Identity, TraceHitColor, 0.1f, 8, 0.0f, DrawDuration);
+			}
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::CapsuleTraceTest( const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bReturnPhysicalMaterial = true;
+		QueryParams.bReturnFaceIndex = true;
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxCapsuleGeometry CapsuleGeo(Radius, HalfHeight);
+		bool bHit = m_PhysicScene->GeomSweepTest(this, CapsuleGeo, Start, End, CapsuleRotation2P(Rotation), QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugSweptCapsule(Start, End, Radius, HalfHeight, Rotation, bHit ? TraceHitColor : TraceColor, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
+// ------------------------------------------------------------------------------------------------------
 
 	ViewInfo World::GetPlayerWorldView() const
 	{

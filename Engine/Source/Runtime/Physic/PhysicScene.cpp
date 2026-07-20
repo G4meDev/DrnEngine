@@ -368,7 +368,7 @@ namespace Drn
 				else if ( Shape->getGeometry().getType() == PxGeometryType::eCAPSULE)
 				{
 					const PxCapsuleGeometry* CapsuleGeo = static_cast<const PxCapsuleGeometry*>(&(Shape->getGeometry()));
-					m_OwningWorld->DrawDebugCapsule(WorldTransform.GetLocation(), CapsuleGeo->halfHeight, CapsuleGeo->radius, WorldTransform.GetRotation(), DebugDrawColor, 0.0f, 0);
+					m_OwningWorld->DrawDebugCapsule(WorldTransform.GetLocation(), CapsuleGeo->halfHeight, CapsuleGeo->radius, P2CapsuleRotation(WorldTransform.GetRotation()), DebugDrawColor, 0.0f, 0);
 				}
 
 				else if (Shape->getGeometry().getType() == PxGeometryType::eTRIANGLEMESH)
@@ -620,15 +620,83 @@ namespace Drn
 		return bHaveBlockingHit;
 	}
 
-	//bool PhysicScene::GeomSweepMulti( const World* InWorld, std::vector<HitResult>& OutHits, const Vector Start, const Vector End, const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams )
-	//{
-	//	
-	//}
-	//
-	//bool PhysicScene::GeomSweepTest( const World* InWorld, const Vector Start, const Vector End, const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams )
-	//{
-	//	
-	//}
+	bool PhysicScene::GeomSweepMulti(const World* InWorld, std::vector<HitResult>& OutHits, const PxGeometry& GeomInput, const Vector Start, const Vector End, const Quat& Rotation, const CollisionQueryParams& Params
+			, const CollisionObjectQueryParams& ObjectParams)
+	{
+		bool bHaveBlockingHit = false;
+
+		Vector Delta = End - Start;
+		float DeltaSize = Delta.Length();
+		float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
+		float MinBlockingDistance = DeltaMag;
+
+		{
+			CollisionFilterData Filter = CreateObjectQueryFilterData(true, ObjectParams);
+			CollisionQueryFilterCallback QueryCallback(Params, true);
+
+			bool bBlockingHit = false;
+			const Vector Dir = DeltaMag > 0.f ? (Delta / DeltaMag) : Vector(1, 0, 0);
+			const Transform StartTM = Transform(Start, Rotation);
+
+			const PxU32 bufferSize = MAX_MULTIHIT_COUNT;
+			PxSweepHit hitBuffer[bufferSize];
+			PxSweepBuffer SweepBuffer(hitBuffer, bufferSize);
+
+			const EHitFlags HitFlags = (EHitFlags)((uint16)EHitFlags::Position | (uint16)EHitFlags::Normal | (uint16)EHitFlags::MTD| (uint16)EHitFlags::FaceIndex);
+			const EQueryFlags QueryFlags = (EQueryFlags)((uint16)EQueryFlags::PreFilter | (uint16)EQueryFlags::PostFilter);
+			PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(QueryFlags) | StaticDynamicQueryFlags(Params));
+			bool bHit = m_PhysxScene->sweep(GeomInput, Transform2P(StartTM), Vector2P(Dir), DeltaMag, SweepBuffer, U2PHitFlags(HitFlags), QueryFilterData, &QueryCallback);
+
+			const int32 NumHits = SweepBuffer.getNbAnyHits();
+
+			if(NumHits > 0 && SweepBuffer.hasBlock)
+			{
+				bBlockingHit = true;
+				MinBlockingDistance = SweepBuffer.getAnyHit(NumHits - 1).distance;
+			}
+
+			if (NumHits > 0)
+			{
+				ConvertTraceResults<PxSweepBuffer, PxSweepHit>(bBlockingHit, InWorld, NumHits, &SweepBuffer, DeltaMag, Filter, OutHits, Start, End, &GeomInput, StartTM
+					, MinBlockingDistance, Params.bReturnFaceIndex, Params.bReturnPhysicalMaterial);
+			}
+
+			bHaveBlockingHit = bBlockingHit;
+		}
+
+		return bHaveBlockingHit;
+	}
+	
+	bool PhysicScene::GeomSweepTest(const World* InWorld, const PxGeometry& GeomInput, const Vector Start, const Vector End, const Quat& Rotation, const CollisionQueryParams& Params
+			, const CollisionObjectQueryParams& ObjectParams)
+	{
+		bool bHaveBlockingHit = false;
+
+		Vector Delta = End - Start;
+		float DeltaSize = Delta.Length();
+		float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
+
+		{
+			CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+			CollisionQueryFilterCallback QueryCallback(Params, true);
+			QueryCallback.bIgnoreTouches = true;
+
+			bool bBlockingHit = false;
+			const Vector Dir = DeltaMag > 0.f ? (Delta / DeltaMag) : Vector(1, 0, 0);
+			const Transform StartTM = Transform(Start, Rotation);
+
+			PxSweepBuffer SweepBuffer;
+			const EHitFlags HitFlags = EHitFlags::None;
+			const EQueryFlags QueryFlags = (EQueryFlags)((uint16)EQueryFlags::PreFilter | (uint16)EQueryFlags::PostFilter | (uint16)EQueryFlags::AnyHit);
+			PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(QueryFlags) | StaticDynamicQueryFlags(Params));
+			bool bHit = m_PhysxScene->sweep(GeomInput, Transform2P(StartTM), Vector2P(Dir), DeltaMag, SweepBuffer, U2PHitFlags(HitFlags), QueryFilterData, &QueryCallback);
+
+			const int32 NumHits = SweepBuffer.getNbAnyHits();
+			bHaveBlockingHit = (NumHits > 0) && SweepBuffer.hasBlock;
+		}
+
+		return bHaveBlockingHit;
+	}
 
 	template <typename BufferType, typename ElementType>
 	void PhysicScene::ConvertTraceResults( bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, BufferType* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHit,
@@ -689,7 +757,6 @@ namespace Drn
 		if (bInitialOverlap && Geom)
 		{
 			ConvertOverlappedShapeToImpactHit(InWorld, Hit, PActorShape, StartLoc, EndLoc, OutResult, QueryTM, QueryFilter, bReturnPhysMat);
-			drn_check(false);
 			return;
 		}
 
@@ -1163,7 +1230,8 @@ namespace Drn
 		{
 			Result = ECollisionQueryHitType::Touch;	//In the case of overlaps, physx only understands touches. We do this at the end to ensure all filtering logic based on block vs overlap is correct
 		}
-
+		
+		PreFilterReturnValue = Result;
 		return (PxQueryHitType::Enum)Result;
 	}
 
