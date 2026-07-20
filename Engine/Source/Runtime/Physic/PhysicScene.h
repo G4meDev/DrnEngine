@@ -102,6 +102,11 @@ namespace Drn
 		bool GeomSweepTest(const World* InWorld, const PxGeometry& GeomInputs, const Vector Start, const Vector End, const Quat& Rotation, const CollisionQueryParams& Params
 			, const CollisionObjectQueryParams& ObjectParams);
 
+		bool GeomOverlap(const World* InWorld, const PxGeometry& Geom, const Transform& GeomPose, std::vector<OverlapResult>& OutOverlaps,
+			const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams);
+
+		bool GeomOverlapTest(const World* InWorld, const PxGeometry& Geom, const Transform& GeomPose, const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams);
+
 		template <typename BufferType, typename ElementType>
 		void ConvertTraceResults(bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, BufferType* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHits, const Vector& StartLoc, const Vector& EndLoc,
 			const PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat);
@@ -114,6 +119,8 @@ namespace Drn
 
 		bool ConvertOverlappedShapeToImpactHit(const World* InWorld, const PxLocationHit& PHit, const PxActorShape& PActorShape, const Vector& StartLoc, const Vector& EndLoc,
 			HitResult& OutResult, const Transform& QueryTM, const CollisionFilterData& QueryFilter, bool bReturnPhysMat);
+
+		bool ConvertOverlapResults(int32 NumOverlaps, PxOverlapBuffer* OverlapResults, const CollisionFilterData& QueryFilter, std::vector<OverlapResult>& OutOverlaps);
 
 	private:
 

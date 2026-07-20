@@ -114,6 +114,25 @@ namespace Drn
 		bool CapsuleTraceTest( const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
+		bool SphereOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool SphereOverlapTest( const Vector& Position, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool BoxOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool BoxOverlapTest( const Vector& Position, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool CapsuleOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+		bool CapsuleOverlapTest( const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
+
+
 // ---------------------------------------------------------------------------------------------------------
 
 		inline bool IsPendingDestroy() const { return m_PendingDestory; }

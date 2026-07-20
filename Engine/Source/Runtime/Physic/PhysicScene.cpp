@@ -698,7 +698,65 @@ namespace Drn
 		return bHaveBlockingHit;
 	}
 
-	template <typename BufferType, typename ElementType>
+	bool PhysicScene::GeomOverlap( const World* InWorld, const PxGeometry& Geom, const Transform& GeomPose, std::vector<OverlapResult>& OutOverlaps,
+		const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams )
+	{
+		bool bHaveBlockingHit = false;
+
+		CollisionFilterData Filter = CreateObjectQueryFilterData(true, ObjectParams);
+		CollisionQueryFilterCallback QueryCallback(Params, false);
+		QueryCallback.bIsOverlapQuery = true;
+
+		EQueryFlags QueryFlags = EQueryFlags::PreFilter;
+		if (Params.bSkipNarrowPhase)
+		{
+			EnumAddFlags(QueryFlags, EQueryFlags::SkipNarrowPhase);
+		}
+		PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(QueryFlags) | StaticDynamicQueryFlags(Params));
+
+		const PxU32 bufferSize = MAX_MULTIHIT_COUNT;
+		PxOverlapHit hitBuffer[bufferSize];
+		PxOverlapBuffer OverlapBuffer(hitBuffer, bufferSize);
+
+		bool bHit = m_PhysxScene->overlap(Geom, Transform2P(GeomPose), OverlapBuffer, QueryFilterData, &QueryCallback);
+		bHaveBlockingHit = OverlapBuffer.hasBlock;
+
+		const int32 NumHits = OverlapBuffer.getNbAnyHits();
+		if (NumHits > 0)
+		{
+			bHaveBlockingHit = ConvertOverlapResults(NumHits, &OverlapBuffer, Filter, OutOverlaps);
+		}
+
+		return bHaveBlockingHit;
+	}
+
+	bool PhysicScene::GeomOverlapTest( const World* InWorld, const PxGeometry& Geom, const Transform& GeomPose,
+		const CollisionQueryParams& Params, const CollisionObjectQueryParams& ObjectParams )
+	{
+		bool bHaveBlockingHit = false;
+
+		CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+		CollisionQueryFilterCallback QueryCallback(Params, false);
+		QueryCallback.bIsOverlapQuery = true;
+
+		EQueryFlags QueryFlags = (EQueryFlags)((uint16)EQueryFlags::PreFilter | (uint16)EQueryFlags::AnyHit);
+		if (Params.bSkipNarrowPhase)
+		{
+			EnumAddFlags(QueryFlags, EQueryFlags::SkipNarrowPhase);
+		}
+		PxQueryFilterData QueryFilterData(U2PFilterData(Filter), U2PQueryFlags(QueryFlags) | StaticDynamicQueryFlags(Params));
+
+		const PxU32 bufferSize = MAX_MULTIHIT_COUNT;
+		PxOverlapHit hitBuffer[bufferSize];
+		PxOverlapBuffer OverlapBuffer(hitBuffer, bufferSize);
+
+		bool bHit = m_PhysxScene->overlap(Geom, Transform2P(GeomPose), OverlapBuffer, QueryFilterData, &QueryCallback);
+		bHaveBlockingHit = OverlapBuffer.hasBlock;
+
+		return bHaveBlockingHit;
+	}
+
+	template<typename BufferType, typename ElementType>
 	void PhysicScene::ConvertTraceResults( bool& OutHasValidBlockingHit, const World* InWorld, int32 NumHits, BufferType* Hits, float CheckLength, const CollisionFilterData& QueryFilter, HitResult& OutHit,
 		const Vector& StartLoc, const Vector& EndLoc, const PxGeometry* Geom, const Transform& QueryTM, float MaxDistance, bool bReturnFaceIndex, bool bReturnPhysMat )
 	{
@@ -990,6 +1048,106 @@ namespace Drn
 		//SetHitResultFromShapeAndFaceIndex(HitShape, HitActor, GetInternalFaceIndex(Hit), OutResult.ImpactPoint, OutResult, bReturnPhysMat);
 
 		return bBlockingHit;
+	}
+
+	bool IsBlocking(const PxShape& Shape, const CollisionFilterData& QueryFilter)
+	{
+		const CollisionFilterData ShapeFilter = P2UFilterData(Shape.getQueryFilterData());
+		const ECollisionQueryHitType HitType = CalcQueryHitType(QueryFilter, ShapeFilter);
+		const bool bBlock = (HitType == ECollisionQueryHitType::Block);
+		return bBlock;
+	}
+
+	void ConvertQueryOverlap(const PxShape& Shape, const PxActor& Actor, OverlapResult& OutOverlap, const CollisionFilterData& QueryFilter)
+	{
+		const bool bBlock = IsBlocking(Shape, QueryFilter);
+
+		if (const BodyInstance* BodyInst = PhysicUserData::Get<BodyInstance>(Actor.userData))
+		{
+			//BodyInst = FPhysicsInterface::ShapeToOriginalBodyInstance(BodyInst, &Shape);
+			if (const PrimitiveComponent* OwnerComponent = BodyInst->GetOwnerComponent())
+			{
+				OutOverlap.HitActor = OwnerComponent->GetOwningActor();
+				OutOverlap.HitComponent = BodyInst->GetOwnerComponent();
+				//OutOverlap.ItemIndex = OwnerComponent->bMultiBodyOverlap ? BodyInst->InstanceBodyIndex : INDEX_NONE;
+			}
+		}
+		else
+		{
+			drn_check(false);
+		}
+		//else if(const FCustomPhysXPayload* CustomPayload = GetUserData<FCustomPhysXPayload>(Shape))
+		//{
+		//	TWeakObjectPtr<UPrimitiveComponent> OwnerComponent = CustomPayload->GetOwningComponent();
+		//	if (UPrimitiveComponent* OwnerComponentRaw = OwnerComponent.Get())
+		//	{
+		//		OutOverlap.Actor = OwnerComponentRaw->GetOwner();
+		//		OutOverlap.Component = OwnerComponent; // Copying weak pointer is faster than assigning raw pointer.
+		//		OutOverlap.ItemIndex = OwnerComponent->bMultiBodyOverlap ? CustomPayload->GetItemIndex() : INDEX_NONE;
+		//	}
+		//}
+
+		OutOverlap.bBlockingHit = bBlock;
+	}
+
+	void AddUniqueOverlap(std::vector<OverlapResult>& OutOverlaps, const OverlapResult& NewOverlap)
+	{
+		for(int32 TestIdx=0; TestIdx<OutOverlaps.size(); TestIdx++)
+		{
+			OverlapResult& Overlap = OutOverlaps[TestIdx];
+
+			if (Overlap.ItemIndex == NewOverlap.ItemIndex && Overlap.HitComponent == NewOverlap.HitComponent)
+			{
+				drn_check(Overlap.HitActor == NewOverlap.HitActor);
+				if(!Overlap.bBlockingHit && NewOverlap.bBlockingHit)
+				{
+					Overlap = NewOverlap;
+				}
+
+				return;
+			}
+		}
+
+		OutOverlaps.push_back(NewOverlap);
+	}
+
+	struct OverlapKey
+	{
+		PrimitiveComponent* Component;
+		int32 ComponentIndex;
+
+		OverlapKey(PrimitiveComponent* InComponent, int32 InComponentIndex)
+			: Component(InComponent)
+			, ComponentIndex(InComponentIndex)
+		{
+		}
+
+		friend bool operator==(const OverlapKey& X, const OverlapKey& Y)
+		{
+			return (X.ComponentIndex == Y.ComponentIndex) && (X.Component == Y.Component);
+		}
+	};
+
+	bool PhysicScene::ConvertOverlapResults(int32 NumOverlaps, PxOverlapBuffer* OverlapResults, const CollisionFilterData& QueryFilter, std::vector<OverlapResult>& OutOverlaps)
+	{
+		const int32 ExpectedSize = OutOverlaps.size() + NumOverlaps;
+		OutOverlaps.reserve(ExpectedSize);
+		bool bBlockingFound = false;
+
+		for (int32 i = 0; i < NumOverlaps; i++)
+		{
+			OverlapResult NewOverlap;
+			ConvertQueryOverlap(*OverlapResults->getAnyHit(i).shape, *OverlapResults->getAnyHit(i).actor, NewOverlap, QueryFilter);
+
+			if (NewOverlap.bBlockingHit)
+			{
+				bBlockingFound = true;
+			}
+
+			AddUniqueOverlap(OutOverlaps, NewOverlap);
+		}
+
+		return bBlockingFound;
 	}
 
 // ------------------------------------------------------------------------------------------------------------

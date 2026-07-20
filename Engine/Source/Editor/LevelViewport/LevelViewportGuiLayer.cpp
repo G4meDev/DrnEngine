@@ -422,28 +422,14 @@ namespace Drn
 		{
 			HitResult Hit;
 			Vector Start = SelectedSceneComponent->GetWorldLocation();
-			//Vector End = Start + Vector::DownVector * 10000;
-			Vector End = Start + SelectedSceneComponent->GetWorldRotation().GetAxisY() * -5;
+			Vector End = Start + Vector::DownVector * 10000;
 
-			//SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f);
-			//bool bHit = SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()} );
-			//if (bHit)
-			//{
-			//	SelectedSceneComponent->SetWorldLocation(Hit.Location);
-			//}
-
-			//bool bHit = SelectedSceneComponent->GetWorld()->LineTraceTest( Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//std::vector<HitResult> Hits; bool bHit = SelectedSceneComponent->GetWorld()->LineTraceMulti( Hits, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//HitResult Hits; bool bHit = SelectedSceneComponent->GetWorld()->SphereTrace( Hits, Start, End, 0.5f, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//std::vector<HitResult> Hits; bool bHit = SelectedSceneComponent->GetWorld()->SphereTraceMulti( Hits, Start, End, 0.5f, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//bool bHit = SelectedSceneComponent->GetWorld()->SphereTraceTest( Start, End, 0.5f, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//HitResult Hits; bool bHit = SelectedSceneComponent->GetWorld()->BoxTrace( Hits, Start, End, Vector(1.0f), SelectedSceneComponent->GetWorldRotation(), {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//std::vector<HitResult> Hits; bool bHit = SelectedSceneComponent->GetWorld()->BoxTraceMulti( Hits, Start, End, Vector(1.0f), SelectedSceneComponent->GetWorldRotation(), {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//bool bHit = SelectedSceneComponent->GetWorld()->BoxTraceTest( Start, End, Vector(1.0f), SelectedSceneComponent->GetWorldRotation(), {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//HitResult Hits; bool bHit = SelectedSceneComponent->GetWorld()->CapsuleTrace( Hits, Start, End, 0.5f, 1.5f, SelectedSceneComponent->GetWorldRotation(), {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			//std::vector<HitResult> Hits; bool bHit = SelectedSceneComponent->GetWorld()->CapsuleTraceMulti( Hits, Start, End, 0.5f, 1.5f, SelectedSceneComponent->GetWorldRotation(), {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-			bool bHit = SelectedSceneComponent->GetWorld()->CapsuleTraceTest( Start, End, 0.5f, 1.5f, SelectedSceneComponent->GetWorldRotation(), {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f );
-
+			SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f);
+			bool bHit = SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()} );
+			if (bHit)
+			{
+				SelectedSceneComponent->SetWorldLocation(Hit.Location);
+			}
 		}
 	}
 

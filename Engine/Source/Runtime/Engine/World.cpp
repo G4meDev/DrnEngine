@@ -789,6 +789,144 @@ namespace Drn
 		return bHit;
 	}
 
+	bool World::SphereOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration , Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxSphereGeometry SphereGeo(Radius);
+		bool bHit = m_PhysicScene->GeomOverlap(this, SphereGeo, Transform(Position, Quat::Identity), OutOverlaps, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugSphere(Position, Quat::Identity, bHit ? TraceHitColor : TraceColor, Radius, 16, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::SphereOverlapTest( const Vector& Position, float Radius, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration , Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxSphereGeometry SphereGeo(Radius);
+		bool bHit = m_PhysicScene->GeomOverlapTest(this, SphereGeo, Transform(Position, Quat::Identity), QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugSphere(Position, Quat::Identity, bHit ? TraceHitColor : TraceColor, Radius, 16, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::BoxOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, const Vector& HalfSize,
+		const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor , Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxBoxGeometry BoxGeo(Vector2P(HalfSize));
+		bool bHit = m_PhysicScene->GeomOverlap(this, BoxGeo, Transform(Position, Rotation), OutOverlaps, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugBox(Box(HalfSize * -1, HalfSize), Transform(Position, Rotation), bHit ? TraceHitColor : TraceColor, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::BoxOverlapTest( const Vector& Position, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxBoxGeometry BoxGeo(Vector2P(HalfSize));
+		bool bHit = m_PhysicScene->GeomOverlapTest(this, BoxGeo, Transform(Position, Rotation), QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugBox(Box(HalfSize * -1, HalfSize), Transform(Position, Rotation), bHit ? TraceHitColor : TraceColor, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::CapsuleOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxCapsuleGeometry CapsuleGeo(Radius, HalfHeight);
+		bool bHit = m_PhysicScene->GeomOverlap(this, CapsuleGeo, Transform(Position, CapsuleRotation2P(Rotation)), OutOverlaps, QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugCapsule(Position, HalfHeight, Radius, Rotation, bHit ? TraceHitColor : TraceColor, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
+	bool World::CapsuleOverlapTest( const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation,
+		const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
+	{
+		drn_check(m_PhysicScene);
+
+		CollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActors(IgnoreActors);
+
+		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
+
+		physx::PxCapsuleGeometry CapsuleGeo(Radius, HalfHeight);
+		bool bHit = m_PhysicScene->GeomOverlapTest(this, CapsuleGeo, Transform(Position, CapsuleRotation2P(Rotation)), QueryParams, ObjectQueryParams);
+
+#if WITH_EDITOR
+		if (DrawDuration >= 0.0f)
+		{
+			DrawDebugCapsule(Position, HalfHeight, Radius, Rotation, bHit ? TraceHitColor : TraceColor, 0.0f, DrawDuration);
+		}
+#endif
+
+		return bHit;
+	}
+
 // ------------------------------------------------------------------------------------------------------
 
 	ViewInfo World::GetPlayerWorldView() const

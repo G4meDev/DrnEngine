@@ -179,6 +179,23 @@ namespace Drn
 		class PhysicalMaterial* PhysMaterial;
 	};
 
+	struct OverlapResult
+	{
+		Actor* HitActor;
+		PrimitiveComponent* HitComponent;
+		int32 ItemIndex;
+
+		Actor* GetActor() const { return HitActor; };
+		PrimitiveComponent* GetComponent() const { return HitComponent; };
+
+		bool bBlockingHit;
+
+		OverlapResult()
+		{
+			memset(this, 0, sizeof(OverlapResult));
+		}
+	};
+
 	struct RigidBodyContactInfo
 	{
 		RigidBodyContactInfo()
