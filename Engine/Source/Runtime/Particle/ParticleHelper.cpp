@@ -10,6 +10,7 @@
 #include "Runtime/Particle/ParticleModuleEventReceiver.h"
 #include "Runtime/Particle/ParticleModuleCollision.h"
 #include "Runtime/Particle/ParticleModuleSize.h"
+#include "Runtime/Particle/ParticleModuleColor.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -71,6 +72,8 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleSize>(EParticleModule::Size, "Initial Size", "Size");
 		RegisterParticleModule<ParticleModuleSizeScale>(EParticleModule::SizeScale, "Size Scale", "Size");
 		RegisterParticleModule<ParticleModuleSizeByLife>(EParticleModule::SizeByLife, "Size By Life", "Size");
+		RegisterParticleModule<ParticleModuleColor>(EParticleModule::Color, "Color", "Color");
+		RegisterParticleModule<ParticleModuleColorOverLife>(EParticleModule::ColorOverLife, "Color Over Life", "Color");
 
 
 	}

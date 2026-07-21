@@ -78,6 +78,8 @@ namespace Drn
 		Size,
 		SizeScale,
 		SizeByLife,
+		Color,
+		ColorOverLife,
 		Max
 	};
 

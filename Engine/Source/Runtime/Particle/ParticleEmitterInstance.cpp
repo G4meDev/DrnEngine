@@ -868,7 +868,7 @@ namespace Drn
 					Math::DegreesToRadians(PayloadData->Rotation.GetY()), Math::DegreesToRadians(PayloadData->Rotation.GetZ())) : Quat::Identity;
 
 				//GetWorld()->DrawDebugSphere(SimulationToWorld.TransformPosition(Particle.Location), ParticleRotation, Color::White, 1 - Particle.RelativeTime, 32, 0.01, 0);
-				GetWorld()->DrawDebugBox(Box(Particle.Size * -0.5f, Particle.Size * 0.5f), SimulationToWorld * Transform(Particle.Location, ParticleRotation), Color::White, 0.01, 0);
+				GetWorld()->DrawDebugBox(Box(Particle.Size * -0.5f, Particle.Size * 0.5f), SimulationToWorld * Transform(Particle.Location, ParticleRotation), Particle.Color, 0.01, 0);
 			}
 		}
 	}
