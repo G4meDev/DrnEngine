@@ -759,19 +759,18 @@ namespace Drn
 	bool ParticleSystemComponent::ParticleLineCheck( HitResult& Hit, Actor* SourceActor, const Vector& End, const Vector& Start, const Vector& HalfExtent, const std::vector<ECollisionChannel>& ObjectTypes )
 	{
 		drn_check(GetWorld());
-		//if ( HalfExtent.IsZero() )
+		if ( HalfExtent.IsZero() )
 		{
 			CollisionQueryParams QueryParams(SourceActor);
 			QueryParams.bReturnPhysicalMaterial = true;
 			return GetWorld()->GetPhysicScene()->RaycastSingle(GetWorld(), Hit, Start, End, QueryParams, ObjectTypes);
 		}
-		//else
-		//{
-		//	FCollisionQueryParams BoxParams(SCENE_QUERY_STAT(ParticleCollision));
-		//	BoxParams.AddIgnoredActor(SourceActor);
-		//	BoxParams.bReturnPhysicalMaterial = true;
-		//	return GetWorld()->SweepSingleByObjectType(Hit, Start, End, FQuat::Identity, ObjectParams, FCollisionShape::MakeBox(HalfExtent), BoxParams);
-		//}
+		else
+		{
+			CollisionQueryParams BoxParams(SourceActor);
+			BoxParams.bReturnPhysicalMaterial = true;
+			return GetWorld()->GetPhysicScene()->GeomSweepSingle(GetWorld(), Hit, PxBoxGeometry(), Start, End, Quat::Identity, BoxParams, ObjectTypes);
+		}
 	}
 
 #if WITH_EDITOR

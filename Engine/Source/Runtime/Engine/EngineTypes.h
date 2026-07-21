@@ -75,6 +75,9 @@ namespace Drn
 		EventReceiverKillParticles,
 		EventReceiverSpawn,
 		Collision,
+		Size,
+		SizeScale,
+		SizeByLife,
 		Max
 	};
 

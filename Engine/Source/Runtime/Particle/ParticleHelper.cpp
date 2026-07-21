@@ -9,6 +9,7 @@
 #include "Runtime/Particle/ParticleModuleEventGenerator.h"
 #include "Runtime/Particle/ParticleModuleEventReceiver.h"
 #include "Runtime/Particle/ParticleModuleCollision.h"
+#include "Runtime/Particle/ParticleModuleSize.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -67,6 +68,9 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleEventReceiverKillParticles>(EParticleModule::EventReceiverKillParticles, "Event Receiver Kill Particles", "Event");
 		RegisterParticleModule<ParticleModuleEventReceiverSpawn>(EParticleModule::EventReceiverSpawn, "Event Receiver Spawn", "Event");
 		RegisterParticleModule<ParticleModuleCollision>(EParticleModule::Collision, "Collision", "Collision");
+		RegisterParticleModule<ParticleModuleSize>(EParticleModule::Size, "Initial Size", "Size");
+		RegisterParticleModule<ParticleModuleSizeScale>(EParticleModule::SizeScale, "Size Scale", "Size");
+		RegisterParticleModule<ParticleModuleSizeByLife>(EParticleModule::SizeByLife, "Size By Life", "Size");
 
 
 	}

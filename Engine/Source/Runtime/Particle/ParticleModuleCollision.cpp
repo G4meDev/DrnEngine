@@ -187,8 +187,7 @@ namespace Drn
 			}
 			Vector	Direction = (Location - OldLocation).GetSafeNormal();
 
-			//Vector Size = Particle.Size * ParentScale;
-			Vector Size = ParentScale;
+			Vector Size = Particle.Size * ParentScale;
 			Vector	Extent(0.0f);
 
 			//UParticleModuleTypeDataMesh* MeshType = Cast<UParticleModuleTypeDataMesh>(LODLevel->TypeDataModule);
