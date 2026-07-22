@@ -68,5 +68,44 @@ namespace Drn
 #endif
 	};
 
+// ------------------------------------------------------------------------------------------------------
+
+	class ParticleModuleAccelerationOverLife : public ParticleModuleAccelerationBase
+	{
+	public:
+		ParticleModuleAccelerationOverLife();
+	
+		TRefCountPtr<ParticleDistributionVector> AccelerationOverLife;
+	
+		virtual EParticleModule GetModuleType() const override { return EParticleModule::AccelerationOverLife; }
+
+		virtual void Update(ParticleEmitterInstance* EmitterInstance, int32 Offset, float DeltaTime) override;
+
+		virtual void Serialize( Archive& Ar ) override;
+	
+#if WITH_EDITOR
+		virtual bool Draw( ParticleEmitter* Owner ) override;
+#endif
+	};
+
+// ------------------------------------------------------------------------------------------------------
+
+	class ParticleModuleDrag : public ParticleModuleAccelerationBase
+	{
+	public:
+		ParticleModuleDrag();
+	
+		TRefCountPtr<ParticleDistributionFloat> DragCoefficient;
+	
+		virtual EParticleModule GetModuleType() const override { return EParticleModule::Drag; }
+
+		virtual void Update(ParticleEmitterInstance* EmitterInstance, int32 Offset, float DeltaTime) override;
+
+		virtual void Serialize( Archive& Ar ) override;
+	
+#if WITH_EDITOR
+		virtual bool Draw( ParticleEmitter* Owner ) override;
+#endif
+	};
 
 }  // namespace Drn

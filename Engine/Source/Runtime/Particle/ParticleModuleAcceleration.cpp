@@ -17,13 +17,6 @@ namespace Drn
 		}
 	}
 
-#if WITH_EDITOR
-	bool ParticleModuleAccelerationBase::Draw( ParticleEmitter* Owner )
-	{
-		return ImGui::Checkbox("World Space", &bWorldSpace);
-	}
-#endif
-
 // -----------------------------------------------------------------------------------------
 
 	ParticleModuleAccelerationConstant::ParticleModuleAccelerationConstant()
@@ -109,16 +102,6 @@ namespace Drn
 			Ar << Acceleration;
 		}
 	}
-
-#if WITH_EDITOR
-	bool ParticleModuleAccelerationConstant::Draw( ParticleEmitter* Owner )
-	{
-		bool bDirty = ParticleModuleAccelerationBase::Draw(Owner);
-		bDirty |= Acceleration.Draw("Acceleration", "Acceleration", EParameterPopupContext::None);
-
-		return bDirty;
-	}
-#endif
 
 // -----------------------------------------------------------------------------------------
 
@@ -212,7 +195,101 @@ namespace Drn
 		}
 	}
 
+// -----------------------------------------------------------------------------------------
+
+	ParticleModuleAccelerationOverLife::ParticleModuleAccelerationOverLife()
+		: ParticleModuleAccelerationBase()
+		, AccelerationOverLife(new ParticleDistributionVectorConstant(Vector::ZeroVector))
+	{
+		bUpdateModule = true;
+	}
+
+	void ParticleModuleAccelerationOverLife::Update( ParticleEmitterInstance* Owner, int32 Offset, float DeltaTime )
+	{
+		if (bWorldSpace && Owner->Emitter->bUseLocalSpace)
+		{
+			Transform Mat = Owner->Component->GetWorldTransform();
+			BEGIN_UPDATE_LOOP;
+				Vector Accel = AccelerationOverLife->GetValue(Particle.RelativeTime, Owner);
+				Accel = Mat.InverseTransformVector(Accel);
+				Particle.Velocity		+= Accel * DeltaTime;
+				Particle.BaseVelocity	+= Accel * DeltaTime;
+			END_UPDATE_LOOP;
+		}
+		else
+		{
+			BEGIN_UPDATE_LOOP;
+			Vector Accel = AccelerationOverLife->GetValue(Particle.RelativeTime, Owner);
+			Particle.Velocity		+= Accel * DeltaTime;
+			Particle.BaseVelocity	+= Accel * DeltaTime;
+			END_UPDATE_LOOP;
+		}
+	}
+
+	void ParticleModuleAccelerationOverLife::Serialize( Archive& Ar )
+	{
+		ParticleModuleAccelerationBase::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			AccelerationOverLife = ParticleDistributionVector::Create(Ar);
+		}
+		else
+		{
+			AccelerationOverLife->Serialize(Ar);
+		}
+	}
+
+// -----------------------------------------------------------------------------------------
+
+	ParticleModuleDrag::ParticleModuleDrag()
+		: ParticleModuleAccelerationBase()
+		, DragCoefficient(new ParticleDistributionFloatConstant(1.0f))
+	{
+		bUpdateModule = true;
+	}
+
+	void ParticleModuleDrag::Update( ParticleEmitterInstance* Owner, int32 Offset, float DeltaTime )
+	{
+		BEGIN_UPDATE_LOOP;
+		{
+			Vector Drag  = Particle.Velocity * -DragCoefficient->GetValue(Particle.RelativeTime, Owner);
+			Particle.Velocity		+= Drag * DeltaTime;
+			Particle.BaseVelocity	+= Drag * DeltaTime;
+		}
+		END_UPDATE_LOOP;
+	}
+
+	void ParticleModuleDrag::Serialize( Archive& Ar )
+	{
+		ParticleModuleAccelerationBase::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			DragCoefficient = ParticleDistributionFloat::Create(Ar);
+		}
+		else
+		{
+			DragCoefficient->Serialize(Ar);
+		}
+	}
+
+// -----------------------------------------------------------------------------------------
+
 #if WITH_EDITOR
+	bool ParticleModuleAccelerationBase::Draw( ParticleEmitter* Owner )
+	{
+		return ImGui::Checkbox("World Space", &bWorldSpace);
+	}
+
+	bool ParticleModuleAccelerationConstant::Draw( ParticleEmitter* Owner )
+	{
+		bool bDirty = ParticleModuleAccelerationBase::Draw(Owner);
+		bDirty |= Acceleration.Draw("Acceleration", "Acceleration", EParameterPopupContext::None);
+
+		return bDirty;
+	}
+
 	bool ParticleModuleAcceleration::Draw( ParticleEmitter* Owner )
 	{
 		bool bDirty = ParticleModuleAccelerationBase::Draw(Owner);
@@ -221,8 +298,22 @@ namespace Drn
 
 		return bDirty;
 	}
-#endif
 
-// -----------------------------------------------------------------------------------------
+	bool ParticleModuleAccelerationOverLife::Draw( ParticleEmitter* Owner )
+	{
+		bool bDirty = ParticleModuleAccelerationBase::Draw(Owner);
+		bDirty |= AccelerationOverLife->Draw(AccelerationOverLife, "Acceleration Over Life");
+
+		return bDirty;
+	}
+
+	bool ParticleModuleDrag::Draw( ParticleEmitter* Owner )
+	{
+		bool bDirty = ParticleModuleAccelerationBase::Draw(Owner);
+		bDirty |= DragCoefficient->Draw(DragCoefficient, "Drag Coefficient");
+
+		return bDirty;
+	}
+#endif
 
 }  // namespace Drn

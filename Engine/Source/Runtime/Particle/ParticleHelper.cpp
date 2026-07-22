@@ -57,21 +57,32 @@ namespace Drn
 	{
 		RegisterParticleModule<ParticleModuleSpawn>(EParticleModule::Spawn, "Spawn", "Spawn");
 		RegisterParticleModule<ParticleModuleSpawnPerUnit>(EParticleModule::SpawnPerUnit, "Spawn Per Unit", "Spawn");
+
 		RegisterParticleModule<ParticleModuleLocationPrimitiveSphere>(EParticleModule::LocationSphere, "Sphere", "Location");
+
 		RegisterParticleModule<ParticleModuleLifetime>(EParticleModule::Lifetime, "Lifetime", "Lifetime");
+
 		RegisterParticleModule<ParticleModuleVelocity>(EParticleModule::Velocity, "Initial Velocity", "Velocity");
 		RegisterParticleModule<ParticleModuleVelocityOverLifetime>(EParticleModule::VelocityOverLifetime, "Velocity Over Lifetime", "Velocity");
+
 		RegisterParticleModule<ParticleModuleAccelerationConstant>(EParticleModule::AccelerationConstant, "Acceleration Constant", "Acceleration");
 		RegisterParticleModule<ParticleModuleAcceleration>(EParticleModule::Acceleration, "Acceleration", "Acceleration");
+		RegisterParticleModule<ParticleModuleAccelerationOverLife>(EParticleModule::AccelerationOverLife, "Acceleration Over Life", "Acceleration");
+		RegisterParticleModule<ParticleModuleDrag>(EParticleModule::Drag, "Drag", "Acceleration");
+
 		RegisterParticleModule<ParticleModuleMeshRotation>(EParticleModule::MeshRotation, "Mesh Rotation", "Mesh Rotation");
 		RegisterParticleModule<ParticleModuleMeshRotationRate>(EParticleModule::MeshRotationRate, "Mesh Rotation Rate", "Mesh Rotation");
+
 		RegisterParticleModule<ParticleModuleEventGenerator>(EParticleModule::EventGenerator, "Event Generator", "Event");
 		RegisterParticleModule<ParticleModuleEventReceiverKillParticles>(EParticleModule::EventReceiverKillParticles, "Event Receiver Kill Particles", "Event");
 		RegisterParticleModule<ParticleModuleEventReceiverSpawn>(EParticleModule::EventReceiverSpawn, "Event Receiver Spawn", "Event");
+
 		RegisterParticleModule<ParticleModuleCollision>(EParticleModule::Collision, "Collision", "Collision");
+
 		RegisterParticleModule<ParticleModuleSize>(EParticleModule::Size, "Initial Size", "Size");
 		RegisterParticleModule<ParticleModuleSizeScale>(EParticleModule::SizeScale, "Size Scale", "Size");
 		RegisterParticleModule<ParticleModuleSizeByLife>(EParticleModule::SizeByLife, "Size By Life", "Size");
+
 		RegisterParticleModule<ParticleModuleColor>(EParticleModule::Color, "Color", "Color");
 		RegisterParticleModule<ParticleModuleColorOverLife>(EParticleModule::ColorOverLife, "Color Over Life", "Color");
 

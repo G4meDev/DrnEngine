@@ -80,6 +80,8 @@ namespace Drn
 		SizeByLife,
 		Color,
 		ColorOverLife,
+		AccelerationOverLife,
+		Drag,
 		Max
 	};
 
