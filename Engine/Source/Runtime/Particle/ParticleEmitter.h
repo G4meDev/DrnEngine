@@ -5,6 +5,8 @@
 
 namespace Drn
 {
+	class ParticleEmitterType;
+
 	class ParticleEmitter : public Serializable, public RefCountedObject
 	{
 	public:
@@ -28,6 +30,8 @@ namespace Drn
 #if WITH_EDITOR
 		bool Draw();
 #endif
+
+		TRefCountPtr<ParticleEmitterType> EmitterType;
 
 		std::vector<ParticleModuleSpawnBase*> SpawningModules;
 		std::vector<ParticleModule*> SpawnModules;

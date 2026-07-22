@@ -8,7 +8,7 @@
 namespace Drn
 {
 	#define DIST_GET_RANDOM_VALUE(RandStream)		((RandStream == NULL) ? Math::SRand() : RandStream->GetFraction())
-	
+
 	void ParticleDistributionFloat::Serialize( Archive& Ar )
 	{
 		if (!Ar.IsLoading())

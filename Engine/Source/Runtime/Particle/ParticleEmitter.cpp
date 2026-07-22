@@ -3,6 +3,7 @@
 
 #include "Runtime/Particle/ParticleModuleEventGenerator.h"
 #include "Runtime/Particle/ParticleModuleEventReceiver.h"
+#include "Runtime/Particle/ParticleEmitterType.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -12,6 +13,7 @@ namespace Drn
 {
 	ParticleEmitter::ParticleEmitter()
 		: Name("Emitter")
+		, EmitterType(new ParticleEmitterMeshType())
 		, bEnabled(true)
 		, ReqInstanceBytes(0)
 		, Origin(Vector::ZeroVector)
@@ -39,6 +41,7 @@ namespace Drn
 			UpdateModules.clear();
 
 			Ar >> Name;
+			EmitterType = ParticleEmitterType::Create(Ar);
 
 			int32 ModulesCount;
 			Ar >> ModulesCount;
@@ -86,6 +89,7 @@ namespace Drn
 // ------------------------------------------------------------------------------------
 
 			Ar << Name;
+			EmitterType->Serialize(Ar);
 
 			Ar << ModulesCount;
 			for (int32 i = 0; i < ModulesCount; i++)
@@ -183,6 +187,11 @@ namespace Drn
 		{
 			SetName(EmitterName);
 			bDirty = true;
+		}
+
+		if (ImGui::CollapsingHeader("Type", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			bDirty |= EmitterType->Draw(EmitterType);
 		}
 
 		if (ImGui::CollapsingHeader("Emitter", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))

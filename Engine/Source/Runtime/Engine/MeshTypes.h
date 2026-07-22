@@ -53,6 +53,10 @@ namespace Drn
 
 		std::string GetMaterialName() const;
 
+#if WITH_EDITOR
+		bool Draw(uint32 MaterialIndex);
+#endif
+
 	private:
 		EMaterialType Type;
 		AssetHandle<Material> MaterialHandle;

@@ -178,6 +178,44 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
+	bool MaterialSlot::Draw( uint32 MaterialIndex )
+	{
+		ImGui::PushID(MaterialIndex);
+		bool bDirty = false;
+
+		ImGui::Text(std::to_string(MaterialIndex).c_str());
+
+		const std::string MaterialPath = GetMaterialName();
+		ImGui::Text(MaterialPath.c_str());
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EditorConfig::Payload_AssetPath()))
+			{
+				auto AssetPath = static_cast<const char*>(payload->Data);
+				AssetHandle<Asset> DropedMaterial(AssetPath);
+				EAssetType Type = DropedMaterial.LoadGeneric();
+					
+				if (Type == EAssetType::Material)
+				{
+					SetMaterial(AssetHandle<Material>(AssetPath));
+					bDirty = true;
+				}
+
+				else if (Type == EAssetType::MaterialInstance)
+				{
+					SetMaterial(AssetHandle<MaterialInstance>(AssetPath));
+					bDirty = true;
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::PopID();
+		return bDirty;
+	}
+
 	void MaterialPropertyOverride::Draw( StaticMeshComponent* MC, uint32 MaterialIndex)
 	{
 		ImGui::PushID( "MaterialName" );
