@@ -58,6 +58,7 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleSpawn>(EParticleModule::Spawn, "Spawn", "Spawn");
 		RegisterParticleModule<ParticleModuleSpawnPerUnit>(EParticleModule::SpawnPerUnit, "Spawn Per Unit", "Spawn");
 
+		RegisterParticleModule<ParticleModuleLocation>(EParticleModule::Location, "Initial Location", "Location");
 		RegisterParticleModule<ParticleModuleLocationPrimitiveSphere>(EParticleModule::LocationSphere, "Sphere", "Location");
 
 		RegisterParticleModule<ParticleModuleLifetime>(EParticleModule::Lifetime, "Lifetime", "Lifetime");

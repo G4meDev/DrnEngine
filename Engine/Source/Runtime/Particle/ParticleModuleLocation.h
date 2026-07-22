@@ -61,4 +61,22 @@ namespace Drn
 		virtual bool Draw(ParticleEmitter* Owner) override;
 #endif
 	};
+
+	class ParticleModuleLocation : public ParticleModuleLocationBase
+	{
+	public:
+		ParticleModuleLocation();
+
+		TRefCountPtr<ParticleDistributionVector> StartLocation;
+
+		virtual void Spawn(ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase) override;
+
+		virtual EParticleModule	GetModuleType() const override { return EParticleModule::Location; }
+
+		virtual void Serialize( Archive& Ar ) override;
+
+#if WITH_EDITOR
+		virtual bool Draw(ParticleEmitter* Owner) override;
+#endif
+	};
 }

@@ -55,6 +55,8 @@ namespace Drn
 		}
 	}
 
+// -------------------------------------------------------------------------------------------------
+
 	void ParticleModuleLocationPrimitiveBase::DetermineUnitDirection( ParticleEmitterInstance* Owner, Vector& vUnitDir, RandomStream* InRandomStream )
 	{
 		Vector vRand = Vector(InRandomStream->GetFraction(), InRandomStream->GetFraction(), InRandomStream->GetFraction());
@@ -196,6 +198,38 @@ namespace Drn
 		}
 	}
 
+// -------------------------------------------------------------------------------------------------
+
+	ParticleModuleLocation::ParticleModuleLocation()
+		: ParticleModuleLocationBase()
+		, StartLocation(new ParticleDistributionVectorConstant(Vector::ZeroVector))
+	{}
+
+	void ParticleModuleLocation::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
+	{
+		SPAWN_INIT;
+		Vector LocationOffset = StartLocation->GetValue(Owner->EmitterTime, Owner, &GetRandomStream(Owner));
+		LocationOffset = Owner->EmitterToSimulation.TransformVector(LocationOffset);
+		Particle.Location += LocationOffset;
+	}
+
+	void ParticleModuleLocation::Serialize( Archive& Ar )
+	{
+		ParticleModuleLocationBase::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			StartLocation = ParticleDistributionVector::Create(Ar);
+		}
+
+		else
+		{
+			StartLocation->Serialize(Ar);
+		}
+	}
+
+// -------------------------------------------------------------------------------------------------
+
 #if WITH_EDITOR
 	bool ParticleModuleLocationPrimitiveBase::Draw( ParticleEmitter* Owner )
 	{
@@ -223,6 +257,15 @@ namespace Drn
 
 		return bDirty;
 	}
+
+	bool ParticleModuleLocation::Draw( ParticleEmitter* Owner )
+	{
+		bool bDirty = ParticleModuleLocationBase::Draw(Owner);
+
+		bDirty |= StartLocation->Draw(StartLocation, "Radius");
+
+		return bDirty;
+	}
 #endif
 
-        }  // namespace Drn
+}  // namespace Drn

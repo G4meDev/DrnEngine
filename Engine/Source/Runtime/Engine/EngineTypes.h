@@ -84,6 +84,7 @@ namespace Drn
 		Drag,
 		MeshRotationRateOverLifetime,
 		MeshRotationRateMultiplyLifetime,
+		Location,
 		Max
 	};
 
