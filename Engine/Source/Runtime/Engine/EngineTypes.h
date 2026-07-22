@@ -82,6 +82,8 @@ namespace Drn
 		ColorOverLife,
 		AccelerationOverLife,
 		Drag,
+		MeshRotationRateOverLifetime,
+		MeshRotationRateMultiplyLifetime,
 		Max
 	};
 

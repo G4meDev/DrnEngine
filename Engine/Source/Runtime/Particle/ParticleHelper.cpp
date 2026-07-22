@@ -72,6 +72,8 @@ namespace Drn
 
 		RegisterParticleModule<ParticleModuleMeshRotation>(EParticleModule::MeshRotation, "Mesh Rotation", "Mesh Rotation");
 		RegisterParticleModule<ParticleModuleMeshRotationRate>(EParticleModule::MeshRotationRate, "Mesh Rotation Rate", "Mesh Rotation");
+		RegisterParticleModule<ParticleModuleMeshRotationRateOverLifetime>(EParticleModule::MeshRotationRateOverLifetime, "Mesh Rotation Rate Over Lifetime", "Mesh Rotation");
+		RegisterParticleModule<ParticleModuleMeshRotationRateMultiplyLifetime>(EParticleModule::MeshRotationRateMultiplyLifetime, "Mesh Rotation Rate Multiply Lifetime", "Mesh Rotation");
 
 		RegisterParticleModule<ParticleModuleEventGenerator>(EParticleModule::EventGenerator, "Event Generator", "Event");
 		RegisterParticleModule<ParticleModuleEventReceiverKillParticles>(EParticleModule::EventReceiverKillParticles, "Event Receiver Kill Particles", "Event");
