@@ -56,6 +56,22 @@ namespace Drn
 		uint32 PrimitiveCount;
 	};
 
+	class ParticleSprite
+	{
+	public:
+
+		ParticleSprite( D3D12CommandList* CommandList );
+		~ParticleSprite();
+
+		TRefCountPtr<RenderVertexBuffer> m_VertexBuffer;
+		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
+
+		void Bind( D3D12CommandList* CommandList );
+
+		uint32 VertexCount;
+		uint32 PrimitiveCount;
+	};
+
 	class UniformCube
 	{
 	public:
@@ -379,10 +395,12 @@ namespace Drn
 
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleMesh;
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleMeshDepthOnly;
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleSprite;
 
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
 		UniformQuad* m_UniformQuad;
+		ParticleSprite* m_ParticleSprite;
 		UniformCube* m_UniformCube;
 		UniformCubePositionOnly* m_UniformCubePositionOnly;
 		PointLightSphere* m_PointLightSphere;

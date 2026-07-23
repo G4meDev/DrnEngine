@@ -60,6 +60,7 @@ namespace Drn
 
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_ParticleMesh;
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_ParticleMeshDepthOnly;
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_ParticleSprite;
 
 	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
@@ -157,9 +158,22 @@ namespace Drn
 			VertexElement(8, 32, DXGI_FORMAT_R32G32B32A32_FLOAT, "TRANSFORM", 3, 96, true),
 		});
 
+		VertexDeclaration_ParticleSprite = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32_FLOAT, "POSITION", 0, 8),
+
+			VertexElement(1, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "POS_RELTIME", 0, 64, true),
+			VertexElement(1, 16, DXGI_FORMAT_R32G32B32A32_FLOAT, "OLDPOS_ID", 0, 64, true),
+			VertexElement(1, 32, DXGI_FORMAT_R32G32B32A32_FLOAT, "SIZE_ROT_SUBINDEX", 0, 64, true),
+			VertexElement(1, 48, DXGI_FORMAT_R32G32B32A32_FLOAT, "PARTICLE_COLOR", 0, 64, true),
+
+			VertexElement(2, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "DYNAMIC", 0, 16, true),
+		});
+
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
 		m_BackfaceScreenTriangle = new BackfaceScreenTriangle( CommandList );
 		m_UniformQuad = new UniformQuad( CommandList );
+		m_ParticleSprite = new ParticleSprite( CommandList );
 		m_UniformCube = new UniformCube( CommandList );
 		m_UniformCubePositionOnly = new UniformCubePositionOnly( CommandList );
 		m_PointLightSphere = new PointLightSphere( CommandList );
@@ -218,6 +232,7 @@ namespace Drn
 		delete m_ScreenTriangle;
 		delete m_BackfaceScreenTriangle;
 		delete m_UniformQuad;
+		delete m_ParticleSprite;
 		delete m_UniformCube;
 		delete m_UniformCubePositionOnly;
 		delete m_PointLightSphere;
@@ -329,6 +344,44 @@ namespace Drn
 		uint16 const Strides[] = { sizeof(PositionUV) };
 		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
+	}
+
+// --------------------------------------------------------------------------------------
+
+	Vector2 ParticleSpriteVertexData[] = 
+	{
+		{ 0, 0},
+		{ 0, 1},
+		{ 1, 1},
+		{ 1, 0}
+	};
+
+	TriangleIndexList_16 ParticleSpriteIndexData[] =
+	{
+		{0, 2, 3},
+		{0, 1, 2}
+	};
+
+	ParticleSprite::ParticleSprite( D3D12CommandList* CommandList )
+	{
+		VertexCount = _countof(ParticleSpriteVertexData);
+		PrimitiveCount = _countof(ParticleSpriteIndexData);
+
+		uint32 VertexBufferFlags = (uint32)EBufferUsageFlags::VertexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo VertexBufferCreateInfo(nullptr, ParticleSpriteVertexData, ClearValueBinding::Black, "VB_UniformQuad");
+		m_VertexBuffer = RenderVertexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(ParticleSpriteVertexData), VertexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, VertexBufferCreateInfo);
+
+		uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+		RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, ParticleSpriteIndexData, ClearValueBinding::Black, "IB_UniformQuad");
+		m_IndexBuffer = RenderIndexBuffer::Create(CommandList->GetParentDevice(), CommandList, sizeof(uint16), sizeof(ParticleSpriteIndexData), IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
+	}
+
+	ParticleSprite::~ParticleSprite()
+	{}
+
+	void ParticleSprite::Bind( D3D12CommandList* CommandList )
+	{
+		CommandList->SetStreamSource(0, m_VertexBuffer, 0);
 	}
 
 // --------------------------------------------------------------------------------------

@@ -27,6 +27,7 @@ namespace Drn
 		VertexFactoryInstancedStaticMesh,
 		VertexFactoryDecal,
 		VertexFactoryParticleMesh,
+		VertexFactoryParticleSprite,
 
 		HasPrePass,
 		HasCustomPrePass,
@@ -58,6 +59,7 @@ namespace Drn
 		{EMaterialShaderFlag::VertexFactoryInstancedStaticMesh	, "SUPPORT_INSTANCED"},
 		{EMaterialShaderFlag::VertexFactoryDecal				, "SUPPORT_DECAL"},
 		{EMaterialShaderFlag::VertexFactoryParticleMesh			, "SUPPORT_PARTICLE_MESH"},
+		{EMaterialShaderFlag::VertexFactoryParticleSprite		, "SUPPORT_PARTICLE_SPRITE"},
 
 		{EMaterialShaderFlag::HasPrePass						, "SUPPORT_PRE_PASS"},
 		{EMaterialShaderFlag::HasCustomPrePass					, "HAS_CUSTOM_PRE_PASS"},
@@ -110,6 +112,11 @@ namespace Drn
 		else if (VertexFactory == VertexFactoryType::ParticleMesh)
 		{
 			return EMaterialShaderFlag::VertexFactoryParticleMesh;
+		}
+
+		else if (VertexFactory == VertexFactoryType::ParticleSprite)
+		{
+			return EMaterialShaderFlag::VertexFactoryParticleSprite;
 		}
 
 		drn_check(false);
@@ -511,6 +518,7 @@ namespace Drn
 			MaterialAsset->ShaderParameters.bIsUsedWithInstancedStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryInstancedStaticMesh);
 			MaterialAsset->ShaderParameters.bIsUsedWithDecal = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryDecal);
 			MaterialAsset->ShaderParameters.bIsUsedWithParticleMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryParticleMesh);
+			MaterialAsset->ShaderParameters.bIsUsedWithParticleSprite = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryParticleSprite);
 
 			UpdateMaterialParameterSlots(MaterialAsset, ShaderString);
 		}

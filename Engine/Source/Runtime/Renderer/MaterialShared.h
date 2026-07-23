@@ -111,6 +111,7 @@ namespace Drn
 		static VertexFactoryType* InstancedStaticMesh;
 		static VertexFactoryType* Decal;
 		static VertexFactoryType* ParticleMesh;
+		static VertexFactoryType* ParticleSprite;
 
 	private:
 		const std::string Name;
@@ -174,6 +175,7 @@ namespace Drn
 				uint32 bHasDistortionPass : 1;
 
 				uint32 bIsUsedWithParticleMesh : 1;
+				uint32 bIsUsedWithParticleSprite : 1;
 			};
 		};
 

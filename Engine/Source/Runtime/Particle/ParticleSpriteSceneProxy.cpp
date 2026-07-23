@@ -48,12 +48,63 @@ namespace Drn
 
 	void ParticleCpuSpriteSceneProxy::RenderMainPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		if (ActiveParticles > 0)
+		{
+			MaterialShader* MatShader = SpriteMaterial.GetParentMaterial()->GetShaderParameters().bIsUsedWithParticleSprite && SpriteMaterial.GetParentMaterial()->GetShaderParameters().bHasMainPass
+				? SpriteMaterial.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::ParticleSprite, EMaterialStage::Main)
+				: nullptr;
+
+			if (MatShader)
+			{
+				SCOPE_STAT_DYNAMIC(SpriteMaterial.GetMaterialName().c_str());
 		
+				MatShader->Bind(CommandList);
+				SpriteMaterial.GetMaterialInterface()->BindResources(CommandList);
+		
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(ParticleBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+				CommonResources::Get()->m_ParticleSprite->Bind(CommandList);
+				BindInstanceBuffers(CommandList);
+
+				CommonResources::Get()->m_ParticleSprite->Bind(CommandList);
+				BindInstanceBuffers(CommandList);
+				CommandList->DrawIndexedPrimitive(CommonResources::Get()->m_ParticleSprite->m_IndexBuffer, 0, 0,
+					CommonResources::Get()->m_ParticleSprite->VertexCount, 0, CommonResources::Get()->m_ParticleSprite->PrimitiveCount, ActiveParticles);
+			}
+		}
 	}
 
 	void ParticleCpuSpriteSceneProxy::RenderPrePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		if (ActiveParticles > 0)
+		{
+			MaterialShader* MatShader = nullptr;
+			if (SpriteMaterial.GetParentMaterial()->GetShaderParameters().bIsUsedWithParticleSprite && SpriteMaterial.GetParentMaterial()->GetShaderParameters().bHasPrepass)
+			{
+				MatShader = SpriteMaterial.GetParentMaterial()->GetShaderParameters().bHasCustomPrepass
+					? SpriteMaterial.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::ParticleSprite, EMaterialStage::Prepass)
+					: CommonResources::Get()->m_PositionOnlyMaterialShaders.GetShader(VertexFactoryType::ParticleSprite, SpriteMaterial.GetParentMaterial()->IsTwoSided());
+			}
+
+			if (MatShader)
+			{
+				SCOPE_STAT_DYNAMIC(SpriteMaterial.GetMaterialName().c_str());
 		
+				MatShader->Bind(CommandList);
+				SpriteMaterial.GetMaterialInterface()->BindResources(CommandList);
+		
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(ParticleBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+
+				CommonResources::Get()->m_ParticleSprite->Bind(CommandList);
+				BindInstanceBuffers(CommandList);
+				CommandList->DrawIndexedPrimitive(CommonResources::Get()->m_ParticleSprite->m_IndexBuffer, 0, 0,
+					CommonResources::Get()->m_ParticleSprite->VertexCount, 0, CommonResources::Get()->m_ParticleSprite->PrimitiveCount, ActiveParticles);
+			}
+		}
 	}
 
 	void ParticleCpuSpriteSceneProxy::RenderShadowPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer, LightSceneProxy* LightProxy )
@@ -126,7 +177,7 @@ namespace Drn
 		MaxParticles = OwningEmitter->MaxActiveParticles;
 
 		ParticleData.m_Guid = Guid;
-		ParticleData.m_LocalToWorld = OwningEmitter->EmitterToSimulation;
+		ParticleData.m_LocalToWorld = OwningEmitter->SimulationToWorld;
 		ParticleBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ParticleSpriteData), EUniformBufferUsage::MultiFrame, &ParticleData);
 
 		for (int32 i = 0; i < ActiveParticles; i++)
@@ -163,8 +214,8 @@ namespace Drn
 
 	void ParticleCpuSpriteSceneProxy::BindInstanceBuffers( class D3D12CommandList* CommandList )
 	{
-		CommandList->SetStreamSource(8, ParticlesInstanceBuffer, 0);
-		CommandList->SetStreamSource(9, DynamicBuffer, 0);
+		CommandList->SetStreamSource(1, ParticlesInstanceBuffer, 0);
+		CommandList->SetStreamSource(2, DynamicBuffer, 0);
 	}
 
 }  // namespace Drn

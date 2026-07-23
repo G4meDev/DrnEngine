@@ -149,6 +149,13 @@ struct PrimitiveBuffer
     uint4 Guid;
 };
 
+struct ParticleSpriteBuffer
+{
+    matrix SimulationToWorld;
+    matrix Unused_1;
+    uint4 Guid;
+};
+
 struct StaticSamplers
 {
     uint LinearSamplerIndex;
@@ -260,12 +267,26 @@ struct VertexInputParticleMesh
     float4 ParticleDynamic          : DYNAMIC;
 };
 
+struct VertexInputParticleSprite
+{
+    float2 Position                         : POSITION;
+    
+    float4 ParticlePosition_RelativeTime    : POS_RELTIME;
+    float4 ParticleOldPosition_Id           : OLDPOS_ID;
+    float4 Size_Rotation_Subindex           : SIZE_ROT_SUBINDEX;
+    float4 ParticleColor                    : PARTICLE_COLOR;
+    
+    float4 ParticleDynamic                  : DYNAMIC;
+};
+
 #if INSTANCED
 #define VertexInput VertexInputInstancedStaticMesh
 #elif STATICMESH
 #define VertexInput VertexInputStaticMesh
 #elif PARTICLE_MESH
 #define VertexInput VertexInputParticleMesh
+#elif PARTICLE_SPRITE
+#define VertexInput VertexInputParticleSprite
 #endif
 
 struct BasePassPixelShaderOutput
