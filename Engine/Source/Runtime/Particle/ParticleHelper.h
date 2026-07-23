@@ -168,36 +168,22 @@ namespace Drn
 
 	struct MeshParticleInstanceVertex
 	{
-		/** The color of the particle. */
-		Vector4 Color;
-
-		/** The instance to world transform of the particle. Translation vector is packed into W components. */
 		Vector4 Transform[3];
-
-		/** The velocity of the particle, XYZ: direction, W: speed. */
+		Vector4 Color;
 		Vector4 Velocity;
-
-		/** The sub-image texture offsets for the particle. */
 		int16 SubUVParams[4];
-
-		/** The sub-image lerp value for the particle. */
 		float SubUVLerp;
-
-		/** The relative time of the particle. */
 		float RelativeTime;
 	};
 
 	struct MeshParticleInstanceVertexDynamicParameter
 	{
-		/** The dynamic parameter of the particle. */
 		float DynamicValue[4];
 	};
 
 	struct MeshParticleInstanceVertexPrevTransform
 	{
-		Vector4 PrevTransform0;
-		Vector4 PrevTransform1;
-		Vector4 PrevTransform2;
+		Vector4 PrevTransform[3];
 	};
 
 	struct ParticleSpawnPerUnitInstancePayload

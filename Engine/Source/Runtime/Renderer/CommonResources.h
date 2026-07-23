@@ -377,6 +377,9 @@ namespace Drn
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_InstancedStaticMesh;
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_InstancedStaticMeshDefaultDepthOnly;
 
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleMesh;
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleMeshDepthOnly;
+
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
 		UniformQuad* m_UniformQuad;

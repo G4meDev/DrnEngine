@@ -61,6 +61,9 @@ namespace Drn
 		virtual void Init();
 		World* GetWorld() const;
 
+		virtual void RegisterSceneProxy() {};
+		virtual void UnregisterSceneProxy() {};
+
 		void UpdateTransforms();
 
 		uint32 GetModuleDataOffset(ParticleModule* Module);
@@ -147,13 +150,19 @@ namespace Drn
 		ParticleMeshEmitterInstance();
 		virtual ~ParticleMeshEmitterInstance();
 
+		virtual void InitParameters(ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent) override;
 		virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
 		virtual void PostSpawn(BaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
+
+		virtual void RegisterSceneProxy() override;
+		virtual void UnregisterSceneProxy() override;
 
 		//virtual uint32 RequiredBytes() override;
 		virtual bool Resize(int32 NewMaxActiveParticles) override;
 
 		virtual void UpdateBoundingBox(float DeltaTime) override;
+
+		class ParticleMeshSceneProxy* MeshSceneProxy;
 	};
 
 

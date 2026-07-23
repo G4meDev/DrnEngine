@@ -72,7 +72,7 @@ namespace Drn
 #endif
 	};
 
-	class ParticleSystemComponent : public SceneComponent
+	class ParticleSystemComponent : public PrimitiveComponent
 	{
 	public:
 		ParticleSystemComponent();
@@ -85,6 +85,9 @@ namespace Drn
 
 		virtual void RegisterComponent(World* InOwningWorld) override;
 		virtual void UnRegisterComponent() override;
+
+		void RegisterSceneProxies();
+		void UnregisterSceneProxies();
 
 		void SetTemplate(AssetHandle<ParticleSystem> InTemplate);
 		bool IsUsingTemplate(AssetHandle<ParticleSystem> InTemplate);
@@ -128,6 +131,9 @@ namespace Drn
 
 		virtual bool ParticleLineCheck(HitResult& Hit, Actor* SourceActor, const Vector& End, const Vector& Start, const Vector& HalfExtent, const std::vector<ECollisionChannel>& ObjectTypes);
 
+		inline float GetMinDrawDistance() const { return MinDrawDistance; }
+		inline float GetMaxDrawDistance() const { return MaxDrawDistance; }
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 
@@ -160,6 +166,9 @@ namespace Drn
 		std::vector<ParticleEventCollideData> CollisionEvents;
 		std::vector<ParticleEventBurstData> BurstEvents;
 		std::vector<ParticleEventKismetData> KismetEvents;
+
+		float MinDrawDistance;
+		float MaxDrawDistance;
 
 		friend class ParticleEmitterInstance;
 		friend class ParticleMeshEmitterInstance;

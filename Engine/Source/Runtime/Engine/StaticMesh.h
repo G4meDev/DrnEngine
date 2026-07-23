@@ -76,6 +76,8 @@ namespace Drn
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::StaticMesh; }
 
+		const StaticMeshData& GetMeshData() { return Data; }
+
 	protected:
 
 #if WITH_EDITOR

@@ -149,6 +149,8 @@ set( HEADER_FILES
 	Source/Runtime/Particle/ParticleModuleEventGenerator.h
 	Source/Runtime/Particle/ParticleModuleEventReceiver.h
 	Source/Runtime/Particle/ParticleEmitterType.h
+	Source/Runtime/Particle/ParticleMeshSceneProxy.h
+	Source/Runtime/Particle/ParticleSpriteSceneProxy.h
 	Source/Runtime/Particle/ParticleEmitterInstance.h
 	Source/Runtime/Particle/ParticleSystemComponent.h
 	Source/Runtime/Particle/ParticleHelper.h
@@ -416,6 +418,8 @@ set( SOURCE_FILES
 	Source/Runtime/Particle/ParticleModuleEventGenerator.cpp
 	Source/Runtime/Particle/ParticleModuleEventReceiver.cpp
 	Source/Runtime/Particle/ParticleEmitterType.cpp
+	Source/Runtime/Particle/ParticleMeshSceneProxy.cpp
+	Source/Runtime/Particle/ParticleSpriteSceneProxy.cpp
 	Source/Runtime/Particle/ParticleEmitterInstance.cpp
 	Source/Runtime/Particle/ParticleSystemComponent.cpp
 	Source/Runtime/Particle/ParticleHelper.cpp

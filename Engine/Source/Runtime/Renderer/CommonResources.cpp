@@ -58,6 +58,9 @@ namespace Drn
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_InstancedStaticMesh;
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_InstancedStaticMeshDefaultDepthOnly;
 
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_ParticleMesh;
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_ParticleMeshDepthOnly;
+
 	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
 		VertexDeclaration_Pos = VertexDeclaration::Create(
@@ -117,6 +120,41 @@ namespace Drn
 			VertexElement(9, 0, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 1, 24, true),
 			VertexElement(9, 8, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 2, 24, true),
 			VertexElement(9, 16, DXGI_FORMAT_R16G16B16A16_FLOAT, "MAT", 3, 24, true),
+		});
+
+		VertexDeclaration_ParticleMesh = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 12),
+			VertexElement(1, 0, DXGI_FORMAT_R8G8B8A8_UNORM, "COLOR", 0, 4),
+			VertexElement(2, 0, DXGI_FORMAT_R8G8B8A8_SNORM, "NORMAL", 0, 4),
+			VertexElement(3, 0, DXGI_FORMAT_R8G8B8A8_SNORM, "TANGENT", 0, 4),
+			VertexElement(4, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 0, 4),
+			VertexElement(5, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 1, 4),
+			VertexElement(6, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 2, 4),
+			VertexElement(7, 0, DXGI_FORMAT_R16G16_FLOAT, "TEXCOORD", 3, 4),
+
+			VertexElement(8, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "TRANSFORM", 1, 96, true),
+			VertexElement(8, 16, DXGI_FORMAT_R32G32B32A32_FLOAT, "TRANSFORM", 2, 96, true),
+			VertexElement(8, 32, DXGI_FORMAT_R32G32B32A32_FLOAT, "TRANSFORM", 3, 96, true),
+			VertexElement(8, 48, DXGI_FORMAT_R32G32B32A32_FLOAT, "PARTICLE_COLOR", 0, 96, true),
+			VertexElement(8, 64, DXGI_FORMAT_R32G32B32A32_FLOAT, "PARTICLE_VELOCITY", 0, 96, true),
+			VertexElement(8, 80, DXGI_FORMAT_R16G16B16A16_SINT, "SUBUV", 0, 96, true),
+			VertexElement(8, 88, DXGI_FORMAT_R32G32_FLOAT, "SUBUVLERP_RELTIME", 0, 96, true),
+
+			VertexElement(9, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "PREV_TRANSFORM", 1, 48, true),
+			VertexElement(9, 16, DXGI_FORMAT_R32G32B32A32_FLOAT, "PREV_TRANSFORM", 2, 48, true),
+			VertexElement(9, 32, DXGI_FORMAT_R32G32B32A32_FLOAT, "PREV_TRANSFORM", 3, 48, true),
+
+			VertexElement(10, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "DYNAMIC", 1, 16, true),
+		});
+
+		VertexDeclaration_ParticleMeshDepthOnly = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 12),
+
+			VertexElement(8, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "TRANSFORM", 1, 96, true),
+			VertexElement(8, 16, DXGI_FORMAT_R32G32B32A32_FLOAT, "TRANSFORM", 2, 96, true),
+			VertexElement(8, 32, DXGI_FORMAT_R32G32B32A32_FLOAT, "TRANSFORM", 3, 96, true),
 		});
 
 		m_ScreenTriangle = new ScreenTriangle( CommandList );

@@ -16,6 +16,8 @@ namespace Drn
 		, bWarmingUp(false)
 		, TotalActiveParticles(0)
 		, NumSignificantEmitters(0)
+		, MinDrawDistance(0.0f)
+		, MaxDrawDistance(0.0f)
 	{
 		bTickInEditor = true;
 		RandStream.Initalize(Time::Cycles());
@@ -171,7 +173,7 @@ namespace Drn
 
 	void ParticleSystemComponent::Serialize( Archive& Ar )
 	{
-		SceneComponent::Serialize(Ar);
+		PrimitiveComponent::Serialize(Ar);
 
 		if ( Ar.IsLoading() )
 		{
@@ -198,6 +200,9 @@ namespace Drn
 					VectorParams[Index].Serialize(Ar);
 				}
 			}
+
+			Ar >> MinDrawDistance;
+			Ar >> MaxDrawDistance;
 		}
 
 		else
@@ -221,13 +226,18 @@ namespace Drn
 					VectorParams[Index].Serialize(Ar);
 				}
 			}
+
+			Ar << MinDrawDistance;
+			Ar << MaxDrawDistance;
 		}
 
 	}
 
 	void ParticleSystemComponent::RegisterComponent( World* InOwningWorld )
 	{
-		SceneComponent::RegisterComponent(InOwningWorld);
+		PrimitiveComponent::RegisterComponent(InOwningWorld);
+
+		RegisterSceneProxies();
 
 #if WITH_EDITOR
 		AssetHandle<Texture2D> DefaultIcon( "Engine\\Content\\EditorResources\\ComponentIcons\\T_ParticleIcon.drn" );
@@ -239,7 +249,31 @@ namespace Drn
 
 	void ParticleSystemComponent::UnRegisterComponent()
 	{
-		SceneComponent::UnRegisterComponent();
+		UnregisterSceneProxies();
+
+		PrimitiveComponent::UnRegisterComponent();
+	}
+
+	void ParticleSystemComponent::RegisterSceneProxies()
+	{
+		for (ParticleEmitterInstance* Instance : Emitters)
+		{
+			if (Instance)
+			{
+				Instance->RegisterSceneProxy();
+			}
+		}
+	}
+
+	void ParticleSystemComponent::UnregisterSceneProxies()
+	{
+		for (ParticleEmitterInstance* Instance : Emitters)
+		{
+			if (Instance)
+			{
+				Instance->UnregisterSceneProxy();
+			}
+		}
 	}
 
 	void ParticleSystemComponent::SetTemplate( AssetHandle<ParticleSystem> InTemplate )
@@ -821,6 +855,16 @@ namespace Drn
 		if (ImGui::Button("Activate"))
 		{
 			Activate();
+		}
+
+		if (ImGui::InputFloat("MinDrawDistance", &MinDrawDistance))
+		{
+			//SetMinDrawDistance(MinDrawDistance);
+		}
+
+		if (ImGui::InputFloat("MaxDrawDistance", &MaxDrawDistance))
+		{
+			//SetMaxDrawDistance(MaxDrawDistance);
 		}
 
 		if (ImGui::CollapsingHeader("Float Parameters", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))

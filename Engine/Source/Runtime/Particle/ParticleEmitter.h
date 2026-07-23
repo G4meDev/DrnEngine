@@ -27,6 +27,8 @@ namespace Drn
 		inline bool IsMeshRotationActive() const { return bHasMeshRotation; }
 		inline int32 GetMeshRotationOffset() const { return MeshRotationOffset; }
 
+		inline ParticleEmitterType* GetEmitterType() const { return EmitterType; }
+
 #if WITH_EDITOR
 		bool Draw();
 #endif

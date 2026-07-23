@@ -4,6 +4,7 @@
 #include "Runtime/Particle/ParticleModuleLocation.h"
 #include "Runtime/Particle/ParticleModuleEventGenerator.h"
 #include "Runtime/Particle/ParticleModuleEventReceiver.h"
+#include "Runtime/Particle/ParticleMeshSceneProxy.h"
 
 #define MAX_PARTICLE_COUNT 2048
 
@@ -815,15 +816,27 @@ namespace Drn
 // ----------------------------------------------------------------------------------------------------------------------
 
 	ParticleMeshEmitterInstance::ParticleMeshEmitterInstance()
-		//: bHasRotation(false)
-		//, MeshRotationOffset(0)
+		: MeshSceneProxy(nullptr)
 	{
-		
+
 	}
 
 	ParticleMeshEmitterInstance::~ParticleMeshEmitterInstance()
 	{
-		
+		if (Component->IsRegistered())
+		{
+			UnregisterSceneProxy();
+		}
+	}
+
+	void ParticleMeshEmitterInstance::InitParameters( ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent )
+	{
+		ParticleEmitterInstance::InitParameters(InTemplate, InComponent);
+
+		if (InComponent->IsRegistered()) // handle delayed instance spawns
+		{
+			RegisterSceneProxy();
+		}
 	}
 
 	void ParticleMeshEmitterInstance::Tick( float DeltaTime, bool bSuppressSpawning )
@@ -851,7 +864,7 @@ namespace Drn
 			{
 				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
 				//Particle.Velocity = Particle.Velocity + Vector(0.0, -0.5, 0.0);
-	
+
 				MeshRotationPayloadData* PayloadData = (MeshRotationPayloadData*)((uint8*)&Particle + Emitter->GetMeshRotationOffset());
 				PayloadData->CurContinuousRotation += PayloadData->RotationRate * DeltaTime;
 			}
@@ -879,7 +892,28 @@ namespace Drn
 
 	}
 
-	//uint32 ParticleMeshEmitterInstance::RequiredBytes()
+	void ParticleMeshEmitterInstance::RegisterSceneProxy()
+	{
+		if (!MeshSceneProxy)
+		{
+			MeshSceneProxy = new ParticleMeshSceneProxy(this);
+			GetWorld()->GetScene()->RegisterPrimitiveProxy(MeshSceneProxy);
+
+			std::cout << "Reg\n";
+		}
+	}
+
+	void ParticleMeshEmitterInstance::UnregisterSceneProxy()
+	{
+		if (MeshSceneProxy)
+		{
+			MeshSceneProxy->MarkPendingKill();
+			MeshSceneProxy = nullptr;
+			std::cout << "Unreg\n";
+		}
+	}
+
+	// uint32 ParticleMeshEmitterInstance::RequiredBytes()
 	//{
 	//	uint32 Bytes = ParticleEmitterInstance::RequiredBytes();
 	//
