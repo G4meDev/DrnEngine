@@ -57,6 +57,8 @@ namespace Drn
 
 		RandomStream EmitterRandomStream;
 
+		class PrimitiveSceneProxy* SceneProxy;
+
 		virtual void InitParameters(ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent);
 		virtual void Init();
 		World* GetWorld() const;

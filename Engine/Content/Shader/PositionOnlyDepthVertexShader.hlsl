@@ -40,6 +40,8 @@ VertexShaderOutput Main_VS(VertexInputPositionOnly IN)
     LocalToWorld = P.LocalToWorld;
 #elif INSTANCED
     LocalToWorld = GetLocalToWorld(IN);
+#elif PARTICLE_MESH
+    LocalToWorld = GetLocalToWorld(IN);
 #endif
     
     float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f));

@@ -21,6 +21,8 @@ namespace Drn
 	{
 		bTickInEditor = true;
 		RandStream.Initalize(Time::Cycles());
+
+		bStatic = false;
 	}
 
 	ParticleSystemComponent::~ParticleSystemComponent()
@@ -203,6 +205,8 @@ namespace Drn
 
 			Ar >> MinDrawDistance;
 			Ar >> MaxDrawDistance;
+
+			drn_check(!bStatic); // this is always dynamic
 		}
 
 		else
@@ -939,6 +943,33 @@ namespace Drn
 		BoxSphereBounds Bounds = CalcBounds(GetWorldTransform());
 		GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::White, 0.0f, 0.0f);
 	}
+
+	void ParticleSystemComponent::SetSelectedInEditor( bool SelectedInEditor )
+	{
+		PrimitiveComponent::SetSelectedInEditor(SelectedInEditor);
+
+		for (ParticleEmitterInstance* Instance : Emitters)
+		{
+			if (Instance && Instance->SceneProxy)
+			{
+				Instance->SceneProxy->SetSelectedInEditor(SelectedInEditor);
+			}
+		}
+	}
+
+	void ParticleSystemComponent::SetSelectable( bool Selectable )
+	{
+		PrimitiveComponent::SetSelectable(Selectable);
+
+		for (ParticleEmitterInstance* Instance : Emitters)
+		{
+			if (Instance && Instance->SceneProxy)
+			{
+				Instance->SceneProxy->SetSelectable(Selectable);
+			}
+		}
+	}
+
 #endif
 
 // ------------------------------------------------------------------------------------------

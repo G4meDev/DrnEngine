@@ -185,10 +185,21 @@ struct VertexInputPositionOnlyInstancedStaticMesh
     half4 LocalToWorld3 : MAT3;
 };
 
+struct VertexInputPositionOnlyParticleMesh
+{
+    float3 Position         : POSITION;
+    
+    float4 LocalToWorld1    : TRANSFORM1;
+    float4 LocalToWorld2    : TRANSFORM2;
+    float4 LocalToWorld3    : TRANSFORM3;
+};
+
 #if INSTANCED
 #define VertexInputPositionOnly VertexInputPositionOnlyInstancedStaticMesh
 #elif STATICMESH
 #define VertexInputPositionOnly VertexInputPositionOnlyStaticMesh
+#elif PARTICLE_MESH
+#define VertexInputPositionOnly VertexInputPositionOnlyParticleMesh
 #endif
 
 struct VertexInputStaticMesh
@@ -223,10 +234,38 @@ struct VertexInputInstancedStaticMesh
     float4 PerInstanceCustom2 : CUSTOM2;
 };
 
+struct VertexInputParticleMesh
+{
+    float3 Position : POSITION;
+    float3 Color : COLOR;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
+    float2 UV1 : TEXCOORD0;
+    float2 UV2 : TEXCOORD1;
+    float2 UV3 : TEXCOORD2;
+    float2 UV4 : TEXCOORD3;
+    
+    float4 LocalToWorld1            : TRANSFORM1;
+    float4 LocalToWorld2            : TRANSFORM2;
+    float4 LocalToWorld3            : TRANSFORM3;
+    float4 ParticleColor            : PARTICLE_COLOR;
+    float4 ParticleVelocity         : PARTICLE_VELOCITY;
+    int4 ParticleSubUv              : SUBUV;
+    float2 SubUvLerpAndRelativeTime : SUBUVLERP_RELTIME;
+    
+    float4 PrevLocalToWorld1        : PREV_TRANSFORM1;
+    float4 PrevLocalToWorld2        : PREV_TRANSFORM2;
+    float4 PrevLocalToWorld3        : PREV_TRANSFORM3;
+    
+    float4 ParticleDynamic          : DYNAMIC;
+};
+
 #if INSTANCED
 #define VertexInput VertexInputInstancedStaticMesh
 #elif STATICMESH
 #define VertexInput VertexInputStaticMesh
+#elif PARTICLE_MESH
+#define VertexInput VertexInputParticleMesh
 #endif
 
 struct BasePassPixelShaderOutput
@@ -399,6 +438,24 @@ matrix GetLocalToWorld(VertexInputPositionOnlyInstancedStaticMesh IN)
         ( float4(IN.LocalToWorld1.x, IN.LocalToWorld2.x, IN.LocalToWorld3.x, IN.OriginRandom.x)
         , float4(IN.LocalToWorld1.y, IN.LocalToWorld2.y, IN.LocalToWorld3.y, IN.OriginRandom.y)
         , float4(IN.LocalToWorld1.z, IN.LocalToWorld2.z, IN.LocalToWorld3.z, IN.OriginRandom.z)
+        , float4(0, 0, 0, 1));
+}
+
+matrix GetLocalToWorld(VertexInputPositionOnlyParticleMesh IN)
+{
+    return matrix
+        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld1.y, IN.LocalToWorld1.z, IN.LocalToWorld1.w)
+        , float4(IN.LocalToWorld2.x, IN.LocalToWorld2.y, IN.LocalToWorld2.z, IN.LocalToWorld2.w)
+        , float4(IN.LocalToWorld3.x, IN.LocalToWorld3.y, IN.LocalToWorld3.z, IN.LocalToWorld3.w)
+        , float4(0, 0, 0, 1));
+}
+
+matrix GetLocalToWorld(VertexInputParticleMesh IN)
+{
+    return matrix
+        ( float4(IN.LocalToWorld1.x, IN.LocalToWorld1.y, IN.LocalToWorld1.z, IN.LocalToWorld1.w)
+        , float4(IN.LocalToWorld2.x, IN.LocalToWorld2.y, IN.LocalToWorld2.z, IN.LocalToWorld2.w)
+        , float4(IN.LocalToWorld3.x, IN.LocalToWorld3.y, IN.LocalToWorld3.z, IN.LocalToWorld3.w)
         , float4(0, 0, 0, 1));
 }
 

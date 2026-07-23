@@ -139,6 +139,10 @@ namespace Drn
 
 		virtual void DrawEditorDefault() override;
 		virtual void DrawEditorSelected() override;
+
+		virtual void SetSelectedInEditor(bool SelectedInEditor) override;
+		virtual void SetSelectable(bool Selectable) override;
+
 		inline virtual bool HasSprite() const override { return true; }
 #endif
 

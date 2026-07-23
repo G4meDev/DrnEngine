@@ -5,6 +5,7 @@
 #include "Runtime/Particle/ParticleModuleEventGenerator.h"
 #include "Runtime/Particle/ParticleModuleEventReceiver.h"
 #include "Runtime/Particle/ParticleMeshSceneProxy.h"
+#include "Runtime/Particle/ParticleEmitterType.h"
 
 #define MAX_PARTICLE_COUNT 2048
 
@@ -17,6 +18,7 @@ namespace Drn
 	ParticleEmitterInstance::ParticleEmitterInstance()
 		: Emitter(nullptr)
 		, Component(nullptr)
+		, SceneProxy(nullptr)
 		, EmitterType(EEmitterType::Mesh)
 		, Location(Vector::ZeroVector)
 		, bEnabled(1)
@@ -836,6 +838,10 @@ namespace Drn
 		if (InComponent->IsRegistered()) // handle delayed instance spawns
 		{
 			RegisterSceneProxy();
+#if WITH_EDITOR
+			SceneProxy->SetSelectable(InComponent->IsSelectable());
+			SceneProxy->SetSelectedInEditor(InComponent->IsSelectedInEditor());
+#endif
 		}
 	}
 
@@ -872,6 +878,19 @@ namespace Drn
 
 		if (bEnabled && !Component->bWarmingUp)
 		{
+			ParticleEmitterMeshType* EmitterMeshType = Emitter->GetEmitterType()->GetType() == EEmitterType::Mesh ? 
+				static_cast<ParticleEmitterMeshType*>(Emitter->GetEmitterType()) : nullptr;
+
+			BoxSphereBounds MeshBounds(Vector::ZeroVector, Vector::OneVector, 1.0f);
+			if (EmitterMeshType)
+			{
+				EmitterMeshType->Mesh.Load();
+				if (EmitterMeshType->Mesh.IsValid())
+				{
+					MeshBounds = EmitterMeshType->Mesh->GetBounds();
+				}
+			}
+
 			for (int32 i = 0; i < ActiveParticles; i++)
 			{
 				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
@@ -880,8 +899,8 @@ namespace Drn
 				Quat ParticleRotation = Emitter->bHasMeshRotation ? Quat(Math::DegreesToRadians(PayloadData->Rotation.GetX()),
 					Math::DegreesToRadians(PayloadData->Rotation.GetY()), Math::DegreesToRadians(PayloadData->Rotation.GetZ())) : Quat::Identity;
 
-				//GetWorld()->DrawDebugSphere(SimulationToWorld.TransformPosition(Particle.Location), ParticleRotation, Color::White, 1 - Particle.RelativeTime, 32, 0.01, 0);
-				GetWorld()->DrawDebugBox(Box(Particle.Size * -0.5f, Particle.Size * 0.5f), SimulationToWorld * Transform(Particle.Location, ParticleRotation), Particle.Color, 0.01, 0);
+				Transform BoundTransform = Transform(MeshBounds.Origin, Quat::Identity, MeshBounds.BoxExtent) * Transform(Particle.Location, ParticleRotation, Particle.Size) * Transform(SimulationToWorld);
+				GetWorld()->DrawDebugBox(Box(-1, 1), BoundTransform, Particle.Color, 0.01, 0);
 			}
 		}
 	}
@@ -897,9 +916,8 @@ namespace Drn
 		if (!MeshSceneProxy)
 		{
 			MeshSceneProxy = new ParticleMeshSceneProxy(this);
+			SceneProxy = MeshSceneProxy;
 			GetWorld()->GetScene()->RegisterPrimitiveProxy(MeshSceneProxy);
-
-			std::cout << "Reg\n";
 		}
 	}
 
@@ -908,8 +926,8 @@ namespace Drn
 		if (MeshSceneProxy)
 		{
 			MeshSceneProxy->MarkPendingKill();
+			SceneProxy = nullptr;
 			MeshSceneProxy = nullptr;
-			std::cout << "Unreg\n";
 		}
 	}
 

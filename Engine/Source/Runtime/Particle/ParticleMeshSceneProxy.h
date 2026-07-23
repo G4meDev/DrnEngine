@@ -58,8 +58,6 @@ namespace Drn
 		int32 ActiveParticles;
 		int32 MaxParticles;
 
-		BoxSphereBounds TempBound;
-
 		std::vector<MeshParticleInstanceVertex> ParticlesInstanceData;
 		std::vector<MeshParticleInstanceVertexPrevTransform> PrevTransforms;
 		std::vector<MeshParticleInstanceVertexDynamicParameter> Dynamics;

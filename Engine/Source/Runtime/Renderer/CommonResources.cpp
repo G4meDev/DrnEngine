@@ -145,7 +145,7 @@ namespace Drn
 			VertexElement(9, 16, DXGI_FORMAT_R32G32B32A32_FLOAT, "PREV_TRANSFORM", 2, 48, true),
 			VertexElement(9, 32, DXGI_FORMAT_R32G32B32A32_FLOAT, "PREV_TRANSFORM", 3, 48, true),
 
-			VertexElement(10, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "DYNAMIC", 1, 16, true),
+			VertexElement(10, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "DYNAMIC", 0, 16, true),
 		});
 
 		VertexDeclaration_ParticleMeshDepthOnly = VertexDeclaration::Create(
