@@ -140,6 +140,12 @@ struct ViewBuffer
     float RealTime;
     float PrevGameTime;
     float PrevRealTime;
+    
+    float3 CameraUpVector;
+    float DeltaTime;
+
+    float3 CameraRightVector;
+    float OneOverDeltaTime;
 };
 
 struct PrimitiveBuffer
@@ -483,6 +489,11 @@ matrix GetLocalToWorld(VertexInputParticleMesh IN)
 float max3(float A, float B, float C)
 {
     return max(max(A, B), C);
+}
+
+float3 SafeNormalize(float3 V)
+{
+    return V * rsqrt(max(dot(V, V), 0.00000001));
 }
 
 uint ReverseBits32( uint bits )

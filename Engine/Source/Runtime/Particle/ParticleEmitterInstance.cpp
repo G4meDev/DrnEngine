@@ -216,15 +216,15 @@ namespace Drn
 
 				UpdateBoundingBox(DeltaTime);
 
-				for (int32 i=0; i<ActiveParticles; i++)
-				{
-					DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
-
-					Particle.OldLocation = Particle.Location;
-
-					bool bJustSpawned = (Particle.Flags & STATE_Particle_JustSpawned) != 0;
-					Particle.Flags &= ~STATE_Particle_JustSpawned;
-				}
+				//for (int32 i=0; i<ActiveParticles; i++)
+				//{
+				//	DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+				//
+				//	Particle.OldLocation = Particle.Location;
+				//
+				//	bool bJustSpawned = (Particle.Flags & STATE_Particle_JustSpawned) != 0;
+				//	Particle.Flags &= ~STATE_Particle_JustSpawned;
+				//}
 			}
 
 			//Tick_ModuleFinalUpdate(DeltaTime, LODLevel);
@@ -1108,16 +1108,16 @@ namespace Drn
 	{
 		ParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
 
-		if (bEnabled && !Component->bWarmingUp)
-		{
-			for (int32 i = 0; i < ActiveParticles; i++)
-			{
-				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
-
-				Transform BoundTransform = Transform(Particle.Location, Quat::Identity, Particle.Size) * Transform(SimulationToWorld);
-				GetWorld()->DrawDebugSphere(BoundTransform.GetLocation(), Quat::Identity, Particle.Color, BoundTransform.GetScale().GetMaxComponent(), 8, 0, 0);
-			}
-		}
+		//if (bEnabled && !Component->bWarmingUp)
+		//{
+		//	for (int32 i = 0; i < ActiveParticles; i++)
+		//	{
+		//		DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+		//
+		//		Transform BoundTransform = Transform(Particle.Location, Quat::Identity, Particle.Size) * Transform(SimulationToWorld);
+		//		GetWorld()->DrawDebugSphere(BoundTransform.GetLocation(), Quat::Identity, Particle.Color, BoundTransform.GetScale().GetMaxComponent(), 8, 0, 0);
+		//	}
+		//}
 	}
 
 	void ParticleCpuSpriteEmitterInstance::RegisterSceneProxy()

@@ -51,6 +51,12 @@ namespace Drn
 		float PrevGameTime;
 		float PrevRealTime;
 
+		Vector CameraUpVector;
+		float DeltaTime;
+
+		Vector CameraRightVector;
+		float OneOverDeltaTime;
+
 		float ConvertFromDeviceZ(float DeviceZ) const;
 		float ConvertToDeviceZ(float SceneDepth) const;
 

@@ -1252,6 +1252,9 @@ namespace Drn
 		m_SceneView.GameTime = GetScene()->GetWorld()->GetTimeSeconds();
 #endif
 
+		m_SceneView.DeltaTime			= Time::GetApplicationDeltaTime();
+		m_SceneView.OneOverDeltaTime	= 1.0f / Time::GetApplicationDeltaTime();
+
 		m_SceneView.Size = GetViewportSize();
 		m_SceneView.InvSizeX = 1.0f / m_SceneView.Size.X;
 		m_SceneView.InvSizeY = 1.0f / m_SceneView.Size.Y;
@@ -1309,6 +1312,8 @@ namespace Drn
 
 		m_SceneView.CameraPos = VInfo.Location;
 		m_SceneView.CameraDir = VInfo.Rotation.GetVector();
+		m_SceneView.CameraUpVector = VInfo.Rotation.GetUpAxis();
+		m_SceneView.CameraRightVector = VInfo.Rotation.GetRightAxis();
 
 		m_SceneView.InvTanHalfFov = m_SceneView.ViewToProjection.m_Matrix.m[0][0];
 
