@@ -30,9 +30,16 @@ namespace Drn
 	class ParticleEmitterCpuSpriteType : public ParticleEmitterType
 	{
 	public:
-		ParticleEmitterCpuSpriteType() : ParticleEmitterType(){}
+		ParticleEmitterCpuSpriteType();
 		virtual EEmitterType GetType() const override { return EEmitterType::Sprite_Cpu; };
 
+		virtual void Serialize(Archive& Ar) override;
+
+		MaterialSlot SpriteMaterial;
+
+#if WITH_EDITOR
+		virtual bool Draw(TRefCountPtr<ParticleEmitterType>& Ptr) override;
+#endif
 	};
 
 	class ParticleEmitterGpuSpriteType : public ParticleEmitterType

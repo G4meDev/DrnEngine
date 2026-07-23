@@ -156,6 +156,18 @@ namespace Drn
 		Vector4			BaseColor;				// Base color of the particle
 	};
 
+	struct ParticleSpriteVertex
+	{
+		Vector Position;
+		float RelativeTime;
+		Vector	OldPosition;
+		float ParticleId;
+		Vector2 Size;
+		float Rotation;
+		float SubImageIndex;
+		Vector4 Color;
+	};
+
 	struct MeshRotationPayloadData
 	{
 		Vector	InitialOrientation;		// from mesh data module

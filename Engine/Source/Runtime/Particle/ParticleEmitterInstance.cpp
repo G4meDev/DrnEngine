@@ -5,6 +5,7 @@
 #include "Runtime/Particle/ParticleModuleEventGenerator.h"
 #include "Runtime/Particle/ParticleModuleEventReceiver.h"
 #include "Runtime/Particle/ParticleMeshSceneProxy.h"
+#include "Runtime/Particle/ParticleSpriteSceneProxy.h"
 #include "Runtime/Particle/ParticleEmitterType.h"
 
 #define MAX_PARTICLE_COUNT 2048
@@ -900,15 +901,9 @@ namespace Drn
 					Math::DegreesToRadians(PayloadData->Rotation.GetY()), Math::DegreesToRadians(PayloadData->Rotation.GetZ())) : Quat::Identity;
 
 				Transform BoundTransform = Transform(MeshBounds.Origin, Quat::Identity, MeshBounds.BoxExtent) * Transform(Particle.Location, ParticleRotation, Particle.Size) * Transform(SimulationToWorld);
-				GetWorld()->DrawDebugBox(Box(-1, 1), BoundTransform, Particle.Color, 0.01, 0);
+				GetWorld()->DrawDebugBox(Box(-1, 1), BoundTransform, Particle.Color, 0, 0);
 			}
 		}
-	}
-
-	void ParticleMeshEmitterInstance::PostSpawn( BaseParticle* Particle, float InterpolationPercentage, float SpawnTime )
-	{
-		ParticleEmitterInstance::PostSpawn(Particle, InterpolationPercentage, SpawnTime);
-
 	}
 
 	void ParticleMeshEmitterInstance::RegisterSceneProxy()
@@ -1081,4 +1076,196 @@ namespace Drn
 		}
 	}
 
-        }  // namespace Drn
+// ------------------------------------------------------------------------------------------------------
+
+	ParticleCpuSpriteEmitterInstance::ParticleCpuSpriteEmitterInstance()
+		: SpriteSceneProxy(nullptr)
+	{}
+
+	ParticleCpuSpriteEmitterInstance::~ParticleCpuSpriteEmitterInstance()
+	{
+		if (Component->IsRegistered())
+		{
+			UnregisterSceneProxy();
+		}
+	}
+
+	void ParticleCpuSpriteEmitterInstance::InitParameters( ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent )
+	{
+		ParticleEmitterInstance::InitParameters(InTemplate, InComponent);
+
+		if (InComponent->IsRegistered()) // handle delayed instance spawns
+		{
+			RegisterSceneProxy();
+#if WITH_EDITOR
+			SceneProxy->SetSelectable(InComponent->IsSelectable());
+			SceneProxy->SetSelectedInEditor(InComponent->IsSelectedInEditor());
+#endif
+		}
+	}
+
+	void ParticleCpuSpriteEmitterInstance::Tick( float DeltaTime, bool bSuppressSpawning )
+	{
+		ParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
+
+		if (bEnabled && !Component->bWarmingUp)
+		{
+			for (int32 i = 0; i < ActiveParticles; i++)
+			{
+				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+
+				Transform BoundTransform = Transform(Particle.Location, Quat::Identity, Particle.Size) * Transform(SimulationToWorld);
+				GetWorld()->DrawDebugSphere(BoundTransform.GetLocation(), Quat::Identity, Particle.Color, BoundTransform.GetScale().GetMaxComponent(), 8, 0, 0);
+			}
+		}
+	}
+
+	void ParticleCpuSpriteEmitterInstance::RegisterSceneProxy()
+	{
+		if (!SpriteSceneProxy)
+		{
+			SpriteSceneProxy = new ParticleCpuSpriteSceneProxy(this);
+			SceneProxy = SpriteSceneProxy;
+			GetWorld()->GetScene()->RegisterPrimitiveProxy(SpriteSceneProxy);
+		}
+	}
+
+	void ParticleCpuSpriteEmitterInstance::UnregisterSceneProxy()
+	{
+		if (SpriteSceneProxy)
+		{
+			SpriteSceneProxy->MarkPendingKill();
+			SceneProxy = nullptr;
+			SpriteSceneProxy = nullptr;
+		}
+	}
+
+	void ParticleCpuSpriteEmitterInstance::UpdateBoundingBox( float DeltaTime )
+	{
+		//ParticleEmitterInstance::UpdateBoundingBox(DeltaTime);
+
+		if (Component)
+		{
+			bool bUpdateBox = !Component->bWarmingUp && Component->Template.IsValid() && !Component->Template->bUseFixedBounds;
+			Vector Scale = Component->GetWorldScale();
+
+			Vector	NewLocation;
+			float	NewRotation;
+			if (bUpdateBox)
+			{
+				ParticleBoundingBox.Init();
+			}
+
+			Vector ParticlePivotOffset(-0.5f,-0.5f,0.0f);
+			//if( bUpdateBox )
+			//{
+			//	for( uint32 i = 0; i < NumModules; ++i )
+			//	{
+			//		UParticleModulePivotOffset* Module = Cast<UParticleModulePivotOffset>(HighestLODLevel->Modules[i]);
+			//		if( Module )
+			//		{
+			//			FVector2D PivotOff = Module->PivotOffset;
+			//			ParticlePivotOffset += FVector(PivotOff.X, PivotOff.Y, 0.0f);
+			//			break;
+			//		}
+			//	}
+			//}
+
+			// Store off the orbit offset, if there is one
+			//int32 OrbitOffsetValue = GetOrbitPayloadOffset();
+
+			// For each particle, offset the box appropriately 
+			Vector MinVal(10000000.0f);
+			Vector MaxVal(-10000000.0f);
+		
+			const bool bUseLocalSpace = Emitter->bUseLocalSpace;
+			const Matrix ComponentToWorld = bUseLocalSpace ? Matrix(Component->GetWorldTransform()) : Matrix::MatrixIdentity;
+
+			for (int32 i=0; i<ActiveParticles; i++)
+			{
+				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+			
+				// Do linear integrator and update bounding box
+				// Do angular integrator, and wrap result to within +/- 2 PI
+				Particle.OldLocation	= Particle.Location;
+
+				bool bJustSpawned = (Particle.Flags & STATE_Particle_JustSpawned) != 0;
+				Particle.Flags &= ~STATE_Particle_JustSpawned;
+
+				//Don't update position for newly spawned particles. They already have a partial update applied during spawn.
+				bool bSkipUpdate = bJustSpawned;
+
+				if ((Particle.Flags & STATE_Particle_Freeze) == 0 && !bSkipUpdate)
+				{
+					if ((Particle.Flags & STATE_Particle_FreezeTranslation) == 0)
+					{
+						NewLocation = Particle.Location + (Particle.Velocity * DeltaTime);
+					}
+					else
+					{
+						NewLocation = Particle.Location;
+					}
+					if ((Particle.Flags & STATE_Particle_FreezeRotation) == 0)
+					{
+						NewRotation = (DeltaTime * Particle.RotationRate) + Particle.Rotation;
+					}
+					else
+					{
+						NewRotation = Particle.Rotation;
+					}
+				}
+				else
+				{
+					NewLocation = Particle.Location;
+					NewRotation = Particle.Rotation;
+				}
+
+				float LocalMax(0.0f);
+
+				if (bUpdateBox)
+				{	
+					//if (OrbitOffsetValue == -1)
+					{
+						LocalMax = (Particle.Size * Scale).GetAbsMax();
+					}
+					//else
+					//{
+					//	int32 CurrentOffset = OrbitOffsetValue;
+					//	const uint8* ParticleBase = (const uint8*)&Particle;
+					//	PARTICLE_ELEMENT(FOrbitChainModuleInstancePayload, OrbitPayload);
+					//	LocalMax = OrbitPayload.Offset.GetAbsMax();
+					//}
+
+					LocalMax += (Particle.Size * ParticlePivotOffset).GetAbsMax();
+				}
+
+				Particle.Location	 = NewLocation;
+				Particle.Rotation	 = std::fmod(NewRotation, 2.f*(float)XM_PI);
+
+				if (bUpdateBox)
+				{	
+					Vector PositionForBounds = NewLocation;
+
+					if (bUseLocalSpace)
+					{
+						// Note: building the bounding box in world space as that gives tighter bounds than transforming a local space AABB into world space
+						PositionForBounds = ComponentToWorld.TransformPosition(NewLocation);
+					}
+
+					MinVal.SetX( std::min<float>(MinVal.GetX(), PositionForBounds.GetX() - LocalMax) );
+					MaxVal.SetX( std::max<float>(MaxVal.GetX(), PositionForBounds.GetX() + LocalMax) );
+					MinVal.SetY( std::min<float>(MinVal.GetY(), PositionForBounds.GetY() - LocalMax) );
+					MaxVal.SetY( std::max<float>(MaxVal.GetY(), PositionForBounds.GetY() + LocalMax) );
+					MinVal.SetZ( std::min<float>(MinVal.GetZ(), PositionForBounds.GetZ() - LocalMax) );
+					MaxVal.SetZ( std::max<float>(MaxVal.GetZ(), PositionForBounds.GetZ() + LocalMax) );
+				}
+			}
+
+			if (bUpdateBox)
+			{
+				ParticleBoundingBox = Box(MinVal, MaxVal);
+			}
+		}
+	}
+
+}  // namespace Drn

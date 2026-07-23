@@ -160,6 +160,14 @@ namespace Drn
 			return XMMax(XMMax(XMVectorGetX(Vec), XMVectorGetY(Vec)), XMVectorGetZ(Vec));
 		}
 
+		inline float GetAbsMax() const
+		{
+			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
+			Vector Temp = XMVectorAbs(Vec);
+
+			return Temp.GetMaxComponent();
+		}
+
 		inline float GetMinComponent() const 
 		{
 			XMVECTOR Vec = XMLoadFloat3(&m_Vector);

@@ -46,6 +46,28 @@ namespace Drn
 		return Out;
 	}
 
+// --------------------------------------------------------------------------------------------------------
+
+	ParticleEmitterCpuSpriteType::ParticleEmitterCpuSpriteType()
+		: ParticleEmitterType()
+	{}
+
+	void ParticleEmitterCpuSpriteType::Serialize( Archive& Ar )
+	{
+		ParticleEmitterType::Serialize(Ar);
+
+		if (Ar.IsLoading())
+		{
+			SpriteMaterial.Serialize(Ar);
+		}
+		else
+		{
+			SpriteMaterial.Serialize(Ar);
+		}
+	}
+
+// --------------------------------------------------------------------------------------------------------
+
 	ParticleEmitterMeshType::ParticleEmitterMeshType()
 		: ParticleEmitterType()
 	{}
@@ -164,6 +186,22 @@ namespace Drn
 
 		return bDirty;
 	}
+
+	bool ParticleEmitterCpuSpriteType::Draw( TRefCountPtr<ParticleEmitterType>& Ptr )
+	{
+		bool bDirty = ParticleEmitterType::Draw(Ptr);
+		if (bDirty)
+		{
+			return true;
+		}
+
+		bDirty |= SpriteMaterial.Draw(0);
+
+		return bDirty;
+	}
 #endif
 
-}  // namespace Drn
+	
+
+
+        }  // namespace Drn

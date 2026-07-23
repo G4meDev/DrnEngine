@@ -372,6 +372,7 @@ namespace Drn
 
 	void ParticleMeshSceneProxy::UpdateResources( class D3D12CommandList* CommandList )
 	{
+		UpdateMeshAndMaterials(CommandList);
 		UpdateBuffers(CommandList);
 	}
 
@@ -423,8 +424,6 @@ namespace Drn
 
 	void ParticleMeshSceneProxy::UpdateBuffers( class D3D12CommandList* CommandList )
 	{
-		UpdateMeshAndMaterials(CommandList);
-
 		drn_check(OwningEmitter);
 
 		if (MaxParticles < OwningEmitter->MaxActiveParticles)

@@ -176,6 +176,7 @@ namespace Drn
 
 		friend class ParticleEmitterInstance;
 		friend class ParticleMeshEmitterInstance;
+		friend class ParticleCpuSpriteEmitterInstance;
 		friend class AssetPreviewParticleSystemGuiLayer;
 	};
 }

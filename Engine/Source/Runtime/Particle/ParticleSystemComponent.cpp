@@ -1,5 +1,6 @@
 #include "DrnPCH.h"
 #include "ParticleSystemComponent.h"
+#include "Runtime/Particle/ParticleEmitterType.h"
 
 #if WITH_EDITOR
 #include "Editor/EditorConfig.h"
@@ -334,8 +335,23 @@ namespace Drn
 					}
 					else
 					{
-						TRefCountPtr<ParticleMeshEmitterInstance> MeshEmitter = new ParticleMeshEmitterInstance();
-						Instance = Emitters[i] = ((ParticleEmitterInstance*)MeshEmitter);
+						drn_check(Emitter->EmitterType);
+						EEmitterType EType = Emitter->GetEmitterType()->GetType();
+
+						if (EType == EEmitterType::Mesh)
+						{
+							TRefCountPtr<ParticleMeshEmitterInstance> MeshEmitter = new ParticleMeshEmitterInstance();
+							Instance = Emitters[i] = MeshEmitter;
+						}
+						else if (EType == EEmitterType::Sprite_Cpu)
+						{
+							TRefCountPtr<ParticleCpuSpriteEmitterInstance> SpriteEmitter = new ParticleCpuSpriteEmitterInstance();
+							Instance = Emitters[i] = SpriteEmitter;
+						}
+						else
+						{
+							drn_check(false);
+						}
 					}
 
 					if (Instance)

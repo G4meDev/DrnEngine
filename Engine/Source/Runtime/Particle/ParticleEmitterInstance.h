@@ -145,7 +145,31 @@ namespace Drn
 		virtual void ProcessParticleEvents(float DeltaTime, bool bSuppressSpawning);
 
 	};
-	
+
+// ---------------------------------------------------------------------------------------
+
+	class ParticleCpuSpriteEmitterInstance : public ParticleEmitterInstance
+	{
+	public:
+		ParticleCpuSpriteEmitterInstance();
+		virtual ~ParticleCpuSpriteEmitterInstance();
+
+		virtual void InitParameters(ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent) override;
+		virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
+
+		virtual void RegisterSceneProxy() override;
+		virtual void UnregisterSceneProxy() override;
+
+		//virtual uint32 RequiredBytes() override;
+		//virtual bool Resize(int32 NewMaxActiveParticles) override;
+
+		virtual void UpdateBoundingBox(float DeltaTime) override;
+
+		class ParticleCpuSpriteSceneProxy* SpriteSceneProxy;
+	};
+
+// ---------------------------------------------------------------------------------------
+
 	class ParticleMeshEmitterInstance : public ParticleEmitterInstance
 	{
 	public:
@@ -154,7 +178,6 @@ namespace Drn
 
 		virtual void InitParameters(ParticleEmitter* InTemplate, ParticleSystemComponent* InComponent) override;
 		virtual void Tick(float DeltaTime, bool bSuppressSpawning) override;
-		virtual void PostSpawn(BaseParticle* Particle, float InterpolationPercentage, float SpawnTime) override;
 
 		virtual void RegisterSceneProxy() override;
 		virtual void UnregisterSceneProxy() override;
@@ -167,8 +190,7 @@ namespace Drn
 		class ParticleMeshSceneProxy* MeshSceneProxy;
 	};
 
-
-	// ---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 
 #if WITH_EDITOR
 	class ParticleStats
