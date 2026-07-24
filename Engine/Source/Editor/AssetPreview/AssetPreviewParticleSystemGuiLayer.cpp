@@ -331,7 +331,52 @@ namespace Drn
 					Module->SetEnabled(!Module->IsEnabled());
 				} ImGui::SameLine();
 
-				ImGui::Text(ModuleMetaData.DisplayName.c_str());
+				auto CanMoveModule = [&](int32 From, int32 To)
+				{
+					bool bValidDest = (To >= 0) && (To < Emitter->Modules.size());
+					return (From != To) && bValidDest;
+				};
+
+				auto MoveModule = [&](int32 From, int32 To)
+				{
+					std::iter_swap(Emitter->Modules.begin() + From, Emitter->Modules.begin() + To);
+					if (SelectedModuleIndex == From)
+					{
+						SelectedModuleIndex = To;
+					}
+				};
+
+				ImGui::BeginDisabled(!CanMoveModule(ModuleIndex, ModuleIndex - 1));
+				if (ImGui::Button("Up"))
+				{
+					MoveModule(ModuleIndex, ModuleIndex - 1);
+				} ImGui::SameLine(); ImGui::EndDisabled();
+
+				ImGui::BeginDisabled(!CanMoveModule(ModuleIndex, ModuleIndex + 1));
+				if (ImGui::Button("Down"))
+				{
+					MoveModule(ModuleIndex, ModuleIndex + 1);
+				} ImGui::SameLine(); ImGui::EndDisabled();
+
+				{
+					bool bPushedColor = false;
+					if (!Module->IsValid())
+					{
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+						bPushedColor = true;
+					}
+					else if (!Module->IsEnabled())
+					{
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 0, 1));
+						bPushedColor = true;
+					}
+
+					ImGui::Text(ModuleMetaData.DisplayName.c_str());
+					if (bPushedColor)
+					{
+						ImGui::PopStyleColor();
+					}
+				}
 			}
 			ImGui::EndChild();
 

@@ -29,6 +29,9 @@ namespace Drn
 
 		inline ParticleEmitterType* GetEmitterType() const { return EmitterType; }
 
+		bool IsMeshEmitter() const;
+		bool IsCpuSpriteEmitter() const;
+
 #if WITH_EDITOR
 		bool Draw();
 #endif

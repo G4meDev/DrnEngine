@@ -13,7 +13,15 @@ namespace Drn
 
 	void ParticleModuleMeshRotation::CompileModule( ParticleEmitter* Emitter )
 	{
-		Emitter->bHasMeshRotation = true;
+		if (Emitter->IsMeshEmitter())
+		{
+			Emitter->bHasMeshRotation = true;
+		}
+
+		else
+		{
+			bValid = false;
+		}
 	}
 
 	void ParticleModuleMeshRotation::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
@@ -67,7 +75,15 @@ namespace Drn
 
 	void ParticleModuleMeshRotationRate::CompileModule( ParticleEmitter* Emitter )
 	{
-		Emitter->bHasMeshRotation = true;
+		if (Emitter->IsMeshEmitter())
+		{
+			Emitter->bHasMeshRotation = true;
+		}
+
+		else
+		{
+			bValid = false;
+		}
 	}
 
 	void ParticleModuleMeshRotationRate::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
@@ -114,7 +130,15 @@ namespace Drn
 
 	void ParticleModuleMeshRotationRateOverLifetime::CompileModule( ParticleEmitter* Emitter )
 	{
-		Emitter->bHasMeshRotation = true;
+		if (Emitter->IsMeshEmitter())
+		{
+			Emitter->bHasMeshRotation = true;
+		}
+
+		else
+		{
+			bValid = false;
+		}
 	}
 
 	void ParticleModuleMeshRotationRateOverLifetime::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )
@@ -200,7 +224,15 @@ namespace Drn
 
 	void ParticleModuleMeshRotationRateMultiplyLifetime::CompileModule( ParticleEmitter* Emitter )
 	{
-		Emitter->bHasMeshRotation = true;
+		if (Emitter->IsMeshEmitter())
+		{
+			Emitter->bHasMeshRotation = true;
+		}
+
+		else
+		{
+			bValid = false;
+		}
 	}
 
 	void ParticleModuleMeshRotationRateMultiplyLifetime::Spawn( ParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, BaseParticle* ParticleBase )

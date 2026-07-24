@@ -177,6 +177,16 @@ namespace Drn
 		}
 	}
 
+	bool ParticleEmitter::IsMeshEmitter() const
+	{
+		return EmitterType && (EmitterType->GetType() == EEmitterType::Mesh);
+	}
+
+	bool ParticleEmitter::IsCpuSpriteEmitter() const
+	{
+		return EmitterType && (EmitterType->GetType() == EEmitterType::Sprite_Cpu);
+	}
+
 #if WITH_EDITOR
 	bool ParticleEmitter::Draw()
 	{
