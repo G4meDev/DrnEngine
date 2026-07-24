@@ -8,8 +8,6 @@
 #include "Runtime/Particle/ParticleSpriteSceneProxy.h"
 #include "Runtime/Particle/ParticleEmitterType.h"
 
-#define MAX_PARTICLE_COUNT 2048
-
 namespace Drn
 {
 #if WITH_EDITOR
@@ -165,7 +163,7 @@ namespace Drn
 
 	bool ParticleEmitterInstance::Resize( int32 NewMaxActiveParticles )
 	{
-		if (NewMaxActiveParticles < 0 || NewMaxActiveParticles > MAX_PARTICLE_COUNT)
+		if (NewMaxActiveParticles < 0 || NewMaxActiveParticles > Emitter->MaxParticleCount)
 		{
 			return false;
 		}
@@ -462,7 +460,7 @@ namespace Drn
 			NewLeftover			= NewLeftover - Number;
 
 			bool bProcessSpawn = true;
-			int32 NewCount = std::min(ActiveParticles + Number + BurstCount, MAX_PARTICLE_COUNT);
+			int32 NewCount = std::min(ActiveParticles + Number + BurstCount, Emitter->MaxParticleCount);
 
 			if (NewCount >= MaxActiveParticles)
 			{

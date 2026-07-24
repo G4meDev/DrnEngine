@@ -57,6 +57,7 @@ namespace Drn
 		bool bKillOnDeactivate;
 		bool bKillOnCompleted;
 		EParticleSortMode SortMode;
+		int32 MaxParticleCount;
 
 		float EmitterDuration;
 		float EmitterDurationLow;

@@ -19,6 +19,7 @@ namespace Drn
 		, Origin(Vector::ZeroVector)
 		, Rotation(Quat::Identity)
 		, SortMode(EParticleSortMode::None)
+		, MaxParticleCount(500)
 		, bUseLocalSpace(false)
 		, bKillOnDeactivate(false)
 		, bKillOnCompleted(false)
@@ -62,6 +63,7 @@ namespace Drn
 			Ar >> bKillOnDeactivate;
 			Ar >> bKillOnCompleted;
 			Ar >> *(uint8*)&SortMode;
+			Ar >> MaxParticleCount;
 
 			Ar >> EmitterDuration;
 			Ar >> EmitterDurationLow;
@@ -106,6 +108,7 @@ namespace Drn
 			Ar << bKillOnDeactivate;
 			Ar << bKillOnCompleted;
 			Ar << (uint8)SortMode;
+			Ar << MaxParticleCount;
 
 			Ar << EmitterDuration;
 			Ar << EmitterDurationLow;
@@ -222,6 +225,8 @@ namespace Drn
 				SortMode = (EParticleSortMode)Selected;
 				bDirty = true;
 			}
+
+			bDirty |= ImGui::InputInt("Max Particle Count", &MaxParticleCount);
 		}
 
 		if (ImGui::CollapsingHeader("Duration", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
