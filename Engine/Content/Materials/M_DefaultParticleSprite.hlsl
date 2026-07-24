@@ -45,64 +45,6 @@ struct PixelShaderOutput
 #endif
 };
 
-void ParticleSpriteTangents(ViewBuffer View, float Rotation, float3 WorldPosition, float3 OldWorldPosition, out float3 OutRight, out float3 OutUp, bool VelocityAlign)
-{
-    float3 RightVector = View.CameraRightVector;
-    float3 UpVector = View.CameraUpVector;
-    float3 CameraDirection = SafeNormalize(View.CameraPos - WorldPosition.xyz);
-    
-    [flatten]
-    if (VelocityAlign)
-    {
-        float3 ParticleDirection = SafeNormalize(WorldPosition.xyz - OldWorldPosition.xyz);
-        RightVector = SafeNormalize(cross(CameraDirection, ParticleDirection));
-        UpVector = -ParticleDirection;
-    }
-    
-    float SinRotation;
-	float CosRotation;
-	const float SpriteRotation = Rotation;
-	sincos(SpriteRotation, SinRotation, CosRotation);
-
-	OutRight	= SinRotation * UpVector + CosRotation * RightVector;
-	OutUp		= CosRotation * UpVector - SinRotation * RightVector;
-}
-
-float3x3 ParticleSpriteCalcTangentBasis(float3 Right, float3 Up)
-{
-    float3 Normal = normalize(cross(Right, -Up));
-    return float3x3(Right, Normal, -Up);
-}
-
-float ExponentialDenstity(float Depth, float Density, bool UseExp2 = true)
-{
-    float DC = Depth * Density;
-    [flatten]
-    if(UseExp2)
-    {
-        DC *= DC;
-    }
-    
-    if(Depth > 0.0f)
-    {
-        return 1.0f / pow(2.718, DC);
-    }
-    
-    return 1.0f;
-}
-
-float RadialGradientExponential(float2 UV, float2 CenterPosition = float2(0.5, 0.5), float Radius = 0.5, float Density = 2.333, bool bInvertDensity = false)
-{
-    if(bInvertDensity)
-    {
-        return ExponentialDenstity(distance(UV, CenterPosition) / Radius, Density);
-    }
-    else
-    {
-        return 1 - ExponentialDenstity(1 - (distance(UV, CenterPosition) / Radius), Density);
-    }
-}
-
 VertexShaderOutput Main_VS(VertexInputParticleSprite IN)
 {
     VertexShaderOutput OUT;

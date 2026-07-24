@@ -38,12 +38,56 @@ namespace Drn
 
 	void ParticleCpuSpriteSceneProxy::RenderTranslucencyPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		if (ActiveParticles > 0)
+		{
+			MaterialShader* MatShader = SpriteMaterial.GetParentMaterial()->GetShaderParameters().bIsUsedWithParticleSprite && SpriteMaterial.GetParentMaterial()->GetShaderParameters().bHasTranslucencyPass
+				? SpriteMaterial.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::ParticleSprite, EMaterialStage::Translucensy)
+				: nullptr;
+
+			if (MatShader)
+			{
+				SCOPE_STAT_DYNAMIC(SpriteMaterial.GetMaterialName().c_str());
 		
+				MatShader->Bind(CommandList);
+				SpriteMaterial.GetMaterialInterface()->BindResources(CommandList);
+		
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(ParticleBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+				CommonResources::Get()->m_ParticleSprite->Bind(CommandList);
+				BindInstanceBuffers(CommandList);
+				CommandList->DrawIndexedPrimitive(CommonResources::Get()->m_ParticleSprite->m_IndexBuffer, 0, 0,
+					CommonResources::Get()->m_ParticleSprite->VertexCount, 0, CommonResources::Get()->m_ParticleSprite->PrimitiveCount, ActiveParticles);
+			}
+		}
 	}
 
 	void ParticleCpuSpriteSceneProxy::RenderDistortionPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		if (ActiveParticles > 0)
+		{
+			MaterialShader* MatShader = SpriteMaterial.GetParentMaterial()->GetShaderParameters().bIsUsedWithParticleSprite && SpriteMaterial.GetParentMaterial()->GetShaderParameters().bHasDistortionPass
+				? SpriteMaterial.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::ParticleSprite, EMaterialStage::Distortion)
+				: nullptr;
+
+			if (MatShader)
+			{
+				SCOPE_STAT_DYNAMIC(SpriteMaterial.GetMaterialName().c_str());
 		
+				MatShader->Bind(CommandList);
+				SpriteMaterial.GetMaterialInterface()->BindResources(CommandList);
+		
+				CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+				CommandList->SetGraphicRootConstant(ParticleBuffer->GetViewIndex(), 1);
+				CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+				CommonResources::Get()->m_ParticleSprite->Bind(CommandList);
+				BindInstanceBuffers(CommandList);
+				CommandList->DrawIndexedPrimitive(CommonResources::Get()->m_ParticleSprite->m_IndexBuffer, 0, 0,
+					CommonResources::Get()->m_ParticleSprite->VertexCount, 0, CommonResources::Get()->m_ParticleSprite->PrimitiveCount, ActiveParticles);
+			}
+		}
 	}
 
 	void ParticleCpuSpriteSceneProxy::RenderMainPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
@@ -120,17 +164,89 @@ namespace Drn
 #if WITH_EDITOR
 	void ParticleCpuSpriteSceneProxy::RenderHitProxyPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		SCOPE_STAT("HitProxyParticle");
 		
+		if (ActiveParticles == 0 || !m_Selectable)
+		{
+			return;
+		}
+		
+		MaterialShader* MatShader = SpriteMaterial.GetParentMaterial()->GetShaderParameters().bIsUsedWithParticleSprite && SpriteMaterial.GetParentMaterial()->GetShaderParameters().bHasHitProxyPass
+			? SpriteMaterial.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::ParticleSprite, EMaterialStage::Hitproxy)
+			: nullptr;
+
+		if (MatShader)
+		{
+			SCOPE_STAT_DYNAMIC(SpriteMaterial.GetMaterialName().c_str());
+
+			MatShader->Bind(CommandList);
+			SpriteMaterial.GetMaterialInterface()->BindResources(CommandList);
+				
+			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+			CommandList->SetGraphicRootConstant(ParticleBuffer->GetViewIndex(), 1);
+			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+			CommonResources::Get()->m_ParticleSprite->Bind(CommandList);
+			BindInstanceBuffers(CommandList);
+			CommandList->DrawIndexedPrimitive(CommonResources::Get()->m_ParticleSprite->m_IndexBuffer, 0, 0,
+				CommonResources::Get()->m_ParticleSprite->VertexCount, 0, CommonResources::Get()->m_ParticleSprite->PrimitiveCount, ActiveParticles);
+		}
 	}
 
 	void ParticleCpuSpriteSceneProxy::RenderSelectionPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		if (ActiveParticles == 0 || !m_SelectedInEditor)
+			return;
 		
+		MaterialShader* MatShader = SpriteMaterial.GetParentMaterial()->GetShaderParameters().bIsUsedWithParticleSprite && SpriteMaterial.GetParentMaterial()->GetShaderParameters().bHasEditorSelectionPass
+			? SpriteMaterial.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::ParticleSprite, EMaterialStage::EditorSelection)
+			: nullptr;
+
+		if (MatShader)
+		{
+			SCOPE_STAT_DYNAMIC(SpriteMaterial.GetMaterialName().c_str());
+
+			MatShader->Bind(CommandList);
+			SpriteMaterial.GetMaterialInterface()->BindResources(CommandList);
+
+			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+			CommandList->SetGraphicRootConstant(ParticleBuffer->GetViewIndex(), 1);
+			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+
+			CommonResources::Get()->m_ParticleSprite->Bind(CommandList);
+			BindInstanceBuffers(CommandList);
+			CommandList->DrawIndexedPrimitive(CommonResources::Get()->m_ParticleSprite->m_IndexBuffer, 0, 0,
+				CommonResources::Get()->m_ParticleSprite->VertexCount, 0, CommonResources::Get()->m_ParticleSprite->PrimitiveCount, ActiveParticles);
+		}
 	}
 
 	void ParticleCpuSpriteSceneProxy::RenderEditorPrimitivePass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
 	{
+		if (ActiveParticles == 0 || !m_EditorPrimitive)
+		{
+			return;
+		}
+
+		MaterialShader* MatShader = SpriteMaterial.GetParentMaterial()->GetShaderParameters().bIsUsedWithParticleSprite && SpriteMaterial.GetParentMaterial()->GetShaderParameters().bHasEditorPrimitivePass
+			? SpriteMaterial.GetParentMaterial()->GetShaders().GetShader(VertexFactoryType::ParticleSprite, EMaterialStage::EditorPrimitive)
+			: nullptr;
+
+		if (MatShader)
+		{
+			SCOPE_STAT_DYNAMIC(SpriteMaterial.GetMaterialName().c_str());
 		
+			MatShader->Bind(CommandList);
+			SpriteMaterial.GetMaterialInterface()->BindResources(CommandList);
+
+			CommandList->SetGraphicRootConstant(Renderer->ViewBuffer->GetViewIndex(), 0);
+			CommandList->SetGraphicRootConstant(ParticleBuffer->GetViewIndex(), 1);
+			CommandList->SetGraphicRootConstant(Renderer::Get()->StaticSamplersBuffer->GetViewIndex(), 2);
+		
+			CommonResources::Get()->m_ParticleSprite->Bind(CommandList);
+			BindInstanceBuffers(CommandList);
+			CommandList->DrawIndexedPrimitive(CommonResources::Get()->m_ParticleSprite->m_IndexBuffer, 0, 0,
+				CommonResources::Get()->m_ParticleSprite->VertexCount, 0, CommonResources::Get()->m_ParticleSprite->PrimitiveCount, ActiveParticles);
+		}
 	}
 #endif
 
