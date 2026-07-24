@@ -53,6 +53,7 @@ namespace Drn
 		bool bUseLocalSpace;
 		bool bKillOnDeactivate;
 		bool bKillOnCompleted;
+		EParticleSortMode SortMode;
 
 		float EmitterDuration;
 		float EmitterDurationLow;

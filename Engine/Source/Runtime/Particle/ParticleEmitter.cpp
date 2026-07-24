@@ -18,6 +18,7 @@ namespace Drn
 		, ReqInstanceBytes(0)
 		, Origin(Vector::ZeroVector)
 		, Rotation(Quat::Identity)
+		, SortMode(EParticleSortMode::None)
 		, bUseLocalSpace(false)
 		, bKillOnDeactivate(false)
 		, bKillOnCompleted(false)
@@ -60,6 +61,7 @@ namespace Drn
 			Ar >> bUseLocalSpace;
 			Ar >> bKillOnDeactivate;
 			Ar >> bKillOnCompleted;
+			Ar >> *(uint8*)&SortMode;
 
 			Ar >> EmitterDuration;
 			Ar >> EmitterDurationLow;
@@ -103,6 +105,7 @@ namespace Drn
 			Ar << bUseLocalSpace;
 			Ar << bKillOnDeactivate;
 			Ar << bKillOnCompleted;
+			Ar << (uint8)SortMode;
 
 			Ar << EmitterDuration;
 			Ar << EmitterDurationLow;
@@ -201,6 +204,14 @@ namespace Drn
 			bDirty |= ImGui::Checkbox("Use Local Space", &bUseLocalSpace);
 			bDirty |= ImGui::Checkbox("Kill On Deactivate", &bKillOnDeactivate);
 			bDirty |= ImGui::Checkbox("Kill On Completed", &bKillOnCompleted);
+
+			const char* const Options[] = { "None", "View Projection Depth", "Distance To View", "Age Oldest First", "Age Newest First" };
+			int32 Selected = (uint8)SortMode;
+			if(ImGui::Combo("SortMode", &Selected, Options, _countof(Options)))
+			{
+				SortMode = (EParticleSortMode)Selected;
+				bDirty = true;
+			}
 		}
 
 		if (ImGui::CollapsingHeader("Duration", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))

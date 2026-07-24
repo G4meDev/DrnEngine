@@ -78,6 +78,16 @@ namespace Drn
 		EPET_MAX,
 	};
 
+	enum class EParticleSortMode : uint8
+	{
+		None,
+		ViewProjDepth,
+		DistanceToView,
+		Age_OldestFirst,
+		Age_NewestFirst,
+		MAX,
+	};
+
 	struct ParticleEventInstancePayload
 	{
 		uint32 bSpawnEventsPresent:1;

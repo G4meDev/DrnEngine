@@ -56,6 +56,8 @@ namespace Drn
 
 		int32 ActiveParticles;
 		int32 MaxParticles;
+		EParticleSortMode SortMode;
+		std::vector<uint16> SortedInidices;
 
 		std::vector<ParticleSpriteVertex> ParticlesInstanceData;
 		std::vector<MeshParticleInstanceVertexDynamicParameter> Dynamics;

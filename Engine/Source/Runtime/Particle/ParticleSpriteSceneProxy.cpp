@@ -8,6 +8,7 @@ namespace Drn
 		: PrimitiveSceneProxy(InOwningEmitter->Component)
 		, OwningEmitter(InOwningEmitter )
 		, Guid(InOwningEmitter->Component->GetGuid())
+		, SortMode(InOwningEmitter->Emitter->SortMode)
 		, ActiveParticles(0)
 		, MaxParticles(0)
 	{
@@ -287,6 +288,11 @@ namespace Drn
 		if (MaxParticles < OwningEmitter->MaxActiveParticles)
 		{
 			ParticlesInstanceData.resize(OwningEmitter->MaxActiveParticles);
+
+			if (SortMode != EParticleSortMode::None)
+			{
+				SortedInidices.resize(OwningEmitter->MaxActiveParticles);
+			}
 		}
 
 		ActiveParticles = OwningEmitter->ActiveParticles;
@@ -296,9 +302,75 @@ namespace Drn
 		ParticleData.m_LocalToWorld = OwningEmitter->SimulationToWorld;
 		ParticleBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ParticleSpriteData), EUniformBufferUsage::MultiFrame, &ParticleData);
 
+		uint16* ParticleIndices = OwningEmitter->ParticleIndices;
+		if (SortMode != EParticleSortMode::None)
+		{
+			memcpy(SortedInidices.data(), OwningEmitter->ParticleIndices, sizeof(uint16) * ActiveParticles);
+
+			if (SortMode == EParticleSortMode::ViewProjDepth)
+			{
+				//Vector CameraLocation = OwningEmitter->Component->GetWorld()->GetPlayerWorldView().Location;
+				//
+				//std::sort(SortedInidices.begin(), SortedInidices.begin() + ActiveParticles,
+				//	[&](uint16 A, uint16 B)
+				//	{
+				//		DECLARE_PARTICLE(ParticleA, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[A]);
+				//		DECLARE_PARTICLE(ParticleB, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[B]);
+				//
+				//		float DistA = Vector::DistSquared(OwningEmitter->SimulationToWorld.TransformPosition(ParticleA.Location), CameraLocation);
+				//		float DistB = Vector::DistSquared(OwningEmitter->SimulationToWorld.TransformPosition(ParticleB.Location), CameraLocation);
+				//
+				//		return DistA > DistB;
+				//	});
+			}
+
+			else if (SortMode == EParticleSortMode::DistanceToView)
+			{
+				Vector CameraLocation = OwningEmitter->Component->GetWorld()->GetPlayerWorldView().Location;
+
+				std::sort(SortedInidices.begin(), SortedInidices.begin() + ActiveParticles,
+					[&](uint16 A, uint16 B)
+					{
+						DECLARE_PARTICLE(ParticleA, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[A]);
+						DECLARE_PARTICLE(ParticleB, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[B]);
+
+						float DistA = Vector::DistSquared(OwningEmitter->SimulationToWorld.TransformPosition(ParticleA.Location), CameraLocation);
+						float DistB = Vector::DistSquared(OwningEmitter->SimulationToWorld.TransformPosition(ParticleB.Location), CameraLocation);
+
+						return DistA > DistB;
+					});
+			}
+
+			else if (SortMode == EParticleSortMode::Age_OldestFirst)
+			{
+				std::sort(SortedInidices.begin(), SortedInidices.begin() + ActiveParticles,
+					[&](uint16 A, uint16 B)
+					{
+						DECLARE_PARTICLE(ParticleA, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[A]);
+						DECLARE_PARTICLE(ParticleB, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[B]);
+
+						return ParticleA.RelativeTime > ParticleB.RelativeTime;
+					});
+			}
+
+			else if (SortMode == EParticleSortMode::Age_NewestFirst)
+			{
+				std::sort(SortedInidices.begin(), SortedInidices.begin() + ActiveParticles,
+					[&](uint16 A, uint16 B)
+					{
+						DECLARE_PARTICLE(ParticleA, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[A]);
+						DECLARE_PARTICLE(ParticleB, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[B]);
+
+						return ParticleA.RelativeTime < ParticleB.RelativeTime;
+					});
+			}
+
+			ParticleIndices = SortedInidices.data();
+		}
+
 		for (int32 i = 0; i < ActiveParticles; i++)
 		{
-			DECLARE_PARTICLE(Particle, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * OwningEmitter->ParticleIndices[i]);
+			DECLARE_PARTICLE(Particle, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[i]);
 
 			ParticlesInstanceData[i].OldPosition = Particle.OldLocation;
 			ParticlesInstanceData[i].Position = Particle.Location;
