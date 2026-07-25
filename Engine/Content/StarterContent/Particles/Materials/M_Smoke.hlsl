@@ -67,39 +67,6 @@ struct PixelShaderInput
     float4 Position : SV_Position;
 };
 
-float4 TextureSubuv(Texture2D Texture, SamplerState State, float2 Uv, float2 SubImages, float Frame, bool LinearBlend = false)
-{
-    [flatten]
-    if(LinearBlend)
-    {
-        float2 InvSubImages = 1.0f / SubImages;
-        float Frac = frac(Frame);
-        float Integral = Frame - Frac;
-        
-        float2 Offset1 = float2(fmod(Integral, SubImages.x), floor(Integral * InvSubImages.x));
-        float2 Uv1 = (Uv + Offset1) * InvSubImages;
-        float4 Sample1 = Texture.Sample(State, Uv1);
-        
-        float2 Offset2 = float2(fmod(Integral + 1, SubImages.x), floor((Integral + 1) * InvSubImages.x));
-        float2 Uv2 = (Uv + Offset2) * InvSubImages;
-        float4 Sample2 = Texture.Sample(State, Uv2);
-        
-        return lerp(Sample1, Sample2, Frac);
-    }
-    else
-    {
-        float2 InvSubImages = 1.0f / SubImages;
-        float Frac = frac(Frame);
-        float Integral = Frame - Frac;
-        
-        float2 Offset1 = float2(fmod(Integral, SubImages.x), floor(Integral * InvSubImages.x));
-        float2 Uv1 = (Uv + Offset1) * InvSubImages;
-        float4 Sample1 = Texture.Sample(State, Uv1);
-        
-        return Sample1;
-    }
-}
-
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
