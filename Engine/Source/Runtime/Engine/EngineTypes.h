@@ -85,6 +85,7 @@ namespace Drn
 		MeshRotationRateOverLifetime,
 		MeshRotationRateMultiplyLifetime,
 		Location,
+		Subuv,
 		Max
 	};
 

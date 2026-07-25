@@ -52,7 +52,7 @@ VertexShaderOutput Main_VS(VertexInputParticleSprite IN)
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
     OUT.Color = IN.ParticleColor;
     OUT.UV = IN.Position;
-    OUT.SubImage = IN.ParticlePosition_RelativeTime.w * 63;
+    OUT.SubImage = IN.Size_Rotation_Subindex.w;
     
     return OUT;
 }

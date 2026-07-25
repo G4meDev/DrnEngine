@@ -368,6 +368,9 @@ namespace Drn
 			ParticleIndices = SortedInidices.data();
 		}
 
+		const bool bHasSubuv = OwningEmitter->Emitter->bHasSubuv;
+		const int32 SubuvOffset = OwningEmitter->Emitter->GetSubuvOffset();
+
 		for (int32 i = 0; i < ActiveParticles; i++)
 		{
 			DECLARE_PARTICLE(Particle, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * ParticleIndices[i]);
@@ -379,7 +382,12 @@ namespace Drn
 			ParticlesInstanceData[i].Size = Vector2(Particle.Size.X, Particle.Size.Y);
 			ParticlesInstanceData[i].Rotation = Particle.Rotation;
 			ParticlesInstanceData[i].ParticleId = Particle.Flags & EParticleStates::STATE_CounterMask;
-			ParticlesInstanceData[i].SubImageIndex = 0;
+
+			if (bHasSubuv)
+			{
+				SubuvPayloadData* PayloadData = (SubuvPayloadData*)((uint8*)&Particle + SubuvOffset);
+				ParticlesInstanceData[i].SubImageIndex = PayloadData->ImageIndex;
+			}
 		}
 
 		if (ActiveParticles > 0)

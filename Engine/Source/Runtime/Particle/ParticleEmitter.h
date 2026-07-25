@@ -27,6 +27,9 @@ namespace Drn
 		inline bool IsMeshRotationActive() const { return bHasMeshRotation; }
 		inline int32 GetMeshRotationOffset() const { return MeshRotationOffset; }
 
+		inline bool IsSubuvActive() const { return bHasSubuv; }
+		inline int32 GetSubuvOffset() const { return SubuvOffset; }
+
 		inline ParticleEmitterType* GetEmitterType() const { return EmitterType; }
 
 		bool IsMeshEmitter() const;
@@ -66,9 +69,11 @@ namespace Drn
 		bool bDurationRecalcEachLoop;
 
 		bool bHasMeshRotation;
+		bool bHasSubuv;
 
 		int32 ParticleSize;
 		int32 MeshRotationOffset;
+		int32 SubuvOffset;
 
 	private:
 		std::string Name;

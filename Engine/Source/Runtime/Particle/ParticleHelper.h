@@ -188,6 +188,11 @@ namespace Drn
 		Vector  RotationRateBase;
 	};
 
+	struct SubuvPayloadData
+	{
+		float ImageIndex;
+	};
+
 	struct MeshParticleInstanceVertex
 	{
 		Vector4 Transform[3];

@@ -148,6 +148,8 @@ set( HEADER_FILES
 	Source/Runtime/Particle/ParticleModuleColor.h
 	Source/Runtime/Particle/ParticleModuleEventGenerator.h
 	Source/Runtime/Particle/ParticleModuleEventReceiver.h
+	Source/Runtime/Particle/ParticleModuleSubuv.h
+	Source/Runtime/Particle/ParticleModuleRotation.h
 	Source/Runtime/Particle/ParticleEmitterType.h
 	Source/Runtime/Particle/ParticleMeshSceneProxy.h
 	Source/Runtime/Particle/ParticleSpriteSceneProxy.h
@@ -417,6 +419,8 @@ set( SOURCE_FILES
 	Source/Runtime/Particle/ParticleModuleColor.cpp
 	Source/Runtime/Particle/ParticleModuleEventGenerator.cpp
 	Source/Runtime/Particle/ParticleModuleEventReceiver.cpp
+	Source/Runtime/Particle/ParticleModuleSubuv.cpp
+	Source/Runtime/Particle/ParticleModuleRotation.cpp
 	Source/Runtime/Particle/ParticleEmitterType.cpp
 	Source/Runtime/Particle/ParticleMeshSceneProxy.cpp
 	Source/Runtime/Particle/ParticleSpriteSceneProxy.cpp

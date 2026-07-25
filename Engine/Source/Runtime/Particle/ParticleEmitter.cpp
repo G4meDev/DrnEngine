@@ -28,7 +28,9 @@ namespace Drn
 		, bEmitterDurationUseRange(false)
 		, EmitterLoops(0)
 		, bHasMeshRotation(false)
+		, bHasSubuv(false)
 		, MeshRotationOffset(0)
+		, SubuvOffset(0)
 		, EventGenerator(nullptr)
 	{
 	}
@@ -72,6 +74,7 @@ namespace Drn
 			Ar >> bDurationRecalcEachLoop;
 
 			Ar >> bHasMeshRotation;
+			Ar >> bHasSubuv;
 
 			CalculateRequiredBytesAndOffset();
 			for (int32 i = 0; i < ModulesCount; i++)
@@ -83,6 +86,7 @@ namespace Drn
 		else
 		{
 			bHasMeshRotation = false;
+			bHasSubuv = false;
 
 			const int32 ModulesCount = Modules.size();
 			for (int32 i = 0; i < ModulesCount; i++)
@@ -117,6 +121,7 @@ namespace Drn
 			Ar << bDurationRecalcEachLoop;
 
 			Ar << bHasMeshRotation;
+			Ar << bHasSubuv;
 		}
 	}
 
@@ -177,6 +182,12 @@ namespace Drn
 		{
 			MeshRotationOffset = ParticleSize;
 			ParticleSize += sizeof(MeshRotationPayloadData);
+		}
+
+		if (bHasSubuv)
+		{
+			SubuvOffset = ParticleSize;
+			ParticleSize += sizeof(SubuvPayloadData);
 		}
 	}
 
