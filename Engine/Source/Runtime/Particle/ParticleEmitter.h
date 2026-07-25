@@ -68,6 +68,9 @@ namespace Drn
 		int32 EmitterLoops;
 		bool bDurationRecalcEachLoop;
 
+		Vector NormalsSphereCenter;
+		Vector NormalsCylinderDirection;
+
 		bool bHasMeshRotation;
 		bool bHasSubuv;
 

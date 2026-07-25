@@ -298,8 +298,12 @@ namespace Drn
 		ActiveParticles = OwningEmitter->ActiveParticles;
 		MaxParticles = OwningEmitter->MaxActiveParticles;
 
+		Matrix EmitterToWorld = OwningEmitter->EmitterToSimulation * OwningEmitter->SimulationToWorld;
+
 		ParticleData.m_Guid = Guid;
 		ParticleData.m_LocalToWorld = OwningEmitter->SimulationToWorld;
+		ParticleData.NormalsSphereCenter = EmitterToWorld.TransformPosition(OwningEmitter->Emitter->NormalsSphereCenter);
+		ParticleData.NormalsCylinderDirection = EmitterToWorld.TransformVector(OwningEmitter->Emitter->NormalsCylinderDirection);
 		ParticleBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ParticleSpriteData), EUniformBufferUsage::MultiFrame, &ParticleData);
 
 		uint16* ParticleIndices = OwningEmitter->ParticleIndices;

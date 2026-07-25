@@ -12,6 +12,12 @@ namespace Drn
 		Matrix m_LocalToWorld;
 		Matrix m_PrevLocalToWorld;
 		Guid m_Guid;
+
+		Vector NormalsSphereCenter;
+		float Unused_1;
+
+		Vector NormalsCylinderDirection;
+		float Unused_2;
 	};
 
 	class ParticleCpuSpriteSceneProxy : public PrimitiveSceneProxy

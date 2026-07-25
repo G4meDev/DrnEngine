@@ -26,6 +26,8 @@ namespace Drn
 		, EmitterDuration(1.0f)
 		, EmitterDurationLow(0.0f)
 		, bEmitterDurationUseRange(false)
+		, NormalsSphereCenter(Vector(0, 1, 0))
+		, NormalsCylinderDirection(Vector(0, 1, 0))
 		, EmitterLoops(0)
 		, bHasMeshRotation(false)
 		, bHasSubuv(false)
@@ -73,6 +75,9 @@ namespace Drn
 			Ar >> EmitterLoops;
 			Ar >> bDurationRecalcEachLoop;
 
+			Ar >> NormalsSphereCenter;
+			Ar >> NormalsCylinderDirection;
+
 			Ar >> bHasMeshRotation;
 			Ar >> bHasSubuv;
 
@@ -119,6 +124,9 @@ namespace Drn
 			Ar << bEmitterDurationUseRange;
 			Ar << EmitterLoops;
 			Ar << bDurationRecalcEachLoop;
+
+			Ar << NormalsSphereCenter;
+			Ar << NormalsCylinderDirection;
 
 			Ar << bHasMeshRotation;
 			Ar << bHasSubuv;
@@ -247,6 +255,12 @@ namespace Drn
 			bDirty |= ImGui::Checkbox("Emitter Duration Use Range", &bEmitterDurationUseRange);
 			bDirty |= ImGui::Checkbox("Duration Recalculate Each Loop", &bDurationRecalcEachLoop);
 			bDirty |= ImGui::InputInt("Emitter Loops", &EmitterLoops);
+		}
+
+		if (ImGui::CollapsingHeader("Normals", ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			bDirty |= NormalsSphereCenter.Draw("Normals Sphere Center", "Normals Sphere Center");
+			bDirty |= NormalsCylinderDirection.Draw("Normals Cylinder Direction", "Normals Cylinder Direction");
 		}
 
 		return bDirty;

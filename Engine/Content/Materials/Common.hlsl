@@ -160,6 +160,12 @@ struct ParticleSpriteBuffer
     matrix SimulationToWorld;
     matrix Unused_1;
     uint4 Guid;
+    
+    float3 NormalsSphereCenter;
+    float Unused_2;
+
+    float3 NormalsCylinderDirection;
+    float Unused_3;
 };
 
 struct StaticSamplers
@@ -1839,7 +1845,8 @@ void ParticleSpriteTangents(ViewBuffer View, float Rotation, float3 WorldPositio
     {
         float3 ParticleDirection = SafeNormalize(WorldPosition.xyz - OldWorldPosition.xyz);
         RightVector = SafeNormalize(cross(CameraDirection, ParticleDirection));
-        UpVector = -ParticleDirection;
+        UpVector = ParticleDirection;
+        //UpVector = -ParticleDirection;
     }
     
     float SinRotation;
@@ -1857,7 +1864,20 @@ float3x3 ParticleSpriteCalcTangentBasis(float3 Right, float3 Up)
     return float3x3(Right, Normal, -Up);
 }
 
-float4 ParticleSpriteCalcVelocity(ViewBuffer View, float WorldPosition, float3 OldWorldPosition)
+float3x3 ParticleSpriteCalcSphereTangentBasis(float3 SpherePosition, float3 ParticlePosition, float3 Right, float3 Up)
+{
+    float3 Normal = normalize(ParticlePosition - SpherePosition);
+    return float3x3(Right, Normal, -Up);
+}
+
+float3x3 ParticleSpriteCalcCylinderTangentBasis(float3 SpherePosition, float3 CylinderDirection, float3 ParticlePosition, float3 Right, float3 Up)
+{
+    float3 ClosestPointOnCylinder = SpherePosition + dot(CylinderDirection, ParticlePosition - SpherePosition) * CylinderDirection;
+    float3 Normal = normalize(ParticlePosition - ClosestPointOnCylinder);
+    return float3x3(Right, Normal, -Up);
+}
+
+float4 ParticleSpriteCalcVelocity(ViewBuffer View, float3 WorldPosition, float3 OldWorldPosition)
 {
     float3 Velocity = (WorldPosition - OldWorldPosition) * View.InvDeltaTime;
     return float4(normalize(Velocity), length(Velocity));
