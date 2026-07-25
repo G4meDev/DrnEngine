@@ -134,7 +134,7 @@ namespace Drn
 		ImGui::Text( "%ux%u", m_OwningAsset->GetSizeX(), m_OwningAsset->GetSizeY() );
 		ImGui::Text( "%u mips", m_OwningAsset->GetMipLevels() );
 
-		const char* LayoutTypes[] = { "NoCompression", "BC1", "BC4", "BC5", "BC6", "BC2" };
+		const char* LayoutTypes[] = { "NoCompression", "BC1", "BC4", "BC5", "BC6", "BC2", "BC3" };
 		int32 CurrrentComppression = static_cast<int32>(m_OwningAsset->m_Compression);
 		if ( ImGui::Combo( "Compression", &CurrrentComppression, LayoutTypes, IM_ARRAYSIZE( LayoutTypes )))
 		{

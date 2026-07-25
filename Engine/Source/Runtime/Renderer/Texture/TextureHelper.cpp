@@ -18,6 +18,9 @@ namespace Drn
 			case DXGI_FORMAT_BC2_UNORM: return "BC2_UNORM";
 			case DXGI_FORMAT_BC2_UNORM_SRGB: return "BC2_UNORM_SRGB";
 
+			case DXGI_FORMAT_BC3_UNORM: return "BC3_UNORM";
+			case DXGI_FORMAT_BC3_UNORM_SRGB: return "BC3_UNORM_SRGB";
+
 			case DXGI_FORMAT_BC4_UNORM: return "BC4_UNORM";
 			case DXGI_FORMAT_BC5_UNORM: return "BC5_UNORM";
 			case DXGI_FORMAT_BC6H_UF16: return "BC6H_UF16";
@@ -39,6 +42,11 @@ namespace Drn
 			else if (Compression == ETextureCompression::BC2)
 			{
 				return DXGI_FORMAT_BC2_UNORM;
+			}
+
+			else if (Compression == ETextureCompression::BC3)
+			{
+				return DXGI_FORMAT_BC3_UNORM;
 			}
 
 			else if (Compression == ETextureCompression::BC4)

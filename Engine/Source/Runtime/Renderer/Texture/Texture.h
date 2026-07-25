@@ -13,6 +13,7 @@ namespace Drn
 		BC5,
 		BC6,
 		BC2,
+		BC3,
 	};
 
 	enum class ETilingMethod : uint8
