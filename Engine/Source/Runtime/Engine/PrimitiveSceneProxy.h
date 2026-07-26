@@ -35,6 +35,9 @@ namespace Drn
 		inline bool IsMarkedPendingKill() const { return bPendingDestory; }
 		inline void MarkPendingKill() { bPendingDestory = true; }
 
+		virtual void OnRegister(Scene* InScene) {};
+		virtual void OnRemove(Scene* InScene) {};
+
 	protected:
 
 		virtual void RenderVelocityPass(class D3D12CommandList* CommandList, SceneRenderer* Renderer) = 0;

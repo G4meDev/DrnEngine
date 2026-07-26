@@ -62,6 +62,8 @@ namespace Drn
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_ParticleMeshDepthOnly;
 	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_ParticleSprite;
 
+	TRefCountPtr<class VertexDeclaration> CommonResources::VertexDeclaration_ParticleLight;
+
 	CommonResources::CommonResources( D3D12CommandList* CommandList )
 	{
 		VertexDeclaration_Pos = VertexDeclaration::Create(
@@ -168,6 +170,14 @@ namespace Drn
 			VertexElement(1, 48, DXGI_FORMAT_R32G32B32A32_FLOAT, "PARTICLE_COLOR", 0, 64, true),
 
 			VertexElement(2, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "DYNAMIC", 0, 16, true),
+		});
+
+		VertexDeclaration_ParticleLight = VertexDeclaration::Create(
+		{
+			VertexElement(0, 0, DXGI_FORMAT_R32G32B32_FLOAT, "POSITION", 0, 12),
+
+			VertexElement(1, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, "POS_RADIUS", 0, 32, true),
+			VertexElement(1, 16, DXGI_FORMAT_R32G32B32A32_FLOAT, "COLOR_INVRADIUS", 0, 32, true),
 		});
 
 		m_ScreenTriangle = new ScreenTriangle( CommandList );
@@ -1311,46 +1321,87 @@ namespace Drn
 
 	LightPassPSO::LightPassPSO( D3D12CommandList* CommandList, CommonResources* CR )
 	{
-		std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightPassDeferred.hlsl" ) );
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightPassDeferred.hlsl" ) );
 
-		ID3DBlob* VertexShaderBlob;
-		ID3DBlob* PixelShaderBlob;
+			ID3DBlob* VertexShaderBlob;
+			ID3DBlob* PixelShaderBlob;
 
-		std::wstring SideMacro = StringHelper::s2ws("SPOTLIGHT_STENCIL_SIDES=" + std::to_string(SPOTLIGHT_STENCIL_SIDES));
-		std::wstring SliceMacro = StringHelper::s2ws("SPOTLIGHT_STENCIL_SLICES=" + std::to_string(SPOTLIGHT_STENCIL_SLICES));
+			std::wstring SideMacro = StringHelper::s2ws("SPOTLIGHT_STENCIL_SIDES=" + std::to_string(SPOTLIGHT_STENCIL_SIDES));
+			std::wstring SliceMacro = StringHelper::s2ws("SPOTLIGHT_STENCIL_SLICES=" + std::to_string(SPOTLIGHT_STENCIL_SLICES));
 
-		const std::vector<const wchar_t*> Macros = { SideMacro.c_str(), SliceMacro.c_str() };
-		CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
-		CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+			const std::vector<const wchar_t*> Macros = { SideMacro.c_str(), SliceMacro.c_str() };
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
 
-		VertexShader* VShader = new VertexShader();
-		VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
-		VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
+			VertexShader* VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
 
-		PixelShader* PShader = new PixelShader();
-		PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
-		PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
+			PixelShader* PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
 
 
-		BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, PShader, nullptr);
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_Pos, VShader, nullptr, nullptr, PShader, nullptr);
 
-		BlendStateInitializer BInit = {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::One, EBlendFactor::One, EBlendOperation::Add, EBlendFactor::One, EBlendFactor::Zero)};
-		TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+			BlendStateInitializer BInit = {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::One, EBlendFactor::One, EBlendOperation::Add, EBlendFactor::One, EBlendFactor::Zero)};
+			TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
 
-		RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Front);
-		TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Front);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
 
-		DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
-		TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
 		
-		DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
-		ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
 
-		GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
-			1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
 
-		m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
-		SetName(m_PSO->PipelineState, "PSO_LightpassDeferred");
+			m_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_PSO->PipelineState, "PSO_LightpassDeferred");
+		}
+
+		{
+			std::wstring ShaderPath = StringHelper::s2ws( Path::ConvertProjectPath( "\\Engine\\Content\\Shader\\LightPassParticle.hlsl" ) );
+
+			ID3DBlob* VertexShaderBlob;
+			ID3DBlob* PixelShaderBlob;
+
+			const std::vector<const wchar_t*> Macros = {};
+			CompileShader( ShaderPath, L"Main_VS", L"vs_6_6", Macros, &VertexShaderBlob);
+			CompileShader( ShaderPath, L"Main_PS", L"ps_6_6", Macros, &PixelShaderBlob);
+
+			VertexShader* VShader = new VertexShader();
+			VShader->ByteCode.pShaderBytecode = VertexShaderBlob->GetBufferPointer();
+			VShader->ByteCode.BytecodeLength = VertexShaderBlob->GetBufferSize();
+
+			PixelShader* PShader = new PixelShader();
+			PShader->ByteCode.pShaderBytecode = PixelShaderBlob->GetBufferPointer();
+			PShader->ByteCode.BytecodeLength = PixelShaderBlob->GetBufferSize();
+
+			BoundShaderStateInput BoundShaderState(CR->VertexDeclaration_ParticleLight, VShader, nullptr, nullptr, PShader, nullptr);
+
+			BlendStateInitializer BInit = {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::One, EBlendFactor::One, EBlendOperation::Add, EBlendFactor::One, EBlendFactor::Zero)};
+			TRefCountPtr<BlendState> BState = BlendState::Create(BInit);
+
+			RasterizerStateInitializer RInit(ERasterizerFillMode::Solid, ERasterizerCullMode::Front);
+			TRefCountPtr<RasterizerState> RState = RasterizerState::Create(RInit);
+
+			DepthStencilStateInitializer DInit(false, ECompareFunction::Always);
+			TRefCountPtr<DepthStencilState> DState = DepthStencilState::Create(DInit);
+		
+			DXGI_FORMAT TargetFormats[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { GBUFFER_COLOR_DEFERRED_FORMAT };
+			ETextureCreateFlags TargetFlags[D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT] = { ETextureCreateFlags::None };
+
+			GraphicsPipelineStateInitializer Init(BoundShaderState, BState, RState, DState, EPrimitiveType::TriangleList,
+				1, TargetFormats, TargetFlags, DXGI_FORMAT_UNKNOWN, ETextureCreateFlags::None, EDepthStencilViewType::DepthWrite, 1);
+
+			m_ParticleLightPass_PSO = GraphicsPipelineState::Create(CommandList->GetParentDevice(), Init, Renderer::Get()->m_BindlessRootSinature.Get());
+			SetName(m_ParticleLightPass_PSO->PipelineState, "PSO_LightPassParticle");
+		}
 	}
 
 // --------------------------------------------------------------------------------------

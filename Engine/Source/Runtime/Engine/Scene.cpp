@@ -5,6 +5,7 @@
 #include "Runtime/Engine/SkyLightSceneProxy.h"
 #include "Runtime/Engine/PostProcessVolume.h"
 #include "Runtime/Engine/DecalSceneProxy.h"
+#include "Runtime/Particle/ParticleLightSceneProxy.h"
 
 #include "Runtime/Engine/ReflectionCaptureComponent.h"
 #include "Runtime/Engine/ReflectionCaptureProxy.h"
@@ -117,6 +118,7 @@ namespace Drn
 
 			if (Proxy->IsMarkedPendingKill())
 			{
+				Proxy->OnRemove(this);
 				delete Proxy;
 			}
 			else
@@ -124,6 +126,7 @@ namespace Drn
 				Proxy->InitResources(CommandList);
 				Proxy->UpdateResources(CommandList);
 				m_PrimitiveProxies.push_back(Proxy);
+				Proxy->OnRegister(this);
 			}
 		}
 		m_PendingProxies.clear();
@@ -288,6 +291,13 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------
 
+		for (ParticleLightSceneProxy* Proxy : m_ParticleLightProxies)
+		{
+			Proxy->UpdateResources(CommandList);
+		}
+
+// ----------------------------------------------------------------------------------
+
 #if WITH_EDITOR
 		ResolveReflectionCaptures(CommandList);
 #endif
@@ -327,6 +337,24 @@ namespace Drn
 	void Scene::RegisterDecalProxy( class DecalSceneProxy* InProxy )
 	{
 		m_PendingDecalProxies.push_back(InProxy);
+	}
+
+	void Scene::RegisterParticleLightProxy( class ParticleLightSceneProxy* InProxy )
+	{
+		drn_check(InProxy);
+		auto It = std::find(m_ParticleLightProxies.begin(), m_ParticleLightProxies.end(), InProxy);
+		drn_check(It == m_ParticleLightProxies.end());
+
+		m_ParticleLightProxies.push_back(InProxy);
+	}
+
+	void Scene::UnRegisterParticleLightProxy( class ParticleLightSceneProxy* InProxy )
+	{
+		drn_check(InProxy);
+		auto It = std::find(m_ParticleLightProxies.begin(), m_ParticleLightProxies.end(), InProxy);
+		drn_check(It != m_ParticleLightProxies.end());
+
+		m_ParticleLightProxies.erase(It);
 	}
 
 #if WITH_EDITOR

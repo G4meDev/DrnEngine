@@ -16,6 +16,7 @@
 #include "Runtime/Renderer/RenderBuffer/SceneDownSampleBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/BloomBuffer.h"
 #include "Runtime/Renderer/RenderBuffer/DecalBuffer.h"
+#include "Runtime/Particle/ParticleLightSceneProxy.h"
 
 #include "Runtime/Engine/PostProcessVolume.h"
 
@@ -491,6 +492,15 @@ namespace Drn
 			LightSceneProxy* Proxy = m_Scene->GetLightProxies()[It.GetIndex()];
 			Proxy->Render(m_CommandList, this);
 		}
+
+// --------------------------------------------------------------------------------------
+
+		for (ParticleLightSceneProxy* Proxy : m_Scene->m_ParticleLightProxies)
+		{
+			Proxy->Render(m_CommandList, this);
+		}
+
+// --------------------------------------------------------------------------------------
 
 		PIXEndEvent( m_CommandList->GetD3D12CommandList());
 	}

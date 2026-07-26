@@ -36,6 +36,9 @@ namespace Drn
 
 		void RegisterDecalProxy( class DecalSceneProxy* InProxy );
 
+		void RegisterParticleLightProxy( class ParticleLightSceneProxy* InProxy );
+		void UnRegisterParticleLightProxy( class ParticleLightSceneProxy* InProxy );
+
 		inline const std::vector<PrimitiveSceneProxy*>& GetPrimitiveProxies() { return m_PrimitiveProxies; };
 		inline const std::vector<LightSceneProxy*>& GetLightProxies() { return m_LightProxies; };
 		inline const std::vector<DecalSceneProxy*>& GetDecalProxies() { return m_DecalProxies; };
@@ -67,6 +70,8 @@ namespace Drn
 
 		std::vector<class DecalSceneProxy*> m_DecalProxies;
 		std::vector<class DecalSceneProxy*> m_PendingDecalProxies;
+
+		std::vector<class ParticleLightSceneProxy*> m_ParticleLightProxies;
 
 		std::set<SceneRenderer*> m_SceneRenderers;
 

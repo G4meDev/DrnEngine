@@ -29,6 +29,9 @@ namespace Drn
 		virtual const BoxSphereBounds& GetBounds() override;
 		virtual PrimitiveComponent* GetPrimitive() override{ return OwningEmitter->Component; }
 
+		virtual void OnRegister(Scene* InScene) override;
+		virtual void OnRemove(Scene* InScene) override;
+
 	protected:
 
 		void RenderVelocityPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer ) override;
@@ -73,6 +76,12 @@ namespace Drn
 
 		ParticleSpriteData ParticleData;
 		TRefCountPtr<RenderUniformBuffer> ParticleBuffer;
+
+		class ParticleLightSceneProxy* LightProxy;
+
+		bool bHasLightModule = true;
+
+// -------------------------------------------------------------------------------------------
 
 		friend class ParticleEmitterInstance;
 	};

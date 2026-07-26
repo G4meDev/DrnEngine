@@ -1,12 +1,14 @@
 #include "DrnPCH.h"
 #include "ParticleSpriteSceneProxy.h"
 #include "Runtime/Particle/ParticleEmitterType.h"
+#include "Runtime/Particle/ParticleLightSceneProxy.h"
 
 namespace Drn
 {
 	ParticleCpuSpriteSceneProxy::ParticleCpuSpriteSceneProxy( ParticleCpuSpriteEmitterInstance* InOwningEmitter )
 		: PrimitiveSceneProxy(InOwningEmitter->Component)
-		, OwningEmitter(InOwningEmitter )
+		, OwningEmitter(InOwningEmitter)
+		, LightProxy(nullptr)
 		, Guid(InOwningEmitter->Component->GetGuid())
 		, SortMode(InOwningEmitter->Emitter->SortMode)
 		, ActiveParticles(0)
@@ -30,6 +32,26 @@ namespace Drn
 	{
 		drn_check(OwningEmitter);
 		return OwningEmitter->GetBoundingBox();
+	}
+
+	void ParticleCpuSpriteSceneProxy::OnRegister( Scene* InScene )
+	{
+		if (bHasLightModule)
+		{
+			drn_check(!LightProxy);
+			LightProxy = new ParticleLightSceneProxy(OwningEmitter);
+			InScene->RegisterParticleLightProxy(LightProxy);
+		}
+	}
+
+	void ParticleCpuSpriteSceneProxy::OnRemove( Scene* InScene )
+	{
+		if (LightProxy)
+		{
+			InScene->UnRegisterParticleLightProxy(LightProxy);
+			delete LightProxy;
+			LightProxy = nullptr;
+		}
 	}
 
 	void ParticleCpuSpriteSceneProxy::RenderVelocityPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )

@@ -253,6 +253,7 @@ namespace Drn
 	public:
 		LightPassPSO( D3D12CommandList* CommandList, CommonResources* CR );
 		TRefCountPtr<GraphicsPipelineState> m_PSO;
+		TRefCountPtr<GraphicsPipelineState> m_ParticleLightPass_PSO;
 	};
 
 	class DebugLineThicknessPSO : public RefCountedObject
@@ -396,6 +397,8 @@ namespace Drn
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleMesh;
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleMeshDepthOnly;
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleSprite;
+
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleLight;
 
 		ScreenTriangle* m_ScreenTriangle;
 		BackfaceScreenTriangle* m_BackfaceScreenTriangle;
