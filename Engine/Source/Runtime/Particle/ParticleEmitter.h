@@ -30,6 +30,9 @@ namespace Drn
 		inline bool IsSubuvActive() const { return bHasSubuv; }
 		inline int32 GetSubuvOffset() const { return SubuvOffset; }
 
+		inline bool IsLightActive() const { return bHasLight; }
+		inline int32 GetLightOffset() const { return LightOffset; }
+
 		inline ParticleEmitterType* GetEmitterType() const { return EmitterType; }
 
 		bool IsMeshEmitter() const;
@@ -73,10 +76,12 @@ namespace Drn
 
 		bool bHasMeshRotation;
 		bool bHasSubuv;
+		bool bHasLight;
 
 		int32 ParticleSize;
 		int32 MeshRotationOffset;
 		int32 SubuvOffset;
+		int32 LightOffset;
 
 	private:
 		std::string Name;

@@ -218,6 +218,11 @@ namespace Drn
 		float	CurrentDistanceTravelled;
 	};
 
+	struct ParticleLightPayload
+	{
+		Vector Color;
+		float Radius;
+	};
 
 	struct ParticleBurst
 	{

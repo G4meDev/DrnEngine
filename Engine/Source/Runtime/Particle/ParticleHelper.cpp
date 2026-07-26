@@ -13,6 +13,7 @@
 #include "Runtime/Particle/ParticleModuleColor.h"
 #include "Runtime/Particle/ParticleModuleSubuv.h"
 #include "Runtime/Particle/ParticleModuleRotation.h"
+#include "Runtime/Particle/ParticleModuleLight.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -95,6 +96,8 @@ namespace Drn
 
 		RegisterParticleModule<ParticleModuleRotation>(EParticleModule::Rotation, "Initial Rotation", "Rotation");
 		RegisterParticleModule<ParticleModuleRotationRate>(EParticleModule::RotationRate, "Initial Rotation Rate", "Rotation");
+
+		RegisterParticleModule<ParticleModuleLight>(EParticleModule::Light, "Light", "Light");
 
 
 	}

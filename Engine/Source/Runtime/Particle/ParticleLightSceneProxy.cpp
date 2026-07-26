@@ -30,7 +30,7 @@ namespace Drn
 	void ParticleLightSceneProxy::UpdateResources( class D3D12CommandList* CommandList )
 	{
 		drn_check(OwningEmitter);
-		//drn_check(OwningEmitter->HasLightModule);
+		drn_check(OwningEmitter->Emitter->IsLightActive());
 
 		if (MaxParticles < OwningEmitter->MaxActiveParticles)
 		{
@@ -40,17 +40,19 @@ namespace Drn
 		ActiveParticles = OwningEmitter->ActiveParticles;
 		MaxParticles = OwningEmitter->MaxActiveParticles;
 
+		const int32 LightOffset = OwningEmitter->Emitter->GetLightOffset();
+		drn_check(LightOffset);
+
 		for (int32 i = 0; i < ActiveParticles; i++)
 		{
 			DECLARE_PARTICLE(Particle, OwningEmitter->ParticleData + OwningEmitter->ParticleStride * OwningEmitter->ParticleIndices[i]);
 
-			Vector Color = 1;
-			float Radius = 1;
+			ParticleLightPayload* PayloadData = (ParticleLightPayload*)( (uint8*)&Particle + LightOffset );
 
 			ParticlesLightInstanceData[i].WorldPosition = OwningEmitter->SimulationToWorld.TransformPosition(Particle.Location);
-			ParticlesLightInstanceData[i].Color = Color;
-			ParticlesLightInstanceData[i].Radius = Radius;
-			ParticlesLightInstanceData[i].InvRadius = 1.0f/Radius;
+			ParticlesLightInstanceData[i].Color = PayloadData->Color;
+			ParticlesLightInstanceData[i].Radius = PayloadData->Radius;
+			ParticlesLightInstanceData[i].InvRadius = 1.0f/PayloadData->Radius;
 		}
 
 		if (ActiveParticles > 0)

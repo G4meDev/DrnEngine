@@ -79,8 +79,6 @@ namespace Drn
 
 		class ParticleLightSceneProxy* LightProxy;
 
-		bool bHasLightModule = true;
-
 // -------------------------------------------------------------------------------------------
 
 		friend class ParticleEmitterInstance;

@@ -36,7 +36,7 @@ namespace Drn
 
 	void ParticleCpuSpriteSceneProxy::OnRegister( Scene* InScene )
 	{
-		if (bHasLightModule)
+		if (OwningEmitter->Emitter->IsLightActive())
 		{
 			drn_check(!LightProxy);
 			LightProxy = new ParticleLightSceneProxy(OwningEmitter);

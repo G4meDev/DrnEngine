@@ -88,6 +88,7 @@ namespace Drn
 		Subuv,
 		Rotation,
 		RotationRate,
+		Light,
 		Max
 	};
 

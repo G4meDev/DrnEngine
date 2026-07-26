@@ -97,12 +97,13 @@ namespace Drn
 	{
 		SCOPE_STAT();
 
-		std::erase_if(m_PrimitiveProxies, [CommandList](PrimitiveSceneProxy* Proxy)
+		std::erase_if(m_PrimitiveProxies, [CommandList, this](PrimitiveSceneProxy* Proxy)
 		{
 			drn_check(Proxy);
 
 			if (Proxy->IsMarkedPendingKill())
 			{
+				Proxy->OnRemove(this);
 				delete Proxy;
 				return true;
 			}
@@ -118,7 +119,6 @@ namespace Drn
 
 			if (Proxy->IsMarkedPendingKill())
 			{
-				Proxy->OnRemove(this);
 				delete Proxy;
 			}
 			else
