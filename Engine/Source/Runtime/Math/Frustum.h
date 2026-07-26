@@ -9,7 +9,7 @@ namespace Drn
 	{
 	public:
 		Frustum() {};
-		Frustum(const Vector& Location, const Quat& Rotation, float Fov, float AspectRatio, float NearClip, float FarClip);
+		//Frustum(const Vector& Location, const Quat& Rotation, float Fov, float AspectRatio, float NearClip, float FarClip);
 		Frustum(const ViewInfo& VInfo);
 
 		//bool Contains(const BoxSphereBounds& Bounds) const;

@@ -135,6 +135,8 @@ namespace Drn
 		inline const BitArray& GetVisibleLights() const { return LightVisibilityMap; }
 		inline class D3D12CommandList* GetCommandList() const { return m_CommandList; }
 
+		inline const Frustum& GetViewFrustum() const { return ViewFrustum; }
+
 #if WITH_EDITOR
 		OnPickedComponentDelegate OnPickedComponent;
 		void QueueMousePickEvent( const IntPoint& ScreenPosition );

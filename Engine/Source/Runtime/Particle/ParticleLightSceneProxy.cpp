@@ -18,6 +18,21 @@ namespace Drn
 			SCOPE_STAT("ParticleLight");
 			drn_check(ParticlesLightInstanceBuffer);
 
+			{
+				SCOPE_STAT("Bounds");
+
+				Sphere ParticleBounds;
+				ParticleBounds.Init();
+				for (int32 ParticleIndex = 0; ParticleIndex < ActiveParticles; ParticleIndex++)
+				{
+					const ParticleLightInstance& Instance = ParticlesLightInstanceData[ParticleIndex];
+					ParticleBounds += Sphere(Instance.WorldPosition, Instance.Radius);
+				}
+
+				if (!ParticleBounds.IsValid() || !Renderer->GetViewFrustum().Contains(ParticleBounds))
+					return;
+			}
+
 			CommandList->SetGraphicPipelineState(CommonResources::Get()->m_LightPassPSO->m_ParticleLightPass_PSO);
 
 			CommandList->SetStreamSource(0, CommonResources::Get()->m_PointLightSphere->m_VertexBuffer, 0);

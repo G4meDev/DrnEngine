@@ -221,5 +221,11 @@ namespace Drn
 		{
 			return std::abs(Value) <= ErrorTolerance;
 		}
+
+		template< class T > 
+		static inline T Square( const T A )
+		{
+			return A*A;
+		}
 	};
 }

@@ -3,17 +3,34 @@
 
 namespace Drn
 {
-	Frustum::Frustum( const Vector& Location, const Quat& Rotation, float Fov, float AspectRatio, float NearClip, float FarClip )
-	{
-		XMFLOAT4 R;
-		XMStoreFloat4(&R, Rotation.Get());
-		const float YSlope = Fov / 45.0f;
-		const float XSlope = YSlope * AspectRatio;
-		ViewFrustum = DirectX::BoundingFrustum( *Location.Get(), R, XSlope, -XSlope, YSlope, -YSlope, NearClip, FarClip );
-	}
+	//Frustum::Frustum( const Vector& Location, const Quat& Rotation, float Fov, float AspectRatio, float NearClip, float FarClip )
+	//{
+	//	XMFLOAT4 R;
+	//	XMStoreFloat4(&R, Rotation.Get());
+	//	const float YSlope = Fov / 45.0f;
+	//	const float XSlope = YSlope * AspectRatio;
+	//	ViewFrustum = DirectX::BoundingFrustum( *Location.Get(), R, XSlope, -XSlope, YSlope, -YSlope, NearClip, FarClip );
+	//}
 
-	Frustum::Frustum( const ViewInfo& VInfo ) : Frustum(VInfo.Location, VInfo.Rotation, VInfo.FOV, VInfo.AspectRatio, VInfo.NearClipPlane, VInfo.FarClipPlane)
-	{}
+	//Frustum::Frustum( const ViewInfo& VInfo ) : Frustum(VInfo.Location, VInfo.Rotation, VInfo.FOV, VInfo.AspectRatio, VInfo.NearClipPlane, VInfo.FarClipPlane)
+	//{}
+
+	Frustum::Frustum(const ViewInfo& VInfo)
+	{
+		Matrix ViewMatrix = VInfo.CalculateViewMatrix();
+		Matrix ProjectionMatrix = VInfo.CalculateProjectionMatrix();
+
+		DirectX::BoundingFrustum::CreateFromMatrix(ViewFrustum, ProjectionMatrix.Get());
+
+		if (ViewFrustum.Far < ViewFrustum.Near)
+		{
+			float Far = ViewFrustum.Far;
+			ViewFrustum.Far = ViewFrustum.Near;
+			ViewFrustum.Near = Far;
+		}
+
+		ViewFrustum.Transform( ViewFrustum, ViewMatrix.Inverse().Get() );
+	}
 
 	//bool Frustum::Contains( const BoxSphereBounds& Bounds ) const
 	//{
