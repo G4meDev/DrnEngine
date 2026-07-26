@@ -14,6 +14,7 @@
 #include "Runtime/Particle/ParticleModuleSubuv.h"
 #include "Runtime/Particle/ParticleModuleRotation.h"
 #include "Runtime/Particle/ParticleModuleLight.h"
+#include "Runtime/Particle/ParticleModuleKill.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -98,6 +99,7 @@ namespace Drn
 		RegisterParticleModule<ParticleModuleRotationRate>(EParticleModule::RotationRate, "Initial Rotation Rate", "Rotation");
 
 		RegisterParticleModule<ParticleModuleLight>(EParticleModule::Light, "Light", "Light");
+		RegisterParticleModule<ParticleModuleKillHeight>(EParticleModule::KillHeight, "KillHeight", "Kill");
 
 
 	}

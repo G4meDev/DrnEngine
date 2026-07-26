@@ -89,6 +89,7 @@ namespace Drn
 		Rotation,
 		RotationRate,
 		Light,
+		KillHeight,
 		Max
 	};
 
