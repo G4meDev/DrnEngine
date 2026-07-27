@@ -444,7 +444,7 @@ namespace Drn
 		else if (MaterialStage == EMaterialStage::Translucensy)
 		{
 			BlendStateInitializer BInitTranslucent	( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha	, EBlendFactor::InverseSourceAlpha	, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
-			BlendStateInitializer BInitAdditive		( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::One			, EBlendFactor::One					, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::InverseSourceAlpha)} );
+			BlendStateInitializer BInitAdditive		( {BlendStateInitializer::RenderTarget(EBlendOperation::Add, EBlendFactor::SourceAlpha	, EBlendFactor::One					, EBlendOperation::Add, EBlendFactor::Zero, EBlendFactor::One)} );
 
 			BoundShaderStateInput BoundShaderState = GetShaderStateInput(VertexFactory->GetVertexDeclaration(), Blob);
 			BlendStateInitializer& BInit = InMaterial->GetBlendMode() == EBlendMode::Translucent ? BInitTranslucent : BInitAdditive;

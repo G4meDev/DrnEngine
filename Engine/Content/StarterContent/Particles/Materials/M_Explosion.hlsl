@@ -91,7 +91,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     float3 Color = IN.Color.rgb * ExplosionSubuv.rgb;
     
-    float4 OutColor = float4(Color * Opacity, 0);
+    float4 OutColor = float4(Color, Opacity);
     
     PixelShaderOutput OUT;
     

@@ -75,7 +75,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     Opacity = saturate(Opacity);
     float3 Color = IN.Color.rgb * SparkBurst.rgb;
     
-    float4 OutColor = float4(Color * Opacity, 0);
+    float4 OutColor = float4(Color, Opacity);
     
     PixelShaderOutput OUT;
     
