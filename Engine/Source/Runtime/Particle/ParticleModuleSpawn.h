@@ -46,9 +46,6 @@ namespace Drn
 
 		std::vector<ParticleBurst> BurstList;
 
-		InterpCurveFloat FloatCurve;
-		InterpCurveVector VectorCurve;
-
 		virtual uint32 RequiredBytesPerInstance() override;
 
 		virtual bool GetSpawnAmount(ParticleEmitterInstance* Owner, float OldLeftover, 

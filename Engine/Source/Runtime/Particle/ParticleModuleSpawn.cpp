@@ -108,9 +108,6 @@ namespace Drn
 			{
 				Ar >> BurstList[i];
 			}
-
-			Ar >> FloatCurve;
-			Ar >> VectorCurve;
 		}
 
 		else
@@ -124,9 +121,6 @@ namespace Drn
 			{
 				Ar << BurstList[i];
 			}
-
-			Ar << FloatCurve;
-			Ar << VectorCurve;
 		}
 	}
 
@@ -155,9 +149,6 @@ namespace Drn
 			bDirty |= Burst.Draw();
 			ImGui::PopID();
 		}
-
-		bDirty |= FloatCurve.Draw("Float Curve");
-		bDirty |= VectorCurve.Draw("Vector Curve");
 
 		return bDirty;
 	}

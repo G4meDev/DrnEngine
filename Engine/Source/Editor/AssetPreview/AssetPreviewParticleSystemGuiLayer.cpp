@@ -38,7 +38,7 @@ namespace Drn
 		TransientAsset.Load();
 
 		m_World = new PreviewWorld;
-		//m_World->GetWorld()->SetGameMode(true);
+		m_World->GetWorld()->SetGameMode(true);
 
 		m_World->SkyLight->SetIntensity(0.4f);
 
@@ -117,6 +117,17 @@ namespace Drn
 						Comp->GetWorld()->DrawDebugBox(Box(EmitterBounds.BoxExtent * -1, EmitterBounds.BoxExtent), Transform(EmitterBounds.Origin, Quat::Identity), GetSeededRandomColorVec4(EmitterIndex), 0.0f, 0.0f);
 					}
 				}
+			}
+		}
+
+		// keep looping particle
+		if (Comp->bWasCompleted)
+		{
+			TimeSinceCompleted += DeltaTime;
+			if (TimeSinceCompleted > ReplayDelay)
+			{
+				TimeSinceCompleted = 0.0f;
+				Comp->Activate();
 			}
 		}
 

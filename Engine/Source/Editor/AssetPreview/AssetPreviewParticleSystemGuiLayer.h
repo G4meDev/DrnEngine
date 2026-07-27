@@ -33,8 +33,6 @@ namespace Drn
 
 		void OnSave();
 
-
-
 	private:
 
 		int32 SelectedEmitterIndex;
@@ -45,6 +43,8 @@ namespace Drn
 		int32 DeferrModuleEmitterDeleteIndex;
 
 		bool bShowBounds = false;
+		float ReplayDelay = 0.5f;
+		float TimeSinceCompleted = 0.0f;
 
 		TRefCountPtr<class PreviewWorld> m_World;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
