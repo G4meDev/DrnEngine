@@ -1,7 +1,7 @@
 #include "Common.hlsl"
 
 // DOMAIN_SURFACE
-// BLEND_TRANSLUCENT
+// BLEND_ADDITIVE
 // SHADING_UNLIT
 
 // SUPPORT_PARTICLE_SPRITE
@@ -70,7 +70,12 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     SamplerState SparkBurstSampler = ResourceDescriptorHeap[Parameters.SparkBurst_Sampler];
     
     float4 SparkBurst = SparkBurstTexture.Sample(SparkBurstSampler, IN.UV);
-    float4 OutColor = float4(IN.Color.rgb * SparkBurst.rgb, IN.Color.a * SparkBurst.r);
+    
+    float Opacity = IN.Color.a * SparkBurst.r;
+    Opacity = saturate(Opacity);
+    float3 Color = IN.Color.rgb * SparkBurst.rgb;
+    
+    float4 OutColor = float4(Color * Opacity, 0);
     
     PixelShaderOutput OUT;
     

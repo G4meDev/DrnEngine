@@ -38,6 +38,7 @@ namespace Drn
 		inline EMaterialDomain GetMaterialDomain() const { return ShaderParameters.MaterialDomain; }
 
 		inline bool IsTwoSided() const { return ShaderParameters.bIsTwoSided; }
+		inline const EBlendMode& GetBlendMode() const { return ShaderParameters.BlendMode; }
 
 		inline const MaterialUniformParameters& GetParameters() const { return MaterialParameters; }
 

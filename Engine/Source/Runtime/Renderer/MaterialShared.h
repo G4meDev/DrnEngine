@@ -135,6 +135,7 @@ namespace Drn
 		Opaque,
 		Masked,
 		Translucent,
+		Additive,
 	};
 
 	enum class EMaterialShadingModel : uint8
@@ -232,6 +233,7 @@ namespace Drn
 				case EBlendMode::Opaque:		return "Opaque";
 				case EBlendMode::Masked:		return "Masked";
 				case EBlendMode::Translucent:	return "Translucent";
+				case EBlendMode::Additive:		return "Additive";
 				default:						return "Unkown";
 			}
 		}

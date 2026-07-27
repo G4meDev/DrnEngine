@@ -17,6 +17,7 @@ namespace Drn
 		BlendOpaque,
 		BlendMasked,
 		BlendTranslucent,
+		BlendAdditive,
 
 		ShadingLit,
 		ShadingUnlit,
@@ -49,6 +50,7 @@ namespace Drn
 		{EMaterialShaderFlag::BlendOpaque						, "BLEND_OPAQUE"},
 		{EMaterialShaderFlag::BlendMasked						, "BLEND_MASKED"},
 		{EMaterialShaderFlag::BlendTranslucent					, "BLEND_TRANSLUCENT"},
+		{EMaterialShaderFlag::BlendAdditive						, "BLEND_ADDITIVE"},
 
 		{EMaterialShaderFlag::ShadingLit						, "SHADING_LIT"},
 		{EMaterialShaderFlag::ShadingUnlit						, "SHADING_UNLIT"},
@@ -83,7 +85,8 @@ namespace Drn
 	{
 		return Flag == EMaterialShaderFlag::BlendOpaque
 			|| Flag == EMaterialShaderFlag::BlendMasked
-			|| Flag == EMaterialShaderFlag::BlendTranslucent;
+			|| Flag == EMaterialShaderFlag::BlendTranslucent
+			|| Flag == EMaterialShaderFlag::BlendAdditive;
 	}
 
 	inline static bool IsMaterialFlagShadingModel( EMaterialShaderFlag Flag )
@@ -219,6 +222,11 @@ namespace Drn
 				return EBlendMode::Translucent;
 			}
 
+			else if (HasFlag(EMaterialShaderFlag::BlendAdditive))
+			{
+				return EBlendMode::Additive;
+			}
+
 			drn_check(false);
 			return EBlendMode::Opaque;
 		}
@@ -239,6 +247,11 @@ namespace Drn
 			return EMaterialShadingModel::Lit;
 		}
 	};
+
+	bool HasTranslucensy(EBlendMode BlendMode)
+	{
+		return (BlendMode == EBlendMode::Translucent) || (BlendMode == EBlendMode::Additive);
+	}
 
 // -----------------------------------------------------------------------------------------------------------
 
@@ -448,7 +461,7 @@ namespace Drn
 					Shaders.PushShader(VertexFactory, EMaterialStage::EditorSelection, MainShaderBlob);
 				}
 
-				if (BlendMode == EBlendMode::Translucent)
+				if (HasTranslucensy(BlendMode))
 				{
 					ShaderBlob TranslucentShaderBlob;
 					std::vector<const wchar_t*> Macros = { L"TRANSLUCENCY_PASS=1" };
@@ -511,7 +524,7 @@ namespace Drn
 			MaterialAsset->ShaderParameters.bHasEditorSelectionPass = Flags.HasFlag(EMaterialShaderFlag::HasEditorSelectionPass);
 			MaterialAsset->ShaderParameters.bHasDecalPass = Flags.HasFlag(EMaterialShaderFlag::HasDecalPass);
 			MaterialAsset->ShaderParameters.bHasVelocityPass = Flags.HasFlag(EMaterialShaderFlag::HasVeloictyPass);
-			MaterialAsset->ShaderParameters.bHasTranslucencyPass = (MaterialDomain == EMaterialDomain::Surface) && (BlendMode == EBlendMode::Translucent);
+			MaterialAsset->ShaderParameters.bHasTranslucencyPass = (MaterialDomain == EMaterialDomain::Surface) && HasTranslucensy(BlendMode);
 			MaterialAsset->ShaderParameters.bHasDistortionPass = Flags.HasFlag(EMaterialShaderFlag::HasDistortionPass);
 
 			MaterialAsset->ShaderParameters.bIsUsedWithStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryStaticMesh);

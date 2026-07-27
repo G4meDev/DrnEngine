@@ -1,7 +1,8 @@
 #include "Common.hlsl"
 
 // DOMAIN_SURFACE
-// BLEND_TRANSLUCENT
+// BLEND_---TRANSLUCENT
+// BLEND_ADDITIVE
 // SHADING_LIT
 
 // SUPPORT_PARTICLE_SPRITE
@@ -84,13 +85,13 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     
     float4 ExplosionSubuv = TextureSubuv(ExplosionSubuvTexture, ExplosionSubuvSampler, IN.UV, float2(6, 6), IN.SubImage, true);
     
-    //float Opacity = saturate(IN.Color.a * SmokeSubuv.a);
-    float Opacity = saturate(IN.Color.a);
+    float Opacity = IN.Color.a;
     Opacity = DepthFade(SceneDepth, PixelDepth, Opacity, 0.6f);
+    Opacity = saturate(Opacity);
     
     float3 Color = IN.Color.rgb * ExplosionSubuv.rgb;
     
-    float4 OutColor = float4(Color, Opacity);
+    float4 OutColor = float4(Color * Opacity, 0);
     
     PixelShaderOutput OUT;
     

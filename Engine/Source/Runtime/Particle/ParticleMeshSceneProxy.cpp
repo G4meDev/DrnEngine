@@ -27,7 +27,9 @@ namespace Drn
 	const BoxSphereBounds& ParticleMeshSceneProxy::GetBounds()
 	{
 		drn_check(OwningEmitter);
-		return OwningEmitter->GetBoundingBox();
+		Bounds = OwningEmitter->GetBoundingBox();
+
+		return Bounds;
 	}
 
 	void ParticleMeshSceneProxy::RenderVelocityPass( class D3D12CommandList* CommandList, SceneRenderer* Renderer )
