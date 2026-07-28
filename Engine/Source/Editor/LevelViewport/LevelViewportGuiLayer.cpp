@@ -194,6 +194,7 @@ namespace Drn
 
 				DrawViewFlag( EWorldViewFlag::Collision, "Collision" );
 				DrawViewFlag( EWorldViewFlag::Light, "Light" );
+				DrawViewFlag( EWorldViewFlag::Bounds, "Bounds" );
 				DrawViewFlag( EWorldViewFlag::LightGrid, "LightGrid" );
 
 				ImGui::EndMenu();

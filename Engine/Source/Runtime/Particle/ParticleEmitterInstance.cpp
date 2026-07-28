@@ -360,6 +360,16 @@ namespace Drn
 		}
 	}
 
+	Box ParticleEmitterInstance::GetBoundingBox()
+	{
+		if (Component->Template.IsValid() && Component->Template->bUseFixedBounds)
+		{
+			return Component->GetBounds().GetBox();
+		}
+
+		return ParticleBoundingBox;
+	}
+
 	void ParticleEmitterInstance::ResetParticleParameters( float DeltaTime )
 	{
 		// Store off any orbit offset values
@@ -1106,16 +1116,16 @@ namespace Drn
 	{
 		ParticleEmitterInstance::Tick(DeltaTime, bSuppressSpawning);
 
-		if (bEnabled && !Component->bWarmingUp)
-		{
-			for (int32 i = 0; i < ActiveParticles; i++)
-			{
-				DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
-		
-				Transform BoundTransform = Transform(Particle.Location, Quat::Identity, Particle.Size) * Transform(SimulationToWorld);
-				GetWorld()->DrawDebugSphere(BoundTransform.GetLocation(), Quat::Identity, Particle.Color, BoundTransform.GetScale().GetMaxComponent(), 8, 0, 0);
-			}
-		}
+		//if (bEnabled && !Component->bWarmingUp)
+		//{
+		//	for (int32 i = 0; i < ActiveParticles; i++)
+		//	{
+		//		DECLARE_PARTICLE(Particle, ParticleData + ParticleStride * ParticleIndices[i]);
+		//
+		//		Transform BoundTransform = Transform(Particle.Location, Quat::Identity, Particle.Size) * Transform(SimulationToWorld);
+		//		GetWorld()->DrawDebugSphere(BoundTransform.GetLocation(), Quat::Identity, Particle.Color, (Particle.Size * Component->GetWorldScale()).GetMaxComponent(), 8, 0, 0);
+		//	}
+		//}
 	}
 
 	void ParticleCpuSpriteEmitterInstance::RegisterSceneProxy()
@@ -1234,7 +1244,7 @@ namespace Drn
 					//	LocalMax = OrbitPayload.Offset.GetAbsMax();
 					//}
 
-					LocalMax += (Particle.Size * ParticlePivotOffset).GetAbsMax();
+					//LocalMax += (Particle.Size * ParticlePivotOffset).GetAbsMax();
 				}
 
 				Particle.Location	 = NewLocation;

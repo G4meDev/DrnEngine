@@ -81,8 +81,9 @@ namespace Drn
 		virtual void Tick_ModuleUpdate(float DeltaTime);
 		//virtual void Tick_ModulePostUpdate(float DeltaTime);
 		//virtual void Tick_ModuleFinalUpdate(float DeltaTime);
-		
-		virtual Box GetBoundingBox() { return ParticleBoundingBox; };
+
+		//virtual Box GetBoundingBox() { return ParticleBoundingBox; };
+		virtual Box GetBoundingBox();
 		virtual void UpdateBoundingBox(float DeltaTime) = 0;
 
 		//virtual uint32 CalculateParticleStride(uint32 ParticleSize);

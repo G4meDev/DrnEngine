@@ -14,7 +14,8 @@ namespace Drn
 		None				= 0,
 		Collision			= 1 << 0,
 		Light				= 1 << 1,
-		LightGrid			= 1 << 2,
+		Bounds				= 1 << 2,
+		LightGrid			= 1 << 3,
 	};
 
 	enum class EWorldType

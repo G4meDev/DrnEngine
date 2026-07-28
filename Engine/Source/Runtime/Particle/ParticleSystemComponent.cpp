@@ -869,6 +869,12 @@ namespace Drn
 		ImGui::Separator();
 		ImGui::TextWrapped(Template.GetPath().c_str());
 
+		if (ImGui::Button("Reset"))
+		{
+			Deactivate();
+			Activate();
+		} ImGui::SameLine();
+
 		if (ImGui::Button("Deactivate"))
 		{
 			Deactivate();
@@ -951,15 +957,30 @@ namespace Drn
 
 	void ParticleSystemComponent::DrawEditorSelected()
 	{
-		const bool bUseFixedBound = Template.IsValid() && Template->bUseFixedBounds;
-		if (bUseFixedBound)
+		if (GetWorld()->HasViewFlag(EWorldViewFlag::Bounds))
 		{
-			Box LocalFixedBound = Box(Template->FixedBoundsMin, Template->FixedBoundsMax);
-			GetWorld()->DrawDebugBox(LocalFixedBound, GetWorldTransform(), Color::Blue, 0.0f, 0.0f);
-		}
+			const bool bUseFixedBound = Template.IsValid() && Template->bUseFixedBounds;
+			if (bUseFixedBound)
+			{
+				Box LocalFixedBound = Box(Template->FixedBoundsMin, Template->FixedBoundsMax);
+				GetWorld()->DrawDebugBox(LocalFixedBound, GetWorldTransform(), Color::Blue, 0.0f, 0.0f);
+			}
 
-		BoxSphereBounds Bounds = CalcBounds(GetWorldTransform());
-		GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::White, 0.0f, 0.0f);
+			else
+			{
+				BoxSphereBounds Bounds = CalcBounds(GetWorldTransform());
+				GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::Blue, 0.0f, 0.0f);
+
+				for (ParticleEmitterInstance* Instance : Emitters)
+				{
+					if (Instance)
+					{
+						Bounds = Instance->GetBoundingBox();
+						GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::White, 0.0f, 0.0f);
+					}
+				}
+			}
+		}
 	}
 
 	void ParticleSystemComponent::SetSelectedInEditor( bool SelectedInEditor )

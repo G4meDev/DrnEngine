@@ -320,9 +320,12 @@ namespace Drn
 	{
 		PrimitiveComponent::DrawEditorSelected();
 
-		BoxSphereBounds Bounds = GetBounds();
-		GetWorld()->DrawDebugSphere(Bounds.Origin, Quat::Identity, Color::Green, Bounds.SphereRadius, 32, 0.0f, 0.0f);
-		GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::Blue, 0.0f, 0.0f);
+		if (GetWorld()->HasViewFlag(EWorldViewFlag::Bounds))
+		{
+			BoxSphereBounds Bounds = GetBounds();
+			GetWorld()->DrawDebugSphere(Bounds.Origin, Quat::Identity, Color::Green, Bounds.SphereRadius, 32, 0.0f, 0.0f);
+			GetWorld()->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::Blue, 0.0f, 0.0f);
+		}
 	}
 
 #endif

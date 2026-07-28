@@ -31,7 +31,9 @@ namespace Drn
 	const BoxSphereBounds& ParticleCpuSpriteSceneProxy::GetBounds()
 	{
 		drn_check(OwningEmitter);
-		return OwningEmitter->GetBoundingBox();
+
+		Bounds = OwningEmitter->GetBoundingBox();
+		return Bounds;
 	}
 
 	void ParticleCpuSpriteSceneProxy::OnRegister( Scene* InScene )
