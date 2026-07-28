@@ -48,6 +48,7 @@ namespace Drn
 		inline bool IsPendingKill() const { return m_PendingKill; }
 
 		inline bool CanTickInEditor() const { return bTickInEditor; }
+		inline void SetTickInEditor(bool bTick) { bTickInEditor = bTick; }
 
 		uint32 GetUniqueID() const { return ComponentId; };
 

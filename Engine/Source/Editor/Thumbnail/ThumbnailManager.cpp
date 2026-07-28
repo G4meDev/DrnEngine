@@ -288,6 +288,49 @@ namespace Drn
 			}
 		}
 
+		else if (AssetType == EAssetType::ParticleSystem)
+		{
+			AssetHandle<ParticleSystem> ParticleAsset(AssetPath);
+			ParticleAsset.Load();
+
+			if ( ParticleAsset.IsValid() )
+			{
+				PreviewWorld* TargetWorld = new PreviewWorld;
+				TargetWorld->GetWorld()->SetPaused(true);
+				TargetWorld->GetWorld()->SetGameMode(true);
+
+				TargetWorld->SkyLight->SetIntensity(0.4f);
+
+				TargetWorld->DirectionalLight->SetIntensity(1);
+				TargetWorld->DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
+
+				Particle* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<Particle>();
+				SpawnedActor->GetParticleSystemComponenet()->SetTemplate(ParticleAsset);
+				SpawnedActor->GetParticleSystemComponenet()->ActivateSystem();
+
+				float Warmup = ParticleAsset->ThumbnailWarmup;
+				constexpr float TimeStep = 1.0f / 60;
+				while (Warmup > TimeStep)
+				{
+					Warmup -= TimeStep;
+					SpawnedActor->GetParticleSystemComponenet()->Tick(TimeStep);
+				}
+				SpawnedActor->GetParticleSystemComponenet()->SetTickInEditor(false); // set paused
+
+				BoxSphereBounds Bounds = SpawnedActor->GetParticleSystemComponenet()->CalcBounds(SpawnedActor->GetParticleSystemComponenet()->GetWorldTransform());
+				Quat CameraRotation(0, Math::PI / 4, Math::PI * 5 / 4);
+
+				float Radius = Bounds.SphereRadius * 2 + ParticleAsset->ThumbnailDistance;
+				Vector CameraPosition = Bounds.Origin + CameraRotation.GetAxisZ() * -Radius;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
+
+				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
+
+				ThumbnailCaptureEvent* Event = CaptureSceneThumbnail(TargetWorld->GetSceneRenderer(), AssetPath);
+				Event->m_PreviewWorld = TargetWorld;
+			}
+		}
 	}
 
 	void ThumbnailManager::ProccessRequestedThumbnails( D3D12CommandList* CmdList )
