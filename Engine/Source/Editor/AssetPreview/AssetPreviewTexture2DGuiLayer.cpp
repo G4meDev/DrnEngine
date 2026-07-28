@@ -23,6 +23,9 @@ namespace Drn
 		m_PreviewWorld->SetPaused(true);
 		m_PreviewWorld->SetEditorWorld();
 
+		PostProcessVolume* PVolume = m_PreviewWorld->SpawnActor<PostProcessVolume>();
+		PVolume->m_PostProcessVolumeComponent->m_PostProcessSettings.m_BloomSettings.m_Brightness = 0.0f;
+
 		AssetHandle<StaticMesh> PlaneMesh( "Engine\\Content\\BasicShapes\\SM_Quad.drn" );
 		PlaneMesh.Load();
 		
@@ -40,6 +43,7 @@ namespace Drn
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>( m_PreviewWorld->GetScene() );
 		UpdateMipLevel();
+		UpdateShowColor();
 	}
 
 	AssetPreviewTexture2DGuiLayer::~AssetPreviewTexture2DGuiLayer()

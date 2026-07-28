@@ -21,6 +21,7 @@ struct ParametersBuffers
 struct VertexShaderOutput
 {
     float2 UV : TEXCOORD0;
+    float3 WorldPosition: WORLDPOS;
     float4 Position : SV_Position;
 };
 
@@ -47,6 +48,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
 
     float4 WorldPosition = mul(Primitive.LocalToWorld, float4(IN.Position, 1.0f));
+    OUT.WorldPosition = WorldPosition.xyz;
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
     OUT.UV = IN.UV1;
     
@@ -58,6 +60,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
 struct PixelShaderInput
 {
     float2 UV : TEXCOORD0;
+    float3 WorldPosition : WORLDPOS;
 };
 
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
@@ -81,14 +84,30 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     //OUT.Masks.a = 1.0f/255;
     OUT.Masks.a = 0;
     
-    if(Parameters.ShowColor.a > 0)
+    float3 Color;
+    
+    float4 ChannelMasks = step(0.1, Parameters.ShowColor);
+    float SumMask = ChannelMasks.r + ChannelMasks.g + ChannelMasks.b + ChannelMasks.a;
+
+    Color = Sample.rgb * ChannelMasks.rgb;
+    if(SumMask == 1) // single channel view
     {
-        OUT.ColorDeferred = float4(Sample.aaa, 1);
+        float4 Mult = Sample.rgba * ChannelMasks.rgba;
+        float MultAdd = Mult.r + Mult.g + Mult.b + Mult.a;
+        Color = MultAdd;
     }
-    else
+    
+    else if (ChannelMasks.a > 0)
     {
-        OUT.ColorDeferred = float4(Sample.rgb, 1);
+        float PatternStepSize = 0.1f;
+        float2 Pattern = floor((IN.WorldPosition.xy) / PatternStepSize);
+        float Sum = Pattern.x + Pattern.y;
+        float Mask = fmod(Sum, 2) == 0;
+        float3 Background = lerp(0.3f, 0.8f, Mask);
+        Color = lerp(Background, Color, Sample.a);
     }
+    
+    OUT.ColorDeferred = float4(Color, 1);
     
     return OUT;
 }
