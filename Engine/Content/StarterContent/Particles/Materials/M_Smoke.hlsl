@@ -47,6 +47,7 @@ VertexShaderOutput Main_VS(VertexInputParticleSprite IN)
 
     
     float2 Size = abs(IN.Size_Rotation_Subindex.xy);
+    Size = Size.xx;
     WorldPosition.xyz += Size.x * (IN.Position.x - 0.5f) * Right;
     WorldPosition.xyz += Size.y * (IN.Position.y - 0.5f) * Up;
 

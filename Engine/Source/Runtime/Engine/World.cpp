@@ -249,6 +249,18 @@ namespace Drn
 		}
 	}
 
+	void World::DrawDebugRectacngle( const Vector& Base, Vector2 Size, const Vector& X, const Vector& Y, const Color& Color, float Thickness, float Lifetime )
+	{
+		if (m_LineBatchCompponent)
+		{
+			m_LineBatchCompponent->DrawRectacngle(Base, Size, X, Y, Color, Thickness, Lifetime);
+		}
+		else if(m_LineBatchThicknessCompponent && Thickness != 0)
+		{
+			m_LineBatchThicknessCompponent->DrawRectacngle(Base, Size, X, Y, Color, Thickness, Lifetime);
+		}
+	}
+
 	void World::DrawDebugBox( const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime )
 	{
 		if (m_LineBatchCompponent)

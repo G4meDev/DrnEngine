@@ -55,6 +55,7 @@ namespace Drn
 		void DrawHalfCircle(const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
 		void DrawSphere(const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
 
+		void DrawRectacngle(const Vector& Base, Vector2 Size, const Vector& X, const Vector& Y, const Color& Color, float Thickness, float Lifetime);
 		void DrawBox(const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime);
 		void DrawCapsule(const Vector& Center, float HalfHeight, float Radius, const Quat& Rotation, const Color& Color, float Thickness, float Lifetime);
 

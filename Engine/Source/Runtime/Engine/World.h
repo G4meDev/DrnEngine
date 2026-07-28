@@ -63,6 +63,7 @@ namespace Drn
 		void DrawDebugLine(const Vector& Start, const Vector& End, const Color& Color, float Thickness, float Duration);
 		void DrawDebugCircle(const Vector& Base, const Vector& X, const Vector& Z, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
 		void DrawDebugSphere(const Vector& Center, const Quat& Rotation, const Color& Color, float Radius, int32 NumSides, float Thickness, float Lifetime);
+		void DrawDebugRectacngle(const Vector& Base, Vector2 Size, const Vector& X, const Vector& Y, const Color& Color, float Thickness, float Lifetime);
 		void DrawDebugBox(const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime);
 		void DrawDebugCone(const Vector& InCenter, const Vector& Direction, float Length, float AngleWidth, float AngleHeight, const Color& Color, int32 NumSides, float Thickness, float Lifetime);
 		void DrawDebugConeCap(const Vector& InCenter, const Vector& Direction, float Length, float Angle, const Color& Color, int32 NumSides, float Thickness, float Lifetime);

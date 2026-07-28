@@ -830,6 +830,8 @@ namespace Drn
 #if WITH_EDITOR
 	void ParticleSystemComponent::DrawDetailPanel( float DeltaTime )
 	{
+		PrimitiveComponent::DrawDetailPanel(DeltaTime);
+
 		if ( ImGui::Button( "Clear" ) )
 		{
 			SetTemplate(AssetHandle<ParticleSystem>(""));

@@ -394,6 +394,8 @@ namespace Drn
 			ParticleIndices = SortedInidices.data();
 		}
 
+		const Vector Scale = OwningEmitter->Component->GetWorldScale();
+
 		const bool bHasSubuv = OwningEmitter->Emitter->bHasSubuv;
 		const int32 SubuvOffset = OwningEmitter->Emitter->GetSubuvOffset();
 
@@ -405,7 +407,8 @@ namespace Drn
 			ParticlesInstanceData[i].Position = Particle.Location;
 			ParticlesInstanceData[i].Color = Particle.Color;
 			ParticlesInstanceData[i].RelativeTime = Particle.RelativeTime;
-			ParticlesInstanceData[i].Size = Vector2(Particle.Size.X, Particle.Size.Y);
+			//ParticlesInstanceData[i].Size = Vector2(Particle.Size.X, Particle.Size.Y) *;
+			ParticlesInstanceData[i].Size = Vector2(Particle.Size.X * Scale.X, Particle.Size.Y * Scale.Z);
 			ParticlesInstanceData[i].Rotation = Particle.Rotation;
 			ParticlesInstanceData[i].ParticleId = Particle.Flags & EParticleStates::STATE_CounterMask;
 

@@ -37,6 +37,7 @@ VertexShaderOutput Main_VS(VertexInputParticleSprite IN)
     ParticleSpriteTangents(View, IN.Size_Rotation_Subindex.z, WorldPosition.xyz, OldWorldPosition.xyz, Right, Up, false);
     
     float2 Size = abs(IN.Size_Rotation_Subindex.xy);
+    Size = Size.xx;
     WorldPosition.xyz += Size.x * (IN.Position.x - 0.5f) * Right;
     WorldPosition.xyz += Size.y * (IN.Position.y - 0.5f) * Up;
     
@@ -59,7 +60,12 @@ struct PixelShaderInput
 
 PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 {
-    float4 OutColor = float4(IN.Color.rgb, IN.Color.a * RadialGradientExponential(IN.UV));
+    float2 A = IN.UV - 0.5f;
+    A *= A;
+    float Opacity = 1 - A.x - A.y;
+    Opacity = saturate(pow(Opacity, 30));
+    
+    float4 OutColor = float4(IN.Color.rgb, IN.Color.a * Opacity);
     
     PixelShaderOutput OUT;
     

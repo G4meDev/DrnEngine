@@ -107,6 +107,24 @@ namespace Drn
 		DrawCircle(Center, UpVector, ForwardVector, Color, Radius, NumSides, Thickness, Lifetime);
 	}
 
+	void LineBatchComponent::DrawRectacngle( const Vector& Base, Vector2 Size, const Vector& X, const Vector& Y, const Color& Color, float Thickness, float Lifetime )
+	{
+		const float HalfX = Size.X / 2;
+		const float HalfY = Size.Y / 2;
+
+		const Vector Point0 = Base + Y * HalfY - X * HalfX;
+		const Vector Point1 = Base + Y * HalfY + X * HalfX;
+		const Vector Point2 = Base - Y * HalfY + X * HalfX;
+		const Vector Point3 = Base - Y * HalfY - X * HalfX;
+
+		m_Lines.push_back(BatchLine(Point0, Point1, Color, Thickness, Lifetime));
+		m_Lines.push_back(BatchLine(Point1, Point2, Color, Thickness, Lifetime));
+		m_Lines.push_back(BatchLine(Point2, Point3, Color, Thickness, Lifetime));
+		m_Lines.push_back(BatchLine(Point3, Point0, Color, Thickness, Lifetime));
+
+		MarkRenderStateDirty();
+	}
+
 	void LineBatchComponent::DrawBox( const Box& InBox, const Transform& T, const Color& Color, float Thickness, float Lifetime )
 	{
 		Vector	B[2];
