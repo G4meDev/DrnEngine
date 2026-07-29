@@ -166,6 +166,15 @@ struct ParticleSpriteBuffer
 
     float3 NormalsCylinderDirection;
     float Unused_3;
+    
+    float3 EmitterForward;
+    float Unused_4;
+
+    float3 EmitterUp;
+    float Unused_5;
+
+    float3 EmitterRight;
+    float Unused_6;
 };
 
 struct StaticSamplers

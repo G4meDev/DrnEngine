@@ -328,6 +328,14 @@ namespace Drn
 		ParticleData.m_LocalToWorld = OwningEmitter->SimulationToWorld;
 		ParticleData.NormalsSphereCenter = EmitterToWorld.TransformPosition(OwningEmitter->Emitter->NormalsSphereCenter);
 		ParticleData.NormalsCylinderDirection = EmitterToWorld.TransformVector(OwningEmitter->Emitter->NormalsCylinderDirection);
+
+		Matrix EmitterToComponent = Transform(OwningEmitter->Emitter->Origin, OwningEmitter->Emitter->Rotation);
+		Matrix LocalToEmitter = EmitterToComponent * OwningEmitter->Component->GetWorldTransform().ToMatrixNoScale();
+
+		ParticleData.EmitterForward	= LocalToEmitter.TransformVector(Vector::ForwardVector).GetSafeNormal();
+		ParticleData.EmitterUp		= LocalToEmitter.TransformVector(Vector::UpVector).GetSafeNormal();
+		ParticleData.EmitterRight	= LocalToEmitter.TransformVector(Vector::RightVector).GetSafeNormal();
+
 		ParticleBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ParticleSpriteData), EUniformBufferUsage::MultiFrame, &ParticleData);
 
 		uint16* ParticleIndices = OwningEmitter->ParticleIndices;

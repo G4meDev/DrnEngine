@@ -18,6 +18,15 @@ namespace Drn
 
 		Vector NormalsCylinderDirection;
 		float Unused_2;
+
+		Vector EmitterForward;
+		float Unused_3;
+
+		Vector EmitterUp;
+		float Unused_4;
+
+		Vector EmitterRight;
+		float Unused_5;
 	};
 
 	class ParticleCpuSpriteSceneProxy : public PrimitiveSceneProxy
