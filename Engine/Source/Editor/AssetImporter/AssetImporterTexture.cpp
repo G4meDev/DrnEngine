@@ -27,7 +27,7 @@ namespace Drn
 		TexMetadata  metadata;
 		ScratchImage scratchImage;
 		HRESULT Result = E_FAIL;
-		if ( Extension == ".tga" )
+		if ( Extension == ".tga" || Extension == ".TGA")
 		{
 			Result = LoadFromTGAFile(StringHelper::s2ws(Path).c_str(), &metadata, scratchImage);
 		}

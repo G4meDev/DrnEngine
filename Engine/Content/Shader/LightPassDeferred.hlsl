@@ -219,19 +219,15 @@ float4 Main_PS(PixelShaderInput IN) : SV_Target
     
     else if (BindlessResources.LightFlags & LIGHT_BITFLAG_DIRECTIONAL)
     {
-        [branch]
-        if (Depth > 0.0001)
-        {
-            ConstantBuffer<DirectionalLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
-            Radiance = CalculateDirectionalLightRadiance(WorldPos.xyz, Light.Direction, Light.Color, CameraVector, Gbuffer);
+        ConstantBuffer<DirectionalLightData> Light = ResourceDescriptorHeap[BindlessResources.LightDataIndex];
+        Radiance = CalculateDirectionalLightRadiance(WorldPos.xyz, Light.Direction, Light.Color, CameraVector, Gbuffer);
             
-            [branch]
-            if (Light.ShadowDataIndex != 0)
-            {
-                ConstantBuffer<DirectionalLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
-                SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCmpSamplerIndex];
-                Shadow = CalculateDirectionalLightShadow(WorldPos.xyz, ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform), Light, ShadowBuffer, CompState);
-            }
+        [branch]
+        if (Light.ShadowDataIndex != 0)
+        {
+            ConstantBuffer<DirectionalLightShadowData> ShadowBuffer = ResourceDescriptorHeap[Light.ShadowDataIndex];
+            SamplerComparisonState CompState = ResourceDescriptorHeap[StaticSamplers.LinearCmpSamplerIndex];
+            Shadow = CalculateDirectionalLightShadow(WorldPos.xyz, ConvertFromDeviceZ(Depth, View.InvDeviceZToWorldZTransform), Light, ShadowBuffer, CompState);
         }
     }
     

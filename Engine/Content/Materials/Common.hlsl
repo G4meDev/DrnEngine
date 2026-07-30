@@ -1458,6 +1458,7 @@ float CalculateDirectionalLightShadow(float3 WorldPosition, float Depth, Directi
     // TODO: seam blending
     float Alpha = 0;
     int index = 0;
+    bool bInCascadeRage = false;
     float CascadeDistance;
     for (uint i = 0; i < ShadowData.CascadeCount; i++)
     {
@@ -1465,9 +1466,14 @@ float CalculateDirectionalLightShadow(float3 WorldPosition, float Depth, Directi
         if (Depth < CascadeDistance)
         {
             index = i;
+            bInCascadeRage = true;
             break;
         }
     }
+    
+    [flatten]
+    if(!bInCascadeRage)
+        return 1.0f;
     
     float4 ShadowPos = mul(ShadowData.CsWorldToProjectionMatrices[index], float4(WorldPosition, 1));
 

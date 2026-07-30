@@ -76,7 +76,7 @@ namespace Drn
 			SelectedSceneComponent = static_cast<SceneComponent*>(GetSelectedComponentDel.Execute());
 		}
 
-		if (SelectedSceneComponent && SelectedSceneComponent->GetOwningActor() &&
+		if (!m_World->IsInGameMode() && SelectedSceneComponent && SelectedSceneComponent->GetOwningActor() &&
 			!SelectedSceneComponent->GetOwningActor()->IsMarkedPendingKill())
 		{
 			const ImVec2 RectMin = ImGui::GetItemRectMin();
