@@ -52,6 +52,8 @@ VertexShaderOutput Main_VS(VertexInputParticleSprite IN)
     WorldPosition.xyz += Size.x * (IN.Position.x - 0.5f) * Right;
     WorldPosition.xyz += Size.y * (IN.Position.y - 0.5f) * Up;
     
+    WorldPosition.y -= 0.75f;
+    
     float3x3 TangentToWorld = ParticleSpriteCalcTangentBasis(Right, Up);
     
     OUT.TangentToWorld = TangentToWorld;

@@ -579,6 +579,13 @@ namespace Drn
 		return Transform::Identity;
 	}
 
+	bool WheeledVehicleMovementComponent::IsWheelOnGround( int32 WheelIndex ) const
+	{
+		drn_check(WheelIndex >= 0);
+		drn_check(WheelIndex < PxVehicleLimits::eMAX_NB_WHEELS);
+		return VehicleState.roadGeomStates[WheelIndex].hitState;
+	}
+
 #if WITH_EDITOR
 	void WheeledVehicleMovementComponent::DrawDetailPanel( float DeltaTime )
 	{

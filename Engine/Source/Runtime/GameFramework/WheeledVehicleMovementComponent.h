@@ -331,6 +331,7 @@ namespace Drn
 		inline void SetSteerInput(float InSteerInput) { SteerInput = InSteerInput; }
 
 		Transform GetWheelWorldTransform(int32 WheelIndex) const;
+		bool IsWheelOnGround(int32 WheelIndex) const;
 
 		const WheelData& GetWheelData( int32 Index ) const { return Wheels[Index]; }
 

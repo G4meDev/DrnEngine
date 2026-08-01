@@ -36,6 +36,7 @@ namespace Drn
 		std::unique_ptr<class RaceVehicleMovementComponent> MovementComponent;
 
 		std::unique_ptr<class StaticMeshComponent> VehicleWheels[4];
+		std::unique_ptr<class ParticleSystemComponent> VehicleWheelsParticles[4];
 
 		std::shared_ptr<class SpringArmComponent> m_SpringArm;
 		std::shared_ptr<class CameraComponent> m_Camera;

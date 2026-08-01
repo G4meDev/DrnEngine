@@ -39,14 +39,24 @@ namespace Drn
 		m_SpringArm->SetEnableRotationLag(true);
 		m_SpringArm->SetRotationLagSpeed(30.0f);
 
+		SetRootComponent(VehicleMesh.get());
+
+		AssetHandle<ParticleSystem> WheelFxTemplate("Game\\Content\\Level_3\\Assets\\Effects\\P_WheelKickup_Dirt.drn");
+		WheelFxTemplate.Load();
+		drn_check(WheelFxTemplate.IsValid());
+
 		for (int32 i = 0; i < 4; i++)
 		{
 			VehicleWheels[i] = std::make_unique<StaticMeshComponent>();
 			VehicleWheels[i]->SetStatic(false);
 			VehicleWheels[i]->SetComponentLabel( "VehicleWheel_" + std::to_string(i) );
 			VehicleMesh->AttachSceneComponent(VehicleWheels[i].get());
-			SetRootComponent(VehicleMesh.get());
 			VehicleWheels[i]->SetMesh(DefaultVehicleWheel);
+
+			VehicleWheelsParticles[i] = std::make_unique<ParticleSystemComponent>();
+			VehicleWheelsParticles[i]->SetComponentLabel( "VehicleWheelFx_" + std::to_string(i) );
+			VehicleWheels[i]->AttachSceneComponent(VehicleWheelsParticles[i].get());
+			VehicleWheelsParticles[i]->SetTemplate(WheelFxTemplate);
 		}
 
 		MovementComponent = std::make_unique<RaceVehicleMovementComponent>();
@@ -91,6 +101,17 @@ namespace Drn
 		{
 			Transform WheelWorldTransform = MovementComponent->GetWheelWorldTransform(i);
 			VehicleWheels[i]->SetWorldLocationAndRotation(WheelWorldTransform.GetLocation(), WheelWorldTransform.GetRotation());
+
+			const bool bWheelOnGround = MovementComponent->IsWheelOnGround(i);
+			const bool bFxActive = !VehicleWheelsParticles[i]->ShouldActivate();
+			if (bWheelOnGround && !bFxActive)
+			{
+				VehicleWheelsParticles[i]->Activate();
+			}
+			else if (!bWheelOnGround && bFxActive)
+			{
+				VehicleWheelsParticles[i]->Deactivate();
+			}
 		}
 	}
 
