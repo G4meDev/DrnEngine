@@ -203,7 +203,7 @@ namespace Drn
 				Quat CameraRotation( 0, 0, Math::PI);
 				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
 
-				Vector CameraPosition = PlaneMesh->GetBounds().Origin + CameraRotation.GetAxisZ() * PlaneMesh->GetBounds().SphereRadius * -2.45;
+				Vector CameraPosition = PlaneMesh->GetBounds().Origin + CameraRotation.GetAxisZ() * PlaneMesh->GetBounds().SphereRadius * -1.72;
 				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
 
 				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));

@@ -74,7 +74,8 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     SamplerState Sampler = ResourceDescriptorHeap[Parameters.BaseColor_Sampler];
     
     PixelShaderOutput OUT;
-    float4 Sample = Texture.SampleLevel(Sampler, IN.UV, Parameters.MipLevel);
+    float2 UV = float2(1 - IN.UV.x, IN.UV.y);
+    float4 Sample = Texture.SampleLevel(Sampler, UV, Parameters.MipLevel);
     
     //OUT.ColorDeferred = float4(BaseColor, 1);
     //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);
