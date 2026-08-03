@@ -31,6 +31,7 @@ namespace Drn
 		m_Camera = std::make_shared<CameraComponent>();
 		m_SpringArm->AttachSceneComponent(m_Camera.get());
 		m_Camera->SetComponentLabel("Camera");
+		m_Camera->m_FOV = 55.0f;
 
 		m_SpringArm->SetArmLength(11.0f);
 		m_SpringArm->SetRelativeLocationAndRotation(Vector(0.0f, 2.0, 0.0f), Quat(0, XM_PI / 12, 0));
