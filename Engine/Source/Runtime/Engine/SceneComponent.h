@@ -67,6 +67,11 @@ namespace Drn
 		inline bool IsStatic() const { return bStatic; }
 
 #if WITH_EDITOR
+		virtual Transform GetGizmoTransform() const;
+		virtual void OnGizmoLocationChanged(const Vector& GizmoLocation);
+		virtual void OnGizmoRotationChanged(const Quat& GizmoRotation);
+		virtual void OnGizmoScaleChanged(const Vector& GizmoScale);
+
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
 

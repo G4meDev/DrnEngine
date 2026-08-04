@@ -11,7 +11,7 @@ namespace Drn
 
 		Matrix m_LocalToWorld;
 		Matrix m_PrevLocalToWorld;
-		Guid m_Guid;
+		HitProxyData m_HitProxyData;
 	};
 
 	class ParticleMeshSceneProxy : public PrimitiveSceneProxy
@@ -53,7 +53,7 @@ namespace Drn
 		ParticleMeshEmitterInstance* OwningEmitter;
 		AssetHandle<StaticMesh> Mesh;
 		std::vector<MaterialSlot> Materials;
-		Guid Guid;
+		HitProxyData m_HitProxyData;
 
 		int32 ActiveParticles;
 		int32 MaxParticles;

@@ -59,7 +59,7 @@ namespace Drn
 	BillboardSceneProxy::BillboardSceneProxy( class BillboardComponent* InBillboardComponent )
 		: PrimitiveSceneProxy( InBillboardComponent )
 		, m_Sprite( InBillboardComponent->GetSprite() )
-		, m_Guid( InBillboardComponent->GetParent() ? InBillboardComponent->GetParent()->GetGuid() : InBillboardComponent->GetGuid() )
+		, m_HitProxyData( InBillboardComponent->GetParent() ? InBillboardComponent->GetParent() : InBillboardComponent)
 	{}
 
 	BillboardSceneProxy::~BillboardSceneProxy()
@@ -170,7 +170,7 @@ namespace Drn
 		}
 
 		m_BillboardData.m_LocalToProjetcion = mvpMatrix;
-		m_BillboardData.m_Guid = m_Guid;
+		m_BillboardData.m_HitProxyData = m_HitProxyData;
 
 		TRefCountPtr<RenderUniformBuffer> BillboardBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(BillboardData), EUniformBufferUsage::SingleFrame, &m_BillboardData);
 

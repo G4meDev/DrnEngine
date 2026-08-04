@@ -6,7 +6,7 @@ namespace Drn
 	InstancedStaticMeshSceneProxy::InstancedStaticMeshSceneProxy( InstancedStaticMeshComponent* InInstancedStaticMeshComponent )
 		: PrimitiveSceneProxy(InInstancedStaticMeshComponent)
 		, m_OwningInstancedStaticMeshComponent(InInstancedStaticMeshComponent)
-		, m_Guid(InInstancedStaticMeshComponent->GetGuid())
+		, m_HitProxyData(InInstancedStaticMeshComponent)
 	{
 #if WITH_EDITOR
 		m_EditorPrimitive = InInstancedStaticMeshComponent->IsEditorPrimitive();
@@ -446,7 +446,7 @@ namespace Drn
 	{
 		//m_PrimitiveData.m_LocalToWorld = Matrix(m_OwningInstancedStaticMeshComponent->GetWorldTransform()).Get();
 		//m_PrimitiveData.m_LocalToProjection = XMMatrixMultiply( m_PrimitiveData.m_LocalToWorld.Get(), Renderer->GetSceneView().WorldToProjection.Get() );
-		m_PrimitiveData.m_Guid = m_Guid;
+		m_PrimitiveData.m_HitProxyData = m_HitProxyData;
 
 		PrimitiveBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveData), EUniformBufferUsage::MultiFrame, &m_PrimitiveData);
 

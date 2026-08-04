@@ -9,7 +9,7 @@ namespace Drn
 		: PrimitiveSceneProxy(InOwningEmitter->Component)
 		, OwningEmitter(InOwningEmitter)
 		, LightProxy(nullptr)
-		, Guid(InOwningEmitter->Component->GetGuid())
+		, m_HitProxyData(InOwningEmitter->Component)
 		, SortMode(InOwningEmitter->Emitter->SortMode)
 		, ActiveParticles(0)
 		, MaxParticles(0)
@@ -324,7 +324,7 @@ namespace Drn
 
 		Matrix EmitterToWorld = OwningEmitter->EmitterToSimulation * OwningEmitter->SimulationToWorld;
 
-		ParticleData.m_Guid = Guid;
+		ParticleData.m_HitProxyData = m_HitProxyData;
 		ParticleData.m_LocalToWorld = OwningEmitter->SimulationToWorld;
 		ParticleData.NormalsSphereCenter = EmitterToWorld.TransformPosition(OwningEmitter->Emitter->NormalsSphereCenter);
 		ParticleData.NormalsCylinderDirection = EmitterToWorld.TransformVector(OwningEmitter->Emitter->NormalsCylinderDirection);

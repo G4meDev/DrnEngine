@@ -15,6 +15,13 @@ namespace Drn
 
 	EngineTypes* EngineTypes::m_SingletonInstance;
 
+	HitProxyData::HitProxyData( class SceneComponent* InComponent )
+		: ActorID(InComponent->GetOwningActor()->GetUniqueID())
+		, ComponentID(InComponent->GetUniqueID())
+		, CustomA(0)
+		, CustomB(0)
+	{}
+
 	void RigidBodyCollisionInfo::SetFrom( const BodyInstance* BodyInst )
 	{
 		if (BodyInst)
@@ -621,8 +628,6 @@ namespace Drn
 #endif
 
 // --------------------------------------------------------------------------------
-
-
 
 
         }  // namespace Drn

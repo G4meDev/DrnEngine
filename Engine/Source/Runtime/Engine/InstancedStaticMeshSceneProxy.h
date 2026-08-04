@@ -12,7 +12,7 @@ namespace Drn
 
 		Matrix m_LocalToWorld;
 		Matrix m_PrevLocalToWorld;
-		Guid m_Guid;
+		HitProxyData m_HitProxyData;
 	};
 
 	struct Matrix16_4x3
@@ -70,7 +70,7 @@ namespace Drn
 		InstancedStaticMeshComponent* m_OwningInstancedStaticMeshComponent;
 		std::vector<MaterialSlot> m_Materials;
 
-		Guid m_Guid;
+		HitProxyData m_HitProxyData;
 
 		AssetHandle<StaticMesh> m_Mesh;
 

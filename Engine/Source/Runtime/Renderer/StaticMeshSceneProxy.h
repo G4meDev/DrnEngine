@@ -14,7 +14,7 @@ namespace Drn
 
 		Matrix m_LocalToWorld;
 		Matrix m_PrevLocalToWorld;
-		Guid m_Guid;
+		HitProxyData m_HitProxyData;
 	};
 
 	class StaticMeshSceneProxy : public PrimitiveSceneProxy
@@ -56,7 +56,7 @@ namespace Drn
 		StaticMeshComponent* m_OwningStaticMeshComponent;
 		std::vector<MaterialSlot> m_Materials;
 
-		Guid m_Guid;
+		HitProxyData m_HitProxyData;
 
 		AssetHandle<StaticMesh> m_Mesh;
 

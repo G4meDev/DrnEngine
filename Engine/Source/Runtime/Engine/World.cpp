@@ -211,6 +211,41 @@ namespace Drn
 		return nullptr;
 	}
 
+	Component* World::GetComponentWithID( uint32 ID )
+	{
+		for (Actor* actor : m_Actors)
+		{
+			if (!actor->IsMarkedPendingKill())
+			{
+				std::vector<Component*> Components;
+				actor->GetComponents<Component>(Components, EComponentType::Component, true);
+
+				for (Component* Comp : Components)
+				{
+					if (!Comp->IsPendingKill() && (Comp->GetUniqueID() == ID))
+					{
+						return Comp;
+					}
+				}
+			}
+		}
+
+		return nullptr;
+	}
+
+	Actor* World::GetActorWithID( uint32 ID )
+	{
+		for (Actor* actor : m_Actors)
+		{
+			if (!actor->IsMarkedPendingKill() && (actor->GetUniqueID() == ID))
+			{
+				return actor;
+			}
+		}
+
+		return nullptr;
+	}
+
 // ----------------------------------------------------------------------------------------
 
 	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Color& Color, float Thickness, float Duration )

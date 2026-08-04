@@ -104,7 +104,7 @@ namespace Drn
 			XMStoreFloat4x4(&P, projectionMatrix);
 
 			XMFLOAT4X4 M;
-			Matrix SceneComponentWorldTransform = SelectedSceneComponent->GetWorldTransform();
+			Matrix SceneComponentWorldTransform = SelectedSceneComponent->GetGizmoTransform();
 			XMStoreFloat4x4(&M, SceneComponentWorldTransform.Get());
 
 			XMFLOAT4X4 Iden;
@@ -120,15 +120,17 @@ namespace Drn
 			{
 				Transform SceneComponentWorldTransform = Transform( XMLoadFloat4x4(&M) );
 
-				if (m_GizmoState.m_Space == EGizmoSpace::Scale)
+				if (m_GizmoState.m_Space == EGizmoSpace::Translation)
 				{
-					SelectedSceneComponent->SetRelativeScale(SceneComponentWorldTransform.GetScale());
+					SelectedSceneComponent->OnGizmoLocationChanged(SceneComponentWorldTransform.GetLocation());
 				}
-
+				else if (m_GizmoState.m_Space == EGizmoSpace::Rotation)
+				{
+					SelectedSceneComponent->OnGizmoRotationChanged(SceneComponentWorldTransform.GetRotation());
+				}
 				else
 				{
-					SelectedSceneComponent->SetWorldLocationAndRotation(SceneComponentWorldTransform.GetLocation(),
-						SceneComponentWorldTransform.GetRotation());
+					SelectedSceneComponent->OnGizmoScaleChanged(SceneComponentWorldTransform.GetScale());
 				}
 			}
 		}

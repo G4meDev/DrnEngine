@@ -7,7 +7,7 @@ namespace Drn
 	ParticleMeshSceneProxy::ParticleMeshSceneProxy( ParticleMeshEmitterInstance* InOwningEmitter )
 		: PrimitiveSceneProxy(InOwningEmitter->Component)
 		, OwningEmitter(InOwningEmitter )
-		, Guid(InOwningEmitter->Component->GetGuid())
+		, m_HitProxyData(InOwningEmitter->Component)
 		, ActiveParticles(0)
 		, MaxParticles(0)
 	{
@@ -436,7 +436,7 @@ namespace Drn
 		ActiveParticles = OwningEmitter->ActiveParticles;
 		MaxParticles = OwningEmitter->MaxActiveParticles;
 
-		ParticleData.m_Guid = Guid;
+		ParticleData.m_HitProxyData = m_HitProxyData;
 		ParticleBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(ParticleMeshData), EUniformBufferUsage::MultiFrame, &ParticleData);
 
 		for (int32 i = 0; i < ActiveParticles; i++)

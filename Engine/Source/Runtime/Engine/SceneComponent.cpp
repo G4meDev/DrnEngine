@@ -367,6 +367,27 @@ namespace Drn
 // -------------------------------------------------------------------------------------------
 
 #if WITH_EDITOR
+	
+	Transform SceneComponent::GetGizmoTransform() const
+	{
+		return GetWorldTransform();
+	}
+
+	void SceneComponent::OnGizmoLocationChanged( const Vector& GizmoLocation )
+	{
+		SetWorldLocation(GizmoLocation);
+	}
+
+	void SceneComponent::OnGizmoRotationChanged( const Quat& GizmoRotation )
+	{
+		SetWorldRotation(GizmoRotation);
+	}
+
+	void SceneComponent::OnGizmoScaleChanged( const Vector& GizmoScale )
+	{
+		SetWorldScale(GizmoScale);
+	}
+
 	void SceneComponent::DrawDetailPanel( float DeltaTime )
 	{
 		Component::DrawDetailPanel(DeltaTime);

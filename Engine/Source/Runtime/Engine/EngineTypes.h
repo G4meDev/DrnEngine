@@ -93,6 +93,37 @@ namespace Drn
 		Max
 	};
 
+	struct HitProxyData
+	{
+		HitProxyData(uint32 InActorID, uint32 InComponentID, uint32 InCustomA, uint32 InCustomB)
+			: ActorID(InActorID)
+			, ComponentID(InComponentID)
+			, CustomA(InCustomA)
+			, CustomB(InCustomB)
+		{}
+
+		HitProxyData(uint32 InActorID, uint32 InComponentID)
+			: ActorID(InActorID)
+			, ComponentID(InComponentID)
+			, CustomA(0)
+			, CustomB(0)
+		{}
+
+		HitProxyData()
+			: ActorID(0)
+			, ComponentID(0)
+			, CustomA(0)
+			, CustomB(0)
+		{}
+
+		HitProxyData(class SceneComponent* InComponent);
+
+		uint32 ActorID;
+		uint32 ComponentID;
+		uint32 CustomA;
+		uint32 CustomB;
+	};
+
 	enum class ERenderBufferCopySource
 	{
 		FinalColor,

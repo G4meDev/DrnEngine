@@ -47,6 +47,8 @@ namespace Drn
 		}
 
 		Component* GetComponentWithGuid(const Guid& ID);
+		Component* GetComponentWithID(uint32 ID);
+		Actor* GetActorWithID(uint32 ID);
 
 		inline const std::set<Actor*>& GetActorList() { return m_Actors; };
 

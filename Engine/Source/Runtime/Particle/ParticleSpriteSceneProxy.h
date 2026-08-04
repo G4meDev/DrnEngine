@@ -11,7 +11,7 @@ namespace Drn
 
 		Matrix m_LocalToWorld;
 		Matrix m_PrevLocalToWorld;
-		Guid m_Guid;
+		HitProxyData m_HitProxyData;
 
 		Vector NormalsSphereCenter;
 		float Unused_1;
@@ -70,7 +70,7 @@ namespace Drn
 
 		ParticleCpuSpriteEmitterInstance* OwningEmitter;
 		MaterialSlot SpriteMaterial;
-		Guid Guid;
+		HitProxyData m_HitProxyData;
 
 		int32 ActiveParticles;
 		int32 MaxParticles;

@@ -13,7 +13,7 @@ namespace Drn
 
 		Matrix m_LocalToProjetcion;
 
-		Guid m_Guid;
+		HitProxyData m_HitProxyData;
 
 		uint32 m_TextureIndex;
 		Vector Padding;
@@ -52,7 +52,7 @@ namespace Drn
 
 	protected:
 		AssetHandle<Texture2D> m_Sprite;
-		Guid m_Guid;
+		HitProxyData m_HitProxyData;
 
 		BillboardData m_BillboardData;
 

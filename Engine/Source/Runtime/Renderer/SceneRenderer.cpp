@@ -1620,15 +1620,15 @@ namespace Drn
 			{
 				if (Renderer::Get()->GetFence()->IsFenceComplete(Event.FenceValue))
 				{
-					Guid Result;
-					memcpy(&Result, Event.ReadbackBuffer->m_ResourceLocation.GetMappedBaseAddress(), sizeof(Guid));
+					HitProxyData Result;
+					memcpy(&Result, Event.ReadbackBuffer->m_ResourceLocation.GetMappedBaseAddress(), sizeof(HitProxyData));
 
 					World* W = GetScene() ? GetScene()->GetWorld() : nullptr;
 					if (W)
 					{
 						if (OnPickedComponent.IsBound())
 						{
-							OnPickedComponent.Braodcast( W->GetComponentWithGuid(Result) );
+							OnPickedComponent.Braodcast( W->GetComponentWithID(Result.ComponentID) );
 						}
 					}
 

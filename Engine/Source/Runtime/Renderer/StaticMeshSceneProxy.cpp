@@ -8,7 +8,7 @@ namespace Drn
 	StaticMeshSceneProxy::StaticMeshSceneProxy( StaticMeshComponent* InStaticMeshComponent )
 		: PrimitiveSceneProxy( InStaticMeshComponent )
 		, m_OwningStaticMeshComponent( InStaticMeshComponent )
-		, m_Guid(InStaticMeshComponent->GetGuid())
+		, m_HitProxyData(InStaticMeshComponent)
 	{
 #if WITH_EDITOR
 		m_EditorPrimitive = InStaticMeshComponent->IsEditorPrimitive();
@@ -99,7 +99,7 @@ namespace Drn
 	void StaticMeshSceneProxy::UpdatePrimitiveBuffer(D3D12CommandList* CommandList)
 	{
 		m_PrimitiveData.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
-		m_PrimitiveData.m_Guid = m_Guid;
+		m_PrimitiveData.m_HitProxyData = m_HitProxyData;
 
 		PrimitiveBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveData), EUniformBufferUsage::MultiFrame, &m_PrimitiveData);
 	}
