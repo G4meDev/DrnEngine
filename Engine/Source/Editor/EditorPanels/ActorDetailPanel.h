@@ -6,7 +6,7 @@
 
 namespace Drn
 {
-	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, Component* );
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, const HitProxyData& );
 	DECLARE_DELEGATE_RetVal( Component*, GetSelectedComponentDelegate);
 
 	class ActorDetailPanel

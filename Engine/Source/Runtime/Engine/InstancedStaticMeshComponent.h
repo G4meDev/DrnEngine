@@ -81,11 +81,32 @@ namespace Drn
 
 		bool IsUsingMaterial(const AssetHandle<Material>& Mat);
 
-		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+		virtual Transform GetGizmoTransform() const override;
+		virtual void OnGizmoLocationChanged(const Vector& Location) override;
+		virtual void OnGizmoRotationChanged(const Quat& Rotation) override;
+		virtual void OnGizmoScaleChanged(const Vector& Scale) override;
+
+		virtual void SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data ) override;
 		virtual void SetSelectable( bool Selectable ) override;
 
 		virtual void DrawEditorDefault() override;
 		virtual void DrawEditorSelected() override;
+
+		mutable int32 SelectedInstanceIndex = -2; // first click moves component, second one selected instance
+		inline void ValidateInstanceIndex() const
+		{
+			if (SelectedInstanceIndex >= 0)
+			{
+				if (GetInstanceCount() == 0)
+				{
+					SelectedInstanceIndex = -2;
+				}
+				else
+				{
+					SelectedInstanceIndex = std::clamp(SelectedInstanceIndex, 0, GetInstanceCount() - 1);
+				}
+			}
+		}
 #endif
 
 	protected:

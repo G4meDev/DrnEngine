@@ -21,7 +21,7 @@ namespace Drn
 
 		static LevelViewport* Get();
 
-		void OnSelectedNewComponent( Component* NewComponent );
+		void OnSelectedNewComponent( const HitProxyData& Data );
 		Component* GetSelectedComponent() { return m_SelectedComponent; }
 
 		void OnRemovedActorsFromWorld( std::vector<Actor*> RemovedActors );

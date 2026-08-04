@@ -98,9 +98,9 @@ namespace Drn
 		ImGui::DragFloat("MaxCaptureDistance", &MaxCaptureDistance, 1.0f, 1.0f, 10000.0f);
 	}
 
-	void ReflectionCaptureComponent::SetSelectedInEditor( bool SelectedInEditor )
+	void ReflectionCaptureComponent::SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
 	{
-		SceneComponent::SetSelectedInEditor(SelectedInEditor);
+		SceneComponent::SetSelectedInEditor(SelectedInEditor, Data);
 	}
 
 #endif

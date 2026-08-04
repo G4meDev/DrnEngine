@@ -117,9 +117,9 @@ namespace Drn
 		}
 	}
 
-	void DecalComponent::SetSelectedInEditor( bool SelectedInEditor )
+	void DecalComponent::SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
 	{
-		SceneComponent::SetSelectedInEditor(SelectedInEditor);
+		SceneComponent::SetSelectedInEditor(SelectedInEditor, Data);
 	}
 
 	void DecalComponent::DrawEditorSelected()

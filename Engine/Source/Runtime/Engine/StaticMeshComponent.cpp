@@ -290,9 +290,9 @@ namespace Drn
 		return false;
 	}
 
-	void StaticMeshComponent::SetSelectedInEditor( bool SelectedInEditor )
+	void StaticMeshComponent::SetSelectedInEditor(bool SelectedInEditor, const HitProxyData& Data)
 	{
-		PrimitiveComponent::SetSelectedInEditor(SelectedInEditor);
+		PrimitiveComponent::SetSelectedInEditor(SelectedInEditor, Data);
 	
 		if (m_SceneProxy)
 		{

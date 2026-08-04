@@ -11,7 +11,7 @@ namespace Drn
 {
 	DECLARE_DELEGATE( HandleInputDelegate );
 
-	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, Component* );
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, const HitProxyData& );
 	DECLARE_DELEGATE_RetVal( Component*, GetSelectedComponentDelegate );
 
 	class ViewportPanel
@@ -37,7 +37,7 @@ namespace Drn
 		void DrawHeader();
 		void HandleInputs();
 
-		void OnRendererPickedComponent( Component* PickedComponent );
+		void OnRendererPickedComponent( const HitProxyData& Data );
 
 		IntPoint CachedSize = IntPoint( 1920, 1080 );
 

@@ -16,7 +16,7 @@ namespace Drn
 		m_World = InScene->GetWorld();
 		m_Scene = InScene;
 		m_SceneRenderer = m_Scene->AllocateSceneRenderer();
-		m_SceneRenderer->OnPickedComponent.Add( this, &ViewportPanel::OnRendererPickedComponent );
+		m_SceneRenderer->OnMousePickDel.Add( this, &ViewportPanel::OnRendererPickedComponent );
 		m_SceneRenderer->OnSceneRendererResized.Add( this, &ViewportPanel::OnSceneRendererResized );
 		m_SceneRenderer->OnSceneRendererDestroy.AddLambda( [&](){ m_SceneRenderer = nullptr; } );
 
@@ -34,7 +34,7 @@ namespace Drn
 		// even though we allocate renderer with this class, some times worlds gets destroyed and deallocates renderer early. ideally this shouldn't happen
 		if (m_SceneRenderer)
 		{
-			m_SceneRenderer->OnPickedComponent.Remove(this);
+			m_SceneRenderer->OnMousePickDel.Remove(this);
 			m_SceneRenderer->OnSceneRendererResized.Remove(this);
 			m_Scene->ReleaseSceneRenderer(m_SceneRenderer);
 		}
@@ -135,7 +135,7 @@ namespace Drn
 			}
 		}
 
-		if ( ImGui::IsItemHovered() )
+		if ( ImGui::IsItemHovered() && OnSelectedNewComponent.IsBound())
 		{
 			const ImVec2 RectMin = ImGui::GetItemRectMin();
 			const ImVec2 RectMax = ImGui::GetItemRectMax();
@@ -220,10 +220,10 @@ namespace Drn
 		}
 	}
 
-	void ViewportPanel::OnRendererPickedComponent( Component* PickedComponent )
+	void ViewportPanel::OnRendererPickedComponent( const HitProxyData& Data )
 	{
 		// broadcast to others. e.g. level viewport
-		OnSelectedNewComponent.Braodcast( PickedComponent );
+		OnSelectedNewComponent.Braodcast( Data );
 	}
 
 	void ViewportPanel::SetRenderingEnabled( bool Enabled )

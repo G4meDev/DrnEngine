@@ -757,13 +757,93 @@ namespace Drn
 		return false;
 	}
 
-	void InstancedStaticMeshComponent::SetSelectedInEditor( bool SelectedInEditor )
+	Transform InstancedStaticMeshComponent::GetGizmoTransform() const
 	{
-		PrimitiveComponent::SetSelectedInEditor(SelectedInEditor);
+		ValidateInstanceIndex();
+
+		Transform Result;
+		if (SelectedInstanceIndex >= 0)
+		{
+			GetInstanceTransform(SelectedInstanceIndex, Result, true);
+		}
+		else
+		{
+			Result = GetWorldTransform();
+		}
+
+		return Result;
+	}
+
+	void InstancedStaticMeshComponent::OnGizmoLocationChanged( const Vector& Location )
+	{
+		ValidateInstanceIndex();
+
+		if (SelectedInstanceIndex >= 0)
+		{
+			Transform InstanceTransform;
+			GetInstanceTransform(SelectedInstanceIndex, InstanceTransform, true);
+			InstanceTransform.SetLocation(Location);
+			UpdateInstanceTransform(SelectedInstanceIndex, InstanceTransform, true, true);
+		}
+		else
+		{
+			SetWorldLocation(Location);
+		}
+	}
+
+	void InstancedStaticMeshComponent::OnGizmoRotationChanged( const Quat& Rotation )
+	{
+		ValidateInstanceIndex();
+		
+		if (SelectedInstanceIndex >= 0)
+		{
+			Transform InstanceTransform;
+			GetInstanceTransform(SelectedInstanceIndex, InstanceTransform, true);
+			InstanceTransform.SetRotation(Rotation);
+			UpdateInstanceTransform(SelectedInstanceIndex, InstanceTransform, true, true);
+		}
+		else
+		{
+			SetWorldRotation(Rotation);
+		}
+	}
+
+	void InstancedStaticMeshComponent::OnGizmoScaleChanged( const Vector& Scale )
+	{
+		ValidateInstanceIndex();
+		
+		if (SelectedInstanceIndex >= 0)
+		{
+			Transform InstanceTransform;
+			GetInstanceTransform(SelectedInstanceIndex, InstanceTransform, true);
+			InstanceTransform.SetScale(Scale);
+			UpdateInstanceTransform(SelectedInstanceIndex, InstanceTransform, true, true);
+		}
+		else
+		{
+			SetWorldScale(Scale);
+		}
+	}
+
+	void InstancedStaticMeshComponent::SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
+	{
+		PrimitiveComponent::SetSelectedInEditor(SelectedInEditor, Data);
 	
 		if (m_SceneProxy)
 		{
 			m_SceneProxy->SetSelectedInEditor( SelectedInEditor );
+		}
+
+		if (SelectedInEditor && Data.ComponentID == GetUniqueID())
+		{
+			if (++SelectedInstanceIndex >= 0)
+			{
+				SelectedInstanceIndex = Data.CustomA;
+			}
+		}
+		else
+		{
+			SelectedInstanceIndex = -2;
 		}
 	}
 

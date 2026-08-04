@@ -44,7 +44,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
-		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+		virtual void SetSelectedInEditor(bool SelectedInEditor, const HitProxyData& Data) override;
 #endif
 
 		Vector m_LightColor;

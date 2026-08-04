@@ -54,7 +54,7 @@ namespace Drn
 		Quat VInverseRot = Other.Rotation.Inverse();
 		Vector VR = VInverseRot.RotateVector(VQTranslation);
 
-		Vector VTranslation = VR * VScale3D;
+		Vector VTranslation = VR * VSafeScale3D;
 
 		Quat VRotation = Quat::Multiply(VInverseRot, Rotation);
 

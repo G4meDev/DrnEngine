@@ -54,7 +54,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		inline bool IsSelectedInEditor() const { return m_SelectedInEditor; }
-		virtual void SetSelectedInEditor( bool SelectedInEditor );
+		virtual void SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data );
 
 		inline virtual bool ShouldDrawInComponentHeirarchy() const { return true; }
 #endif

@@ -36,6 +36,7 @@ struct ParametersBuffers
 };
 
 //#define MAIN_PASS 1
+//#define HITPROXY_PASS 1
 
 struct VertexShaderOutput
 {
@@ -45,9 +46,18 @@ struct VertexShaderOutput
     float2 UV0 : TEXCOORD0;
     float3 VertexColor : COLOR;
 #endif
+    
+#if HITPROXY_PASS
+    uint InstanceIndex : ID;
+#endif
 };
 
-VertexShaderOutput Main_VS(VertexInput IN)
+VertexShaderOutput Main_VS(
+    VertexInput IN
+#if INSTANCED
+    , uint InstanceIndex : SV_InstanceID
+#endif
+)
 {
     VertexShaderOutput OUT;
 
@@ -82,6 +92,14 @@ VertexShaderOutput Main_VS(VertexInput IN)
     OUT.VertexColor = IN.Color;
 #endif
     
+#if HITPROXY_PASS
+#if INSTANCED
+    OUT.InstanceIndex = InstanceIndex;
+#else
+    OUT.InstanceIndex = 0;
+#endif
+#endif
+    
     return OUT;
 }
 
@@ -94,6 +112,10 @@ struct PixelShaderInput
     float3x3 TBN : TBN;
     float2 UV0 : TEXCOORD0;
     float3 VertexColor : COLOR;
+#endif
+    
+#if HITPROXY_PASS
+    uint InstanceIndex : ID;
 #endif
 };
 
@@ -180,6 +202,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
 #elif HITPROXY_PASS
     ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Guid = P.Guid;
+    OUT.Guid[2] = IN.InstanceIndex;
 #endif
     
     return OUT;

@@ -10,7 +10,7 @@ LOG_DECLARE_CATEGORY(LogSceneRenderer);
 
 namespace Drn
 {
-	DECLARE_MULTICAST_DELEGATE_OneParam( OnPickedComponentDelegate, Component* );
+	DECLARE_MULTICAST_DELEGATE_OneParam( OnMousePickDelegate, const HitProxyData& );
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnSceneRendererResizedDelegate, const IntPoint& );
 	DECLARE_MULTICAST_DELEGATE( OnSceneRendererDestroyDelegate );
 
@@ -138,7 +138,7 @@ namespace Drn
 		inline const Frustum& GetViewFrustum() const { return ViewFrustum; }
 
 #if WITH_EDITOR
-		OnPickedComponentDelegate OnPickedComponent;
+		OnMousePickDelegate OnMousePickDel;
 		void QueueMousePickEvent( const IntPoint& ScreenPosition );
 
 		template<class UserClass, class Func>

@@ -62,9 +62,9 @@ namespace Drn
 		m_RenderSettingsDirty |= DirtySettings;
 	}
 
-	void PostProcessVolumeComponent::SetSelectedInEditor( bool SelectedInEditor )
+	void PostProcessVolumeComponent::SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
 	{
-		SceneComponent::SetSelectedInEditor(SelectedInEditor);
+		SceneComponent::SetSelectedInEditor(SelectedInEditor, Data);
 	}
 #endif
 

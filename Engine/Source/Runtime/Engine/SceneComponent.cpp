@@ -411,9 +411,9 @@ namespace Drn
 		ImGui::Separator();
 	}
 
-	void SceneComponent::SetSelectedInEditor( bool SelectedInEditor )
+	void SceneComponent::SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
 	{
-		Component::SetSelectedInEditor(SelectedInEditor);
+		Component::SetSelectedInEditor(SelectedInEditor, Data);
 
 		
 	}

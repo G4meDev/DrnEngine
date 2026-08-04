@@ -73,7 +73,7 @@ namespace Drn
 		virtual void OnGizmoScaleChanged(const Vector& GizmoScale);
 
 		virtual void DrawDetailPanel(float DeltaTime) override;
-		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+		virtual void SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data) override;
 
 		inline virtual bool HasSprite() const { return false; }
 #endif

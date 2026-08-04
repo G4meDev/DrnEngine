@@ -46,7 +46,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
-		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+		virtual void SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data ) override;
 
 		inline bool IsSelectable() const { return m_Selectable; }
 		virtual void SetSelectable( bool Selectable );

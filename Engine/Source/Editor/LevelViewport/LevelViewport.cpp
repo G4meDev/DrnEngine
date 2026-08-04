@@ -69,9 +69,10 @@ namespace Drn
 		return SingletonInstance;
 	}
 
-	void LevelViewport::OnSelectedNewComponent( Component* NewComponent )
+	void LevelViewport::OnSelectedNewComponent(const HitProxyData& Data)
 	{
 		Component* OldComponent = m_SelectedComponent;
+		Component* NewComponent = m_OwningWorld->GetComponentWithID(Data.ComponentID);
 
 		if ( NewComponent == nullptr )
 		{
@@ -88,16 +89,16 @@ namespace Drn
 			m_SelectedComponent = NewComponent->GetOwningActor()->GetRoot();
 		}
 
-		if (OldComponent && OldComponent->GetOwningActor())
+		if (OldComponent && OldComponent != NewComponent && OldComponent->GetOwningActor())
 		{
 			//OldComponent->SetSelectedInEditor(false);
-			OldComponent->GetOwningActor()->SetComponentsSelectedInEditor(false);
+			OldComponent->GetOwningActor()->SetComponentsSelectedInEditor(false, Data);
 		}
 
 		if (m_SelectedComponent && m_SelectedComponent->GetOwningActor())
 		{
 			//m_SelectedComponent->SetSelectedInEditor(true);
-			m_SelectedComponent->GetOwningActor()->SetComponentsSelectedInEditor(true);
+			m_SelectedComponent->GetOwningActor()->SetComponentsSelectedInEditor(true, Data);
 		}
 	}
 

@@ -60,7 +60,7 @@ namespace Drn
 
 		bool IsUsingMaterial(const AssetHandle<Material>& Mat);
 
-		virtual void SetSelectedInEditor( bool SelectedInEditor ) override;
+		virtual void SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data ) override;
 		virtual void SetSelectable( bool Selectable ) override;
 
 		virtual void DrawEditorDefault() override;

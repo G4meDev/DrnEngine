@@ -228,14 +228,14 @@ namespace Drn
 		m_Transient = Transient;
 	}
 
-	void Actor::SetComponentsSelectedInEditor( bool SelectedInEditor )
+	void Actor::SetComponentsSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
 	{
 		std::vector<Component*> AllComponents;
 		GetComponents<Component>(AllComponents, EComponentType::Component, true);
 
 		for (Component* Comp : AllComponents)
 		{
-			Comp->SetSelectedInEditor(SelectedInEditor);
+			Comp->SetSelectedInEditor(SelectedInEditor, Data);
 		}
 	}
 

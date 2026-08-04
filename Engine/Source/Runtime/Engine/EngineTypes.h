@@ -116,7 +116,7 @@ namespace Drn
 			, CustomB(0)
 		{}
 
-		HitProxyData(class SceneComponent* InComponent);
+		HitProxyData(class Component* InComponent);
 
 		uint32 ActorID;
 		uint32 ComponentID;

@@ -983,9 +983,9 @@ namespace Drn
 		}
 	}
 
-	void ParticleSystemComponent::SetSelectedInEditor( bool SelectedInEditor )
+	void ParticleSystemComponent::SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
 	{
-		PrimitiveComponent::SetSelectedInEditor(SelectedInEditor);
+		PrimitiveComponent::SetSelectedInEditor(SelectedInEditor, Data);
 
 		for (ParticleEmitterInstance* Instance : Emitters)
 		{

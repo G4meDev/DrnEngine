@@ -15,7 +15,7 @@ namespace Drn
 
 	EngineTypes* EngineTypes::m_SingletonInstance;
 
-	HitProxyData::HitProxyData( class SceneComponent* InComponent )
+	HitProxyData::HitProxyData( class Component* InComponent )
 		: ActorID(InComponent->GetOwningActor()->GetUniqueID())
 		, ComponentID(InComponent->GetUniqueID())
 		, CustomA(0)

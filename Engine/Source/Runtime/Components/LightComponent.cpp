@@ -127,9 +127,9 @@ namespace Drn
 		SceneComponent::DrawDetailPanel(DeltaTime);
 	}
 
-	void LightComponent::SetSelectedInEditor( bool SelectedInEditor )
+	void LightComponent::SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
 	{
-		SceneComponent::SetSelectedInEditor(SelectedInEditor);
+		SceneComponent::SetSelectedInEditor(SelectedInEditor, Data);
 
 
 	}

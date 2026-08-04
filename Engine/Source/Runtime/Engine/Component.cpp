@@ -73,7 +73,7 @@ namespace Drn
 		ComponentLabel = InLabel;
 	}
 
-	void Component::SetSelectedInEditor( bool SelectedInEditor )
+	void Component::SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data )
 	{
 		m_SelectedInEditor = SelectedInEditor;
 	}

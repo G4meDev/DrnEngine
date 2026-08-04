@@ -97,7 +97,7 @@ namespace Drn
 
 		if (ImGui::IsItemFocused())
 		{
-			OnSelectedNewComponent.Braodcast(Comp);
+			OnSelectedNewComponent.Braodcast(HitProxyData(Comp));
 		}
 
 		if ( node_open )
@@ -148,7 +148,7 @@ namespace Drn
 
 							if (ImGui::IsItemFocused())
 							{
-								OnSelectedNewComponent.Braodcast(Comp);
+								OnSelectedNewComponent.Braodcast(HitProxyData(Comp));
 							}
 
 							ImGui::TreePop();

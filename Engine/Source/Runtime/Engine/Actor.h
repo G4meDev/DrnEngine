@@ -84,7 +84,7 @@ namespace Drn
 
 		inline bool IsTransient() const { return m_Transient; }
 
-		void SetComponentsSelectedInEditor( bool SelectedInEditor );
+		void SetComponentsSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data );
 
 		virtual bool DrawDetailPanel();
 

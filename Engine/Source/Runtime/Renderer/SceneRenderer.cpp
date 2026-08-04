@@ -1626,9 +1626,9 @@ namespace Drn
 					World* W = GetScene() ? GetScene()->GetWorld() : nullptr;
 					if (W)
 					{
-						if (OnPickedComponent.IsBound())
+						if (OnMousePickDel.IsBound())
 						{
-							OnPickedComponent.Braodcast( W->GetComponentWithID(Result.ComponentID) );
+							OnMousePickDel.Braodcast(Result);
 						}
 					}
 
