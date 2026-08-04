@@ -133,7 +133,9 @@ namespace Drn
 				Pitch = Math::DegreesToRadians(Pitch);
 				Yaw = Math::DegreesToRadians(Yaw);
 
-				*this = Quat(Pitch, -Roll, Yaw);
+				//*this = Quat(Pitch, -Roll, Yaw);
+				*this = Quat(-Pitch, Roll, Yaw + XM_PI);
+
 				return true;
 			}
 		}
