@@ -130,6 +130,13 @@ namespace Drn
 		FinalColorPretonemap
 	};
 
+	enum class EGizmoSpace : uint16
+	{
+		Translation		= (1u << 0) | (1u << 1) | (1u << 2),
+		Rotation		= (1u << 3) | (1u << 4) | (1u << 5),
+		Scale			= (1u << 7) | (1u << 8) | (1u << 9)
+	};
+
 	class StaticShadowDepthMapData
 	{
 	public:

@@ -54,7 +54,7 @@ struct VertexShaderOutput
 
 VertexShaderOutput Main_VS(
     VertexInput IN
-#if INSTANCED
+#if INSTANCED && HITPROXY_PASS
     , uint InstanceIndex : SV_InstanceID
 #endif
 )

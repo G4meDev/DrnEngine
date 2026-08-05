@@ -373,19 +373,9 @@ namespace Drn
 		return GetWorldTransform();
 	}
 
-	void SceneComponent::OnGizmoLocationChanged( const Vector& GizmoLocation )
+	void SceneComponent::OnGizmoTransformChanged( const Transform& GizmoTransform, EGizmoSpace Space )
 	{
-		SetWorldLocation(GizmoLocation);
-	}
-
-	void SceneComponent::OnGizmoRotationChanged( const Quat& GizmoRotation )
-	{
-		SetWorldRotation(GizmoRotation);
-	}
-
-	void SceneComponent::OnGizmoScaleChanged( const Vector& GizmoScale )
-	{
-		SetWorldScale(GizmoScale);
+		SetWorldTransform(GizmoTransform);
 	}
 
 	void SceneComponent::DrawDetailPanel( float DeltaTime )

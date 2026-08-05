@@ -513,7 +513,7 @@ float3 SafeNormalize(float3 V)
 
 uint ReverseBits32( uint bits )
 {
-#if SM5_PROFILE || COMPILER_METAL
+#if 1
 	return reversebits( bits );
 #else
 	bits = ( bits << 16) | ( bits >> 16);

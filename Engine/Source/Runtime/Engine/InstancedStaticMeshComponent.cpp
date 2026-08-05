@@ -690,8 +690,28 @@ namespace Drn
 
 			for (int32 InstanceIndex = 0; InstanceIndex < GetInstanceCount(); InstanceIndex++)
 			{
+				ImGui::PushID(InstanceIndex);
+
 				std::string InstanceLabel = std::to_string(InstanceIndex).c_str();
 				ImGui::Text(InstanceLabel.c_str());
+
+				ImGui::SameLine();
+				if (ImGui::Button("X"))
+				{
+					RemoveInstance(InstanceIndex);
+					ImGui::PopID();
+					continue;
+				}
+
+				bool bSelected = SelectedInstanceIndex == InstanceIndex;
+				if (bSelected) ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1, 1, 0, 1));
+
+				ImGui::SameLine();
+				if (ImGui::Button("O"))
+				{
+					SelectedInstanceIndex = InstanceIndex;
+				}
+				if (bSelected) ImGui::PopStyleColor();
 
 				Transform InstanceTransform = PerInstanceTransform[InstanceIndex];
 				if (InstanceTransform.Draw(InstanceLabel.c_str()))
@@ -710,6 +730,8 @@ namespace Drn
 						}
 					}
 				}
+
+				ImGui::PopID();
 			}
 		}
 	}
@@ -774,54 +796,17 @@ namespace Drn
 		return Result;
 	}
 
-	void InstancedStaticMeshComponent::OnGizmoLocationChanged( const Vector& Location )
+	void InstancedStaticMeshComponent::OnGizmoTransformChanged( const Transform& GizmoTransform, EGizmoSpace Space )
 	{
 		ValidateInstanceIndex();
 
 		if (SelectedInstanceIndex >= 0)
 		{
-			Transform InstanceTransform;
-			GetInstanceTransform(SelectedInstanceIndex, InstanceTransform, true);
-			InstanceTransform.SetLocation(Location);
-			UpdateInstanceTransform(SelectedInstanceIndex, InstanceTransform, true, true);
+			UpdateInstanceTransform(SelectedInstanceIndex, GizmoTransform, true, true);
 		}
 		else
 		{
-			SetWorldLocation(Location);
-		}
-	}
-
-	void InstancedStaticMeshComponent::OnGizmoRotationChanged( const Quat& Rotation )
-	{
-		ValidateInstanceIndex();
-		
-		if (SelectedInstanceIndex >= 0)
-		{
-			Transform InstanceTransform;
-			GetInstanceTransform(SelectedInstanceIndex, InstanceTransform, true);
-			InstanceTransform.SetRotation(Rotation);
-			UpdateInstanceTransform(SelectedInstanceIndex, InstanceTransform, true, true);
-		}
-		else
-		{
-			SetWorldRotation(Rotation);
-		}
-	}
-
-	void InstancedStaticMeshComponent::OnGizmoScaleChanged( const Vector& Scale )
-	{
-		ValidateInstanceIndex();
-		
-		if (SelectedInstanceIndex >= 0)
-		{
-			Transform InstanceTransform;
-			GetInstanceTransform(SelectedInstanceIndex, InstanceTransform, true);
-			InstanceTransform.SetScale(Scale);
-			UpdateInstanceTransform(SelectedInstanceIndex, InstanceTransform, true, true);
-		}
-		else
-		{
-			SetWorldScale(Scale);
+			SetWorldTransform(GizmoTransform);
 		}
 	}
 

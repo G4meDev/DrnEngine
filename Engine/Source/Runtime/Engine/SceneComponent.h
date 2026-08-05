@@ -68,9 +68,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		virtual Transform GetGizmoTransform() const;
-		virtual void OnGizmoLocationChanged(const Vector& GizmoLocation);
-		virtual void OnGizmoRotationChanged(const Quat& GizmoRotation);
-		virtual void OnGizmoScaleChanged(const Vector& GizmoScale);
+		virtual void OnGizmoTransformChanged(const Transform& GizmoTransform, EGizmoSpace Space);
 
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		virtual void SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data) override;

@@ -119,19 +119,7 @@ namespace Drn
 			if (UsingGizmo)
 			{
 				Transform SceneComponentWorldTransform = Transform( XMLoadFloat4x4(&M) );
-
-				if (m_GizmoState.m_Space == EGizmoSpace::Translation)
-				{
-					SelectedSceneComponent->OnGizmoLocationChanged(SceneComponentWorldTransform.GetLocation());
-				}
-				else if (m_GizmoState.m_Space == EGizmoSpace::Rotation)
-				{
-					SelectedSceneComponent->OnGizmoRotationChanged(SceneComponentWorldTransform.GetRotation());
-				}
-				else
-				{
-					SelectedSceneComponent->OnGizmoScaleChanged(SceneComponentWorldTransform.GetScale());
-				}
+				SelectedSceneComponent->OnGizmoTransformChanged(SceneComponentWorldTransform, m_GizmoState.m_Space);
 			}
 		}
 

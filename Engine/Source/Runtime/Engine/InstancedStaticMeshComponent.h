@@ -82,9 +82,7 @@ namespace Drn
 		bool IsUsingMaterial(const AssetHandle<Material>& Mat);
 
 		virtual Transform GetGizmoTransform() const override;
-		virtual void OnGizmoLocationChanged(const Vector& Location) override;
-		virtual void OnGizmoRotationChanged(const Quat& Rotation) override;
-		virtual void OnGizmoScaleChanged(const Vector& Scale) override;
+		virtual void OnGizmoTransformChanged(const Transform& GizmoTransform, EGizmoSpace Space) override;
 
 		virtual void SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data ) override;
 		virtual void SetSelectable( bool Selectable ) override;
