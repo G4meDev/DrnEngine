@@ -582,4 +582,13 @@ namespace Drn
 		}
 	}
 
+	uint64 BufferArchive::Tell()
+	{
+		return m_HeapPointer - m_HeapStart;
+	}
+
+	void BufferArchive::Seek( uint64 InPos )
+	{
+		m_HeapPointer = m_HeapStart + InPos;
+	}
 }

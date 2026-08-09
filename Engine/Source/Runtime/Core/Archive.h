@@ -31,6 +31,12 @@ namespace Drn
 		inline uint8 GetVersion() const { return m_ArchiveVersion; };
 		inline bool IsValid() const { return m_ValidArchive; }
 
+		inline void SetLoading( bool bInLoading ) { m_IsLoading = bInLoading; }
+
+		virtual uint64 Tell() = 0;
+		virtual void Seek(uint64 InPos) = 0;
+		//virtual uint64 TotalSize() const = 0;
+
 		virtual Archive& operator<<(bool Value) = 0;
 		virtual Archive& operator<<(uint8 Value) = 0;
 		virtual Archive& operator<<(uint16 Value) = 0;

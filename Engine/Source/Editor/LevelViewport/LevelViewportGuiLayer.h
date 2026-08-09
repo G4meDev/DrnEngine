@@ -49,6 +49,7 @@ namespace Drn
 		void DrawContextPopup();
 
 		void DeleteSelectedActor();
+		void DuplicateSelectedActor();
 		void AlignSelectedComponentToSurfaceBelow();
 		void FocusOnSelected();
 

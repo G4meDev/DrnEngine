@@ -46,6 +46,9 @@ namespace Drn
 
 		static IntPoint GetScreenPositionRelative();
 
+		void DeleteActor(Actor* InActor);
+		void DuplicateActor(Actor* InActor);
+
 	protected:
 
 		std::shared_ptr<FileImportMenu> m_FileImportMenu;

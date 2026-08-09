@@ -345,6 +345,11 @@ namespace Drn
 			DeleteSelectedActor();
 		}
 
+		if ( ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D) )
+		{
+			DuplicateSelectedActor();
+		}
+
 		if ( ImGui::IsKeyPressed(ImGuiKey_C) )
 		{
 			AlignSelectedComponentToSurfaceBelow();
@@ -387,6 +392,12 @@ namespace Drn
 					ImGui::CloseCurrentPopup();
 				}
 
+				if (ImGui::Button( "Duplicate" ))
+				{
+					DuplicateSelectedActor();
+					ImGui::CloseCurrentPopup();
+				}
+
 				ImGui::Button( "unused_1" );
 				ImGui::Button( "unused_2" );
 				ImGui::Button( "unused_3" );
@@ -412,7 +423,18 @@ namespace Drn
 
 		if ( SelectedActor )
 		{
-			SelectedActor->Destroy();
+			Editor::Get()->DeleteActor(SelectedActor);
+		}
+	}
+
+	void LevelViewportGuiLayer::DuplicateSelectedActor()
+	{
+		Actor* SelectedActor = m_OwningLevelViewport->GetSelectedComponent() ?
+		m_OwningLevelViewport->GetSelectedComponent()->GetOwningActor() : nullptr;
+
+		if ( SelectedActor )
+		{
+			Editor::Get()->DuplicateActor(SelectedActor);
 		}
 	}
 

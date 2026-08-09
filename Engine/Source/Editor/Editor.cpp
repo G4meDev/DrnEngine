@@ -250,6 +250,41 @@ namespace Drn
 		return ScreenPos;
 	}
 
-}
+	void Editor::DeleteActor( Actor* InActor )
+	{
+		if (InActor && !InActor->IsMarkedPendingKill())
+		{
+			LOG( LogEditor, Info, "removing actor \"%s\"", InActor->GetActorLabel().c_str());
+			InActor->Destroy();
+		}
+	}
+
+	void Editor::DuplicateActor( Actor* InActor )
+	{
+		if (InActor && !InActor->IsMarkedPendingKill())
+		{
+			LOG( LogEditor, Info, "duplicating actor \"%s\"", InActor->GetActorLabel().c_str());
+
+			World* ActorWorld = InActor->GetWorld();
+			drn_check(ActorWorld);
+
+			BufferArchive Ar(100, false);
+			InActor->Serialize(Ar);
+
+			Ar.SetLoading(true);
+			Ar.Seek(0);
+
+			EActorType ActorType = InActor->GetActorType();
+			Actor* NewActor = EngineTypes::Get()->m_ActorSerializationMap[ActorType](ActorWorld, Ar);
+
+			drn_check(NewActor);
+
+			// offset to avoid full overlap and make it easier to see
+			NewActor->SetActorLocation(NewActor->GetActorLocation() + NewActor->GetActorForwardVector() * 0.5f);
+			NewActor->SetActorLabel(ActorWorld->GetActorLabelRespectIndexing(InActor->GetActorLabel()));
+		}
+	}
+
+}  // namespace Drn
 
 #endif

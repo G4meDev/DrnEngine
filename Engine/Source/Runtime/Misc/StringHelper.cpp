@@ -40,4 +40,22 @@ namespace Drn
 
 		return converterX.to_bytes( wstr );
 	}
+
+	void StringHelper::SplitLabelAndIndex( const std::string& Str, std::string& Label, int64& Index )
+	{
+		int32 DigitIndex;
+		for (DigitIndex = Str.length() - 1; DigitIndex >= 0 && std::isdigit(Str[DigitIndex]); DigitIndex--);
+
+		if (DigitIndex > 0 && DigitIndex < Str.length() - 1)
+		{
+			Label = Str.substr(0, DigitIndex + 1);
+			Index = std::stoi(Str.substr(DigitIndex + 1));
+		}
+		else
+		{
+			Label = Str;
+			Index = 0;
+		}
+	}
+
 }

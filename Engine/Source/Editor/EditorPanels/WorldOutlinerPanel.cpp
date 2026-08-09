@@ -4,7 +4,7 @@
 #if WITH_EDITOR
 
 #include "Runtime/Renderer/Renderer.h"
-
+#include "Editor/Editor.h"
 #include "imgui.h"
 
 LOG_DEFINE_CATEGORY( LogWorldOutliner, "WorldOutliner" );
@@ -75,6 +75,11 @@ namespace Drn
 						DeleteActor(actor);
 					}
 
+					if (ImGui::Button("Duplicate"))
+					{
+						DuplicateActor(actor);
+					}
+
 					ImGui::EndMenu();
 				}
 
@@ -97,13 +102,14 @@ namespace Drn
 
 	void WorldOutlinerPanel::DeleteActor( Actor* actor )
 	{
-		if (actor)
-		{
-			LOG( LogWorldOutliner, Info, "removing actor \"%s\"", actor->GetActorLabel().c_str());
-			ImGui::CloseCurrentPopup();
+		ImGui::CloseCurrentPopup();
+		Editor::Get()->DeleteActor(actor);
+	}
 
-			actor->Destroy();
-		}
+	void WorldOutlinerPanel::DuplicateActor( Actor* actor )
+	{
+		ImGui::CloseCurrentPopup();
+		Editor::Get()->DuplicateActor(actor);
 	}
 
 }

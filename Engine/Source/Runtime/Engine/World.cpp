@@ -1124,6 +1124,41 @@ namespace Drn
 		return result;
 	}
 
+	std::string World::GetActorLabelRespectIndexing( const std::string& InLabel )
+	{
+		std::string Label = "None";
+		int64 Index = 0;
+		StringHelper::SplitLabelAndIndex(InLabel, Label, Index);
+
+		for (Actor* WorldActor : m_Actors)
+		{
+			std::string TempLabel = "None";
+			int64 TempIndex = 0;
+
+			StringHelper::SplitLabelAndIndex(WorldActor->GetActorLabel(), TempLabel, TempIndex);
+
+			if (TempLabel == Label)
+			{
+				Index = std::max(Index, TempIndex);
+			}
+		}
+
+		for (Actor* WorldActor : m_NewActors)
+		{
+			std::string TempLabel = "None";
+			int64 TempIndex = 0;
+
+			StringHelper::SplitLabelAndIndex(WorldActor->GetActorLabel(), TempLabel, TempIndex);
+
+			if (TempLabel == Label)
+			{
+				Index = std::max(Index, TempIndex);
+			}
+		}
+
+		return Label + std::to_string(Index + 1);
+	}
+
 #endif
 
 }

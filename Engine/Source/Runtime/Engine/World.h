@@ -196,6 +196,8 @@ namespace Drn
 		void SetLabel( const std::string& Label ) { m_WorldLabel = Label; }
 		const std::string& GetLabel() const { return m_WorldLabel; }
 
+		std::string GetActorLabelRespectIndexing(const std::string& InLabel);
+
 		const std::string& GetLevelPath() const { return m_LevelPath; }
 
 		inline EBufferVisualization GetBufferVisualization() const { return m_BufferVisualization; }

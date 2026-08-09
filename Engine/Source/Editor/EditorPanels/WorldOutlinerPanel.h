@@ -26,6 +26,7 @@ namespace Drn
 
 		void DrawMenu(float DeltaTime);
 		void DeleteActor(Actor* actor);
+		void DuplicateActor(Actor* actor);
 
 		World* m_World;
 

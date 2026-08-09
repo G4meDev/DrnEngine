@@ -87,6 +87,9 @@ namespace Drn
 
 		void ReadWholeBuffer(std::vector<uint8>& Data);
 
+		virtual uint64 Tell() override;
+		virtual void Seek(uint64 InPos) override;
+
 	protected:
 
 		std::string m_FilePath;

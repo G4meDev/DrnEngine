@@ -490,4 +490,15 @@ namespace Drn
 		Data.resize(Size);
 		File.read(reinterpret_cast<char*>(Data.data()), Size);
 	}
-}
+
+	uint64 FileArchive::Tell()
+	{
+		return File.tellg();
+	}
+
+	void FileArchive::Seek( uint64 InPos )
+	{
+		File.seekg(InPos);
+	}
+
+        }  // namespace Drn

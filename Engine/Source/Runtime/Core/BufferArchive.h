@@ -97,6 +97,9 @@ namespace Drn
 
 		inline void ResetPointer() { m_HeapPointer = m_HeapStart; }
 
+		virtual uint64 Tell() override;
+		virtual void Seek(uint64 InPos) override;
+
 	protected:
 
 		uint64 m_Size;
