@@ -1001,15 +1001,23 @@ struct DirectionalLightData
     float3 Color;
 };
 
+struct CascadeSplitData
+{
+    float SplitNear;
+    float SplitFar;
+    float SplitLength;
+    float DepthBias;
+};
+
 struct DirectionalLightShadowData
 {
-    float DepthBias;
     float InvShadowmapResolution;
     uint CascadeCount;
     uint ShadowMapTextureIndex;
+    float unused_1;
     
     matrix CsWorldToProjectionMatrices[8];
-    float4 CsSplitDistances[2];
+    CascadeSplitData CsSplitData[8];
 };
 
 static const float2 DiscSamples5[] =
@@ -1457,27 +1465,25 @@ float CalculateDirectionalLightShadow(float3 WorldPosition, float Depth, Directi
     
     // TODO: seam blending
     float Alpha = 0;
-    int index = 0;
-    bool bInCascadeRage = false;
-    float CascadeDistance;
+    int index = -1;
+    float CascadeFarDistance = 1000.0f;
     for (uint i = 0; i < ShadowData.CascadeCount; i++)
     {
-        CascadeDistance = ShadowData.CsSplitDistances[i / 4][i % 4];
-        if (Depth < CascadeDistance)
+        CascadeFarDistance = ShadowData.CsSplitData[i].SplitFar;
+        if (Depth < CascadeFarDistance)
         {
             index = i;
-            bInCascadeRage = true;
             break;
         }
     }
     
-    [flatten]
-    if(!bInCascadeRage)
+    [branch]
+    if(index == -1)
         return 1.0f;
     
+    float DepthBias = ShadowData.CsSplitData[index].DepthBias;
+    
     float4 ShadowPos = mul(ShadowData.CsWorldToProjectionMatrices[index], float4(WorldPosition, 1));
-
-    float DepthBias = ShadowData.DepthBias * ShadowData.CsSplitDistances[0][0] / CascadeDistance;
     
     float CompareDistance = ShadowPos.z / ShadowPos.w;
     float ShadowDepthBias = -DepthBias / ShadowPos.w;

@@ -145,7 +145,7 @@ namespace Drn
 			SetCascadeDepthScale(m_CascadeDepthScale);
 		}
 
-		if ( ImGui::InputFloat( "DepthBias", &m_DepthBias, 0.0001f, 1.0f, "%.4f" ) )
+		if ( ImGui::InputFloat( "DepthBias", &m_DepthBias, 0.0001f, 1.0f, "%.9f" ) )
 		{
 			SetDepthBias(m_DepthBias);
 		}

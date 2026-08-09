@@ -74,7 +74,6 @@ namespace Drn
 
 			CommandList->SetViewport( 0, 0, 0, DIRECTIONAL_SHADOW_SIZE, DIRECTIONAL_SHADOW_SIZE, 1 );
 
-			m_ShadowData.DepthBias = m_DepthBias;
 			m_ShadowData.InvShadowResolution = 1.0f / DIRECTIONAL_SHADOW_SIZE;
 			m_ShadowData.CacadeCount = m_CascadeCount;
 			m_ShadowData.ShadowmapTextureIndex = m_ShadowmapResource->GetShaderResourceView()->GetDescriptorHeapIndex();
@@ -86,7 +85,13 @@ namespace Drn
 
 			for (int32 i = 0; i < m_CascadeCount; i++)
 			{
-				m_ShadowData.SplitDistances[i] = m_SplitDistances[i + 1];
+				CascadeSplitData& SplitData = m_ShadowData.SplitData[i];
+
+				SplitData.SplitNear = m_SplitDistances[i];
+				SplitData.SplitFar = m_SplitDistances[i + 1];
+				SplitData.SplitLength = SplitData.SplitFar - SplitData.SplitNear;
+				//SplitData.DepthBias = m_DepthBias * SplitData.SplitLength; // @TODO: find better bias mapping for each cascade
+				SplitData.DepthBias = m_DepthBias;
 			}
 
 			ShadowBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(DirectionalLightShadowData), EUniformBufferUsage::SingleFrame, &m_ShadowData);

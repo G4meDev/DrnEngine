@@ -17,17 +17,25 @@ namespace Drn
 		float Padding;
 	};
 
+	struct CascadeSplitData
+	{
+		float SplitNear;
+		float SplitFar;
+		float SplitLength;
+		float DepthBias;
+	};
+
 	struct DirectionalLightShadowData
 	{
 		DirectionalLightShadowData() = default;
 
-		float DepthBias;
 		float InvShadowResolution;
 		uint32 CacadeCount;
 		uint32 ShadowmapTextureIndex;
+		float unused_1;
 
 		Matrix CsWorldToProjectionMatrices[8];
-		float SplitDistances[8];
+		CascadeSplitData SplitData[8];
 	};
 
 	class DirectionalLightSceneProxy : public LightSceneProxy
