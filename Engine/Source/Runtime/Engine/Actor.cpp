@@ -9,6 +9,7 @@ namespace Drn
 		: Root(nullptr)
 		, m_World(nullptr)
 		, m_PendingKill(false)
+		, m_Guid(Guid::NewGuid())
 	{
 		ActorId = ApplicationMisc::GetUniqueId();
 	}
@@ -141,6 +142,8 @@ namespace Drn
 	{
 		if (Ar.IsLoading())
 		{
+			Ar >> m_Guid;
+
 			std::string ActorLabelStr;
 			Ar >> ActorLabelStr;
 
@@ -163,6 +166,7 @@ namespace Drn
 
 		else
 		{
+			Ar << m_Guid;
 			Ar << ActorLabel;
 
 			const uint32 ActorTagsCount = Tags.size();

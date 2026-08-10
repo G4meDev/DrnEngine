@@ -50,6 +50,8 @@ namespace Drn
 		Component* GetComponentWithID(uint32 ID);
 		Actor* GetActorWithID(uint32 ID);
 
+		bool ValidateGuids() const;
+
 		inline const std::set<Actor*>& GetActorList() { return m_Actors; };
 
 		OnAddActorsDelegate OnAddActors;

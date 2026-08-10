@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "Level.h"
 
+LOG_DEFINE_CATEGORY( LogLevel, "LogLevel" );
+
 namespace Drn
 {
 	Level::Level( const std::string& Path )
@@ -60,6 +62,12 @@ namespace Drn
 
 	void Level::SaveFromWorld( World* InWorld )
 	{
+		if (!InWorld->ValidateGuids())
+		{
+			LOG(LogLevel, Error, "Failed to save level.");
+			return;
+		}
+
 		FileArchive Ar(Path::ConvertProjectPath(m_Path), false);
 		Asset::Serialize(Ar);
 
@@ -76,6 +84,8 @@ namespace Drn
 			Ar << static_cast<uint16>(actor->GetActorType());
 			actor->Serialize(Ar);
 		}
+
+		LOG(LogLevel, Info, "Saved level.");
 	}
 
 #endif

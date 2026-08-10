@@ -102,6 +102,8 @@ namespace Drn
 
 		void DispatchPhysicsCollisionHit(const RigidBodyCollisionInfo& MyInfo, const RigidBodyCollisionInfo& OtherInfo, const CollisionImpactData& RigidCollisionData);
 
+		inline const Guid& GetGuid() const { return m_Guid; }
+
 		bool ActorHasTag(const std::string& Tag) const;
 		void AddActorTag(const std::string& Tag);
 
@@ -121,6 +123,7 @@ namespace Drn
 		bool m_PendingKill;
 		World* m_World;
 
+		Guid m_Guid;
 		std::vector<std::string> Tags;
 		uint32 ActorId;
 

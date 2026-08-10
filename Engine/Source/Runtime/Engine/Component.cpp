@@ -49,11 +49,13 @@ namespace Drn
 		if (Ar.IsLoading())
 		{
 			//Ar >> ComponentLabel;
+			Ar >> m_Guid;
 		}
 
 		else
 		{
 			//Ar << ComponentLabel;
+			Ar << m_Guid;
 		}
 	}
 

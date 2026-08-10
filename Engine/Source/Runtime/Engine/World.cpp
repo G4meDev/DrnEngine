@@ -246,6 +246,88 @@ namespace Drn
 		return nullptr;
 	}
 
+	bool World::ValidateGuids() const
+	{
+		bool bGlobalFlag = true;
+
+		{
+			typedef std::pair<Guid, Actor*> IDActorPair;
+
+			std::vector<IDActorPair> IDActors;
+			IDActors.reserve(m_Actors.size());
+			for (Actor* actor : m_Actors)
+			{
+				IDActors.push_back({actor->GetGuid(), actor});
+			}
+
+			std::sort(IDActors.begin(), IDActors.end(), []( IDActorPair& A, IDActorPair& B ) { return A.first < B.first; });
+			int32 Index = 1;
+			while (Index < IDActors.size())
+			{
+				bool bFlag = false;
+				while (Index < IDActors.size() && IDActors[Index].first == IDActors[Index - 1].first)
+				{
+					if (!bFlag)
+					{
+						LOG(LogWorld, Warning, "found multiple actors with same guid: %s", IDActors[Index].first.ToString().c_str());
+						LOG(LogWorld, Warning, "\t %s", IDActors[Index - 1].second->GetActorLabel().c_str());
+
+						bGlobalFlag = false;
+						bFlag = true;
+					}
+
+					LOG(LogWorld, Warning, "\t %s", IDActors[Index].second->GetActorLabel().c_str());
+					Index++;
+				}
+
+				Index++;
+			}
+		}
+
+		{
+			typedef std::pair<Guid, Component*> IDComponentPair;
+
+			std::vector<IDComponentPair> IDComponents;
+			IDComponents.reserve(m_Actors.size());
+			for (Actor* actor : m_Actors)
+			{
+				std::vector<Component*> ActorComponents;
+				actor->GetComponentsInline(ActorComponents);
+
+				// @TODO: ignore transient component. e.g. billboard component
+				for (Component* Comp : ActorComponents)
+				{
+					IDComponents.push_back({Comp->GetGuid(), Comp});
+				}
+			}
+
+			std::sort(IDComponents.begin(), IDComponents.end(), []( IDComponentPair& A, IDComponentPair& B ) { return A.first < B.first; });
+			int32 Index = 1;
+			while (Index < IDComponents.size())
+			{
+				bool bFlag = false;
+				while (Index < IDComponents.size() && IDComponents[Index].first == IDComponents[Index - 1].first)
+				{
+					if (!bFlag)
+					{
+						LOG(LogWorld, Warning, "found multiple component with same guid: %s", IDComponents[Index].first.ToString().c_str());
+						LOG(LogWorld, Warning, "\t %s. %s", IDComponents[Index - 1].second->GetOwningActor()->GetActorLabel().c_str(), IDComponents[Index - 1].second->GetComponentLabel().c_str());
+
+						bGlobalFlag = false;
+						bFlag = true;
+					}
+
+					LOG(LogWorld, Warning, "\t %s. %s", IDComponents[Index].second->GetOwningActor()->GetActorLabel().c_str(), IDComponents[Index].second->GetComponentLabel().c_str());
+					Index++;
+				}
+
+				Index++;
+			}
+		}
+
+		return bGlobalFlag;
+	}
+
 // ----------------------------------------------------------------------------------------
 
 	void World::DrawDebugLine( const Vector& Start, const Vector& End, const Color& Color, float Thickness, float Duration )

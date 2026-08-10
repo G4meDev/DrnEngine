@@ -9,7 +9,7 @@ namespace Drn
 		, m_BillboardSceneProxy(nullptr)
 	{
 		SetEditorPrimitive(true);
-
+		SetComponentLabel("Billboard Component");
 	}
 
 	BillboardComponent::~BillboardComponent()
