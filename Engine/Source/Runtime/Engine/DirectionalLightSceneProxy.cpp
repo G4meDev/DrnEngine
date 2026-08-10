@@ -201,7 +201,7 @@ namespace Drn
 		const Vector& ViewOrigin, float SplitNear, float SplitFar )
 	{
 		const Matrix& ViewMatrix = View.WorldToView;
-		const Matrix& ProjectionMatrix = View.ViewToProjection;
+		Matrix ProjectionMatrix = View.GetProjectionMatrixNoAA();
 
 		const Vector& CameraDirection = View.CameraDir;
 		const Vector& LightDirection = m_Direction * -1;

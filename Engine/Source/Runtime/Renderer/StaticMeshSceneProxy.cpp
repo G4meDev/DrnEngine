@@ -9,6 +9,7 @@ namespace Drn
 		: PrimitiveSceneProxy( InStaticMeshComponent )
 		, m_OwningStaticMeshComponent( InStaticMeshComponent )
 		, m_HitProxyData(InStaticMeshComponent)
+		, bWasDirty(true)
 	{
 #if WITH_EDITOR
 		m_EditorPrimitive = InStaticMeshComponent->IsEditorPrimitive();
@@ -39,9 +40,6 @@ namespace Drn
 
 	void StaticMeshSceneProxy::UpdateResources( D3D12CommandList* CommandList )
 	{
-		// TODO: issue when proxy not begin rendered
-		m_PrimitiveData.m_PrevLocalToWorld = m_PrimitiveData.m_LocalToWorld;
-
 		if (m_OwningStaticMeshComponent->IsRenderStateDirty())
 		{
 			m_Mesh = m_OwningStaticMeshComponent->GetMesh();
@@ -85,6 +83,14 @@ namespace Drn
 				}
 			}
 
+			bWasDirty = true;
+			UpdatePrimitiveBuffer(CommandList);
+		}
+
+		// @HACK: just one frame delay to propagate PrevLocalToWorld
+		if (!m_OwningStaticMeshComponent->IsRenderStateDirty() && bWasDirty)
+		{
+			bWasDirty = false;
 			UpdatePrimitiveBuffer(CommandList);
 		}
 
@@ -98,6 +104,8 @@ namespace Drn
 
 	void StaticMeshSceneProxy::UpdatePrimitiveBuffer(D3D12CommandList* CommandList)
 	{
+		// TODO: issue when proxy not begin rendered
+		m_PrimitiveData.m_PrevLocalToWorld = m_PrimitiveData.m_LocalToWorld;
 		m_PrimitiveData.m_LocalToWorld = Matrix(m_OwningStaticMeshComponent->GetWorldTransform()).Get();
 		m_PrimitiveData.m_HitProxyData = m_HitProxyData;
 

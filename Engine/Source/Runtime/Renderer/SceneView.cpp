@@ -33,6 +33,16 @@ namespace Drn
 		//}
 	}
 
+	Matrix SceneRendererView::GetProjectionMatrixNoAA() const
+	{
+		Matrix Result = ViewToProjection;
+
+		Result.m_Matrix.m[2][0] -= JitterOffset[0];
+		Result.m_Matrix.m[2][1] -= JitterOffset[1];
+
+		return Result;
+	}
+
 	Vector4 SceneRendererView::PixelToScreen( float InX, float InY, float InZ ) const
 	{
 		return Vector4((InX / Size.X) * 2.0f - 1.0f, (InY / Size.Y) * -2.0f + 1.0f, InZ, 1);

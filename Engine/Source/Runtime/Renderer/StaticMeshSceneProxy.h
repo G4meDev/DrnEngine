@@ -63,6 +63,8 @@ namespace Drn
 		PrimitiveData m_PrimitiveData;
 		TRefCountPtr<RenderUniformBuffer> PrimitiveBuffer;
 
+		bool bWasDirty;
+
 		friend class StaticMeshComponent;
 	};
 }

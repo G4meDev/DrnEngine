@@ -60,6 +60,8 @@ namespace Drn
 		float ConvertFromDeviceZ(float DeviceZ) const;
 		float ConvertToDeviceZ(float SceneDepth) const;
 
+		Matrix GetProjectionMatrixNoAA() const;
+
 		Vector4 PixelToScreen(float InX, float InY, float InZ) const;
 		Vector PixelToWorld(float InX, float InY, float InZ) const;
 		Vector ScreenToWorld(const Vector4& InScreenPosition) const;
