@@ -103,6 +103,7 @@ namespace Drn
 		void DispatchPhysicsCollisionHit(const RigidBodyCollisionInfo& MyInfo, const RigidBodyCollisionInfo& OtherInfo, const CollisionImpactData& RigidCollisionData);
 
 		inline const Guid& GetGuid() const { return m_Guid; }
+		inline void GenerateNewGuid() { m_Guid = Guid::NewGuid(); }
 
 		bool ActorHasTag(const std::string& Tag) const;
 		void AddActorTag(const std::string& Tag);

@@ -278,6 +278,14 @@ namespace Drn
 			Actor* NewActor = EngineTypes::Get()->m_ActorSerializationMap[ActorType](ActorWorld, Ar);
 
 			drn_check(NewActor);
+			NewActor->GenerateNewGuid();
+
+			std::vector<Component*> ActorComps;
+			NewActor->GetComponentsInline(ActorComps);
+			for (Component* Comp : ActorComps)
+			{
+				Comp->GenerateNewGuid();
+			}
 
 			// offset to avoid full overlap and make it easier to see
 			NewActor->SetActorLocation(NewActor->GetActorLocation() + NewActor->GetActorForwardVector() * 0.5f);

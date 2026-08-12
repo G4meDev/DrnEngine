@@ -43,6 +43,7 @@ namespace Drn
 		virtual void DestroyComponent();
 
 		inline const Guid& GetGuid() const { return m_Guid; }
+		inline void GenerateNewGuid() { m_Guid = Guid::NewGuid(); }
 
 		inline bool IsRegistered() const { return m_Registered; }
 		inline bool IsPendingKill() const { return m_PendingKill; }
