@@ -160,6 +160,8 @@ namespace Drn
 
 	OnlineDescriptorManager::HeapOffset OnlineDescriptorManager::AllocateHeapSlot(HeapIndex& OutHeapIndex, uint64& GpuHandle, uint32& Index)
 	{
+		SCOPE_STAT();
+
 		drn_check(!m_FreeHeaps.empty());
 		ScopeLock Lock(&CritSect);
 
@@ -189,6 +191,8 @@ namespace Drn
 
 	void OnlineDescriptorManager::FreeHeapSlot( HeapOffset Offset, HeapIndex index )
 	{
+		SCOPE_STAT();
+
 		ScopeLock Lock(&CritSect);
 		SHeapEntry &HeapEntry = m_Heaps[index];
 

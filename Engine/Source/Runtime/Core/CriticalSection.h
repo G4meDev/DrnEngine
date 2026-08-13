@@ -1,22 +1,21 @@
 #pragma once
 
-//#include <Windows.h>
+#include <Windows.h>
 
 namespace Drn
 {
-	class CriticalSection
-	{
-	public:
-		CriticalSection(){}
-	};
+	//class CriticalSection
+	//{
+	//public:
+	//	CriticalSection(){}
+	//};
+	//
+	//class ScopeLock
+	//{
+	//public:
+	//	ScopeLock(CriticalSection* InSynchObject){}
+	//};
 
-	class ScopeLock
-	{
-	public:
-		ScopeLock(CriticalSection* InSynchObject){}
-	};
-
-/*
 	class CriticalSection
 	{
 		CRITICAL_SECTION CS;
@@ -92,5 +91,4 @@ namespace Drn
 
 		CriticalSection* SynchObject;
 	};
-*/
 }

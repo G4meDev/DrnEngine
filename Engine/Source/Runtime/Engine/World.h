@@ -50,8 +50,6 @@ namespace Drn
 		Component* GetComponentWithID(uint32 ID);
 		Actor* GetActorWithID(uint32 ID);
 
-		bool ValidateGuids() const;
-
 		inline const std::set<Actor*>& GetActorList() { return m_Actors; };
 
 		OnAddActorsDelegate OnAddActors;
@@ -189,6 +187,7 @@ namespace Drn
 		inline bool ShouldUseViewportCamera() const { return m_WorldType == EWorldType::Editor || IsEjected(); }
 		inline CameraActor* GetViewportCamera() const { return m_ViewportCamera; }
 
+		bool ValidateGuids() const;
 		void Save();
 
 		uint32 GetNonTransientActorCount();
