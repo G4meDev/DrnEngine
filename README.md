@@ -13,9 +13,12 @@ DrnEngine is a game engine under development for personal educational purposes.
 - Deferred decals
 - Post processing(SSAO, SSR, Bloom, TAA)
 - Modular particle system
+- CPU and GPU profiling
 - Nvidia physx integration(rigid body and vehicle simulation and scene queries)
 
 ## Screenshots
 
-| ![Screenshot1](Docs/img/Screenshot1.png) | ![Screenshot2](Docs/img/Screenshot2.png) |
-| ![Screenshot3](Docs/img/Screenshot3.png) | ![Screenshot4](Docs/img/Screenshot4.png) |
+![Screenshot1](Docs/img/Screenshot1.png)
+![Screenshot2](Docs/img/Screenshot2.png)
+![Screenshot3](Docs/img/Screenshot3.png)
+![Screenshot4](Docs/img/Screenshot4.png)
