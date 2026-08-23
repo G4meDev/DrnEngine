@@ -17,8 +17,5 @@ DrnEngine is a game engine under development for personal educational purposes.
 
 ## Screenshots
 
-|:------------------------------------------------------------:|:-------------------------------------------:|
 | ![Screenshot1](Docs/img/Screenshot1.png) | ![Screenshot2](Docs/img/Screenshot2.png) |
-
-|:-------------------------------------------------------:|:---------------------------------------------:|
 | ![Screenshot3](Docs/img/Screenshot3.png) | ![Screenshot4](Docs/img/Screenshot4.png) |
