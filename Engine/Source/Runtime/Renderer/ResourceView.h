@@ -303,8 +303,9 @@ namespace Drn
 	class ConstantBufferView
 	{
 	public:
-		ConstantBufferView()
+		ConstantBufferView(bool bInDynamic)
 		{
+			bDynamic = bInDynamic;
 			AllocateDescriptorSlot();
 		}
 
@@ -326,12 +327,22 @@ namespace Drn
 
 		inline void AllocateDescriptorSlot()
 		{
-			m_CpuHandle = Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().AllocateHeapSlot(m_HeapIndex, m_GpuHandle.ptr, m_Index);
+			if (bDynamic)
+			{
+				m_CpuHandle = Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().AllocateHeapSlotDynamic(m_GpuHandle.ptr, m_Index);
+			}
+			else
+			{
+				m_CpuHandle = Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().AllocateHeapSlot(m_HeapIndex, m_GpuHandle.ptr, m_Index);
+			}
 		}
 
 		inline void FreeDescriptorSlot()
 		{
-			Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().FreeHeapSlot(m_CpuHandle, m_HeapIndex);
+			if (!bDynamic)
+			{
+				Renderer::Get()->GetDevice()->GetSrvDescriptorAllocator().FreeHeapSlot(m_CpuHandle, m_HeapIndex);
+			}
 		}
 
 		inline const D3D12_CONSTANT_BUFFER_VIEW_DESC& GetDesc() const { return m_Desc; }
@@ -342,6 +353,7 @@ namespace Drn
 		CD3DX12_GPU_DESCRIPTOR_HANDLE m_GpuHandle;
 		uint32 m_Index;
 		uint32 m_HeapIndex;
+		bool bDynamic;
 	};
 
 // ---------------------------------------------------------------------------------------------------------

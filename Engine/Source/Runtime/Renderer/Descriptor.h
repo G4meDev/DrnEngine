@@ -61,6 +61,65 @@ namespace Drn
 		CriticalSection CritSect;
 	};
 
+	//class OnlineDescriptorManager : public DeviceChild
+	//{
+	//public:
+	//	typedef D3D12_CPU_DESCRIPTOR_HANDLE HeapOffset;
+	//	typedef decltype(HeapOffset::ptr) HeapOffsetRaw;
+	//	typedef uint32 HeapIndex;
+	//
+	//private:
+	//	struct SFreeRange { HeapOffsetRaw Start; HeapOffsetRaw End; };
+	//	struct SHeapEntry
+	//	{
+	//		std::list<SFreeRange> m_FreeList;
+	//
+	//		SHeapEntry() { }
+	//	};
+	//	typedef std::vector<SHeapEntry> THeapMap;
+	//
+	//	static D3D12_DESCRIPTOR_HEAP_DESC CreateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32 NumDescriptorsPerHeap)
+	//	{
+	//		D3D12_DESCRIPTOR_HEAP_DESC Desc = {};
+	//		Desc.Type = Type;
+	//		Desc.NumDescriptors = NumDescriptorsPerHeap;
+	//		Desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	//
+	//		return Desc;
+	//	}
+	//
+	//public:
+	//	OnlineDescriptorManager(Device* Parent, D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32 NumDescriptorsPerChunk, uint32 NumChunks)
+	//		: DeviceChild(Parent)
+	//		, m_NumChunks(NumChunks)
+	//		, m_NumDescriptorsPerChunk(NumDescriptorsPerChunk)
+	//		, m_Desc(CreateDescriptor(Type, NumDescriptorsPerChunk * NumChunks))
+	//		, m_DescriptorSize(0)
+	//	{}
+	//
+	//	virtual ~OnlineDescriptorManager();
+	//
+	//	ID3D12DescriptorHeap* GetHeap() const { return m_Heap; }
+	//
+	//	void Init();
+	//
+	//	HeapOffset AllocateHeapSlot( HeapIndex& OutHeapIndex, uint64& GpuHandle, uint32& Index);
+	//	void FreeHeapSlot( HeapOffset Offset, HeapIndex index );
+	//
+	//	int32 GetNumAllocatedHandles();
+	//
+	//private:
+	//	TRefCountPtr<ID3D12DescriptorHeap> m_Heap;
+	//	const D3D12_DESCRIPTOR_HEAP_DESC m_Desc;
+	//	uint32 m_DescriptorSize;
+	//	uint32 m_NumChunks;
+	//	uint32 m_NumDescriptorsPerChunk;
+	//
+	//	THeapMap m_Heaps;
+	//	std::list<HeapIndex> m_FreeHeaps;
+	//	CriticalSection CritSect;
+	//};
+
 	class OnlineDescriptorManager : public DeviceChild
 	{
 	public:
@@ -73,18 +132,18 @@ namespace Drn
 		struct SHeapEntry
 		{
 			std::list<SFreeRange> m_FreeList;
-
+	
 			SHeapEntry() { }
 		};
 		typedef std::vector<SHeapEntry> THeapMap;
-
+	
 		static D3D12_DESCRIPTOR_HEAP_DESC CreateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32 NumDescriptorsPerHeap)
 		{
 			D3D12_DESCRIPTOR_HEAP_DESC Desc = {};
 			Desc.Type = Type;
 			Desc.NumDescriptors = NumDescriptorsPerHeap;
 			Desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-
+	
 			return Desc;
 		}
 	
@@ -93,21 +152,25 @@ namespace Drn
 			: DeviceChild(Parent)
 			, m_NumChunks(NumChunks)
 			, m_NumDescriptorsPerChunk(NumDescriptorsPerChunk)
-			, m_Desc(CreateDescriptor(Type, NumDescriptorsPerChunk * NumChunks))
+			, m_Desc(CreateDescriptor(Type, NumDescriptorsPerChunk * NumChunks * 2))
 			, m_DescriptorSize(0)
+			, DynamicIndex(NumDescriptorsPerChunk * NumChunks)
+			, DynamicIndexStart(NumDescriptorsPerChunk * NumChunks)
+			, DynamicIndexEnd(NumDescriptorsPerChunk * NumChunks * 2)
 		{}
-
+	
 		virtual ~OnlineDescriptorManager();
-
+	
 		ID3D12DescriptorHeap* GetHeap() const { return m_Heap; }
-
+	
 		void Init();
-
+	
 		HeapOffset AllocateHeapSlot( HeapIndex& OutHeapIndex, uint64& GpuHandle, uint32& Index);
+		HeapOffset AllocateHeapSlotDynamic( uint64& GpuHandle, uint32& Index);
 		void FreeHeapSlot( HeapOffset Offset, HeapIndex index );
-
+	
 		int32 GetNumAllocatedHandles();
-
+	
 	private:
 		TRefCountPtr<ID3D12DescriptorHeap> m_Heap;
 		const D3D12_DESCRIPTOR_HEAP_DESC m_Desc;
@@ -117,6 +180,9 @@ namespace Drn
 
 		THeapMap m_Heaps;
 		std::list<HeapIndex> m_FreeHeaps;
+		uint32 DynamicIndex;
+		uint32 DynamicIndexStart;
+		uint32 DynamicIndexEnd;
 		CriticalSection CritSect;
 	};
 }

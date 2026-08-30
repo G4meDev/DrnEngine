@@ -117,7 +117,7 @@ class LogCategory;
 	extern LogCategory Category;						\
 
 #define D3D12_DEBUG_LAYER 0
-#define D3D12_GPU_VALIDATION 0
+#define D3D12_GPU_VALIDATION 1
 #define D3D12_DRED 0
 #define D3D12_Debug_INFO 1
 #define RENDER_STATS 1

@@ -165,7 +165,7 @@ namespace Drn
 		drn_check(InSize <= D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT * 16);
 
 		const uint32 AlignedSize = Align( InSize, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT );
-		NewUniformBuffer->View = new ConstantBufferView();
+		NewUniformBuffer->View = new ConstantBufferView(Usage == EUniformBufferUsage::SingleFrame);
 
 		void* MappedData = nullptr;
 		//if (Usage == EUniformBufferUsage::MultiFrame)
