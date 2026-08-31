@@ -41,9 +41,7 @@ namespace Drn
 
 	bool Frustum::Contains( const Sphere& Bounds ) const
 	{
-		DirectX::BoundingSphere SphereBound(*Bounds.Center.Get(), Bounds.Radius);
-		DirectX::ContainmentType Type = ViewFrustum.Contains(SphereBound);
-		return Type != DISJOINT;
+		return ViewFrustum.Contains(Bounds.DirectxBound) != DISJOINT;
 	}
 
         }  // namespace Drn

@@ -209,6 +209,7 @@ set( HEADER_FILES
 	Source/Runtime/Math/Color.h
 	Source/Runtime/Math/Float16.h
 	Source/Runtime/Math/BoxSphereBounds.h
+	Source/Runtime/Math/OrientedBox.h
 	Source/Runtime/Math/Frustum.h
 	Source/Runtime/Math/RandomStream.h
 	Source/Runtime/Math/InterpCurve.h
@@ -483,6 +484,7 @@ set( SOURCE_FILES
 	Source/Runtime/Math/Color.cpp
 	Source/Runtime/Math/Float16.cpp
 	Source/Runtime/Math/BoxSphereBounds.cpp
+	Source/Runtime/Math/OrientedBox.cpp
 	Source/Runtime/Math/Frustum.cpp
 	Source/Runtime/Math/RandomStream.cpp
 	Source/Runtime/Math/InterpCurve.cpp

@@ -11,8 +11,11 @@ namespace Drn
 		Sphere(const Vector& InCenter, float InRadius) : Center(InCenter), Radius(InRadius) {};
 		Sphere() : Sphere(Vector::OneVector, 1) {};
 
-		Vector Center;
-		float Radius;
+		union
+		{
+			DirectX::BoundingSphere DirectxBound;
+			struct { Vector Center; float Radius; };
+		};
 
 		inline void Init() { Radius = 0.0f; }
 		inline bool IsValid() const { return Radius != 0.0f; }

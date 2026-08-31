@@ -78,9 +78,10 @@ namespace Drn
 			m_ShadowData.CacadeCount = m_CascadeCount;
 			m_ShadowData.ShadowmapTextureIndex = m_ShadowmapResource->GetShaderResourceView()->GetDescriptorHeapIndex();
 
+			m_CascadeBounds.resize(m_CascadeCount);
 			for (int32 i = 0; i < m_CascadeCount; i++)
 			{
-				m_ShadowData.CsWorldToProjectionMatrices[i] = GetShadowSplitBoundsMatrix(Renderer->GetSceneView(), Renderer->GetSceneView().CameraPos, m_SplitDistances[i], m_SplitDistances[i + 1]);
+				m_ShadowData.CsWorldToProjectionMatrices[i] = GetShadowSplitBoundsMatrix(Renderer->GetSceneView(), Renderer->GetSceneView().CameraPos, m_SplitDistances[i], m_SplitDistances[i + 1], m_CascadeBounds[i]);
 			}
 
 			for (int32 i = 0; i < m_CascadeCount; i++)
@@ -109,10 +110,14 @@ namespace Drn
 				TRefCountPtr<RenderUniformBuffer> CsWorldToProjectionMatricesBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(Matrix), EUniformBufferUsage::SingleFrame, &m_ShadowData.CsWorldToProjectionMatrices[i]);
 
 				CommandList->SetGraphicRootConstant(CsWorldToProjectionMatricesBuffer->GetViewIndex(), 6);
-				
+
 				for (PrimitiveSceneProxy* Proxy : Renderer->GetScene()->GetPrimitiveProxies())
 				{
-					Proxy->RenderShadowPass(CommandList, Renderer, this);
+					const bool bVisible = m_CascadeBounds[i].Contains(Proxy->GetBounds().GetSphere());
+					if (bVisible)
+					{
+						Proxy->RenderShadowPass(CommandList, Renderer, this);
+					}
 				}
 			}
 
@@ -181,6 +186,11 @@ namespace Drn
 		}
 	}
 
+	Matrix DirectionalLightSceneProxy::GetLightViewMatrix() const
+	{
+		return XMMatrixLookAtLH(XMVectorZero(), XMLoadFloat3(m_Direction.Get()), XMLoadFloat3(Vector::UpVector.Get()));
+	}
+
 	void DirectionalLightSceneProxy::CalculateSplitDistance()
 	{
 		m_SplitDistances.clear();
@@ -198,7 +208,7 @@ namespace Drn
 	}
 
 	Matrix DirectionalLightSceneProxy::GetShadowSplitBoundsMatrix( const SceneRendererView& View,
-		const Vector& ViewOrigin, float SplitNear, float SplitFar )
+		const Vector& ViewOrigin, float SplitNear, float SplitFar, OrientedBox& CascadeBound )
 	{
 		const Matrix& ViewMatrix = View.WorldToView;
 		Matrix ProjectionMatrix = View.GetProjectionMatrixNoAA();
@@ -264,7 +274,7 @@ namespace Drn
 
 // ------------------------------------------------------------------------------------------------------------------
 
-		Matrix LightViewMatrix = XMMatrixLookAtLH(XMVectorZero(), XMLoadFloat3(m_Direction.Get()), XMLoadFloat3(Vector::UpVector.Get()));
+		Matrix LightViewMatrix = GetLightViewMatrix();
 
 		float MinX, MinY, MinZ = FLT_MAX;
 		float MaxX, MaxY, MaxZ = FLT_MIN;
@@ -303,6 +313,15 @@ namespace Drn
 		XMMATRIX P = XMMatrixOrthographicLH( Width, Height, 0, ScaledDepth);
 
 		Matrix Result = V * P;
+
+		{
+			const Vector BoxExtent = Vector(Width, Height, ScaledDepth) / 2.0f;
+			const Vector BoxCenter = CameraPos + m_Direction * BoxExtent.Z;
+			const Quat BoxRotation = Quat::FromZ(m_Direction).Get();
+
+			CascadeBound = OrientedBox(BoxCenter, BoxExtent, BoxRotation);
+		}
+
 		return Result;
 	}
 

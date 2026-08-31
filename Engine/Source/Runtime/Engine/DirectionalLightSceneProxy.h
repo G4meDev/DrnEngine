@@ -66,11 +66,14 @@ namespace Drn
 		virtual float GetMaxDrawDistance() const override { return FLT_MAX; }
 		virtual Sphere GetBoundingSphere() const override { return Sphere(Vector::ZeroVector, FLT_MAX); };
 
+		Matrix GetLightViewMatrix() const;
+
 	protected:
 
 		DirectionalLightComponent* m_DirectionalLightComponent = nullptr;
 
 		std::vector<float> m_SplitDistances;
+		std::vector<OrientedBox> m_CascadeBounds;
 
 		Vector m_Direction;
 		float m_ShadowDistance;
@@ -80,7 +83,7 @@ namespace Drn
 		float m_DepthBias;
 
 		void CalculateSplitDistance();
-		Matrix GetShadowSplitBoundsMatrix( const SceneRendererView& View, const Vector& ViewOrigin, float SplitNear, float SplitFar );
+		Matrix GetShadowSplitBoundsMatrix( const SceneRendererView& View, const Vector& ViewOrigin, float SplitNear, float SplitFar, OrientedBox& CascadeBound );
 
 		TRefCountPtr<class RenderTexture2DArray> m_ShadowmapResource;
 		std::vector<TRefCountPtr<class DepthStencilView>> m_ShadowmapViews;
