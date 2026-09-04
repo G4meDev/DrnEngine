@@ -35,9 +35,9 @@ namespace Drn
 		PreviewWorld->SetPaused(true);
 		PreviewWorld->SetEditorWorld();
 
-		//PreviewMesh = PreviewWorld->SpawnActor<SkeletalMeshActor>();
-		//PreviewMesh->GetMeshComponent()->SetSelectable(false);
-		//PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
+		PreviewMesh = PreviewWorld->SpawnActor<SkeletalMeshActor>();
+		PreviewMesh->GetMeshComponent()->SetSelectable(false);
+		PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
 
 		m_SkyLight = PreviewWorld->SpawnActor<SkyLightActor>();
 		m_SkyLight->SetIntensity(0.4f);
@@ -47,6 +47,15 @@ namespace Drn
 		m_DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>(PreviewWorld->GetScene());
+
+		AssetHandle<Material> BoneWeightPreviewMaterial("Engine\\Content\\Materials\\M_SkeletalMeshWeightPreview.drn");
+		BoneWeightPreviewMaterial.Load();
+		BoneWeightMaterial = MaterialInstanceDynamic::Create(BoneWeightPreviewMaterial);
+
+		for (int32 MaterialIndex = 0; MaterialIndex < PreviewMesh->GetMeshComponent()->GetMaterialCount(); MaterialIndex++)
+		{
+			PreviewMesh->GetMeshComponent()->SetMaterial(MaterialIndex, BoneWeightMaterial);
+		}
 	}
 
 	AssetPreviewSkeletalMeshGuiLayer::~AssetPreviewSkeletalMeshGuiLayer()
@@ -64,6 +73,8 @@ namespace Drn
 	void AssetPreviewSkeletalMeshGuiLayer::Draw( float DeltaTime )
 	{
 		SCOPE_STAT();
+
+		BoneWeightMaterial->SetNamedScalar("BoneIndex", SelectedBoneIndex);
 
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);
@@ -377,19 +388,19 @@ namespace Drn
 			PreviewWorld->DrawDebugBox(Box(Bounds.BoxExtent * -1, Bounds.BoxExtent), Transform(Bounds.Origin, Quat::Identity), Color::Blue, 0, 0);
 		}
 
-		for (auto& Mesh : m_OwningAsset->Data.MeshesData)
-		{
-			for (int32 TriangleIndex = 0; TriangleIndex < Mesh.VertexData.GetIndexCount(); TriangleIndex+=3)
-			{
-				uint32 Pt0 = Mesh.VertexData.Use4BitIndices() ? Mesh.VertexData.GetIndices_32()[TriangleIndex + 0] : Mesh.VertexData.GetIndices_16()[TriangleIndex + 0];
-				uint32 Pt1 = Mesh.VertexData.Use4BitIndices() ? Mesh.VertexData.GetIndices_32()[TriangleIndex + 1] : Mesh.VertexData.GetIndices_16()[TriangleIndex + 1];
-				uint32 Pt2 = Mesh.VertexData.Use4BitIndices() ? Mesh.VertexData.GetIndices_32()[TriangleIndex + 2] : Mesh.VertexData.GetIndices_16()[TriangleIndex + 2];
-
-				PreviewWorld->DrawDebugLine(Mesh.VertexData.GetPositions()[Pt0], Mesh.VertexData.GetPositions()[Pt1], Color::White, 0, 0);
-				PreviewWorld->DrawDebugLine(Mesh.VertexData.GetPositions()[Pt1], Mesh.VertexData.GetPositions()[Pt2], Color::White, 0, 0);
-				PreviewWorld->DrawDebugLine(Mesh.VertexData.GetPositions()[Pt2], Mesh.VertexData.GetPositions()[Pt0], Color::White, 0, 0);
-			}
-		}
+		//for (auto& Mesh : m_OwningAsset->Data.MeshesData)
+		//{
+		//	for (int32 TriangleIndex = 0; TriangleIndex < Mesh.VertexData.GetIndexCount(); TriangleIndex+=3)
+		//	{
+		//		uint32 Pt0 = Mesh.VertexData.Use4BitIndices() ? Mesh.VertexData.GetIndices_32()[TriangleIndex + 0] : Mesh.VertexData.GetIndices_16()[TriangleIndex + 0];
+		//		uint32 Pt1 = Mesh.VertexData.Use4BitIndices() ? Mesh.VertexData.GetIndices_32()[TriangleIndex + 1] : Mesh.VertexData.GetIndices_16()[TriangleIndex + 1];
+		//		uint32 Pt2 = Mesh.VertexData.Use4BitIndices() ? Mesh.VertexData.GetIndices_32()[TriangleIndex + 2] : Mesh.VertexData.GetIndices_16()[TriangleIndex + 2];
+		//
+		//		PreviewWorld->DrawDebugLine(Mesh.VertexData.GetPositions()[Pt0], Mesh.VertexData.GetPositions()[Pt1], Color::White, 0, 0);
+		//		PreviewWorld->DrawDebugLine(Mesh.VertexData.GetPositions()[Pt1], Mesh.VertexData.GetPositions()[Pt2], Color::White, 0, 0);
+		//		PreviewWorld->DrawDebugLine(Mesh.VertexData.GetPositions()[Pt2], Mesh.VertexData.GetPositions()[Pt0], Color::White, 0, 0);
+		//	}
+		//}
 
 		//if (true)
 		//{

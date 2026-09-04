@@ -45,12 +45,14 @@ namespace Drn
 		int32 SelectedBoneIndex;
 
 		World* PreviewWorld;
-		//StaticMeshActor* PreviewMesh;
+		SkeletalMeshActor* PreviewMesh;
 		class SkyLightActor* m_SkyLight;
 		class DirectionalLightActor* m_DirectionalLight;
 
 		AssetHandle<SkeletalMesh> m_OwningAsset;
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
+
+		TRefCountPtr<MaterialInstanceDynamic> BoneWeightMaterial;
 
 		bool m_ShowSceneSetting;
 		bool m_ShowDetail;

@@ -29,4 +29,31 @@ namespace Drn
 
 		static D3D12_VERTEX_BUFFER_VIEW VertexBufferViewNull;
 	};
+
+	class SkeletalMeshVertexBuffer
+	{
+	public:
+		SkeletalMeshVertexBuffer();
+		virtual ~SkeletalMeshVertexBuffer();
+
+		static SkeletalMeshVertexBuffer* Create(class D3D12CommandList* CommandList, SkeletalMeshVertexData& Source, const std::string& Name, bool CreateOnDefaultHeap = true);
+
+		void Bind(class D3D12CommandList* CommandList);
+
+		TRefCountPtr<class RenderVertexBuffer> m_PositionBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_NormalBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_TangentBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_BitTangentBuffer;
+		TRefCountPtr<class RenderVertexBuffer> m_ColorBuffer;
+
+		TRefCountPtr<class RenderVertexBuffer> m_UV1Buffer;
+		TRefCountPtr<class RenderVertexBuffer> m_UV2Buffer;
+		TRefCountPtr<class RenderVertexBuffer> m_UV3Buffer;
+		TRefCountPtr<class RenderVertexBuffer> m_UV4Buffer;
+
+		TRefCountPtr<class RenderVertexBuffer> m_BoneIndices;
+		TRefCountPtr<class RenderVertexBuffer> m_BoneWeights;
+
+		static D3D12_VERTEX_BUFFER_VIEW VertexBufferViewNull;
+	};
 }

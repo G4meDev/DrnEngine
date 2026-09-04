@@ -42,21 +42,21 @@ namespace Drn
 	struct SkeletalMeshSlotData : public Serializable
 	{
 	public:
-		//SkeletalMeshSlotData();
-		//~SkeletalMeshSlotData();
+		SkeletalMeshSlotData();
+		~SkeletalMeshSlotData();
 
 		uint8 MaterialIndex = 0;
 
 		SkeletalMeshVertexData VertexData;
 
-		//class StaticMeshVertexBuffer* m_StaticMeshVertexBuffer;
-		//TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
+		class SkeletalMeshVertexBuffer* m_SkeletalMeshVertexBuffer;
+		TRefCountPtr<RenderIndexBuffer> m_IndexBuffer;
 
 		virtual void Serialize(Archive& Ar) override;
 
-		//inline void ReleaseBuffers();
+		inline void ReleaseBuffers();
 
-		//void BindAndDraw( class D3D12CommandList* CommandList ) const;
+		void BindAndDraw( class D3D12CommandList* CommandList ) const;
 	};
 
 	struct SkeletalMeshData : public Serializable
@@ -82,6 +82,9 @@ namespace Drn
 #endif
 
 		virtual void Serialize(Archive& Ar) override;
+
+		void InitResources( ID3D12GraphicsCommandList2* CommandList );
+		void UploadResources( class D3D12CommandList* CommandList );
 
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::SkeletalMesh; }

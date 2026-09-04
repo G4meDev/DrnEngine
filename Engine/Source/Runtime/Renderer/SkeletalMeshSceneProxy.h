@@ -15,6 +15,8 @@ namespace Drn
 		Matrix m_LocalToWorld;
 		Matrix m_PrevLocalToWorld;
 		HitProxyData m_HitProxyData;
+
+		//Matrix BoneMatrices[MAX_BONES];
 	};
 
 	class SkeletalMeshSceneProxy : public PrimitiveSceneProxy

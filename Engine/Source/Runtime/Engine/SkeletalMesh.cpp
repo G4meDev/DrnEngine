@@ -99,6 +99,43 @@ namespace Drn
 		}
 	}
 
+	void SkeletalMesh::InitResources( ID3D12GraphicsCommandList2* CommandList )
+	{
+		
+	}
+
+	void SkeletalMesh::UploadResources( class D3D12CommandList* CommandList )
+	{
+		if (!IsRenderStateDirty())
+			return;
+
+		for (int i = 0; i < Data.MeshesData.size(); i++)
+		{
+			ID3D12Device* Device = Renderer::Get()->GetD3D12Device();
+			SkeletalMeshSlotData& Proxy = Data.MeshesData[i];
+
+			std::string MeshName = "";
+#if D3D12_Debug_INFO
+			MeshName = m_Path;
+			MeshName = Path::ConvertShortPath(MeshName);
+			MeshName = Path::RemoveFileExtension(MeshName) + "_" + std::to_string(i);
+#endif
+
+			Proxy.ReleaseBuffers();
+
+			SkeletalMeshVertexData& VData = Proxy.VertexData;
+
+			uint32 IndexBufferFlags = (uint32)EBufferUsageFlags::IndexBuffer | (uint32)EBufferUsageFlags::Static;
+			RenderResourceCreateInfo IndexBufferCreateInfo(nullptr, VData.GetIndexBufferPtr(), ClearValueBinding::Black, "IB" + MeshName);
+			Proxy.m_IndexBuffer = RenderIndexBuffer::Create(Renderer::Get()->GetDevice(), CommandList, VData.GetIndexBufferStride(), VData.GetIndexBufferByteSize(),
+				IndexBufferFlags, D3D12_RESOURCE_STATE_COMMON, false, IndexBufferCreateInfo);
+
+			Proxy.m_SkeletalMeshVertexBuffer = SkeletalMeshVertexBuffer::Create(CommandList, Proxy.VertexData, MeshName);
+		}
+
+		ClearRenderStateDirty();
+	}
+
 	EAssetType SkeletalMesh::GetAssetType()
 	{
 		return EAssetType::SkeletalMesh;
@@ -144,15 +181,35 @@ namespace Drn
 	}
 #endif
 
-	//SkeletalMeshSlotData::SkeletalMeshSlotData()
-	//{
-	//	
-	//}
-	//
-	//SkeletalMeshSlotData::~SkeletalMeshSlotData()
-	//{
-	//	
-	//}
+	SkeletalMeshSlotData::SkeletalMeshSlotData()
+		: m_IndexBuffer(nullptr)
+		, m_SkeletalMeshVertexBuffer(nullptr)
+	{
+		
+	}
+
+	void SkeletalMeshSlotData::ReleaseBuffers()
+	{
+		if (m_SkeletalMeshVertexBuffer)
+		{
+			delete m_SkeletalMeshVertexBuffer;
+			m_SkeletalMeshVertexBuffer = nullptr;
+		}
+	}
+
+	void SkeletalMeshSlotData::BindAndDraw( class D3D12CommandList* CommandList ) const
+	{
+		uint32 VertexCount = VertexData.GetVertexCount();
+		uint32 PrimitiveCount = VertexData.GetPrimitiveCount();
+
+		m_SkeletalMeshVertexBuffer->Bind(CommandList);
+		CommandList->DrawIndexedPrimitive(m_IndexBuffer, 0, 0, VertexCount, 0, PrimitiveCount, 1);
+	}
+	
+	SkeletalMeshSlotData::~SkeletalMeshSlotData()
+	{
+		ReleaseBuffers();
+	}
 
 	Archive& operator<<( Archive& Ar, const MeshBoneInfo& Value )
 	{

@@ -24,6 +24,9 @@ static const float PI = 3.14159265359;
 #define SHADING_MODEL_LIT 1
 #define SHADING_MODEL_FOLIAGE 2
 
+#define MAX_EFFECTIVE_BONES 4
+#define MAX_BONES 255
+
 float Uint8ToFloat(uint Value)
 {
     return Value / 255.0f;
@@ -203,6 +206,14 @@ struct VertexInputPositionOnlyStaticMesh
     float3 Position : POSITION;
 };
 
+struct VertexInputPositionOnlySkeletalMesh
+{
+    float3 Position : POSITION;
+    
+    uint4 BoneIndices : BONE_INDEX;
+    float4 BoneWeights : BONE_WEIGHT;
+};
+
 struct VertexInputPositionOnlyInstancedStaticMesh
 {
     float3 Position : POSITION;
@@ -226,6 +237,8 @@ struct VertexInputPositionOnlyParticleMesh
 #define VertexInputPositionOnly VertexInputPositionOnlyInstancedStaticMesh
 #elif STATICMESH
 #define VertexInputPositionOnly VertexInputPositionOnlyStaticMesh
+#elif SKELETALMESH
+#define VertexInputPositionOnly VertexInputPositionOnlySkeletalMesh
 #elif PARTICLE_MESH
 #define VertexInputPositionOnly VertexInputPositionOnlyParticleMesh
 #endif
@@ -240,6 +253,20 @@ struct VertexInputStaticMesh
     float2 UV2 : TEXCOORD1;
     float2 UV3 : TEXCOORD2;
     float2 UV4 : TEXCOORD3;
+};
+
+struct VertexInputSkeletalMesh
+{
+    float3 Position : POSITION;
+    float3 Color : COLOR;
+    float3 Normal : NORMAL;
+    float3 Tangent : TANGENT;
+    float2 UV1 : TEXCOORD0;
+    float2 UV2 : TEXCOORD1;
+    float2 UV3 : TEXCOORD2;
+    float2 UV4 : TEXCOORD3;
+    uint4 BoneIndices : BONE_INDEX;
+    float4 BoneWeights : BONE_WEIGHT;
 };
 
 struct VertexInputInstancedStaticMesh
@@ -304,6 +331,8 @@ struct VertexInputParticleSprite
 #define VertexInput VertexInputInstancedStaticMesh
 #elif STATICMESH
 #define VertexInput VertexInputStaticMesh
+#elif SKELETALMESH
+#define VertexInput VertexInputSkeletalMesh
 #elif PARTICLE_MESH
 #define VertexInput VertexInputParticleMesh
 #elif PARTICLE_SPRITE

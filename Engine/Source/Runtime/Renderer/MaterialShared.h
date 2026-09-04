@@ -109,6 +109,7 @@ namespace Drn
 
 		static VertexFactoryType* StaticMesh;
 		static VertexFactoryType* InstancedStaticMesh;
+		static VertexFactoryType* SkeletalMesh;
 		static VertexFactoryType* Decal;
 		static VertexFactoryType* ParticleMesh;
 		static VertexFactoryType* ParticleSprite;
@@ -177,6 +178,7 @@ namespace Drn
 
 				uint32 bIsUsedWithParticleMesh : 1;
 				uint32 bIsUsedWithParticleSprite : 1;
+				uint32 bIsUsedWithSkeletalMesh : 1;
 			};
 		};
 

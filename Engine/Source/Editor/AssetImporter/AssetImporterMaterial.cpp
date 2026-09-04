@@ -25,6 +25,7 @@ namespace Drn
 		TwoSided,
 
 		VertexFactoryStaticMesh,
+		VertexFactorySkeletalMesh,
 		VertexFactoryInstancedStaticMesh,
 		VertexFactoryDecal,
 		VertexFactoryParticleMesh,
@@ -58,6 +59,7 @@ namespace Drn
 		{EMaterialShaderFlag::TwoSided							, "TWO_SIDED"},
 
 		{EMaterialShaderFlag::VertexFactoryStaticMesh			, "SUPPORT_STATICMESH"},
+		{EMaterialShaderFlag::VertexFactorySkeletalMesh			, "SUPPORT_SKELETALMESH"},
 		{EMaterialShaderFlag::VertexFactoryInstancedStaticMesh	, "SUPPORT_INSTANCED"},
 		{EMaterialShaderFlag::VertexFactoryDecal				, "SUPPORT_DECAL"},
 		{EMaterialShaderFlag::VertexFactoryParticleMesh			, "SUPPORT_PARTICLE_MESH"},
@@ -105,6 +107,11 @@ namespace Drn
 		else if (VertexFactory == VertexFactoryType::InstancedStaticMesh)
 		{
 			return EMaterialShaderFlag::VertexFactoryInstancedStaticMesh;
+		}
+
+		else if (VertexFactory == VertexFactoryType::SkeletalMesh)
+		{
+			return EMaterialShaderFlag::VertexFactorySkeletalMesh;
 		}
 
 		else if (VertexFactory == VertexFactoryType::Decal)
@@ -529,6 +536,7 @@ namespace Drn
 
 			MaterialAsset->ShaderParameters.bIsUsedWithStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryStaticMesh);
 			MaterialAsset->ShaderParameters.bIsUsedWithInstancedStaticMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryInstancedStaticMesh);
+			MaterialAsset->ShaderParameters.bIsUsedWithSkeletalMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactorySkeletalMesh);
 			MaterialAsset->ShaderParameters.bIsUsedWithDecal = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryDecal);
 			MaterialAsset->ShaderParameters.bIsUsedWithParticleMesh = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryParticleMesh);
 			MaterialAsset->ShaderParameters.bIsUsedWithParticleSprite = Flags.HasFlag(EMaterialShaderFlag::VertexFactoryParticleSprite);

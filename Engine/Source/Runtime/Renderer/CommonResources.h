@@ -394,6 +394,9 @@ namespace Drn
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_InstancedStaticMesh;
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_InstancedStaticMeshDefaultDepthOnly;
 
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_SkeletalMesh;
+		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_SkeletalMeshDepthOnly;
+
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleMesh;
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleMeshDepthOnly;
 		static TRefCountPtr<class VertexDeclaration> VertexDeclaration_ParticleSprite;

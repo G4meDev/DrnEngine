@@ -64,6 +64,9 @@ namespace Drn
 		bool HasUV4() const { return UV_4.size() > 0; }
 		const std::vector<Vector2Half>& GetUV4() const { return UV_4; }
 
+		const std::vector<uint8>& GetBoneIndices() const { return BoneIndices; }
+		const std::vector<FloatUnorm8>& GetBoneWeights() const { return BoneWeights; }
+
 	private:
 
 		uint64 VertexCount;

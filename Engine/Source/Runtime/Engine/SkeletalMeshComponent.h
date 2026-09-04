@@ -38,6 +38,8 @@ namespace Drn
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<MaterialInstance>& InMaterial);
 		void SetMaterial(uint16 MaterialIndex, TRefCountPtr<MaterialInstanceDynamic> InMaterial);
 
+		inline uint16 GetMaterialCount() const { return m_OverrideMaterials.size(); };
+
 		void RefreshOverrideMaterials();
 
 		void SetMinDrawDistance(float Value);

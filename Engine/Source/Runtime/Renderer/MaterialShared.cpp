@@ -10,6 +10,7 @@ namespace Drn
 	std::vector<VertexFactoryType*> VertexFactoryType::GlobalFactories;
 	VertexFactoryType* VertexFactoryType::StaticMesh = new VertexFactoryType("StaticMesh", L"STATICMESH=1", &CommonResources::Get()->VertexDeclaration_StaticMesh, &CommonResources::Get()->VertexDeclaration_Pos);
 	VertexFactoryType* VertexFactoryType::InstancedStaticMesh = new VertexFactoryType("InstancedStaticMesh", L"INSTANCED=1", &CommonResources::Get()->VertexDeclaration_InstancedStaticMesh, &CommonResources::Get()->VertexDeclaration_InstancedStaticMeshDefaultDepthOnly);
+	VertexFactoryType* VertexFactoryType::SkeletalMesh = new VertexFactoryType("SkeletalMesh", L"SKELETALMESH=1", &CommonResources::Get()->VertexDeclaration_SkeletalMesh, &CommonResources::Get()->VertexDeclaration_SkeletalMeshDepthOnly);
 	VertexFactoryType* VertexFactoryType::Decal = new VertexFactoryType("Decal", L"DECAL=1", &CommonResources::Get()->VertexDeclaration_Pos, nullptr);
 	VertexFactoryType* VertexFactoryType::ParticleMesh = new VertexFactoryType("ParticleMesh", L"PARTICLE_MESH=1", &CommonResources::Get()->VertexDeclaration_ParticleMesh, &CommonResources::Get()->VertexDeclaration_ParticleMeshDepthOnly);
 	VertexFactoryType* VertexFactoryType::ParticleSprite = new VertexFactoryType("ParticleSprite", L"PARTICLE_SPRITE=1", &CommonResources::Get()->VertexDeclaration_ParticleSprite, nullptr);
@@ -633,6 +634,7 @@ namespace Drn
 		bool bTwoSided = bIsTwoSided; ImGui::Checkbox("TwoSided", &bTwoSided);
 
 		bool bInstacedStaticMesh = bIsUsedWithInstancedStaticMesh; ImGui::Checkbox("Instanced Static Mesh", &bInstacedStaticMesh);
+		bool bSkeletalMesh = bIsUsedWithSkeletalMesh; ImGui::Checkbox("Skeletal Mesh", &bSkeletalMesh);
 	}
 #endif
 
