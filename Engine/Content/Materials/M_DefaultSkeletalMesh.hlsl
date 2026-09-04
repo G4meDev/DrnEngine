@@ -10,12 +10,13 @@
 // SUPPORT_PRE_PASS
 // SUPPORT_HIT_PROXY_PASS
 // SUPPORT_EDITOR_SELECTION_PASS
+// SUPPORT_SHADOW_PASS
 
 ConstantBuffer<StandardResources> BindlessResources : register(b0);
 
 struct ParametersBuffers
 {
-    SCALAR(BoneIndex, BoneIndex)
+    
 };
 
 //#define MAIN_PASS 1
@@ -25,6 +26,8 @@ struct VertexShaderOutput
 {
     float4 Position : SV_Position;
 #if MAIN_PASS
+    float3x3 TBN : TBN;
+    float2 UV0 : TEXCOORD0;
     float3 VertexColor : COLOR;
 #endif
     
@@ -50,19 +53,22 @@ VertexShaderOutput Main_VS(
     matrix LocalToWorld = Primitive.LocalToWorld;
     float4 WorldPosition = mul(LocalToWorld, float4(BlendedData.Position, 1.0f));
     
+#if SHADOW_PASS_POINTLIGHT
+    OUT.Position = WorldPosition;
+#elif SHADOW_PASS_SPOTLIGHT
+    ConstantBuffer<ShadowDepth> ShadowBuffer = ResourceDescriptorHeap[BindlessResources.ShadowDepthBuffer];
+    OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, WorldPosition);
+#else
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
+#endif
     
 #if MAIN_PASS
-    OUT.VertexColor = 0;
+    float3 WorldNormal = normalize(mul((float3x3)LocalToWorld, BlendedData.Normal));
+    float3 WorldTangent = normalize(mul((float3x3)LocalToWorld, BlendedData.Tangent));
+    OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
-    [unroll]
-    for (int i = 0; i < MAX_EFFECTIVE_BONES; i++)
-    {
-        if (IN.BoneIndices[i] == Parameters.BoneIndex)
-        {
-            OUT.VertexColor = IN.BoneWeights[i].xxx;
-        }
-    }
+    OUT.UV0 = IN.UV1;
+    OUT.VertexColor = IN.Color;
 #endif
     
 #if HITPROXY_PASS
@@ -88,6 +94,8 @@ struct PixelShaderInput
 {
     float4 Position : SV_Position;
 #if MAIN_PASS
+    float3x3 TBN : TBN;
+    float2 UV0 : TEXCOORD0;
     float3 VertexColor : COLOR;
 #endif
     
@@ -124,13 +132,23 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
-    OUT.ColorDeferred = float4(IN.VertexColor, 1);
-    OUT.BaseColor = float4(0, 0, 0, 1);
-    OUT.WorldNormal = EncodeNormal(float3(0, 1, 0));
-    OUT.Masks = float4(0, 0, 1, Uint8ToFloat(SHADING_MODEL_UNLIT));
+    float3 VertexNormal = IN.TBN[1];
+
+    float3 BaseColor = 1.0f;
+    float Roughness = 0.5f;
+
+    float3 Masks = float3(0, Roughness, 1.0f);
+    
+    float3 TangentNormal = float3(0, 1, 0);
+    float3 WorldNormal = normalize(mul(TangentNormal, IN.TBN));
+    
+    OUT.ColorDeferred = float4(0.0, 0.0, 0.0, 1);
+    OUT.BaseColor = float4(BaseColor, 1);
+    OUT.WorldNormal = EncodeNormal(WorldNormal);
+    OUT.Masks = float4(Masks, Uint8ToFloat(SHADING_MODEL_LIT));
     
 #elif HITPROXY_PASS
-    ConstantBuffer<PrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<SkeletalMeshPrimitiveBuffer> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     OUT.Guid = P.Guid;
     OUT.Guid[2] = IN.BoneIndex;
 #endif

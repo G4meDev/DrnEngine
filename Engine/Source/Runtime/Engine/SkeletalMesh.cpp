@@ -158,6 +158,11 @@ namespace Drn
 		Save();
 		Load();
 
+		if (GuiLayer)
+		{
+			GuiLayer->OnReimport();
+		}
+
 		MarkRenderStateDirty();
 	}
 

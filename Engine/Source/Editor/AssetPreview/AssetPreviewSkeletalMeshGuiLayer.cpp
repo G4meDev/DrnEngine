@@ -37,7 +37,7 @@ namespace Drn
 		PreviewWorld->SetEditorWorld();
 
 		PreviewMesh = PreviewWorld->SpawnActor<SkeletalMeshActor>();
-		PreviewMesh->GetMeshComponent()->SetSelectable(false);
+		//PreviewMesh->GetMeshComponent()->SetSelectable(false);
 		PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
 
 		m_SkyLight = PreviewWorld->SpawnActor<SkyLightActor>();
@@ -48,15 +48,13 @@ namespace Drn
 		m_DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>(PreviewWorld->GetScene());
+		m_ViewportPanel->OnSelectedNewComponent.Add( this, &AssetPreviewSkeletalMeshGuiLayer::OnSelectedNewComponent );
 
 		AssetHandle<Material> BoneWeightPreviewMaterial("Engine\\Content\\Materials\\M_SkeletalMeshWeightPreview.drn");
 		BoneWeightPreviewMaterial.Load();
 		BoneWeightMaterial = MaterialInstanceDynamic::Create(BoneWeightPreviewMaterial);
 
-		for (int32 MaterialIndex = 0; MaterialIndex < PreviewMesh->GetMeshComponent()->GetMaterialCount(); MaterialIndex++)
-		{
-			PreviewMesh->GetMeshComponent()->SetMaterial(MaterialIndex, BoneWeightMaterial);
-		}
+		OnReimport();
 	}
 
 	AssetPreviewSkeletalMeshGuiLayer::~AssetPreviewSkeletalMeshGuiLayer()
@@ -69,6 +67,23 @@ namespace Drn
 		}
 
 		m_OwningAsset->GuiLayer = nullptr;
+	}
+
+	void AssetPreviewSkeletalMeshGuiLayer::OnReimport()
+	{
+		for (int32 MaterialIndex = 0; MaterialIndex < PreviewMesh->GetMeshComponent()->GetMaterialCount(); MaterialIndex++)
+		{
+			PreviewMesh->GetMeshComponent()->SetMaterial(MaterialIndex, BoneWeightMaterial);
+		}
+		
+		SelectedBoneIndex = -1;
+
+		const int32 BoneCount = m_OwningAsset->Data.RefSkeleton.BonePose.size();
+		BonePreviewTransforms.resize(BoneCount);
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		{
+			BonePreviewTransforms[BoneIndex] = Transform::Identity;
+		}
 	}
 
 	void AssetPreviewSkeletalMeshGuiLayer::Draw( float DeltaTime )
@@ -354,6 +369,14 @@ namespace Drn
 		}
 	}
 
+	void AssetPreviewSkeletalMeshGuiLayer::OnSelectedNewComponent( const HitProxyData& Data )
+	{
+		if (Data.ActorID == PreviewMesh->GetUniqueID() && Data.ComponentID == PreviewMesh->GetMeshComponent()->GetUniqueID())
+		{
+			SelectedBoneIndex = Data.CustomA;
+		}
+	}
+
 	void AssetPreviewSkeletalMeshGuiLayer::DrawDebugs()
 	{
 		if (m_DrawNormals || m_DrawTangents || m_DrawBitTangents)
@@ -429,6 +452,6 @@ namespace Drn
 		
 	}
 
-}
+        }
 
 #endif

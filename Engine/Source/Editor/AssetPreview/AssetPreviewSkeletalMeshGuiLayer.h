@@ -7,6 +7,7 @@
 #include "Runtime/Renderer/ImGui/ImGuiLayer.h"
 #include "Editor/Misc/ViewportCameraInputHandler.h"
 
+
 namespace Drn
 {
 	class AssetPreviewStaticMesh;
@@ -21,6 +22,7 @@ namespace Drn
 		virtual void Draw( float DeltaTime ) override;
 
 		void SetCurrentFocus();
+		void OnReimport();
 
 	protected:
 
@@ -32,6 +34,8 @@ namespace Drn
 
 		void DrawSkeletonTree();
 		void DrawSkeletonTreeNode(int32 NodeIndex);
+
+		void OnSelectedNewComponent( const HitProxyData& Data );
 
 		void DrawDebugs();
 		float m_DebugLinesSize;
@@ -54,6 +58,7 @@ namespace Drn
 		std::unique_ptr<ViewportPanel> m_ViewportPanel;
 
 		TRefCountPtr<MaterialInstanceDynamic> BoneWeightMaterial;
+		std::vector<Transform> BonePreviewTransforms;
 
 		bool m_ShowSceneSetting;
 		bool m_ShowDetail;

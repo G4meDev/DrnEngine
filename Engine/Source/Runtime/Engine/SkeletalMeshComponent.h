@@ -64,6 +64,9 @@ namespace Drn
 
 		virtual void DrawEditorDefault() override;
 		virtual void DrawEditorSelected() override;
+
+		//virtual Transform GetGizmoTransform() const override;
+		//virtual void OnGizmoTransformChanged(const Transform& GizmoTransform, EGizmoSpace Space) override;
 #endif
 
 	protected:
