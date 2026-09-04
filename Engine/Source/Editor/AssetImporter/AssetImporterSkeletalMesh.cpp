@@ -61,28 +61,10 @@ namespace Drn
 
 	void AssetImporterSkeletalMesh::ProcessSkeleton( SkeletalMesh* MeshAsset, const aiScene* scene, ImportedSkeletalMeshData& BuildingData )
 	{
-		for (int i = 0; i < scene->mNumMeshes; i++)
-		{
-			aiMesh* Mesh = scene->mMeshes[i];
+		aiNode* RootNode = scene->mRootNode->FindNode("root");
+		drn_check(RootNode);
 
-			if (Mesh->HasBones())
-			{
-				for (int32 BoneIndex = 0; BoneIndex < Mesh->mNumBones; BoneIndex++)
-				{
-					if (!BuildingData.RefSkeleton.HasBone(Mesh->mBones[BoneIndex]->mName.C_Str()))
-					{
-						BuildingData.RefSkeleton.BoneInfo.push_back({});
-						BuildingData.RefSkeleton.BoneInfo.back().Name = Mesh->mBones[BoneIndex]->mName.C_Str();
-
-						Transform BoneTransform = A2Matrix(Mesh->mBones[BoneIndex]->mOffsetMatrix);
-						BoneTransform.SetLocation(BoneTransform.GetLocation() * MeshAsset->ImportScale);
-						BuildingData.RefSkeleton.BonePose.push_back(BoneTransform);
-					}
-				}
-			}
-		}
-
-		ProcessSkeleton(-1, scene->mRootNode, BuildingData);
+		ProcessSkeleton(MeshAsset, -1, RootNode, BuildingData);
 
 		ReferenceSkeleton OldSkeleton = BuildingData.RefSkeleton;
 
@@ -102,23 +84,34 @@ namespace Drn
 
 			std::iter_swap(BuildingData.RefSkeleton.BonePose.begin() + BoneIndex, BuildingData.RefSkeleton.BonePose.begin() + OldIndex);
 		}
+
+		for (int32 BoneIndex = 0; BoneIndex < BuildingData.RefSkeleton.BoneInfo.size(); BoneIndex++)
+		{
+			const int32 ParentIndex = BuildingData.RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+			if (ParentIndex != -1)
+			{
+				BuildingData.RefSkeleton.BonePose[BoneIndex] = BuildingData.RefSkeleton.BonePose[BoneIndex] * BuildingData.RefSkeleton.BonePose[ParentIndex];
+			}
+		}
+		for (int32 BoneIndex = 0; BoneIndex < BuildingData.RefSkeleton.BoneInfo.size(); BoneIndex++)
+		{
+			BuildingData.RefSkeleton.BonePose[BoneIndex] = Matrix(BuildingData.RefSkeleton.BonePose[BoneIndex]).Inverse();
+		}
 	}
 
-	void AssetImporterSkeletalMesh::ProcessSkeleton( int32 ParentIndex, const aiNode* node, ImportedSkeletalMeshData& BuildingData )
+	void AssetImporterSkeletalMesh::ProcessSkeleton( SkeletalMesh* MeshAsset, int32 ParentIndex, const aiNode* node, ImportedSkeletalMeshData& BuildingData )
 	{
 		auto& Bones = BuildingData.RefSkeleton.BoneInfo;
-		
-		int32 BoneIndex = -1;
-		auto It = std::find(Bones.begin(), Bones.end(), MeshBoneInfo(node->mName.C_Str(), -1));
-		if (It != Bones.end())
-		{
-			It->ParentIndex = ParentIndex;
-			BoneIndex = std::distance(Bones.begin(), It);
-		}
+
+		int32 BoneIndex = Bones.size();
+		Bones.push_back(MeshBoneInfo(node->mName.C_Str(), ParentIndex));
+		Transform BoneTransform = A2Matrix(node->mTransformation);
+		BoneTransform.SetLocation(BoneTransform.GetLocation() * MeshAsset->ImportScale);
+		BuildingData.RefSkeleton.BonePose.push_back(BoneTransform);
 
 		for (int32 i = 0; i < node->mNumChildren; i++)
 		{
-			ProcessSkeleton(BoneIndex, node->mChildren[i], BuildingData);
+			ProcessSkeleton(MeshAsset, BoneIndex, node->mChildren[i], BuildingData);
 		}
 	}
 

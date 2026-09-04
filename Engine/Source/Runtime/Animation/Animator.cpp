@@ -11,16 +11,7 @@ namespace Drn
 
 	void AnimatorReferencePose::Tick( float DeltaTime )
 	{
-		//if (OwningComponent && OwningComponent->GetMesh().IsValid())
-		//{
-		//	const int32 BoneCount = OwningComponent->GetMesh()->GetData().RefSkeleton.BoneInfo.size();
-		//	FinalBoneTransforms.resize(BoneCount);
-		//
-		//	for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
-		//	{
-		//		FinalBoneTransforms[BoneIndex] = Transform::Identity;
-		//	}
-		//}
+		
 	}
 
 	const Matrix& AnimatorReferencePose::GetFinalBoneMatrix(int32 BoneIndex) const

@@ -42,7 +42,7 @@ namespace Drn
 
 	private:
 		static void ProcessSkeleton(SkeletalMesh* MeshAsset, const aiScene *scene, ImportedSkeletalMeshData& BuildingData);
-		static void ProcessSkeleton(int32 ParentIndex, const aiNode *node, ImportedSkeletalMeshData& BuildingData);
+		static void ProcessSkeleton(SkeletalMesh* MeshAsset, int32 ParentIndex, const aiNode *node, ImportedSkeletalMeshData& BuildingData);
 		static void ProcessMesh(SkeletalMesh* MeshAsset, aiMesh* mesh, const aiScene *scene, ImportedSkeletalMeshData& BuildingData);
 		static void Build(SkeletalMesh* MeshAsset, ImportedSkeletalMeshData& BuildingData);
 	};
