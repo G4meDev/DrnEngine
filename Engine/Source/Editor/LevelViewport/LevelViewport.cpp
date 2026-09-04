@@ -102,6 +102,29 @@ namespace Drn
 		}
 	}
 
+	void LevelViewport::GetGizmoTransform( bool& bDrawGizmo, Transform& GizmoTransform )
+	{
+		SceneComponent* SceneComp = dynamic_cast<SceneComponent*>(m_SelectedComponent);
+
+		bDrawGizmo = !m_OwningWorld->IsInGameMode() && SceneComp && SceneComp->GetOwningActor() &&
+			!SceneComp->GetOwningActor()->IsMarkedPendingKill();
+
+		if (bDrawGizmo)
+		{
+			GizmoTransform = SceneComp->GetGizmoTransform();
+		}
+	}
+
+	void LevelViewport::OnGizmoTransformChanged( const Transform& GizmoTransform, EGizmoSpace GizmoSpace )
+	{
+		SceneComponent* SceneComp = dynamic_cast<SceneComponent*>(m_SelectedComponent);
+		
+		if (SceneComp)
+		{
+			SceneComp->OnGizmoTransformChanged(GizmoTransform, GizmoSpace);
+		}
+	}
+
 	void LevelViewport::OnRemovedActorsFromWorld( std::vector<Actor*> RemovedActors )
 	{
 		if (m_SelectedComponent)

@@ -24,6 +24,9 @@ namespace Drn
 		void OnSelectedNewComponent( const HitProxyData& Data );
 		Component* GetSelectedComponent() { return m_SelectedComponent; }
 
+		void GetGizmoTransform( bool& bDrawGizmo, Transform& GizmoTransform );
+		void OnGizmoTransformChanged( const Transform& GizmoTransform, EGizmoSpace GizmoSpace );
+
 		void OnRemovedActorsFromWorld( std::vector<Actor*> RemovedActors );
 
 	protected:

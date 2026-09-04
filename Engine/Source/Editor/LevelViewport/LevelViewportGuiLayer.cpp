@@ -22,6 +22,9 @@ namespace Drn
 		m_ViewportPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent );
 		m_ViewportPanel->GetSelectedComponentDel.Bind( InOwningLevelViewport, &LevelViewport::GetSelectedComponent );
 		m_ViewportPanel->HandleInputDel.Bind( this, &LevelViewportGuiLayer::HandleViewportInputs );
+
+		m_ViewportPanel->GetGizmoTransformDel.Bind( InOwningLevelViewport, &LevelViewport::GetGizmoTransform );
+		m_ViewportPanel->OnGizmoTransformChangedDel.Bind( InOwningLevelViewport, &LevelViewport::OnGizmoTransformChanged );
 		
 		m_WorldOutlinerPanel = std::make_unique<WorldOutlinerPanel>(WorldManager::Get()->GetMainWorld() );
 		m_WorldOutlinerPanel->OnSelectedNewComponent.Add( InOwningLevelViewport, &LevelViewport::OnSelectedNewComponent );
@@ -37,6 +40,8 @@ namespace Drn
 	LevelViewportGuiLayer::~LevelViewportGuiLayer()
 	{
 		m_ViewportPanel->OnSelectedNewComponent.Remove( this );
+		m_ViewportPanel->GetGizmoTransformDel.Unbind();
+		m_ViewportPanel->OnGizmoTransformChangedDel.Unbind();
 	}
 
 	void LevelViewportGuiLayer::Draw( float DeltaTime )

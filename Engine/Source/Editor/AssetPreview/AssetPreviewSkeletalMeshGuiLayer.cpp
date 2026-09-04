@@ -49,6 +49,8 @@ namespace Drn
 
 		m_ViewportPanel = std::make_unique<ViewportPanel>(PreviewWorld->GetScene());
 		m_ViewportPanel->OnSelectedNewComponent.Add( this, &AssetPreviewSkeletalMeshGuiLayer::OnSelectedNewComponent );
+		m_ViewportPanel->GetGizmoTransformDel.Bind( this, &AssetPreviewSkeletalMeshGuiLayer::GetGizmoTransform );
+		m_ViewportPanel->OnGizmoTransformChangedDel.Bind( this, &AssetPreviewSkeletalMeshGuiLayer::OnGizmoTransformChanged );
 
 		AssetHandle<Material> BoneWeightPreviewMaterial("Engine\\Content\\Materials\\M_SkeletalMeshWeightPreview.drn");
 		BoneWeightPreviewMaterial.Load();
@@ -60,6 +62,10 @@ namespace Drn
 	AssetPreviewSkeletalMeshGuiLayer::~AssetPreviewSkeletalMeshGuiLayer()
 	{
 		//LOG(LogSkeletalMeshPreview, Info, "closing %s", m_OwningAsset->m_Path.c_str());
+
+		m_ViewportPanel->OnSelectedNewComponent.Clear();
+		m_ViewportPanel->GetGizmoTransformDel.Unbind();
+		m_ViewportPanel->OnGizmoTransformChangedDel.Unbind();
 
 		if (PreviewWorld)
 		{
@@ -82,7 +88,13 @@ namespace Drn
 		BonePreviewTransforms.resize(BoneCount);
 		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
 		{
-			BonePreviewTransforms[BoneIndex] = Transform::Identity;
+			BonePreviewTransforms[BoneIndex] = Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[BoneIndex]).Inverse();
+			
+			const int32 ParentIndex = m_OwningAsset->Data.RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+			if (ParentIndex != -1)
+			{
+				BonePreviewTransforms[BoneIndex] = BonePreviewTransforms[BoneIndex].GetRelativeTransform(Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[ParentIndex]).Inverse());
+			}
 		}
 	}
 
@@ -315,7 +327,8 @@ namespace Drn
 		if (SelectedBoneIndex != -1)
 		{
 			ImGui::Text(m_OwningAsset->Data.RefSkeleton.BoneInfo[SelectedBoneIndex].Name.c_str());
-			m_OwningAsset->Data.RefSkeleton.BonePose[SelectedBoneIndex].Draw("Selected Bone");
+			//m_OwningAsset->Data.RefSkeleton.BonePose[SelectedBoneIndex].Draw("Selected Bone");
+			BonePreviewTransforms[SelectedBoneIndex].Draw("Selected Bone");
 		}
 	}
 
@@ -374,6 +387,40 @@ namespace Drn
 		if (Data.ActorID == PreviewMesh->GetUniqueID() && Data.ComponentID == PreviewMesh->GetMeshComponent()->GetUniqueID())
 		{
 			SelectedBoneIndex = Data.CustomA;
+		}
+	}
+
+	void AssetPreviewSkeletalMeshGuiLayer::GetGizmoTransform( bool& bDrawGizmo, Transform& GizmoTransform )
+	{
+		bDrawGizmo = SelectedBoneIndex != -1;
+		if (bDrawGizmo)
+		{
+			ReferenceSkeleton& RefSkeleton = m_OwningAsset->Data.RefSkeleton;
+
+			GizmoTransform = BonePreviewTransforms[SelectedBoneIndex];
+			int32 ParentIndex = RefSkeleton.BoneInfo[SelectedBoneIndex].ParentIndex;
+
+			while (ParentIndex != -1)
+			{
+				GizmoTransform = GizmoTransform * BonePreviewTransforms[ParentIndex];
+				ParentIndex = RefSkeleton.BoneInfo[ParentIndex].ParentIndex;
+			}
+		}
+	}
+
+	void AssetPreviewSkeletalMeshGuiLayer::OnGizmoTransformChanged( const Transform& GizmoTransform, EGizmoSpace GizmoSpace )
+	{
+		if (SelectedBoneIndex != -1)
+		{
+			const int32 ParentIndex = m_OwningAsset->Data.RefSkeleton.BoneInfo[SelectedBoneIndex].ParentIndex;
+			if (ParentIndex == -1)
+			{
+				BonePreviewTransforms[SelectedBoneIndex] = GizmoTransform;
+			}
+			else
+			{
+				BonePreviewTransforms[SelectedBoneIndex] = GizmoTransform.GetRelativeTransform(Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[ParentIndex]).Inverse());
+			}
 		}
 	}
 

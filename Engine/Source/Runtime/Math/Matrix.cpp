@@ -30,7 +30,7 @@ namespace Drn
 		XMStoreFloat4x4(&m_Matrix, XMMatrixSet
 		(
 			X.GetX(), X.GetY(), X.GetZ(), X.GetW(),
-			Y.GetX(), Y.GetY(), Y.GetZ(), X.GetW(),
+			Y.GetX(), Y.GetY(), Y.GetZ(), Y.GetW(),
 			Z.GetX(), Z.GetY(), Z.GetZ(), Z.GetW(),
 			W.GetX(), W.GetY(), W.GetZ(), W.GetW()
 		));

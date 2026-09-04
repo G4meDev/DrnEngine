@@ -37,6 +37,9 @@ namespace Drn
 
 		void OnSelectedNewComponent( const HitProxyData& Data );
 
+		void GetGizmoTransform( bool& bDrawGizmo, Transform& GizmoTransform );
+		void OnGizmoTransformChanged( const Transform& GizmoTransform, EGizmoSpace GizmoSpace );
+
 		void DrawDebugs();
 		float m_DebugLinesSize;
 

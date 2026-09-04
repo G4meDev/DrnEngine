@@ -74,7 +74,9 @@ namespace Drn
 						BuildingData.RefSkeleton.BoneInfo.push_back({});
 						BuildingData.RefSkeleton.BoneInfo.back().Name = Mesh->mBones[BoneIndex]->mName.C_Str();
 
-						BuildingData.RefSkeleton.BonePose.push_back(A2Matrix(Mesh->mBones[BoneIndex]->mOffsetMatrix));
+						Transform BoneTransform = A2Matrix(Mesh->mBones[BoneIndex]->mOffsetMatrix);
+						BoneTransform.SetLocation(BoneTransform.GetLocation() * MeshAsset->ImportScale);
+						BuildingData.RefSkeleton.BonePose.push_back(BoneTransform);
 					}
 				}
 			}

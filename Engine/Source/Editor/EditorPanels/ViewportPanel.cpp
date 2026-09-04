@@ -76,52 +76,102 @@ namespace Drn
 			SelectedSceneComponent = static_cast<SceneComponent*>(GetSelectedComponentDel.Execute());
 		}
 
-		if (!m_World->IsInGameMode() && SelectedSceneComponent && SelectedSceneComponent->GetOwningActor() &&
-			!SelectedSceneComponent->GetOwningActor()->IsMarkedPendingKill())
+		bool bDrawGizmo = false;
+		Transform GizmoTransform;
+
+		if (GetGizmoTransformDel.IsBound())
 		{
-			const ImVec2 RectMin = ImGui::GetItemRectMin();
-			const ImVec2 RectMax = ImGui::GetItemRectMax();
-
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(RectMin.x, RectMin.y, RectMax.x - RectMin.x, RectMax.y - RectMin.y);
-
-			float aspectRatio = (float) (m_SceneRenderer->GetViewportSize().X) / m_SceneRenderer->GetViewportSize().Y;
-		
-			XMMATRIX viewMatrix;
-			XMMATRIX projectionMatrix;
-		
-			ViewInfo VInfo = m_World->GetPlayerWorldView();
-
-			VInfo.AspectRatio = aspectRatio;
-			viewMatrix = VInfo.CalculateViewMatrix().Get();
-			projectionMatrix = VInfo.CalculateProjectionMatrix().Get();
-
-			XMFLOAT4X4 V;
-			XMStoreFloat4x4(&V, viewMatrix);
-
-			XMFLOAT4X4 P;
-			XMStoreFloat4x4(&P, projectionMatrix);
-
-			XMFLOAT4X4 M;
-			Matrix SceneComponentWorldTransform = SelectedSceneComponent->GetGizmoTransform();
-			XMStoreFloat4x4(&M, SceneComponentWorldTransform.Get());
-
-			XMFLOAT4X4 Iden;
-			XMStoreFloat4x4(&Iden, Matrix::MatrixIdentity.Get());
-
-			float Snap[3];
-			m_GizmoState.GetSnapValue(Snap);
-			ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], m_GizmoState.GetGuizmoSpace(), m_GizmoState.GetGuizmoMode(), &M.m[0][0],
-				nullptr, Snap[0] == 0 ? nullptr : Snap );
-
-			UsingGizmo = ImGuizmo::IsUsing();
-			if (UsingGizmo)
+			GetGizmoTransformDel.Execute(bDrawGizmo, GizmoTransform);
+			if (bDrawGizmo)
 			{
-				Transform SceneComponentWorldTransform = Transform( XMLoadFloat4x4(&M) );
-				SelectedSceneComponent->OnGizmoTransformChanged(SceneComponentWorldTransform, m_GizmoState.m_Space);
+				const ImVec2 RectMin = ImGui::GetItemRectMin();
+				const ImVec2 RectMax = ImGui::GetItemRectMax();
+				
+				ImGuizmo::SetOrthographic(false);
+				ImGuizmo::SetDrawlist();
+				ImGuizmo::SetRect(RectMin.x, RectMin.y, RectMax.x - RectMin.x, RectMax.y - RectMin.y);
+				
+				float aspectRatio = (float) (m_SceneRenderer->GetViewportSize().X) / m_SceneRenderer->GetViewportSize().Y;
+				
+				XMMATRIX viewMatrix;
+				XMMATRIX projectionMatrix;
+				
+				ViewInfo VInfo = m_World->GetPlayerWorldView();
+				
+				VInfo.AspectRatio = aspectRatio;
+				viewMatrix = VInfo.CalculateViewMatrix().Get();
+				projectionMatrix = VInfo.CalculateProjectionMatrix().Get();
+				
+				XMFLOAT4X4 V;
+				XMStoreFloat4x4(&V, viewMatrix);
+				
+				XMFLOAT4X4 P;
+				XMStoreFloat4x4(&P, projectionMatrix);
+				
+				XMFLOAT4X4 M;
+				Matrix GizmoWorldTransform = GizmoTransform;
+				XMStoreFloat4x4(&M, GizmoWorldTransform.Get());
+				
+				float Snap[3];
+				m_GizmoState.GetSnapValue(Snap);
+				ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], m_GizmoState.GetGuizmoSpace(), m_GizmoState.GetGuizmoMode(), &M.m[0][0],
+					nullptr, Snap[0] == 0 ? nullptr : Snap );
+				
+				UsingGizmo = ImGuizmo::IsUsing();
+				if (UsingGizmo)
+				{
+					Transform UpdatedGizmoWorldTransform = Transform( XMLoadFloat4x4(&M) );
+					if (OnGizmoTransformChangedDel.IsBound())
+					{
+						OnGizmoTransformChangedDel.Execute(UpdatedGizmoWorldTransform, m_GizmoState.m_Space);
+					}
+				}
 			}
 		}
+
+		//if (!m_World->IsInGameMode() && SelectedSceneComponent && SelectedSceneComponent->GetOwningActor() &&
+		//	!SelectedSceneComponent->GetOwningActor()->IsMarkedPendingKill())
+		//{
+		//	const ImVec2 RectMin = ImGui::GetItemRectMin();
+		//	const ImVec2 RectMax = ImGui::GetItemRectMax();
+		//
+		//	ImGuizmo::SetOrthographic(false);
+		//	ImGuizmo::SetDrawlist();
+		//	ImGuizmo::SetRect(RectMin.x, RectMin.y, RectMax.x - RectMin.x, RectMax.y - RectMin.y);
+		//
+		//	float aspectRatio = (float) (m_SceneRenderer->GetViewportSize().X) / m_SceneRenderer->GetViewportSize().Y;
+		//
+		//	XMMATRIX viewMatrix;
+		//	XMMATRIX projectionMatrix;
+		//
+		//	ViewInfo VInfo = m_World->GetPlayerWorldView();
+		//
+		//	VInfo.AspectRatio = aspectRatio;
+		//	viewMatrix = VInfo.CalculateViewMatrix().Get();
+		//	projectionMatrix = VInfo.CalculateProjectionMatrix().Get();
+		//
+		//	XMFLOAT4X4 V;
+		//	XMStoreFloat4x4(&V, viewMatrix);
+		//
+		//	XMFLOAT4X4 P;
+		//	XMStoreFloat4x4(&P, projectionMatrix);
+		//
+		//	XMFLOAT4X4 M;
+		//	Matrix SceneComponentWorldTransform = SelectedSceneComponent->GetGizmoTransform();
+		//	XMStoreFloat4x4(&M, SceneComponentWorldTransform.Get());
+		//
+		//	float Snap[3];
+		//	m_GizmoState.GetSnapValue(Snap);
+		//	ImGuizmo::Manipulate( &V.m[0][0], &P.m[0][0], m_GizmoState.GetGuizmoSpace(), m_GizmoState.GetGuizmoMode(), &M.m[0][0],
+		//		nullptr, Snap[0] == 0 ? nullptr : Snap );
+		//
+		//	UsingGizmo = ImGuizmo::IsUsing();
+		//	if (UsingGizmo)
+		//	{
+		//		Transform SceneComponentWorldTransform = Transform( XMLoadFloat4x4(&M) );
+		//		SelectedSceneComponent->OnGizmoTransformChanged(SceneComponentWorldTransform, m_GizmoState.m_Space);
+		//	}
+		//}
 
 		if ( ImGui::IsItemHovered() && OnSelectedNewComponent.IsBound())
 		{

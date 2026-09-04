@@ -14,6 +14,9 @@ namespace Drn
 	DECLARE_MULTICAST_DELEGATE_OneParam( OnSelectedNewComponentDelegate, const HitProxyData& );
 	DECLARE_DELEGATE_RetVal( Component*, GetSelectedComponentDelegate );
 
+	DECLARE_DELEGATE_TwoParams( GetGizmoTransformDelegate, bool&, Transform& );
+	DECLARE_DELEGATE_TwoParams( OnGizmoTransformChangedDelegate, const Transform&, Drn::EGizmoSpace );
+
 	class ViewportPanel
 	{
 	public:
@@ -29,6 +32,9 @@ namespace Drn
 
 		OnSelectedNewComponentDelegate OnSelectedNewComponent;
 		GetSelectedComponentDelegate GetSelectedComponentDel;
+
+		GetGizmoTransformDelegate GetGizmoTransformDel;
+		OnGizmoTransformChangedDelegate OnGizmoTransformChangedDel;
 
 	protected:
 
