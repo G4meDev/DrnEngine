@@ -17,6 +17,8 @@ namespace Drn
 		HitProxyData m_HitProxyData;
 
 		//Matrix BoneMatrices[MAX_BONES];
+		uint32 BoneMatricesIndex;
+		uint32 PreviousBoneMatricesIndex;
 	};
 
 	class SkeletalMeshSceneProxy : public PrimitiveSceneProxy
@@ -64,6 +66,9 @@ namespace Drn
 
 		PrimitiveData m_PrimitiveData;
 		TRefCountPtr<RenderUniformBuffer> PrimitiveBuffer;
+
+		TRefCountPtr<RenderUniformBuffer> BoneMatricesBuffer;
+		std::vector<Matrix> BoneMatrices;
 
 		bool bWasDirty;
 

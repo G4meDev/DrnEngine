@@ -41,6 +41,7 @@ namespace Drn
 		bool m_DrawBitTangents;
 
 		bool m_DrawBounds;
+		bool m_PreviewWeights;
 
 		int32 SelectedBoneIndex;
 

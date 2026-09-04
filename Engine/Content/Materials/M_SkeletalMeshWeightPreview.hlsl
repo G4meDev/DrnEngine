@@ -43,11 +43,15 @@ VertexShaderOutput Main_VS(
     VertexShaderOutput OUT;
 
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
-    ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<SkeletalMeshPrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     ConstantBuffer<ParametersBuffers> Parameters = ResourceDescriptorHeap[BindlessResources.ParametersBufferIndex];
     
+    ConstantBuffer<SkeletalMeshBoneData> Bones = ResourceDescriptorHeap[Primitive.BoneMatricesIndex];
+    
+    BoneBlendVertexData BlendedData = BoneBlendVertex(IN, Bones);
+    
     matrix LocalToWorld = Primitive.LocalToWorld;
-    float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f));
+    float4 WorldPosition = mul(LocalToWorld, float4(BlendedData.Position, 1.0f));
     
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
     

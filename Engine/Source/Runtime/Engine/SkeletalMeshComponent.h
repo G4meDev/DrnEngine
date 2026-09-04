@@ -37,6 +37,7 @@ namespace Drn
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<Material>& InMaterial);
 		void SetMaterial(uint16 MaterialIndex, AssetHandle<MaterialInstance>& InMaterial);
 		void SetMaterial(uint16 MaterialIndex, TRefCountPtr<MaterialInstanceDynamic> InMaterial);
+		void SetMaterialOverride(uint16 MaterialIndex, bool bOverride);
 
 		inline uint16 GetMaterialCount() const { return m_OverrideMaterials.size(); };
 

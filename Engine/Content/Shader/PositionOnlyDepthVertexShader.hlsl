@@ -35,6 +35,15 @@ VertexShaderOutput Main_VS(VertexInputPositionOnly IN)
     ConstantBuffer<ViewBuffer> View = ResourceDescriptorHeap[BindlessResources.ViewIndex];
     ConstantBuffer<Primitive> P = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
     
+    float3 LocalPosition = IN.Position;
+    
+#if SKELETALMESH
+    ConstantBuffer<SkeletalMeshPrimitiveBuffer> SkeletalPrimitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
+    ConstantBuffer<SkeletalMeshBoneData> Bones = ResourceDescriptorHeap[SkeletalPrimitive.BoneMatricesIndex];
+    BoneBlendVertexData BlendedData = BoneBlendVertex(IN, Bones);
+    LocalPosition = BlendedData.Position;
+#endif
+    
     matrix LocalToWorld;
 #if STATICMESH
     LocalToWorld = P.LocalToWorld;
@@ -46,7 +55,7 @@ VertexShaderOutput Main_VS(VertexInputPositionOnly IN)
     LocalToWorld = GetLocalToWorld(IN);
 #endif
     
-    float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f));
+    float4 WorldPosition = mul(LocalToWorld, float4(LocalPosition, 1.0f));
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
     
     return OUT;

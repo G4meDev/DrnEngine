@@ -178,6 +178,15 @@ namespace Drn
 		}
 	}
 
+	void SkeletalMeshComponent::SetMaterialOverride( uint16 MaterialIndex, bool bOverride )
+	{
+		if (MaterialIndex < m_OverrideMaterials.size())
+		{
+			m_OverrideMaterials[MaterialIndex].m_Overriden = bOverride;
+			MarkRenderStateDirty();
+		}
+	}
+
 #if WITH_EDITOR
 
 	void SkeletalMeshComponent::DrawDetailPanel( float DeltaTime )

@@ -23,6 +23,7 @@ namespace Drn
 		, m_DrawTangents(false)
 		, m_DrawBitTangents(false)
 		, m_DrawBounds(false)
+		, m_PreviewWeights(false)
 		, SelectedBoneIndex(-1)
 	{
 		//LOG(LogSkeletalMeshPreview, Info, "opening %s", InOwningAsset->m_Path.c_str());
@@ -75,6 +76,11 @@ namespace Drn
 		SCOPE_STAT();
 
 		BoneWeightMaterial->SetNamedScalar("BoneIndex", SelectedBoneIndex);
+
+		for (int32 MaterialIndex = 0; MaterialIndex < PreviewMesh->GetMeshComponent()->GetMaterialCount(); MaterialIndex++)
+		{
+			PreviewMesh->GetMeshComponent()->SetMaterialOverride(MaterialIndex, m_PreviewWeights);
+		}
 
 		std::string name = m_OwningAsset->m_Path;
 		name = Path::ConvertShortPath(name);
@@ -224,17 +230,17 @@ namespace Drn
 					AssetHandle<Asset> DropedMaterial(AssetPath);
 					EAssetType Type = DropedMaterial.LoadGeneric();
 					
-					//if (Type == EAssetType::Material)
-					//{
-					//	Mat.SetMaterial(AssetHandle<Material>(AssetPath));
-					//	PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
-					//}
-					//
-					//else if (Type == EAssetType::MaterialInstance)
-					//{
-					//	Mat.SetMaterial(AssetHandle<MaterialInstance>(AssetPath));
-					//	PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
-					//}
+					if (Type == EAssetType::Material)
+					{
+						Mat.SetMaterial(AssetHandle<Material>(AssetPath));
+						PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
+					}
+					
+					else if (Type == EAssetType::MaterialInstance)
+					{
+						Mat.SetMaterial(AssetHandle<MaterialInstance>(AssetPath));
+						PreviewMesh->GetMeshComponent()->MarkRenderStateDirty();
+					}
 				}
 
 				ImGui::EndDragDropTarget();
@@ -287,6 +293,8 @@ namespace Drn
 		}
 
 // ------------------------------------------------------------------------------------------------------
+
+		ImGui::Checkbox( "Preview Weights", &m_PreviewWeights);
 
 		ImGui::Separator();
 		if (SelectedBoneIndex != -1)

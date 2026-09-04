@@ -104,10 +104,20 @@ namespace Drn
 
 	void SkeletalMeshSceneProxy::UpdatePrimitiveBuffer(D3D12CommandList* CommandList)
 	{
+		const int32 BoneCount = m_Mesh->Data.RefSkeleton.BoneInfo.size();
+		BoneMatrices.resize(BoneCount);
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		{
+			BoneMatrices[BoneIndex] = Matrix::MatrixIdentity;
+		}
+		BoneMatricesBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(Matrix) * BoneCount, EUniformBufferUsage::MultiFrame, BoneMatrices.data());
+
 		// TODO: issue when proxy not begin rendered
 		m_PrimitiveData.m_PrevLocalToWorld = m_PrimitiveData.m_LocalToWorld;
 		m_PrimitiveData.m_LocalToWorld = Matrix(m_OwningSkeletalMeshComponent->GetWorldTransform()).Get();
 		m_PrimitiveData.m_HitProxyData = m_HitProxyData;
+
+		m_PrimitiveData.BoneMatricesIndex = BoneMatricesBuffer->GetViewIndex();
 		
 		PrimitiveBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(PrimitiveData), EUniformBufferUsage::MultiFrame, &m_PrimitiveData);
 	}

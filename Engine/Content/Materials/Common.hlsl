@@ -158,6 +158,20 @@ struct PrimitiveBuffer
     uint4 Guid;
 };
 
+struct SkeletalMeshPrimitiveBuffer
+{
+    matrix LocalToWorld;
+    matrix PrevLocalToWorld;
+    uint4 Guid;
+    
+    uint BoneMatricesIndex;
+};
+
+struct SkeletalMeshBoneData
+{
+    matrix Matrices[MAX_BONES];
+};
+
 struct ParticleSpriteBuffer
 {
     matrix SimulationToWorld;
@@ -1993,4 +2007,55 @@ float4 TextureSubuv(Texture2D Texture, SamplerState State, float2 Uv, float2 Sub
         
         return Sample1;
     }
+}
+
+struct BoneBlendVertexData
+{
+    float3 Position;
+    float3 Normal;
+    float3 Tangent;
+};
+
+BoneBlendVertexData BoneBlendVertex(VertexInputPositionOnlySkeletalMesh Input, SkeletalMeshBoneData Bones)
+{
+    BoneBlendVertexData Out;
+    Out.Position = 0;
+    Out.Normal = 0;
+    Out.Tangent = 0;
+    
+    [unroll]
+    for (int i = 0; i < MAX_EFFECTIVE_BONES; i++)
+    {
+        const float BoneWeight = Input.BoneWeights[i];
+        if (BoneWeight > 0.0f)
+        {
+            const uint BoneIndex = Input.BoneIndices[i];
+            Out.Position += mul(Bones.Matrices[BoneIndex], float4(Input.Position, 1.0f)).xyz * BoneWeight;
+        }
+    }
+    
+    return Out;
+}
+
+BoneBlendVertexData BoneBlendVertex(VertexInputSkeletalMesh Input, SkeletalMeshBoneData Bones)
+{
+    BoneBlendVertexData Out;
+    Out.Position = 0;
+    Out.Normal = 0;
+    Out.Tangent = 0;
+    
+    [unroll]
+    for (int i = 0; i < MAX_EFFECTIVE_BONES; i++)
+    {
+        const float BoneWeight = Input.BoneWeights[i];
+        if (BoneWeight > 0.0f)
+        {
+            const uint BoneIndex = Input.BoneIndices[i];
+            Out.Position += mul(Bones.Matrices[BoneIndex], float4(Input.Position, 1.0f)).xyz * BoneWeight;
+            Out.Normal += mul((float3x3) Bones.Matrices[BoneIndex], Input.Normal) * BoneWeight;
+            Out.Tangent += mul((float3x3) Bones.Matrices[BoneIndex], Input.Tangent) * BoneWeight;
+        }
+    }
+    
+    return Out;
 }
