@@ -274,6 +274,15 @@ namespace Drn
 		{
 			m_OwningAsset->NegativeBoundExtention = Vector(NegBound[0], NegBound[1], NegBound[2]);
 		}
+
+// ------------------------------------------------------------------------------------------------------
+
+		ImGui::Separator();
+		if (SelectedBoneIndex != -1)
+		{
+			ImGui::Text(m_OwningAsset->Data.RefSkeleton.BoneInfo[SelectedBoneIndex].Name.c_str());
+			m_OwningAsset->Data.RefSkeleton.BonePose[SelectedBoneIndex].Draw("Selected Bone");
+		}
 	}
 
 	void AssetPreviewSkeletalMeshGuiLayer::ShowSourceFileSelection()

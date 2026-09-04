@@ -37,6 +37,7 @@ namespace Drn
 		InstancedStaticMeshActor,
 		ScenePointCloudImporter,
 		Particle,
+		SkeletalMeshActor,
 	};
 
 	enum class EComponentType : uint32
@@ -52,6 +53,7 @@ namespace Drn
 		WheeledVehicleMovementComponent,
 		InstancedStaticMeshComponent,
 		ParticleSystemComponent,
+		SkeletalMeshComponent,
 	};
 
 	enum class ELightType : uint8

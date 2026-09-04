@@ -84,6 +84,7 @@ namespace Drn
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::WheeledVehiclePawn			, WheeledVehiclePawn );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::ScenePointCloudImporter	, ScenePointCloudImporter );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::Particle					, Particle );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::SkeletalMeshActor			, SkeletalMeshActor );
 
 		ParticleTypes::RegisterParticleModules();
 

@@ -104,6 +104,16 @@ namespace Drn
 		return EAssetType::SkeletalMesh;
 	}
 
+	MaterialSlot SkeletalMesh::GetMaterialAtIndex( uint32 Index )
+	{
+		if (Index >= 0 && Index < Data.Materials.size())
+		{
+			return Data.Materials[Index];
+		}
+
+		return MaterialSlot();
+	}
+
 #if WITH_EDITOR
 	void SkeletalMesh::Import()
 	{

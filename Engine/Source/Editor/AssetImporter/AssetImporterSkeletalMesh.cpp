@@ -15,6 +15,14 @@ LOG_DEFINE_CATEGORY( LogSkeletalMeshImporter, "SkeletalMeshImporter" );
 namespace Drn
 {
 	Vector A2Vector(const aiVector3D& InVector) { return Vector(InVector.x, InVector.y, InVector.z); }
+	Matrix A2Matrix(const aiMatrix4x4& InMatrix)
+	{
+		return Matrix(
+			Vector4(InMatrix.a1, InMatrix.a2, InMatrix.a3, InMatrix.a4),
+			Vector4(InMatrix.b1, InMatrix.b2, InMatrix.b3, InMatrix.b4),
+			Vector4(InMatrix.c1, InMatrix.c2, InMatrix.c3, InMatrix.c4),
+			Vector4(InMatrix.d1, InMatrix.d2, InMatrix.d3, InMatrix.d4)).GetTranspose();
+	}
 
 	void AssetImporterSkeletalMesh::Import( SkeletalMesh* MeshAsset, const std::string& Path )
 	{
@@ -65,9 +73,8 @@ namespace Drn
 					{
 						BuildingData.RefSkeleton.BoneInfo.push_back({});
 						BuildingData.RefSkeleton.BoneInfo.back().Name = Mesh->mBones[BoneIndex]->mName.C_Str();
-					
-						BuildingData.RefSkeleton.BonePose.push_back({});
-						//BuildingData.RefSkeleton.BonePose.back()
+
+						BuildingData.RefSkeleton.BonePose.push_back(A2Matrix(Mesh->mBones[BoneIndex]->mOffsetMatrix));
 					}
 				}
 			}

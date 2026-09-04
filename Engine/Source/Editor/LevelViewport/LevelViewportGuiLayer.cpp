@@ -322,6 +322,16 @@ namespace Drn
 			NewActor->SetActorLocation(WorldPosition);
 		}
 
+		else if (asset.IsValid() && Type == EAssetType::SkeletalMesh)
+		{
+			SkeletalMeshActor* NewActor = WorldManager::Get()->GetMainWorld()->SpawnActor<SkeletalMeshActor>();
+
+			AssetHandle<SkeletalMesh> MeshAsset(AssetPath);
+			MeshAsset.Load();
+			NewActor->GetMeshComponent()->SetMesh(MeshAsset);
+			NewActor->SetActorLocation(WorldPosition);
+		}
+
 		else if (asset.IsValid() && Type == EAssetType::ParticleSystem)
 		{
 			Particle* NewActor = WorldManager::Get()->GetMainWorld()->SpawnActor<Particle>();

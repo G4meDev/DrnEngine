@@ -93,6 +93,8 @@ namespace Drn
 		inline const BoxSphereBounds& GetBounds() const { return Bounds; }
 		inline BoxSphereBounds GetBounds() { return Bounds; }
 
+		MaterialSlot GetMaterialAtIndex(uint32 Index);
+
 	protected:
 
 #if WITH_EDITOR
@@ -128,6 +130,8 @@ namespace Drn
 		class AssetPreviewSkeletalMeshGuiLayer* GuiLayer = nullptr;
 #endif
 
+		friend class SkeletalMeshComponent;
+		friend class SkeletalMeshSceneProxy;
 		friend class AssetImporterSkeletalMesh;
 		friend class AssetPreviewSkeletalMeshGuiLayer;
 	};
