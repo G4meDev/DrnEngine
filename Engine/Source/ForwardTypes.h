@@ -94,6 +94,7 @@ namespace Drn
 	class StaticMeshComponent;
 	class InstancedStaticMeshComponent;
 	class StaticMesh;
+	class SkeletalMesh;
 	class Material;
 	class PipelineStateObject;
 	class Resource;

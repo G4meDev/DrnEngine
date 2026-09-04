@@ -40,12 +40,39 @@ namespace Drn
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
+	D3D12_INPUT_ELEMENT_DESC InputLayout::SkeletalMesh[11] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 1, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R8G8B8A8_SNORM, 2, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R8G8B8A8_SNORM, 3, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "BINORMAL", 0, DXGI_FORMAT_R8G8B8A8_SNORM, 4, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R16G16_FLOAT, 5, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R16G16_FLOAT, 6, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 2, DXGI_FORMAT_R16G16_FLOAT, 7, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 3, DXGI_FORMAT_R16G16_FLOAT, 8, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "BONE_INDEX", 0, DXGI_FORMAT_R8G8B8A8_UINT, 9, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "BONE_WEIGHT", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 10, D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	};
+
 	D3D12_INPUT_LAYOUT_DESC InputLayout::GetLayoutDescriptionForType( EInputLayoutType Type )
 	{
 		switch ( Type )
 		{
 		case EInputLayoutType::Position:			return { InputLayout::Position, _countof( InputLayout::Position) };
 		case EInputLayoutType::StandardMesh:		return { InputLayout::StaticMesh, _countof( InputLayout::StaticMesh) };
+		case EInputLayoutType::SkeletalMesh:		return { InputLayout::SkeletalMesh, _countof( InputLayout::SkeletalMesh) };
 		case EInputLayoutType::LineColorThickness:	return { InputLayout::LineColorThickness, _countof( InputLayout::LineColorThickness) };
 		default:									return { InputLayout::StaticMesh, _countof( InputLayout::StaticMesh) };
 		}
@@ -56,6 +83,7 @@ namespace Drn
 		switch ( Type )
 		{
 		case EInputLayoutType::StandardMesh:		return "StandardMesh";
+		case EInputLayoutType::SkeletalMesh:		return "SkeletalMesh";
 		case EInputLayoutType::LineColorThickness:	return "LineColorThickness";
 		default:									return "StandardMesh";
 		}

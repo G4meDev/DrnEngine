@@ -106,6 +106,78 @@ namespace Drn
 		Archive& operator<<(const BoxSphereBounds& Value);
 		Archive& operator>>(BoxSphereBounds& Value);
 
+		template<typename S, typename T>
+		Archive& operator<<(const std::vector<T>& Value)
+		{
+			static_assert(!std::numeric_limits<S>::is_signed);
+
+			constexpr uint64 ContaierSizeMax = std::numeric_limits<S>::max();
+
+			const uint64 Size = Value.size();
+			const bool bSizeOverflow = Size > ContaierSizeMax;
+			drn_check(!bSizeOverflow);
+
+			S ClampedSize = bSizeOverflow ? ContaierSizeMax : Size;
+			*this << ClampedSize;
+			for (S i = 0; i < ClampedSize; i++)
+			{
+				*this << Value[i];
+			}
+		
+			return *this;
+		}
+
+		template<typename S, typename T>
+		Archive& operator>>(std::vector<T>& Value)
+		{
+			static_assert(!std::numeric_limits<S>::is_signed);
+
+			S Size;
+			*this >> Size;
+			Value.resize(Size);
+		
+			for (S i = 0; i < Size; i++)
+			{
+				*this >> Value[i];
+			}
+		
+			return *this;
+		}
+
+		template<typename S, typename T>
+		void Serialize(std::vector<T>& Value)
+		{
+			static_assert(!std::numeric_limits<S>::is_signed);
+
+			if (IsLoading())
+			{
+				S Size;
+				*this >> Size;
+				Value.resize(Size);
+		
+				for (S i = 0; i < Size; i++)
+				{
+					Value[i].Serialize(*this);
+				}
+			}
+
+			else
+			{
+				constexpr uint64 ContaierSizeMax = std::numeric_limits<S>::max();
+
+				const uint64 Size = Value.size();
+				const bool bSizeOverflow = Size > ContaierSizeMax;
+				drn_check(!bSizeOverflow);
+
+				S ClampedSize = bSizeOverflow ? ContaierSizeMax : Size;
+				*this << ClampedSize;
+				for (S i = 0; i < ClampedSize; i++)
+				{
+					Value[i].Serialize(*this);
+				}
+			}
+		}
+
 	protected:
 		bool m_IsLoading;
 		uint8 m_ArchiveVersion;

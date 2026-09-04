@@ -8,6 +8,9 @@
 #define ECC_TO_BITFIELD( x ) ( 1 << ( x ) )
 #define CRC_TO_BITFIELD( x ) ( 1 << ( x ) )
 
+#define MAX_EFFECTIVE_BONES 4
+#define MAX_BONES 255
+
 namespace Drn
 {
 	class ParticleModule;

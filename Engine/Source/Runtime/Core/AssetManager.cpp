@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "AssetManager.h"
 
+#include "Editor/AssetImporter/MeshImporterHelper.h"
+
 LOG_DEFINE_CATEGORY( LogAssetManager, "AssetManager" )
 
 namespace Drn
@@ -71,7 +73,20 @@ namespace Drn
 		if ( FileExtension == ".obj" || FileExtension == ".fbx" || FileExtension == ".FBX" )
 		{
 			FormatSupported = true;
-			CreatedAsset    = std::shared_ptr<Asset>(new StaticMesh( AssetFilePath, SourceFile ) );
+
+			EMeshImporterPreviewFlags MeshFlags = MeshImporterHelper::PreviewMeshSource(SourceFile);
+			if (EnumHasAnyFlags(MeshFlags, EMeshImporterPreviewFlags::IsValidSource))
+			{
+				if (EnumHasAnyFlags(MeshFlags, EMeshImporterPreviewFlags::HasSkeletalMeshes))
+				{
+					CreatedAsset = std::shared_ptr<Asset>(new SkeletalMesh( AssetFilePath, SourceFile ));
+				}
+				
+				else
+				{
+					CreatedAsset = std::shared_ptr<Asset>(new StaticMesh( AssetFilePath, SourceFile ));
+				}
+			}
 		}
 
 		else if ( FileExtension == ".hlsl" )

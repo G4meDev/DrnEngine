@@ -19,7 +19,8 @@ namespace Drn
 		TextureCube,
 		MaterialInstance,
 		PhysicalMaterial,
-		ParticleSystem
+		ParticleSystem,
+		SkeletalMesh,
 	};
 
 	class Asset : public Serializable

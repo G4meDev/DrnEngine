@@ -10,6 +10,7 @@ namespace Drn
 		StandardMesh = 0,
 		LineColorThickness,
 		Position,
+		SkeletalMesh,
 
 		MAX_TYPE
 	};
@@ -142,6 +143,25 @@ namespace Drn
 		inline Vector GetBitTangent() { return Vector(BT_X, BT_Y, BT_Z); }
 	};
 
+	struct InputLayout_SkeletalMesh
+	{
+		InputLayout_SkeletalMesh() {}
+
+		//Vector Position;
+		//Vector4 Color;
+		//
+		//Vector Normal;
+		//Vector Tangent;
+		//
+		//Vector2 UV1;
+		//Vector2 UV2;
+		//Vector2 UV3;
+		//Vector2 UV4;
+		//
+		//uint32 BoneIndex[4];
+		//Vector4 BoneWeight;
+	};
+
 	class InputLayout
 	{
 	public:
@@ -149,6 +169,7 @@ namespace Drn
 		static D3D12_INPUT_ELEMENT_DESC Color[2];
 		static D3D12_INPUT_ELEMENT_DESC LineColorThickness[2];
 		static D3D12_INPUT_ELEMENT_DESC StaticMesh[9];
+		static D3D12_INPUT_ELEMENT_DESC SkeletalMesh[11];
 
 		static D3D12_INPUT_LAYOUT_DESC GetLayoutDescriptionForType(EInputLayoutType Type);
 		static std::string GetNameForType(EInputLayoutType Type);

@@ -7,6 +7,9 @@
 
 namespace Drn
 {
+	Vector4 Vector4::ZeroVector(0);
+	Vector4 Vector4::OneVector(1);
+
 #if WITH_EDITOR
 	bool Vector4::Draw( const std::string& id, const std::string& Label)
 	{

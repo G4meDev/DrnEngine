@@ -27,6 +27,9 @@ namespace Drn
 		bool Draw();
 #endif
 
+		static Vector4 ZeroVector;
+		static Vector4 OneVector;
+
 	private:
 		XMFLOAT4 m_Vector;
 

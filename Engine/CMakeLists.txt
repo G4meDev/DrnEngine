@@ -31,6 +31,10 @@ set( HEADER_FILES
 	Source/Runtime/Engine/StaticMeshComponent.h
 	Source/Runtime/Engine/StaticMesh.h
 	Source/Runtime/Engine/StaticMeshVertexData.h
+	Source/Runtime/Engine/SkeletalMesh.h
+	Source/Runtime/Engine/SkeletalMeshActor.h
+	Source/Runtime/Engine/SkeletalMeshComponent.h
+	Source/Runtime/Engine/SkeletalMeshVertexData.h
 	Source/Runtime/Engine/NamedProperty.h
 	Source/Runtime/Engine/NamedProperty.h
 	Source/Runtime/Engine/MeshTypes.h
@@ -99,6 +103,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/PipelineStateObject.h
 	Source/Runtime/Renderer/InputLayout.h
 	Source/Runtime/Renderer/StaticMeshSceneProxy.h
+	Source/Runtime/Renderer/SkeletalMeshSceneProxy.h
 	Source/Runtime/Renderer/D3D12Utils.h
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
@@ -255,6 +260,7 @@ set( HEADER_FILES
 	Source/Editor/StatsWindow/StatsWindowGuiLayer.h
 
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h
+	Source/Editor/AssetPreview/AssetPreviewSkeletalMeshGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewMaterialInstanceGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.h
@@ -262,7 +268,9 @@ set( HEADER_FILES
 	Source/Editor/AssetPreview/AssetPreviewPhysicalMaterialGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewParticleSystemGuiLayer.h
 
+	Source/Editor/AssetImporter/MeshImporterHelper.h
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.h
+	Source/Editor/AssetImporter/AssetImporterSkeletalMesh.h
 	Source/Editor/AssetImporter/AssetImporterMaterial.h
 	Source/Editor/AssetImporter/AssetImporterTexture.h
 
@@ -307,6 +315,10 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/StaticMeshComponent.cpp
 	Source/Runtime/Engine/StaticMesh.cpp
 	Source/Runtime/Engine/StaticMeshVertexData.cpp
+	Source/Runtime/Engine/SkeletalMesh.cpp
+	Source/Runtime/Engine/SkeletalMeshActor.cpp
+	Source/Runtime/Engine/SkeletalMeshComponent.cpp
+	Source/Runtime/Engine/SkeletalMeshVertexData.cpp
 	Source/Runtime/Engine/MeshTypes.cpp
 	Source/Runtime/Engine/NamedProperty.cpp
 	Source/Runtime/Engine/CameraComponent.cpp
@@ -374,6 +386,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/PipelineStateObject.cpp
 	Source/Runtime/Renderer/InputLayout.cpp
 	Source/Runtime/Renderer/StaticMeshSceneProxy.cpp
+	Source/Runtime/Renderer/SkeletalMeshSceneProxy.cpp
 	Source/Runtime/Renderer/D3D12Utils.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp
@@ -530,6 +543,7 @@ set( SOURCE_FILES
 	Source/Editor/Misc/TaskGraphVisualizer.cpp
 
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.cpp
+	Source/Editor/AssetPreview/AssetPreviewSkeletalMeshGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewMaterialInstanceGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.cpp
@@ -537,7 +551,9 @@ set( SOURCE_FILES
 	Source/Editor/AssetPreview/AssetPreviewPhysicalMaterialGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewParticleSystemGuiLayer.cpp
 
+	Source/Editor/AssetImporter/MeshImporterHelper.cpp
 	Source/Editor/AssetImporter/AssetImporterStaticMesh.cpp
+	Source/Editor/AssetImporter/AssetImporterSkeletalMesh.cpp
 	Source/Editor/AssetImporter/AssetImporterMaterial.cpp
 	Source/Editor/AssetImporter/AssetImporterTexture.cpp
 

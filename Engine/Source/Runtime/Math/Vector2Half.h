@@ -15,5 +15,8 @@ namespace Drn
 		inline Vector2Half(float InX, float InY) : X(InX), Y(InY) {}
 
 		//inline Vector2Half(const Vector2& InVector2) : X(InX), Y(InY) {}
+
+		static Vector2Half ZeroVector;
+		static Vector2Half OneVector;
 	};
 }

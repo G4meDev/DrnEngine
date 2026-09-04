@@ -149,6 +149,11 @@ namespace Drn
 				m_Asset = AssetManager::Get()->Load<ParticleSystem>(m_Path);
 			}
 
+			else if (Type == EAssetType::SkeletalMesh)
+			{
+				m_Asset = AssetManager::Get()->Load<SkeletalMesh>(m_Path);
+			}
+
 			else
 			{
 				drn_check(false);

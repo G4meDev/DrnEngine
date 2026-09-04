@@ -20,6 +20,7 @@
 #include "Runtime/Engine/StaticMesh.h"
 #include "Runtime/Engine/StaticMeshComponent.h"
 #include "Runtime/Engine/InstancedStaticMeshComponent.h"
+#include "Runtime/Engine/SkeletalMesh.h"
 #include "Runtime/Engine/CameraComponent.h"
 #include "Runtime/Engine/Component.h"
 #include "Runtime/Engine/SceneComponent.h"
