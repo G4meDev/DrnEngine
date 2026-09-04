@@ -29,6 +29,7 @@
 #include "Runtime/Engine/StaticMeshActor.h"
 #include "Runtime/Engine/InstancedStaticMesh.h"
 #include "Runtime/Engine/SkeletalMeshActor.h"
+#include "Runtime/Animation/Animator.h"
 #include "Runtime/Engine/CameraActor.h"
 #include "Runtime/Engine/PointLightActor.h"
 #include "Runtime/Engine/SpotLightActor.h"

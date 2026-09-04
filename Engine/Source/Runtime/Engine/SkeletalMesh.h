@@ -98,6 +98,8 @@ namespace Drn
 
 		MaterialSlot GetMaterialAtIndex(uint32 Index);
 
+		inline const SkeletalMeshData& GetData() const { return Data; }
+
 	protected:
 
 #if WITH_EDITOR

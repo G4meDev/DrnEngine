@@ -49,6 +49,8 @@ namespace Drn
 		//inline BodySetup* GetBodySetup() const { return Mesh.IsValid() ? Mesh->GetBodySetup() : nullptr; }
 		virtual BoxSphereBounds CalcBounds(const Transform& LocalToWorld) const override;
 
+		void SetAnimator( Animator* InAnimator );
+
 #if WITH_EDITOR
 
 		virtual void DrawDetailPanel(float DeltaTime) override;
@@ -70,6 +72,8 @@ namespace Drn
 #endif
 
 	protected:
+
+		TRefCountPtr<Animator> m_Animator;
 
 		AssetHandle<SkeletalMesh> Mesh;
 		SkeletalMeshSceneProxy* m_SkeletalMeshSceneProxy;

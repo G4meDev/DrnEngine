@@ -39,6 +39,7 @@ namespace Drn
 		PreviewMesh = PreviewWorld->SpawnActor<SkeletalMeshActor>();
 		//PreviewMesh->GetMeshComponent()->SetSelectable(false);
 		PreviewMesh->GetMeshComponent()->SetMesh(m_OwningAsset);
+		PreviewMesh->GetMeshComponent()->SetTickInEditor(true);
 
 		m_SkyLight = PreviewWorld->SpawnActor<SkyLightActor>();
 		m_SkyLight->SetIntensity(0.4f);
@@ -55,6 +56,9 @@ namespace Drn
 		AssetHandle<Material> BoneWeightPreviewMaterial("Engine\\Content\\Materials\\M_SkeletalMeshWeightPreview.drn");
 		BoneWeightPreviewMaterial.Load();
 		BoneWeightMaterial = MaterialInstanceDynamic::Create(BoneWeightPreviewMaterial);
+
+		TRefCountPtr<AnimatorSkeletalMeshPreview> NewAnimator = new AnimatorSkeletalMeshPreview(this);
+		PreviewMesh->GetMeshComponent()->SetAnimator(NewAnimator);
 
 		OnReimport();
 	}

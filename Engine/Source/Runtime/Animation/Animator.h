@@ -1,0 +1,47 @@
+#pragma once
+
+#include "ForwardTypes.h"
+
+namespace Drn
+{
+	class Animator : public RefCountedObject
+	{
+	public:
+		virtual void Tick(float DeltaTime);
+
+		virtual const Matrix& GetFinalBoneMatrix(int32 BoneIndex) const = 0;
+		virtual int32 GetBoneCount() const = 0;
+
+		inline void SetOwningComponent( SkeletalMeshComponent* InOwningComponent ) { OwningComponent = InOwningComponent; }
+
+	protected:
+		SkeletalMeshComponent* OwningComponent;
+	};
+
+	class AnimatorReferencePose : public Animator
+	{
+	public:
+		virtual void Tick(float DeltaTime) override;
+
+		virtual const Matrix& GetFinalBoneMatrix(int32 BoneIndex) const override;
+		virtual int32 GetBoneCount() const override;
+
+	};
+
+#if WITH_EDITOR
+	class AnimatorSkeletalMeshPreview : public Animator
+	{
+	public:
+		AnimatorSkeletalMeshPreview(class AssetPreviewSkeletalMeshGuiLayer* InPreview);
+
+		virtual void Tick(float DeltaTime) override;
+
+		virtual const Matrix& GetFinalBoneMatrix(int32 BoneIndex) const override;
+		virtual int32 GetBoneCount() const override;
+
+		class AssetPreviewSkeletalMeshGuiLayer* Preview;
+
+		std::vector<Transform> FinalBoneTranforms;
+	};
+#endif
+}

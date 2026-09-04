@@ -29,6 +29,11 @@ namespace Drn
 	void SkeletalMeshComponent::Tick( float DeltaTime )
 	{
 		PrimitiveComponent::Tick(DeltaTime);
+
+		if (m_Animator)
+		{
+			m_Animator->Tick(DeltaTime);
+		}
 	}
 
 	void SkeletalMeshComponent::SetMesh( const AssetHandle<SkeletalMesh>& InHandle )
@@ -399,6 +404,22 @@ namespace Drn
 		}
 
 		return PrimitiveComponent::CalcBounds(LocalToWorld);
+	}
+
+	void SkeletalMeshComponent::SetAnimator( Animator* InAnimator )
+	{
+		if (m_Animator != InAnimator)
+		{
+			if (m_Animator)
+			{
+				m_Animator->SetOwningComponent(nullptr);
+			}
+			m_Animator = InAnimator;
+			if (m_Animator)
+			{
+				m_Animator->SetOwningComponent(this);
+			}
+		}
 	}
 
         }  // namespace Drn

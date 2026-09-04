@@ -168,6 +168,8 @@ set( HEADER_FILES
 	Source/Runtime/Particle/ParticleDistributionFloat.h
 	Source/Runtime/Particle/ParticleDistributionVector.h
 
+	Source/Runtime/Animation/Animator.h
+
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
 	Source/Runtime/Components/PointLightComponent.h
@@ -450,6 +452,8 @@ set( SOURCE_FILES
 	Source/Runtime/Particle/Particle.cpp
 	Source/Runtime/Particle/ParticleDistributionFloat.cpp
 	Source/Runtime/Particle/ParticleDistributionVector.cpp
+
+	Source/Runtime/Animation/Animator.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

@@ -66,6 +66,8 @@ namespace Drn
 		bool m_ShowSceneSetting;
 		bool m_ShowDetail;
 
+		friend class AnimatorSkeletalMeshPreview;
+
 	private:
 		
 	};
