@@ -15,6 +15,7 @@ LOG_DEFINE_CATEGORY( LogSkeletalMeshImporter, "SkeletalMeshImporter" );
 namespace Drn
 {
 	Vector A2Vector(const aiVector3D& InVector) { return Vector(InVector.x, InVector.y, InVector.z); }
+	Quat A2Quat(const aiQuaternion& InQuat) { return Quat(InQuat.x, InQuat.y, InQuat.z, InQuat.w); }
 	Matrix A2Matrix(const aiMatrix4x4& InMatrix)
 	{
 		return Matrix(
@@ -320,6 +321,121 @@ namespace Drn
 
 		MaterialsData.push_back( InMaterial );
 		return MaterialsData.size() - 1;
+	}
+
+// ----------------------------------------------------------------------------------------------------------------
+
+	void AssetImporterSkeletalMesh::ImportAnimation( AnimationSequence* AnimationAsset, SkeletalMesh* MeshAsset, const std::string& Path )
+	{
+		if (!FileSystem::FileExists(Path))
+		{
+			LOG(LogSkeletalMeshImporter, Error, "source not found.\n importing failed.");
+			return;
+		}
+
+		Assimp::Importer importer;
+		//const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
+		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_LimitBoneWeights | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded );
+
+		//if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
+		if(!scene || !scene->mRootNode) 
+		{
+			LOG(LogSkeletalMeshImporter, Error, "%s\nimporting failed.", importer.GetErrorString());
+			return;
+		}
+
+		drn_check(scene->mNumAnimations == 1);
+		aiAnimation* Animation = scene->mAnimations[0];
+
+		AnimationData& AnimData = AnimationAsset->Data;
+		ReferenceSkeleton& RefSkeleton = MeshAsset->Data.RefSkeleton;
+
+		const float TicksPerSecond = Animation->mTicksPerSecond;
+		AnimData.Length = Animation->mDuration / TicksPerSecond;
+		const int32 NumFrames = TicksPerSecond * AnimData.Length + 1;
+
+		AnimData.KeyFrames.resize(NumFrames);
+		for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
+		{
+			AnimData.KeyFrames[FrameNumer].BonePose.resize(RefSkeleton.BoneInfo.size());
+		}
+
+		int32 KeyIndex1; int32 KeyIndex2; float Alpha;
+		for (int32 ChannelIndex = 0; ChannelIndex < Animation->mNumChannels; ChannelIndex++)
+		{
+			aiNodeAnim* Channel = Animation->mChannels[ChannelIndex];
+			const int32 BoneIndex = RefSkeleton.FindBone(Channel->mNodeName.C_Str());
+
+			for (int32 PositionKeyIndex = 0; PositionKeyIndex < Channel->mNumPositionKeys; PositionKeyIndex++)
+			{
+				AnimationRuntime::GetFrameIndicesFromTime(KeyIndex1, KeyIndex2, Alpha, Channel->mPositionKeys[PositionKeyIndex].mTime / TicksPerSecond, NumFrames, AnimData.Length);
+
+				const int32 NumKeys = NumFrames - 1;
+				const float KeyPos = ((float)NumKeys * Channel->mPositionKeys[PositionKeyIndex].mTime / TicksPerSecond) / AnimData.Length;
+				const int32 KeyIndex1 = std::clamp<int32>( std::round(KeyPos), 0, NumFrames-1 );
+
+				std::cout << KeyIndex1 << "\t" << Channel->mPositionKeys[PositionKeyIndex].mTime << "\n";
+
+				//AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetLocation(A2Vector(Channel->mPositionKeys[PositionKeyIndex].mValue) * MeshAsset->ImportScale);
+				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetLocation(A2Vector(Channel->mPositionKeys[PositionKeyIndex].mValue) * 0.1f);
+			}
+
+			for (int32 RotationKeyIndex = 0; RotationKeyIndex < Channel->mNumRotationKeys; RotationKeyIndex++)
+			{
+				AnimationRuntime::GetFrameIndicesFromTime(KeyIndex1, KeyIndex2, Alpha, Channel->mRotationKeys[RotationKeyIndex].mTime / TicksPerSecond, NumFrames, AnimData.Length);
+				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetRotation(A2Quat(Channel->mRotationKeys[RotationKeyIndex].mValue));
+			}
+
+			for (int32 ScaleKeyIndex = 0; ScaleKeyIndex < Channel->mNumScalingKeys; ScaleKeyIndex++)
+			{
+				AnimationRuntime::GetFrameIndicesFromTime(KeyIndex1, KeyIndex2, Alpha, Channel->mScalingKeys[ScaleKeyIndex].mTime / TicksPerSecond, NumFrames, AnimData.Length);
+				//AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetScale(A2Vector(Channel->mScalingKeys[ScaleKeyIndex].mValue));
+				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetScale(Vector::OneVector);
+			}
+		}
+
+		// reintroduce import scale
+		//{
+		//	AnimationData WorldTransforms = AnimData;
+		//	const int32 BoneCount = RefSkeleton.BoneInfo.size();
+		//
+		//	for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
+		//	{
+		//		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		//		{
+		//			const int32 ParentIndex = RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+		//
+		//			if (ParentIndex != -1)
+		//			{
+		//				//WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex] = WorldTransforms.KeyFrames[FrameNumer].BonePose[ParentIndex] * WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex];
+		//				WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex] = WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex] * WorldTransforms.KeyFrames[FrameNumer].BonePose[ParentIndex];
+		//			}
+		//		}
+		//	}
+		//
+		//	for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
+		//	{
+		//		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		//		{
+		//			WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex].SetLocation(WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex].GetLocation() * MeshAsset->ImportScale);
+		//		}
+		//	}
+		//
+		//	for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
+		//	{
+		//		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		//		{
+		//			const int32 ParentIndex = RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+		//	
+		//			if (ParentIndex != -1)
+		//			{
+		//				AnimData.KeyFrames[FrameNumer].BonePose[BoneIndex] =
+		//					WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex].GetRelativeTransform(WorldTransforms.KeyFrames[FrameNumer].BonePose[ParentIndex]);
+		//			}
+		//		}
+		//	}
+		//}
+
 	}
 
         }

@@ -58,6 +58,8 @@ namespace Drn
 
 		Vector GetSafeScaleReciprocal( const Vector& InScale ) const;
 
+		static Transform Blend(const Transform& T1, const Transform& T2, float Alpha);
+
 		inline std::string ToString()
 		{
 			std::stringstream ss;

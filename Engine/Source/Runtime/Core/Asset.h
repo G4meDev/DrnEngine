@@ -21,6 +21,7 @@ namespace Drn
 		PhysicalMaterial,
 		ParticleSystem,
 		SkeletalMesh,
+		AnimationSequence,
 	};
 
 	class Asset : public Serializable

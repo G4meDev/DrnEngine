@@ -13,6 +13,8 @@
 #include "Editor/FileImportMenu/FileImportMenu.h"
 #include "Editor/EditorPanels/ViewportPanel.h"
 
+#include "Editor/ContentBrowser/ContentBrowser.h"
+
 namespace Drn
 {
 	AssetPreviewSkeletalMeshGuiLayer::AssetPreviewSkeletalMeshGuiLayer(SkeletalMesh* InOwningAsset)
@@ -233,6 +235,11 @@ namespace Drn
 			ShowSourceFileSelection();
 		}
 
+		if (ImGui::Button("import animation"))
+		{
+			ShowAnimationFileSelection();
+		}
+
 		ImGui::Separator();
 
 		uint64 VertexCount = 0;
@@ -349,6 +356,25 @@ namespace Drn
 		m_OwningAsset->Import();
 	}
 
+	void AssetPreviewSkeletalMeshGuiLayer::ShowAnimationFileSelection()
+	{
+		Editor::Get()->OpenImportMenu(
+			"Select animation file", FileImportMenu::FileFilter_Model(),
+			std::bind( &AssetPreviewSkeletalMeshGuiLayer::OnSelectedAnimationFile, this, std::placeholders::_1 ) );
+	}
+
+	void AssetPreviewSkeletalMeshGuiLayer::OnSelectedAnimationFile( std::string FilePath )
+	{
+		AssetImportUserData UserData;
+		UserData.AssetType = EAssetType::AnimationSequence;
+		UserData.UserData << m_OwningAsset.GetPath();
+		UserData.UserData.Seek(0);
+
+		AssetManager::Get()->Create(FilePath, ContentBrowser::Get()->GetSelectedFolderPath(), UserData);
+
+		ContentBrowser::Get()->Refresh();
+	}
+
 	void AssetPreviewSkeletalMeshGuiLayer::DrawSkeletonTree()
 	{
 		DrawSkeletonTreeNode(0);
@@ -416,14 +442,25 @@ namespace Drn
 	{
 		if (SelectedBoneIndex != -1)
 		{
-			const int32 ParentIndex = m_OwningAsset->Data.RefSkeleton.BoneInfo[SelectedBoneIndex].ParentIndex;
+			ReferenceSkeleton& RefSkeleton = m_OwningAsset->Data.RefSkeleton;
+			int32 ParentIndex = m_OwningAsset->Data.RefSkeleton.BoneInfo[SelectedBoneIndex].ParentIndex;
+
 			if (ParentIndex == -1)
 			{
 				BonePreviewTransforms[SelectedBoneIndex] = GizmoTransform;
 			}
 			else
 			{
-				BonePreviewTransforms[SelectedBoneIndex] = GizmoTransform.GetRelativeTransform(Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[ParentIndex]).Inverse());
+				Transform ParentWorldTransform = Transform::Identity;
+
+				while (ParentIndex != -1)
+				{
+					ParentWorldTransform = ParentWorldTransform * BonePreviewTransforms[ParentIndex];
+					ParentIndex = RefSkeleton.BoneInfo[ParentIndex].ParentIndex;
+				}
+
+				BonePreviewTransforms[SelectedBoneIndex] = GizmoTransform.GetRelativeTransform(ParentWorldTransform);
+				//BonePreviewTransforms[SelectedBoneIndex] = GizmoTransform.GetRelativeTransform(Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[ParentIndex]).Inverse());
 			}
 		}
 	}

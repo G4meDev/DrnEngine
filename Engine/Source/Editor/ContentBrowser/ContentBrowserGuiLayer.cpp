@@ -487,8 +487,9 @@ namespace Drn
 			LOG( LogContentBrowser, Error, "there is no folder selected in content browser for imprting file. ");
 			return;
 		}
-		
-		AssetManager::Get()->Create( FilePath, SelectedFolder->File.m_FullPath );
+
+		AssetImportUserData UserData;
+		AssetManager::Get()->Create( FilePath, SelectedFolder->File.m_FullPath, UserData);
 		OnRefresh();
 	}
 

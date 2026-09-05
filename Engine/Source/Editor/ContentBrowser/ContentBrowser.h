@@ -20,6 +20,9 @@ namespace Drn
 
 		static ContentBrowser* Get();
 
+		std::string GetSelectedFolderPath();
+		void Refresh();
+
 		//std::string GetSelectedFilePath();
 
 	protected:

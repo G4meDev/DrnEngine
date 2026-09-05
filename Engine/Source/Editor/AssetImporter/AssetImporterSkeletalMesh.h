@@ -40,6 +40,8 @@ namespace Drn
 	public:
 		static void Import(SkeletalMesh* MeshAsset, const std::string& Path);
 
+		static void ImportAnimation(AnimationSequence* AnimationAsset, SkeletalMesh* MeshAsset, const std::string& Path);
+
 	private:
 		static void ProcessSkeleton(SkeletalMesh* MeshAsset, const aiScene *scene, ImportedSkeletalMeshData& BuildingData);
 		static void ProcessSkeleton(SkeletalMesh* MeshAsset, int32 ParentIndex, const aiNode *node, ImportedSkeletalMeshData& BuildingData);

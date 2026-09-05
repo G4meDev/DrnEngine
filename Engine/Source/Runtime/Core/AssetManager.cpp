@@ -42,7 +42,7 @@ namespace Drn
 	}
 
 #if WITH_EDITOR
-	void AssetManager::Create( const std::string& SourceFile, const std::string& TargetFolder )
+	void AssetManager::Create( const std::string& SourceFile, const std::string& TargetFolder, AssetImportUserData& UserData )
 	{
 		std::string TargetFolderFullPath = Path::ConvertProjectPath(TargetFolder);
 
@@ -70,7 +70,16 @@ namespace Drn
 		std::shared_ptr<Asset> CreatedAsset;
 		bool                          FormatSupported = false;
 
-		if ( FileExtension == ".obj" || FileExtension == ".fbx" || FileExtension == ".FBX" )
+		if (UserData.AssetType == EAssetType::AnimationSequence)
+		{
+			if (FileExtension == ".obj" || FileExtension == ".fbx" || FileExtension == ".FBX")
+			{
+				FormatSupported = true;
+				CreatedAsset = std::shared_ptr<Asset>(new AnimationSequence( AssetFilePath, SourceFile, UserData ));
+			}
+		}
+
+		else if ( FileExtension == ".obj" || FileExtension == ".fbx" || FileExtension == ".FBX" )
 		{
 			FormatSupported = true;
 

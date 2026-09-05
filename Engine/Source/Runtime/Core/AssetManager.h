@@ -18,6 +18,17 @@ namespace Drn
 	class AssetManager;
 	class MaterialInstance;
 
+	struct AssetImportUserData
+	{
+		AssetImportUserData()
+			: AssetType(EAssetType::Undefined)
+			, UserData(10)
+		{}
+
+		EAssetType AssetType;
+		BufferArchive UserData;
+	};
+
 	template<typename T>
 	struct AssetHandle
 	{
@@ -154,6 +165,11 @@ namespace Drn
 				m_Asset = AssetManager::Get()->Load<SkeletalMesh>(m_Path);
 			}
 
+			else if (Type == EAssetType::AnimationSequence)
+			{
+				m_Asset = AssetManager::Get()->Load<AnimationSequence>(m_Path);
+			}
+
 			else
 			{
 				drn_check(false);
@@ -238,7 +254,7 @@ namespace Drn
 
 #if WITH_EDITOR
 
-		void Create(const std::string& SourceFile, const std::string& TargetFolder);
+		void Create(const std::string& SourceFile, const std::string& TargetFolder, AssetImportUserData& UserData);
 
 		template <typename T>
 		void Create(const std::string& TargetFolder, const std::string& AssetNamePrefix, int Unused);

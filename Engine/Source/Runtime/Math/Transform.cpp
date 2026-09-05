@@ -5,6 +5,8 @@
 
 namespace Drn
 {
+	#define ZERO_ANIMWEIGHT_THRESH ( 0.00001f )
+
 	Transform Transform::Identity = Transform( XMMatrixIdentity() );
 
 	Transform::Transform( const Matrix& InMatrix )
@@ -110,6 +112,26 @@ namespace Drn
 		SafeReciprocalScale = XMVectorSelect( ReciprocalScale, XMVectorZero(), ScaleZeroMask );
 
 		return SafeReciprocalScale;
+	}
+
+	Transform Transform::Blend( const Transform& T1, const Transform& T2, float Alpha )
+	{
+		if( std::abs(Alpha) <= ZERO_ANIMWEIGHT_THRESH )
+		{
+			return T1;
+		}
+		else if( std::abs(Alpha - 1.0f) <= ZERO_ANIMWEIGHT_THRESH )
+		{
+			return T2;
+		}
+		else
+		{
+			return Transform(
+				Vector::Lerp(T1.GetLocation(), T2.GetLocation(), Alpha),
+				Quat::Slerp(T1.GetRotation(), T2.GetRotation(), Alpha),
+				Vector::Lerp(T1.GetScale(), T2.GetScale(), Alpha)
+				);
+		}
 	}
 
 #if WITH_EDITOR

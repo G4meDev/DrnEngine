@@ -97,6 +97,7 @@ namespace Drn
 	class SkeletalMesh;
 	class SkeletalMeshComponent;
 	class Animator;
+	class AnimationSequence;
 	class Material;
 	class PipelineStateObject;
 	class Resource;

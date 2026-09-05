@@ -43,5 +43,22 @@ namespace Drn
 
 		std::vector<Transform> FinalBoneTranforms;
 	};
+
+	class AnimatorAnimationSequencePreview : public Animator
+	{
+	public:
+		AnimatorAnimationSequencePreview(class AssetPreviewAnimationSequenceGuiLayer* InPreview);
+
+		virtual void Tick(float DeltaTime) override;
+
+		virtual const Matrix& GetFinalBoneMatrix(int32 BoneIndex) const override;
+		virtual int32 GetBoneCount() const override;
+
+		class AssetPreviewAnimationSequenceGuiLayer* Preview;
+
+		std::vector<Transform> FinalBoneTranforms;
+
+		float AnimTime;
+	};
 #endif
 }

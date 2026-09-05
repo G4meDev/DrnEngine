@@ -2,6 +2,7 @@
 #include "Animator.h"
 
 #include "Editor/AssetPreview/AssetPreviewSkeletalMeshGuiLayer.h"
+#include "Editor/AssetPreview/AssetPreviewAnimationSequenceGuiLayer.h"
 
 namespace Drn
 {
@@ -80,6 +81,77 @@ namespace Drn
 	{
 		return FinalBoneTranforms.size();
 	}
-#endif
 
+// -----------------------------------------------------------------------------------
+
+	AnimatorAnimationSequencePreview::AnimatorAnimationSequencePreview(AssetPreviewAnimationSequenceGuiLayer* InPreview )
+		: AnimTime(0.0f)
+	{
+		Preview = InPreview;
+	}
+
+	void AnimatorAnimationSequencePreview::Tick( float DeltaTime )
+	{
+		OwningComponent->MarkRenderStateDirty();
+
+		AnimationData& AnimData = Preview->m_OwningAsset->Data;
+		const ReferenceSkeleton& RefSkeleton = Preview->m_OwningAsset->OwningSkeleton->GetData().RefSkeleton;
+
+		AnimTime = std::fmod(AnimTime + DeltaTime * 0.1, AnimData.Length);
+
+		int32 FrameIndex1; int32 FrameIndex2; float Alpha;
+		AnimationRuntime::GetFrameIndicesFromTime(FrameIndex1, FrameIndex2, Alpha, AnimTime, Preview->m_OwningAsset->GetNumFrames(), AnimData.Length);
+
+		if (Preview->DisplayFrameNumber >= 0)
+		{
+			FrameIndex1 = std::clamp<int32>(Preview->DisplayFrameNumber, 0, Preview->m_OwningAsset->GetNumFrames() - 1);
+			Alpha = 0.0f;
+		}
+
+		//FrameIndex1 = 0;
+		//FrameIndex2 = 1;
+		Alpha = 0.0f;
+
+		AnimationKeyFrame& Frame1 = AnimData.KeyFrames[FrameIndex1];
+		AnimationKeyFrame& Frame2 = AnimData.KeyFrames[FrameIndex2];
+
+		const int32 BoneCount = RefSkeleton.BoneInfo.size();
+		FinalBoneTranforms.resize(BoneCount);
+
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		{
+			const int32 ParentBoneIndex = RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+
+			Transform BoneTransform = Transform::Blend(Frame1.BonePose[BoneIndex], Frame2.BonePose[BoneIndex], Alpha);
+
+			if (ParentBoneIndex == -1)
+			{
+				FinalBoneTranforms[BoneIndex] = BoneTransform;
+			}
+			else
+			{
+				FinalBoneTranforms[BoneIndex] = BoneTransform * FinalBoneTranforms[ParentBoneIndex];
+			}
+		}
+		
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		{
+			FinalBoneTranforms[BoneIndex] = RefSkeleton.BonePose[BoneIndex] * FinalBoneTranforms[BoneIndex];
+		}
+	}
+
+	const Matrix& AnimatorAnimationSequencePreview::GetFinalBoneMatrix( int32 BoneIndex ) const
+	{
+		drn_check(BoneIndex >= 0);
+		drn_check(BoneIndex < FinalBoneTranforms.size());
+
+		return FinalBoneTranforms[BoneIndex];
+	}
+
+	int32 AnimatorAnimationSequencePreview::GetBoneCount() const
+	{
+		return FinalBoneTranforms.size();
+	}
+
+#endif
 }  // namespace Drn

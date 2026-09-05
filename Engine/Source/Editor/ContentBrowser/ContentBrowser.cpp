@@ -46,7 +46,17 @@ namespace Drn
 		return SingletonInstance.get();
 	}
 
-	//std::string ContentBrowser::GetSelectedFilePath()
+	std::string ContentBrowser::GetSelectedFolderPath()
+	{
+		return ContentBrowserLayer->SelectedFolder ? ContentBrowserLayer->SelectedFolder->File.m_FullPath : "";
+	}
+
+	void ContentBrowser::Refresh()
+	{
+		ContentBrowserLayer->OnRefresh();
+	}
+
+	// std::string ContentBrowser::GetSelectedFilePath()
 	//{
 	//	if (ContentBrowserLayer && ContentBrowserLayer->Selection.Size == 1)
 	//	{
