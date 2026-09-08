@@ -36,8 +36,8 @@ namespace Drn
 		}
 
 		Assimp::Importer importer;
-		//const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
-		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_LimitBoneWeights | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded );
+		importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, MeshAsset->ImportScale);
+		const aiScene* scene = importer.ReadFile( Path, aiProcess_GlobalScale | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_LimitBoneWeights | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded );
 
 		if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
 		{
@@ -62,14 +62,40 @@ namespace Drn
 
 	void AssetImporterSkeletalMesh::ProcessSkeleton( SkeletalMesh* MeshAsset, const aiScene* scene, ImportedSkeletalMeshData& BuildingData )
 	{
-		aiNode* RootNode = scene->mRootNode->FindNode("root");
-		drn_check(RootNode);
+		for (int32 MeshIndex = 0; MeshIndex < scene->mNumMeshes; MeshIndex++)
+		{
+			aiMesh* Mesh = scene->mMeshes[MeshIndex];
+		
+			const int32 BoneCount = Mesh->mNumBones;
+			for (int32 BoneIndex = 0; BoneIndex < Mesh->mNumBones; BoneIndex++)
+			{
+				aiBone* Bone = Mesh->mBones[BoneIndex];
+		
+				if (BuildingData.RefSkeleton.FindBone(Bone->mName.C_Str()) == -1)
+				{
+					BuildingData.RefSkeleton.BoneInfo.push_back({});
+					BuildingData.RefSkeleton.BoneInfo.back().Name = Bone->mName.C_Str();
 
-		ProcessSkeleton(MeshAsset, -1, RootNode, BuildingData);
-
-		ReferenceSkeleton OldSkeleton = BuildingData.RefSkeleton;
+					BuildingData.RefSkeleton.BonePose.push_back({});
+					BuildingData.RefSkeleton.BonePose.back() = A2Matrix(Bone->mOffsetMatrix);
+				}
+			}
+		}
 
 		const int32 BoneCount = BuildingData.RefSkeleton.BoneInfo.size();
+		aiNode* Node = scene->mRootNode;
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		{
+			MeshBoneInfo& Bone = BuildingData.RefSkeleton.BoneInfo[BoneIndex];
+
+			aiNode* BoneNode = Node->FindNode(Bone.Name.c_str());
+			drn_check(BoneNode);
+			aiNode* BoneParentNode = BoneNode->mParent;
+
+			Bone.ParentIndex = BoneParentNode ? BuildingData.RefSkeleton.FindBone(BoneParentNode->mName.C_Str()) : -1;
+		}
+
+		ReferenceSkeleton OldSkeleton = BuildingData.RefSkeleton;
 
 		std::vector<std::pair<uint32, uint32>> IndexBoneDepth;
 		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
@@ -104,18 +130,18 @@ namespace Drn
 			}
 		}
 
-		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
-		{
-			const int32 ParentIndex = BuildingData.RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
-			if (ParentIndex != -1)
-			{
-				BuildingData.RefSkeleton.BonePose[BoneIndex] = BuildingData.RefSkeleton.BonePose[BoneIndex] * BuildingData.RefSkeleton.BonePose[ParentIndex];
-			}
-		}
-		for (int32 BoneIndex = 0; BoneIndex < BuildingData.RefSkeleton.BoneInfo.size(); BoneIndex++)
-		{
-			BuildingData.RefSkeleton.BonePose[BoneIndex] = Matrix(BuildingData.RefSkeleton.BonePose[BoneIndex]).Inverse();
-		}
+		//for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		//{
+		//	const int32 ParentIndex = BuildingData.RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+		//	if (ParentIndex != -1)
+		//	{
+		//		BuildingData.RefSkeleton.BonePose[BoneIndex] = BuildingData.RefSkeleton.BonePose[BoneIndex] * BuildingData.RefSkeleton.BonePose[ParentIndex];
+		//	}
+		//}
+		//for (int32 BoneIndex = 0; BoneIndex < BuildingData.RefSkeleton.BoneInfo.size(); BoneIndex++)
+		//{
+		//	BuildingData.RefSkeleton.BonePose[BoneIndex] = Matrix(BuildingData.RefSkeleton.BonePose[BoneIndex]).Inverse();
+		//}
 	}
 
 	void AssetImporterSkeletalMesh::ProcessSkeleton( SkeletalMesh* MeshAsset, int32 ParentIndex, const aiNode* node, ImportedSkeletalMeshData& BuildingData )
@@ -125,7 +151,7 @@ namespace Drn
 		int32 BoneIndex = Bones.size();
 		Bones.push_back(MeshBoneInfo(node->mName.C_Str(), ParentIndex));
 		Transform BoneTransform = A2Matrix(node->mTransformation);
-		BoneTransform.SetLocation(BoneTransform.GetLocation() * MeshAsset->ImportScale);
+		BoneTransform.SetLocation(BoneTransform.GetLocation());
 		BuildingData.RefSkeleton.BonePose.push_back(BoneTransform);
 
 		for (int32 i = 0; i < node->mNumChildren; i++)
@@ -160,7 +186,7 @@ namespace Drn
 
 		for ( uint32 i = 0; i < VertexCount; i++ )
 		{
-			MeshData.VertexData.Positions[i] = A2Vector(mesh->mVertices[i]) * MeshAsset->ImportScale;
+			MeshData.VertexData.Positions[i] = A2Vector(mesh->mVertices[i]);
 
 			if (MeshAsset->m_ImportNormals)
 			{
@@ -243,7 +269,7 @@ namespace Drn
 			MeshData.MaterialIndex = BuildingData.AddMaterial(MatName);
 		}
 
-		MeshData.Bound = Box(A2Vector(mesh->mAABB.mMin) * MeshAsset->ImportScale, A2Vector(mesh->mAABB.mMax * MeshAsset->ImportScale));
+		MeshData.Bound = Box(A2Vector(mesh->mAABB.mMin), A2Vector(mesh->mAABB.mMax));
 	}
 
 	void AssetImporterSkeletalMesh::Build( SkeletalMesh* MeshAsset, ImportedSkeletalMeshData& BuildingData )
@@ -343,19 +369,6 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------------------------------------
 
-	std::string TTT(aiAnimBehaviour In)
-	{
-		switch ( In )
-		{
-		case aiAnimBehaviour_DEFAULT: return "Default";
-		case aiAnimBehaviour_CONSTANT: return "Constant";
-		case aiAnimBehaviour_LINEAR: return "Linear";
-		case aiAnimBehaviour_REPEAT: return "Repeat";
-		case _aiAnimBehaviour_Force32Bit:
-		default: return "Invalid";
-		}
-	}
-
 	void AssetImporterSkeletalMesh::ImportAnimation( AnimationSequence* AnimationAsset, SkeletalMesh* MeshAsset, const std::string& Path )
 	{
 		if (!FileSystem::FileExists(Path))
@@ -365,8 +378,8 @@ namespace Drn
 		}
 
 		Assimp::Importer importer;
-		//const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
-		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_LimitBoneWeights | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded );
+		importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, MeshAsset->ImportScale);
+		const aiScene* scene = importer.ReadFile( Path, aiProcess_GlobalScale | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_LimitBoneWeights | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded );
 
 		//if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
 		if(!scene || !scene->mRootNode) 
@@ -396,11 +409,24 @@ namespace Drn
 		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
 		{
 			Transform BoneDefaultTransform = RefSkeleton.GetParentBoneSpaceTransform(BoneIndex);
-
 			for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
 			{
 				AnimData.KeyFrames[FrameNumer].BonePose[BoneIndex] = RefSkeleton.GetParentBoneSpaceTransform(BoneIndex);
 			}
+		}
+
+		struct FilledData
+		{
+			bool bLocation = false;
+			bool bRotation = false;
+			bool bScale = false;
+		};
+
+		std::vector<std::vector<FilledData>> FramesFilledData;
+		FramesFilledData.resize(NumFrames);
+		for (int32 FrameIndex = 0; FrameIndex < NumFrames; FrameIndex++)
+		{
+			FramesFilledData[FrameIndex].resize(BoneCount);
 		}
 
 		int32 KeyIndex1; int32 KeyIndex2; float Alpha;
@@ -409,8 +435,11 @@ namespace Drn
 			aiNodeAnim* Channel = Animation->mChannels[ChannelIndex];
 			std::string BoneName = Channel->mNodeName.C_Str();
 			const int32 BoneIndex = RefSkeleton.FindBone(BoneName);
-
-			std::cout << Channel->mNodeName.C_Str() << "\t" << BoneIndex << "\n";
+			if (BoneIndex == -1)
+			{
+				//drn_check(false);
+				continue;
+			}
 
 			for (int32 PositionKeyIndex = 0; PositionKeyIndex < Channel->mNumPositionKeys; PositionKeyIndex++)
 			{
@@ -420,8 +449,9 @@ namespace Drn
 				const float KeyPos = ((float)NumKeys * Channel->mPositionKeys[PositionKeyIndex].mTime / TicksPerSecond) / AnimData.Length;
 				const int32 KeyIndex1 = std::clamp<int32>( std::round(KeyPos), 0, NumFrames-1 );
 
-				//AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetLocation(A2Vector(Channel->mPositionKeys[PositionKeyIndex].mValue) * MeshAsset->ImportScale);
-				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetLocation(A2Vector(Channel->mPositionKeys[PositionKeyIndex].mValue) * 0.1f);
+				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetLocation(A2Vector(Channel->mPositionKeys[PositionKeyIndex].mValue));
+
+				FramesFilledData[KeyIndex1][BoneIndex].bLocation = true;
 			}
 
 			for (int32 RotationKeyIndex = 0; RotationKeyIndex < Channel->mNumRotationKeys; RotationKeyIndex++)
@@ -433,6 +463,8 @@ namespace Drn
 				const int32 KeyIndex1 = std::clamp<int32>( std::round(KeyPos), 0, NumFrames-1 );
 
 				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetRotation(A2Quat(Channel->mRotationKeys[RotationKeyIndex].mValue));
+
+				FramesFilledData[KeyIndex1][BoneIndex].bRotation = true;
 			}
 
 			for (int32 ScaleKeyIndex = 0; ScaleKeyIndex < Channel->mNumScalingKeys; ScaleKeyIndex++)
@@ -443,53 +475,37 @@ namespace Drn
 				const float KeyPos = ((float)NumKeys * Channel->mPositionKeys[ScaleKeyIndex].mTime / TicksPerSecond) / AnimData.Length;
 				const int32 KeyIndex1 = std::clamp<int32>( std::round(KeyPos), 0, NumFrames-1 );
 
-				//AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetScale(A2Vector(Channel->mScalingKeys[ScaleKeyIndex].mValue));
-				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetScale(Vector::OneVector);
+				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetScale(A2Vector(Channel->mScalingKeys[ScaleKeyIndex].mValue));
+
+				FramesFilledData[KeyIndex1][BoneIndex].bScale = true;
 			}
 		}
 
-		// reintroduce import scale
-		//{
-		//	AnimationData WorldTransforms = AnimData;
-		//	const int32 BoneCount = RefSkeleton.BoneInfo.size();
-		//
-		//	for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
-		//	{
-		//		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
-		//		{
-		//			const int32 ParentIndex = RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
-		//
-		//			if (ParentIndex != -1)
-		//			{
-		//				//WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex] = WorldTransforms.KeyFrames[FrameNumer].BonePose[ParentIndex] * WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex];
-		//				WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex] = WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex] * WorldTransforms.KeyFrames[FrameNumer].BonePose[ParentIndex];
-		//			}
-		//		}
-		//	}
-		//
-		//	for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
-		//	{
-		//		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
-		//		{
-		//			WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex].SetLocation(WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex].GetLocation() * MeshAsset->ImportScale);
-		//		}
-		//	}
-		//
-		//	for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
-		//	{
-		//		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
-		//		{
-		//			const int32 ParentIndex = RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
-		//	
-		//			if (ParentIndex != -1)
-		//			{
-		//				AnimData.KeyFrames[FrameNumer].BonePose[BoneIndex] =
-		//					WorldTransforms.KeyFrames[FrameNumer].BonePose[BoneIndex].GetRelativeTransform(WorldTransforms.KeyFrames[FrameNumer].BonePose[ParentIndex]);
-		//			}
-		//		}
-		//	}
-		//}
+		// fill empty frame data
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		{
+			const Vector BoneDefaultLocation	= AnimData.KeyFrames[0].BonePose[BoneIndex].GetLocation();
+			const Quat BoneDefaultRotation		= AnimData.KeyFrames[0].BonePose[BoneIndex].GetRotation();
+			const Vector BoneDefaultScale		= AnimData.KeyFrames[0].BonePose[BoneIndex].GetScale();
 
+			for (int32 FrameIndex = 1; FrameIndex < NumFrames; FrameIndex++)
+			{
+				if (!FramesFilledData[FrameIndex][BoneIndex].bLocation)
+				{
+					AnimData.KeyFrames[FrameIndex].BonePose[BoneIndex].SetLocation(BoneDefaultLocation);
+				}
+
+				if (!FramesFilledData[FrameIndex][BoneIndex].bRotation)
+				{
+					AnimData.KeyFrames[FrameIndex].BonePose[BoneIndex].SetRotation(BoneDefaultRotation);
+				}
+
+				if (!FramesFilledData[FrameIndex][BoneIndex].bScale)
+				{
+					AnimData.KeyFrames[FrameIndex].BonePose[BoneIndex].SetScale(BoneDefaultScale);
+				}
+			}
+		}
 	}
 
         }
