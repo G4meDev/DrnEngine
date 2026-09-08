@@ -54,6 +54,11 @@ namespace Drn
 		virtual const Matrix& GetFinalBoneMatrix(int32 BoneIndex) const override;
 		virtual int32 GetBoneCount() const override;
 
+		Transform GetBoneWorldTransform(int32 BoneIndex) const;
+
+		float GetCurrentTime() const;
+		int32 GetCurrentFrame() const;
+
 		class AssetPreviewAnimationSequenceGuiLayer* Preview;
 
 		std::vector<Transform> FinalBoneTranforms;

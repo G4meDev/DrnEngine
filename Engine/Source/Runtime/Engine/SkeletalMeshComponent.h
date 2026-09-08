@@ -50,6 +50,7 @@ namespace Drn
 		virtual BoxSphereBounds CalcBounds(const Transform& LocalToWorld) const override;
 
 		void SetAnimator( Animator* InAnimator );
+		inline Animator* GetAnimator() const { return m_Animator; }
 
 #if WITH_EDITOR
 

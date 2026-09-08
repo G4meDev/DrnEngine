@@ -27,13 +27,15 @@ namespace Drn
 	struct ReferenceSkeleton
 	{
 		std::vector<MeshBoneInfo> BoneInfo;
-		std::vector<Transform> BonePose;
+		std::vector<Transform> BonePose; // ref bind pose
 
 		inline void Resize(int32 NewSize) { BoneInfo.resize(NewSize); BonePose.resize(NewSize); }
 
 		bool HasBone(const std::string& Name) const;
 		bool IsLeafBone(int32 BoneIndex) const;
 		int32 FindBone(const std::string& Name) const;
+
+		Transform GetParentBoneSpaceTransform(int32 BoneIndex) const;
 
 		friend Archive& operator<<(Archive& Ar, const ReferenceSkeleton& Value);
 		friend Archive& operator>>(Archive& Ar, ReferenceSkeleton& Value);

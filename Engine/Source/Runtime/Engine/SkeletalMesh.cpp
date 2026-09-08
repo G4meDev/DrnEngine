@@ -292,4 +292,20 @@ namespace Drn
 		return It == BoneInfo.end() ? -1 : std::distance(BoneInfo.begin(), It);
 	}
 
-}  // namespace Drn
+	Transform ReferenceSkeleton::GetParentBoneSpaceTransform( int32 BoneIndex ) const
+	{
+		drn_check(BoneIndex >= 0);
+		drn_check(BoneIndex < BonePose.size());
+
+		Transform Result = Matrix(BonePose[BoneIndex]).Inverse();
+
+		const int32 ParentIndex = BoneInfo[BoneIndex].ParentIndex;
+		if (ParentIndex != -1)
+		{
+			Result = Result.GetRelativeTransform(Matrix(BonePose[ParentIndex]).Inverse());
+		}
+
+		return Result;
+	}
+
+        }  // namespace Drn

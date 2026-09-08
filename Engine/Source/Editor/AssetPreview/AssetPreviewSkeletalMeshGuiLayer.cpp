@@ -94,13 +94,14 @@ namespace Drn
 		BonePreviewTransforms.resize(BoneCount);
 		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
 		{
-			BonePreviewTransforms[BoneIndex] = Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[BoneIndex]).Inverse();
-			
-			const int32 ParentIndex = m_OwningAsset->Data.RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
-			if (ParentIndex != -1)
-			{
-				BonePreviewTransforms[BoneIndex] = BonePreviewTransforms[BoneIndex].GetRelativeTransform(Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[ParentIndex]).Inverse());
-			}
+			BonePreviewTransforms[BoneIndex] = m_OwningAsset->Data.RefSkeleton.GetParentBoneSpaceTransform(BoneIndex);
+			//BonePreviewTransforms[BoneIndex] = Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[BoneIndex]).Inverse();
+			//
+			//const int32 ParentIndex = m_OwningAsset->Data.RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+			//if (ParentIndex != -1)
+			//{
+			//	BonePreviewTransforms[BoneIndex] = BonePreviewTransforms[BoneIndex].GetRelativeTransform(Matrix(m_OwningAsset->Data.RefSkeleton.BonePose[ParentIndex]).Inverse());
+			//}
 		}
 	}
 

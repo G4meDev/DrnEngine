@@ -97,7 +97,7 @@ namespace Drn
 		AnimationData& AnimData = Preview->m_OwningAsset->Data;
 		const ReferenceSkeleton& RefSkeleton = Preview->m_OwningAsset->OwningSkeleton->GetData().RefSkeleton;
 
-		AnimTime = std::fmod(AnimTime + DeltaTime * 0.1, AnimData.Length);
+		AnimTime = std::fmod(AnimTime + DeltaTime * Preview->PreviewSpeed, AnimData.Length);
 
 		int32 FrameIndex1; int32 FrameIndex2; float Alpha;
 		AnimationRuntime::GetFrameIndicesFromTime(FrameIndex1, FrameIndex2, Alpha, AnimTime, Preview->m_OwningAsset->GetNumFrames(), AnimData.Length);
@@ -108,9 +108,14 @@ namespace Drn
 			Alpha = 0.0f;
 		}
 
+		if (Preview->StepAnimation)
+		{
+			Alpha = 0.0f;
+		}
+
 		//FrameIndex1 = 0;
 		//FrameIndex2 = 1;
-		Alpha = 0.0f;
+		//Alpha = 0.0f;
 
 		AnimationKeyFrame& Frame1 = AnimData.KeyFrames[FrameIndex1];
 		AnimationKeyFrame& Frame2 = AnimData.KeyFrames[FrameIndex2];
@@ -151,6 +156,27 @@ namespace Drn
 	int32 AnimatorAnimationSequencePreview::GetBoneCount() const
 	{
 		return FinalBoneTranforms.size();
+	}
+
+	Transform AnimatorAnimationSequencePreview::GetBoneWorldTransform(int32 BoneIndex) const
+	{
+		drn_check(BoneIndex >= 0);
+		drn_check(BoneIndex < FinalBoneTranforms.size());
+
+		const ReferenceSkeleton& RefSkeleton = Preview->m_OwningAsset->OwningSkeleton->GetData().RefSkeleton;
+		return Matrix(RefSkeleton.BonePose[BoneIndex]).Inverse() * FinalBoneTranforms[BoneIndex];
+	}
+
+	float AnimatorAnimationSequencePreview::GetCurrentTime() const
+	{
+		AnimationData& AnimData = Preview->m_OwningAsset->Data;
+		return Preview->DisplayFrameNumber >= 0 ? AnimData.Length * Preview->DisplayFrameNumber / AnimData.KeyFrames.size() : AnimTime;
+	}
+
+	int32 AnimatorAnimationSequencePreview::GetCurrentFrame() const
+	{
+		AnimationData& AnimData = Preview->m_OwningAsset->Data;
+		return Preview->DisplayFrameNumber >= 0 ? Preview->DisplayFrameNumber : (AnimTime / AnimData.Length) * AnimData.KeyFrames.size();
 	}
 
 #endif

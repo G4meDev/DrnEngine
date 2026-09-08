@@ -69,24 +69,42 @@ namespace Drn
 
 		ReferenceSkeleton OldSkeleton = BuildingData.RefSkeleton;
 
-		std::sort( BuildingData.RefSkeleton.BoneInfo.begin(), BuildingData.RefSkeleton.BoneInfo.end(),
-			[](const MeshBoneInfo& A, const MeshBoneInfo& B) { return A.ParentIndex < A.ParentIndex; } );
+		const int32 BoneCount = BuildingData.RefSkeleton.BoneInfo.size();
 
-		for (int32 BoneIndex = 0; BoneIndex < BuildingData.RefSkeleton.BoneInfo.size(); BoneIndex++)
+		std::vector<std::pair<uint32, uint32>> IndexBoneDepth;
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
 		{
-			int32 OldIndex = OldSkeleton.FindBone(BuildingData.RefSkeleton.BoneInfo[BoneIndex].Name);
+			uint32 BoneDepth = 0;
+			int32 Parent = OldSkeleton.BoneInfo[BoneIndex].ParentIndex;
+
+			while (Parent != -1)
+			{
+				BoneDepth++;
+				Parent = OldSkeleton.BoneInfo[Parent].ParentIndex;
+			}
+
+			IndexBoneDepth.push_back({BoneIndex, BoneDepth});
+		}
+
+		std::sort( IndexBoneDepth.begin(), IndexBoneDepth.end(),
+			[](const std::pair<uint32, uint32>& A, const std::pair<uint32, uint32>& B) { return A.second < B.second; } );
+
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		{
+			int32 OldIndex = IndexBoneDepth[BoneIndex].first;
 			drn_check(OldIndex >= 0);
+
+			BuildingData.RefSkeleton.BoneInfo[BoneIndex] = OldSkeleton.BoneInfo[OldIndex];
+			BuildingData.RefSkeleton.BonePose[BoneIndex] = OldSkeleton.BonePose[OldIndex];
 
 			int32 OldParentIndex = OldSkeleton.BoneInfo[OldIndex].ParentIndex;
 			if (OldParentIndex >= 0)
 			{
 				BuildingData.RefSkeleton.BoneInfo[BoneIndex].ParentIndex = BuildingData.RefSkeleton.FindBone(OldSkeleton.BoneInfo[OldParentIndex].Name);
 			}
-
-			std::iter_swap(BuildingData.RefSkeleton.BonePose.begin() + BoneIndex, BuildingData.RefSkeleton.BonePose.begin() + OldIndex);
 		}
 
-		for (int32 BoneIndex = 0; BoneIndex < BuildingData.RefSkeleton.BoneInfo.size(); BoneIndex++)
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
 		{
 			const int32 ParentIndex = BuildingData.RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
 			if (ParentIndex != -1)
@@ -325,6 +343,19 @@ namespace Drn
 
 // ----------------------------------------------------------------------------------------------------------------
 
+	std::string TTT(aiAnimBehaviour In)
+	{
+		switch ( In )
+		{
+		case aiAnimBehaviour_DEFAULT: return "Default";
+		case aiAnimBehaviour_CONSTANT: return "Constant";
+		case aiAnimBehaviour_LINEAR: return "Linear";
+		case aiAnimBehaviour_REPEAT: return "Repeat";
+		case _aiAnimBehaviour_Force32Bit:
+		default: return "Invalid";
+		}
+	}
+
 	void AssetImporterSkeletalMesh::ImportAnimation( AnimationSequence* AnimationAsset, SkeletalMesh* MeshAsset, const std::string& Path )
 	{
 		if (!FileSystem::FileExists(Path))
@@ -354,17 +385,32 @@ namespace Drn
 		AnimData.Length = Animation->mDuration / TicksPerSecond;
 		const int32 NumFrames = TicksPerSecond * AnimData.Length + 1;
 
+		const int32 BoneCount = RefSkeleton.BoneInfo.size();
 		AnimData.KeyFrames.resize(NumFrames);
 		for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
 		{
 			AnimData.KeyFrames[FrameNumer].BonePose.resize(RefSkeleton.BoneInfo.size());
 		}
 
+		// fill with ref skeleton data
+		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+		{
+			Transform BoneDefaultTransform = RefSkeleton.GetParentBoneSpaceTransform(BoneIndex);
+
+			for (int32 FrameNumer = 0; FrameNumer < NumFrames; FrameNumer++)
+			{
+				AnimData.KeyFrames[FrameNumer].BonePose[BoneIndex] = RefSkeleton.GetParentBoneSpaceTransform(BoneIndex);
+			}
+		}
+
 		int32 KeyIndex1; int32 KeyIndex2; float Alpha;
 		for (int32 ChannelIndex = 0; ChannelIndex < Animation->mNumChannels; ChannelIndex++)
 		{
 			aiNodeAnim* Channel = Animation->mChannels[ChannelIndex];
-			const int32 BoneIndex = RefSkeleton.FindBone(Channel->mNodeName.C_Str());
+			std::string BoneName = Channel->mNodeName.C_Str();
+			const int32 BoneIndex = RefSkeleton.FindBone(BoneName);
+
+			std::cout << Channel->mNodeName.C_Str() << "\t" << BoneIndex << "\n";
 
 			for (int32 PositionKeyIndex = 0; PositionKeyIndex < Channel->mNumPositionKeys; PositionKeyIndex++)
 			{
@@ -374,8 +420,6 @@ namespace Drn
 				const float KeyPos = ((float)NumKeys * Channel->mPositionKeys[PositionKeyIndex].mTime / TicksPerSecond) / AnimData.Length;
 				const int32 KeyIndex1 = std::clamp<int32>( std::round(KeyPos), 0, NumFrames-1 );
 
-				std::cout << KeyIndex1 << "\t" << Channel->mPositionKeys[PositionKeyIndex].mTime << "\n";
-
 				//AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetLocation(A2Vector(Channel->mPositionKeys[PositionKeyIndex].mValue) * MeshAsset->ImportScale);
 				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetLocation(A2Vector(Channel->mPositionKeys[PositionKeyIndex].mValue) * 0.1f);
 			}
@@ -383,12 +427,22 @@ namespace Drn
 			for (int32 RotationKeyIndex = 0; RotationKeyIndex < Channel->mNumRotationKeys; RotationKeyIndex++)
 			{
 				AnimationRuntime::GetFrameIndicesFromTime(KeyIndex1, KeyIndex2, Alpha, Channel->mRotationKeys[RotationKeyIndex].mTime / TicksPerSecond, NumFrames, AnimData.Length);
+
+				const int32 NumKeys = NumFrames - 1;
+				const float KeyPos = ((float)NumKeys * Channel->mPositionKeys[RotationKeyIndex].mTime / TicksPerSecond) / AnimData.Length;
+				const int32 KeyIndex1 = std::clamp<int32>( std::round(KeyPos), 0, NumFrames-1 );
+
 				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetRotation(A2Quat(Channel->mRotationKeys[RotationKeyIndex].mValue));
 			}
 
 			for (int32 ScaleKeyIndex = 0; ScaleKeyIndex < Channel->mNumScalingKeys; ScaleKeyIndex++)
 			{
 				AnimationRuntime::GetFrameIndicesFromTime(KeyIndex1, KeyIndex2, Alpha, Channel->mScalingKeys[ScaleKeyIndex].mTime / TicksPerSecond, NumFrames, AnimData.Length);
+
+				const int32 NumKeys = NumFrames - 1;
+				const float KeyPos = ((float)NumKeys * Channel->mPositionKeys[ScaleKeyIndex].mTime / TicksPerSecond) / AnimData.Length;
+				const int32 KeyIndex1 = std::clamp<int32>( std::round(KeyPos), 0, NumFrames-1 );
+
 				//AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetScale(A2Vector(Channel->mScalingKeys[ScaleKeyIndex].mValue));
 				AnimData.KeyFrames[KeyIndex1].BonePose[BoneIndex].SetScale(Vector::OneVector);
 			}

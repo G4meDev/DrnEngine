@@ -192,10 +192,22 @@ namespace Drn
 			ShowSourceFileSelection();
 		}
 
+
+		ImGui::InputFloat("Preview Speed", &PreviewSpeed);
+		ImGui::Checkbox("Step Animation", &StepAnimation);
 		ImGui::InputInt("Frame Number", &DisplayFrameNumber);
 
 		ImGui::Separator();
 
+		AnimatorAnimationSequencePreview* Anim = dynamic_cast<AnimatorAnimationSequencePreview*>(PreviewMesh->GetMeshComponent()->GetAnimator());
+		if (Anim)
+		{
+			std::string TimeDisplayInfo = std::format("{:.2f} / {:.2f}", Anim->GetCurrentTime(), m_OwningAsset->Data.Length);
+			ImGui::Text(TimeDisplayInfo.c_str());
+
+			std::string FrameDisplayInfo = std::format("{} / {}", Anim->GetCurrentFrame(), m_OwningAsset->Data.KeyFrames.size());
+			ImGui::Text(FrameDisplayInfo.c_str());
+		}
 	}
 
 	void AssetPreviewAnimationSequenceGuiLayer::ShowSourceFileSelection()
@@ -259,20 +271,12 @@ namespace Drn
 
 	void AssetPreviewAnimationSequenceGuiLayer::GetGizmoTransform( bool& bDrawGizmo, Transform& GizmoTransform )
 	{
-		//bDrawGizmo = SelectedBoneIndex != -1;
-		//if (bDrawGizmo)
-		//{
-		//	ReferenceSkeleton& RefSkeleton = m_OwningAsset->Data.RefSkeleton;
-		//
-		//	GizmoTransform = BonePreviewTransforms[SelectedBoneIndex];
-		//	int32 ParentIndex = RefSkeleton.BoneInfo[SelectedBoneIndex].ParentIndex;
-		//
-		//	while (ParentIndex != -1)
-		//	{
-		//		GizmoTransform = GizmoTransform * BonePreviewTransforms[ParentIndex];
-		//		ParentIndex = RefSkeleton.BoneInfo[ParentIndex].ParentIndex;
-		//	}
-		//}
+		bDrawGizmo = SelectedBoneIndex != -1;
+		if (bDrawGizmo && PreviewMesh->GetMeshComponent()->GetAnimator())
+		{
+			AnimatorAnimationSequencePreview* Anim = dynamic_cast<AnimatorAnimationSequencePreview*>(PreviewMesh->GetMeshComponent()->GetAnimator());
+			GizmoTransform = Anim ? Anim->GetBoneWorldTransform(SelectedBoneIndex) : Transform::Identity;
+		}
 	}
 
 	void AssetPreviewAnimationSequenceGuiLayer::OnGizmoTransformChanged( const Transform& GizmoTransform, EGizmoSpace GizmoSpace )
