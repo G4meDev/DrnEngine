@@ -245,6 +245,25 @@ namespace Drn
 			}
 		}
 
+		// adjust normalized weights to account for conversion from float to 8bit data loss
+		for ( uint32 VertexIndex = 0; VertexIndex < VertexCount; VertexIndex++ )
+		{
+			uint32 SumWeight = 0;
+			for (int32 i = 0; i < MAX_EFFECTIVE_BONES; i++)
+			{
+				SumWeight += MeshData.VertexData.BoneWeights[VertexIndex * MAX_EFFECTIVE_BONES + i].Value;
+			}
+
+			float NormalizedError = 255 - SumWeight;
+
+			int32 BoneCounter = 0;
+			while (NormalizedError > 0)
+			{
+				MeshData.VertexData.BoneWeights[VertexIndex * MAX_EFFECTIVE_BONES + (BoneCounter++ % MAX_EFFECTIVE_BONES)].Value++;
+				NormalizedError--;
+			}
+		}
+
 		MeshData.VertexData.bUse4BitIndices = VertexCount > UINT16_MAX;
 		for ( uint32 i = 0; i < mesh->mNumFaces; i++ )
 		{

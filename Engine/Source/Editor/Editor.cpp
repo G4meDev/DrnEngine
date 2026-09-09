@@ -110,7 +110,7 @@ namespace Drn
 
 	void Editor::NotifyMaterialReimported( const AssetHandle<Material>& Mat )
 	{
-		return;
+		//return;
 
 		for (World* W : WorldManager::Get()->m_AllocatedWorlds)
 		{
@@ -120,6 +120,17 @@ namespace Drn
 				actor->GetRoot()->GetComponents<StaticMeshComponent>(MeshComponents, EComponentType::StaticMeshComponent, true);
 
 				for (StaticMeshComponent* MC : MeshComponents)
+				{
+					if (MC && MC->IsUsingMaterial(Mat))
+					{
+						MC->MarkRenderStateDirty();
+					}
+				}
+
+				std::vector<SkeletalMeshComponent*> SkeletalMeshComponents;
+				actor->GetRoot()->GetComponents<SkeletalMeshComponent>(SkeletalMeshComponents, EComponentType::SkeletalMeshComponent, true);
+
+				for (SkeletalMeshComponent* MC : SkeletalMeshComponents)
 				{
 					if (MC && MC->IsUsingMaterial(Mat))
 					{

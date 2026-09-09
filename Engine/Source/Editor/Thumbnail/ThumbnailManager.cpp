@@ -350,11 +350,9 @@ namespace Drn
 				SkeletalMeshActor* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<SkeletalMeshActor>();
 				SpawnedActor->GetMeshComponent()->SetMesh(SkeletalMeshAsset);
 
-				Quat CameraRotation(0, Math::PI / 4, Math::PI * 5 / 4);
-				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
-
-				Vector CameraPosition = SkeletalMeshAsset->GetBounds().Origin + CameraRotation.GetAxisZ() * SkeletalMeshAsset->GetBounds().SphereRadius * SkeletalMeshAsset->ThumbnailDistance;
-				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
+				Vector FocalPoint = SkeletalMeshAsset->GetBounds().Origin;
+				Vector CameraLocation = FocalPoint + Vector::OneVector * SkeletalMeshAsset->GetBounds().SphereRadius * SkeletalMeshAsset->ThumbnailDistance;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorTransform(Transform(CameraLocation, Quat::LookAtRotation(CameraLocation, FocalPoint)));
 
 				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
 
@@ -385,11 +383,9 @@ namespace Drn
 				TRefCountPtr<AnimatorAnimationSequence> Anim = new AnimatorAnimationSequence(AnimationAsset);
 				SpawnedActor->GetMeshComponent()->SetAnimator(Anim);
 
-				Quat CameraRotation(0, Math::PI / 4, Math::PI * 5 / 4);
-				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
-
-				Vector CameraPosition = Skeleton->GetBounds().Origin + CameraRotation.GetAxisZ() * Skeleton->GetBounds().SphereRadius * Skeleton->ThumbnailDistance;
-				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
+				Vector FocalPoint = AnimationAsset->GetSkeleton()->GetBounds().Origin;
+				Vector CameraLocation = FocalPoint + Vector::OneVector * AnimationAsset->GetSkeleton()->GetBounds().SphereRadius * AnimationAsset->GetSkeleton()->ThumbnailDistance;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorTransform(Transform(CameraLocation, Quat::LookAtRotation(CameraLocation, FocalPoint)));
 
 				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
 
