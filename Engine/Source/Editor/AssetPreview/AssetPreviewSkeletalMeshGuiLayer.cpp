@@ -62,6 +62,10 @@ namespace Drn
 		TRefCountPtr<AnimatorSkeletalMeshPreview> NewAnimator = new AnimatorSkeletalMeshPreview(this);
 		PreviewMesh->GetMeshComponent()->SetAnimator(NewAnimator);
 
+		Vector FocalPoint = m_OwningAsset->GetBounds().Origin;
+		Vector CameraLocation = FocalPoint + Vector::OneVector * m_OwningAsset->GetBounds().SphereRadius * m_OwningAsset->ThumbnailDistance;
+		PreviewWorld->GetViewportCamera()->SetActorTransform(Transform(CameraLocation, Quat::LookAtRotation(CameraLocation, FocalPoint)));
+
 		OnReimport();
 	}
 
@@ -342,6 +346,8 @@ namespace Drn
 			//m_OwningAsset->Data.RefSkeleton.BonePose[SelectedBoneIndex].Draw("Selected Bone");
 			BonePreviewTransforms[SelectedBoneIndex].Draw("Selected Bone");
 		}
+
+		ImGui::InputFloat("Thumbnail Distance", &m_OwningAsset->ThumbnailDistance);
 	}
 
 	void AssetPreviewSkeletalMeshGuiLayer::ShowSourceFileSelection()

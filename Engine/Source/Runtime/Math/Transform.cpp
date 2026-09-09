@@ -11,15 +11,7 @@ namespace Drn
 
 	Transform::Transform( const Matrix& InMatrix )
 	{
-		XMVECTOR DecompLocation;
-		XMVECTOR DecompRotation;
-		XMVECTOR DecompScale;
-
-		XMMatrixDecompose(&DecompScale, &DecompRotation, &DecompLocation, InMatrix.Get());
-
-		Location = Vector(DecompLocation);
-		Rotation = Quat(DecompRotation);
-		Scale = Vector(DecompScale);
+		InMatrix.Decompose(Location, Rotation, Scale);
 	}
 
 	Transform Transform::operator*( const Transform& Other ) const

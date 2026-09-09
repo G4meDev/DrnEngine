@@ -68,7 +68,7 @@ VertexShaderOutput Main_VS(VertexInput IN)
     OUT.Normal = normalize(mul((float3x3) LocalToWorld, LocalNormal));
     
     
-#if HITPROXY_PASS && SKELETALMESH
+#if HITPROXY_PASS
     OUT.BoneIndex = 0;
 
 #if SKELETALMESH

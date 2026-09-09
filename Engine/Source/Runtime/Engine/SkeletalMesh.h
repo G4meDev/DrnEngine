@@ -102,6 +102,8 @@ namespace Drn
 
 		inline const SkeletalMeshData& GetData() const { return Data; }
 
+		float ThumbnailDistance = 4.0f;
+
 	protected:
 
 #if WITH_EDITOR

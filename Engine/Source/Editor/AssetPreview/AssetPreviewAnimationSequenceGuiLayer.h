@@ -51,8 +51,8 @@ namespace Drn
 		bool m_ShowSceneSetting;
 		bool m_ShowDetail;
 
-		float PreviewSpeed = 0.1f;
-		bool StepAnimation = true;
+		float PreviewSpeed = 1.0f;
+		bool StepAnimation = false;
 		int32 DisplayFrameNumber;
 
 		friend class AnimatorSkeletalMeshPreview;

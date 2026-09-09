@@ -107,6 +107,31 @@ namespace Drn
 		return bDirty;
 	}
 
+	Quat Quat::LookToRotation( const Vector& Forward, const Vector& Up )
+	{
+		return Matrix::MakeFromZY(Forward, Up).Rotation();
+	}
+
+	Quat Quat::LookAtRotation( const Vector& Start, const Vector& Target )
+	{
+		return Matrix::MakeFromZ(Target - Start).Rotation();
+	}
+
+	// Quat Quat::FromX( const Vector& XAxis )
+	//{
+	//	
+	//}
+
+	Quat Quat::FromY( const Vector& YAxis )
+	{
+		return Matrix::MakeFromY(YAxis).Rotation();
+	}
+
+	Quat Quat::FromZ( const Vector& ZAxis )
+	{
+		return Matrix::MakeFromZ(ZAxis).Rotation();
+	}
+
 	std::string Quat::ToString()
 	{
 		return std::format("(X={:.6f},Y={:.6f},Z={:.6f},W={:.6f})", m_Vector.x, m_Vector.y, m_Vector.z, m_Vector.w);

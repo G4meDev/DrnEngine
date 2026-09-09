@@ -80,72 +80,12 @@ namespace Drn
 			return std::acos((2 * Product * Product) - 1.0f);
 		}
 
-		static Quat FromToRotation(const Vector& FromDir, const Vector& ToDir)
-		{
-			const XMVECTOR F = XMVector3Normalize(XMLoadFloat3(&FromDir.m_Vector));
-			const XMVECTOR T = XMVector3Normalize(XMLoadFloat3(&ToDir.m_Vector));
+		static Quat LookToRotation(const Vector& Forward, const Vector& Up);
+		static Quat LookAtRotation(const Vector& Start, const Vector& Target);
 
-			const float dot = XMVectorGetX(XMVector3Dot(F, T));
-			if (dot >= 1.f)
-			{
-				return Quat::Identity;
-			}
-			else if (dot <= -1.f)
-			{
-				XMVECTOR axis = XMVector3Cross(F, XMLoadFloat3(&Vector::RightVector.m_Vector));
-				if (XMVector3NearEqual(XMVector3LengthSq(axis), g_XMZero, g_XMEpsilon))
-				{
-					axis = XMVector3Cross(F, XMLoadFloat3(&Vector::UpVector.m_Vector));
-				}
-
-				return XMQuaternionRotationAxis(axis, XM_PI);
-			}
-			else
-			{
-				const XMVECTOR C = XMVector3Cross(F, T);
-				XMFLOAT4 Temp;
-				XMStoreFloat4(&Temp, C);
-
-				const float s = sqrtf((1.f + dot) * 2.f);
-				Temp.x /= s;
-				Temp.y /= s;
-				Temp.z /= s;
-				Temp.w = s * 0.5f;
-
-				return Quat(XMLoadFloat4(&Temp));
-			}
-		}
-
-		static Quat LookRotation(const Vector& Forward, const Vector& Up)
-		{
-			Quat Q1 = FromToRotation(Vector::ForwardVector, Forward);
-			
-			const XMVECTOR C = XMVector3Cross(XMLoadFloat3(&Forward.m_Vector), XMLoadFloat3(&Up.m_Vector));
-			if (XMVector3NearEqual(XMVector3LengthSq(C), g_XMZero, g_XMEpsilon))
-			{
-				return Q1;
-			}
-			
-			const XMVECTOR U = XMQuaternionMultiply(XMLoadFloat4(&Q1.m_Vector), XMLoadFloat3(&Vector::UpVector.m_Vector));
-			Quat Q2 = FromToRotation(U, Up);
-			
-			return XMQuaternionMultiply(XMLoadFloat4(&Q2.m_Vector), XMLoadFloat4(&Q1.m_Vector));
-		}
-
-		static Quat FromX(const Vector& XAxis)
-		{
-			return FromToRotation(Vector::RightVector, XAxis);
-		}
-
-		static Quat FromY(const Vector& YAxis)
-		{
-			return FromToRotation(Vector::UpVector, YAxis);
-		}
-
-		static Quat FromZ(const Vector& ZAxis)
-		{
-			return FromToRotation(Vector::ForwardVector, ZAxis);
-		}
+		//static Quat FromX(const Vector& XAxis);
+		static Quat FromY(const Vector& YAxis);
+		static Quat FromZ(const Vector& ZAxis);
 
 		inline Vector GetAxisX() const { return RotateVector(Vector(1, 0, 0)); }
 		inline Vector GetAxisY() const { return RotateVector(Vector(0, 1, 0)); }

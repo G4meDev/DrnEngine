@@ -48,6 +48,10 @@ namespace Drn
 		TRefCountPtr<AnimatorAnimationSequencePreview> NewAnimator = new AnimatorAnimationSequencePreview(this);
 		PreviewMesh->GetMeshComponent()->SetAnimator(NewAnimator);
 
+		Vector FocalPoint = m_OwningAsset->GetSkeleton()->GetBounds().Origin;
+		Vector CameraLocation = FocalPoint + Vector::OneVector * m_OwningAsset->GetSkeleton()->GetBounds().SphereRadius * m_OwningAsset->GetSkeleton()->ThumbnailDistance;
+		PreviewWorld->GetViewportCamera()->SetActorTransform(Transform(CameraLocation, Quat::LookAtRotation(CameraLocation, FocalPoint)));
+
 		OnReimport();
 	}
 

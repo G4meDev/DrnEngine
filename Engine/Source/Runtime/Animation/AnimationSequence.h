@@ -40,6 +40,9 @@ namespace Drn
 		virtual EAssetType GetAssetType() override;
 		inline static EAssetType GetAssetTypeStatic() { return EAssetType::AnimationSequence; }
 
+		inline AssetHandle<SkeletalMesh> GetSkeleton() const { return OwningSkeleton; }
+		inline const AnimationData& GetAnimationData() const { return Data; }
+
 #if WITH_EDITOR
 		void Import();
 

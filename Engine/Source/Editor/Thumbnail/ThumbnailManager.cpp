@@ -129,7 +129,7 @@ namespace Drn
 	void ThumbnailManager::GenerateThumbnailForAssetPath( const std::string& AssetPath )
 	{
 		AssetHandle<Asset> ThumbnailAsset(AssetPath);
-		EAssetType AssetType = ThumbnailAsset.LoadGeneric();
+		EAssetType AssetType = ThumbnailAsset.LoadType();
 
 		if (AssetType == EAssetType::StaticMesh)
 		{
@@ -324,6 +324,72 @@ namespace Drn
 				Vector CameraPosition = Bounds.Origin + CameraRotation.GetAxisZ() * -Radius;
 				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
 				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
+
+				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
+
+				ThumbnailCaptureEvent* Event = CaptureSceneThumbnail(TargetWorld->GetSceneRenderer(), AssetPath);
+				Event->m_PreviewWorld = TargetWorld;
+			}
+		}
+
+		else if (AssetType == EAssetType::SkeletalMesh)
+		{
+			AssetHandle<SkeletalMesh> SkeletalMeshAsset(AssetPath);
+			SkeletalMeshAsset.Load();
+
+			if (SkeletalMeshAsset.IsValid())
+			{
+				PreviewWorld* TargetWorld = new PreviewWorld;
+				TargetWorld->GetWorld()->SetGameMode(true);
+
+				TargetWorld->SkyLight->SetIntensity(0.4f);
+
+				TargetWorld->DirectionalLight->SetIntensity(1);
+				TargetWorld->DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
+
+				SkeletalMeshActor* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<SkeletalMeshActor>();
+				SpawnedActor->GetMeshComponent()->SetMesh(SkeletalMeshAsset);
+
+				Quat CameraRotation(0, Math::PI / 4, Math::PI * 5 / 4);
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
+
+				Vector CameraPosition = SkeletalMeshAsset->GetBounds().Origin + CameraRotation.GetAxisZ() * SkeletalMeshAsset->GetBounds().SphereRadius * SkeletalMeshAsset->ThumbnailDistance;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
+
+				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
+
+				ThumbnailCaptureEvent* Event = CaptureSceneThumbnail(TargetWorld->GetSceneRenderer(), AssetPath);
+				Event->m_PreviewWorld = TargetWorld;
+			}
+		}
+
+		else if (AssetType == EAssetType::AnimationSequence)
+		{
+			AssetHandle<AnimationSequence> AnimationAsset(AssetPath);
+			AnimationAsset.Load();
+
+			if (AnimationAsset.IsValid())
+			{
+				PreviewWorld* TargetWorld = new PreviewWorld;
+				TargetWorld->GetWorld()->SetGameMode(true);
+
+				TargetWorld->SkyLight->SetIntensity(0.4f);
+
+				TargetWorld->DirectionalLight->SetIntensity(1);
+				TargetWorld->DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
+
+				AssetHandle<SkeletalMesh> Skeleton = AnimationAsset->GetSkeleton();
+				SkeletalMeshActor* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<SkeletalMeshActor>();
+				SpawnedActor->GetMeshComponent()->SetMesh(Skeleton);
+
+				TRefCountPtr<AnimatorAnimationSequence> Anim = new AnimatorAnimationSequence(AnimationAsset);
+				SpawnedActor->GetMeshComponent()->SetAnimator(Anim);
+
+				Quat CameraRotation(0, Math::PI / 4, Math::PI * 5 / 4);
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorRotation( CameraRotation );
+
+				Vector CameraPosition = Skeleton->GetBounds().Origin + CameraRotation.GetAxisZ() * Skeleton->GetBounds().SphereRadius * Skeleton->ThumbnailDistance;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorLocation( CameraPosition );
 
 				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
 

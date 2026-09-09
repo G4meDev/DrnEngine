@@ -21,9 +21,11 @@ namespace Drn
 		inline Vector GetColumn( int i ) const { return Vector(m_Matrix.m[0][i], m_Matrix.m[1][i], m_Matrix.m[2][i]); }
 		inline Vector GetRow( int i ) const { return Vector(m_Matrix.m[i][0], m_Matrix.m[i][1], m_Matrix.m[i][2]); }
 
-		static Matrix MakeFromX( const Vector& XAxis);
-		static Matrix MakeFromY( const Vector& YAxis);
-		static Matrix MakeFromZ( const Vector& ZAxis);
+		//static Matrix MakeFromX(const Vector& XAxis);
+		static Matrix MakeFromY(const Vector& YAxis);
+		static Matrix MakeFromZ(const Vector& ZAxis);
+
+		static Matrix MakeFromZY(const Vector& ZAxis, const Vector& YAxis);
 
 		static Matrix TranslationMatrix( const Vector& Translation );
 
@@ -83,7 +85,7 @@ namespace Drn
 			XMVECTOR Rot;
 			XMVECTOR Sca;
 
-			XMMatrixDecompose(&Sca, &Rot, &Loc, XMLoadFloat4x4(&m_Matrix));
+			drn_check(XMMatrixDecompose(&Sca, &Rot, &Loc, XMLoadFloat4x4(&m_Matrix)));
 			Location = Loc;
 			Rotation = Rot;
 			Scale = Sca;

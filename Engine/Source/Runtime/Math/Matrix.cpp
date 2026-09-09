@@ -36,79 +36,53 @@ namespace Drn
 		));
 	}
 
-	Matrix Matrix::MakeFromX( const Vector& XAxis )
-	{
-		XMVECTOR NewX = XMLoadFloat3( XAxis.Get() );
-		NewX = XMVector3Normalize( NewX );
-
-		XMVECTOR UpVector;
-
-		if ( XMVector3IsInfinite(NewX) )
-		{
-			UpVector = XMVectorSet( 1, 0, 0, 0 );
-		}
-
-		else
-		{
-			UpVector = XMVectorSet( 0, 1, 0, 0 );
-		}
-
-		XMVECTOR NewY = XMVector3Cross( UpVector, NewX );
-		NewY = XMVector3Normalize(NewY);
-
-		XMVECTOR NewZ = XMVector3Cross( NewX, NewY );
-
-		return Matrix( NewX, NewY, NewZ, Vector::ZeroVector );
-	}
+	//Matrix Matrix::MakeFromX( const Vector& XAxis )
+	//{
+	//	Vector const NewX = XAxis.GetSafeNormal();
+	//	Vector const UpVector = ( Math::Abs(NewX.Y) < (1.f - KINDA_SMALL_NUMBER) ) ? Vector::UpVector : Vector::ForwardVector;
+	//
+	//	const Vector NewY = (UpVector ^ NewX).GetSafeNormal();
+	//	const Vector NewZ = NewX ^ NewY;
+	//
+	//	return Matrix(NewX, NewY, NewZ, Vector::ZeroVector);
+	//}
 
 	Matrix Matrix::MakeFromY( const Vector& YAxis )
 	{
-		XMVECTOR NewY = XMLoadFloat3( YAxis.Get() );
-		NewY = XMVector3Normalize( NewY );
+		Vector const NewY = YAxis.GetSafeNormal();
+		Vector const UpVector = ( Math::Abs(NewY.Y) < (1.f - KINDA_SMALL_NUMBER) ) ? Vector::UpVector : Vector::ForwardVector;
 
-		XMVECTOR UpVector;
+		const Vector NewZ = (UpVector ^ NewY).GetSafeNormal();
+		const Vector NewX = NewY ^ NewZ;
 
-		if ( XMVector3IsInfinite(NewY) )
-		{
-			UpVector = XMVectorSet( 0, 1, 0, 0 );
-		}
-
-		else
-		{
-			UpVector = XMVectorSet( 0, 0, 1, 0 );
-		}
-
-		XMVECTOR NewZ = XMVector3Cross( UpVector, NewY );
-		NewZ = XMVector3Normalize(NewZ);
-
-		XMVECTOR NewX = XMVector3Cross( NewY, NewZ );
-
-		return Matrix( NewX, NewY, NewZ, Vector::ZeroVector );
+		return Matrix(NewX, NewY, NewZ, Vector::ZeroVector);
 	}
 
 	Matrix Matrix::MakeFromZ( const Vector& ZAxis )
 	{
-		XMVECTOR NewZ = XMLoadFloat3( ZAxis.Get() );
-		NewZ = XMVector3Normalize( NewZ );
+		const Vector NewZ = ZAxis.GetSafeNormal();
+		Vector UpVector = (Math::Abs(NewZ.Y) < (1.0f - KINDA_SMALL_NUMBER)) ? Vector::UpVector : Vector::ForwardVector;
 
-		XMVECTOR UpVector;
-
-		if ( XMVector3IsInfinite(NewZ) )
-		{
-			UpVector = XMVectorSet( 0, 0, 1, 0 );
-		}
-
-		else
-		{
-			UpVector = XMVectorSet( 0, 1, 0, 0 );
-		}
-
-		XMVECTOR NewX = XMVector3Cross( UpVector, NewZ );
-		NewX = XMVector3Normalize(NewX);
-
-		XMVECTOR NewY = XMVector3Cross( NewZ, NewX );
+		Vector NewX = (UpVector ^ NewZ).GetSafeNormal();
+		Vector NewY = NewZ ^ NewX;
 
 		return Matrix( NewX, NewY, NewZ, Vector::ZeroVector );
+	}
+
+	Matrix Matrix::MakeFromZY( const Vector& ZAxis, const Vector& YAxis )
+	{
+		Vector const NewZ = ZAxis.GetSafeNormal();
+		Vector Norm = YAxis.GetSafeNormal();
+
+		if ( Math::IsNearlyEqual(Math::Abs(NewZ | Norm), 1.f) )
+		{
+			Norm = ( Math::Abs(NewZ.Y) < (1.f - KINDA_SMALL_NUMBER) ) ? Vector::UpVector : Vector::ForwardVector;
+		}
+
+		const Vector NewX = (Norm ^ NewZ).GetSafeNormal();
+		const Vector NewY = NewZ ^ NewX;
+
+		return Matrix(NewX, NewY, NewZ, Vector::ZeroVector);
 	}
 
 	Matrix Matrix::TranslationMatrix( const Vector& Translation )

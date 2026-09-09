@@ -98,6 +98,20 @@ namespace Drn
 			m_Asset = AssetManager::Get()->LoadChecked<T>(m_Path);
 		}
 
+		EAssetType LoadType()
+		{
+			FileArchive Ar(Path::ConvertProjectPath(m_Path));
+			if (!Ar.IsValid())
+			{
+				return EAssetType::Undefined;
+			}
+
+			uint16 TypeByte;
+			Ar >> TypeByte;
+
+			return static_cast<EAssetType>(TypeByte);
+		}
+
 		// TODO: mark this editor only
 		EAssetType LoadGeneric()
 		{

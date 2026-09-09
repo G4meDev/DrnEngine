@@ -64,6 +64,8 @@ namespace Drn
 
 				Ar >> PositiveBoundExtention;
 				Ar >> NegativeBoundExtention;
+
+				Ar >> ThumbnailDistance;
 			}
 		}
 
@@ -95,6 +97,8 @@ namespace Drn
 
 				Ar << PositiveBoundExtention;
 				Ar << NegativeBoundExtention;
+
+				Ar << ThumbnailDistance;
 			}
 		}
 	}
