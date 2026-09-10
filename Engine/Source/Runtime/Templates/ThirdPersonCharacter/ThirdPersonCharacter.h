@@ -32,6 +32,9 @@ namespace Drn
 		void OnBeginRun();
 		void OnEndRun();
 
+		inline float GetWalkSpeed() const { return m_WalkSpeed; }
+		inline float GetRunSpeed() const { return m_RunSpeed; }
+
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
 		virtual void DrawEditorDefault() override;
@@ -53,8 +56,11 @@ namespace Drn
 
 		bool m_Running = false;
 
-		float m_WalkSpeed = 0.01f;
-		float m_RunSpeed = 0.027f;
+		float m_WalkSpeed = 4.0f;
+		float m_RunSpeed = 10.0f;
+		float m_SpeedRaiseRate = 20.0f;
+		float m_SpeedLowerRate = 50.0f;
+
 		float m_LookSpeed = 70.0f;
 		float m_CameraPitchClamp = 70.0f;
 	};
@@ -80,5 +86,7 @@ namespace Drn
 		AssetHandle<AnimationSequence> RunAnimation;
 
 		AnimationPose FinalPose;
+
+		float LerpedSpeed = 0.0f;
 	};
 }

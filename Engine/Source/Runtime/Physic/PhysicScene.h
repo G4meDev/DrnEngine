@@ -125,6 +125,7 @@ namespace Drn
 	private:
 
 		void StepSimulation(float DeltaTime);
+		void StepControllers(float DeltaTime);
 		void SyncActors();
 
 		void DispatchPhysicEvents();

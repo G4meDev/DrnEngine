@@ -26,7 +26,7 @@ namespace Drn
 	{
 		Pawn::Tick(DeltaTime);
 
-		m_MovementComponent->SetMovementInput(m_MovementInput * 2);
+		m_MovementComponent->SetMovementInput(m_MovementInput);
 		m_MovementInput = Vector::ZeroVector;
 	}
 

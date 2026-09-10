@@ -29,10 +29,10 @@ namespace Drn
 
 		if (m_Controller)
 		{
-			physx::PxControllerFilters Filter;
-			Filter.mFilterFlags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC;
-
-			m_Controller->move(Vector2P(m_MovementInput + Vector::DownVector * 0.1f), 0.001f, DeltaTime, Filter);
+			//physx::PxControllerFilters Filter;
+			//Filter.mFilterFlags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC;
+			//
+			//m_Controller->move(Vector2P(m_MovementInput + Vector::DownVector * 0.1f), 0.001f, DeltaTime, Filter);
 
 			Velocity = P2Vector(m_Controller->getActor()->getLinearVelocity());
 		}
@@ -83,6 +83,11 @@ namespace Drn
 		PX_RELEASE(m_Controller);
 
 		Component::UnRegisterComponent();
+	}
+
+	Vector CharacterMovementComponent::CalculateDisplacement() const
+	{
+		return m_MovementInput + Vector::DownVector * 9.8f;
 	}
 
 	void CharacterMovementComponent::SetMovementInput( const Vector& Input )

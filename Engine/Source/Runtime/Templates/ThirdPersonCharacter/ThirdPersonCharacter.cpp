@@ -56,25 +56,37 @@ namespace Drn
 	{
 		Character::Tick(DeltaTime);
 
+		const Vector VelocityZX = GetCharacterMovementComponent()->GetVelocity() * Vector(1.0f, 0.0f, 1.0f);
+		const float VelocityZXMag = VelocityZX.Length();
+		if (VelocityZXMag> KINDA_SMALL_NUMBER)
+		{
+			const float TurnRate = 10.0f;
+			CharacterMesh->SetWorldRotation(Quat::Slerp(CharacterMesh->GetWorldRotation(), Quat::FromZ(VelocityZX), TurnRate * DeltaTime));
+		}
+		m_SpringArm->SetWorldRotation(CameraRotation.Quaternion());
+
+
 		Vector ForwardVector = m_SpringArm->GetForwardVector() * Vector(1, 0, 1);
 		ForwardVector = ForwardVector.GetSafeNormal();
 
 		Vector RightVector = Vector::CrossProduct( Vector::UpVector, ForwardVector );
 
 		m_MovementInput = ForwardVector * m_ForwardInput + RightVector * m_RightInput;
-		m_MovementInput = m_MovementInput.GetSafeNormal();
-		m_MovementInput = m_MovementInput * (m_Running ? m_RunSpeed : m_WalkSpeed);
+		if (m_MovementInput.Length() > 1.0f)
+		{
+			m_MovementInput = m_MovementInput.GetSafeNormal();
+		}
+		//m_MovementInput = m_MovementInput * (m_Running ? m_RunSpeed : m_WalkSpeed);
+
+		{
+			const float TargetSpeed = m_MovementInput.Length() * (m_Running ? m_RunSpeed : m_WalkSpeed);
+			const float EffectiveSpeed = TargetSpeed > VelocityZXMag ? Math::FInterpTo(VelocityZXMag, TargetSpeed, DeltaTime, m_SpeedRaiseRate) : Math::FInterpTo(VelocityZXMag, TargetSpeed, DeltaTime, m_SpeedLowerRate);
+
+			const Vector MovementDiretion = m_MovementInput.Length() > 0.001 ? m_MovementInput.GetSafeNormal() : VelocityZX.GetSafeNormal();
+			m_MovementInput = MovementDiretion * EffectiveSpeed;
+		}
 
 		m_ForwardInput = m_RightInput = 0;
-
-		m_SpringArm->SetWorldRotation(CameraRotation.Quaternion());
-
-		Vector VelocityZX = GetCharacterMovementComponent()->GetVelocity() * Vector(1.0f, 0.0f, 1.0f);
-		if (VelocityZX.Length() > KINDA_SMALL_NUMBER)
-		{
-			const float TurnRate = 10.0f;
-			CharacterMesh->SetWorldRotation(Quat::Slerp(CharacterMesh->GetWorldRotation(), Quat::FromZ(VelocityZX), TurnRate * DeltaTime));
-		}
 	}
 
 	void ThirdPersonCharacter::CalcCamera( struct ViewInfo& OutResult )
@@ -187,8 +199,8 @@ namespace Drn
 		Animator::Tick(DeltaTime);
 		OwningComponent->MarkRenderStateDirty();
 
-		float CharacterSpeed = OwningCharcater->GetCharacterMovementComponent()->GetVelocity().Length();
-		std::cout << CharacterSpeed << "\n";
+		float CharacterSpeed = OwningCharcater->GetCharacterMovementComponent()->GetVelocity().LengthXZ();
+		LerpedSpeed = Math::FInterpConstantTo(LerpedSpeed, CharacterSpeed, DeltaTime, 50.0f);
 
 		const ReferenceSkeleton& RefSkeleton = OwningComponent->GetMesh()->GetData().RefSkeleton;
 
@@ -199,17 +211,14 @@ namespace Drn
 		const int32 BoneCount = RefSkeleton.BoneInfo.size();
 		FinalPose.BoneTransforms.resize(BoneCount);
 
-		const float WalkSpeedMax = 5.0f;
-		const float RunSpeedMax = 12.0f;
-
-		if (CharacterSpeed < WalkSpeedMax)
+		if (CharacterSpeed < OwningCharcater->GetWalkSpeed())
 		{
-			float Alpha = Math::GetMappedRangeValueClamped(0.0f, WalkSpeedMax, 0.0f, 1.0f, CharacterSpeed);
+			float Alpha = Math::GetMappedRangeValueClamped(0.0f, OwningCharcater->GetWalkSpeed(), 0.0f, 1.0f, LerpedSpeed);
 			FinalPose = AnimationPose::Blend(PlayAnimationIdle.GetPose(), PlayAnimationWalk.GetPose(), Alpha);
 		}
 		else
 		{
-			float Alpha = Math::GetMappedRangeValueClamped(WalkSpeedMax, RunSpeedMax, 0.0f, 1.0f, CharacterSpeed);
+			float Alpha = Math::GetMappedRangeValueClamped(OwningCharcater->GetWalkSpeed(), OwningCharcater->GetRunSpeed(), 0.0f, 1.0f, LerpedSpeed);
 			FinalPose = AnimationPose::Blend(PlayAnimationWalk.GetPose(), PlayAnimationRun.GetPose(), Alpha);
 		}
 

@@ -22,6 +22,7 @@ namespace Drn
 		void RegisterComponent( World* InOwningWorld ) override;
 		void UnRegisterComponent() override;
 
+		virtual Vector CalculateDisplacement() const;
 		void SetMovementInput(const Vector& Input);
 
 		inline Vector GetPosition() const { return m_Controller ? Pd2Vector(m_Controller->getFootPosition()) : GetOwningActor()->GetActorLocation(); }

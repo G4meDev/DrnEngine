@@ -280,6 +280,11 @@ namespace Drn
 			return XMVectorGetX( XMVector3Length( XMLoadFloat3(&m_Vector) ) );
 		}
 
+		inline float LengthXZ() const
+		{
+			return std::sqrt(X*X + Z*Z);
+		}
+
 		inline bool IsNormalized() const 
 		{
 			return std::abs(1.0f - SizeSquared()) < 0.01f;

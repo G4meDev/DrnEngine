@@ -49,6 +49,19 @@ namespace Drn
 		return ((double)std::rand()) / RAND_MAX;
 	}
 
+	float Math::FInterpConstantTo( float Current, float Target, float DeltaTime, float InterpSpeed )
+	{
+		const float Dist = Target - Current;
+
+		if( (Dist * Dist) < SMALL_NUMBER )
+		{
+			return Target;
+		}
+
+		const float Step = InterpSpeed * DeltaTime;
+		return Current + Math::Clamp<float>(Dist, -Step, Step);
+	}
+
 	float Math::FInterpTo( float Current, float Target, float DeltaTime, float InterpSpeed )
 	{
 		if( InterpSpeed <= 0.f )

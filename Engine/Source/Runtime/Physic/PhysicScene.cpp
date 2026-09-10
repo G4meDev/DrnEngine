@@ -130,10 +130,31 @@ namespace Drn
 
 		float ClampedDeltaTime = std::clamp(DeltaTime, 0.00001f, MAX_PHYSIC_TIMESTEP);
 
+		StepControllers(ClampedDeltaTime);
 		m_PhysxScene->simulate(ClampedDeltaTime);
 		m_PhysxScene->fetchResults(true);
 
 		m_PhysxScene->unlockWrite();
+	}
+
+	void PhysicScene::StepControllers( float DeltaTime )
+	{
+		uint32 NumController = m_ControllerManager->getNbControllers();
+		for (uint32 i = 0; i < NumController; i++)
+		{
+			physx::PxController* PC = m_ControllerManager->getController(i);
+			Vector Position = Pd2Vector(PC->getFootPosition());
+
+			CharacterMovementComponent* MC = PhysicUserData::Get<CharacterMovementComponent>( PC->getUserData() );
+			if (MC && !MC->IsPendingKill())
+			{
+				physx::PxControllerFilters Filter;
+				Filter.mFilterFlags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC;
+
+				//PC->move(Vector2P(Vector::ForwardVector * 4.0f * DeltaTime), 0.001f, DeltaTime, Filter);
+				PC->move(Vector2P(MC->CalculateDisplacement() * DeltaTime), 0.001f, DeltaTime, Filter);
+			}
+		}
 	}
 
 	void PhysicScene::SyncActors()
