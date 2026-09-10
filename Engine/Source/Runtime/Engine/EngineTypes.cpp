@@ -85,6 +85,7 @@ namespace Drn
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::ScenePointCloudImporter	, ScenePointCloudImporter );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::Particle					, Particle );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::SkeletalMeshActor			, SkeletalMeshActor );
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::ThirdPersonCharacter		, ThirdPersonCharacter );
 
 		ParticleTypes::RegisterParticleModules();
 

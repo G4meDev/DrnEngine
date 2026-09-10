@@ -30,6 +30,7 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( SphereReflectionCapture	, Volume );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Pawn					, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Character				, Player );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( ThirdPersonCharacter	, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( WheeledVehiclePawn		, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( InstancedStaticMeshActor, Primitive );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Particle				, Effect );

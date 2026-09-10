@@ -233,6 +233,8 @@ set( HEADER_FILES
 	Source/Runtime/Misc/DebugHelper.h
 	Source/Runtime/Misc/Parse.h
 
+	Source/Runtime/Templates/ThirdPersonCharacter/ThirdPersonCharacter.h
+
 	Source/Runtime/Tool/ScenePointCloudImporter.h
 	
 	Source/Editor/Misc/ViewportCameraInputHandler.h
@@ -519,6 +521,8 @@ set( SOURCE_FILES
 	Source/Runtime/Misc/StatsMisc.cpp
 	Source/Runtime/Misc/DebugHelper.cpp
 	Source/Runtime/Misc/Parse.cpp
+
+	Source/Runtime/Templates/ThirdPersonCharacter/ThirdPersonCharacter.cpp
 
 	Source/Runtime/Tool/ScenePointCloudImporter.cpp
 	

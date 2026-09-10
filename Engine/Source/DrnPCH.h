@@ -102,6 +102,8 @@
 #include "Runtime/Misc/Path.h"
 #include "Runtime/Misc/FileSystem.h"
 
+#include "Runtime/Templates/ThirdPersonCharacter/ThirdPersonCharacter.h"
+
 //#define PAR_SHAPES_IMPLEMENTATION
 //#include "ThirdParty/par/par_shapes.h"
 

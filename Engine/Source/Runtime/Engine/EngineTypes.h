@@ -38,6 +38,7 @@ namespace Drn
 		ScenePointCloudImporter,
 		Particle,
 		SkeletalMeshActor,
+		ThirdPersonCharacter,
 	};
 
 	enum class EComponentType : uint32

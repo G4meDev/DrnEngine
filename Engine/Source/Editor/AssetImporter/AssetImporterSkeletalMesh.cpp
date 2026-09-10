@@ -254,14 +254,8 @@ namespace Drn
 				SumWeight += MeshData.VertexData.BoneWeights[VertexIndex * MAX_EFFECTIVE_BONES + i].Value;
 			}
 
-			float NormalizedError = 255 - SumWeight;
-
-			int32 BoneCounter = 0;
-			while (NormalizedError > 0)
-			{
-				MeshData.VertexData.BoneWeights[VertexIndex * MAX_EFFECTIVE_BONES + (BoneCounter++ % MAX_EFFECTIVE_BONES)].Value++;
-				NormalizedError--;
-			}
+			float NormalizedError = UINT8_MAX - SumWeight;
+			MeshData.VertexData.BoneWeights[VertexIndex * MAX_EFFECTIVE_BONES].Value += NormalizedError;
 		}
 
 		MeshData.VertexData.bUse4BitIndices = VertexCount > UINT16_MAX;
