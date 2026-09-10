@@ -13,6 +13,7 @@ namespace Drn
 		, m_MovementInput(Vector::ZeroVector)
 		, m_HalfHeight(3.0f)
 		, m_Radius(1.0f)
+		, Velocity(Vector::ZeroVector)
 	{
 	
 	}
@@ -32,6 +33,13 @@ namespace Drn
 			Filter.mFilterFlags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC;
 
 			m_Controller->move(Vector2P(m_MovementInput + Vector::DownVector * 0.1f), 0.001f, DeltaTime, Filter);
+
+			Velocity = P2Vector(m_Controller->getActor()->getLinearVelocity());
+		}
+
+		else
+		{
+			Velocity = Vector::ZeroVector;
 		}
 	}
 

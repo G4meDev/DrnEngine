@@ -227,5 +227,32 @@ namespace Drn
 		{
 			return A*A;
 		}
+
+		template<class T>
+		static T GetRangePct(T MinValue, T MaxValue, T Value)
+		{
+			static_assert(std::is_floating_point_v<T>);
+
+			const T Divisor = MaxValue - MinValue;
+			if (Math::IsNearlyZero(Divisor))
+			{
+				return (Value >= MaxValue) ? (T)1 : (T)0;
+			}
+
+			return (Value - MinValue) / Divisor;
+		}
+
+		template<class T>
+		static FORCEINLINE T GetRangeValue(T const& RangeMin, T const& RangeMax, T Pct)
+		{
+			return Math::Lerp<T>(RangeMin, RangeMax, Pct);
+		}
+
+		template<class T>
+		static T GetMappedRangeValueClamped(const T& InMin, const T& InMax, const T& OutMin, const T& OutMax, const T Value)
+		{
+			const T ClampedPct = std::clamp<T>(GetRangePct(InMin, InMax, Value), 0, 1);
+			return GetRangeValue(OutMin, OutMax, ClampedPct);
+		}
 	};
 }

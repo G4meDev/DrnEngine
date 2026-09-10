@@ -15,6 +15,8 @@ namespace Drn
 		virtual EActorType GetActorType() override { return EActorType::ThirdPersonCharacter; }
 		inline static EActorType GetActorTypeStatic() { return EActorType::ThirdPersonCharacter; };
 
+		inline SkeletalMeshComponent* GetCharcaterMesh() const { return CharacterMesh.get(); }
+
 		virtual void Tick( float DeltaTime ) override;
 
 		virtual void CalcCamera( struct ViewInfo& OutResult ) override;
@@ -44,14 +46,39 @@ namespace Drn
 		std::shared_ptr<class CameraComponent> m_Camera;
 		std::shared_ptr<SkeletalMeshComponent> CharacterMesh;
 
+		TRefCountPtr<class ThirdPersonCharacterAnimator> CharacterAnimator;
+
 		Vector m_ForwardInput;
 		Vector m_RightInput;
 
 		bool m_Running = false;
 
-		float m_WalkSpeed = 10.0f;
-		float m_RunSpeed = 27.0f;
+		float m_WalkSpeed = 0.01f;
+		float m_RunSpeed = 0.027f;
 		float m_LookSpeed = 70.0f;
 		float m_CameraPitchClamp = 70.0f;
+	};
+
+	class ThirdPersonCharacterAnimator : public Animator
+	{
+	public:
+		ThirdPersonCharacterAnimator(ThirdPersonCharacter* InOwningCharacter);
+
+		virtual void Tick(float DeltaTime) override;
+
+		virtual Matrix GetFinalBoneMatrix(int32 BoneIndex) const override;
+		virtual int32 GetBoneCount() const override;
+
+		AnimTask_PlayAnimation PlayAnimationIdle;
+		AnimTask_PlayAnimation PlayAnimationWalk;
+		AnimTask_PlayAnimation PlayAnimationRun;
+
+		ThirdPersonCharacter* OwningCharcater;
+
+		AssetHandle<AnimationSequence> IdleAnimation;
+		AssetHandle<AnimationSequence> WalkAnimation;
+		AssetHandle<AnimationSequence> RunAnimation;
+
+		AnimationPose FinalPose;
 	};
 }

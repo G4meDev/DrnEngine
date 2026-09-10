@@ -31,6 +31,8 @@
 #include "Runtime/Engine/SkeletalMeshActor.h"
 #include "Runtime/Animation/Animator.h"
 #include "Runtime/Animation/AnimationSequence.h"
+#include "Runtime/Animation/AnimationPose.h"
+#include "Runtime/Animation/AnimTask_PlayAnimation.h"
 #include "Runtime/Engine/CameraActor.h"
 #include "Runtime/Engine/PointLightActor.h"
 #include "Runtime/Engine/SpotLightActor.h"

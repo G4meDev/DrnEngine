@@ -170,6 +170,8 @@ set( HEADER_FILES
 
 	Source/Runtime/Animation/Animator.h
 	Source/Runtime/Animation/AnimationSequence.h
+	Source/Runtime/Animation/AnimationPose.h
+	Source/Runtime/Animation/AnimTask_PlayAnimation.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -459,6 +461,8 @@ set( SOURCE_FILES
 
 	Source/Runtime/Animation/Animator.cpp
 	Source/Runtime/Animation/AnimationSequence.cpp
+	Source/Runtime/Animation/AnimationPose.cpp
+	Source/Runtime/Animation/AnimTask_PlayAnimation.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

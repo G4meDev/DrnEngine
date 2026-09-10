@@ -126,6 +126,13 @@ namespace Drn
 			}
 		}
 
+		// don`t make empty buffer
+		if (BoneCount == 0)
+		{
+			BoneCount = 1;
+			BoneMatrices.resize(BoneCount);
+		}
+
 		BoneMatricesBuffer = RenderUniformBuffer::Create(CommandList->GetParentDevice(), sizeof(Matrix) * BoneCount, EUniformBufferUsage::MultiFrame, BoneMatrices.data());
 
 		// TODO: issue when proxy not begin rendered

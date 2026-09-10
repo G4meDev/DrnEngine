@@ -43,6 +43,8 @@ namespace Drn
 			return UserData;
 		}
 
+		inline const Vector& GetVelocity() { return Velocity; }
+
 #if WITH_EDITOR
 		void DrawDetailPanel( float DeltaTime ) override;
 #endif
@@ -56,5 +58,9 @@ namespace Drn
 		Vector m_MovementInput;
 
 		PhysicUserData UserData;
+
+// -----------------------------------------------------------------
+
+		Vector Velocity;
 	};
 }
