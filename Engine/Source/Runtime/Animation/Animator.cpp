@@ -3,6 +3,7 @@
 
 #include "Editor/AssetPreview/AssetPreviewSkeletalMeshGuiLayer.h"
 #include "Editor/AssetPreview/AssetPreviewAnimationSequenceGuiLayer.h"
+#include "Editor/AssetPreview/AssetPreviewBlendSpace1DGuiLayer.h"
 
 namespace Drn
 {
@@ -234,6 +235,52 @@ namespace Drn
 	{
 		AnimationData& AnimData = Preview->m_OwningAsset->Data;
 		return Preview->DisplayFrameNumber >= 0 ? Preview->DisplayFrameNumber : (AnimTime / AnimData.Length) * AnimData.KeyFrames.size();
+	}
+
+// ------------------------------------------------------------------------------------------
+
+	AnimatorBlendSpace1DPreview::AnimatorBlendSpace1DPreview( class AssetPreviewBlendSpace1DGuiLayer* InPreview )
+	{
+		Preview = InPreview;
+	}
+
+	void AnimatorBlendSpace1DPreview::Tick( float DeltaTime )
+	{
+		Animator::Tick(DeltaTime);
+		OwningComponent->MarkRenderStateDirty();
+
+		SkeletalMesh* Skeleton = Preview->m_OwningAsset->GetSkeleton().Get();
+
+		if (Skeleton)
+		{
+			PlayBlendSpace.PlayBlendSpace1D(Preview->m_OwningAsset, Preview->PreviewSampleTime, DeltaTime);
+			FinalPose = PlayBlendSpace.GetPose();
+			const ReferenceSkeleton& RefSkeleton = Skeleton->GetData().RefSkeleton;
+
+			const int32 BoneCount = PlayBlendSpace.GetPose().BoneTransforms.size();
+			for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
+			{
+				FinalPose.BoneTransforms[BoneIndex] = RefSkeleton.BonePose[BoneIndex] * FinalPose.BoneTransforms[BoneIndex];
+			}
+		}
+
+		else
+		{
+			FinalPose.BoneTransforms.resize(1);
+		}
+	}
+
+	Matrix AnimatorBlendSpace1DPreview::GetFinalBoneMatrix( int32 BoneIndex ) const
+	{
+		drn_check(BoneIndex >= 0);
+		drn_check(BoneIndex < FinalPose.BoneTransforms.size());
+
+		return FinalPose.BoneTransforms[BoneIndex];
+	}
+
+	int32 AnimatorBlendSpace1DPreview::GetBoneCount() const
+	{
+		return FinalPose.BoneTransforms.size();
 	}
 
 #endif

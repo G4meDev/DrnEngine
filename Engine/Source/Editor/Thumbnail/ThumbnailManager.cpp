@@ -393,6 +393,46 @@ namespace Drn
 				Event->m_PreviewWorld = TargetWorld;
 			}
 		}
+
+		else if (AssetType == EAssetType::BlendSpace1D)
+		{
+			AssetHandle<BlendSpace1D> BlendSpaceAsset(AssetPath);
+			BlendSpaceAsset.Load();
+
+			AssetHandle<AnimationSequence> AnimationAsset;
+			if (BlendSpaceAsset.IsValid() && BlendSpaceAsset->GetSkeleton().IsValid() && (BlendSpaceAsset->GetSortedSampleIndices().size() > 0))
+			{
+				int32 SampleIndex = BlendSpaceAsset->GetSortedSampleIndices()[0];
+				AnimationAsset = BlendSpaceAsset->GetSampleData()[SampleIndex].Animation;
+			}
+
+			if (AnimationAsset.IsValid())
+			{
+				PreviewWorld* TargetWorld = new PreviewWorld;
+				TargetWorld->GetWorld()->SetGameMode(true);
+
+				TargetWorld->SkyLight->SetIntensity(0.4f);
+
+				TargetWorld->DirectionalLight->SetIntensity(1);
+				TargetWorld->DirectionalLight->SetActorRotation(Quat(0, XM_PIDIV4, XM_PI));
+
+				AssetHandle<SkeletalMesh> Skeleton = AnimationAsset->GetSkeleton();
+				SkeletalMeshActor* SpawnedActor = TargetWorld->GetWorld()->SpawnActor<SkeletalMeshActor>();
+				SpawnedActor->GetMeshComponent()->SetMesh(Skeleton);
+
+				TRefCountPtr<AnimatorAnimationSequence> Anim = new AnimatorAnimationSequence(AnimationAsset);
+				SpawnedActor->GetMeshComponent()->SetAnimator(Anim);
+
+				Vector FocalPoint = AnimationAsset->GetSkeleton()->GetBounds().Origin;
+				Vector CameraLocation = FocalPoint + Vector::OneVector * AnimationAsset->GetSkeleton()->GetBounds().SphereRadius * AnimationAsset->GetSkeleton()->ThumbnailDistance;
+				TargetWorld->GetWorld()->GetViewportCamera()->SetActorTransform(Transform(CameraLocation, Quat::LookAtRotation(CameraLocation, FocalPoint)));
+
+				TargetWorld->GetSceneRenderer()->ResizeViewDeferred(IntPoint(THUMBNAIL_TEXTURE_SIZE));
+
+				ThumbnailCaptureEvent* Event = CaptureSceneThumbnail(TargetWorld->GetSceneRenderer(), AssetPath);
+				Event->m_PreviewWorld = TargetWorld;
+			}
+		}
 	}
 
 	void ThumbnailManager::ProccessRequestedThumbnails( D3D12CommandList* CmdList )

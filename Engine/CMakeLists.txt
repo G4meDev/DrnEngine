@@ -169,9 +169,11 @@ set( HEADER_FILES
 	Source/Runtime/Particle/ParticleDistributionVector.h
 
 	Source/Runtime/Animation/Animator.h
-	Source/Runtime/Animation/AnimationSequence.h
 	Source/Runtime/Animation/AnimationPose.h
+	Source/Runtime/Animation/AnimationSequence.h
+	Source/Runtime/Animation/BlendSpace1D.h
 	Source/Runtime/Animation/AnimTask_PlayAnimation.h
+	Source/Runtime/Animation/AnimTask_PlayBlendSpace1D.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -269,6 +271,7 @@ set( HEADER_FILES
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewSkeletalMeshGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewAnimationSequenceGuiLayer.h
+	Source/Editor/AssetPreview/AssetPreviewBlendSpace1DGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewMaterialInstanceGuiLayer.h
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.h
@@ -460,9 +463,11 @@ set( SOURCE_FILES
 	Source/Runtime/Particle/ParticleDistributionVector.cpp
 
 	Source/Runtime/Animation/Animator.cpp
-	Source/Runtime/Animation/AnimationSequence.cpp
 	Source/Runtime/Animation/AnimationPose.cpp
+	Source/Runtime/Animation/AnimationSequence.cpp
+	Source/Runtime/Animation/BlendSpace1D.cpp
 	Source/Runtime/Animation/AnimTask_PlayAnimation.cpp
+	Source/Runtime/Animation/AnimTask_PlayBlendSpace1D.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp
@@ -560,6 +565,7 @@ set( SOURCE_FILES
 	Source/Editor/AssetPreview/AssetPreviewStaticMeshGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewSkeletalMeshGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewAnimationSequenceGuiLayer.cpp
+	Source/Editor/AssetPreview/AssetPreviewBlendSpace1DGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewMaterialGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewMaterialInstanceGuiLayer.cpp
 	Source/Editor/AssetPreview/AssetPreviewTexture2DGuiLayer.cpp

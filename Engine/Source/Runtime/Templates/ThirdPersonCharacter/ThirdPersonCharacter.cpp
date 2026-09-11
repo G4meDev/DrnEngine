@@ -184,14 +184,17 @@ namespace Drn
 		const int32 BoneCount = RefSkeleton.BoneInfo.size();
 		FinalPose.BoneTransforms.resize(BoneCount);
 
-		IdleAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Idle.drn");
-		IdleAnimation.Load();
+		IdleWalkRunBlendSpace = AssetHandle<BlendSpace1D>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\BS_ThirdPerson_IdleWalkRun.drn");
+		IdleWalkRunBlendSpace.Load();
 
-		WalkAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Walk.drn");
-		WalkAnimation.Load();
-
-		RunAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Run.drn");
-		RunAnimation.Load();
+		//IdleAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Idle.drn");
+		//IdleAnimation.Load();
+		//
+		//WalkAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Walk.drn");
+		//WalkAnimation.Load();
+		//
+		//RunAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Run.drn");
+		//RunAnimation.Load();
 	}
 
 	void ThirdPersonCharacterAnimator::Tick( float DeltaTime )
@@ -200,29 +203,31 @@ namespace Drn
 		OwningComponent->MarkRenderStateDirty();
 
 		float CharacterSpeed = OwningCharcater->GetCharacterMovementComponent()->GetVelocity().LengthXZ();
-		LerpedSpeed = Math::FInterpConstantTo(LerpedSpeed, CharacterSpeed, DeltaTime, 50.0f);
 
 		const ReferenceSkeleton& RefSkeleton = OwningComponent->GetMesh()->GetData().RefSkeleton;
-
-		PlayAnimationIdle.PlayAnimation(IdleAnimation, DeltaTime);
-		PlayAnimationWalk.PlayAnimation(WalkAnimation, DeltaTime);
-		PlayAnimationRun.PlayAnimation(RunAnimation, DeltaTime);
-
 		const int32 BoneCount = RefSkeleton.BoneInfo.size();
-		FinalPose.BoneTransforms.resize(BoneCount);
 
-		if (CharacterSpeed < OwningCharcater->GetWalkSpeed())
-		{
-			float Alpha = Math::GetMappedRangeValueClamped(0.0f, OwningCharcater->GetWalkSpeed(), 0.0f, 1.0f, LerpedSpeed);
-			FinalPose = AnimationPose::Blend(PlayAnimationIdle.GetPose(), PlayAnimationWalk.GetPose(), Alpha);
-		}
-		else
-		{
-			float Alpha = Math::GetMappedRangeValueClamped(OwningCharcater->GetWalkSpeed(), OwningCharcater->GetRunSpeed(), 0.0f, 1.0f, LerpedSpeed);
-			FinalPose = AnimationPose::Blend(PlayAnimationWalk.GetPose(), PlayAnimationRun.GetPose(), Alpha);
-		}
+		PlayIdleWalkRun.PlayBlendSpace1D(IdleWalkRunBlendSpace, CharacterSpeed, DeltaTime);
 
-		//FinalPose = PlayAnimationWalk.GetPose();
+		//PlayAnimationIdle.PlayAnimation(IdleAnimation, DeltaTime);
+		//PlayAnimationWalk.PlayAnimation(WalkAnimation, DeltaTime);
+		//PlayAnimationRun.PlayAnimation(RunAnimation, DeltaTime);
+		//
+		//const int32 BoneCount = RefSkeleton.BoneInfo.size();
+		//FinalPose.BoneTransforms.resize(BoneCount);
+		//
+		//if (CharacterSpeed < OwningCharcater->GetWalkSpeed())
+		//{
+		//	float Alpha = Math::GetMappedRangeValueClamped(0.0f, OwningCharcater->GetWalkSpeed(), 0.0f, 1.0f, LerpedSpeed);
+		//	FinalPose = AnimationPose::Blend(PlayAnimationIdle.GetPose(), PlayAnimationWalk.GetPose(), Alpha);
+		//}
+		//else
+		//{
+		//	float Alpha = Math::GetMappedRangeValueClamped(OwningCharcater->GetWalkSpeed(), OwningCharcater->GetRunSpeed(), 0.0f, 1.0f, LerpedSpeed);
+		//	FinalPose = AnimationPose::Blend(PlayAnimationWalk.GetPose(), PlayAnimationRun.GetPose(), Alpha);
+		//}
+
+		FinalPose = PlayIdleWalkRun.GetPose();
 
 		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
 		{

@@ -421,6 +421,19 @@ namespace Drn
 				OnRefresh();
 			}
 
+			if (ImGui::Button("Blend Space 1D"))
+			{
+				if (!SelectedFolder)
+				{
+					LOG(LogContentBrowser, Warning, "Cloudn`t add asset. there is no folder selected.");
+					return;
+				}
+
+				AssetManager::Get()->Create<BlendSpace1D>(SelectedFolder->File.m_FullPath, "BlendSpace1D_", 1);
+
+				OnRefresh();
+			}
+
 			ImGui::EndPopup();
 		}
 	}

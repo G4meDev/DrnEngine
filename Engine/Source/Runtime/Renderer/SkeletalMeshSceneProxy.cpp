@@ -45,10 +45,11 @@ namespace Drn
 			m_Mesh = m_OwningSkeletalMeshComponent->GetMesh();
 		}
 		
-		if (m_Mesh.IsValid())
+		if (!m_Mesh.IsValid())
 		{
-			m_Mesh->UploadResources(CommandList);
+			return;
 		}
+		m_Mesh->UploadResources(CommandList);
 		
 		if (m_OwningSkeletalMeshComponent->IsRenderStateDirty())
 		{

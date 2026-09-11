@@ -57,6 +57,31 @@ namespace Drn
 		Quat(Vector::UpVector		, XM_PI),		// direction: backward	, up: up
 	};
 
+	Quat Quat::LookToRotation( const Vector& Forward, const Vector& Up )
+	{
+		return Matrix::MakeFromZY(Forward, Up).Rotation();
+	}
+
+	Quat Quat::LookAtRotation( const Vector& Start, const Vector& Target )
+	{
+		return Matrix::MakeFromZ(Target - Start).Rotation();
+	}
+
+	// Quat Quat::FromX( const Vector& XAxis )
+	//{
+	//	
+	//}
+
+	Quat Quat::FromY( const Vector& YAxis )
+	{
+		return Matrix::MakeFromY(YAxis).Rotation();
+	}
+
+	Quat Quat::FromZ( const Vector& ZAxis )
+	{
+		return Matrix::MakeFromZ(ZAxis).Rotation();
+	}
+
 #if WITH_EDITOR
 	bool Quat::Draw(const std::string& id, const std::string& Label, EParameterPopupContext PopupOptions)
 	{
@@ -105,31 +130,6 @@ namespace Drn
 		}
 
 		return bDirty;
-	}
-
-	Quat Quat::LookToRotation( const Vector& Forward, const Vector& Up )
-	{
-		return Matrix::MakeFromZY(Forward, Up).Rotation();
-	}
-
-	Quat Quat::LookAtRotation( const Vector& Start, const Vector& Target )
-	{
-		return Matrix::MakeFromZ(Target - Start).Rotation();
-	}
-
-	// Quat Quat::FromX( const Vector& XAxis )
-	//{
-	//	
-	//}
-
-	Quat Quat::FromY( const Vector& YAxis )
-	{
-		return Matrix::MakeFromY(YAxis).Rotation();
-	}
-
-	Quat Quat::FromZ( const Vector& ZAxis )
-	{
-		return Matrix::MakeFromZ(ZAxis).Rotation();
 	}
 
 	std::string Quat::ToString()

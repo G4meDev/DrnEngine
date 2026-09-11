@@ -22,6 +22,7 @@ namespace Drn
 		ParticleSystem,
 		SkeletalMesh,
 		AnimationSequence,
+		BlendSpace1D,
 	};
 
 	class Asset : public Serializable

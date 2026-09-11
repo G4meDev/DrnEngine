@@ -70,5 +70,6 @@ namespace Drn
 	{
 	public:
 		static void GetFrameIndicesFromTime(int32& OutKeyIndex1, int32& OutKeyIndex2, float& OutAlpha, const float Time, const int32 NumFrames, const float SequenceLength);
+		static float StepAnimationTime(float CurrentTime, float DeltaTime, float AnimationLength, float PlayRate = 1.0f, bool bLoop = true);
 	};
 }

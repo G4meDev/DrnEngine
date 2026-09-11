@@ -180,4 +180,17 @@ namespace Drn
 		OutAlpha = Alpha;
 	}
 
+	float AnimationRuntime::StepAnimationTime(float CurrentTime, float DeltaTime, float AnimationLength, float PlayRate, bool bLoop)
+	{
+		CurrentTime += DeltaTime * PlayRate;
+		if (bLoop)
+		{
+			return std::fmod(CurrentTime, AnimationLength);
+		}
+		else
+		{
+			return std::min(CurrentTime, AnimationLength);
+		}
+	}
+
         }  // namespace Drn

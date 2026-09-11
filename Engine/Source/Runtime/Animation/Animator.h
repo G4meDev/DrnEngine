@@ -2,6 +2,9 @@
 
 #include "ForwardTypes.h"
 
+#include "Runtime/Animation/AnimTask_PlayBlendSpace1D.h"
+#include "Runtime/Animation/AnimationPose.h"
+
 namespace Drn
 {
 	class Animator : public RefCountedObject
@@ -80,6 +83,23 @@ namespace Drn
 		std::vector<Transform> FinalBoneTranforms;
 
 		float AnimTime;
+	};
+
+	class AnimatorBlendSpace1DPreview : public Animator
+	{
+	public:
+		AnimatorBlendSpace1DPreview(class AssetPreviewBlendSpace1DGuiLayer* InPreview);
+
+		virtual void Tick(float DeltaTime) override;
+
+		virtual Matrix GetFinalBoneMatrix(int32 BoneIndex) const override;
+		virtual int32 GetBoneCount() const override;
+
+		AnimTask_PlayBlendSpace1D PlayBlendSpace;
+
+		AnimationPose FinalPose;
+
+		class AssetPreviewBlendSpace1DGuiLayer* Preview;
 	};
 #endif
 }

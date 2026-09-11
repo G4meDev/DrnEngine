@@ -12,16 +12,7 @@ namespace Drn
 		const AnimationData& AnimData = Animation->GetAnimationData();
 		const ReferenceSkeleton& RefSkeleton = Sequence->GetSkeleton()->GetData().RefSkeleton;
 
-		AnimTime = AnimTime + DeltaTime * Rate;
-		if (bLoop)
-		{
-			AnimTime = std::fmod(AnimTime, AnimData.Length);
-		}
-		else
-		{
-			AnimTime = std::min(AnimTime, AnimData.Length);
-		}
-
+		AnimTime = AnimationRuntime::StepAnimationTime(AnimTime, DeltaTime, AnimData.Length, Rate, bLoop);
 		int32 FrameIndex1; int32 FrameIndex2; float Alpha;
 		AnimationRuntime::GetFrameIndicesFromTime(FrameIndex1, FrameIndex2, Alpha, AnimTime, Animation->GetNumFrames(), AnimData.Length);
 
@@ -46,4 +37,5 @@ namespace Drn
 			}	
 		}
 	}
-}
+
+        }

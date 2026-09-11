@@ -38,7 +38,7 @@ namespace Drn
 			, m_Asset(nullptr) {}
 
 		AssetHandle() 
-			: AssetHandle("InvalidPath") {}
+			: AssetHandle("") {}
 
 		~AssetHandle() 
 		{
@@ -182,6 +182,11 @@ namespace Drn
 			else if (Type == EAssetType::AnimationSequence)
 			{
 				m_Asset = AssetManager::Get()->Load<AnimationSequence>(m_Path);
+			}
+
+			else if (Type == EAssetType::BlendSpace1D)
+			{
+				m_Asset = AssetManager::Get()->Load<BlendSpace1D>(m_Path);
 			}
 
 			else
@@ -331,6 +336,11 @@ namespace Drn
 	template<typename T>
 	T* AssetManager::Load( const std::string& Path )
 	{
+		if (Path == "")
+		{
+			return nullptr;
+		}
+
 		Asset* asset = nullptr;
 		auto it = m_AssetRegistery.find(Path);
 
