@@ -39,6 +39,12 @@ namespace Drn
 		}
 
 		template<typename T>
+		static T RadiansToDegrees(T const& RadVal)
+		{
+			return RadVal * (180.f / PI);
+		}
+
+		template<typename T>
 		static T Clamp(T Value, T Min, T Max)
 		{
 			return (Value < Min) ? Min : (Value < Max) ? Value : Max;
@@ -74,6 +80,13 @@ namespace Drn
 		{
 			return tanf(Value);
 		}
+
+		static inline float Asin( float Value ) { return asinf( (Value<-1.f) ? -1.f : ((Value<1.f) ? Value : 1.f) ); }
+		static inline float Acos( float Value ) { return acosf( (Value<-1.f) ? -1.f : ((Value<1.f) ? Value : 1.f) ); }
+
+		static inline float Atan2(float Y, float X) { return std::atan2(Y, X); }
+
+		static inline float Sqrt( float Value ) { return sqrtf(Value); }
 
 		static bool IsNearlyEqual(float A, float B, float Telorance = 0.001f);
 

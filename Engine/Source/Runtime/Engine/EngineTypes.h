@@ -143,6 +143,21 @@ namespace Drn
 		Scale			= (1u << 7) | (1u << 8) | (1u << 9)
 	};
 
+	enum class EBoneModificationMode : uint8
+	{
+		Ignore,
+		Additive,
+		Replace
+	};
+
+	enum class EBoneControlSpace : uint8
+	{
+		WorldSpace,
+		ComponentSpace,
+		ParentBoneSpace,
+		BoneSpace
+	};
+
 	class StaticShadowDepthMapData
 	{
 	public:

@@ -269,6 +269,18 @@ namespace Drn
 			return Vector(m_Vector.x*Scale, m_Vector.y*Scale, m_Vector.z*Scale);
 		}
 
+		inline bool Normalize(float Tolerance = SMALL_NUMBER)
+		{
+			const float SquareSum = X*X + Y*Y + Z*Z;
+			if(SquareSum > Tolerance)
+			{
+				const float Scale = 1.0f / std::sqrt(SquareSum);
+				X *= Scale; Y *= Scale; Z *= Scale;
+				return true;
+			}
+			return false;
+		}
+
 		inline float SizeSquared() const
 		{
 			XMVECTOR Vec = XMLoadFloat3(&m_Vector);

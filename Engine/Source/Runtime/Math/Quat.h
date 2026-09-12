@@ -96,6 +96,36 @@ namespace Drn
 		inline Vector GetUpAxis() const { return GetAxisY(); }
 		inline Vector GetVector() const { return GetAxisZ(); }
 
+		static inline Quat FindBetween_Helper(const Vector& A, const Vector& B, float NormAB)
+		{
+			float W = NormAB + Vector::DotProduct(A, B);
+			Quat Result;
+
+			if (W >= 1e-6f * NormAB)
+			{
+				Result = Quat(A.Y * B.Z - A.Z * B.Y,
+							   A.Z * B.X - A.X * B.Z,
+							   A.X * B.Y - A.Y * B.X,
+							   W);
+			}
+			else
+			{
+				W = 0.f;
+				Result = std::abs(A.X) > std::abs(A.Y)
+						? Quat(-A.Z, 0.f, A.X, W)
+						: Quat(0.f, -A.Z, A.Y, W);
+			}
+
+			Result.Normalize();
+			return Result;
+		}
+
+		static inline Quat FindBetweenNormals(const Vector& A, const Vector& B)
+		{
+			const float NormAB = 1.f;
+			return FindBetween_Helper(A, B, NormAB);
+		}
+
 		std::string ToString();
 		bool FromString(const std::string& Str);
 

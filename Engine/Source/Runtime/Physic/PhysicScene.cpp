@@ -151,8 +151,10 @@ namespace Drn
 				physx::PxControllerFilters Filter;
 				Filter.mFilterFlags = PxQueryFlag::eSTATIC | PxQueryFlag::eDYNAMIC;
 
-				//PC->move(Vector2P(Vector::ForwardVector * 4.0f * DeltaTime), 0.001f, DeltaTime, Filter);
-				PC->move(Vector2P(MC->CalculateDisplacement() * DeltaTime), 0.001f, DeltaTime, Filter);
+				physx::PxControllerCollisionFlags CollisionFlags = PC->move(Vector2P(MC->CalculateDisplacement() * DeltaTime), 0.001f, DeltaTime, Filter);
+				MC->bCollidingOnBottom = CollisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN;
+				MC->bCollidingOnSides = CollisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES;
+				MC->bCollidingOnTop = CollisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP;
 			}
 		}
 	}

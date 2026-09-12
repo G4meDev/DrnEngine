@@ -46,6 +46,10 @@ namespace Drn
 
 		inline const Vector& GetVelocity() { return Velocity; }
 
+		inline bool IsCollidingOnBottom() const { return bCollidingOnBottom; }
+		inline bool IsCollidingOnSides() const { return bCollidingOnSides; }
+		inline bool IsCollidingOnTop() const { return bCollidingOnTop; }
+
 #if WITH_EDITOR
 		void DrawDetailPanel( float DeltaTime ) override;
 #endif
@@ -63,5 +67,10 @@ namespace Drn
 // -----------------------------------------------------------------
 
 		Vector Velocity;
+		bool bCollidingOnBottom;
+		bool bCollidingOnSides;
+		bool bCollidingOnTop;
+
+		friend class PhysicScene;
 	};
 }

@@ -168,6 +168,7 @@ set( HEADER_FILES
 	Source/Runtime/Particle/ParticleDistributionFloat.h
 	Source/Runtime/Particle/ParticleDistributionVector.h
 
+	Source/Runtime/Animation/AnimationCore.h
 	Source/Runtime/Animation/Animator.h
 	Source/Runtime/Animation/AnimationPose.h
 	Source/Runtime/Animation/AnimationSequence.h
@@ -462,6 +463,7 @@ set( SOURCE_FILES
 	Source/Runtime/Particle/ParticleDistributionFloat.cpp
 	Source/Runtime/Particle/ParticleDistributionVector.cpp
 
+	Source/Runtime/Animation/AnimationCore.cpp
 	Source/Runtime/Animation/Animator.cpp
 	Source/Runtime/Animation/AnimationPose.cpp
 	Source/Runtime/Animation/AnimationSequence.cpp
