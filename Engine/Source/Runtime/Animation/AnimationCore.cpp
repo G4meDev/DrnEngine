@@ -193,6 +193,39 @@ namespace Drn
 		SolveTwoBoneIK(InOutRootTransform, InOutJointTransform, InOutEndTransform, JointTarget, Effector, UpperLimbLength, LowerLimbLength, bAllowStretching, StartStretchRatio, MaxStretchScale);
 	}
 
+	void AnimationRuntime::TwoBoneIK( AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, int32 BoneIndex, const Vector& JointTarget,
+		const Vector& Effector, bool bAllowStretching, float StartStretchRatio, float MaxStretchScale, EBoneControlSpace JointSpace, EBoneControlSpace EffectorSpace )
+	{
+		drn_check(BoneIndex >= 0);
+
+		int32 JointIndex = RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+		drn_check(JointIndex >= 0);
+
+		int32 RootIndex = RefSkeleton.BoneInfo[JointIndex].ParentIndex;
+		drn_check(RootIndex >= 0);
+
+		Transform RootTransform = Pose.BoneTransforms[RootIndex];
+		Transform JointTransform = Pose.BoneTransforms[JointIndex];
+		Transform EndTransform = Pose.BoneTransforms[BoneIndex];
+
+		Transform EffectorTargetTransform(Effector, Quat::Identity);
+		Transform JointTargetTransform(JointTarget, Quat::Identity);
+
+		ConvertToComponentSpace(Pose, RefSkeleton, ComponentTransform, EffectorTargetTransform, BoneIndex, EffectorSpace);
+		ConvertToComponentSpace(Pose, RefSkeleton, ComponentTransform, JointTargetTransform, JointIndex, JointSpace);
+
+		SolveTwoBoneIK(RootTransform, JointTransform, EndTransform, JointTargetTransform.GetLocation(), EffectorTargetTransform.GetLocation(), bAllowStretching, StartStretchRatio, MaxStretchScale);
+
+		AnimationRuntime::ModifyBoneTransform(Pose, RefSkeleton, ComponentTransform, RootIndex, RootTransform,
+			EBoneControlSpace::ComponentSpace, EBoneModificationMode::Replace, EBoneModificationMode::Replace, EBoneModificationMode::Replace);
+
+		AnimationRuntime::ModifyBoneTransform(Pose, RefSkeleton, ComponentTransform, JointIndex, JointTransform,
+			EBoneControlSpace::ComponentSpace, EBoneModificationMode::Replace, EBoneModificationMode::Replace, EBoneModificationMode::Replace);
+
+		AnimationRuntime::ModifyBoneTransform(Pose, RefSkeleton, ComponentTransform, BoneIndex, EndTransform,
+			EBoneControlSpace::ComponentSpace, EBoneModificationMode::Replace, EBoneModificationMode::Replace, EBoneModificationMode::Replace);
+	}
+
 	void AnimationRuntime::ConvertFromComponentSpace( AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, Transform& InOutTransform, int32 BoneIndex, EBoneControlSpace Space )
 	{
 		if (Space == EBoneControlSpace::ComponentSpace)
@@ -229,12 +262,10 @@ namespace Drn
 		}
 	}
 
-	void AnimationRuntime::ModifyBoneTransform( AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, const std::string& BoneName, const Transform& BoneTransform,
+	void AnimationRuntime::ModifyBoneTransform( AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, int32 BoneIndex, const Transform& BoneTransform,
 		EBoneControlSpace Space, EBoneModificationMode TranslationMode, EBoneModificationMode RotationMode, EBoneModificationMode ScaleMode)
 	{
 		SCOPE_STAT();
-
-		const int32 BoneIndex = RefSkeleton.FindBone(BoneName);
 		drn_check(BoneIndex >= 0);
 
 		Transform NewTransform = Pose.BoneTransforms[BoneIndex];

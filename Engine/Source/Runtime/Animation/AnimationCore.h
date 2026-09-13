@@ -23,10 +23,13 @@ namespace Drn
 		static void SolveTwoBoneIK(Transform& InOutRootTransform, Transform& InOutJointTransform, Transform& InOutEndTransform, const Vector& JointTarget, const Vector& Effector,
 			bool bAllowStretching, float StartStretchRatio, float MaxStretchScale);
 
+		static void TwoBoneIK(AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, int32 BoneIndex, const Vector& JointTarget, const Vector& Effector,
+			bool bAllowStretching, float StartStretchRatio, float MaxStretchScale, EBoneControlSpace JointSpace = EBoneControlSpace::WorldSpace, EBoneControlSpace EffectorSpace = EBoneControlSpace::WorldSpace);
+
 		static void ConvertFromComponentSpace(AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, Transform& InOutTransform, int32 BoneIndex, EBoneControlSpace Space);
 		static void ConvertToComponentSpace(AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, Transform& InOutTransform, int32 BoneIndex, EBoneControlSpace Space);
 
-		static void ModifyBoneTransform(AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, const std::string& BoneName, const Transform& BoneTransform,
+		static void ModifyBoneTransform(AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, int32 BoneIndex, const Transform& BoneTransform,
 			EBoneControlSpace Space, EBoneModificationMode TranslationMode = EBoneModificationMode::Ignore,
 			EBoneModificationMode RotationMode = EBoneModificationMode::Ignore, EBoneModificationMode ScaleMode = EBoneModificationMode::Ignore);
 	};

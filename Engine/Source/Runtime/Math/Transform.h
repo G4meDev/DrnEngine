@@ -24,6 +24,7 @@ namespace Drn
 		Transform() : Transform(Vector::ZeroVector, Quat(), Vector::OneVector) {};
 		inline Transform(const Vector& InLocation, const Quat& InRotation, const Vector& InScale) : Location(InLocation), Rotation(InRotation), Scale(InScale) {};
 		inline Transform(const Vector& InLocation, const Quat& InRotation) : Location(InLocation), Rotation(InRotation), Scale(Vector::OneVector) {};
+		inline Transform(const Vector& InLocation) : Location(InLocation), Rotation(Quat::Identity), Scale(Vector::OneVector) {};
 		Transform(const Matrix& InMatrix);
 
 		Transform operator*(const Transform& Other) const;

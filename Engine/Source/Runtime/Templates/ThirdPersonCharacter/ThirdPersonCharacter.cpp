@@ -200,6 +200,41 @@ namespace Drn
 		//RunAnimation.Load();
 	}
 
+	bool TraceFootIK(Actor* OwningActor, const AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, int32 BoneIndex, float TraceDistance, Vector& HitLocation, Vector& HitNormal, float& HitOffset)
+	{
+		const int32 JointIndex = RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
+		const int32 RootIndex = RefSkeleton.BoneInfo[JointIndex].ParentIndex;
+
+		const Vector BoneWorldLocation = (Pose.BoneTransforms[BoneIndex] * ComponentTransform).GetLocation();
+		const Vector FlattenFootLocation = Vector(BoneWorldLocation.X, ComponentTransform.GetLocation().Y, BoneWorldLocation.Z);
+		const Vector TraceStart = FlattenFootLocation + Vector::UpVector * TraceDistance;
+		const Vector TraceEnd = FlattenFootLocation + Vector::DownVector * TraceDistance;
+
+		HitResult Hit;
+		bool bHit = OwningActor->GetWorld()->LineTrace(Hit, TraceStart, TraceEnd, {ECollisionChannel::ECC_WorldStatic}, {OwningActor}, 0.0f);
+
+		if (bHit)
+		{
+			HitLocation = Hit.Location;
+			HitNormal = Hit.Normal;
+			HitOffset = HitLocation.Y - FlattenFootLocation.Y;
+		}
+		else
+		{
+			HitLocation = FlattenFootLocation;
+			HitNormal = Vector::UpVector;
+			HitOffset = 0.0f;
+		}
+
+		return bHit;
+	}
+
+	Quat CalculateFootRotation(const Vector& Normal)
+	{
+		return Rotator(Math::RadiansToDegrees(Math::Atan2(Normal.Z, Normal.Y)), 0.0f,
+			Math::RadiansToDegrees(Math::Atan2(Normal.X, Normal.Y))).Quaternion();
+	}
+
 	void ThirdPersonCharacterAnimator::Tick( float DeltaTime )
 	{
 		Animator::Tick(DeltaTime);
@@ -232,57 +267,49 @@ namespace Drn
 
 		FinalPose = PlayIdleWalkRun.GetPose();
 
-		const std::string BoneName = "mixamorig:RightFoot";
-		const int32 BoneIndex = RefSkeleton.FindBone(BoneName);
-		drn_check(BoneIndex > 0);
+		Vector IKLocation_RF; Vector IKNormal_RF; float IKOffset_RF;
+		Vector IKLocation_LF; Vector IKNormal_LF; float IKOffset_LF;
 
-		const int32 JointIndex = RefSkeleton.BoneInfo[BoneIndex].ParentIndex;
-		const int32 RootIndex = RefSkeleton.BoneInfo[JointIndex].ParentIndex;
+		const std::string BoneName_RF = "mixamorig:RightFoot";
+		const int32 BoneIndex_RF = RefSkeleton.FindBone(BoneName_RF);
+		drn_check(BoneIndex_RF >= 0);
 
+		const std::string BoneName_LF = "mixamorig:LeftFoot";
+		const int32 BoneIndex_LF = RefSkeleton.FindBone(BoneName_LF);
+		drn_check(BoneIndex_LF >= 0);
+
+		const float FootTraceDistance = 1.0f;
 		const Transform ComponentTransform = OwningComponent->GetWorldTransform();
-		const Transform BoneWorldTransform = FinalPose.BoneTransforms[BoneIndex] * ComponentTransform;
-		const float HalfTraceDistance = 1.0f;
-		const Vector TraceStart = BoneWorldTransform.GetLocation() * Vector(1, 0, 1) + Vector::UpVector * (ComponentTransform.GetLocation().Y + HalfTraceDistance);
-		const Vector TraceEnd = TraceStart + Vector::DownVector * HalfTraceDistance;
+		TraceFootIK(OwningCharcater, FinalPose, RefSkeleton, ComponentTransform, BoneIndex_RF, FootTraceDistance, IKLocation_RF, IKNormal_RF, IKOffset_RF);
+		TraceFootIK(OwningCharcater, FinalPose, RefSkeleton, ComponentTransform, BoneIndex_LF, FootTraceDistance, IKLocation_LF, IKNormal_LF, IKOffset_LF);
 
-		HitResult Hit;
-		bool bHit = OwningCharcater->GetWorld()->LineTrace(Hit, TraceStart, TraceEnd, {ECollisionChannel::ECC_WorldStatic}, {OwningCharcater}, 0.0f);
+		const std::string BoneName_Root = "mixamorig:Hips";
+		const int32 BoneIndex_Root = RefSkeleton.FindBone(BoneName_Root);
+		drn_check(BoneIndex_Root >= 0);
 
-		if (bHit)
-		{
-			Transform RootTransform = FinalPose.BoneTransforms[RootIndex];
-			Transform JointTransform = FinalPose.BoneTransforms[JointIndex];
-			Transform BoneTransform = FinalPose.BoneTransforms[BoneIndex];
+		const Vector RootOffset = Vector::UpVector * (IKOffset_RF + IKOffset_LF) * 0.5f;
+		AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_Root, Transform(RootOffset),
+			EBoneControlSpace::WorldSpace, EBoneModificationMode::Ignore, EBoneModificationMode::Additive, EBoneModificationMode::Ignore);
 
-			const Vector JointTarget = Vector(2.0f, 4.0f, 7.0f);
-			const Vector FootBottomOffset = Vector(0.0f, 0.2f, 0.0f);
-			const Vector Effector = ComponentTransform.InverseTransformPosition(Hit.Location + FootBottomOffset);
+		const Vector JointTarget_RF = Vector(0.5f, 1.5f, 2.0f);
+		const Vector JointTarget_LF = Vector(-0.5f, 1.5f, 2.0f);
 
-			bool bAllowStretching = false;
-			float StartStretchRatio = 1.0f;
-			float MaxStretchScale = 1.0f;
+		//OwningCharcater->GetWorld()->DrawDebugSphere(ComponentTransform.TransformPosition(JointTarget_RF), Quat::Identity, Color::Red, 1.0f, 32, 0.0, 0.0f);
 
-			AnimationRuntime::SolveTwoBoneIK(RootTransform, JointTransform, BoneTransform, JointTarget, Effector, bAllowStretching, StartStretchRatio, MaxStretchScale);
+		const Vector Effector_RF = IKLocation_RF + Vector::UpVector * FinalPose.BoneTransforms[BoneIndex_RF].GetLocation().Y;
+		const Vector Effector_LF = IKLocation_LF + Vector::UpVector * FinalPose.BoneTransforms[BoneIndex_LF].GetLocation().Y;
 
-			AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, RefSkeleton.BoneInfo[RootIndex].Name, RootTransform,
-				EBoneControlSpace::ComponentSpace, EBoneModificationMode::Replace, EBoneModificationMode::Replace, EBoneModificationMode::Replace);
+		AnimationRuntime::TwoBoneIK(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_RF, JointTarget_RF, Effector_RF,
+			false, 1.0f, 1.0f, EBoneControlSpace::ComponentSpace, EBoneControlSpace::WorldSpace);
 
-			AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, RefSkeleton.BoneInfo[JointIndex].Name, JointTransform,
-				EBoneControlSpace::ComponentSpace, EBoneModificationMode::Replace, EBoneModificationMode::Replace, EBoneModificationMode::Replace);
+		AnimationRuntime::TwoBoneIK(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_LF, JointTarget_LF, Effector_LF,
+			false, 1.0f, 1.0f, EBoneControlSpace::ComponentSpace, EBoneControlSpace::WorldSpace);
 
-			AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, RefSkeleton.BoneInfo[BoneIndex].Name, BoneTransform,
-				EBoneControlSpace::ComponentSpace, EBoneModificationMode::Replace, EBoneModificationMode::Replace, EBoneModificationMode::Replace);
+		AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_RF, Transform(Vector::ZeroVector, CalculateFootRotation(IKNormal_RF)),
+			EBoneControlSpace::WorldSpace, EBoneModificationMode::Ignore, EBoneModificationMode::Additive, EBoneModificationMode::Ignore);
 
-			if (Hit.Normal.Y < 0.99f)
-			{
-				Quat FootRotation = Rotator(Math::RadiansToDegrees(Math::Atan2(Hit.Normal.Z, Hit.Normal.Y)), 0.0f,
-					Math::RadiansToDegrees(Math::Atan2(Hit.Normal.X, Hit.Normal.Y))).Quaternion();
-
-				AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, RefSkeleton.BoneInfo[BoneIndex].Name, Transform(Vector::ZeroVector, FootRotation),
-					EBoneControlSpace::WorldSpace, EBoneModificationMode::Ignore, EBoneModificationMode::Additive, EBoneModificationMode::Ignore);
-			}
-		}
-
+		AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_LF, Transform(Vector::ZeroVector, CalculateFootRotation(IKNormal_LF)),
+			EBoneControlSpace::WorldSpace, EBoneModificationMode::Ignore, EBoneModificationMode::Additive, EBoneModificationMode::Ignore);
 
 		for (int32 BoneIndex = 0; BoneIndex < BoneCount; BoneIndex++)
 		{
