@@ -170,6 +170,7 @@ set( HEADER_FILES
 
 	Source/Runtime/Animation/AnimationCore.h
 	Source/Runtime/Animation/Animator.h
+	Source/Runtime/Animation/AnimationStateMachine.h
 	Source/Runtime/Animation/AnimationPose.h
 	Source/Runtime/Animation/AnimationSequence.h
 	Source/Runtime/Animation/BlendSpace1D.h
@@ -465,6 +466,7 @@ set( SOURCE_FILES
 
 	Source/Runtime/Animation/AnimationCore.cpp
 	Source/Runtime/Animation/Animator.cpp
+	Source/Runtime/Animation/AnimationStateMachine.cpp
 	Source/Runtime/Animation/AnimationPose.cpp
 	Source/Runtime/Animation/AnimationSequence.cpp
 	Source/Runtime/Animation/BlendSpace1D.cpp

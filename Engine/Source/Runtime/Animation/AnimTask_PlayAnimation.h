@@ -11,10 +11,14 @@ namespace Drn
 		void SetTime(float Time) { AnimTime = Time; }
 		void Reset() { SetTime(0); }
 
-		inline const AnimationPose GetPose() const { return Pose; }
+		inline float GetRemainingTime() const { return AnimLength - AnimTime; };
+		inline float GetRemainingTimeRatio() const { return (AnimLength - AnimTime) / AnimLength; };
+
+		inline const AnimationPose& GetPose() const { return Pose; }
 
 	protected:
 		float AnimTime;
+		float AnimLength;
 		AnimationPose Pose;
 	};
 }

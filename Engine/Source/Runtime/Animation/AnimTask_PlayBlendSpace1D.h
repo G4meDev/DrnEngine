@@ -11,7 +11,7 @@ namespace Drn
 	public:
 		void PlayBlendSpace1D(AssetHandle<BlendSpace1D> BlendSpace, float InSampleTime, float DeltaTime, float PlayRate = 1.0f);
 
-		inline const AnimationPose GetPose() const { return Pose; }
+		inline const AnimationPose& GetPose() const { return Pose; }
 
 	protected:
 		float SampleTime = FLT_MAX;

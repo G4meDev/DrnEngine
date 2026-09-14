@@ -31,6 +31,7 @@
 #include "Runtime/Engine/SkeletalMeshActor.h"
 #include "Runtime/Animation/AnimationCore.h"
 #include "Runtime/Animation/Animator.h"
+#include "Runtime/Animation/AnimationStateMachine.h"
 #include "Runtime/Animation/AnimationPose.h"
 #include "Runtime/Animation/AnimationSequence.h"
 #include "Runtime/Animation/BlendSpace1D.h"

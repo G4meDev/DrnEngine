@@ -180,6 +180,119 @@ namespace Drn
 
 // --------------------------------------------------------------------------------------
 
+	class AnimationLocomotionState : public AnimationState
+	{
+	public:
+		AnimationLocomotionState(ThirdPersonCharacterAnimator* InOwningAnimator)
+			: OwningAnimator(InOwningAnimator)
+		{}
+
+		virtual void Tick(float DeltaTime) override
+		{
+			float CharacterSpeed = OwningAnimator->OwningCharcater->GetCharacterMovementComponent()->GetVelocity().LengthXZ();
+			PlayIdleWalkRun.PlayBlendSpace1D(OwningAnimator->IdleWalkRunBlendSpace, CharacterSpeed, DeltaTime);
+		}
+
+		virtual void OnEnterState() override {}
+		virtual void OnLeaveState() override {}
+
+		virtual const AnimationPose& GetPose() const override { return PlayIdleWalkRun.GetPose(); }
+
+		bool CanTransitionToJumpStart()
+		{
+			return !OwningAnimator->OwningCharcater->GetCharacterMovementComponent()->IsCollidingOnBottom();
+		}
+
+		AnimTask_PlayBlendSpace1D PlayIdleWalkRun;
+		ThirdPersonCharacterAnimator* OwningAnimator;
+	};
+
+	class AnimationJumpStartState : public AnimationState
+	{
+	public:
+		AnimationJumpStartState(ThirdPersonCharacterAnimator* InOwningAnimator)
+			: OwningAnimator(InOwningAnimator)
+		{}
+
+		virtual void Tick(float DeltaTime) override
+		{
+			PlayAnimationJumpStart.PlayAnimation(OwningAnimator->JumpStartAnimation, DeltaTime, 1.0f, false);
+		}
+
+		virtual void OnEnterState() override
+		{
+			PlayAnimationJumpStart.Reset();
+		}
+
+		virtual void OnLeaveState() override {}
+
+		virtual const AnimationPose& GetPose() const override { return PlayAnimationJumpStart.GetPose(); }
+
+		bool CanTransitionToFallLoop()
+		{
+			return PlayAnimationJumpStart.GetRemainingTimeRatio() < 0.1f;
+		}
+
+		AnimTask_PlayAnimation PlayAnimationJumpStart;
+		ThirdPersonCharacterAnimator* OwningAnimator;
+	};
+
+	class AnimationFallLoopState : public AnimationState
+	{
+	public:
+		AnimationFallLoopState(ThirdPersonCharacterAnimator* InOwningAnimator)
+			: OwningAnimator(InOwningAnimator)
+		{}
+
+		virtual void Tick(float DeltaTime) override
+		{
+			PlayAnimationFallLoop.PlayAnimation(OwningAnimator->FallLoopAnimation, DeltaTime);
+		}
+
+		virtual void OnEnterState() override {}
+		virtual void OnLeaveState() override {}
+
+		virtual const AnimationPose& GetPose() const override { return PlayAnimationFallLoop.GetPose(); }
+
+		bool CanTransitionToFallToLand()
+		{
+			return OwningAnimator->OwningCharcater->GetCharacterMovementComponent()->IsCollidingOnBottom();
+		}
+
+		AnimTask_PlayAnimation PlayAnimationFallLoop;
+		ThirdPersonCharacterAnimator* OwningAnimator;
+	};
+
+	class AnimationFallToLandState : public AnimationState
+	{
+	public:
+		AnimationFallToLandState(ThirdPersonCharacterAnimator* InOwningAnimator)
+			: OwningAnimator(InOwningAnimator)
+		{}
+
+		virtual void Tick(float DeltaTime) override
+		{
+			PlayAnimationFallToLand.PlayAnimation(OwningAnimator->FallToLandAnimation, DeltaTime, 1.0f, false);
+		}
+
+		virtual void OnEnterState() override
+		{
+			PlayAnimationFallToLand.Reset();
+		}
+
+		virtual void OnLeaveState() override {}
+
+		virtual const AnimationPose& GetPose() const override { return PlayAnimationFallToLand.GetPose(); }
+
+		bool CanTransitionToLocomotion()
+		{
+			return PlayAnimationFallToLand.GetRemainingTimeRatio() < 0.1f;
+		}
+
+		AnimTask_PlayAnimation PlayAnimationFallToLand;
+		ThirdPersonCharacterAnimator* OwningAnimator;
+	};
+
 	ThirdPersonCharacterAnimator::ThirdPersonCharacterAnimator( ThirdPersonCharacter* InOwningCharacter )
 		: OwningCharcater(InOwningCharacter)
 	{
@@ -190,14 +303,28 @@ namespace Drn
 		IdleWalkRunBlendSpace = AssetHandle<BlendSpace1D>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\BS_ThirdPerson_IdleWalkRun.drn");
 		IdleWalkRunBlendSpace.Load();
 
-		//IdleAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Idle.drn");
-		//IdleAnimation.Load();
-		//
-		//WalkAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Walk.drn");
-		//WalkAnimation.Load();
-		//
-		//RunAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_Run.drn");
-		//RunAnimation.Load();
+		JumpStartAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_JumpStart.drn");
+		JumpStartAnimation.Load();
+
+		FallLoopAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_FallLoop.drn");
+		FallLoopAnimation.Load();
+		
+		FallToLandAnimation = AssetHandle<AnimationSequence>("Engine\\Content\\Template\\ThirdPersonCharacter\\Character\\Animation\\AS_ThirdPerson_FallToLand.drn");
+		FallToLandAnimation.Load();
+
+		StateMacine = new AnimationStateMachine();
+
+		CREATE_AND_REGISTER_ANIMSTATE(StateMacine, AnimationLocomotionState, LocomotionState, this);
+		CREATE_AND_REGISTER_ANIMSTATE(StateMacine, AnimationJumpStartState, JumpStartState, this);
+		CREATE_AND_REGISTER_ANIMSTATE(StateMacine, AnimationFallLoopState, FallLoopState, this);
+		CREATE_AND_REGISTER_ANIMSTATE(StateMacine, AnimationFallToLandState, FallToLandState, this);
+
+		REGISTER_ANIMSTATE_TRANSITION(LocomotionState, JumpStartState, &AnimationLocomotionState::CanTransitionToJumpStart);
+		REGISTER_ANIMSTATE_TRANSITION(JumpStartState, FallLoopState, &AnimationJumpStartState::CanTransitionToFallLoop);
+		REGISTER_ANIMSTATE_TRANSITION(FallLoopState, FallToLandState, &AnimationFallLoopState::CanTransitionToFallToLand);
+		REGISTER_ANIMSTATE_TRANSITION(FallToLandState, LocomotionState, &AnimationFallToLandState::CanTransitionToLocomotion);
+
+		StateMacine->SetDefaultState(LocomotionState);
 	}
 
 	bool TraceFootIK(Actor* OwningActor, const AnimationPose& Pose, const ReferenceSkeleton& RefSkeleton, const Transform& ComponentTransform, int32 BoneIndex, float TraceDistance, Vector& HitLocation, Vector& HitNormal, float& HitOffset)
@@ -245,27 +372,21 @@ namespace Drn
 		const ReferenceSkeleton& RefSkeleton = OwningComponent->GetMesh()->GetData().RefSkeleton;
 		const int32 BoneCount = RefSkeleton.BoneInfo.size();
 
-		PlayIdleWalkRun.PlayBlendSpace1D(IdleWalkRunBlendSpace, CharacterSpeed, DeltaTime);
+		StateMacine->Tick(DeltaTime);
+		FinalPose = StateMacine->GetPose();
 
-		//PlayAnimationIdle.PlayAnimation(IdleAnimation, DeltaTime);
-		//PlayAnimationWalk.PlayAnimation(WalkAnimation, DeltaTime);
-		//PlayAnimationRun.PlayAnimation(RunAnimation, DeltaTime);
-		//
-		//const int32 BoneCount = RefSkeleton.BoneInfo.size();
-		//FinalPose.BoneTransforms.resize(BoneCount);
-		//
-		//if (CharacterSpeed < OwningCharcater->GetWalkSpeed())
+		//if (OwningCharcater->GetCharacterMovementComponent()->IsCollidingOnBottom())
 		//{
-		//	float Alpha = Math::GetMappedRangeValueClamped(0.0f, OwningCharcater->GetWalkSpeed(), 0.0f, 1.0f, LerpedSpeed);
-		//	FinalPose = AnimationPose::Blend(PlayAnimationIdle.GetPose(), PlayAnimationWalk.GetPose(), Alpha);
+		//	PlayIdleWalkRun.PlayBlendSpace1D(IdleWalkRunBlendSpace, CharacterSpeed, DeltaTime);
+		//	FinalPose = PlayIdleWalkRun.GetPose();
 		//}
+		//
 		//else
 		//{
-		//	float Alpha = Math::GetMappedRangeValueClamped(OwningCharcater->GetWalkSpeed(), OwningCharcater->GetRunSpeed(), 0.0f, 1.0f, LerpedSpeed);
-		//	FinalPose = AnimationPose::Blend(PlayAnimationWalk.GetPose(), PlayAnimationRun.GetPose(), Alpha);
+		//	PlayAnimationFallLoop.PlayAnimation(FallLoopAnimation, DeltaTime);
+		//	FinalPose = PlayAnimationFallLoop.GetPose();
 		//}
 
-		FinalPose = PlayIdleWalkRun.GetPose();
 
 		Vector IKLocation_RF; Vector IKNormal_RF; float IKOffset_RF;
 		Vector IKLocation_LF; Vector IKNormal_LF; float IKOffset_LF;

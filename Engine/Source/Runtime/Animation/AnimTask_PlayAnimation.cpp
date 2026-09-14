@@ -11,6 +11,7 @@ namespace Drn
 
 		const AnimationData& AnimData = Animation->GetAnimationData();
 		const ReferenceSkeleton& RefSkeleton = Sequence->GetSkeleton()->GetData().RefSkeleton;
+		AnimLength = AnimData.Length;
 
 		AnimTime = AnimationRuntime::StepAnimationTime(AnimTime, DeltaTime, AnimData.Length, Rate, bLoop);
 		int32 FrameIndex1; int32 FrameIndex2; float Alpha;
@@ -38,4 +39,4 @@ namespace Drn
 		}
 	}
 
-        }
+}  // namespace Drn

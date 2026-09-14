@@ -75,20 +75,17 @@ namespace Drn
 		virtual Matrix GetFinalBoneMatrix(int32 BoneIndex) const override;
 		virtual int32 GetBoneCount() const override;
 
-		//AnimTask_PlayAnimation PlayAnimationIdle;
-		//AnimTask_PlayAnimation PlayAnimationWalk;
-		//AnimTask_PlayAnimation PlayAnimationRun;
-
 		AnimTask_PlayBlendSpace1D PlayIdleWalkRun;
 
 		ThirdPersonCharacter* OwningCharcater;
 
 		AssetHandle<BlendSpace1D> IdleWalkRunBlendSpace;
-
-		//AssetHandle<AnimationSequence> IdleAnimation;
-		//AssetHandle<AnimationSequence> WalkAnimation;
-		//AssetHandle<AnimationSequence> RunAnimation;
+		AssetHandle<AnimationSequence> JumpStartAnimation;
+		AssetHandle<AnimationSequence> FallLoopAnimation;
+		AssetHandle<AnimationSequence> FallToLandAnimation;
 
 		AnimationPose FinalPose;
+
+		TRefCountPtr<class AnimationStateMachine> StateMacine;
 	};
 }
