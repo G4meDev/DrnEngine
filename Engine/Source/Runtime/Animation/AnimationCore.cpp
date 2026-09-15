@@ -316,21 +316,18 @@ namespace Drn
 		};
 		std::vector<ChildParentTransform> CachedTransforms;
 
-		int32 ParentIndex = BoneIndex;
 		for (int32 ChildIndex = 0; ChildIndex < RefSkeleton.BoneInfo.size(); ChildIndex++)
 		{
 			const auto& Child = RefSkeleton.BoneInfo[ChildIndex];
-
-			if (Child.ParentIndex == ParentIndex)
+			if (RefSkeleton.IsChildOf(ChildIndex, BoneIndex))
 			{
+				const int32 ParentIndex = Child.ParentIndex;
 				const Transform& ParentTransform = Pose.BoneTransforms[ParentIndex];
 				const Transform& ChildTransform = Pose.BoneTransforms[ChildIndex];
 
 				CachedTransforms.push_back({});
 				CachedTransforms.back().BoneIndex = ChildIndex;
 				CachedTransforms.back().BoneTransform = ChildTransform.GetRelativeTransform(ParentTransform);
-
-				ParentIndex = ChildIndex;
 			}
 		}
 

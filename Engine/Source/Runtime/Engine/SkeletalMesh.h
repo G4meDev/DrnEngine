@@ -34,6 +34,7 @@ namespace Drn
 		bool HasBone(const std::string& Name) const;
 		bool IsLeafBone(int32 BoneIndex) const;
 		int32 FindBone(const std::string& Name) const;
+		bool IsChildOf(int32 Bone, int32 Parent) const;
 
 		Transform GetParentBoneSpaceTransform(int32 BoneIndex) const;
 

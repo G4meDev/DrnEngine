@@ -87,5 +87,9 @@ namespace Drn
 		AnimationPose FinalPose;
 
 		TRefCountPtr<class AnimationStateMachine> StateMacine;
+
+		float RootOffsetPrevious;
+		float FootOffsetPrevious_RF;
+		float FootOffsetPrevious_LF;
 	};
 }

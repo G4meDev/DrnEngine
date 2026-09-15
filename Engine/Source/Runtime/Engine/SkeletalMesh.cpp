@@ -296,6 +296,25 @@ namespace Drn
 		return It == BoneInfo.end() ? -1 : std::distance(BoneInfo.begin(), It);
 	}
 
+	bool ReferenceSkeleton::IsChildOf( int32 Bone, int32 Parent ) const
+	{
+		drn_check(Bone >= 0);
+		drn_check(Parent >= 0);
+
+		while (Bone != -1)
+		{
+			int32 ChildParent = BoneInfo[Bone].ParentIndex;
+			if (ChildParent == Parent)
+			{
+				return true;
+			}
+
+			Bone = ChildParent;
+		}
+
+		return false;
+	}
+
 	Transform ReferenceSkeleton::GetParentBoneSpaceTransform( int32 BoneIndex ) const
 	{
 		drn_check(BoneIndex >= 0);

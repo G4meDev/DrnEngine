@@ -690,9 +690,8 @@ float3 ReconstructNormal(float2 xz)
     return float3(xz.x, sqrt(1 - dot(xz, xz)), xz.y);
 }
 
-float3 ReconstructTextureNormal(float2 xy, bool bInvertY = true)
+float3 ReconstructTextureNormal(float2 xy, const bool bInvertY = true)
 {
-    [branch]
     if(bInvertY)
     {
         xy.y = 1 - xy.y;
@@ -879,6 +878,31 @@ float4 WorldAlignedTexture(float3 WorldPosition, float3 TextureSize, Texture2D T
     Result = lerp(Result, YProjected, YTransition);
     
     return Result;
+}
+
+float3 WorldAlignedNormal(float3 WorldPosition, float3 TextureSize, Texture2D Texture, SamplerState Sampler, float3 WorldNormal, float TransitionContrast)
+{
+    float3 ScaledPosition = WorldPosition / TextureSize;
+    
+    //float3 XProjected = ReconstructTextureNormal(Texture.Sample(Sampler, ScaledPosition.zy).xy, false);
+    float3 XProjected = ReconstructTextureNormal(Texture.Sample(Sampler, ScaledPosition.yz).xy, false);
+    XProjected = XProjected.yxz;
+    XProjected.x *= WorldNormal.x;
+    
+    float3 YProjected = ReconstructTextureNormal(Texture.Sample(Sampler, ScaledPosition.xz).xy, false);
+    YProjected.y *= WorldNormal.y;
+    
+    float3 ZProjected = ReconstructTextureNormal(Texture.Sample(Sampler, ScaledPosition.xy).xy, false);
+    ZProjected = ZProjected.xzy;
+    ZProjected.z *= WorldNormal.z;
+    
+    float ZTransition = CheapContrast(abs(WorldNormal.z), TransitionContrast);
+    float YTransition = CheapContrast(abs(WorldNormal.y), TransitionContrast);
+    
+    float3 Result = lerp(XProjected, ZProjected, ZTransition);
+    Result = lerp(Result, YProjected, YTransition);
+    
+    return normalize(Result);
 }
 
 float3 Calculate3DVelocity(float4 PackedVelocityA, float4 PackedVelocityC, float2 TaaJitter, float2 PrevTaaJitter)

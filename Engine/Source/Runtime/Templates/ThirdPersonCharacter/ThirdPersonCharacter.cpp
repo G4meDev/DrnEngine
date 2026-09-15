@@ -216,7 +216,7 @@ namespace Drn
 
 		virtual void Tick(float DeltaTime) override
 		{
-			PlayAnimationJumpStart.PlayAnimation(OwningAnimator->JumpStartAnimation, DeltaTime, 1.0f, false);
+			PlayAnimationJumpStart.PlayAnimation(OwningAnimator->JumpStartAnimation, DeltaTime, 1.42f, false);
 		}
 
 		virtual void OnEnterState() override
@@ -272,7 +272,7 @@ namespace Drn
 
 		virtual void Tick(float DeltaTime) override
 		{
-			PlayAnimationFallToLand.PlayAnimation(OwningAnimator->FallToLandAnimation, DeltaTime, 1.0f, false);
+			PlayAnimationFallToLand.PlayAnimation(OwningAnimator->FallToLandAnimation, DeltaTime, 1.65f, false);
 		}
 
 		virtual void OnEnterState() override
@@ -350,7 +350,7 @@ namespace Drn
 		{
 			HitLocation = FlattenFootLocation;
 			HitNormal = Vector::UpVector;
-			HitOffset = 0.0f;
+			HitOffset = -0.4f;
 		}
 
 		return bHit;
@@ -359,7 +359,7 @@ namespace Drn
 	Quat CalculateFootRotation(const Vector& Normal)
 	{
 		return Rotator(Math::RadiansToDegrees(Math::Atan2(Normal.Z, Normal.Y)), 0.0f,
-			Math::RadiansToDegrees(Math::Atan2(Normal.X, Normal.Y))).Quaternion();
+			Math::RadiansToDegrees(-Math::Atan2(Normal.X, Normal.Y))).Quaternion();
 	}
 
 	void ThirdPersonCharacterAnimator::Tick( float DeltaTime )
@@ -375,18 +375,6 @@ namespace Drn
 		StateMacine->Tick(DeltaTime);
 		FinalPose = StateMacine->GetPose();
 
-		//if (OwningCharcater->GetCharacterMovementComponent()->IsCollidingOnBottom())
-		//{
-		//	PlayIdleWalkRun.PlayBlendSpace1D(IdleWalkRunBlendSpace, CharacterSpeed, DeltaTime);
-		//	FinalPose = PlayIdleWalkRun.GetPose();
-		//}
-		//
-		//else
-		//{
-		//	PlayAnimationFallLoop.PlayAnimation(FallLoopAnimation, DeltaTime);
-		//	FinalPose = PlayAnimationFallLoop.GetPose();
-		//}
-
 
 		Vector IKLocation_RF; Vector IKNormal_RF; float IKOffset_RF;
 		Vector IKLocation_LF; Vector IKNormal_LF; float IKOffset_LF;
@@ -399,36 +387,86 @@ namespace Drn
 		const int32 BoneIndex_LF = RefSkeleton.FindBone(BoneName_LF);
 		drn_check(BoneIndex_LF >= 0);
 
-		const float FootTraceDistance = 1.0f;
+		const float FootTraceDistance = 0.5f;
 		const Transform ComponentTransform = OwningComponent->GetWorldTransform();
 		TraceFootIK(OwningCharcater, FinalPose, RefSkeleton, ComponentTransform, BoneIndex_RF, FootTraceDistance, IKLocation_RF, IKNormal_RF, IKOffset_RF);
 		TraceFootIK(OwningCharcater, FinalPose, RefSkeleton, ComponentTransform, BoneIndex_LF, FootTraceDistance, IKLocation_LF, IKNormal_LF, IKOffset_LF);
+
 
 		const std::string BoneName_Root = "mixamorig:Hips";
 		const int32 BoneIndex_Root = RefSkeleton.FindBone(BoneName_Root);
 		drn_check(BoneIndex_Root >= 0);
 
-		const Vector RootOffset = Vector::UpVector * (IKOffset_RF + IKOffset_LF) * 0.5f;
-		AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_Root, Transform(RootOffset),
-			EBoneControlSpace::WorldSpace, EBoneModificationMode::Ignore, EBoneModificationMode::Additive, EBoneModificationMode::Ignore);
+		float RootHeightOffset = 0.0f;
+		const float MinFootOffset = std::min(IKOffset_LF, IKOffset_RF);
 
-		const Vector JointTarget_RF = Vector(0.5f, 1.5f, 2.0f);
-		const Vector JointTarget_LF = Vector(-0.5f, 1.5f, 2.0f);
+		if (MinFootOffset < 0.0f)
+		{
+			RootHeightOffset = MinFootOffset;
+
+			if (IKOffset_LF < IKOffset_RF)
+			{
+				IKOffset_RF -= RootHeightOffset;
+				IKOffset_LF = 0;
+			}
+			else
+			{
+				IKOffset_LF -= RootHeightOffset;
+				IKOffset_RF = 0;
+			}
+		}
+		else
+		{
+			RootHeightOffset = (IKOffset_RF + IKOffset_LF) / 2.0f;
+
+			if (IKOffset_LF < IKOffset_RF)
+			{
+				IKOffset_LF += RootHeightOffset;
+				IKOffset_RF -= RootHeightOffset;
+			}
+			else
+			{
+				IKOffset_LF -= RootHeightOffset;
+				IKOffset_RF += RootHeightOffset;
+			}
+		}
+
+		const float Interp = 25.0f;
+		IKOffset_RF = Math::FInterpTo(FootOffsetPrevious_RF, IKOffset_RF, DeltaTime, Interp);
+		IKOffset_LF = Math::FInterpTo(FootOffsetPrevious_LF, IKOffset_LF, DeltaTime, Interp);
+
+		FootOffsetPrevious_RF = IKOffset_RF;
+		FootOffsetPrevious_LF = IKOffset_LF;
+
+		RootHeightOffset = Math::FInterpTo(RootOffsetPrevious, RootHeightOffset, DeltaTime, Interp);
+		RootOffsetPrevious = RootHeightOffset;
+
+		//RootHeightOffset = (IKOffset_RF + IKOffset_LF) / 2.0f;
+		const Vector RootOffset = Vector(0.0f, RootHeightOffset, 0.0f);
+
+		AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_Root, Transform(RootOffset),
+			EBoneControlSpace::WorldSpace, EBoneModificationMode::Additive, EBoneModificationMode::Ignore, EBoneModificationMode::Ignore);
+
+		const Vector JointTarget_RF = Vector(0.3f, 0.4f, 2.5f);
+		const Vector JointTarget_LF = Vector(-0.3f, 0.4f, 2.5f);
 
 		//OwningCharcater->GetWorld()->DrawDebugSphere(ComponentTransform.TransformPosition(JointTarget_RF), Quat::Identity, Color::Red, 1.0f, 32, 0.0, 0.0f);
 
-		const Vector Effector_RF = IKLocation_RF + Vector::UpVector * FinalPose.BoneTransforms[BoneIndex_RF].GetLocation().Y;
-		const Vector Effector_LF = IKLocation_LF + Vector::UpVector * FinalPose.BoneTransforms[BoneIndex_LF].GetLocation().Y;
+		const Vector Effector_RF = FinalPose.BoneTransforms[BoneIndex_RF].GetLocation() + Vector::UpVector * IKOffset_RF;
+		const Vector Effector_LF = FinalPose.BoneTransforms[BoneIndex_LF].GetLocation() + Vector::UpVector * IKOffset_LF;
+
+		//const Vector Effector_RF = IKLocation_RF + Vector::UpVector * FinalPose.BoneTransforms[BoneIndex_RF].GetLocation().Y;
+		//const Vector Effector_LF = IKLocation_LF + Vector::UpVector * FinalPose.BoneTransforms[BoneIndex_LF].GetLocation().Y;
 
 		AnimationRuntime::TwoBoneIK(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_RF, JointTarget_RF, Effector_RF,
-			false, 1.0f, 1.0f, EBoneControlSpace::ComponentSpace, EBoneControlSpace::WorldSpace);
-
+			false, 1.0f, 1.0f, EBoneControlSpace::ComponentSpace, EBoneControlSpace::ComponentSpace);
+		
 		AnimationRuntime::TwoBoneIK(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_LF, JointTarget_LF, Effector_LF,
-			false, 1.0f, 1.0f, EBoneControlSpace::ComponentSpace, EBoneControlSpace::WorldSpace);
-
+			false, 1.0f, 1.0f, EBoneControlSpace::ComponentSpace, EBoneControlSpace::ComponentSpace);
+		
 		AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_RF, Transform(Vector::ZeroVector, CalculateFootRotation(IKNormal_RF)),
 			EBoneControlSpace::WorldSpace, EBoneModificationMode::Ignore, EBoneModificationMode::Additive, EBoneModificationMode::Ignore);
-
+		
 		AnimationRuntime::ModifyBoneTransform(FinalPose, RefSkeleton, ComponentTransform, BoneIndex_LF, Transform(Vector::ZeroVector, CalculateFootRotation(IKNormal_LF)),
 			EBoneControlSpace::WorldSpace, EBoneModificationMode::Ignore, EBoneModificationMode::Additive, EBoneModificationMode::Ignore);
 
