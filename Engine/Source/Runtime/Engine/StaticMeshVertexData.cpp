@@ -54,4 +54,24 @@ namespace Drn
 			Ar << UV_4;
 		}
 	}
-}
+
+	void StaticMeshVertexData::Reset()
+	{
+		Indices_16.clear();
+		Indices_32.clear();
+
+		Positions.clear();
+		Normals.clear();
+		Tangents.clear();
+		Colors.clear();
+		
+		UV_1.clear();
+		UV_2.clear();
+		UV_3.clear();
+		UV_4.clear();
+
+		VertexCount = 0;
+		IndexCount = 0;
+	}
+
+        }

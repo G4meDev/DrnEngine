@@ -35,6 +35,7 @@ set( HEADER_FILES
 	Source/Runtime/Engine/SkeletalMeshActor.h
 	Source/Runtime/Engine/SkeletalMeshComponent.h
 	Source/Runtime/Engine/SkeletalMeshVertexData.h
+	Source/Runtime/Engine/DynamicMeshComponent.h
 	Source/Runtime/Engine/NamedProperty.h
 	Source/Runtime/Engine/NamedProperty.h
 	Source/Runtime/Engine/MeshTypes.h
@@ -104,6 +105,7 @@ set( HEADER_FILES
 	Source/Runtime/Renderer/InputLayout.h
 	Source/Runtime/Renderer/StaticMeshSceneProxy.h
 	Source/Runtime/Renderer/SkeletalMeshSceneProxy.h
+	Source/Runtime/Renderer/DynamicMeshSceneProxy.h
 	Source/Runtime/Renderer/D3D12Utils.h
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.h
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.h
@@ -332,6 +334,7 @@ set( SOURCE_FILES
 	Source/Runtime/Engine/SkeletalMeshActor.cpp
 	Source/Runtime/Engine/SkeletalMeshComponent.cpp
 	Source/Runtime/Engine/SkeletalMeshVertexData.cpp
+	Source/Runtime/Engine/DynamicMeshComponent.cpp
 	Source/Runtime/Engine/MeshTypes.cpp
 	Source/Runtime/Engine/NamedProperty.cpp
 	Source/Runtime/Engine/CameraComponent.cpp
@@ -400,6 +403,7 @@ set( SOURCE_FILES
 	Source/Runtime/Renderer/InputLayout.cpp
 	Source/Runtime/Renderer/StaticMeshSceneProxy.cpp
 	Source/Runtime/Renderer/SkeletalMeshSceneProxy.cpp
+	Source/Runtime/Renderer/DynamicMeshSceneProxy.cpp
 	Source/Runtime/Renderer/D3D12Utils.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiLayer.cpp
 	Source/Runtime/Renderer/ImGui/ImGuiRenderer.cpp

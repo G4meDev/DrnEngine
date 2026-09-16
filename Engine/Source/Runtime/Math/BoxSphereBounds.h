@@ -30,8 +30,8 @@ namespace Drn
 
 		BoxSphereBounds operator+( const BoxSphereBounds& Other ) const;
 
-		BoxSphereBounds TranslateBy(const Vector& Offset);
-		BoxSphereBounds TransformBy(const Transform& T);
+		BoxSphereBounds TranslateBy(const Vector& Offset) const;
+		BoxSphereBounds TransformBy(const Transform& T) const;
 
 		inline Sphere GetSphere() const
 		{

@@ -55,6 +55,7 @@ namespace Drn
 		InstancedStaticMeshComponent,
 		ParticleSystemComponent,
 		SkeletalMeshComponent,
+		DynamicMeshComponent,
 	};
 
 	enum class ELightType : uint8

@@ -47,6 +47,9 @@ namespace Drn
 
 		bool bValid;
 
+		friend class Archive& operator<<(Archive& Ar, const Box& Value);
+		friend class Archive& operator>>(Archive& Ar, Box& Value);
+
 	private:
 	};
 }

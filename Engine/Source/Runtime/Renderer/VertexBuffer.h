@@ -6,7 +6,7 @@
 
 namespace Drn
 {
-	class StaticMeshVertexBuffer
+	class StaticMeshVertexBuffer : public RefCountedObject
 	{
 	public:
 		StaticMeshVertexBuffer();

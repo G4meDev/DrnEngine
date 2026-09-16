@@ -16,12 +16,12 @@ namespace Drn
 		return Result;
 	}
 
-	BoxSphereBounds BoxSphereBounds::TranslateBy( const Vector& Offset )
+	BoxSphereBounds BoxSphereBounds::TranslateBy( const Vector& Offset ) const
 	{
 		return BoxSphereBounds(Origin + Offset, BoxExtent, SphereRadius);
 	}
 
-	BoxSphereBounds BoxSphereBounds::TransformBy( const Transform& T )
+	BoxSphereBounds BoxSphereBounds::TransformBy( const Transform& T ) const
 	{
 		BoxSphereBounds Result;
 		XMMATRIX M = Matrix(T).Get();

@@ -50,6 +50,8 @@ namespace Drn
 		bool HasUV4() const { return UV_4.size() > 0; }
 		const std::vector<Vector2Half>& GetUV4() const { return UV_4; }
 
+		void Reset();
+
 	private:
 
 		uint64 VertexCount;
@@ -71,5 +73,6 @@ namespace Drn
 		bool bUse4BitIndices;
 
 		friend class AssetImporterStaticMesh;
+		friend class DynamicMeshComponent;
 	};
 }

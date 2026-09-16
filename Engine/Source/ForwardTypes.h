@@ -96,6 +96,7 @@ namespace Drn
 	class StaticMesh;
 	class SkeletalMesh;
 	class SkeletalMeshComponent;
+	class DynamicMeshComponent;
 	class Animator;
 	class AnimationSequence;
 	class BlendSpace1D;

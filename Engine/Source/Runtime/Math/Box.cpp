@@ -26,12 +26,30 @@ namespace Drn
 			Min = Vector( std::min(Min.GetX(), Other.Min.GetX()), std::min(Min.GetY(), Other.Min.GetY()), std::min(Min.GetZ(), Other.Min.GetZ()) );
 			Max = Vector( std::max(Max.GetX(), Other.Max.GetX()), std::max(Max.GetY(), Other.Max.GetY()), std::max(Max.GetZ(), Other.Max.GetZ()) );
 		}
-		else
+		else if(Other.bValid)
 		{
 			*this = Other;
 		}
 
 		return *this;
+	}
+
+	class Archive& operator<<(Archive& Ar, const Box& Value)
+	{
+		Ar << Value.Min;
+		Ar << Value.Max;
+		Ar << Value.bValid;
+
+		return Ar;
+	}
+
+	class Archive& operator>>(Archive& Ar, Box& Value)
+	{
+		Ar >> Value.Min;
+		Ar >> Value.Max;
+		Ar >> Value.bValid;
+
+		return Ar;
 	}
 
 }
