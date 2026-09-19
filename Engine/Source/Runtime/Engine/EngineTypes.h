@@ -39,6 +39,7 @@ namespace Drn
 		Particle,
 		SkeletalMeshActor,
 		ThirdPersonCharacter,
+		NavMeshActor,
 	};
 
 	enum class EComponentType : uint32
@@ -56,6 +57,7 @@ namespace Drn
 		ParticleSystemComponent,
 		SkeletalMeshComponent,
 		DynamicMeshComponent,
+		NavMeshComponent,
 	};
 
 	enum class ELightType : uint8

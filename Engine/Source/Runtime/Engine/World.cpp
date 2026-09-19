@@ -996,6 +996,12 @@ namespace Drn
 		return ViewInfo();
 	}
 
+	void World::FlushDebugLines()
+	{
+		m_LineBatchCompponent->Flush();
+		m_LineBatchThicknessCompponent->Flush();
+	}
+
 	void World::DestroyActor( Actor* InActor )
 	{
 		std::vector<Actor*> RemovedActorList;

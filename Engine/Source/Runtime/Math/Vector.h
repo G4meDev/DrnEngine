@@ -140,11 +140,16 @@ namespace Drn
 			return (&m_Vector.x)[Index];
 		}
 
-		inline bool Equals( const Vector& Other ) 
+		inline bool Equals( const Vector& Other ) const
 		{
 			uint32_t Result;
 			XMVectorEqualR(&Result, XMLoadFloat3(&m_Vector), XMLoadFloat3(&Other.m_Vector));
 			return XMComparisonAllTrue(Result);
+		}
+
+		inline bool NearlyEquals( const Vector& V, float Tolerance = KINDA_SMALL_NUMBER) const
+		{
+			return std::abs(X-V.X) <= Tolerance && std::abs(Y-V.Y) <= Tolerance && std::abs(Z-V.Z) <= Tolerance;
 		}
 
 		inline static float Distance(const Vector& V1, const Vector& V2) 

@@ -50,7 +50,11 @@ namespace Drn
 		Vector TransformVector(const Vector& V) const;
 		Vector InverseTransformVector( const Vector& InVector ) const;
 
-		inline bool Equals( const Transform& Other ) { return Location.Equals(Other.Location) && Rotation.Equals(Other.Rotation) && Scale.Equals(Other.Scale); }
+		inline bool Equals( const Transform& Other ) const { return Location.Equals(Other.Location) && Rotation.Equals(Other.Rotation) && Scale.Equals(Other.Scale); }
+		inline bool NearlyEquals( const Transform& Other, float Tolerance = KINDA_SMALL_NUMBER) const
+		{
+			return Location.NearlyEquals(Other.Location, Tolerance) && Rotation.Equals(Other.Rotation, Tolerance) && Scale.NearlyEquals(Other.Scale, Tolerance);
+		}
 
 		inline Vector TransformPosition(const Vector& Pos) const
 		{

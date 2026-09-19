@@ -161,6 +161,8 @@ namespace Drn
 
 		inline bool IsPaused() const { return m_Paused; }
 
+		void FlushDebugLines();
+
 		class LineBatchComponent* m_LineBatchCompponent;
 		class LineBatchComponent* m_LineBatchThicknessCompponent;
 

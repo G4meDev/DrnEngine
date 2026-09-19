@@ -179,6 +179,10 @@ set( HEADER_FILES
 	Source/Runtime/Animation/AnimTask_PlayAnimation.h
 	Source/Runtime/Animation/AnimTask_PlayBlendSpace1D.h
 
+	Source/Runtime/Navigation/NavMeshComponent.h
+	Source/Runtime/Navigation/NavMeshActor.h
+	Source/Runtime/Navigation/NavMeshConvexHalfEdge.h
+
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
 	Source/Runtime/Components/PointLightComponent.h
@@ -476,6 +480,10 @@ set( SOURCE_FILES
 	Source/Runtime/Animation/BlendSpace1D.cpp
 	Source/Runtime/Animation/AnimTask_PlayAnimation.cpp
 	Source/Runtime/Animation/AnimTask_PlayBlendSpace1D.cpp
+
+	Source/Runtime/Navigation/NavMeshComponent.cpp
+	Source/Runtime/Navigation/NavMeshActor.cpp
+	Source/Runtime/Navigation/NavMeshConvexHalfEdge.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

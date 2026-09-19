@@ -34,6 +34,7 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( WheeledVehiclePawn		, Player );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( InstancedStaticMeshActor, Primitive );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Particle				, Effect );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( NavMeshActor			, Navigation );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( ScenePointCloudImporter	, Tool );
 	}
 

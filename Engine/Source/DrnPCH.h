@@ -37,6 +37,8 @@
 #include "Runtime/Animation/BlendSpace1D.h"
 #include "Runtime/Animation/AnimTask_PlayAnimation.h"
 #include "Runtime/Animation/AnimTask_PlayBlendSpace1D.h"
+#include "Runtime/Navigation/NavMeshComponent.h"
+#include "Runtime/Navigation/NavMeshActor.h"
 #include "Runtime/Engine/CameraActor.h"
 #include "Runtime/Engine/PointLightActor.h"
 #include "Runtime/Engine/SpotLightActor.h"
