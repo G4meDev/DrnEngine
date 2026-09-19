@@ -38,6 +38,7 @@ namespace Drn
 
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
+		void DrawInternal();
 		inline virtual bool HasSprite() const override { return true; }
 		virtual void SetSelectedInEditor( bool SelectedInEditor, const HitProxyData& Data ) override;
 

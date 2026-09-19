@@ -11,6 +11,13 @@ namespace Drn
 		virtual ~NavMeshVisualizer() {};
 
 #if WITH_EDITOR
+		virtual void DrawDetailPanel(float DeltaTime) override
+		{
+			DynamicMeshComponent::DrawDetailPanel(DeltaTime);
+
+			NavMesh->DrawInternal();
+		}
+
 		virtual Transform GetGizmoTransform() const override
 		{
 			return NavMesh->GetGizmoTransformVisualizer();

@@ -3,7 +3,9 @@
 
 namespace Drn
 {
-	//bool NavMeshConvexHalfEdge::SetPlaneVertices( const std::vector<std::vector<uint32>>& InPlaneVertices, uint32 InNumVertices )
+
+// bool NavMeshConvexHalfEdge::SetPlaneVertices( const std::vector<std::vector<uint32>>& InPlaneVertices, uint32
+// InNumVertices )
 	//{
 	//	int32 HalfEdgeCount = 0;
 	//	for (int32 PlaneIndex = 0; PlaneIndex < InPlaneVertices.Num(); ++PlaneIndex)
@@ -95,6 +97,13 @@ namespace Drn
 	//	return true;
 	//}
 
+	void NavMeshConvexHalfEdge::Clear()
+	{
+		Planes.clear();
+		Vertices.clear();
+		HalfEdges.clear();
+	}
+
 	void NavMeshConvexHalfEdge::AddTriangle( std::vector<Vector>& Positions )
 	{
 		const uint32 VertexCount = Positions.size();
@@ -121,6 +130,163 @@ namespace Drn
 			HalfEdges.back().PlaneIndex = Planes.size() - 1;
 			HalfEdges.back().VertexIndex = Vertices.size() - 1;
 		}
+	}
+
+	bool NavMeshConvexHalfEdge::AddTriangleToEdge( uint32 EdgeIndex, const Vector& Position, uint32& NewVertexIndex )
+	{
+		drn_check(EdgeIndex < NumHalfEdges());
+
+		if (GetTwinHalfEdge(EdgeIndex) == InvalidIndex)
+		{
+			NewVertexIndex = NumVertices();
+
+			Planes.push_back({});
+			Planes.back().NumHalfEdges = 3;
+			Planes.back().FirstHalfEdgeIndex = NumHalfEdges();
+
+			Vertices.push_back({});
+			Vertices.back().Position = Position;
+			Vertices.back().FirstHalfEdgeIndex = NumHalfEdges();
+
+			const int32 PlaneIndex = NumPlanes() - 1;
+			HalfEdges.push_back({});
+			HalfEdges.back().PlaneIndex = PlaneIndex;
+			HalfEdges.back().VertexIndex = GetHalfEdgeVertex(GetNextHalfEdge(EdgeIndex));
+			HalfEdges.back().TwinHalfEdgeIndex = EdgeIndex;
+			GetHalfEdge(EdgeIndex).TwinHalfEdgeIndex = NumHalfEdges() - 1;
+
+			HalfEdges.push_back({});
+			HalfEdges.back().PlaneIndex = PlaneIndex;
+			HalfEdges.back().VertexIndex = GetHalfEdgeVertex(EdgeIndex);
+			HalfEdges.back().TwinHalfEdgeIndex = InvalidIndex;
+
+			HalfEdges.push_back({});
+			HalfEdges.back().PlaneIndex = PlaneIndex;
+			HalfEdges.back().VertexIndex = NewVertexIndex;
+			HalfEdges.back().TwinHalfEdgeIndex = InvalidIndex;
+
+			return true;
+		}
+		
+		return false;
+	}
+
+	void NavMeshConvexHalfEdge::DeletePlane( uint32 PlaneIndex )
+	{
+		drn_check(PlaneIndex < NumPlanes());
+
+		const uint32 FirstEdgeToDelete = GetPlane(PlaneIndex).FirstHalfEdgeIndex;
+		const uint32 NumDeletedEdges = GetPlane(PlaneIndex).NumHalfEdges;
+
+		std::vector<uint32> VerticesToDelete;
+
+		VisitPlaneEdges( PlaneIndex, [&](uint32 HalfEdgeIndex, uint32 NextHalfEdgeIndex)
+		{
+			if (GetTwinHalfEdge(HalfEdgeIndex) != InvalidIndex)
+			{
+				GetHalfEdge(GetTwinHalfEdge(HalfEdgeIndex)).TwinHalfEdgeIndex = InvalidIndex;
+			}
+
+			const uint32 MaxPlanes = 20;
+			uint32 FoundPlanes[MaxPlanes];
+			//uint32 NumVertexFaces = FindVertexPlanes(GetHalfEdgeVertex(HalfEdgeIndex), FoundPlanes, MaxPlanes);
+			uint32 NumVertexFaces = GetVertexPlanes(GetHalfEdgeVertex(HalfEdgeIndex)).size();
+
+			if (NumVertexFaces < 2)
+			{
+				VerticesToDelete.push_back(GetHalfEdgeVertex(HalfEdgeIndex));
+			}
+
+			return true;
+		});
+
+		for (uint32 Index = 0; Index < NumVertices(); Index++)
+		{
+			if (GetVertex(Index).FirstHalfEdgeIndex > FirstEdgeToDelete)
+			{
+				GetVertex(Index).FirstHalfEdgeIndex -= NumDeletedEdges;
+			}
+		}
+
+		for (uint32 Index = 0; Index < NumHalfEdges(); Index++)
+		{
+			if (GetHalfEdge(Index).PlaneIndex > PlaneIndex)
+			{
+				GetHalfEdge(Index).PlaneIndex--;
+			}
+
+			uint32 Dec = 0;
+			for (uint32 VertexToDelete : VerticesToDelete)
+			{
+				if (GetHalfEdge(Index).VertexIndex > VertexToDelete)
+				{
+					Dec++;
+				}
+			}
+			GetHalfEdge(Index).VertexIndex-=Dec;
+
+			if (GetHalfEdge(Index).TwinHalfEdgeIndex != InvalidIndex)
+			{
+				if ((GetHalfEdge(Index).TwinHalfEdgeIndex >= FirstEdgeToDelete) && (GetHalfEdge(Index).TwinHalfEdgeIndex < FirstEdgeToDelete + NumDeletedEdges))
+				{
+					GetHalfEdge(Index).TwinHalfEdgeIndex = InvalidIndex;
+				}
+				else if (GetHalfEdge(Index).TwinHalfEdgeIndex >= FirstEdgeToDelete)
+				{
+					GetHalfEdge(Index).TwinHalfEdgeIndex -= NumDeletedEdges;
+				}
+			}
+		}
+
+		for (uint32 Index = 0; Index < NumPlanes(); Index++)
+		{
+			if (GetPlane(Index).FirstHalfEdgeIndex > FirstEdgeToDelete)
+			{
+				GetPlane(Index).FirstHalfEdgeIndex -= NumDeletedEdges;
+			}
+		}
+
+		Planes.erase(Planes.begin() + PlaneIndex);
+		HalfEdges.erase(HalfEdges.begin() + FirstEdgeToDelete, HalfEdges.begin() + FirstEdgeToDelete + NumDeletedEdges);
+
+		std::sort( VerticesToDelete.begin(), VerticesToDelete.end(), []( uint32 A, uint32 B ) { return A > B;} );
+		for (uint32 DeleteIndex : VerticesToDelete)
+		{
+			Vertices.erase(Vertices.begin() + DeleteIndex);
+		}
+	}
+
+	void NavMeshConvexHalfEdge::DeletePlanes( std::vector<uint32> PlanesIndex )
+	{
+		std::sort(PlanesIndex.begin(), PlanesIndex.end(), [](uint32 A, uint32 B) { return A > B; });
+
+		for (uint32 PlaneIndex : PlanesIndex)
+		{
+			DeletePlane(PlaneIndex);
+		}
+	}
+
+	void NavMeshConvexHalfEdge::DeleteVertex( uint32 VertexIndex )
+	{
+		drn_check(VertexIndex < NumVertices());
+
+		std::vector<uint32> Deletes = GetVertexPlanes(VertexIndex);
+		DeletePlanes(Deletes);
+	}
+
+	void NavMeshConvexHalfEdge::DeleteEdge( uint32 EdgeIndex )
+	{
+		drn_check(EdgeIndex < NumHalfEdges());
+		
+		std::vector<uint32> Deletes;
+		Deletes.push_back(GetHalfEdge(EdgeIndex).PlaneIndex);
+
+		if (GetTwinHalfEdge(EdgeIndex) != InvalidIndex)
+		{
+			Deletes.push_back(GetHalfEdge(GetTwinHalfEdge(EdgeIndex)).PlaneIndex);
+		}
+
+		DeletePlanes(Deletes);
 	}
 
 	Vector NavMeshConvexHalfEdge::CalculatePointsCenter( const std::vector<Vector>& Points )

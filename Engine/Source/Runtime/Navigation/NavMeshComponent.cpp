@@ -190,6 +190,11 @@ namespace Drn
 	{
 		SceneComponent::DrawDetailPanel(DeltaTime);
 
+		DrawInternal();
+	}
+
+	void NavMeshComponent::DrawInternal()
+	{
 		if (ImGui::Button("Press"))
 		{
 			std::vector<Vector> Pos = 
@@ -211,6 +216,79 @@ namespace Drn
 			ConvexMesh.AddTriangle(Pos2);
 
 			UpdateVisualizer();
+		}
+
+		if ( ImGui::Button( "Clear" ) )
+		{
+			ConvexMesh.Clear();
+			SelectedElementType = ENavMeshElementType::Invalid;
+			UpdateVisualizer();
+		}
+
+		if (SelectedElementType != ENavMeshElementType::Invalid && ImGui::IsKeyPressed(ImGuiKey_X))
+		{
+			if (SelectedElementType == ENavMeshElementType::Face)
+			{
+				ConvexMesh.DeletePlane(SelectedElement);
+			}
+
+			else if (SelectedElementType == ENavMeshElementType::Vertex)
+			{
+				ConvexMesh.DeleteVertex(SelectedElement);
+			}
+
+			else if (SelectedElementType == ENavMeshElementType::Edge)
+			{
+				ConvexMesh.DeleteEdge(SelectedElement);
+			}
+
+			SelectedElementType = ENavMeshElementType::Invalid;
+			UpdateVisualizer();
+		}
+
+		if (SelectedElementType == ENavMeshElementType::Face)
+		{
+			const Transform CompTransform = GetWorldTransform();
+
+			auto DrawArrow = [&](Vector& Pt0, Vector& Pt1, const Color& Color)
+			{
+				Pt0 = CompTransform.TransformPosition(Pt0);
+				Pt1 = CompTransform.TransformPosition(Pt1);
+
+				const Vector Center = (Pt0 + Pt1) / 2.0f;
+
+				const Vector& Dir = (Pt1 - Pt0).GetSafeNormal();
+				const Vector Right = (Dir ^ Vector::UpVector).GetSafeNormal();
+
+				const float XOffset = -0.4f;
+				const float YOffset = 1.0f;
+				const float LineHalfSize = 1.0f;
+				const float ArrowSize = 0.3f;
+
+				const Vector Start = Center - Dir * LineHalfSize + Right * XOffset + Vector::UpVector * YOffset;
+				const Vector End = Start + Dir * LineHalfSize * 2.0f;
+
+				GetWorld()->DrawDebugArrow(Start, End, ArrowSize, Color, 0.0f, 0.0f);
+			};
+
+			ConvexMesh.VisitPlaneEdges(SelectedElement, [&](uint32 HalfEdgeIndex, uint32 NextHalfEdgeIndex)
+			{
+				Vector Pt0 = ConvexMesh.GetVertex(ConvexMesh.GetHalfEdgeVertex(HalfEdgeIndex)).Position;
+				Vector Pt1 = ConvexMesh.GetVertex(ConvexMesh.GetHalfEdgeVertex(NextHalfEdgeIndex)).Position;
+
+				DrawArrow(Pt0, Pt1, Color::Blue);
+
+				const uint32 TwinIndex = ConvexMesh.GetTwinHalfEdge(HalfEdgeIndex);
+				if (TwinIndex != ConvexMesh.InvalidIndex)
+				{
+					Vector Pt2 = ConvexMesh.GetVertex(ConvexMesh.GetHalfEdgeVertex(TwinIndex)).Position;
+					Vector Pt3 = ConvexMesh.GetVertex(ConvexMesh.GetHalfEdgeVertex(ConvexMesh.GetNextHalfEdge(TwinIndex))).Position;
+
+					DrawArrow(Pt2, Pt3, Color::Red);
+				}
+
+				return true;
+			});
 		}
 	}
 
@@ -257,7 +335,22 @@ namespace Drn
 
 		else if (SelectedElementType == ENavMeshElementType::Edge)
 		{
-			bChanged = ConvexMesh.SetEdgeTransform(SelectedElement, GizmoTransform.GetRelativeTransform(GetWorldTransform()));
+			if (ImGui::IsKeyDown(ImGuiKey_LeftAlt) && ImGui::IsMouseClicked(ImGuiMouseButton_::ImGuiMouseButton_Left))
+			{
+				uint32 NewVertex = 0;
+				const bool bSuccess = ConvexMesh.AddTriangleToEdge(SelectedElement, GizmoTransform.GetRelativeTransform(GetWorldTransform()).GetLocation(), NewVertex);
+
+				if (bSuccess)
+				{
+					SelectedElementType = ENavMeshElementType::Vertex;
+					SelectedElement = NewVertex;
+				}
+			}
+
+			else
+			{
+				bChanged = ConvexMesh.SetEdgeTransform(SelectedElement, GizmoTransform.GetRelativeTransform(GetWorldTransform()));
+			}
 		}
 
 		if (bChanged)

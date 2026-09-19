@@ -47,7 +47,15 @@ namespace Drn
 			{}
 		};
 
+		void Clear();
+
 		void AddTriangle(std::vector<Vector>& Positions);
+		bool AddTriangleToEdge(uint32 EdgeIndex, const Vector& Position, uint32& NewVertexIndex);
+
+		void DeletePlane(uint32 PlaneIndex);
+		void DeletePlanes(std::vector<uint32> PlanesIndex);
+		void DeleteVertex(uint32 VertexIndex);
+		void DeleteEdge(uint32 EdgeIndex);
 
 		static Vector CalculatePointsCenter(const std::vector<Vector>& Points);
 		static Vector CalculatePointsNormal(const std::vector<Vector>& Points);
@@ -159,26 +167,26 @@ namespace Drn
 			return GetVertex(VertexIndex).FirstHalfEdgeIndex;
 		}
 
-		//void VisitPlaneEdges(uint32 PlaneIndex, const TFunction<bool(uint32 HalfEdgeIndex, uint32 NextHalfEdgeIndex)>& Visitor) const
-		//{
-		//	const uint32 FirstHalfEdgeIndex = GetPlane(PlaneIndex).FirstHalfEdgeIndex;
-		//	uint32 HalfEdgeIndex0 = FirstHalfEdgeIndex;
-		//	if (HalfEdgeIndex0 != InvalidIndex)
-		//	{
-		//		bool bContinue = true;
-		//		do
-		//		{
-		//			const uint32 HalfEdgeIndex1 = GetNextHalfEdge(HalfEdgeIndex0);
-		//			if (HalfEdgeIndex1 != InvalidIndex)
-		//			{
-		//				bContinue = Visitor(HalfEdgeIndex0, HalfEdgeIndex1);
-		//			}
-		//			HalfEdgeIndex0 = HalfEdgeIndex1;
-		//		} while (bContinue && (HalfEdgeIndex0 != FirstHalfEdgeIndex) && (HalfEdgeIndex0 != InvalidIndex));
-		//	}
-		//}
-		//
-		//void VisitVertexHalfEdges(uint32 VertexIndex, const TFunction<bool(uint32 HalfEdgeIndex)>& Visitor) const
+		void VisitPlaneEdges(uint32 PlaneIndex, const std::function<bool(uint32 HalfEdgeIndex, uint32 NextHalfEdgeIndex)>& Visitor) const
+		{
+			const uint32 FirstHalfEdgeIndex = GetPlane(PlaneIndex).FirstHalfEdgeIndex;
+			uint32 HalfEdgeIndex0 = FirstHalfEdgeIndex;
+			if (HalfEdgeIndex0 != InvalidIndex)
+			{
+				bool bContinue = true;
+				do
+				{
+					const uint32 HalfEdgeIndex1 = GetNextHalfEdge(HalfEdgeIndex0);
+					if (HalfEdgeIndex1 != InvalidIndex)
+					{
+						bContinue = Visitor(HalfEdgeIndex0, HalfEdgeIndex1);
+					}
+					HalfEdgeIndex0 = HalfEdgeIndex1;
+				} while (bContinue && (HalfEdgeIndex0 != FirstHalfEdgeIndex) && (HalfEdgeIndex0 != InvalidIndex));
+			}
+		}
+
+		//void VisitVertexHalfEdges(uint32 VertexIndex, const std::function<bool(uint32 HalfEdgeIndex)>& Visitor) const
 		//{
 		//	const uint32 FirstHalfEdgeIndex = GetVertex(VertexIndex).FirstHalfEdgeIndex;
 		//	uint32 HalfEdgeIndex = FirstHalfEdgeIndex;
@@ -215,6 +223,27 @@ namespace Drn
 		//	return NumPlanesFound;
 		//}
 
+		std::vector<uint32> GetVertexPlanes(uint32 VertexIndex)
+		{
+			std::vector<uint32> VertexPlanes;
+
+			for (uint32 PlaneIndex = 0; PlaneIndex < NumPlanes(); PlaneIndex++)
+			{
+				VisitPlaneEdges(PlaneIndex, [&](uint32 HalfEdgeIndex, uint32 NextHalfEdgeIndex)
+				{
+					if (GetHalfEdgeVertex(HalfEdgeIndex) == VertexIndex)
+					{
+						VertexPlanes.push_back(PlaneIndex);
+						return false;
+					}
+
+					return true;
+				} );
+			}
+
+			return VertexPlanes;
+		}
+
 		//bool SetPlaneVertices(const std::vector<std::vector<uint32>>& InPlaneVertices, uint32 InNumVertices);
 
 		uint32 GetPrevPlaneHalfEdge(uint32 PlaneIndex, uint32 PlaneHalfEdgeIndex) const
@@ -234,7 +263,6 @@ namespace Drn
 			const uint32 NextPlaneHalfEdgeIndex = (PlaneHalfEdgeIndex + 1) % PlaneHalfEdgeCount;
 			return GetPlaneHalfEdge(PlaneIndex, NextPlaneHalfEdgeIndex);
 		}
-
 
 		std::vector<PlaneData> Planes;
 		std::vector<HalfEdgeData> HalfEdges;
