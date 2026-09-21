@@ -57,11 +57,13 @@ namespace Drn
 		m_LineBatchThicknessCompponent = new class LineBatchComponent();
 		m_LineBatchThicknessCompponent->SetThickness(true);
 		m_LineBatchThicknessCompponent->RegisterComponent(this);
+
+		m_NavigationSystem = new NavigationSystem();
 	}
 
 	World::~World()
 	{
-		
+		delete m_NavigationSystem;
 	}
 
 	void World::Destroy()

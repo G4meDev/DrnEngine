@@ -182,6 +182,7 @@ set( HEADER_FILES
 	Source/Runtime/Navigation/NavMeshComponent.h
 	Source/Runtime/Navigation/NavMeshActor.h
 	Source/Runtime/Navigation/NavMeshConvexHalfEdge.h
+	Source/Runtime/Navigation/NavigationSystem.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -269,6 +270,7 @@ set( HEADER_FILES
 
 	Source/Editor/Misc/TaskGraphVisualizer.h
 	Source/Editor/Misc/EditorMisc.h
+	Source/Editor/Misc/ImguiHelpers.h
 
 	Source/Editor/ContentBrowser/ContentBrowser.h
 	Source/Editor/ContentBrowser/ContentBrowserGuiLayer.h
@@ -484,6 +486,7 @@ set( SOURCE_FILES
 	Source/Runtime/Navigation/NavMeshComponent.cpp
 	Source/Runtime/Navigation/NavMeshActor.cpp
 	Source/Runtime/Navigation/NavMeshConvexHalfEdge.cpp
+	Source/Runtime/Navigation/NavigationSystem.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp
@@ -566,6 +569,7 @@ set( SOURCE_FILES
 	Source/Editor/Misc/ViewportCameraInputHandler.cpp
 	Source/Editor/Misc/GizmoState.cpp
 	Source/Editor/Misc/EditorMisc.cpp
+	Source/Editor/Misc/ImguiHelpers.cpp
 	
 	Source/Editor/OutputLog/OutputLog.cpp
 	Source/Editor/OutputLog/OutputLogGuiLayer.cpp

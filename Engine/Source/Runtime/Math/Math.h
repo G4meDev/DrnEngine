@@ -268,5 +268,11 @@ namespace Drn
 			const T ClampedPct = std::clamp<T>(GetRangePct(InMin, InMax, Value), 0, 1);
 			return GetRangeValue(OutMin, OutMax, ClampedPct);
 		}
+
+		static Vector2 ComputeBarycentricInPlane(const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P);
+		static const Vector FindClosestPointOnLineSegment(const Vector& P0, const Vector& P1, const Vector& P);
+		static Vector FindClosestPointOnTriangle(const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P);
+
+		static bool PointOverlapsTriangle(const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P, float Thickness);
 	};
 }

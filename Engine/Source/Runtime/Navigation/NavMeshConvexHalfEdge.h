@@ -21,6 +21,22 @@ namespace Drn
 
 			uint32 FirstHalfEdgeIndex;
 			uint32 NumHalfEdges;
+
+			friend class Archive& operator<<(Archive& Ar, const PlaneData& Value)
+			{
+				Ar << Value.FirstHalfEdgeIndex;
+				Ar << Value.NumHalfEdges;
+
+				return Ar;
+			}
+
+			friend class Archive& operator>>(Archive& Ar, PlaneData& Value)
+			{
+				Ar >> Value.FirstHalfEdgeIndex;
+				Ar >> Value.NumHalfEdges;
+
+				return Ar;
+			}
 		};
 
 		struct HalfEdgeData
@@ -34,6 +50,24 @@ namespace Drn
 			uint32 PlaneIndex;
 			uint32 VertexIndex;
 			uint32 TwinHalfEdgeIndex;
+
+			friend class Archive& operator<<(Archive& Ar, const HalfEdgeData& Value)
+			{
+				Ar << Value.PlaneIndex;
+				Ar << Value.TwinHalfEdgeIndex;
+				Ar << Value.VertexIndex;
+
+				return Ar;
+			}
+
+			friend class Archive& operator>>(Archive& Ar, HalfEdgeData& Value)
+			{
+				Ar >> Value.PlaneIndex;
+				Ar >> Value.TwinHalfEdgeIndex;
+				Ar >> Value.VertexIndex;
+
+				return Ar;
+			}
 		};
 
 		struct VertexData
@@ -45,6 +79,22 @@ namespace Drn
 			VertexData()
 				: FirstHalfEdgeIndex(InvalidIndex)
 			{}
+
+			friend class Archive& operator<<(Archive& Ar, const VertexData& Value)
+			{
+				Ar << Value.FirstHalfEdgeIndex;
+				Ar << Value.Position;
+
+				return Ar;
+			}
+
+			friend class Archive& operator>>(Archive& Ar, VertexData& Value)
+			{
+				Ar >> Value.FirstHalfEdgeIndex;
+				Ar >> Value.Position;
+
+				return Ar;
+			}
 		};
 
 		void Clear();
@@ -56,6 +106,7 @@ namespace Drn
 		void DeletePlanes(std::vector<uint32> PlanesIndex);
 		void DeleteVertex(uint32 VertexIndex);
 		void DeleteEdge(uint32 EdgeIndex);
+		void FillEdge(uint32 EdgeIndex);
 
 		static Vector CalculatePointsCenter(const std::vector<Vector>& Points);
 		static Vector CalculatePointsNormal(const std::vector<Vector>& Points);
@@ -79,6 +130,9 @@ namespace Drn
 
 		Transform GetEdgeTransform(int32 EdgeIndex) const;
 		bool SetEdgeTransform(int32 EdgeIndex, const Transform& InTransform);
+
+		bool IsPointOnPlane(uint32 PlaneIndex, const Vector& Point, float Thickness) const;
+		uint32 FindPointsPlane(const Vector& Point) const;
 
 		//static NavMeshConvexHalfEdge MakePlaneVertices(const std::vector<std::vector<uint32>>& InPlaneVertices, uint32 InNumVertices)
 		//{
@@ -267,5 +321,23 @@ namespace Drn
 		std::vector<PlaneData> Planes;
 		std::vector<HalfEdgeData> HalfEdges;
 		std::vector<VertexData> Vertices;
+
+		friend class Archive& operator<<(Archive& Ar, const NavMeshConvexHalfEdge& Value)
+		{
+			Ar.operator<< <uint32>(Value.Planes);
+			Ar.operator<< <uint32>(Value.HalfEdges);
+			Ar.operator<< <uint32>(Value.Vertices);
+
+			return Ar;
+		}
+
+		friend class Archive& operator>>(Archive& Ar, NavMeshConvexHalfEdge& Value)
+		{
+			Ar.operator>> <uint32>(Value.Planes);
+			Ar.operator>> <uint32>(Value.HalfEdges);
+			Ar.operator>> <uint32>(Value.Vertices);
+
+			return Ar;
+		}
 	};
 }

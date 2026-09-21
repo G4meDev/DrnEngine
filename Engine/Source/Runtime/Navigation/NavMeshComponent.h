@@ -36,6 +36,9 @@ namespace Drn
 		NavMeshConvexHalfEdge ConvexMesh;
 		DynamicMeshComponent* Visualizer;
 
+		// TODO: stringid
+		std::string Name;
+
 #if WITH_EDITOR
 		virtual void DrawDetailPanel(float DeltaTime) override;
 		void DrawInternal();

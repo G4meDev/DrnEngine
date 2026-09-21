@@ -10,6 +10,7 @@ namespace Drn
 {
 	NavMeshComponent::NavMeshComponent()
 		: SceneComponent()
+		, Name("")
 	{
 	}
 
@@ -24,17 +25,30 @@ namespace Drn
 
 		if (Ar.IsLoading())
 		{
-			
+			BufferArchive CompressAr(1000);
+			Ar >> CompressAr;
+			CompressAr.Decompress();
+			CompressAr >> Name;
+			CompressAr >> ConvexMesh;
+
+			UpdateVisualizer();
 		}
 		else
 		{
-			
+			BufferArchive CompressAr(1000);
+			CompressAr << Name;
+			CompressAr << ConvexMesh;
+			CompressAr.Compress();
+
+			Ar << CompressAr;
 		}
 	}
 
 	void NavMeshComponent::RegisterComponent( World* InOwningWorld )
 	{
 		SceneComponent::RegisterComponent(InOwningWorld);
+
+		GetWorld()->GetNavigationSystem()->RegisterNavMeshComponent(this);
 
 #if WITH_EDITOR
 		AssetHandle<Texture2D> DefaultIcon( "Engine\\Content\\EditorResources\\T_DefaultComponentIcon.drn" );
@@ -46,6 +60,7 @@ namespace Drn
 
 	void NavMeshComponent::UnRegisterComponent()
 	{
+		GetWorld()->GetNavigationSystem()->UnregisterNavMeshComponent(this);
 
 		SceneComponent::UnRegisterComponent();
 	}
@@ -195,6 +210,8 @@ namespace Drn
 
 	void NavMeshComponent::DrawInternal()
 	{
+		ImGui::InputText("Name", &Name);
+
 		if (ImGui::Button("Press"))
 		{
 			std::vector<Vector> Pos = 
@@ -243,6 +260,13 @@ namespace Drn
 			}
 
 			SelectedElementType = ENavMeshElementType::Invalid;
+			UpdateVisualizer();
+		}
+
+		if (SelectedElementType == ENavMeshElementType::Edge && ImGui::IsKeyPressed(ImGuiKey_B))
+		{
+			ConvexMesh.FillEdge(SelectedElement);
+			
 			UpdateVisualizer();
 		}
 

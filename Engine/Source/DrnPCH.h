@@ -39,6 +39,7 @@
 #include "Runtime/Animation/AnimTask_PlayBlendSpace1D.h"
 #include "Runtime/Navigation/NavMeshComponent.h"
 #include "Runtime/Navigation/NavMeshActor.h"
+#include "Runtime/Navigation/NavigationSystem.h"
 #include "Runtime/Engine/CameraActor.h"
 #include "Runtime/Engine/PointLightActor.h"
 #include "Runtime/Engine/SpotLightActor.h"
@@ -111,6 +112,8 @@
 #include "Runtime/Misc/FileSystem.h"
 
 #include "Runtime/Templates/ThirdPersonCharacter/ThirdPersonCharacter.h"
+
+#include "Editor/Misc/ImguiHelpers.h"
 
 //#define PAR_SHAPES_IMPLEMENTATION
 //#include "ThirdParty/par/par_shapes.h"

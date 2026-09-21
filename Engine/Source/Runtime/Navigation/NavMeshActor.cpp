@@ -54,6 +54,19 @@ namespace Drn
 
 		m_NavMeshComponent->Visualizer = m_DynamicMeshComponent.get();
 		Vis->NavMesh = m_NavMeshComponent.get();
+
+		AssetHandle<StaticMesh> SphereMesh("Engine\\Content\\BasicShapes\\SM_Sphere.drn");
+		SphereMesh.Load();
+
+		NavTestStart = std::make_unique<StaticMeshComponent>();
+		GetRoot()->AttachSceneComponent(NavTestStart.get());
+		NavTestStart->SetComponentLabel("Start");
+		NavTestStart->SetMesh(SphereMesh);
+
+		NavTestEnd = std::make_unique<StaticMeshComponent>();
+		GetRoot()->AttachSceneComponent(NavTestEnd.get());
+		NavTestEnd->SetComponentLabel("End");
+		NavTestEnd->SetMesh(SphereMesh);
 	}
 
 	NavMeshActor::~NavMeshActor()
@@ -69,4 +82,30 @@ namespace Drn
 		//m_DynamicMeshComponent->Serialize(Ar);
 	}
 
-        }
+	bool NavMeshActor::DrawDetailPanel()
+	{
+		Actor::DrawDetailPanel();
+
+		if (ImGui::Button("Test"))
+		{
+			GetWorld()->FlushDebugLines();
+
+			NavMeshComponent* TestNavMesh = GetWorld()->GetNavigationSystem()->GetNavMesh("");
+			NavMeshConvexHalfEdge& Conv = TestNavMesh->ConvexMesh;
+
+			uint32 PlaneIndex = Conv.FindPointsPlane(NavTestStart->GetRelativeLocation());
+
+			if (PlaneIndex != TestNavMesh->ConvexMesh.InvalidIndex)
+			{
+				const Vector P0 = Conv.GetVertex(Conv.GetPlaneVertex(PlaneIndex, 0)).Position;
+				const Vector P1 = Conv.GetVertex(Conv.GetPlaneVertex(PlaneIndex, 1)).Position;
+				const Vector P2 = Conv.GetVertex(Conv.GetPlaneVertex(PlaneIndex, 2)).Position;
+
+				GetWorld()->DrawDebugSphere( (P0 + P1 + P2) / 3.0f, Quat::Identity, Color::Green, 0.3f, 32, 0.0f, 100.0f);
+			}
+		}
+
+		return false;
+	}
+
+        }  // namespace Drn

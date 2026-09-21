@@ -112,6 +112,7 @@ namespace Drn
 	class Actor;
 	class StaticMeshActor;
 	class CameraActor;
+	class NavigationSystem;
 
 	class AssetPreview;
 	

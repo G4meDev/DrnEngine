@@ -213,6 +213,8 @@ namespace Drn
 		inline bool IsInGameMode() { return true; }
 #endif
 
+		inline NavigationSystem* GetNavigationSystem() const { return m_NavigationSystem; }
+
 	protected:
 
 		void DestroyActor(Actor* InActor);
@@ -247,6 +249,8 @@ namespace Drn
 		PhysicScene* m_PhysicScene;
 
 		class PlayerController* m_PlayerController;
+
+		NavigationSystem* m_NavigationSystem;
 
 #if WITH_EDITOR
 		StaticMeshActor* m_AxisGridPlane;

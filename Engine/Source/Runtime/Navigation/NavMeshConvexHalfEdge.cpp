@@ -289,6 +289,128 @@ namespace Drn
 		DeletePlanes(Deletes);
 	}
 
+	void NavMeshConvexHalfEdge::FillEdge( uint32 EdgeIndex )
+	{
+		drn_check(EdgeIndex < NumHalfEdges());
+
+		if (GetTwinHalfEdge(EdgeIndex) != InvalidIndex)
+		{
+			return;
+		}
+
+		uint32 CenterVertex = GetHalfEdgeVertex(GetNextHalfEdge(EdgeIndex));
+		std::vector<uint32> SharedPlanes = GetVertexPlanes(CenterVertex);
+		std::vector<uint32> CandidateEdges;
+
+		for (uint32 PlaneIndex = 0; PlaneIndex < NumPlanes(); PlaneIndex++)
+		{
+			if (PlaneIndex == GetHalfEdgePlane(EdgeIndex))
+			{
+				continue;
+			}
+
+			VisitPlaneEdges(PlaneIndex, [&](uint32 HalfEdgeIndex, uint32 NextHalfEdgeIndex)
+			{
+				if (GetHalfEdgeVertex(HalfEdgeIndex) == CenterVertex)
+				{
+					if (GetTwinHalfEdge(HalfEdgeIndex) == InvalidIndex)
+					{
+						CandidateEdges.push_back(HalfEdgeIndex);
+					}
+
+					return false;
+				}
+
+				return true;
+			});
+		}
+
+		const Vector& Pt0 = GetVertex(GetHalfEdgeVertex(EdgeIndex)).Position;
+		const Vector& Pt1 = GetVertex(CenterVertex).Position;
+		const Vector BaseDir = (Pt1 - Pt0).GetSafeNormal();
+
+		float MinDot = FLT_MAX;
+
+		uint32 VerifiedEdge = InvalidIndex;
+		for (uint32 Candidate : CandidateEdges)
+		{
+			const Vector& TargetPoint = GetVertex(GetHalfEdgeVertex(GetNextHalfEdge(Candidate))).Position;
+
+			if (IsPointOutsideEdge(Pt0, Pt1, TargetPoint))
+			{
+				float Dot = BaseDir | (TargetPoint - CenterVertex).GetSafeNormal();
+
+				if (Dot < MinDot)
+				{
+					MinDot = Dot;
+					VerifiedEdge = Candidate;
+				}
+			}
+		}
+
+		if (VerifiedEdge == InvalidIndex)
+		{
+			return;
+		}
+
+		Planes.push_back({});
+		Planes.back().NumHalfEdges = 3;
+		Planes.back().FirstHalfEdgeIndex = NumHalfEdges();
+
+		uint32 PlaneIndex = NumPlanes() - 1;
+		HalfEdges.push_back({});
+		HalfEdges.back().PlaneIndex = PlaneIndex;
+		HalfEdges.back().VertexIndex = GetHalfEdgeVertex(GetNextHalfEdge(VerifiedEdge));
+		HalfEdges.back().TwinHalfEdgeIndex = VerifiedEdge;
+		GetHalfEdge(VerifiedEdge).TwinHalfEdgeIndex = HalfEdges.size() - 1;
+
+		HalfEdges.push_back({});
+		HalfEdges.back().PlaneIndex = PlaneIndex;
+		HalfEdges.back().VertexIndex = CenterVertex;
+		HalfEdges.back().TwinHalfEdgeIndex = EdgeIndex;
+		GetHalfEdge(EdgeIndex).TwinHalfEdgeIndex = HalfEdges.size() - 1;
+
+		HalfEdges.push_back({});
+		HalfEdges.back().PlaneIndex = PlaneIndex;
+		HalfEdges.back().VertexIndex = GetHalfEdgeVertex(EdgeIndex);
+
+		uint32 Twin = InvalidIndex;
+		for (uint32 PlaneIndex = 0; PlaneIndex < NumPlanes(); PlaneIndex++)
+		{
+			if (Twin != InvalidIndex)
+			{
+				break;
+			}
+
+			VisitPlaneEdges(PlaneIndex, [&](uint32 HalfEdgeIndex, uint32 NextHalfEdgeIndex)
+			{
+				const bool StartEquals = GetHalfEdgeVertex(HalfEdgeIndex) == GetHalfEdgeVertex(GetNextHalfEdge(VerifiedEdge));
+				const bool EndEquals = GetHalfEdgeVertex(NextHalfEdgeIndex) == GetHalfEdgeVertex(EdgeIndex);
+
+				if(StartEquals && EndEquals)
+				{
+					Twin = HalfEdgeIndex;
+					return false;
+				}
+
+				return true;
+			});
+		}
+
+		HalfEdges.back().TwinHalfEdgeIndex = Twin;
+		if (Twin != InvalidIndex)
+		{
+			GetHalfEdge(Twin).TwinHalfEdgeIndex = HalfEdges.size() - 1;
+		}
+
+		if (VerifiedEdge != InvalidIndex)
+		{
+			const Vector& TargetPoint = GetVertex(GetHalfEdgeVertex(GetNextHalfEdge(VerifiedEdge))).Position;
+
+			WorldManager::Get()->GetMainWorld()->DrawDebugSphere(TargetPoint, Quat::Identity, Color::Emerald, 0.5, 32, 0.0, 10.0f);
+		}
+	}
+
 	Vector NavMeshConvexHalfEdge::CalculatePointsCenter( const std::vector<Vector>& Points )
 	{
 		Vector Result = Vector::ZeroVector;
@@ -523,4 +645,29 @@ namespace Drn
 		return bChanged;
 	}
 
-}  // namespace Drn
+	bool NavMeshConvexHalfEdge::IsPointOnPlane( uint32 PlaneIndex, const Vector& Point, float Thickness ) const
+	{
+		drn_check(PlaneIndex < NumPlanes());
+		drn_check(Planes[PlaneIndex].NumHalfEdges == 3);
+
+		const Vector P0 = GetVertex(GetPlaneVertex(PlaneIndex, 0)).Position;
+		const Vector P1 = GetVertex(GetPlaneVertex(PlaneIndex, 1)).Position;
+		const Vector P2 = GetVertex(GetPlaneVertex(PlaneIndex, 2)).Position;
+
+		return Math::PointOverlapsTriangle(P0, P1, P2, Point, Thickness);
+	}
+
+	uint32 NavMeshConvexHalfEdge::FindPointsPlane(const Vector& Point) const
+	{
+		for (uint32 PlaneIndex = 0; PlaneIndex < NumPlanes(); PlaneIndex++)
+		{
+			if (IsPointOnPlane(PlaneIndex, Point, 1.0f))
+			{
+				return PlaneIndex;
+			}
+		}
+
+		return InvalidIndex;
+	}
+
+        }  // namespace Drn
