@@ -107,6 +107,7 @@ namespace Drn
 		void DeleteVertex(uint32 VertexIndex);
 		void DeleteEdge(uint32 EdgeIndex);
 		void FillEdge(uint32 EdgeIndex);
+		void MergePoints(uint32 Source, uint32 Target);
 
 		static Vector CalculatePointsCenter(const std::vector<Vector>& Points);
 		static Vector CalculatePointsNormal(const std::vector<Vector>& Points);

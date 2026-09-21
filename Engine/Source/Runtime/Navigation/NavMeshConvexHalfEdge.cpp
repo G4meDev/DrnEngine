@@ -411,6 +411,39 @@ namespace Drn
 		}
 	}
 
+	void NavMeshConvexHalfEdge::MergePoints( uint32 Source, uint32 Target )
+	{
+		drn_check(Source < NumVertices());
+		drn_check(Target < NumVertices());
+
+		if (Source == Target)
+		{
+			return;
+		}
+
+		// @TODO: merging is for two separate islands. do not let merge on same plane and possibly making twins
+
+		for (uint32 PlaneIndex = 0; PlaneIndex < NumPlanes(); PlaneIndex++)
+		{
+			VisitPlaneEdges( PlaneIndex, [&](uint32 HalfEdgeIndex, uint32 NextHalfEdgeIndex)
+			{
+				if (GetHalfEdgeVertex(HalfEdgeIndex) == Source)
+				{
+					GetHalfEdge(HalfEdgeIndex).VertexIndex = Target;
+				}
+
+				if (GetHalfEdgeVertex(HalfEdgeIndex) > Source)
+				{
+					GetHalfEdge(HalfEdgeIndex).VertexIndex--;
+				}
+
+				return true;
+			});
+		}
+
+		Vertices.erase(Vertices.begin() + Source);
+	}
+
 	Vector NavMeshConvexHalfEdge::CalculatePointsCenter( const std::vector<Vector>& Points )
 	{
 		Vector Result = Vector::ZeroVector;

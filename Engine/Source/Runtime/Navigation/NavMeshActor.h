@@ -20,12 +20,5 @@ namespace Drn
 
 		std::unique_ptr<NavMeshComponent> m_NavMeshComponent;
 		std::unique_ptr<DynamicMeshComponent> m_DynamicMeshComponent;
-
-		std::unique_ptr<StaticMeshComponent> NavTestStart;
-		std::unique_ptr<StaticMeshComponent> NavTestEnd;
-
-#if WITH_EDITOR
-		bool DrawDetailPanel() override;
-#endif
 	};
 }

@@ -51,7 +51,7 @@ namespace Drn
 		GetWorld()->GetNavigationSystem()->RegisterNavMeshComponent(this);
 
 #if WITH_EDITOR
-		AssetHandle<Texture2D> DefaultIcon( "Engine\\Content\\EditorResources\\T_DefaultComponentIcon.drn" );
+		AssetHandle<Texture2D> DefaultIcon( "Engine\\Content\\EditorResources\\ComponentIcons\\T_NavMeshIcon.drn" );
 		DefaultIcon.Load();
 		
 		m_Sprite->SetSprite( DefaultIcon );
@@ -385,12 +385,24 @@ namespace Drn
 
 	void NavMeshComponent::SetSelectedInEditorVisualizer( bool SelectedInEditor, const HitProxyData& Data )
 	{
-		SelectedElementType = static_cast<ENavMeshElementType>(Data.CustomA);
-		SelectedElement = Data.CustomB;
+		ENavMeshElementType Type = static_cast<ENavMeshElementType>(Data.CustomA);
+		uint32 Index = Data.CustomB;
 
-		if (SelectedElementType == ENavMeshElementType::Invalid)
+		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && SelectedElementType == ENavMeshElementType::Vertex && Type == ENavMeshElementType::Vertex)
 		{
+			ConvexMesh.MergePoints(SelectedElement, Index);
 			SelectedElement = 0;
+			SelectedElementType = ENavMeshElementType::Invalid;
+		}
+		else
+		{
+			SelectedElementType = Type;
+			SelectedElement = Index;
+
+			if (SelectedElementType == ENavMeshElementType::Invalid)
+			{
+				SelectedElement = 0;
+			}
 		}
 
 		UpdateVisualizer();

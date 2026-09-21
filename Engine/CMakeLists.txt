@@ -183,6 +183,7 @@ set( HEADER_FILES
 	Source/Runtime/Navigation/NavMeshActor.h
 	Source/Runtime/Navigation/NavMeshConvexHalfEdge.h
 	Source/Runtime/Navigation/NavigationSystem.h
+	Source/Runtime/Navigation/NavigationTest.h
 
 	Source/Runtime/Components/LineBatchComponent.h
 	Source/Runtime/Components/LightComponent.h
@@ -487,6 +488,7 @@ set( SOURCE_FILES
 	Source/Runtime/Navigation/NavMeshActor.cpp
 	Source/Runtime/Navigation/NavMeshConvexHalfEdge.cpp
 	Source/Runtime/Navigation/NavigationSystem.cpp
+	Source/Runtime/Navigation/NavigationTest.cpp
 
 	Source/Runtime/Components/LineBatchComponent.cpp
 	Source/Runtime/Components/LightComponent.cpp

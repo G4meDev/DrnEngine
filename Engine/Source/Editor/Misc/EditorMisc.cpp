@@ -7,6 +7,7 @@
 #include "Runtime/Engine/SphereReflectionCapture.h"
 #include "Runtime/GameFramework/WheeledVehiclePawn.h"
 #include "Runtime/Tool/ScenePointCloudImporter.h"
+#include "Runtime/Navigation/NavigationTest.h"
 
 #if WITH_EDITOR
 
@@ -35,6 +36,7 @@ namespace Drn
 		REGISTER_LEVEL_SPAWNABLE_CLASS( InstancedStaticMeshActor, Primitive );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( Particle				, Effect );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( NavMeshActor			, Navigation );
+		REGISTER_LEVEL_SPAWNABLE_CLASS( NavigationTest			, Navigation );
 		REGISTER_LEVEL_SPAWNABLE_CLASS( ScenePointCloudImporter	, Tool );
 	}
 

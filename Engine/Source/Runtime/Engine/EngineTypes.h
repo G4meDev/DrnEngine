@@ -40,6 +40,7 @@ namespace Drn
 		SkeletalMeshActor,
 		ThirdPersonCharacter,
 		NavMeshActor,
+		NavigationTest,
 	};
 
 	enum class EComponentType : uint32

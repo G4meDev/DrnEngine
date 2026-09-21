@@ -3,6 +3,7 @@
 
 #include "Editor/Misc/EditorMisc.h"
 #include "Runtime/Tool/ScenePointCloudImporter.h"
+#include "Runtime/Navigation/NavigationTest.h"
 
 #if WITH_EDITOR
 #include "imgui.h"
@@ -87,6 +88,7 @@ namespace Drn
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::SkeletalMeshActor			, SkeletalMeshActor );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::ThirdPersonCharacter		, ThirdPersonCharacter );
 		REGISTER_SERIALIZABLE_ACTOR( EActorType::NavMeshActor				, NavMeshActor);
+		REGISTER_SERIALIZABLE_ACTOR( EActorType::NavigationTest				, NavigationTest);
 
 		ParticleTypes::RegisterParticleModules();
 
