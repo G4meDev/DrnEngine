@@ -154,7 +154,7 @@ namespace Drn
 		return P0 + P10 * NormalProj;
 	}
 
-	Vector Math::FindClosestPointOnTriangle( const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P )
+	Vector Math::FindClosestPointOnTriangle( const Plane& TrianglePlane, const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P )
 	{
 		const float Epsilon = KINDA_SMALL_NUMBER;
 
@@ -162,7 +162,9 @@ namespace Drn
 
 		if (Bary.X >= -Epsilon && Bary.X <= 1 + Epsilon && Bary.Y >= -Epsilon && Bary.Y <= 1 + Epsilon && (Bary.X + Bary.Y) <= (1 + Epsilon))
 		{
-			return P;
+			//Plane Pl(P0, P1, P2);
+			//return Pl.ProjectPoint(P);
+			return TrianglePlane.ProjectPoint(P);
 		}
 
 		const Vector P10Closest = FindClosestPointOnLineSegment(P0, P1, P);
@@ -197,12 +199,11 @@ namespace Drn
 		}
 	}
 
-	bool Math::PointOverlapsTriangle( const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P, float Thickness )
+	bool Math::PointOverlapsTriangle( const Plane& TrianglePlane, const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P, float Thickness )
 	{
-		const Vector ClosestPoint = FindClosestPointOnTriangle(P0, P1, P2, P);
+		const Vector ClosestPoint = FindClosestPointOnTriangle(TrianglePlane, P0, P1, P2, P);
 		const float AdjustedThickness = std::max(Thickness, KINDA_SMALL_NUMBER);
 		return (P - ClosestPoint).SizeSquared() <= (AdjustedThickness * AdjustedThickness);
 	}
 
-        }
-
+}

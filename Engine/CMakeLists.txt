@@ -220,6 +220,7 @@ set( HEADER_FILES
 	Source/Runtime/Math/Box.h
 	Source/Runtime/Math/Box2D.h
 	Source/Runtime/Math/Sphere.h
+	Source/Runtime/Math/Plane.h
 	Source/Runtime/Math/Vector.h
 	Source/Runtime/Math/Vector4.h
 	Source/Runtime/Math/Vector2.h
@@ -525,6 +526,7 @@ set( SOURCE_FILES
 	Source/Runtime/Math/Box.cpp
 	Source/Runtime/Math/Box2D.cpp
 	Source/Runtime/Math/Sphere.cpp
+	Source/Runtime/Math/Plane.cpp
 	Source/Runtime/Math/Vector.cpp
 	Source/Runtime/Math/Vector4.cpp
 	Source/Runtime/Math/Vector2.cpp

@@ -14,27 +14,22 @@ namespace Drn
 		{
 			PlaneData()
 				: FirstHalfEdgeIndex(InvalidIndex)
-				, NumHalfEdges(0)
 			{}
 
-			//Vector Center;
-
 			uint32 FirstHalfEdgeIndex;
-			uint32 NumHalfEdges;
+
+			Vector Center;
+			Plane SurfacePlane;
 
 			friend class Archive& operator<<(Archive& Ar, const PlaneData& Value)
 			{
 				Ar << Value.FirstHalfEdgeIndex;
-				Ar << Value.NumHalfEdges;
-
 				return Ar;
 			}
 
 			friend class Archive& operator>>(Archive& Ar, PlaneData& Value)
 			{
 				Ar >> Value.FirstHalfEdgeIndex;
-				Ar >> Value.NumHalfEdges;
-
 				return Ar;
 			}
 		};
@@ -102,6 +97,8 @@ namespace Drn
 		void AddTriangle(std::vector<Vector>& Positions);
 		bool AddTriangleToEdge(uint32 EdgeIndex, const Vector& Position, uint32& NewVertexIndex);
 
+		void Rebuild();
+
 		void DeletePlane(uint32 PlaneIndex);
 		void DeletePlanes(std::vector<uint32> PlanesIndex);
 		void DeleteVertex(uint32 VertexIndex);
@@ -132,8 +129,7 @@ namespace Drn
 		Transform GetEdgeTransform(int32 EdgeIndex) const;
 		bool SetEdgeTransform(int32 EdgeIndex, const Transform& InTransform);
 
-		bool IsPointOnPlane(uint32 PlaneIndex, const Vector& Point, float Thickness) const;
-		uint32 FindPointsPlane(const Vector& Point) const;
+		uint32 FindNearestPlane(const Vector& Point, Vector& NearestPosition, float Radius, float Height, bool& bOverPlane) const;
 
 		//static NavMeshConvexHalfEdge MakePlaneVertices(const std::vector<std::vector<uint32>>& InPlaneVertices, uint32 InNumVertices)
 		//{
@@ -167,7 +163,7 @@ namespace Drn
 
 		uint32 NumPlaneHalfEdges(uint32 PlaneIndex) const
 		{
-			return GetPlane(PlaneIndex).NumHalfEdges;
+			return 3;
 		}
 
 		uint32 GetPlaneHalfEdge(uint32 PlaneIndex, uint32 PlaneEdgeIndex) const
@@ -179,7 +175,7 @@ namespace Drn
 
 		uint32 NumPlaneVertices(uint32 PlaneIndex) const
 		{
-			return GetPlane(PlaneIndex).NumHalfEdges;
+			return 3;
 		}
 
 		uint32 GetPlaneVertex(uint32 PlaneIndex, uint32 PlaneVertexIndex) const

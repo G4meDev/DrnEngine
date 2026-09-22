@@ -31,6 +31,7 @@ namespace Drn
 			CompressAr >> Name;
 			CompressAr >> ConvexMesh;
 
+			ConvexMesh.Rebuild();
 			UpdateVisualizer();
 		}
 		else
@@ -200,6 +201,127 @@ namespace Drn
 		Visualizer->CreateMeshSection_Color(VISUALIZER_SLOT_EDGE, VisualizerMaterial, Positions, Indices, Colors);
 	}
 
+	bool NavMeshComponent::FindPathPlanes( uint32 StartPlane, uint32 EndPlane, std::vector<uint32>& PathPlanes )
+	{
+		struct PathNode
+		{
+			PathNode(uint32 InPlaneIndex)
+				: PlaneIndex(InPlaneIndex)
+				, F(0.0f)
+			{}
+
+			uint32 PlaneIndex;
+			float F; // path cost
+
+			bool operator>( const PathNode& Other ) const { return F > Other.F; }
+			bool operator==( const PathNode& Other ) const { return PlaneIndex == Other.PlaneIndex; }
+		};
+
+		const Vector& StartPlaneCenter = ConvexMesh.GetPlane(StartPlane).Center;
+		const Vector& EndPlaneCenter = ConvexMesh.GetPlane(EndPlane).Center;
+
+		std::priority_queue<PathNode, std::vector<PathNode>, std::greater<PathNode>> Frontier;
+		std::vector<uint32> PlanesParent(ConvexMesh.NumPlanes(), ConvexMesh.InvalidIndex);
+		std::vector<bool> ExploredPlanes(ConvexMesh.NumPlanes(), false);
+		std::vector<float> PlanesGValues(ConvexMesh.NumPlanes(), FLT_MAX);
+
+		Frontier.push(StartPlane);
+		PlanesGValues[StartPlane] = 0.0f;
+
+		while (!Frontier.empty())
+		{
+			PathNode CurrentNode = Frontier.top();
+			Frontier.pop();
+
+			if (CurrentNode.PlaneIndex == EndPlane)
+			{
+				while (CurrentNode.PlaneIndex != StartPlane)
+				{
+					PathPlanes.push_back(CurrentNode.PlaneIndex);
+					CurrentNode.PlaneIndex = PlanesParent[CurrentNode.PlaneIndex];
+				}
+
+				PathPlanes.push_back(StartPlane);
+				std::reverse(PathPlanes.begin(), PathPlanes.end());
+
+				return true;
+			}
+
+			const Vector& PlaneCenter = ConvexMesh.GetPlane(CurrentNode.PlaneIndex).Center;
+			for (int32 EdgeIndex = 0; EdgeIndex < 3; EdgeIndex++)
+			{
+				uint32 TwinIndex = ConvexMesh.GetTwinHalfEdge(ConvexMesh.GetPlaneHalfEdge(CurrentNode.PlaneIndex, EdgeIndex));
+				uint32 TwinPlaneIndex = TwinIndex == ConvexMesh.InvalidIndex ? ConvexMesh.InvalidIndex : ConvexMesh.GetHalfEdgePlane(TwinIndex);
+
+				if ((TwinPlaneIndex == ConvexMesh.InvalidIndex) || ExploredPlanes[TwinPlaneIndex])
+				{
+					continue;
+				}
+
+				const Vector& TwinPlaneCenter = ConvexMesh.GetPlane(TwinPlaneIndex).Center;
+				float DistanceFromPreviousPlane = Vector::DistSquared(PlaneCenter, TwinPlaneCenter);
+				float NewG = PlanesGValues[CurrentNode.PlaneIndex] + DistanceFromPreviousPlane;
+
+				if (NewG < PlanesGValues[TwinPlaneIndex])
+				{
+					PlanesGValues[TwinPlaneIndex] = NewG;
+
+					PathNode NewNode(TwinPlaneIndex);
+					float H = Vector::DistSquared(TwinPlaneCenter, EndPlaneCenter);
+					NewNode.F = NewG + H;
+
+					PlanesParent[TwinPlaneIndex] = CurrentNode.PlaneIndex;
+					Frontier.push(NewNode);
+				}
+			}
+		}
+
+		return false;
+	}
+
+	bool NavMeshComponent::FindPath( const Vector& Start, const Vector& End, float AgentRadius, float AgentHeight, std::vector<Vector>& PathPoints, std::vector<uint32>& PathPlanes )
+	{
+		PathPoints.clear();
+		PathPlanes.clear();
+
+		const Transform CompTransform = GetWorldTransform();
+
+		const Vector StartRelative = CompTransform.InverseTransformPosition(Start);
+		const Vector EndRelative = CompTransform.InverseTransformPosition(End);
+
+		bool bStartOverlaps = false;
+		Vector StartNearest = Vector::ZeroVector;
+		uint32 StartPlane = ConvexMesh.FindNearestPlane(StartRelative, StartNearest, AgentRadius, AgentHeight, bStartOverlaps);
+
+		bool bEndOverlaps = false;
+		Vector EndNearest = Vector::ZeroVector;
+		uint32 EndPlane = ConvexMesh.FindNearestPlane(EndRelative, EndNearest, AgentRadius, AgentHeight, bEndOverlaps);
+
+		if ((StartPlane == ConvexMesh.InvalidIndex) || (EndPlane == ConvexMesh.InvalidIndex))
+		{
+			return false;
+		}
+
+		bool bFoundPath = FindPathPlanes(StartPlane, EndPlane, PathPlanes);
+		if (!bFoundPath)
+		{
+			return false;
+		}
+
+		PathPoints.reserve(PathPlanes.size());
+		for (uint32 PlaneIndex = 1; PlaneIndex < PathPlanes.size() - 1; PlaneIndex++)
+		{
+			PathPoints.push_back(ConvexMesh.GetPlane(PlaneIndex).Center);
+		}
+
+
+
+		for (Vector& Point : PathPoints)
+		{
+			Point = CompTransform.TransformPosition(Point);
+		}
+	}
+
 #if WITH_EDITOR
 	void NavMeshComponent::DrawDetailPanel( float DeltaTime )
 	{
@@ -240,6 +362,11 @@ namespace Drn
 			ConvexMesh.Clear();
 			SelectedElementType = ENavMeshElementType::Invalid;
 			UpdateVisualizer();
+		}
+
+		if (ImGui::Button("Rebuild"))
+		{
+			ConvexMesh.Rebuild();
 		}
 
 		if (SelectedElementType != ENavMeshElementType::Invalid && ImGui::IsKeyPressed(ImGuiKey_X))

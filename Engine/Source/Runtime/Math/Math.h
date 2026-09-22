@@ -6,6 +6,7 @@
 #define PI_ON_180_DEGREES 0.0174532778 // PI / 180
 
 #include "Runtime/Math/Vector.h"
+#include "Runtime/Math/Plane.h"
 #include <algorithm>
 
 namespace Drn
@@ -271,8 +272,8 @@ namespace Drn
 
 		static Vector2 ComputeBarycentricInPlane(const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P);
 		static const Vector FindClosestPointOnLineSegment(const Vector& P0, const Vector& P1, const Vector& P);
-		static Vector FindClosestPointOnTriangle(const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P);
+		static Vector FindClosestPointOnTriangle(const Plane& TrianglePlane, const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P);
 
-		static bool PointOverlapsTriangle(const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P, float Thickness);
+		static bool PointOverlapsTriangle(const Plane& TrianglePlane, const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P, float Thickness);
 	};
 }

@@ -51,7 +51,7 @@ private:
 #include "Runtime/Math/OrientedBox.h"
 #include "Runtime/Math/Frustum.h"
 #include "Runtime/Math/RandomStream.h"
-
+#include "Runtime/Math/Plane.h"
 
 #include "Runtime/Core/Delegate.h"
 #include "Runtime/Engine/CameraTypes.h"

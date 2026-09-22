@@ -1,6 +1,8 @@
 #include "DrnPCH.h"
 #include "NavMeshConvexHalfEdge.h"
 
+#define NUM_VERTEX_PER_PLANE 3
+
 namespace Drn
 {
 
@@ -117,7 +119,6 @@ namespace Drn
 		TransformPoints(Positions, Center, Normal);
 
 		Planes.push_back({});
-		Planes.back().NumHalfEdges = VertexCount;
 		Planes.back().FirstHalfEdgeIndex = HalfEdges.size();
 
 		for (uint32 VertexIndex = 0; VertexIndex < VertexCount; VertexIndex++)
@@ -141,7 +142,6 @@ namespace Drn
 			NewVertexIndex = NumVertices();
 
 			Planes.push_back({});
-			Planes.back().NumHalfEdges = 3;
 			Planes.back().FirstHalfEdgeIndex = NumHalfEdges();
 
 			Vertices.push_back({});
@@ -171,12 +171,26 @@ namespace Drn
 		return false;
 	}
 
+	void NavMeshConvexHalfEdge::Rebuild()
+	{
+		// calculate center and plane
+		for (uint32 PlaneIndex = 0; PlaneIndex < NumPlanes(); PlaneIndex++)
+		{
+			const Vector& P0 = GetVertex(GetPlaneVertex(PlaneIndex, 0)).Position;
+			const Vector& P1 = GetVertex(GetPlaneVertex(PlaneIndex, 1)).Position;
+			const Vector& P2 = GetVertex(GetPlaneVertex(PlaneIndex, 2)).Position;
+
+			GetPlane(PlaneIndex).Center = (P0 + P1 + P2) / NUM_VERTEX_PER_PLANE;
+			GetPlane(PlaneIndex).SurfacePlane = Plane(P0, P1, P2);
+		}
+	}
+
 	void NavMeshConvexHalfEdge::DeletePlane( uint32 PlaneIndex )
 	{
 		drn_check(PlaneIndex < NumPlanes());
 
 		const uint32 FirstEdgeToDelete = GetPlane(PlaneIndex).FirstHalfEdgeIndex;
-		const uint32 NumDeletedEdges = GetPlane(PlaneIndex).NumHalfEdges;
+		const uint32 NumDeletedEdges = NUM_VERTEX_PER_PLANE;
 
 		std::vector<uint32> VerticesToDelete;
 
@@ -354,7 +368,6 @@ namespace Drn
 		}
 
 		Planes.push_back({});
-		Planes.back().NumHalfEdges = 3;
 		Planes.back().FirstHalfEdgeIndex = NumHalfEdges();
 
 		uint32 PlaneIndex = NumPlanes() - 1;
@@ -678,29 +691,50 @@ namespace Drn
 		return bChanged;
 	}
 
-	bool NavMeshConvexHalfEdge::IsPointOnPlane( uint32 PlaneIndex, const Vector& Point, float Thickness ) const
+	uint32 NavMeshConvexHalfEdge::FindNearestPlane( const Vector& Point, Vector& NearestPosition, float Radius, float Height, bool& bOverPlane ) const
 	{
-		drn_check(PlaneIndex < NumPlanes());
-		drn_check(Planes[PlaneIndex].NumHalfEdges == 3);
+		drn_check(Radius > 0.0f);
+		drn_check(Height > 0.0f);
 
-		const Vector P0 = GetVertex(GetPlaneVertex(PlaneIndex, 0)).Position;
-		const Vector P1 = GetVertex(GetPlaneVertex(PlaneIndex, 1)).Position;
-		const Vector P2 = GetVertex(GetPlaneVertex(PlaneIndex, 2)).Position;
+		uint32 Result = InvalidIndex;
+		NearestPosition = Vector::ZeroVector;
+		bOverPlane = false;
 
-		return Math::PointOverlapsTriangle(P0, P1, P2, Point, Thickness);
-	}
-
-	uint32 NavMeshConvexHalfEdge::FindPointsPlane(const Vector& Point) const
-	{
 		for (uint32 PlaneIndex = 0; PlaneIndex < NumPlanes(); PlaneIndex++)
 		{
-			if (IsPointOnPlane(PlaneIndex, Point, 1.0f))
+			const Plane& SurfacePlane = GetPlane(PlaneIndex).SurfacePlane;
+			const Vector& P0 = GetVertex(GetPlaneVertex(PlaneIndex, 0)).Position;
+			const Vector& P1 = GetVertex(GetPlaneVertex(PlaneIndex, 1)).Position;
+			const Vector& P2 = GetVertex(GetPlaneVertex(PlaneIndex, 2)).Position;
+
+			Vector YProjected = SurfacePlane.RayIntersection(Point, Vector::UpVector);
+			const Vector NearestOnPlane = Math::FindClosestPointOnTriangle(SurfacePlane, P0, P1, P2, YProjected);
+
+			const float YDist = YProjected.Y - Point.Y;
+			bool bInHeightRange = std::abs(YDist) <= Height;
+
+			const float XZDist = (YProjected - NearestOnPlane).SizeSquaredXZ();
+			const bool bOverlaps = XZDist <= KINDA_SMALL_NUMBER;
+			const bool bInRadiusRange = XZDist <= (Radius * Radius);
+
+			if (bInHeightRange)
 			{
-				return PlaneIndex;
+				if (bOverlaps)
+				{
+					bOverPlane = true;
+					NearestPosition = NearestOnPlane;
+					return PlaneIndex;
+				}
+
+				if (bInRadiusRange)
+				{
+					Result = PlaneIndex;
+					NearestPosition = NearestOnPlane;
+				}
 			}
 		}
 
-		return InvalidIndex;
+		return Result;
 	}
 
-        }  // namespace Drn
+}

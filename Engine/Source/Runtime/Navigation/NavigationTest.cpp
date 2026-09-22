@@ -51,20 +51,34 @@ namespace Drn
 			NavMeshConvexHalfEdge& Conv = TestNavMesh->ConvexMesh;
 			Transform CompTransform = TestNavMesh->GetWorldTransform();
 
-			const Vector& StartRelative = CompTransform.InverseTransformPosition(NavTestStart->GetWorldLocation());
-			const Vector& EndRelative = CompTransform.InverseTransformPosition(NavTestEnd->GetWorldLocation());
+			//const Vector& StartRelative = CompTransform.InverseTransformPosition(NavTestStart->GetWorldLocation());
+			//const Vector& EndRelative = CompTransform.InverseTransformPosition(NavTestEnd->GetWorldLocation());
+			//
+			//bool bOverlaps;
+			//Vector Nearest;
+			//uint32 PlaneIndex = Conv.FindNearestPlane(StartRelative, Nearest, 0.5f, 4, bOverlaps);
+			//
+			//if (PlaneIndex != TestNavMesh->ConvexMesh.InvalidIndex)
+			//{
+			//	GetWorld()->DrawDebugSphere(CompTransform.TransformPosition(Nearest) , Quat::Identity, bOverlaps ? Color::Green : Color::Red, 0.3f, 32, 0.0f, 100.0f);
+			//}
 
-			uint32 PlaneIndex = Conv.FindPointsPlane(StartRelative);
+			std::vector<Vector> PathPoints;
+			std::vector<uint32> PathPlanes;
 
-			if (PlaneIndex != TestNavMesh->ConvexMesh.InvalidIndex)
+			bool bFoundPath = TestNavMesh->FindPath(NavTestStart->GetWorldLocation(), NavTestEnd->GetWorldLocation(), 0.5f, 4.0f, PathPoints, PathPlanes);
+			if (bFoundPath)
 			{
-				const Vector P0 = Conv.GetVertex(Conv.GetPlaneVertex(PlaneIndex, 0)).Position;
-				const Vector P1 = Conv.GetVertex(Conv.GetPlaneVertex(PlaneIndex, 1)).Position;
-				const Vector P2 = Conv.GetVertex(Conv.GetPlaneVertex(PlaneIndex, 2)).Position;
+				//for (uint32 PlaneIndex : PathPlanes)
+				//{
+				//	const Vector& PlaneCenter = Conv.GetPlane(PlaneIndex).Center;
+				//	GetWorld()->DrawDebugSphere(CompTransform.TransformPosition(PlaneCenter), Quat::Identity, Color::Green, 0.3f, 32, 0.0f, 100.0f);
+				//}
 
-				const Vector Center = (P0 + P1 + P2) / 3.0f;
-
-				GetWorld()->DrawDebugSphere(CompTransform.TransformPosition(Center) , Quat::Identity, Color::Green, 0.3f, 32, 0.0f, 100.0f);
+				for (uint32 PointIndex = 0; PointIndex < PathPoints.size() - 1; PointIndex++)
+				{
+					GetWorld()->DrawDebugArrow(PathPoints[PointIndex], PathPoints[PointIndex+1], 0.3f, Color::Green, 0.0f, 100.0f);
+				}
 			}
 		}
 

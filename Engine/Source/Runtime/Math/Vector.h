@@ -292,6 +292,13 @@ namespace Drn
 			return XMVectorGetX(XMVector3Dot(Vec, Vec));
 		}
 
+		inline float SizeSquaredXZ() const
+		{
+			XMVECTOR Vec = XMLoadFloat3(&m_Vector);
+			Vec = XMVectorSetY(Vec, 0);
+			return XMVectorGetX(XMVector3Dot(Vec, Vec));
+		}
+
 		inline float Length() const
 		{
 			return XMVectorGetX( XMVector3Length( XMLoadFloat3(&m_Vector) ) );
