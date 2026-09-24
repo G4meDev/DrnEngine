@@ -64,20 +64,28 @@ namespace Drn
 			//}
 
 			std::vector<Vector> PathPoints;
-			std::vector<uint32> PathPlanes;
+			std::vector<uint32> PathProtals;
 
-			bool bFoundPath = TestNavMesh->FindPath(NavTestStart->GetWorldLocation(), NavTestEnd->GetWorldLocation(), 0.5f, 4.0f, PathPoints, PathPlanes);
+			bool bFoundPath = TestNavMesh->FindPath(NavTestStart->GetWorldLocation(), NavTestEnd->GetWorldLocation(), 0.5f, 4.0f, PathPoints, PathProtals);
 			if (bFoundPath)
 			{
-				//for (uint32 PlaneIndex : PathPlanes)
+				for (uint32 PathProtal : PathProtals)
+				{
+					const Vector& PlaneCenter = Conv.GetPlane(Conv.GetHalfEdgePlane(PathProtal)).Center;
+					GetWorld()->DrawDebugSphere(CompTransform.TransformPosition(PlaneCenter), Quat::Identity, Color::Green, 0.3f, 32, 0.0f, 100.0f);
+				}
+
+				//for (uint32 PortalIndex : PathProtals)
 				//{
-				//	const Vector& PlaneCenter = Conv.GetPlane(PlaneIndex).Center;
-				//	GetWorld()->DrawDebugSphere(CompTransform.TransformPosition(PlaneCenter), Quat::Identity, Color::Green, 0.3f, 32, 0.0f, 100.0f);
+				//	const Vector& P0 = Conv.GetVertex(Conv.GetHalfEdgeVertex(PortalIndex)).Position;
+				//	const Vector& P1 = Conv.GetVertex(Conv.GetHalfEdgeVertex(Conv.GetNextHalfEdge(PortalIndex))).Position;
+				//
+				//	GetWorld()->DrawDebugArrow(CompTransform.TransformPosition(P0) + Vector(0, 10, 0), CompTransform.TransformPosition(P1) + Vector(0, 10, 0), 0.3f, Color::Green, 0.0f, 100.0f);
 				//}
 
-				for (uint32 PointIndex = 0; PointIndex < PathPoints.size() - 1; PointIndex++)
+				for (uint32 PointIndex = 0; (PathPoints.size() >= 2) && PointIndex < (PathPoints.size()-1); PointIndex++)
 				{
-					GetWorld()->DrawDebugArrow(PathPoints[PointIndex], PathPoints[PointIndex+1], 0.3f, Color::Green, 0.0f, 100.0f);
+					GetWorld()->DrawDebugArrow(PathPoints[PointIndex] + Vector(0, 2, 0), PathPoints[PointIndex+1] + Vector(0, 2, 0), 0.3f, Color::Blue, 0.0f, 100.0f);
 				}
 			}
 		}

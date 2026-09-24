@@ -201,7 +201,7 @@ namespace Drn
 		Visualizer->CreateMeshSection_Color(VISUALIZER_SLOT_EDGE, VisualizerMaterial, Positions, Indices, Colors);
 	}
 
-	bool NavMeshComponent::FindPathPlanes( uint32 StartPlane, uint32 EndPlane, std::vector<uint32>& PathPlanes )
+	bool NavMeshComponent::FindPathPortals( uint32 StartPlane, uint32 EndPlane, std::vector<uint32>& PathProtals )
 	{
 		struct PathNode
 		{
@@ -221,7 +221,7 @@ namespace Drn
 		const Vector& EndPlaneCenter = ConvexMesh.GetPlane(EndPlane).Center;
 
 		std::priority_queue<PathNode, std::vector<PathNode>, std::greater<PathNode>> Frontier;
-		std::vector<uint32> PlanesParent(ConvexMesh.NumPlanes(), ConvexMesh.InvalidIndex);
+		std::vector<uint32> PlanesParentProtal(ConvexMesh.NumPlanes(), ConvexMesh.InvalidIndex);
 		std::vector<bool> ExploredPlanes(ConvexMesh.NumPlanes(), false);
 		std::vector<float> PlanesGValues(ConvexMesh.NumPlanes(), FLT_MAX);
 
@@ -237,12 +237,12 @@ namespace Drn
 			{
 				while (CurrentNode.PlaneIndex != StartPlane)
 				{
-					PathPlanes.push_back(CurrentNode.PlaneIndex);
-					CurrentNode.PlaneIndex = PlanesParent[CurrentNode.PlaneIndex];
+					PathProtals.push_back(PlanesParentProtal[CurrentNode.PlaneIndex]);
+					CurrentNode.PlaneIndex = ConvexMesh.GetHalfEdgePlane(PlanesParentProtal[CurrentNode.PlaneIndex]);
 				}
 
-				PathPlanes.push_back(StartPlane);
-				std::reverse(PathPlanes.begin(), PathPlanes.end());
+				//PathPlanes.push_back(StartPlane);
+				std::reverse(PathProtals.begin(), PathProtals.end());
 
 				return true;
 			}
@@ -250,7 +250,8 @@ namespace Drn
 			const Vector& PlaneCenter = ConvexMesh.GetPlane(CurrentNode.PlaneIndex).Center;
 			for (int32 EdgeIndex = 0; EdgeIndex < 3; EdgeIndex++)
 			{
-				uint32 TwinIndex = ConvexMesh.GetTwinHalfEdge(ConvexMesh.GetPlaneHalfEdge(CurrentNode.PlaneIndex, EdgeIndex));
+				uint32 EdgePlaneIndex = ConvexMesh.GetPlaneHalfEdge(CurrentNode.PlaneIndex, EdgeIndex);
+				uint32 TwinIndex = ConvexMesh.GetTwinHalfEdge(EdgePlaneIndex);
 				uint32 TwinPlaneIndex = TwinIndex == ConvexMesh.InvalidIndex ? ConvexMesh.InvalidIndex : ConvexMesh.GetHalfEdgePlane(TwinIndex);
 
 				if ((TwinPlaneIndex == ConvexMesh.InvalidIndex) || ExploredPlanes[TwinPlaneIndex])
@@ -270,7 +271,7 @@ namespace Drn
 					float H = Vector::DistSquared(TwinPlaneCenter, EndPlaneCenter);
 					NewNode.F = NewG + H;
 
-					PlanesParent[TwinPlaneIndex] = CurrentNode.PlaneIndex;
+					PlanesParentProtal[TwinPlaneIndex] = EdgePlaneIndex;
 					Frontier.push(NewNode);
 				}
 			}
@@ -279,10 +280,122 @@ namespace Drn
 		return false;
 	}
 
-	bool NavMeshComponent::FindPath( const Vector& Start, const Vector& End, float AgentRadius, float AgentHeight, std::vector<Vector>& PathPoints, std::vector<uint32>& PathPlanes )
+	void NavMeshComponent::FunnelPath( const Vector& Start, const Vector& End, std::vector<Vector>& PathPoints, const std::vector<uint32>& PathPortals )
+	{
+		auto GetPortalLeftVertex = [&](uint32 PortalIndex) { return ConvexMesh.GetHalfEdgeVertex(PathPortals[PortalIndex]); };
+		auto GetPortalRightVertex = [&](uint32 PortalIndex) { return ConvexMesh.GetHalfEdgeVertex(ConvexMesh.GetNextHalfEdge(PathPortals[PortalIndex])); };
+
+		PathPoints.reserve(PathPortals.size());
+		PathPoints.push_back(Start);
+
+		if (PathPortals.size() > 0)
+		{
+			auto GetAngle = [&](const Vector& A, const Vector& B, const Vector& C)
+			{
+				const Vector2 AB = Vector2(B.X - A.X, B.Z - A.Z);
+				const Vector2 AC = Vector2(C.X - A.X, C.Z - A.Z);
+				return Vector2::CrossProduct(AB, AC);
+			};
+
+			const uint64 NumPortals = PathPortals.size() + 2;
+			std::vector<Vector> Portals(NumPortals * 2);
+
+			Portals[0] = Start;
+			Portals[1] = Start;
+
+			for (uint32 PortalIndex = 0; PortalIndex < PathPortals.size(); PortalIndex++)
+			{
+				Portals[PortalIndex * 2 + 2] = ConvexMesh.GetVertex(GetPortalLeftVertex(PortalIndex)).Position;
+				Portals[PortalIndex * 2 + 3] = ConvexMesh.GetVertex(GetPortalRightVertex(PortalIndex)).Position;
+			}
+
+			Portals[NumPortals * 2 - 2] = End;
+			Portals[NumPortals * 2 - 1] = End;
+
+			Vector PortalApex = Start;
+			Vector PortalLeft = Start;
+			Vector PortalRight = Start;
+
+			uint32 LeftIndex = ConvexMesh.InvalidIndex;
+			uint32 RightIndex = ConvexMesh.InvalidIndex;
+
+			for (uint32 PortalIndex = 0; PortalIndex < NumPortals; PortalIndex++)
+			{
+				Vector Left = Portals[PortalIndex * 2];
+				Vector Right = Portals[PortalIndex * 2 + 1];
+				
+				if (PortalApex.NearlyEquals(PortalRight) || PortalApex.NearlyEquals(PortalLeft))
+				{
+					PortalLeft = Left;
+					LeftIndex = PortalIndex;
+				}
+
+				else if (GetAngle( PortalApex, Left, PortalLeft ) > 0)
+				{
+					if (GetAngle(PortalApex, PortalRight, Left) < 0.0f)
+					{
+						PathPoints.push_back(PortalRight);
+					
+						PortalApex = PortalRight;
+						PortalLeft = PortalApex;
+						PortalRight = PortalApex;
+
+						PortalIndex = RightIndex;
+
+						LeftIndex = PortalIndex;
+						RightIndex = PortalIndex;
+
+						continue;
+					}
+					else
+					{
+						PortalLeft = Left;
+						LeftIndex = PortalIndex;
+					}
+				}
+
+				if (PortalApex.NearlyEquals(PortalLeft) || PortalApex.NearlyEquals(PortalRight))
+				{
+					PortalRight = Right;
+					RightIndex = PortalIndex;
+				}
+
+				else if (GetAngle(PortalApex, Right, PortalRight) < 0.0f)
+				{
+					if (GetAngle(PortalApex, Right, PortalLeft) < 0.0f)
+					{
+						PathPoints.push_back(PortalLeft);
+					
+						PortalApex = PortalLeft;
+						PortalLeft = PortalApex;
+						PortalRight = PortalApex;
+
+						PortalIndex = LeftIndex;
+
+						LeftIndex = PortalIndex;
+						RightIndex = PortalIndex;
+
+						continue;
+					}
+					else
+					{
+						PortalRight = Right;
+						RightIndex = PortalIndex;
+					}
+				}
+
+				//GetWorld()->DrawDebugSphere(GetWorldTransform().TransformPosition(PortalLeft), Quat::Identity, Color::Cyan, 0.5f, 32, 0, 200);
+				//GetWorld()->DrawDebugSphere(GetWorldTransform().TransformPosition(PortalRight), Quat::Identity, Color::Red, 0.5f, 32, 0, 200);
+			}
+		}
+
+		PathPoints.push_back(End);
+	}
+
+	bool NavMeshComponent::FindPath( const Vector& Start, const Vector& End, float AgentRadius, float AgentHeight, std::vector<Vector>& PathPoints, std::vector<uint32>& PathPortals )
 	{
 		PathPoints.clear();
-		PathPlanes.clear();
+		PathPortals.clear();
 
 		const Transform CompTransform = GetWorldTransform();
 
@@ -302,19 +415,13 @@ namespace Drn
 			return false;
 		}
 
-		bool bFoundPath = FindPathPlanes(StartPlane, EndPlane, PathPlanes);
+		bool bFoundPath = FindPathPortals(StartPlane, EndPlane, PathPortals);
 		if (!bFoundPath)
 		{
 			return false;
 		}
 
-		PathPoints.reserve(PathPlanes.size());
-		for (uint32 PlaneIndex = 1; PlaneIndex < PathPlanes.size() - 1; PlaneIndex++)
-		{
-			PathPoints.push_back(ConvexMesh.GetPlane(PlaneIndex).Center);
-		}
-
-
+		FunnelPath(StartNearest, EndNearest, PathPoints, PathPortals);
 
 		for (Vector& Point : PathPoints)
 		{
