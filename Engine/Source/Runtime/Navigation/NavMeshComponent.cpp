@@ -392,10 +392,10 @@ namespace Drn
 		PathPoints.push_back(End);
 	}
 
-	bool NavMeshComponent::FindPath( const Vector& Start, const Vector& End, float AgentRadius, float AgentHeight, std::vector<Vector>& PathPoints, std::vector<uint32>& PathPortals )
+	bool NavMeshComponent::FindPath( const Vector& Start, const Vector& End, float AgentRadius, float AgentHeight, std::vector<Vector>& PathPoints )
 	{
 		PathPoints.clear();
-		PathPortals.clear();
+		std::vector<uint32> PathPortals;
 
 		const Transform CompTransform = GetWorldTransform();
 
@@ -421,12 +421,25 @@ namespace Drn
 			return false;
 		}
 
+		//for (uint32 PathProtal : PathPortals)
+		//{
+		//	const Vector& PlaneCenter = ConvexMesh.GetPlane(ConvexMesh.GetHalfEdgePlane(PathProtal)).Center;
+		//	GetWorld()->DrawDebugSphere(CompTransform.TransformPosition(PlaneCenter), Quat::Identity, Color::Green, 0.3f, 32, 0.0f, 100.0f);
+		//}
+
 		FunnelPath(StartNearest, EndNearest, PathPoints, PathPortals);
 
 		for (Vector& Point : PathPoints)
 		{
 			Point = CompTransform.TransformPosition(Point);
 		}
+		
+		return true;
+	}
+
+	Vector NavMeshComponent::GetRandomPoint() const
+	{
+		return GetWorldTransform().TransformPosition(ConvexMesh.GetRandomPoint());
 	}
 
 #if WITH_EDITOR

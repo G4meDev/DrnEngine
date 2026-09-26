@@ -6,7 +6,7 @@
 
 // SUPPORT_STATICMESH
 
-// SUPPORT_MAIN_PASS
+// SUPPORT_EDITOR_PRIMITIVE_PASS
 // SUPPORT_HIT_PROXY_PASS
 // TWO_SIDED
 
@@ -20,7 +20,7 @@ struct VertexShaderOutput
 
 struct PixelShaderOutput
 {
-#if TRANSLUCENCY_PASS
+#if EDITOR_PRIMITIVE_PASS
     float4 TranslucentColor;
 #elif HITPROXY_PASS
     uint4 Guid;
@@ -57,7 +57,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN, bool bFrontFace : SV_IsFrontFace,
 
     PixelShaderOutput OUT;
     
-#if TRANSLUCENCY_PASS
+#if EDITOR_PRIMITIVE_PASS
     float3 BaseColorFront = float3(0, 1, 0);
     float3 BaseColoBack = float3(1, 0, 0);
     float3 SelectedColor = float3(1, 1, 0);

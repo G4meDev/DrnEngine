@@ -35,6 +35,8 @@ namespace Drn
 		inline float GetWalkSpeed() const { return m_WalkSpeed; }
 		inline float GetRunSpeed() const { return m_RunSpeed; }
 
+		void SetMovementInputToWorldDirection(const Vector& Direction);
+
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
 		virtual void DrawEditorDefault() override;

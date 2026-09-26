@@ -12,10 +12,14 @@ namespace Drn
 		AssetHandle<StaticMesh> ArrowMesh("Engine\\Content\\Template\\Common\\Mesh\\SM_DestinationArrow.drn");
 		ArrowMesh.Load();
 
+		AssetHandle<MaterialInstance> Mat("Engine\\Content\\Template\\Common\\Material\\MI_SolidColorUnlit_C.drn");
+		Mat.Load();
+
 		NavTestStart = std::make_unique<StaticMeshComponent>();
 		GetRoot()->AttachSceneComponent(NavTestStart.get());
 		NavTestStart->SetComponentLabel("Start");
 		NavTestStart->SetMesh(ArrowMesh);
+		NavTestStart->SetMaterial(0, Mat);
 
 		NavTestEnd = std::make_unique<StaticMeshComponent>();
 		GetRoot()->AttachSceneComponent(NavTestEnd.get());
@@ -38,6 +42,46 @@ namespace Drn
 		NavTestEnd->Serialize(Ar);
 	}
 
+	void NavigationTest::Tick( float DeltaTime )
+	{
+		Actor::Tick(DeltaTime);
+
+		if (!TestCharacter)
+		{
+			TestCharacter = GetWorld()->SpawnActor<ThirdPersonCharacter>();
+			Randomize();
+			TestCharacter->SetActorLocation(NavTestStart->GetWorldLocation());
+			TestCharacter->OnBeginRun();
+		}
+
+		const Vector CharacterLocation = TestCharacter->GetActorLocation();
+		const Vector TargetLocation = NavTestEnd->GetWorldLocation();
+		const bool bReached = CharacterLocation.IsNearlyEqual(TargetLocation, 1.5f);
+		if (bReached)
+		{
+			Randomize();
+		}
+		else
+		{
+			NavMeshComponent* TestNavMesh = GetWorld()->GetNavigationSystem()->GetNavMesh("");
+		
+			std::vector<Vector> PathPoints;
+			bool bFoundPath = TestNavMesh->FindPath(CharacterLocation, TargetLocation, 0.5f, 4.0f, PathPoints);
+
+			if (bFoundPath)
+			{
+				drn_check(PathPoints.size() > 1);
+				const Vector MovementDirection = (PathPoints[1] - PathPoints[0]).GetSafeNormal();
+				TestCharacter->SetMovementInputToWorldDirection(MovementDirection);
+
+				for (uint32 PointIndex = 0; (PathPoints.size() >= 2) && PointIndex < (PathPoints.size()-1); PointIndex++)
+				{
+					GetWorld()->DrawDebugArrow(PathPoints[PointIndex] + Vector(0, 2, 0), PathPoints[PointIndex+1] + Vector(0, 2, 0), 0.3f, Color::Blue, 0.0f, 0.0f);
+				}
+			}
+		}
+	}
+
 #if WITH_EDITOR
 	bool NavigationTest::DrawDetailPanel()
 	{
@@ -51,38 +95,10 @@ namespace Drn
 			NavMeshConvexHalfEdge& Conv = TestNavMesh->ConvexMesh;
 			Transform CompTransform = TestNavMesh->GetWorldTransform();
 
-			//const Vector& StartRelative = CompTransform.InverseTransformPosition(NavTestStart->GetWorldLocation());
-			//const Vector& EndRelative = CompTransform.InverseTransformPosition(NavTestEnd->GetWorldLocation());
-			//
-			//bool bOverlaps;
-			//Vector Nearest;
-			//uint32 PlaneIndex = Conv.FindNearestPlane(StartRelative, Nearest, 0.5f, 4, bOverlaps);
-			//
-			//if (PlaneIndex != TestNavMesh->ConvexMesh.InvalidIndex)
-			//{
-			//	GetWorld()->DrawDebugSphere(CompTransform.TransformPosition(Nearest) , Quat::Identity, bOverlaps ? Color::Green : Color::Red, 0.3f, 32, 0.0f, 100.0f);
-			//}
-
 			std::vector<Vector> PathPoints;
-			std::vector<uint32> PathProtals;
-
-			bool bFoundPath = TestNavMesh->FindPath(NavTestStart->GetWorldLocation(), NavTestEnd->GetWorldLocation(), 0.5f, 4.0f, PathPoints, PathProtals);
+			bool bFoundPath = TestNavMesh->FindPath(NavTestStart->GetWorldLocation(), NavTestEnd->GetWorldLocation(), 0.5f, 4.0f, PathPoints);
 			if (bFoundPath)
 			{
-				for (uint32 PathProtal : PathProtals)
-				{
-					const Vector& PlaneCenter = Conv.GetPlane(Conv.GetHalfEdgePlane(PathProtal)).Center;
-					GetWorld()->DrawDebugSphere(CompTransform.TransformPosition(PlaneCenter), Quat::Identity, Color::Green, 0.3f, 32, 0.0f, 100.0f);
-				}
-
-				//for (uint32 PortalIndex : PathProtals)
-				//{
-				//	const Vector& P0 = Conv.GetVertex(Conv.GetHalfEdgeVertex(PortalIndex)).Position;
-				//	const Vector& P1 = Conv.GetVertex(Conv.GetHalfEdgeVertex(Conv.GetNextHalfEdge(PortalIndex))).Position;
-				//
-				//	GetWorld()->DrawDebugArrow(CompTransform.TransformPosition(P0) + Vector(0, 10, 0), CompTransform.TransformPosition(P1) + Vector(0, 10, 0), 0.3f, Color::Green, 0.0f, 100.0f);
-				//}
-
 				for (uint32 PointIndex = 0; (PathPoints.size() >= 2) && PointIndex < (PathPoints.size()-1); PointIndex++)
 				{
 					GetWorld()->DrawDebugArrow(PathPoints[PointIndex] + Vector(0, 2, 0), PathPoints[PointIndex+1] + Vector(0, 2, 0), 0.3f, Color::Blue, 0.0f, 100.0f);
@@ -90,7 +106,23 @@ namespace Drn
 			}
 		}
 
+		if (ImGui::Button("Randomize"))
+		{
+			Randomize();
+		}
+
 		return false;
 	}
+
+	void NavigationTest::Randomize()
+	{
+		NavMeshComponent* TestNavMesh = GetWorld()->GetNavigationSystem()->GetNavMesh("");
+		if (TestNavMesh)
+		{
+			NavTestStart->SetWorldLocation(TestNavMesh->GetRandomPoint());
+			NavTestEnd->SetWorldLocation(TestNavMesh->GetRandomPoint());
+		}
+	}
+
 #endif
 }  // namespace Drn

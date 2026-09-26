@@ -129,6 +129,14 @@ namespace Drn
 
 		static int32 Rand() { return std::rand(); }
 		static float SRand();
+		inline static uint32 RandRange(uint32 Min, uint32 Max)
+		{
+			const uint32 Range = Max - Min + 1;
+			float F = SRand();
+			float A = Range > 0 ? std::min<uint32>(TruncToInt(SRand() * float(Range)), Range - 1) : 0;
+			return Min + A;
+		}
+
 		static inline float InvSqrt(float F) {  return 1.0f / std::sqrt(F); }
 		static inline float TruncToInt(float F) { return std::trunc(F); }
 
@@ -275,5 +283,15 @@ namespace Drn
 		static Vector FindClosestPointOnTriangle(const Plane& TrianglePlane, const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P);
 
 		static bool PointOverlapsTriangle(const Plane& TrianglePlane, const Vector& P0, const Vector& P1, const Vector& P2, const Vector& P, float Thickness);
+
+		inline static Vector UniformSampleTriangle(float R1, float R2, const Vector& A, const Vector& B, const Vector& C)
+		{
+			if (R1 + R2 > 1.0f)
+			{
+				R1 = 1.0f - R1;
+				R2 = 1.0f - R2;
+			}
+			return A + (B - A) * R1 + (C - A) * R2;
+		}
 	};
 }

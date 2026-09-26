@@ -131,6 +131,9 @@ namespace Drn
 
 		uint32 FindNearestPlane(const Vector& Point, Vector& NearestPosition, float Radius, float Height, bool& bOverPlane) const;
 
+		Vector GetRandomPointInPlane(uint32 PlaneIndex) const;
+		Vector GetRandomPoint() const;
+
 		//static NavMeshConvexHalfEdge MakePlaneVertices(const std::vector<std::vector<uint32>>& InPlaneVertices, uint32 InNumVertices)
 		//{
 		//	NavMeshConvexHalfEdge StructureData;

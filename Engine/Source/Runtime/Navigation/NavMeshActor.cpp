@@ -7,7 +7,11 @@ namespace Drn
 	class NavMeshVisualizer : public DynamicMeshComponent
 	{
 	public:
-		NavMeshVisualizer() : DynamicMeshComponent() {};
+		NavMeshVisualizer() : DynamicMeshComponent()
+		{
+			SetEditorPrimitive(true);
+		};
+
 		virtual ~NavMeshVisualizer() {};
 
 #if WITH_EDITOR

@@ -156,6 +156,13 @@ namespace Drn
 		m_Running = false;
 	}
 
+	void ThirdPersonCharacter::SetMovementInputToWorldDirection( const Vector& Direction )
+	{
+		const Vector LocalDirection = m_SpringArm->GetWorldTransform().InverseTransformVector(Direction);
+		m_ForwardInput = LocalDirection.Z;
+		m_RightInput = LocalDirection.X;
+	}
+
 #if WITH_EDITOR
 	bool ThirdPersonCharacter::DrawDetailPanel()
 	{

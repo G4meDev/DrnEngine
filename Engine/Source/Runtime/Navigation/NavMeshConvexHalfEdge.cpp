@@ -737,4 +737,20 @@ namespace Drn
 		return Result;
 	}
 
-}
+	Vector NavMeshConvexHalfEdge::GetRandomPointInPlane( uint32 PlaneIndex ) const
+	{
+		drn_check(PlaneIndex < NumPlanes());
+
+		const Vector& A = GetVertex(GetPlaneVertex(PlaneIndex, 0)).Position;
+		const Vector& B = GetVertex(GetPlaneVertex(PlaneIndex, 1)).Position;
+		const Vector& C = GetVertex(GetPlaneVertex(PlaneIndex, 2)).Position;
+
+		return Math::UniformSampleTriangle(Math::SRand(), Math::SRand(), A, B, C);
+	}
+
+	Vector NavMeshConvexHalfEdge::GetRandomPoint() const
+	{
+		return NumPlanes() > 0 ? GetRandomPointInPlane(Math::RandRange(0, NumPlanes() - 1)) : Vector::ZeroVector;
+	}
+
+        }  // namespace Drn

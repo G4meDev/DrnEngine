@@ -35,7 +35,9 @@ namespace Drn
 
 		bool FindPathPortals(uint32 StartPlane, uint32 EndPlane, std::vector<uint32>& PathProtals);
 		void FunnelPath(const Vector& Start, const Vector& End, std::vector<Vector>& PathPoints, const std::vector<uint32>& PathPortals);
-		bool FindPath(const Vector& Start, const Vector& End, float AgentRadius, float AgentHeight, std::vector<Vector>& PathPoints, std::vector<uint32>& PathPortals);
+		bool FindPath(const Vector& Start, const Vector& End, float AgentRadius, float AgentHeight, std::vector<Vector>& PathPoints);
+
+		Vector GetRandomPoint() const;
 
 		NavMeshConvexHalfEdge ConvexMesh;
 		DynamicMeshComponent* Visualizer;
