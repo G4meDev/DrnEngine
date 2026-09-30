@@ -1,15 +1,5 @@
 #pragma once
 
-class Noncopyable
-{
-protected:
-	Noncopyable() {}
-	~Noncopyable() {}
-private:
-	Noncopyable(const Noncopyable&);
-	Noncopyable& operator=(const Noncopyable&);
-};
-
 #include <memory>
 #include <iosfwd>
 #include <string>
@@ -24,9 +14,11 @@ private:
 #include <DirectXMath.h>
 #include <DirectXCollision.h>
 
+#include "Runtime/Core/CommonTemplates.h"
 #include "Runtime/Misc/EnumClassFlags.h"
 
 #include "Runtime/Core/CriticalSection.h"
+#include "Runtime/Core/StringID.h"
 #include "Runtime/Misc/DebugHelper.h"
 #include "Runtime/Misc/StatsMisc.h"
 

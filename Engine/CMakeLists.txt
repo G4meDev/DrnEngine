@@ -19,6 +19,9 @@ set( HEADER_FILES
 	Source/Runtime/Core/Window.h
 	Source/Runtime/Core/RefCounting.h
 	Source/Runtime/Core/CriticalSection.h
+	Source/Runtime/Core/StringID.h
+	Source/Runtime/Core/CityHash.h
+	Source/Runtime/Core/CommonTemplates.h
 	
 	Source/Runtime/Engine/EngineTypes.h
 	Source/Runtime/Engine/WorldManager.h
@@ -326,6 +329,9 @@ set( SOURCE_FILES
 	Source/Runtime/Core/Window.cpp
 	Source/Runtime/Core/RefCounting.cpp
 	Source/Runtime/Core/CriticalSection.cpp
+	Source/Runtime/Core/StringID.cpp
+	Source/Runtime/Core/CityHash.cpp
+	Source/Runtime/Core/CommonTemplates.cpp
 	
 	Source/Runtime/Engine/EngineTypes.cpp
 	Source/Runtime/Engine/WorldManager.cpp

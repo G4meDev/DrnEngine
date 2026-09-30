@@ -8,6 +8,8 @@
 #include "Runtime/Core/Time.h"
 #include "Runtime/Core/Taskflow.h"
 #include "Runtime/Core/ApplicationMisc.h"
+#include "Runtime/Core/CityHash.h"
+#include "Runtime/Core/StringID.h"
 
 #include "Runtime/Engine/WorldManager.h"
 #include "Runtime/Engine/InputManager.h"
