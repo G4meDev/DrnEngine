@@ -88,7 +88,7 @@ namespace Drn
 		{
 			MeshBoneInfo& Bone = BuildingData.RefSkeleton.BoneInfo[BoneIndex];
 
-			aiNode* BoneNode = Node->FindNode(Bone.Name.c_str());
+			aiNode* BoneNode = Node->FindNode(Bone.Name.ToString().c_str());
 			drn_check(BoneNode);
 			aiNode* BoneParentNode = BoneNode->mParent;
 

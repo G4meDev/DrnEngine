@@ -60,7 +60,7 @@ namespace Drn
 
 	}
 
-	void StringID::ListNames()
+	void StringID::LogEntries()
 	{
 		for (const auto& It : StringIdMap)
 		{

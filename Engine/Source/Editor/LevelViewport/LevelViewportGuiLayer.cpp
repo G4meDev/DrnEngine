@@ -222,6 +222,16 @@ namespace Drn
 					Editor::Get()->OpenTaskGraphVisualizer();
 				}
 
+				if ( ImGui::MenuItem( "test string id" ) )
+				{
+					StringID::AutoTest();
+				}
+
+				if ( ImGui::MenuItem( "log string id" ) )
+				{
+					StringID::LogEntries();
+				}
+
 				DrawBufferVisualizationMenu();
 
 				ImGui::EndMenu();

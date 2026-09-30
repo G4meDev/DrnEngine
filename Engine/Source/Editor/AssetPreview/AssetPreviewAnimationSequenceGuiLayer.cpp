@@ -246,7 +246,7 @@ namespace Drn
 		EnumAddFlags(NodeFlags, Mesh->GetData().RefSkeleton.IsLeafBone(NodeIndex) ? ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None);
 		EnumAddFlags(NodeFlags, bSelected ? ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None);
 
-		if (ImGui::TreeNodeEx(Bones[NodeIndex].Name.c_str(), NodeFlags))
+		if (ImGui::TreeNodeEx(Bones[NodeIndex].Name.ToString().c_str(), NodeFlags))
 		{
 			if (ImGui::IsItemClicked())
 			{

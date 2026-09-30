@@ -342,7 +342,7 @@ namespace Drn
 		ImGui::Separator();
 		if (SelectedBoneIndex != -1)
 		{
-			ImGui::Text(m_OwningAsset->Data.RefSkeleton.BoneInfo[SelectedBoneIndex].Name.c_str());
+			ImGui::Text(m_OwningAsset->Data.RefSkeleton.BoneInfo[SelectedBoneIndex].Name.ToString().c_str());
 			//m_OwningAsset->Data.RefSkeleton.BonePose[SelectedBoneIndex].Draw("Selected Bone");
 			BonePreviewTransforms[SelectedBoneIndex].Draw("Selected Bone");
 		}
@@ -400,7 +400,7 @@ namespace Drn
 		EnumAddFlags(NodeFlags, m_OwningAsset->Data.RefSkeleton.IsLeafBone(NodeIndex) ? ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_Leaf : ImGuiTreeNodeFlags_None);
 		EnumAddFlags(NodeFlags, bSelected ? ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None);
 
-		if (ImGui::TreeNodeEx(Bones[NodeIndex].Name.c_str(), NodeFlags))
+		if (ImGui::TreeNodeEx(Bones[NodeIndex].Name.ToString().c_str(), NodeFlags))
 		{
 			if (ImGui::IsItemClicked())
 			{

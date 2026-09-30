@@ -7,10 +7,10 @@ namespace Drn
 {
 	struct MeshBoneInfo
 	{
-		std::string Name; // @TODO: cached hashed string
+		StringID Name;
 		int32 ParentIndex;
 
-		MeshBoneInfo(const std::string& InName, int32 InParentIndex)
+		MeshBoneInfo(const StringID& InName, int32 InParentIndex)
 			: Name(InName)
 			, ParentIndex(InParentIndex)
 		{}
@@ -29,17 +29,22 @@ namespace Drn
 		std::vector<MeshBoneInfo> BoneInfo;
 		std::vector<Transform> BonePose; // ref bind pose
 
+		std::unordered_map<StringID, int32> NameToIndexMap;
+
 		inline void Resize(int32 NewSize) { BoneInfo.resize(NewSize); BonePose.resize(NewSize); }
 
 		bool HasBone(const std::string& Name) const;
 		bool IsLeafBone(int32 BoneIndex) const;
-		int32 FindBone(const std::string& Name) const;
+		int32 FindBone(const StringID& Name) const;
 		bool IsChildOf(int32 Bone, int32 Parent) const;
 
 		Transform GetParentBoneSpaceTransform(int32 BoneIndex) const;
 
 		friend Archive& operator<<(Archive& Ar, const ReferenceSkeleton& Value);
 		friend Archive& operator>>(Archive& Ar, ReferenceSkeleton& Value);
+
+	private:
+		void InitalizeNameIndexMap();
 	};
 
 	struct SkeletalMeshSlotData : public Serializable

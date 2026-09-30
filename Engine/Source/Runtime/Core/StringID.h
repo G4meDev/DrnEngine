@@ -299,6 +299,12 @@ namespace Drn
 
 		inline StringIdEntry& GetEntry() const { return IdAllocator.Resolve(Handle); }
 		inline bool IsNone() const { return GetEntry().Length == 0; }
+		inline uint64 GetHash() const { return Hash; }
+
+		//inline std::size_t operator()() const
+		//{
+		//	return Hash;
+		//}
 
 		inline bool operator==(const StringID& Other) const
 		{
@@ -334,7 +340,7 @@ namespace Drn
 		friend class Archive& operator>>(Archive& Ar, StringID& Value);
 
 		static void AutoTest();
-		static void ListNames();
+		static void LogEntries();
 
 	private:
 		StringIdEntryHandle Handle;
@@ -345,4 +351,11 @@ namespace Drn
 
 		static StringID None;
 	};
+
 }
+
+template<>
+struct std::hash<Drn::StringID>
+{
+	std::size_t operator()(const Drn::StringID& key) const { return key.GetHash(); }
+};

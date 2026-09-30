@@ -245,7 +245,20 @@ namespace Drn
 	{
 		Ar.operator>> <uint8>(Value.BoneInfo);
 		Ar.operator>> <uint8>(Value.BonePose);
+		Value.InitalizeNameIndexMap();
+
 		return Ar;
+	}
+
+	void ReferenceSkeleton::InitalizeNameIndexMap()
+	{
+		NameToIndexMap.clear();
+
+		for (int32 BoneIndex = 0; BoneIndex < BoneInfo.size(); BoneIndex++)
+		{
+			const MeshBoneInfo& Bone = BoneInfo[BoneIndex];
+			NameToIndexMap[Bone.Name] = BoneIndex;
+		}
 	}
 
 	void SkeletalMeshSlotData::Serialize( Archive& Ar )
@@ -290,10 +303,10 @@ namespace Drn
 		return It == BoneInfo.end();
 	}
 
-	int32 ReferenceSkeleton::FindBone( const std::string& Name ) const
+	int32 ReferenceSkeleton::FindBone( const StringID& Name ) const
 	{
-		auto It = std::find(BoneInfo.begin(), BoneInfo.end(), MeshBoneInfo(Name, -1));
-		return It == BoneInfo.end() ? -1 : std::distance(BoneInfo.begin(), It);
+		const auto& It = NameToIndexMap.find(Name);
+		return It == NameToIndexMap.end() ? -1 : It->second;
 	}
 
 	bool ReferenceSkeleton::IsChildOf( int32 Bone, int32 Parent ) const
