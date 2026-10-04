@@ -50,6 +50,7 @@ namespace Drn
 		static void ProcessCollisionSphere(StaticMesh* MeshAsset, aiMesh* mesh, const aiScene *scene);
 		static void ProcessCollisionBox(StaticMesh* MeshAsset, aiMesh* mesh, const aiScene *scene);
 		static void ProcessCollisionCapsule(StaticMesh* MeshAsset, aiMesh* mesh, const aiScene *scene);
+		static void ProcessCollisionConvex(StaticMesh* MeshAsset, aiMesh* mesh, const aiScene *scene);
 
 		static void Build(StaticMesh* MeshAsset, ImportedStaticMeshData& BuildingData);
 	};

@@ -5,6 +5,7 @@
 #include "SphereElem.h"
 #include "BoxElem.h"
 #include "CapsuleElem.h"
+#include "ConvexElem.h"
 
 namespace Drn
 {
@@ -15,9 +16,7 @@ namespace Drn
 		std::vector<SphereElem>		SphereElems;
 		std::vector<BoxElem>		BoxElems;
 		std::vector<CapsuleElem>	CapsuleElems;
-
-		// TODO: add shape type
-		std::vector<SphereElem> ConvexElems;
+		std::vector<ConvexElem>		ConvexElems;
 
 		virtual void Serialize(Archive& Ar) override;
 

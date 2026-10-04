@@ -21,22 +21,22 @@ namespace Drn
 
 			for (uint32 i = 0; i < SphereCount; i++)
 			{
-				SphereElems.push_back(Ar);
+				SphereElems.emplace_back(Ar);
 			}
 
 			for (uint32 i = 0; i < BoxCount; i++)
 			{
-				BoxElems.push_back(Ar);
+				BoxElems.emplace_back(Ar);
 			}
 
 			for (uint32 i = 0; i < CapsuleCount; i++)
 			{
-				CapsuleElems.push_back(Ar);
+				CapsuleElems.emplace_back(Ar);
 			}
 
 			for (uint32 i = 0; i < ConvexCount; i++)
 			{
-				ConvexElems.push_back(Ar);
+				ConvexElems.emplace_back(Ar);
 			}
 		}
 		else
@@ -44,7 +44,7 @@ namespace Drn
 			uint32 SphereCount	= SphereElems.size();
 			uint32 BoxCount		= BoxElems.size();
 			uint32 CapsuleCount = CapsuleElems.size();
-			uint32 ConvexCount	= 0;
+			uint32 ConvexCount	= ConvexElems.size();
 			Ar << SphereCount << BoxCount << CapsuleCount << ConvexCount;
 			
 			for (uint32 i = 0; i < SphereCount; i++)

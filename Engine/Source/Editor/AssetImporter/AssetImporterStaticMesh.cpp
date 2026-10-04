@@ -7,6 +7,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "Runtime/Physic/ConvexElem.h"
+
 LOG_DEFINE_CATEGORY( LogStaticMeshImporter, "StaticMeshImporter" );
 
 #define MIN_SPHERE_BOUNDS 0.05f
@@ -14,6 +16,8 @@ LOG_DEFINE_CATEGORY( LogStaticMeshImporter, "StaticMeshImporter" );
 
 namespace Drn
 {
+	Vector A2Vec(const aiVector3D& Vec) { return Vector(Vec.x, Vec.y, Vec.z); }
+
 	void AssetImporterStaticMesh::Import( StaticMesh* MeshAsset, const std::string& Path )
 	{
 		ImportedStaticMeshData Data;
@@ -26,7 +30,8 @@ namespace Drn
 
 		Assimp::Importer importer;
 		//const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
-		const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded );
+		//const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded );
+		const aiScene* scene = importer.ReadFile( Path, aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded );
 
 		if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
 		{
@@ -66,6 +71,12 @@ namespace Drn
 		else if ( Prefix == "CC" )
 		{
 			ProcessCollisionCapsule(MeshAsset, mesh, scene);
+			return;
+		}
+
+		else if ( Prefix == "CX" )
+		{
+			ProcessCollisionConvex(MeshAsset, mesh, scene);
 			return;
 		}
 
@@ -387,5 +398,39 @@ namespace Drn
 		
 	}
 
-}
+	void AssetImporterStaticMesh::ProcessCollisionConvex( StaticMesh* MeshAsset, aiMesh* mesh, const aiScene* scene )
+	{
+		if (mesh->mNumVertices <= 0)
+		{
+			return;
+		}
+
+		std::vector<Vector> Positions;
+		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
+		{
+			Positions.push_back(A2Vec(mesh->mVertices[i]) * MeshAsset->ImportScale);
+		}
+
+		std::vector<std::vector<uint32>> Polys;
+		for (uint32 Index = 0; Index < mesh->mNumFaces; Index++)
+		{
+			Polys.push_back({});
+
+			aiFace face = mesh->mFaces[Index];
+			for (uint32 j = 0; j < face.mNumIndices; j++)
+			{
+				Polys.back().push_back(face.mIndices[j]);
+			}
+		}
+
+		bool bSuccess = false;
+		ConvexElem Elem(Positions, Polys, bSuccess, true);
+
+		if (bSuccess)
+		{
+			MeshAsset->m_BodySetup.m_AggGeo.ConvexElems.push_back(Elem);
+		}
+	}
+
+        }
 #endif

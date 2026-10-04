@@ -54,7 +54,7 @@ namespace Drn
 
 		inline EAggCollisionShape GetType() const { return Type; }
 
-	private:
+	protected:
 
 		EAggCollisionShape Type;
 		PhysicUserData UserData;

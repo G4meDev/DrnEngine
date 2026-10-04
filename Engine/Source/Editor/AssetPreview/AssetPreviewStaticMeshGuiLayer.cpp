@@ -343,6 +343,11 @@ namespace Drn
 			{
 				PreviewWorld->DrawDebugBox(Box(Elem.Extent * -1, Elem.Extent), Transform(Elem.Center, Elem.Rotation), Color::White, 0.0f, 0.0f);
 			}
+
+			for (ConvexElem& Elem : m_OwningAsset->GetBodySetup()->m_AggGeo.ConvexElems)
+			{
+				Elem.DrawDebug(PreviewWorld);
+			}
 		}
 	}
 
