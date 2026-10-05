@@ -2,7 +2,7 @@
 
 // DOMAIN_SURFACE
 // BLEND_MASKED
-// SHADING_LIT
+// SHADING_FOLIAGE
 
 // SUPPORT_STATICMESH
 
@@ -102,7 +102,7 @@ struct PixelShaderInput
 //#define MAIN_PASS 1
 //#define PRE_PASS 1
 
-BasePassPixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) : SV_Target
+BasePassPixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace)
 {
     BasePassPixelShaderOutput OUT;
  

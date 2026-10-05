@@ -362,9 +362,9 @@ struct BasePassPixelShaderOutput
     float4 Masks : SV_TARGET3;
     float4 MasksB : SV_TARGET4;
 #elif HITPROXY_PASS
-    uint4 Guid;
+    uint4 Guid : SV_TARGET0;
 #elif EDITOR_PRIMITIVE_PASS
-    float4 Color;
+    float4 Color : SV_TARGET0;
 #elif SHADOW_PASS
     
 #elif PRE_PASS

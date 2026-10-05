@@ -19,7 +19,7 @@ struct VertexShaderOutput
 struct PixelShaderOutput
 {
 #if TRANSLUCENCY_PASS
-    float4 TranslucentColor;
+    float4 TranslucentColor : SV_TARGET0;
 #endif
 };
 
@@ -58,7 +58,7 @@ struct PixelShaderInput
     float2 UV : UV;
 };
 
-PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN)
 {
     float4 OutColor = float4(IN.Color.rgb, IN.Color.a * RadialGradientExponential(IN.UV));
     

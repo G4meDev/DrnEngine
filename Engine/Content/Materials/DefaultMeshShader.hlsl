@@ -31,11 +31,10 @@ struct PixelShaderOutput
     float4 BaseColor : SV_TARGET1;
     float2 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
-    float4 MasksB : SV_TARGET4;
 #elif HITPROXY_PASS
-    uint4 Guid;
+    uint4 Guid : SV_TARGET0;
 #elif EDITOR_PRIMITIVE_PASS
-    float4 Color;
+    float4 Color : SV_TARGET0;
 #endif
 };
 
@@ -101,7 +100,7 @@ struct PixelShaderInput
 #endif
 };
 
-PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN)
 {
 #if STATICMESH
     ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];

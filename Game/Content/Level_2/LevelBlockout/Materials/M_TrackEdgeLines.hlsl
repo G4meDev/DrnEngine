@@ -87,7 +87,7 @@ struct PixelShaderOutput
     float4 Masks : SV_TARGET2;
 };
 
-PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN)
 {
     PixelShaderOutput OUT;
 

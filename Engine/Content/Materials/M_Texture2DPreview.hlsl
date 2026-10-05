@@ -2,7 +2,7 @@
 
 // DOMAIN_SURFACE
 // BLEND_OPAQUE
-// SHADING_LIT
+// SHADING_UNLIT
 
 // SUPPORT_STATICMESH
 
@@ -29,14 +29,11 @@ struct PixelShaderOutput
 {
 #if MAIN_PASS
     float4 ColorDeferred : SV_TARGET0;
-    float4 BaseColor : SV_TARGET1;
-    float4 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
-    float4 MasksB : SV_TARGET4;
 #elif HITPROXY_PASS
-    uint4 Guid;
+    uint4 Guid : SV_TARGET0;
 #elif EDITOR_PRIMITIVE_PASS
-    float4 Color;
+    float4 Color : SV_TARGET0;
 #endif
 };
 
@@ -63,7 +60,7 @@ struct PixelShaderInput
     float3 WorldPosition : WORLDPOS;
 };
 
-PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN)
 {
     ConstantBuffer<StaticSamplers> StaticSamplers = ResourceDescriptorHeap[BindlessResources.StaticSamplerBufferIndex];
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
@@ -77,16 +74,8 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     float2 UV = float2(1 - IN.UV.x, IN.UV.y);
     float4 Sample = Texture.SampleLevel(Sampler, UV, Parameters.MipLevel);
     
-    //OUT.ColorDeferred = float4(BaseColor, 1);
-    //OUT.ColorDeferred = pow(OUT.ColorDeferred, 1.0f / 2.2f);
-    OUT.BaseColor = 0;
-    OUT.WorldNormal = 0;
-    OUT.Masks = 0;
-    //OUT.Masks.a = 1.0f/255;
-    OUT.Masks.a = 0;
-    
     float3 Color;
-    
+
     float4 ChannelMasks = step(0.1, Parameters.ShowColor);
     float SumMask = ChannelMasks.r + ChannelMasks.g + ChannelMasks.b + ChannelMasks.a;
 
@@ -109,6 +98,7 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     }
     
     OUT.ColorDeferred = float4(Color, 1);
+    OUT.Masks = float4(0, 0, 1, Uint8ToFloat(SHADING_MODEL_UNLIT));
     
     return OUT;
 }

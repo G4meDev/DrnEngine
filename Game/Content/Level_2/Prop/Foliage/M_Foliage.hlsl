@@ -4,7 +4,7 @@
 
 // DOMAIN_SURFACE
 // BLEND_MASKED
-// SHADING_LIT
+// SHADING_FOLIAGE
 
 // SUPPORT_STATICMESH
 // SUPPORT_INSTANCED
@@ -118,16 +118,16 @@ struct PixelShaderOutput
     float4 Masks : SV_TARGET3;
     float4 MasksB : SV_TARGET4;
 #elif HITPROXY_PASS
-    uint4 Guid;
+    uint4 Guid : SV_TARGET0;
 #elif EDITOR_PRIMITIVE_PASS
-    float4 Color;
+    float4 Color : SV_TARGET0;
 #elif SHADOW_PASS
 #endif
 };
 
 //#define MAIN_PASS 1
 
-PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN, bool FrontFace : SV_IsFrontFace)
 {
     PixelShaderOutput OUT;
  

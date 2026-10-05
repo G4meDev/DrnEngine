@@ -142,7 +142,8 @@ namespace Drn
 	enum class EMaterialShadingModel : uint8
 	{
 		Lit,
-		Unlit
+		Unlit,
+		Foliage
 	};
 
 	struct MaterialShaderParameters
@@ -244,9 +245,10 @@ namespace Drn
 		{
 			switch ( ShadingModel )
 			{
-				case EMaterialShadingModel::Lit:	return "Lit";
-				case EMaterialShadingModel::Unlit:	return "Unlit";
-				default:							return "Unkown";
+				case EMaterialShadingModel::Lit:		return "Lit";
+				case EMaterialShadingModel::Unlit:		return "Unlit";
+				case EMaterialShadingModel::Foliage:	return "Foliage";
+				default:								return "Unkown";
 			}
 		}
 

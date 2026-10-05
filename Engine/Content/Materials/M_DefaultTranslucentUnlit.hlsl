@@ -80,18 +80,18 @@ struct PixelShaderInput
 struct PixelShaderOutput
 {
 #if TRANSLUCENCY_PASS
-    float4 TranslucentColor;
+    float4 TranslucentColor : SV_TARGET0;
 #elif HITPROXY_PASS
-    uint4 Guid;
+    uint4 Guid : SV_TARGET0;
 #elif EDITOR_PRIMITIVE_PASS
-    float4 Color;
+    float4 Color : SV_TARGET0;
 #elif SHADOW_PASS
 #endif
 };
 
 //#define TRANSLUCENCY_PASS 1
 
-PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN)
 {
     PixelShaderOutput OUT;
  

@@ -2,7 +2,7 @@
 
 // DOMAIN_SURFACE
 // BLEND_OPAQUE
-// SHADING_LIT
+// SHADING_UNLIT
 
 // SUPPORT_SKELETALMESH
 
@@ -100,19 +100,16 @@ struct PixelShaderOutput
 {
 #if MAIN_PASS
     float4 ColorDeferred : SV_TARGET0;
-    float4 BaseColor : SV_TARGET1;
-    float2 WorldNormal : SV_TARGET2;
     float4 Masks : SV_TARGET3;
-    float4 MasksB : SV_TARGET4;
 #elif HITPROXY_PASS
-    uint4 Guid;
+    uint4 Guid : SV_TARGET0;
 #elif EDITOR_PRIMITIVE_PASS
-    float4 Color;
+    float4 Color : SV_TARGET0;
 #elif SHADOW_PASS
 #endif
 };
 
-PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN)
 {
     PixelShaderOutput OUT;
  
@@ -125,8 +122,6 @@ PixelShaderOutput Main_PS(PixelShaderInput IN) : SV_Target
     SamplerState LinearSampler = ResourceDescriptorHeap[StaticSamplers.LinearSamplerIndex];
     
     OUT.ColorDeferred = float4(IN.VertexColor, 1);
-    OUT.BaseColor = float4(0, 0, 0, 1);
-    OUT.WorldNormal = EncodeNormal(float3(0, 1, 0));
     OUT.Masks = float4(0, 0, 1, Uint8ToFloat(SHADING_MODEL_UNLIT));
     
 #elif HITPROXY_PASS

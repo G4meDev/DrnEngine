@@ -21,6 +21,7 @@ namespace Drn
 
 		ShadingLit,
 		ShadingUnlit,
+		ShadingFoliage,
 
 		TwoSided,
 
@@ -55,6 +56,7 @@ namespace Drn
 
 		{EMaterialShaderFlag::ShadingLit						, "SHADING_LIT"},
 		{EMaterialShaderFlag::ShadingUnlit						, "SHADING_UNLIT"},
+		{EMaterialShaderFlag::ShadingFoliage					, "SHADING_FOLIAGE"},
 
 		{EMaterialShaderFlag::TwoSided							, "TWO_SIDED"},
 
@@ -94,7 +96,8 @@ namespace Drn
 	inline static bool IsMaterialFlagShadingModel( EMaterialShaderFlag Flag )
 	{
 		return Flag == EMaterialShaderFlag::ShadingLit
-			|| Flag == EMaterialShaderFlag::ShadingUnlit;
+			|| Flag == EMaterialShaderFlag::ShadingUnlit
+			|| Flag == EMaterialShaderFlag::ShadingFoliage;
 	}
 
 	EMaterialShaderFlag GetShaderFlagFromVertexFactory(VertexFactoryType* VertexFactory)
@@ -248,6 +251,11 @@ namespace Drn
 			else if (HasFlag(EMaterialShaderFlag::ShadingUnlit))
 			{
 				return EMaterialShadingModel::Unlit;
+			}
+
+			else if (HasFlag(EMaterialShaderFlag::ShadingFoliage))
+			{
+				return EMaterialShadingModel::Foliage;
 			}
 
 			drn_check(false);
@@ -602,6 +610,19 @@ namespace Drn
 			IID_PPV_ARGS(pResults.GetAddressOf())
 		);
 
+		std::wstring LogMacros;
+		for (auto& Mac : Macros)
+		{
+			LogMacros += Mac;
+			LogMacros += L" ";
+		}
+
+		LOG(LogAssetImporterMaterial, Info, "compiling shader.");
+		LOG(LogAssetImporterMaterial, Info, "\tshader path: . \"%ws\"", ShaderPath.c_str());
+		LOG(LogAssetImporterMaterial, Info, "\tentry point: . \"%ws\"", EntryPoint);
+		LOG(LogAssetImporterMaterial, Info, "\tprofile: . \"%ws\"", Profile);
+		LOG(LogAssetImporterMaterial, Info, "\tmacros: . \"%ws\"", LogMacros.c_str());
+
 		Microsoft::WRL::ComPtr<IDxcBlobUtf8> pErrors = nullptr;
 		pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
 		if (pErrors != nullptr && pErrors->GetStringLength() != 0)
@@ -615,6 +636,10 @@ namespace Drn
 		{
 			LOG(LogAssetImporterMaterial, Error, "shader complation Failed.");
 			return false;
+		}
+		else
+		{
+			LOG(LogAssetImporterMaterial, Info, "successfully compiled: \"%ws\"", ShaderPath.c_str());
 		}
 
 		Microsoft::WRL::ComPtr<IDxcBlob> pShader = nullptr;

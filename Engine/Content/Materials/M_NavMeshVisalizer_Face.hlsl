@@ -21,9 +21,9 @@ struct VertexShaderOutput
 struct PixelShaderOutput
 {
 #if EDITOR_PRIMITIVE_PASS
-    float4 TranslucentColor;
+    float4 TranslucentColor : SV_TARGET0;
 #elif HITPROXY_PASS
-    uint4 Guid;
+    uint4 Guid : SV_TARGET0;
 #endif
 };
 
@@ -51,7 +51,7 @@ struct PixelShaderInput
     float4 Color : COLOR;
 };
 
-PixelShaderOutput Main_PS(PixelShaderInput IN, bool bFrontFace : SV_IsFrontFace, uint ID : SV_PrimitiveID) : SV_Target
+PixelShaderOutput Main_PS(PixelShaderInput IN, bool bFrontFace : SV_IsFrontFace, uint ID : SV_PrimitiveID)
 {
     ConstantBuffer<PrimitiveBuffer> Primitive = ResourceDescriptorHeap[BindlessResources.PrimitiveIndex];
 
