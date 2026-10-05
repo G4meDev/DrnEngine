@@ -38,7 +38,7 @@ VertexShaderOutput Main_VS(VertexInput IN)
     float4 WorldPosition = mul(LocalToWorld, float4(IN.Position, 1.0f));
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
     
-    OUT.Color = float4(IN.Color, 0);
+    OUT.Color = float4(IN.Color.rgb, 0);
 
     return OUT;
 }

@@ -57,7 +57,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Position = WorldPosition;
     
     OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
-    OUT.Color = float4(IN.Color, 1.0f);
+    OUT.Color = float4(IN.Color.rgb, 1.0f);
     OUT.Normal = IN.Position;
     OUT.UV = IN.UV1;
 #elif SHADOW_PASS_SPOTLIGHT
@@ -65,7 +65,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.Position = mul(ShadowBuffer.WorldToProjectionMatrix, WorldPosition);
 
     OUT.TBN = float3x3(IN.Position,IN.Position,IN.Position);
-    OUT.Color = float4(IN.Color, 1.0f);
+    OUT.Color = float4(IN.Color.rgb, 1.0f);
     OUT.Normal = IN.Position;
     OUT.UV = IN.UV1;
 #else
@@ -78,7 +78,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     //OUT.TBN = float3x3(WorldTangent, WorldNormal, VertexBiNormal);
     
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
-    OUT.Color = float4(IN.Color, 1.0f);
+    OUT.Color = float4(IN.Color.rgb, 1.0f);
     OUT.Normal = WorldNormal;
     OUT.UV = IN.UV1;
 

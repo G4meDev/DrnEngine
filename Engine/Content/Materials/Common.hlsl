@@ -260,7 +260,7 @@ struct VertexInputPositionOnlyParticleMesh
 struct VertexInputStaticMesh
 {
     float3 Position : POSITION;
-    float3 Color : COLOR;
+    float4 Color : COLOR;
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
     float2 UV1 : TEXCOORD0;
@@ -272,7 +272,7 @@ struct VertexInputStaticMesh
 struct VertexInputSkeletalMesh
 {
     float3 Position : POSITION;
-    float3 Color : COLOR;
+    float4 Color : COLOR;
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
     float2 UV1 : TEXCOORD0;
@@ -286,7 +286,7 @@ struct VertexInputSkeletalMesh
 struct VertexInputInstancedStaticMesh
 {
     float3 Position : POSITION;
-    float3 Color : COLOR;
+    float4 Color : COLOR;
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
     float2 UV1 : TEXCOORD0;
@@ -306,7 +306,7 @@ struct VertexInputInstancedStaticMesh
 struct VertexInputParticleMesh
 {
     float3 Position : POSITION;
-    float3 Color : COLOR;
+    float4 Color : COLOR;
     float3 Normal : NORMAL;
     float3 Tangent : TANGENT;
     float2 UV1 : TEXCOORD0;

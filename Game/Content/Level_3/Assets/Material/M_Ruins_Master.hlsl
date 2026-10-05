@@ -89,7 +89,7 @@ VertexShaderOutput Main_VS(
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
     OUT.UV0 = IN.UV1;
-    OUT.VertexColor = IN.Color;
+    OUT.VertexColor = IN.Color.rgb;
 #endif
     
 #if HITPROXY_PASS

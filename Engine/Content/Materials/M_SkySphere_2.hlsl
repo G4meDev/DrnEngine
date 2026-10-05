@@ -47,7 +47,7 @@ VertexShaderOutput Main_VS(VertexInputStaticMesh IN)
     OUT.TBN = GetTBN(WorldNormal, WorldTangent);
     
     OUT.Position = mul(View.WorldToProjection, WorldPosition);
-    OUT.Color = float4(IN.Color, 1.0f);
+    OUT.Color = float4(IN.Color.rgb, 1.0f);
     OUT.Normal = WorldNormal;
     OUT.UV = IN.UV1;
     
