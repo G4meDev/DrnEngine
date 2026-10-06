@@ -25,6 +25,7 @@ namespace Drn
 		uint8 MaterialIndex;
 
 		uint32 MaxIndex = 0;
+		Box Bound;
 	};
 
 	struct ImportedStaticMeshData

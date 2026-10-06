@@ -3,6 +3,8 @@
 
 #if WITH_EDITOR
 
+#include "Editor/AssetImporter/MeshImporterHelper.h"
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -14,17 +16,6 @@ LOG_DEFINE_CATEGORY( LogSkeletalMeshImporter, "SkeletalMeshImporter" );
 
 namespace Drn
 {
-	Vector A2Vector(const aiVector3D& InVector) { return Vector(InVector.x, InVector.y, InVector.z); }
-	Quat A2Quat(const aiQuaternion& InQuat) { return Quat(InQuat.x, InQuat.y, InQuat.z, InQuat.w); }
-	Matrix A2Matrix(const aiMatrix4x4& InMatrix)
-	{
-		return Matrix(
-			Vector4(InMatrix.a1, InMatrix.a2, InMatrix.a3, InMatrix.a4),
-			Vector4(InMatrix.b1, InMatrix.b2, InMatrix.b3, InMatrix.b4),
-			Vector4(InMatrix.c1, InMatrix.c2, InMatrix.c3, InMatrix.c4),
-			Vector4(InMatrix.d1, InMatrix.d2, InMatrix.d3, InMatrix.d4)).GetTranspose();
-	}
-
 	void AssetImporterSkeletalMesh::Import( SkeletalMesh* MeshAsset, const std::string& Path )
 	{
 		ImportedSkeletalMeshData Data;

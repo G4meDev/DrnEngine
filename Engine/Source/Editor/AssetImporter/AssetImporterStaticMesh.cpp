@@ -3,6 +3,8 @@
 
 #if WITH_EDITOR
 
+#include "Editor/AssetImporter/MeshImporterHelper.h"
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -16,8 +18,6 @@ LOG_DEFINE_CATEGORY( LogStaticMeshImporter, "StaticMeshImporter" );
 
 namespace Drn
 {
-	Vector A2Vec(const aiVector3D& Vec) { return Vector(Vec.x, Vec.y, Vec.z); }
-
 	void AssetImporterStaticMesh::Import( StaticMesh* MeshAsset, const std::string& Path )
 	{
 		ImportedStaticMeshData Data;
@@ -29,9 +29,10 @@ namespace Drn
 		}
 
 		Assimp::Importer importer;
-		//const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
-		//const aiScene* scene = importer.ReadFile( Path, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded );
-		const aiScene* scene = importer.ReadFile( Path, aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded );
+		importer.SetPropertyFloat(AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY, MeshAsset->ImportScale * 100);
+		//const aiScene* scene = importer.ReadFile( Path, aiProcess_GlobalScale | aiProcess_GenBoundingBoxes | aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
+		//const aiScene* scene = importer.ReadFile( Path, aiProcess_GlobalScale | aiProcess_GenBoundingBoxes | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded );
+		const aiScene* scene = importer.ReadFile( Path, aiProcess_GlobalScale | aiProcess_GenBoundingBoxes | aiProcess_JoinIdenticalVertices | aiProcess_ConvertToLeftHanded );
 
 		if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
 		{
@@ -90,9 +91,9 @@ namespace Drn
 		{
 			InputLayout_StaticMesh Vertex;
 
-			Vertex.X = mesh->mVertices[i].x * MeshAsset->ImportScale;
-			Vertex.Y = mesh->mVertices[i].y * MeshAsset->ImportScale;
-			Vertex.Z = mesh->mVertices[i].z * MeshAsset->ImportScale;
+			Vertex.X = mesh->mVertices[i].x;
+			Vertex.Y = mesh->mVertices[i].y;
+			Vertex.Z = mesh->mVertices[i].z;
 
 			Vertex.N_X = mesh->HasNormals() ? mesh->mNormals[i].x : 0;
 			Vertex.N_Y = mesh->HasNormals() ? mesh->mNormals[i].y : 0;
@@ -144,6 +145,10 @@ namespace Drn
 			std::string MatName = material->GetName().C_Str();
 			MeshData.MaterialIndex = BuildingData.AddMaterial(MatName);
 		}
+
+		// --------------------------------------------------------------------------------------------
+
+		MeshData.Bound = Box( A2Vector( mesh->mAABB.mMin ), A2Vector( mesh->mAABB.mMax ) );
 
 		BuildingData.MeshesData.push_back(MeshData);
 
@@ -200,9 +205,6 @@ namespace Drn
 		MeshAsset->Data.Materials.clear();
 
 		MeshAsset->Data.MeshesData.resize(BuildingData.MeshesData.size());
-
-		float MaxX = -FLT_MAX, MaxY = -FLT_MAX, MaxZ = -FLT_MAX;
-		float MinX = FLT_MAX, MinY = FLT_MAX, MinZ = FLT_MAX;
 
 		for (int i = 0; i < BuildingData.MeshesData.size(); i++)
 		{
@@ -272,16 +274,22 @@ namespace Drn
 
 					if (MeshAsset->m_ImportUVs >= 4)
 						Data.VertexData.UV_4[i] = Vector2Half(IMD.Vertices[i].U4, IMD.Vertices[i].V4);
-
-					MaxX = std::max(MaxX, Data.VertexData.Positions[i].GetX());
-					MaxY = std::max(MaxY, Data.VertexData.Positions[i].GetY());
-					MaxZ = std::max(MaxZ, Data.VertexData.Positions[i].GetZ());
-
-					MinX = std::min(MinX, Data.VertexData.Positions[i].GetX());
-					MinY = std::min(MinY, Data.VertexData.Positions[i].GetY());
-					MinZ = std::min(MinZ, Data.VertexData.Positions[i].GetZ());
 				}
 			}
+		}
+
+		float MaxX = -FLT_MAX, MaxY = -FLT_MAX, MaxZ = -FLT_MAX;
+		float MinX = FLT_MAX, MinY = FLT_MAX, MinZ = FLT_MAX;
+
+		for (auto& Mesh : BuildingData.MeshesData)
+		{
+			MaxX = std::max(MaxX, Mesh.Bound.Max.X);
+			MaxY = std::max(MaxY, Mesh.Bound.Max.Y);
+			MaxZ = std::max(MaxZ, Mesh.Bound.Max.Z);
+	
+			MinX = std::min(MinX, Mesh.Bound.Min.X);
+			MinY = std::min(MinY, Mesh.Bound.Min.Y);
+			MinZ = std::min(MinZ, Mesh.Bound.Min.Z);
 		}
 
 		{
@@ -352,16 +360,16 @@ namespace Drn
 
 		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
 		{
-			float Pos_X = mesh->mVertices[i].x * MeshAsset->ImportScale;
-			float Pos_Y = mesh->mVertices[i].y * MeshAsset->ImportScale;
-			float Pos_Z = mesh->mVertices[i].z * MeshAsset->ImportScale;
+			float Pos_X = mesh->mVertices[i].x;
+			float Pos_Y = mesh->mVertices[i].y;
+			float Pos_Z = mesh->mVertices[i].z;
 
 			Pos = Pos + Vector(Pos_X, Pos_Y, Pos_Z);
 		}
 
-		float Pos_X = mesh->mVertices[0].x * MeshAsset->ImportScale;
-		float Pos_Y = mesh->mVertices[0].y * MeshAsset->ImportScale;
-		float Pos_Z = mesh->mVertices[0].z * MeshAsset->ImportScale;
+		float Pos_X = mesh->mVertices[0].x;
+		float Pos_Y = mesh->mVertices[0].y;
+		float Pos_Z = mesh->mVertices[0].z;
 		Vector Pos_0 = Vector(Pos_X, Pos_Y, Pos_Z);
 
 		Vector Center = Pos / mesh->mNumVertices;
@@ -386,8 +394,8 @@ namespace Drn
 			CollisionBox += Vector(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
 		}
 
-		Vector Center = CollisionBox.GetCenter() * MeshAsset->ImportScale;
-		Vector Extent = CollisionBox.GetExtent() * MeshAsset->ImportScale;
+		Vector Center = CollisionBox.GetCenter();
+		Vector Extent = CollisionBox.GetExtent();
 		Quat Rotation = Quat::Identity;
 
 		MeshAsset->m_BodySetup.m_AggGeo.BoxElems.push_back(BoxElem(Center, Rotation, Extent));
@@ -408,7 +416,7 @@ namespace Drn
 		std::vector<Vector> Positions;
 		for ( uint32 i = 0; i < mesh->mNumVertices; i++ )
 		{
-			Positions.push_back(A2Vec(mesh->mVertices[i]) * MeshAsset->ImportScale);
+			Positions.push_back(A2Vector(mesh->mVertices[i]));
 		}
 
 		std::vector<std::vector<uint32>> Polys;
