@@ -48,6 +48,9 @@ namespace Drn
 
 		void SetPhysicalMaterial(AssetHandle<PhysicalMaterial> InMaterial);
 
+		inline ECollisionEnabled GetCollisionEnabled() const { return CollisionEnabled; }
+		void SetCollisionEnabled(ECollisionEnabled InCollisionEnabled);
+
 #if WITH_EDITOR
 		void DrawDetailPanel(float DeltaTime);
 		void DrawPhysicalMaterial();

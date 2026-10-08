@@ -99,18 +99,30 @@ namespace Drn
 	{
 		m_OwnerComponent = InOwnerComponent;
 		m_BodySetup = Setup;
+		physx::PxPhysics* Physics = PhysicManager::Get()->GetPhysics();
 
 		if (!Setup)
 		{
 			return;
 		}
 
-		physx::PxPhysics* Physics = PhysicManager::Get()->GetPhysics();
+		const bool bKinematic = InOwnerComponent->IsStatic();
+		const bool bHasPhysics = CollisionEnabled == ECollisionEnabled::PhysicsOnly || CollisionEnabled == ECollisionEnabled::QueryAndPhysics;
+		const bool bHasQuery = CollisionEnabled == ECollisionEnabled::QueryOnly || CollisionEnabled == ECollisionEnabled::QueryAndPhysics;
 
-		if (m_SimulatePhysic)
+		bool bSimulate = m_SimulatePhysic;
+		if (bSimulate && Setup->TraceFlagComplexAsSimple())
+		{
+			bSimulate = false;
+			LOG(LogBodyInstance, Warning, "tring to simulate complex body.");
+			drn_check(false);
+		}
+
+		if (bSimulate)
 		{
 			physx::PxRigidDynamic* DynamicActor = Physics->createRigidDynamic( Transform2P(BodyTransform) );
 			DynamicActor->setRigidBodyFlag( PxRigidBodyFlag::eENABLE_CCD, true );
+			DynamicActor->setRigidBodyFlag( PxRigidBodyFlag::eKINEMATIC, bKinematic );
 			m_RigidActor = DynamicActor;
 
 			DynamicActor->setSolverIterationCounts(8, 2);
@@ -141,7 +153,7 @@ namespace Drn
 		int32 ActorID = InOwnerComponent->GetOwningActor()->GetUniqueID();
 		int32 ComponentID = InOwnerComponent->GetUniqueID();
 		int32 BodyIndex = 0; // @TODO: add
-		bool bStaticShape = !m_SimulatePhysic;
+		bool bStaticShape = !bSimulate;
 		bool bModifyContacts = false; // @TODO: add
 
 		if (CollisionProfileName == CUSTOM_COLLISION_PROFILE_NAME)
@@ -156,51 +168,127 @@ namespace Drn
 			CreateShapeFilterData(CollisionPreset.ObjectType, MaskFilter, ActorID, CollisionPreset.ResponseToChannels, ComponentID, BodyIndex, QueryData, SimData, bUseCCD, bNotifyHit, bStaticShape, bModifyContacts);
 		}
 
-		if (Setup->m_UseTriMesh)
+		if (bHasPhysics)
 		{
-			for (int32 i = 0; i < Setup->m_TriMeshes.size(); i++)
-			{
-				physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(BodyTransform.GetScale())), *TargetMat->GetMaterial());
-				shape->userData = &Setup->m_TriMeshes[i].GetUserData();
-				shape->setSimulationFilterData( *(PxFilterData*)&SimData );
-				shape->setQueryFilterData( *(PxFilterData*)&QueryData );
+			PxShapeFlags SimFlags = PxShapeFlag::eSIMULATION_SHAPE | PxShapeFlag::eVISUALIZATION;
 
-				m_RigidActor->attachShape( *shape );
-				PX_RELEASE(shape);
+			if (Setup->TraceFlagComplexAsSimple())
+			{
+				for (int32 i = 0; i < Setup->m_TriMeshes.size(); i++)
+				{
+					physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(BodyTransform.GetScale())), *TargetMat->GetMaterial(), false, SimFlags);
+					shape->userData = &Setup->m_TriMeshes[i].GetUserData();
+					shape->setSimulationFilterData( *(PxFilterData*)&SimData );
+					shape->setQueryFilterData( *(PxFilterData*)&QueryData );
+
+					m_RigidActor->attachShape( *shape );
+					PX_RELEASE(shape);
+				}
+			}
+
+			else
+			{
+				for (int32 i = 0; i < Setup->m_AggGeo.GetElementCount(); i++)
+				{
+					ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
+
+					physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(BodyTransform.GetScale()).get()), *TargetMat->GetMaterial(), false, SimFlags);
+					shape->setSimulationFilterData( *(PxFilterData*)&SimData );
+					shape->setQueryFilterData( *(PxFilterData*)&QueryData );
+
+					shape->userData = &Element->GetUserData();
+
+					if (Element->GetType() == EAggCollisionShape::Sphere)
+					{
+						SphereElem* SphereEl = Element->GetShape<SphereElem>();
+						shape->setLocalPose(Transform2P( Transform(SphereEl->Center, Quat(), Vector::OneVector ) ) );
+					}
+
+					// TODO: add rotation
+					else if (Element->GetType() == EAggCollisionShape::Box)
+					{
+						BoxElem* BoxEl = Element->GetShape<BoxElem>();
+						shape->setLocalPose(Transform2P( Transform(BoxEl->Center, Quat(), Vector::OneVector ) ) );
+					}
+
+					m_RigidActor->attachShape( *shape );
+					shape->release();
+				}
 			}
 		}
 
-		else
+		if (bHasQuery)
 		{
-			for (int32 i = 0; i < Setup->m_AggGeo.GetElementCount(); i++)
+			PxShapeFlags QueryFlags = PxShapeFlag::eSCENE_QUERY_SHAPE | PxShapeFlag::eVISUALIZATION;
+
+			if (Setup->TraceFlagSimpleAndComplex() || Setup->TraceFlagComplexAsSimple())
 			{
-				ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
-
-				physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(BodyTransform.GetScale()).get()), *TargetMat->GetMaterial() );
-				shape->setSimulationFilterData( *(PxFilterData*)&SimData );
-				shape->setQueryFilterData( *(PxFilterData*)&QueryData );
-
-				shape->userData = &Element->GetUserData();
-
-				if (Element->GetType() == EAggCollisionShape::Sphere)
+				CollisionFilterData NewQueryData = QueryData;
+				if (Setup->TraceFlagSimpleAndComplex())
 				{
-					SphereElem* SphereEl = Element->GetShape<SphereElem>();
-					shape->setLocalPose(Transform2P( Transform(SphereEl->Center, Quat(), Vector::OneVector ) ) );
+					NewQueryData.Word3 |= EPDF_ComplexCollision;
 				}
 
-				// TODO: add rotation
-				else if (Element->GetType() == EAggCollisionShape::Box)
+				if (Setup->TraceFlagComplexAsSimple())
 				{
-					BoxElem* BoxEl = Element->GetShape<BoxElem>();
-					shape->setLocalPose(Transform2P( Transform(BoxEl->Center, Quat(), Vector::OneVector ) ) );
+					NewQueryData.Word3 |= EPDF_SimpleCollision;
 				}
 
-				m_RigidActor->attachShape( *shape );
-				shape->release();
+				for (int32 i = 0; i < Setup->m_TriMeshes.size(); i++)
+				{
+					physx::PxShape* shape = Physics->createShape(PxTriangleMeshGeometry(Setup->m_TriMeshes[i].TriMesh, Vector2P(BodyTransform.GetScale())), *TargetMat->GetMaterial(), false, QueryFlags);
+					shape->userData = &Setup->m_TriMeshes[i].GetUserData();
+					shape->setSimulationFilterData( *(PxFilterData*)&SimData );
+					shape->setQueryFilterData( *(PxFilterData*)&NewQueryData );
+
+					m_RigidActor->attachShape( *shape );
+					PX_RELEASE(shape);
+				}
+			}
+
+			if (Setup->TraceFlagSimpleAndComplex() || Setup->TraceFlagSimpleAsComplex())
+			{
+				CollisionFilterData NewQueryData = QueryData;
+				if (Setup->TraceFlagSimpleAndComplex())
+				{
+					NewQueryData.Word3 |= EPDF_SimpleCollision;
+				}
+
+				if (Setup->TraceFlagSimpleAsComplex())
+				{
+					NewQueryData.Word3 |= EPDF_ComplexCollision;
+				}
+
+				for (int32 i = 0; i < Setup->m_AggGeo.GetElementCount(); i++)
+				{
+					ShapeElem* Element = Setup->m_AggGeo.GetElement(i);
+
+					physx::PxShape* shape = Physics->createShape( *(Element->GetPxGeometery(BodyTransform.GetScale()).get()), *TargetMat->GetMaterial(), false, QueryFlags);
+					shape->setSimulationFilterData( *(PxFilterData*)&SimData );
+					shape->setQueryFilterData( *(PxFilterData*)&NewQueryData );
+
+					shape->userData = &Element->GetUserData();
+
+					if (Element->GetType() == EAggCollisionShape::Sphere)
+					{
+						SphereElem* SphereEl = Element->GetShape<SphereElem>();
+						shape->setLocalPose(Transform2P( Transform(SphereEl->Center, Quat(), Vector::OneVector ) ) );
+					}
+
+					// TODO: add rotation
+					else if (Element->GetType() == EAggCollisionShape::Box)
+					{
+						BoxElem* BoxEl = Element->GetShape<BoxElem>();
+						shape->setLocalPose(Transform2P( Transform(BoxEl->Center, Quat(), Vector::OneVector ) ) );
+					}
+
+					m_RigidActor->attachShape( *shape );
+					shape->release();
+				}
 			}
 		}
 
-		if (m_SimulatePhysic)
+		if (bSimulate)
 		{
 			PxRigidDynamic* RigidDynamic = m_RigidActor ? m_RigidActor->is<PxRigidDynamic>() : nullptr;
 			drn_check(RigidDynamic);
@@ -392,6 +480,13 @@ namespace Drn
 			PxMaterial* Materials[] = { TargetMat->GetMaterial() };
 			Shape->setMaterials(Materials, 1);
 		}
+	}
+
+	void BodyInstance::SetCollisionEnabled( ECollisionEnabled InCollisionEnabled )
+	{
+		CollisionEnabled = InCollisionEnabled;
+
+		// @TODO: regen bodies
 	}
 
 	int32 BodyInstance::GetAllShapes( std::vector<PxShape*>& Result )

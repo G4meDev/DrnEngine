@@ -472,8 +472,8 @@ namespace Drn
 			Vector Start = SelectedSceneComponent->GetWorldLocation();
 			Vector End = Start + Vector::DownVector * 10000;
 
-			SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f);
-			bool bHit = SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()} );
+			SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, true, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()}, 5.0f);
+			bool bHit = SelectedSceneComponent->GetWorld()->LineTrace( Hit, Start, End, true, {ECC_WorldStatic, ECC_WorldDynamic}, {SelectedSceneComponent->GetOwningActor()} );
 			if (bHit)
 			{
 				SelectedSceneComponent->SetWorldLocation(Hit.Location);

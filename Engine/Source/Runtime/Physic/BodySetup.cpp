@@ -21,7 +21,8 @@ namespace Drn
 			m_TriMeshes.resize(TriMeshesCount);
 			for (uint8 i = 0; i < TriMeshesCount; i++) { m_TriMeshes[i].Serialize(Ar);}
 
-			Ar >> m_UseTriMesh;
+			//Ar >> *((uint8*)&CollisionTraceFlags);
+			Ar >> CollisionTraceFlags;
 		}
 		else
 		{
@@ -30,16 +31,34 @@ namespace Drn
 			Ar << static_cast<uint8>(m_TriMeshes.size());
 			for (uint8 i = 0; i < m_TriMeshes.size(); i++) { m_TriMeshes[i].Serialize(Ar); }
 
-			Ar << m_UseTriMesh;
+			//Ar << (uint8)CollisionTraceFlags;
+			Ar << CollisionTraceFlags;
 		}
 	}
 
 #if WITH_EDITOR
 	void BodySetup::DrawDetailPanel()
 	{
+		DrawCollisionTraceFlag();
+
 		DrawSphereShapes();
 		DrawBoxShapes();
 		DrawCapsuleShapes();
+
+	}
+
+	bool BodySetup::DrawCollisionTraceFlag()
+	{
+		const char* Options[] = { "UseSimpleAndComplex", "UseComplexAsSimple", "UseSimpleAsComplex" };
+
+		int32 Selected = (uint32)CollisionTraceFlags;
+		if ( ImGui::Combo("Collision Mode", &Selected, Options, IM_ARRAYSIZE(Options)) )
+		{
+			CollisionTraceFlags = (ECollisionTraceFlag)Selected;
+			return true;
+		}
+
+		return false;
 	}
 
 	void BodySetup::DrawSphereShapes()

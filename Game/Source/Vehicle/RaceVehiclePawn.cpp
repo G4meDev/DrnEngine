@@ -58,6 +58,8 @@ namespace Drn
 			VehicleWheelsParticles[i]->SetComponentLabel( "VehicleWheelFx_" + std::to_string(i) );
 			VehicleWheels[i]->AttachSceneComponent(VehicleWheelsParticles[i].get());
 			VehicleWheelsParticles[i]->SetTemplate(WheelFxTemplate);
+
+			VehicleWheels[i]->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
 
 		MovementComponent = std::make_unique<RaceVehicleMovementComponent>();

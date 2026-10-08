@@ -297,6 +297,8 @@ namespace Drn
 			, Hash(Other.Hash)
 		{}
 
+		StringID() : StringID(StringID::None) {}
+
 		inline StringIdEntry& GetEntry() const { return IdAllocator.Resolve(Handle); }
 		inline bool IsNone() const { return GetEntry().Length == 0; }
 		inline uint64 GetHash() const { return Hash; }

@@ -59,6 +59,16 @@ namespace Drn
 	{
 		Character::Tick(DeltaTime);
 
+		if (GetCharacterMovementComponent()->IsCollidingOnBottom())
+		{
+			AirTime = 0;
+		}
+		else
+		{
+			AirTime += DeltaTime;
+		}
+		bFalling = AirTime > CoyoteTime;
+
 		const Vector VelocityZX = GetCharacterMovementComponent()->GetVelocity() * Vector(1.0f, 0.0f, 1.0f);
 		const float VelocityZXMag = VelocityZX.Length();
 		if (VelocityZXMag> KINDA_SMALL_NUMBER)
@@ -207,7 +217,7 @@ namespace Drn
 
 		bool CanTransitionToJumpStart()
 		{
-			return !OwningAnimator->OwningCharcater->GetCharacterMovementComponent()->IsCollidingOnBottom();
+			return OwningAnimator->OwningCharcater->IsFalling();
 		}
 
 		AnimTask_PlayBlendSpace1D PlayIdleWalkRun;
@@ -263,7 +273,7 @@ namespace Drn
 
 		bool CanTransitionToFallToLand()
 		{
-			return OwningAnimator->OwningCharcater->GetCharacterMovementComponent()->IsCollidingOnBottom();
+			return !OwningAnimator->OwningCharcater->IsFalling();
 		}
 
 		AnimTask_PlayAnimation PlayAnimationFallLoop;
@@ -345,7 +355,7 @@ namespace Drn
 		const Vector TraceEnd = FlattenFootLocation + Vector::DownVector * TraceDistance;
 
 		HitResult Hit;
-		bool bHit = OwningActor->GetWorld()->LineTrace(Hit, TraceStart, TraceEnd, {ECollisionChannel::ECC_WorldStatic}, {OwningActor}, 0.0f);
+		bool bHit = OwningActor->GetWorld()->LineTrace(Hit, TraceStart, TraceEnd, true, {ECollisionChannel::ECC_WorldStatic}, {OwningActor}, 0.0f);
 
 		if (bHit)
 		{

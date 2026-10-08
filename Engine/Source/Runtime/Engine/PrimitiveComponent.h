@@ -41,6 +41,7 @@ namespace Drn
 		inline void SetEditorPrimitive(bool EditorPrimitive) { m_EditorPrimitive = EditorPrimitive; }
 
 		virtual void SetStatic(bool bInStatic) override;
+		void SetCollisionEnabled(ECollisionEnabled CollisionEnabled);
 
 		OnComponentHitDelegate OnComponentHitDel;
 

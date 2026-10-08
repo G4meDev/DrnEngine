@@ -90,6 +90,14 @@ namespace Drn
 		}
 	}
 
+	void PrimitiveComponent::SetCollisionEnabled( ECollisionEnabled CollisionEnabled )
+	{
+		if (m_BodyInstance.GetCollisionEnabled() != CollisionEnabled)
+		{
+			m_BodyInstance.SetCollisionEnabled(CollisionEnabled);
+		}
+	}
+
 #if WITH_EDITOR
 	void PrimitiveComponent::DrawDetailPanel( float DeltaTime )
 	{

@@ -82,58 +82,58 @@ namespace Drn
 
 // ---------------------------------------------------------------------------------------------------------
 
-		bool LineTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool LineTrace( HitResult& OutHit, const Vector& Start, const Vector& End, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool LineTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool LineTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool LineTraceTest( const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool LineTraceTest( const Vector& Start, const Vector& End, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool SphereTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool SphereTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool SphereTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool SphereTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool SphereTraceTest( const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool SphereTraceTest( const Vector& Start, const Vector& End, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool BoxTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool BoxTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool BoxTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool BoxTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool BoxTraceTest( const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool BoxTraceTest( const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool CapsuleTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool CapsuleTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool CapsuleTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool CapsuleTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool CapsuleTraceTest( const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool CapsuleTraceTest( const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool SphereOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool SphereOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool SphereOverlapTest( const Vector& Position, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool SphereOverlapTest( const Vector& Position, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool BoxOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool BoxOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool BoxOverlapTest( const Vector& Position, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool BoxOverlapTest( const Vector& Position, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool CapsuleOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool CapsuleOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
-		bool CapsuleOverlapTest( const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+		bool CapsuleOverlapTest( const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 			float DrawDuration = -1.0f, Color TraceColor = Color::Red, Color TraceHitColor = Color::Green);
 
 

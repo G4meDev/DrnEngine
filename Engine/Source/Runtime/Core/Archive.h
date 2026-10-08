@@ -17,7 +17,7 @@
 #include <d3dcommon.h>
 
 LOG_DECLARE_CATEGORY( LogArchive );
-#define ARCHIVE_VERSION ( (uint8)1 )
+#define ARCHIVE_VERSION ( (uint8)5 )
 
 namespace Drn
 {
@@ -177,6 +177,39 @@ namespace Drn
 				}
 			}
 		}
+
+		template<typename Enum>
+		Archive& operator<<(const Enum& Value)
+		{
+			using UnderlyingType = __underlying_type(Enum);
+			*this << (UnderlyingType)Value;
+			return *this;
+		}
+		
+		template<typename Enum>
+		Archive& operator>>(Enum& Value)
+		{
+			using UnderlyingType = __underlying_type(Enum);
+			*this >> *((UnderlyingType*)(&Value));
+			return *this;
+		}
+
+		//template<typename T>
+		//Archive& operator<<(const AssetHandle<T>& Value)
+		//{
+		//	Ar << Value.GetPath();
+		//	return Ar;
+		//}
+		//
+		//template<typename T>
+		//Archive& operator<<(AssetHandle<T>& Value)
+		//{
+		//	std::string Path;
+		//	Ar >> Path;
+		//
+		//	Value = AssetHandle<T>(Path);
+		//	return Ar;
+		//}
 
 	protected:
 		bool m_IsLoading;

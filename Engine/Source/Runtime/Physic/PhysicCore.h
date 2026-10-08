@@ -204,7 +204,7 @@ namespace Drn
 		}
 	};
 
-	CollisionFilterData CreateObjectQueryFilterData(const int32 MultiTrace, const CollisionObjectQueryParams& ObjectParam);
+	CollisionFilterData CreateObjectQueryFilterData(bool bTraceComplex, const int32 MultiTrace, const CollisionObjectQueryParams& ObjectParam);
 
 	PxFilterData U2PFilterData(const CollisionFilterData& FilterData);
 	CollisionFilterData P2UFilterData(const PxFilterData& PFilterData);
@@ -222,6 +222,7 @@ namespace Drn
 	{
 		std::string OwnerTag;
 
+		bool bTraceComplex;
 		bool bFindInitialOverlaps;
 		bool bReturnFaceIndex;
 		bool bReturnPhysicalMaterial;

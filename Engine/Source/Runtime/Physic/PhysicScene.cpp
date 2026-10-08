@@ -489,7 +489,7 @@ namespace Drn
 		float MinBlockingDistance = DeltaMag;
 		if (DeltaMag > 0.f)
 		{
-			CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+			CollisionFilterData Filter = CreateObjectQueryFilterData(Params.bTraceComplex, false, ObjectParams);
 
 			CollisionQueryFilterCallback QueryCallback(Params, false);
 			QueryCallback.bIgnoreTouches = true;
@@ -534,7 +534,7 @@ namespace Drn
 		float MinBlockingDistance = DeltaMag;
 		if (DeltaMag > 0.f)
 		{
-			CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+			CollisionFilterData Filter = CreateObjectQueryFilterData(Params.bTraceComplex, false, ObjectParams);
 			CollisionQueryFilterCallback QueryCallback(Params, false);
 			QueryCallback.bIgnoreTouches = true;
 
@@ -563,7 +563,7 @@ namespace Drn
 		float MinBlockingDistance = DeltaMag;
 		if (DeltaMag > 0.f)
 		{
-			CollisionFilterData Filter = CreateObjectQueryFilterData(true, ObjectParams);
+			CollisionFilterData Filter = CreateObjectQueryFilterData(Params.bTraceComplex, true, ObjectParams);
 			CollisionQueryFilterCallback QueryCallback(Params, false);
 
 			bool bBlockingHit = false;
@@ -608,7 +608,7 @@ namespace Drn
 		float MinBlockingDistance = DeltaMag;
 
 		{
-			CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+			CollisionFilterData Filter = CreateObjectQueryFilterData(Params.bTraceComplex, false, ObjectParams);
 
 			CollisionQueryFilterCallback QueryCallback(Params, true);
 			QueryCallback.bIgnoreTouches = true;
@@ -654,7 +654,7 @@ namespace Drn
 		float MinBlockingDistance = DeltaMag;
 
 		{
-			CollisionFilterData Filter = CreateObjectQueryFilterData(true, ObjectParams);
+			CollisionFilterData Filter = CreateObjectQueryFilterData(Params.bTraceComplex, true, ObjectParams);
 			CollisionQueryFilterCallback QueryCallback(Params, true);
 
 			bool bBlockingHit = false;
@@ -700,7 +700,7 @@ namespace Drn
 		float DeltaMag = Math::IsNearlyZero(DeltaSize) ? 0.f : DeltaSize;
 
 		{
-			CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+			CollisionFilterData Filter = CreateObjectQueryFilterData(Params.bTraceComplex, false, ObjectParams);
 			CollisionQueryFilterCallback QueryCallback(Params, true);
 			QueryCallback.bIgnoreTouches = true;
 
@@ -726,7 +726,7 @@ namespace Drn
 	{
 		bool bHaveBlockingHit = false;
 
-		CollisionFilterData Filter = CreateObjectQueryFilterData(true, ObjectParams);
+		CollisionFilterData Filter = CreateObjectQueryFilterData(Params.bTraceComplex, true, ObjectParams);
 		CollisionQueryFilterCallback QueryCallback(Params, false);
 		QueryCallback.bIsOverlapQuery = true;
 
@@ -758,7 +758,7 @@ namespace Drn
 	{
 		bool bHaveBlockingHit = false;
 
-		CollisionFilterData Filter = CreateObjectQueryFilterData(false, ObjectParams);
+		CollisionFilterData Filter = CreateObjectQueryFilterData(Params.bTraceComplex, false, ObjectParams);
 		CollisionQueryFilterCallback QueryCallback(Params, false);
 		QueryCallback.bIsOverlapQuery = true;
 
@@ -1238,6 +1238,9 @@ namespace Drn
 				PhysMat1 = Material1 ? PhysicUserData::Get<PhysicalMaterial>(Material1->userData) : nullptr;
 			}
 
+			drn_check(Shape0->getNbMaterials() == 1);
+			drn_check(Shape1->getNbMaterials() == 1);
+
 			PxContactPairPoint ContactPointBuffer[16];
 			int32 NumContactPoints = Pair->extractContacts(ContactPointBuffer, 16);
 			for(int32 PointIdx=0; PointIdx<NumContactPoints; PointIdx++)
@@ -1381,6 +1384,11 @@ namespace Drn
 		uint32 ShapeFlags = ShapeFilter.Word3 & 0xFFFFFF;
 		uint32 QuerierFlags = FilterData.Word3 & 0xFFFFFF;
 		uint32 CommonFlags = ShapeFlags & QuerierFlags;
+
+		if (!(CommonFlags & EPDF_SimpleCollision) && !(CommonFlags & EPDF_ComplexCollision))
+		{
+			return (PxQueryHitType::Enum)(PreFilterReturnValue = ECollisionQueryHitType::None);
+		}
 
 		ECollisionQueryHitType Result = CalcQueryHitType(FilterData, ShapeFilter, true);
 

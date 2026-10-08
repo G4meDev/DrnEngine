@@ -54,19 +54,19 @@ namespace Drn
 		return Rotation * Quat(Vector::ForwardVector, XM_PIDIV2);
 	}
 
-	CollisionFilterData CreateObjectQueryFilterData( const int32 MultiTrace, const CollisionObjectQueryParams& ObjectParam )
+	CollisionFilterData CreateObjectQueryFilterData(bool bTraceComplex, const int32 MultiTrace, const CollisionObjectQueryParams& ObjectParam )
 	{
 		CollisionFilterData NewData;
 		//NewData.Word0 = (uint32)ECollisionQuery::ObjectQuery;
 
-		//if (bTraceComplex)
-		//{
-		//	NewData.Word3 |= EPDF_ComplexCollision;
-		//}
-		//else
-		//{
-		//	NewData.Word3 |= EPDF_SimpleCollision;
-		//}
+		if (bTraceComplex)
+		{
+			NewData.Word3 |= EPDF_ComplexCollision;
+		}
+		else
+		{
+			NewData.Word3 |= EPDF_SimpleCollision;
+		}
 
 		NewData.Word1 = ObjectParam.GetQueryBitfield();
 		NewData.Word3 |= CreateChannelAndFilter((ECollisionChannel)MultiTrace, ObjectParam.IgnoreMask);

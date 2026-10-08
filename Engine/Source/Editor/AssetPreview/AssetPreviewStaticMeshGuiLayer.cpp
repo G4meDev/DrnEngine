@@ -239,11 +239,6 @@ namespace Drn
 
 // ------------------------------------------------------------------------------------------------------
 
-		ImGui::Checkbox( "Use Complex Collision", &m_OwningAsset->m_BodySetup.m_UseTriMesh );
-		ImGui::Separator();
-
-// ------------------------------------------------------------------------------------------------------
-
 		ImGui::Checkbox( "Import Normal", &m_OwningAsset->m_ImportNormals);
 		ImGui::Checkbox( "Import Tangent", &m_OwningAsset->m_ImportTangents);
 		ImGui::Checkbox( "Import Color", &m_OwningAsset->m_ImportColor);

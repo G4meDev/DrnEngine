@@ -505,13 +505,14 @@ namespace Drn
 
 // ------------------------------------------------------------------------------------------------------
 
-	bool World::LineTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+	bool World::LineTrace( HitResult& OutHit, const Vector& Start, const Vector& End, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 		float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -533,13 +534,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::LineTraceMulti( std::vector<HitResult>& OutHit, const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+	bool World::LineTraceMulti( std::vector<HitResult>& OutHit, const Vector& Start, const Vector& End, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 		float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -564,13 +566,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::LineTraceTest( const Vector& Start, const Vector& End, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors, float DrawDuration,
+	bool World::LineTraceTest( const Vector& Start, const Vector& End, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors, float DrawDuration,
 		Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -588,13 +591,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::SphereTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+	bool World::SphereTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 		float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -617,13 +621,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::SphereTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+	bool World::SphereTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 		float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -646,13 +651,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::SphereTraceTest( const Vector& Start, const Vector& End, float Radius, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
+	bool World::SphereTraceTest( const Vector& Start, const Vector& End, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors,
 		float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -672,13 +678,14 @@ namespace Drn
 	}
 
 
-	bool World::BoxTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::BoxTrace( HitResult& OutHit, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -701,13 +708,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::BoxTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::BoxTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -730,13 +738,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::BoxTraceTest( const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::BoxTraceTest( const Vector& Start, const Vector& End, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -755,13 +764,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::CapsuleTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::CapsuleTrace( HitResult& OutHit, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -784,13 +794,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::CapsuleTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::CapsuleTraceMulti( std::vector<HitResult>& OutHits, const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -813,13 +824,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::CapsuleTraceTest( const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::CapsuleTraceTest( const Vector& Start, const Vector& End, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 		QueryParams.bReturnPhysicalMaterial = true;
 		QueryParams.bReturnFaceIndex = true;
 
@@ -838,13 +850,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::SphereOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::SphereOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration , Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 
 		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
 
@@ -861,13 +874,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::SphereOverlapTest( const Vector& Position, float Radius, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::SphereOverlapTest( const Vector& Position, float Radius, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration , Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 
 		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
 
@@ -885,12 +899,13 @@ namespace Drn
 	}
 
 	bool World::BoxOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, const Vector& HalfSize,
-		const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor , Color TraceHitColor )
+		const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor , Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 
 		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
 
@@ -907,13 +922,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::BoxOverlapTest( const Vector& Position, const Vector& HalfSize, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::BoxOverlapTest( const Vector& Position, const Vector& HalfSize, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 
 		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
 
@@ -930,13 +946,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::CapsuleOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, const std::vector<ECollisionChannel>& ObjectTypes,
+	bool World::CapsuleOverlap( std::vector<OverlapResult>& OutOverlaps, const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex, const std::vector<ECollisionChannel>& ObjectTypes,
 		const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 
 		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
 
@@ -953,13 +970,14 @@ namespace Drn
 		return bHit;
 	}
 
-	bool World::CapsuleOverlapTest( const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation,
+	bool World::CapsuleOverlapTest( const Vector& Position, float Radius, float HalfHeight, const Quat& Rotation, bool bTraceComplex,
 		const std::vector<ECollisionChannel>& ObjectTypes, const std::vector<Actor*>& IgnoreActors, float DrawDuration, Color TraceColor, Color TraceHitColor )
 	{
 		drn_check(m_PhysicScene);
 
 		CollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActors(IgnoreActors);
+		QueryParams.bTraceComplex = bTraceComplex;
 
 		CollisionObjectQueryParams ObjectQueryParams(ObjectTypes);
 

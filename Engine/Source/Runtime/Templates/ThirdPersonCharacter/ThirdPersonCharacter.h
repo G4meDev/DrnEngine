@@ -37,6 +37,8 @@ namespace Drn
 
 		void SetMovementInputToWorldDirection(const Vector& Direction);
 
+		inline bool IsFalling() const { return bFalling; }
+
 #if WITH_EDITOR
 		virtual bool DrawDetailPanel() override;
 		virtual void DrawEditorDefault() override;
@@ -62,6 +64,10 @@ namespace Drn
 		float m_RunSpeed = 10.0f;
 		float m_SpeedRaiseRate = 20.0f;
 		float m_SpeedLowerRate = 50.0f;
+
+		float AirTime = 0.0f;
+		float CoyoteTime = 0.05f;
+		bool bFalling;
 
 		float m_LookSpeed = 70.0f;
 		float m_CameraPitchClamp = 70.0f;
